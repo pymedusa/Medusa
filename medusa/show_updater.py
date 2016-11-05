@@ -145,10 +145,18 @@ class ShowUpdate(db.DBConnection):
         db.DBConnection.__init__(self, 'cache.db')
 
     def initialize_indexer_update(self, show_list):
+        """Add initial next_update to new seasons or shows.
+
+        And cleanup the indexer_update table with shows that have been removed.
+        :param show_list: List of show objects.
+        """
         for show in show_list:
             for season in show.get_all_seasons(True):
                 if not self.get_next_season_update(show.indexer, show.indexerid, season):
                     show.create_next_season_update(season)
+
+        # Cleanup
+        self.clean_expired_seasons(show_list)
 
     def get_next_season_update(self, indexer, indexer_id, season):
         """Get the next season update for a show, the date a season should be refreshed from indexer."""
@@ -177,6 +185,36 @@ class ShowUpdate(db.DBConnection):
             seasons_dict[season['indexer']][season['indexer_id']][season['season']] = season['next_update']
 
         return seasons_dict
+
+    def clean_expired_seasons(self, show_list):
+        """Remove show/season combination from the indexer_update table.
+
+        :param show_list: A list of show_objects, used to clean up the indexer_update table.
+        :return: returns a list with show_id's removed.
+        """
+        remove_row = []
+        remove_show = []
+
+        next_updates = self.select(b'SELECT indexer_update_id, indexer, indexer_id FROM indexer_update')
+
+        for row in next_updates:
+            if not [show for show in show_list if
+                    show.indexer == row['indexer'] and
+                    show.indexerid == row['indexer_id']]:
+                remove_row.append(row['indexer_update_id'])
+                remove_show.append(row['indexer_id'])
+
+        if remove_row:
+            remove_show = b','.join(str(s) for s in set(remove_show))
+            self.action(
+                b'DELETE FROM indexer_update '
+                b'WHERE indexer_update_id IN (%s)' % b','.join(b'?' * len(remove_row)),
+                remove_row
+            )
+            logger.info(u'Removed following shows from season update cache: [{shows}]',
+                        shows=remove_show)
+
+        return remove_show
 
     def get_last_indexer_update(self, indexer):
         """Get the last update timestamp from the lastUpdate table.

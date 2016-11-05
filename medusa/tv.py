@@ -477,7 +477,7 @@ class TVShow(TVObject):
 
             cache_db = db.DBConnection('cache.db')
             cache_db.upsert('indexer_update',
-                            {'next_update': next_update},
+                            {'next_update': int(next_update)},
                             {'indexer': self.indexer, 'indexer_id': self.indexerid, 'season': season})
 
     def should_update(self, update_date=datetime.date.today()):
@@ -1255,6 +1255,15 @@ class TVShow(TVObject):
 
         main_db_con = db.DBConnection()
         main_db_con.mass_action(sql_l)
+
+        # Clean up the indexer_update table,
+        # making sure where not trying to update this show in near future.
+        cache_db_con = db.DBConnection('cache.db')
+        cache_db_con.action(
+                b'DELETE FROM indexer_update '
+                b'WHERE indexer = ? AND indexer_id = ?',
+                [self.indexer, self.indexerid]
+            )
 
         action = ('delete', 'trash')[app.TRASH_REMOVE_SHOW]
 
