@@ -840,8 +840,9 @@ class SubtitlesFinder(object):
                                  tv_episode.release_name, new_release_name)
                     tv_episode.subtitles = []
                     tv_episode.release_name = new_release_name
+                embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
                 downloaded_languages = download_subtitles(tv_episode, video_path=video_path,
-                                                          subtitles=False, embedded_subtitles=True)
+                                                          subtitles=False, embedded_subtitles=embedded_subtitles)
 
                 # Don't run post processor unless at least one file has all of the needed subtitles OR
                 # if user don't want to ignore embedded subtitles and wants to consider 'unknown' as wanted sub,
