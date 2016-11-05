@@ -20,8 +20,6 @@ import os
 import shutil
 import stat
 
-from babelfish import Language
-import knowit
 import medusa as app
 import shutil_custom
 from unrar2 import RarFile
@@ -32,6 +30,7 @@ from .helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extens
 from .helper.encoding import ss
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -547,20 +546,21 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             if app.POSTPONE_IF_NO_SUBS:
                 if not ignore_subs:
                     if subtitles_enabled(cur_video_file_path, nzbName):
+                        embedded_subs = set() if app.IGNORE_EMBEDDED_SUBS else get_embedded_subtitles(cur_video_file_path)
+
                         # If user don't want to ignore embedded subtitles and video has at least one, don't post pone PP
-                        if has_matching_unknown_subtitles(cur_video_file_path):
+                        if accept_unknown(embedded_subs):
                             result.output += logHelper(u"Found embedded unknown subtitles and we don't want to ignore them. "
                                                        u"Continuing the post-process of this file: %s" % cur_video_file)
-
+                        elif accept_any(embedded_subs):
+                            result.output += logHelper(u"Found wanted embedded subtitles. "
+                                                       u"Continuing the post-process of this file: %s" % cur_video_file)
                         else:
                             associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
                             if not [f for f in associated_files if f[-3:] in subtitle_extensions]:
                                 result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
                                                            u" %s" % cur_video_file, logger.DEBUG)
                                 continue
-                            elif get_embedded_subtitles(cur_video_file_path) in app.SUBTITLES_LANGUAGES:
-                                result.output += logHelper(u"Found wanted embedded subtitles. "
-                                                           u"Continuing the post-process of this file: %s" % cur_video_file)
                             else:
                                 result.output += logHelper(u"Found subtitles associated. "
                                                            u"Continuing the post-process of this file: %s" % cur_video_file)
@@ -665,28 +665,3 @@ def subtitles_enabled(*args):
             logger.log(u'Not enough information to parse filename into a valid show. Consider adding scene exceptions '
                        u'or improve naming for: {name}'.format(name=name), logger.WARNING)
     return False
-
-
-def has_matching_unknown_subtitles(video_path):
-    """Whether or not there's a valid unknown embedded subtitle for the specified video.
-
-    :param video_path:
-    :type video_path: str
-    :return:
-    :rtype: bool
-    """
-    return not app.EMBEDDED_SUBTITLES_ALL and app.EMBEDDED_SUBTITLES_UNKNOWN_LANG and \
-        Language('und') in get_embedded_subtitles(video_path)
-
-
-def get_embedded_subtitles(video_path):
-    """Return all embedded subtitles for the given video path.
-
-    :param video_path: video filename to be checked
-    :type video_path: str
-    :return:
-    :rtype: set of Language
-    """
-    knowledge = knowit.know(video_path)
-    tracks = knowledge.get('subtitle', [])
-    return [s['language'] for s in tracks if 'language' in s]

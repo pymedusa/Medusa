@@ -133,7 +133,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="embedded_subtitles_all">
                                         <span class="component-title">Embedded Subtitles</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${'checked="checked"' if app.EMBEDDED_SUBTITLES_ALL else ''}/>
+                                            <input type="checkbox" name="embedded_subtitles_all" id="embedded_subtitles_all" ${'checked="checked"' if app.IGNORE_EMBEDDED_SUBS else ''}/>
                                             <p>Ignore subtitles embedded inside video file?</p>
                                             <p><b>Warning: </b>this will ignore <em>all</em> embedded subtitles for every video file!</p>
                                         </span>
@@ -143,7 +143,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="embedded_subtitles_unknown_lang">
                                         <span class="component-title">Unknown language</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.EMBEDDED_SUBTITLES_UNKNOWN_LANG)]}/>
+                                            <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.ACCEPT_EMBEDDED_UNKNOWN_SUBS)]}/>
                                             <p>Consider unknown embedded subtitles as wanted language to avoid postpone post-process</p>
                                             <p>Only works with setting 'Postpone post processing' enabled</p>
                                         </span>
