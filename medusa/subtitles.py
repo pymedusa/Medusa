@@ -263,7 +263,7 @@ def get_embedded_subtitles(video_path):
     knowledge = knowit.know(video_path)
     tracks = knowledge.get('subtitle', [])
     found_languages = [s['language'] for s in tracks if 'language' in s]
-    logger.debug(u'Found embedded subtitles: {subs}', subs=found_languages)
+    logger.info(u'Found embedded subtitles: {subs}', subs=found_languages)
     return found_languages
 
 
