@@ -172,8 +172,8 @@ class ShowQueue(generic_queue.GenericQueue):
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
             logger.log(
-                u"A refresh was attempted but there is already an update queued or in progress. Since updates do a refresh at the end anyway I'm skipping this request.",
-                logger.DEBUG)
+                u"A refresh was attempted but there is already an update queued or in progress. "
+                u"Since updates do a refresh at the end anyway I'm skipping this request.", logger.DEBUG)
             return
 
         queueItemObj = QueueItemRefresh(show, force=force)
@@ -209,7 +209,8 @@ class ShowQueue(generic_queue.GenericQueue):
             lang = app.INDEXER_DEFAULT_LANGUAGE
 
         queueItemObj = QueueItemAdd(indexer, indexer_id, showDir, default_status, quality, flatten_folders, lang,
-                                    subtitles, anime, scene, paused, blacklist, whitelist, default_status_after, root_dir)
+                                    subtitles, anime, scene, paused, blacklist, whitelist, default_status_after,
+                                    root_dir)
 
         self.add_item(queueItemObj)
 
@@ -331,10 +332,11 @@ class QueueItemAdd(ShowQueueItem):
 
         ShowQueueItem.run(self)
 
-        logger.log(u"Starting to add show {0}".format("by ShowDir: {0}".format(self.showDir) if self.showDir else "by Indexer Id: {0}".format(self.indexer_id)))
+        logger.log(u"Starting to add show {0}".format("by ShowDir: {0}".format(self.showDir) if self.showDir else
+                   u"by Indexer Id: {0}".format(self.indexer_id)))
+
         # make sure the Indexer IDs are valid
         try:
-
             lINDEXER_API_PARMS = app.indexerApi(self.indexer).api_params.copy()
             if self.lang:
                 lINDEXER_API_PARMS['language'] = self.lang
@@ -344,8 +346,8 @@ class QueueItemAdd(ShowQueueItem):
             t = app.indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
             s = t[self.indexer_id]
 
-            # Let's try to create the show Dir if it's not provided. This way we force the show dir to build build using the
-            # Indexers provided series name
+            # Let's try to create the show Dir if it's not provided. This way we force the show dir
+            # to build build using the Indexers provided series name
             if not self.showDir and self.root_dir:
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
                 if show_name:
@@ -360,33 +362,37 @@ class QueueItemAdd(ShowQueueItem):
                     logger.log(u"Unable to get a show {0}, can't add the show".format(self.showDir))
                     return
 
-            # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that has no proper english version of the show
+            # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that
+            # has no proper english version of the show
             if getattr(s, 'seriesname', None) is None:
                 logger.log(u"Show in {} has no name on {}, probably searched with the wrong language.".format
                            (self.showDir, app.indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error("Unable to add show",
-                                       "Show in " + self.showDir + " has no name on " + str(app.indexerApi(
-                                           self.indexer).name) + ", probably the wrong language. Delete .nfo and add manually in the correct language.")
+                ui.notifications.error("Unable to add show", "Show in " + self.showDir + " has no name on " +
+                                       str(app.indexerApi(self.indexer).name) + ", probably the wrong language. "
+                                       "Delete .nfo and manually add the correct language.")
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
             if not s:
-                logger.log(u"Show " + str(s['seriesname']) + " is on " + str(
-                    app.indexerApi(self.indexer).name) + " but contains no season/episode data.")
+                logger.log(u"Show " + str(s['seriesname']) + u" is on " + str(app.indexerApi(self.indexer).name) +
+                           u" but contains no season/episode data.")
                 ui.notifications.error("Unable to add show",
                                        "Show " + str(s['seriesname']) + " is on " + str(app.indexerApi(
                                            self.indexer).name) + " but contains no season/episode data.")
                 self._finishEarly()
                 return
         except Exception as e:
-            logger.log(u"%s Error while loading information from indexer %s. Error: %r" % (self.indexer_id, app.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
-            # logger.log(u"Show name with ID %s doesn't exist on %s anymore. If you are using trakt, it will be removed from your TRAKT watchlist. If you are adding manually, try removing the nfo and adding again" %
-            #            (self.indexer_id, api.indexerApi(self.indexer).name), logger.WARNING)
+            logger.log(u"%s Error while loading information from indexer %s. "
+                       u"Error: %r" % (self.indexer_id, app.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
+            # logger.log(u"Show name with ID %s doesn't exist on %s anymore. If you are using trakt, it will be "
+            #            "removed from your TRAKT watchlist. If you are adding manually, try removing the nfo "
+            #            "and adding again" % (self.indexer_id, api.indexerApi(self.indexer).name), logger.WARNING)
 
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s, not using the NFO. Delete .nfo and try adding manually again." %
+                "Unable to look up the show in %s on %s using ID %s, not using the NFO. "
+                "Delete .nfo and try adding manually again." %
                 (self.showDir, app.indexerApi(self.indexer).name, self.indexer_id)
             )
 
@@ -412,7 +418,8 @@ class QueueItemAdd(ShowQueueItem):
                 try:
                     trakt_api.traktRequest("sync/watchlist/remove", data, method='POST')
                 except TraktException as e:
-                    logger.log("Could not remove show '{0}' from watchlist. Error: {1}".format(title, e), logger.WARNING)
+                    logger.log(u"Could not remove show '{0}' from watchlist. Error: {1}".format
+                               (title, e), logger.WARNING)
 
             self._finishEarly()
             return
@@ -427,7 +434,8 @@ class QueueItemAdd(ShowQueueItem):
             self.show.location = self.showDir
             self.show.subtitles = self.subtitles if self.subtitles is not None else app.SUBTITLES_DEFAULT
             self.show.quality = self.quality if self.quality else app.QUALITY_DEFAULT
-            self.show.flatten_folders = self.flatten_folders if self.flatten_folders is not None else app.FLATTEN_FOLDERS_DEFAULT
+            self.show.flatten_folders = self.flatten_folders if self.flatten_folders is not None \
+                else app.FLATTEN_FOLDERS_DEFAULT
             self.show.anime = self.anime if self.anime is not None else app.ANIME_DEFAULT
             self.show.scene = self.scene if self.scene is not None else app.SCENE_DEFAULT
             self.show.paused = self.paused if self.paused is not None else False
@@ -541,7 +549,8 @@ class QueueItemAdd(ShowQueueItem):
         # Load XEM data to DB for show
         scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer, force=True)
 
-        # check if show has XEM mapping so we can determin if searches should go by scene numbering or indexer numbering.
+        # check if show has XEM mapping so we can determine if searches
+        # should go by scene numbering or indexer numbering.
         if not self.scene and scene_numbering.get_xem_numbering_for_show(self.show.indexerid,
                                                                          self.show.indexer):
             self.show.scene = 1
@@ -569,6 +578,7 @@ class QueueItemRefresh(ShowQueueItem):
         self.force = force
 
     def run(self):
+
         ShowQueueItem.run(self)
 
         logger.log(u"{id}: Performing refresh on {show}".format(id=self.show.indexerid, show=self.show.name))
@@ -635,6 +645,7 @@ class QueueItemSubtitle(ShowQueueItem):
         ShowQueueItem.__init__(self, ShowQueueActions.SUBTITLE, show)
 
     def run(self):
+
         ShowQueueItem.run(self)
 
         logger.log(u'{id}: Downloading subtitles for {show}'.format
@@ -743,6 +754,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         logger.log(u'{id}: Finished update of {show}'.format
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+
         # Refresh show needs to be forced since current execution locks the queue
         app.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
@@ -840,6 +852,9 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
+                        logger.log(u"{id}: Couldn't delete episode {show} {ep} from the database".format
+                                   (id=self.show.indexerid, show=self.show.name,
+                                    ep=episode_num(cur_season, cur_episode)), logger.ERROR)
                         pass
 
             # If this is a season limited update, let's update the cache season next_update
@@ -861,6 +876,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
 
         logger.log(u'{id}: Finished update of {show}'.format
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+
         # Refresh show needs to be forced since current execution locks the queue
         app.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
@@ -870,12 +886,14 @@ class QueueItemRemove(ShowQueueItem):
     def __init__(self, show=None, full=False):
         ShowQueueItem.__init__(self, ShowQueueActions.REMOVE, show)
 
-        # lets make sure this happens before any other high priority actions
+        # let's make sure this happens before any other high priority actions
         self.priority = generic_queue.QueuePriorities.HIGH + generic_queue.QueuePriorities.HIGH
         self.full = full
 
     def run(self):
+
         ShowQueueItem.run(self)
+
         logger.log(u'{id}: Removing {show}'.format(id=self.show.indexerid, show=self.show.name))
 
         # Need to first remove the episodes from the Trakt collection, because we need the list of
