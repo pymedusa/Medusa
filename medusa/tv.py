@@ -1803,7 +1803,7 @@ class TVShow(TVObject):
         # preferred_qualities list and better than what we have, or we only have
         # one bestQuality and we do not have that quality yet
         logger.log('Preferred_qualities: {0}. Allowed_qualities: {1}'.format(preferred_qualities, allowed_qualities), logger.DEBUG)
-        logger.log('Ep status: {0}. Current quality: {1}. New quality: {2}'.format(ep_status, cur_quality, quality), logger.DEBUG)
+        logger.log('Episode status: {0}. Current quality: {1}. New quality: {2}'.format(ep_status, cur_quality, quality), logger.DEBUG)
         if TVEpisode.should_replace(ep_status, cur_quality, quality, allowed_qualities, preferred_qualities):
             logger.log(u'Episode already exists with quality {existing_quality} but found a '
                        u'better or preferred quality {new_quality} for {name} {ep}'.format
@@ -1845,20 +1845,21 @@ class TVShow(TVObject):
             return Overview.GOOD
         elif ep_status in Quality.FAILED:
             return Overview.WANTED
-        elif ep_status in Quality.SNATCHED:
-            return Overview.SNATCHED
-        elif ep_status in Quality.SNATCHED_PROPER:
-            return Overview.SNATCHED_PROPER
-        elif ep_status in Quality.SNATCHED_BEST:
-            return Overview.SNATCHED_BEST
-        elif ep_status in Quality.DOWNLOADED:
+        elif ep_status in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
             allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
             ep_status, cur_quality = Quality.splitCompositeStatus(ep_status)
 
+            # This code must be consistant with backlog.py while looping sql results
+
+            # If cur_quality not part of existing qualities, make it QUAL (backloged)
             if cur_quality not in allowed_qualities + preferred_qualities:
                 return Overview.QUAL
-            elif preferred_qualities and cur_quality not in preferred_qualities:
-                return Overview.QUAL
+            # Return QUAL if not best preferred quality. Else return GOOD (final)
+            elif preferred_qualities:
+                if not cur_quality == max(preferred_qualities):
+                    return Overview.QUAL
+                else:
+                    return Overview.GOOD
             else:
                 return Overview.GOOD
         else:
@@ -3363,16 +3364,16 @@ class TVEpisode(TVObject):
         if ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
             return False
 
-        if new_quality in preferred_qualities:
-            if cur_quality in preferred_qualities:
-                return new_quality > cur_quality
-            return True
+        # Scenario where user downloaded in one quality but this quality is no longer a wanted quality
+        # To avoid redownloads the old quality must has status ARCHIVED
+        if cur_quality not in allowed_qualities + preferred_qualities:
+            if new_quality in allowed_qualities + preferred_qualities:
+                return True
 
-        if new_quality in allowed_qualities:
-            if cur_quality in preferred_qualities:
-                return False
-            if cur_quality in allowed_qualities:
-                return new_quality > cur_quality
-            return True
+        # Scenario where we replace the current quality until we reach best preferred quality
+        # We only replace if preferred_quality is set
+        if preferred_qualities:
+            if not cur_quality == max(preferred_qualities) and new_quality in preferred_qualities:
+                return True
 
         return False

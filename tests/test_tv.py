@@ -1,19 +1,19 @@
 # coding=utf-8
-"""Tests for sickbeard.tv.py."""
-import pytest
+"""Tests for medusa/tv.py."""
+from medusa.common import DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
+from medusa.tv import TVEpisode
 
-from sickbeard.common import DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
-from sickbeard.tv import TVEpisode
+import pytest
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Downloaded 720p HDTV and found 720p BluRay: yes
+    {  # p0: Downloaded 720p HDTV and found 720p BluRay: no
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
         'allowed_qualities': [Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY],
         'preferred_qualities': [],
-        'expected': True
+        'expected': False
     },
     {  # p1: Downloaded 720p HDTV and found 720p BluRay, but episode status is invalid: no
         'ep_status': WANTED,
@@ -35,8 +35,8 @@ from sickbeard.tv import TVEpisode
         'ep_status': SNATCHED,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
-        'allowed_qualities': [Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY],
-        'preferred_qualities': [],
+        'allowed_qualities': [Quality.HDTV, Quality.HDWEBDL],
+        'preferred_qualities': [Quality.HDBLURAY],
         'expected': True
     },
     {  # p4: Snatched Proper 720p HDTV and found 720p BluRay, but 720p HDTV is preferred: no
@@ -55,13 +55,13 @@ from sickbeard.tv import TVEpisode
         'preferred_qualities': [Quality.HDWEBDL],
         'expected': False
     },
-    {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: yes
+    {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: no
         'ep_status': SNATCHED_PROPER,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
         'allowed_qualities': [Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY],
         'preferred_qualities': [Quality.HDWEBDL],
-        'expected': True
+        'expected': False
     },
     {  # p7: Downloaded 720p HDTV and found 720p BluRay, 720p BluRay is not explicity allowed but it's preferred: yes
         'ep_status': DOWNLOADED,
