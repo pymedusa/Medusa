@@ -33,7 +33,7 @@ class Tvdb2Error(Tvdb2Exception):
     """An error with thetvdb.com (Cannot connect, for example)."""
 
 
-class Tvdbv2UserAbort(Tvdb2Exception):
+class Tvdb2UserAbort(Tvdb2Exception):
     """User aborted the interactive selection (via the q command, ^c etc)."""
 
 
