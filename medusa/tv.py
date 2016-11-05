@@ -704,14 +704,14 @@ class TVShow(TVObject):
                    b'WHERE '
                    b'  showid = indexer_id AND showid = ?')
             if seasons:
-                logger.log(u'{id}: Loading all episodes from season(s) {seasons} from the DB'.format
-                           (id=self.indexerid, seasons=seasons), logger.DEBUG)
                 sql += b' AND season IN (%s)' % ','.join('?' * len(seasons))
                 sql_results = main_db_con.select(sql, [self.indexerid] + seasons)
+                logger.log(u'{id}: Loading all episodes of season(s) {seasons} from the DB'.format
+                           (id=self.indexerid, seasons=seasons), logger.DEBUG)
             else:
-                logger.log(u'{id}: Loading all episodes from all seasons from the DB'.format
-                           (id=self.indexerid), logger.DEBUG)
                 sql_results = main_db_con.select(sql, [self.indexerid])
+                logger.log(u'{id}: Loading all episodes of all seasons from the DB'.format
+                           (id=self.indexerid), logger.DEBUG)
         except Exception as error:
             logger.log(u'{id}: Could not load episodes from the DB. Error: {error_msg}'.format
                        (id=self.indexerid, error_msg=error), logger.ERROR)
@@ -1257,7 +1257,7 @@ class TVShow(TVObject):
         main_db_con.mass_action(sql_l)
 
         # Clean up the indexer_update table,
-        # making sure where not trying to update this show in near future.
+        # making sure we're not trying to update this show in near future.
         cache_db_con = db.DBConnection('cache.db')
         cache_db_con.action(b'DELETE FROM indexer_update '
                             b'WHERE indexer = ? AND indexer_id = ?',
