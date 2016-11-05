@@ -741,7 +741,9 @@ class QueueItemUpdate(ShowQueueItem):
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
-                        pass
+                        logger.log(u"{id}: Episode {show} {ep} successfully deleted from the database".format
+                                   (id=self.show.indexerid, show=self.show.name,
+                                    ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
         # Save only after all changes were applied
         try:
@@ -852,10 +854,9 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
-                        logger.log(u"{id}: Couldn't delete episode {show} {ep} from the database".format
+                        logger.log(u"{id}: Episode {show} {ep} successfully deleted from the database".format
                                    (id=self.show.indexerid, show=self.show.name,
-                                    ep=episode_num(cur_season, cur_episode)), logger.ERROR)
-                        pass
+                                    ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
             # If this is a season limited update, let's update the cache season next_update
             if self.seasons:
