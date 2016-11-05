@@ -41,10 +41,6 @@ class Tvdb2ShowNotFound(Tvdb2Exception):
     """Show cannot be found on thetvdb.com (non-existant show)."""
 
 
-class Tvdb2ShowNotFound(Tvdb2Exception):
-    """Show cannot be found on thetvdb.com (non-existant show)."""
-
-
 class Tvdb2ShowIncomplete(Tvdb2Exception):
     """Show found but incomplete on thetvdb.com (incomplete show)."""
 
