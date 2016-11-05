@@ -741,7 +741,7 @@ class QueueItemUpdate(ShowQueueItem):
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
-                        logger.log(u"{id}: Episode {show} {ep} successfully deleted from the database".format
+                        logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
@@ -854,7 +854,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     try:
                         ep_obj.delete_episode()
                     except EpisodeDeletedException:
-                        logger.log(u"{id}: Episode {show} {ep} successfully deleted from the database".format
+                        logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
