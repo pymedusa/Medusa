@@ -422,11 +422,11 @@ class HomeAddShows(Home):
             if blacklist:
                 blacklist = short_group_names(blacklist)
 
-            if not best_qualities:
-                best_qualities = []
-
-            if not any_qualities or try_int(quality_preset, None):
+            if not any_qualities:
                 any_qualities = []
+
+            if not best_qualities or try_int(quality_preset, None):
+                best_qualities = []
 
             if not isinstance(any_qualities, list):
                 any_qualities = [any_qualities]

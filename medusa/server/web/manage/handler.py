@@ -590,7 +590,7 @@ class Manage(Home, WebRoot):
             if quality_preset == 'keep':
                 allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
             elif try_int(quality_preset, None):
-                allowed_qualities = []
+                preferred_qualities = []
 
             exceptions_list = []
 
