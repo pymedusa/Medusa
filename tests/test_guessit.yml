@@ -3308,3 +3308,19 @@
   # episode_title: 9 11 The Longest War
   release_group: DHD
   type: episode
+
+# Regression test: https://github.com/guessit-io/guessit/issues/357
+# filename with SSEE pattern and folder name containing only season Sxx pattern.
+? Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv
+: title: Show Name
+  season: 1
+  episode: 6
+  screen_size: 720p
+  format: HDTV
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: GrOuP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
