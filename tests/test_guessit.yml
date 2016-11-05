@@ -3103,6 +3103,7 @@
 ? Show Name (Season 02) [UNCENSORED] [1080p] [BD] [x265] [pseudo]
 : title: Show Name
   season: 2
+  other: Uncensored
   release_group: 'pseudo'
   screen_size: 1080p
   format: BluRay
@@ -3202,7 +3203,6 @@
   mimetype: video/mp4
   type: episode
 
-
 # Regression test for https://github.com/pymedusa/Medusa/issues/1232
 # Anime was not outputing absolute episode
 ? /Finish/[Group] Anime Super Episode 61 [VOSTFR][720p].mp4
@@ -3214,4 +3214,97 @@
   screen_size: 720p
   container: mp4
   mimetype: video/mp4
+  type: episode
+
+# Regression: S4L release group detected as season 4
+# https://github.com/guessit-io/guessit/issues/352
+? Show Name S01E06 DVD-RIP x264-S4L
+: title: Show Name
+  season: 1
+  episode: 6
+  format: DVD
+  video_codec: h264
+  release_group: S4L
+  type: episode
+
+# Regression: Episode 00 as episode title is wrongly detected as additional episode
+? Show Name - S02E31 - Episode 55 (720p.HDTV)
+: title: Show Name
+  season: 2
+  episode: 31
+  episode_title: Episode 55
+  screen_size: 720p
+  format: HDTV
+  type: episode
+
+# Regression: HBO is not a release group
+? Great.Show.S01E02.Chestbun.720p.HBO.WEBRip.DD5.1.H.264
+: title: Great Show
+  season: 1
+  episode: 2
+  episode_title: Chestbun
+  screen_size: 720p
+  other: HBO
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  type: episode
+
+# Regression: date is not detected when followed by a screen_size
+# https://github.com/guessit-io/guessit/issues/351
+? Show.Name.2016.10.21.1080p.WEBRip.AAC2.0.H.264-group.mkv
+: title: Show Name
+  date: 2016-10-21
+  screen_size: 1080p
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: group
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Regression test: Season repack shouldn't be detected as release_group: season
+? Show.Name.Series.1.[HD].720p.mp4.*Season.Repack*.hdtv.x264
+: title: Show Name
+  season: 1
+  other: ['HD', 'Proper']
+  screen_size: 720p
+  container: MP4
+  proper_count: 1
+  proper_tag: REPACK
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+# Regression: Release group DHD is not detected
+? Show.Name.S2016E15.720p.HDTV.x264.Mammoth.Back.from.the.Dead-DHD.mkv
+: title: Show Name
+  season: 2016
+  year: 2016
+  episode: 15
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  # not a big issue
+  # episode_title: Mammoth Back from the Dead
+  release_group: DHD
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Regression: Release group DHD is not detected
+? Show.Name.S2016E17.720p.HDTV.x264.9.11.The.Longest.War-DHD
+: title: Show Name
+  season: 2016
+  year: 2016
+  episode: 17
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  # not a big issue
+  # episode_title: 9 11 The Longest War
+  release_group: DHD
   type: episode

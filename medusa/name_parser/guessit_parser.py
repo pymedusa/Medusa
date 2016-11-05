@@ -39,6 +39,12 @@ expected_groups = {
     r're:\bF4ST\b',
     r're:\bTGNF4ST\b',
     r're:\bTV2LAX9\b',
+
+    # https://github.com/guessit-io/guessit/issues/352
+    r're:\bS4L\b',
+
+    # https://github.com/guessit-io/guessit/issues/356
+    r're:\bDHD\b',
 }
 
 allowed_languages = {

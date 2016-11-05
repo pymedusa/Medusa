@@ -87,6 +87,8 @@ def other():
     rebulk.regex('DIRFIX', value='DirFix')
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
+    rebulk.regex(r'HBO', value='HBO')
+    rebulk.regex(r'UNCENSORED', value='Uncensored')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
     # Discarded:
