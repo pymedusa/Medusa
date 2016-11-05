@@ -96,7 +96,13 @@ MEDUSA.addShows.newShow = function() {
             var checked = '';
 
             if (data.results.length === 0) {
-                resultStr += '<b>No results found, try a different search.</b>';
+                resultStr += '<ul class="indexer-search-message">';
+                if (data.messages.length === 0) {
+                    resultStr += '<li>No results found, try a different search.</li>';
+                } else {
+                    resultStr += '<li>' + data.messages.join('</li><li>') + '</li>';
+                }
+                resultStr += '</ul>';
             } else {
                 $.each(data.results, function(index, obj) {
                     if (firstResult) {
