@@ -1,6 +1,6 @@
 # coding=utf-8
 """Tests for medusa/tv.py."""
-from medusa.common import DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
+from medusa.common import ARCHIVED, DOWNLOADED, Quality, SNATCHED, SNATCHED_PROPER, WANTED
 from medusa.tv import TVEpisode
 
 import pytest
@@ -102,6 +102,54 @@ import pytest
         'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'preferred_qualities': [Quality.HDBLURAY],
         'expected': True
+    },
+    {  # p12: Snatched 720p HDTV and found 720p BluRay: yes
+        'ep_status': SNATCHED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [],
+        'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'expected': True
+    },
+    {  # p13: Snatched 720p HDTV and found 720p BluRay: yes
+        'ep_status': SNATCHED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'expected': True
+    },
+    {  # p14: Downloaded 720p BluRay and found 720p HDTV: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.HDBLURAY,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'expected': False
+    },
+    {  # p15: Snatched 720p BluRay and found 720p HDTV: no
+        'ep_status': SNATCHED,
+        'cur_quality': Quality.HDBLURAY,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [],
+        'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'expected': False
+    },
+    {  # p16: Archived 720p HDTV and found 720p HDBLURAY: no
+        'ep_status': ARCHIVED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [],
+        'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'expected': False
+    },
+    {  # p17: Archived 720p HDTV and found 720p HDBLURAY: no
+        'ep_status': ARCHIVED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
+        'preferred_qualities': [],
+        'expected': False
     }
 ])
 def test_should_replace(p):
