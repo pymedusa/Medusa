@@ -249,7 +249,7 @@ def accept_any(subtitles):
     :rtype: bool
     """
     wanted = wanted_languages()
-    return bool(subtitles & wanted)
+    return bool(set(subtitles) & wanted)
 
 
 def get_embedded_subtitles(video_path):
@@ -850,7 +850,7 @@ class SubtitlesFinder(object):
                     if not needs_subtitles(downloaded_languages):
                         run_post_process = True
                     elif not app.IGNORE_EMBEDDED_SUBS:
-                        embedded_subs = get_embedded_subtitles()
+                        embedded_subs = get_embedded_subtitles(video_path)
                         run_post_process = accept_unknown(embedded_subs) or accept_any(embedded_subs)
 
         if run_post_process:
