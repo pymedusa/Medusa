@@ -477,7 +477,7 @@ class ContextFilter(logging.Filter):
         fullname = record.name
         basename = fullname.split('.')[0]
         decrease = self.level_mapping.get(fullname) or self.level_mapping.get(basename) or 0
-        level = max(DEBUG, record.levelno - decrease)
+        level = max(DB, record.levelno - decrease)
         if record.levelno != level:
             record.levelno = level
             record.levelname = logging.getLevelName(record.levelno)
