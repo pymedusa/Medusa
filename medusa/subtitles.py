@@ -826,7 +826,8 @@ class SubtitlesFinder(object):
                 # and .mkv has one.
                 if not app.PROCESS_AUTOMATICALLY and not run_post_process and (
                         not needs_subtitles(downloaded_languages) or
-                        process_tv.has_matching_unknown_subtitles(video_path)):
+                        process_tv.has_matching_unknown_subtitles(video_path) or
+                        process_tv.get_embedded_subtitles(video_path) == app.SUBTITLES_LANGUAGES):
                     run_post_process = True
 
         if run_post_process:
