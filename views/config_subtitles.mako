@@ -143,7 +143,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     <label class="clearfix" for="embedded_subtitles_unknown_lang">
                                         <span class="component-title">Unknown language</span>
                                         <span class="component-desc">
-                                            <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.ACCEPT_EMBEDDED_UNKNOWN_SUBS)]}/>
+                                            <input type="checkbox" name="embedded_subtitles_unknown_lang" id="embedded_subtitles_unknown_lang" ${('', 'checked="checked"')[bool(app.ACCEPT_UNKNOWN_EMBEDDED_SUBS)]}/>
                                             <p>Consider unknown embedded subtitles as wanted language to avoid postpone post-process</p>
                                             <p>Only works with setting 'Postpone post processing' enabled</p>
                                         </span>

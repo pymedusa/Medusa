@@ -237,7 +237,7 @@ def accept_unknown(subtitles):
     :return:
     :rtype: bool
     """
-    return app.ACCEPT_EMBEDDED_UNKNOWN_SUBS and Language('und') in subtitles
+    return app.ACCEPT_UNKNOWN_EMBEDDED_SUBS and Language('und') in subtitles
 
 
 def accept_any(subtitles):
