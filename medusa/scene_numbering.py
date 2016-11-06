@@ -202,7 +202,8 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
     indexer = int(indexer)
 
     main_db_con = db.DBConnection()
-    if season and episode:
+    # Season/episode can be 0 so can't check "if season"
+    if season is not None and episode is not None:
         main_db_con.action(
             "INSERT OR IGNORE INTO scene_numbering (indexer, indexer_id, season, episode) VALUES (?,?,?,?)",
             [indexer, indexer_id, season, episode])
@@ -210,7 +211,8 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
         main_db_con.action(
             "UPDATE scene_numbering SET scene_season = ?, scene_episode = ? WHERE indexer = ? and indexer_id = ? and season = ? and episode = ?",
             [sceneSeason, sceneEpisode, indexer, indexer_id, season, episode])
-    elif absolute_number:
+    # absolute_number can be 0 so can't check "if absolute_number"
+    elif absolute_number is not None:
         main_db_con.action(
             "INSERT OR IGNORE INTO scene_numbering (indexer, indexer_id, absolute_number) VALUES (?,?,?)",
             [indexer, indexer_id, absolute_number])
