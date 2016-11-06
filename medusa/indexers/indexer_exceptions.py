@@ -37,8 +37,9 @@ class IndexerShowNotFound(IndexerException):
 
 class IndexerShowNotFoundInLanguage(IndexerException):
     """Show cannot be found in the indexer with this language."""
-    # Call the base class constructor and provide it the language specific information.
+
     def __init__(self, message, language):
+        """Initialize exception with language."""
         super(IndexerShowNotFoundInLanguage, self).__init__(message)
         self.language = language
 
