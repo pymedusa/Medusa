@@ -140,8 +140,8 @@ def get_needed_languages(subtitles):
     :rtype: set of babelfish.Language
     """
     if not app.SUBTITLES_MULTI:
-        return set() if 'und' in subtitles else {from_code(language) for language in wanted_languages()}
-    return {from_code(language) for language in wanted_languages().difference(subtitles)}
+        return set() if 'und' in subtitles else from_codes(wanted_languages())
+    return from_codes(wanted_languages().difference(subtitles))
 
 
 def subtitle_code_filter():
@@ -189,6 +189,17 @@ def from_code(code, unknown='und'):
         return Language.fromopensubtitles(code)  # pylint: disable=no-member
 
     return Language(unknown) if unknown else None
+
+
+def from_codes(codes):
+    """Convert opensubtitles language codes to a proper babelfish.Language object.
+
+    :param codes: an opensubtitles language code to be converted
+    :type codes: set of str or list of str
+    :return: a list of language object
+    :rtype: set of babelfish.Language
+    """
+    return {from_code(language) for language in codes}
 
 
 def from_ietf_code(code, unknown='und'):
@@ -248,8 +259,8 @@ def accept_any(subtitles):
     :return:
     :rtype: bool
     """
-    wanted = wanted_languages()
-    return bool(set(subtitles) & wanted)
+    wanted = from_codes(wanted_languages())
+    return bool(subtitles & wanted)
 
 
 def get_embedded_subtitles(video_path):
@@ -258,11 +269,11 @@ def get_embedded_subtitles(video_path):
     :param video_path: video filename to be checked
     :type video_path: str
     :return:
-    :rtype: set of Language
+    :rtype: set of babelfish.Language
     """
     knowledge = knowit.know(video_path)
     tracks = knowledge.get('subtitle', [])
-    found_languages = [s['language'] for s in tracks if 'language' in s]
+    found_languages = {s['language'] for s in tracks if 'language' in s}
     if found_languages:
         logger.info(u'Found embedded subtitles: {subs}', subs=found_languages)
     return found_languages
@@ -300,7 +311,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     subtitles_dir = get_subtitles_dir(video_path)
     release_name = tv_episode.release_name
 
-    languages = {from_code(language) for language in wanted_languages()}
+    languages = from_codes(wanted_languages())
 
     video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=False,
                       embedded_subtitles=False, release_name=release_name)
