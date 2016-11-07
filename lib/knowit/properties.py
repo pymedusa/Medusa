@@ -472,6 +472,29 @@ class AudioChannelsRule(Handler):
             logger.info('Invalid channels: %d', count)
 
 
+class LanguageRule(Handler):
+    """Language rules."""
+
+    name_re = re.compile(r'(?P<name>\w+)\b', re.IGNORECASE)
+
+    def handle(self, props, context):
+        """Language detection using name."""
+        if 'language' in props:
+            return
+
+        if 'name' in props:
+            name = props.get('name', '')
+            match = self.name_re.match(name)
+            if match:
+                try:
+                    return BabelfishLanguage.fromname(match.group('name'))
+                except BabelfishError:
+                    pass
+
+            logger.info('Invalid language: %r', name)
+        return BabelfishLanguage('und')
+
+
 class HearingImpairedRule(Handler):
     """Hearing Impaired rule."""
 

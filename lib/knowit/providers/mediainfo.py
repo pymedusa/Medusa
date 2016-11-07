@@ -1,71 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import locale
 import logging
 import os
 import sys
 
+from ctypes import c_size_t, c_void_p, c_wchar_p
 from pymediainfo import MediaInfo
 
 from .. import OrderedDict, VIDEO_EXTENSIONS
 from ..properties import (
     AudioChannels, AudioChannelsRule, AudioCodec, AudioCompression, AudioProfile, BitRateMode,
-    Duration, Float, HearingImpairedRule, Integer, Language, MultiHandler, Property,
+    Duration, Float, HearingImpairedRule, Integer, Language, LanguageRule, MultiHandler, Property,
     ResolutionRule, ScanType, SubtitleEncoding, SubtitleFormat, VideoCodec, YesNo
 )
 from ..provider import MalformedFileError, Provider
 
 
 logger = logging.getLogger(__name__)
-
-MEDIA_INFO_AVAILABLE = False
-INITIALIZED = False
-
-
-def load_native():
-    global MEDIA_INFO_AVAILABLE, INITIALIZED
-    if INITIALIZED:
-        return MEDIA_INFO_AVAILABLE
-
-    os_family = 'windows' if (
-        os.name in ('nt', 'dos', 'os2', 'ce')
-    ) else (
-        'macos' if sys.platform == "darwin" else 'unix'
-    )
-    logger.debug('Detected os family: %s', os_family)
-    try:
-        if os_family == 'unix':
-            from ctypes import CDLL
-            logger.debug('Loading native mediainfo library')
-            so_name = 'libmediainfo.so.0'
-            for location in ('/usr/local/mediainfo/lib', ):
-                candidate = os.path.join(location, so_name)
-                if os.path.isfile(candidate):
-                    so_name = candidate
-                    break
-            CDLL(so_name)
-            MEDIA_INFO_AVAILABLE = True
-        else:  # pragma: no cover
-            os_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../native', os_family))
-            if os_family == 'macos':
-                from ctypes import CDLL
-                logger.debug('Loading native mediainfo library from %s', os_folder)
-                CDLL(os.path.join(os_folder, 'libmediainfo.0.dylib'))
-                MEDIA_INFO_AVAILABLE = True
-            else:
-                from ctypes import windll
-                is_64bits = sys.maxsize > 2 ** 32
-                arch = 'x86_64' if is_64bits else 'i386'
-                lib = os.path.join(os_folder, arch)
-                logger.debug('Loading native mediainfo library from %s', lib)
-                windll.MediaInfo = windll.LoadLibrary(os.path.join(lib, 'MediaInfo.dll'))
-                MEDIA_INFO_AVAILABLE = True
-        logger.debug('MediaInfo loaded')
-    except OSError:
-        logger.warning('Unable to load native mediainfo library')
-    finally:
-        INITIALIZED = True
-    return MEDIA_INFO_AVAILABLE
 
 
 class MediaInfoProvider(Provider):
@@ -83,6 +36,7 @@ class MediaInfoProvider(Provider):
                 ('number', Property('track_id', Integer('video track number'))),
                 ('name', Property('name')),
                 ('language', Property('language', Language())),
+                ('_language', Property(handler=LanguageRule())),
                 ('duration', Property('duration', Duration())),
                 ('size', Property('stream_size', Integer('video stream size'))),
                 ('width', Property('width', Integer('width'))),
@@ -106,6 +60,7 @@ class MediaInfoProvider(Provider):
                 ('number', Property('track_id', Integer('audio track number'))),
                 ('name', Property('title')),
                 ('language', Property('language', Language())),
+                ('_language', Property(handler=LanguageRule())),
                 ('duration', Property('duration', Duration())),
                 ('size', Property('stream_size', Integer('audio stream size'))),
                 ('codec', Property('codec', MultiHandler(AudioCodec()))),
@@ -126,6 +81,7 @@ class MediaInfoProvider(Provider):
                 ('number', Property('track_id', Integer('subtitle track number'))),
                 ('name', Property('title')),
                 ('language', Property('language', Language())),
+                ('_language', Property(handler=LanguageRule())),
                 ('hearing_impaired', Property(handler=HearingImpairedRule())),
                 ('format', Property('codec_id', SubtitleFormat())),
                 ('encoding', Property('codec_id', SubtitleEncoding())),
@@ -133,14 +89,85 @@ class MediaInfoProvider(Provider):
                 ('default', Property('default', YesNo(hide_value=False))),
             ]),
         })
+        self.native_lib = self._create_native_lib()
+
+    @staticmethod
+    def _create_native_lib():
+        os_family = 'windows' if (
+            os.name in ('nt', 'dos', 'os2', 'ce')
+        ) else (
+            'macos' if sys.platform == "darwin" else 'unix'
+        )
+        logger.debug('Detected os family: %s', os_family)
+        try:
+            if os_family == 'unix':
+                from ctypes import CDLL
+                logger.debug('Loading native mediainfo library')
+                so_name = 'libmediainfo.so.0'
+                for location in ('/usr/local/mediainfo/lib',):
+                    candidate = os.path.join(location, so_name)
+                    if os.path.isfile(candidate):
+                        so_name = candidate
+                        break
+                lib = CDLL(so_name)
+            else:  # pragma: no cover
+                os_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../native', os_family))
+                if os_family == 'macos':
+                    from ctypes import CDLL
+                    logger.debug('Loading native mediainfo library from %s', os_folder)
+                    lib = CDLL(os.path.join(os_folder, 'libmediainfo.0.dylib'))
+                else:
+                    from ctypes import windll
+                    is_64bits = sys.maxsize > 2 ** 32
+                    arch = 'x86_64' if is_64bits else 'i386'
+                    lib = os.path.join(os_folder, arch)
+                    logger.debug('Loading native mediainfo library from %s', lib)
+                    lib = windll.MediaInfo = windll.LoadLibrary(os.path.join(lib, 'MediaInfo.dll'))
+
+            lib.MediaInfo_Inform.restype = c_wchar_p
+            lib.MediaInfo_New.argtypes = []
+            lib.MediaInfo_New.restype = c_void_p
+            lib.MediaInfo_Option.argtypes = [c_void_p, c_wchar_p, c_wchar_p]
+            lib.MediaInfo_Option.restype = c_wchar_p
+            lib.MediaInfo_Inform.argtypes = [c_void_p, c_size_t]
+            lib.MediaInfo_Inform.restype = c_wchar_p
+            lib.MediaInfo_Open.argtypes = [c_void_p, c_wchar_p]
+            lib.MediaInfo_Open.restype = c_size_t
+            lib.MediaInfo_Delete.argtypes = [c_void_p]
+            lib.MediaInfo_Delete.restype = None
+            lib.MediaInfo_Close.argtypes = [c_void_p]
+            lib.MediaInfo_Close.restype = None
+            logger.debug('MediaInfo loaded')
+            return lib
+        except OSError:
+            logger.warning('Unable to load native mediainfo library')
+
+    def _parse(self, filename):
+        lib = self.native_lib
+        # Create a MediaInfo handle
+        handle = lib.MediaInfo_New()
+        lib.MediaInfo_Option(handle, 'CharSet', 'UTF-8')
+        # Fix for https://github.com/sbraz/pymediainfo/issues/22
+        # Python 2 does not change LC_CTYPE
+        # at startup: https://bugs.python.org/issue6203
+        if sys.version_info < (3, ) and os.name == 'posix' and locale.getlocale() == (None, None):
+            locale.setlocale(locale.LC_CTYPE, locale.getdefaultlocale())
+        lib.MediaInfo_Option(None, 'Inform', 'XML')
+        lib.MediaInfo_Option(None, 'Complete', '1')
+        lib.MediaInfo_Open(handle, filename)
+        xml = lib.MediaInfo_Inform(handle, 0)
+        # Delete the handle
+        lib.MediaInfo_Close(handle)
+        lib.MediaInfo_Delete(handle)
+        return MediaInfo(xml)
 
     def accepts(self, video_path):
         """Accept any video when MediaInfo is available."""
-        return load_native() and video_path.lower().endswith(VIDEO_EXTENSIONS)
+        return self.native_lib and video_path.lower().endswith(VIDEO_EXTENSIONS)
 
     def describe(self, video_path, options):
         """Return video metadata."""
-        data = MediaInfo.parse(video_path).to_data()
+        data = self._parse(video_path).to_data()
         if options.get('raw'):
             return data
 
