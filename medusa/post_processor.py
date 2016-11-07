@@ -165,48 +165,37 @@ class PostProcessor(object):
         :param subfolders: check subfolders while listing files
         :return: A list containing all files which are associated to the given file
         """
-        def recursive_glob(treeroot, pattern):
-            results = []
-            for base, _, files in os.walk(treeroot):
-                goodfiles = fnmatch.filter(files, pattern)
-                results.extend(os.path.join(base, f) for f in goodfiles)
-            return results
+        def find_files(file_path, pattern='*', subfolders=None, base_name_only=None):
+            directory = os.path.dirname(file_path)
+            if base_name_only:
+                pattern = os.path.basename(file_path).rpartition('.')[0] + pattern
+
+            found_files = []
+            for root, _, filenames in os.walk(directory):
+                for filename in fnmatch.filter(filenames, pattern):
+                    found_files.append(os.path.join(root, filename))
+                if not subfolders:
+                    break
+            return found_files
 
         if not file_path:
             return []
 
-        # don't confuse glob with chars we didn't mean to use
-        globbable_file_path = helpers.fixGlob(file_path)
-
         file_path_list = []
-
         extensions_to_delete = []
+        base_name = os.path.basename(file_path)
 
         if subfolders:
-            base_name = os.path.basename(globbable_file_path).rpartition('.')[0]
-        else:
-            base_name = globbable_file_path.rpartition('.')[0]
-
-        if not base_name_only:
-            base_name += '.'
-
-        # don't strip it all and use cwd by accident
-        if not base_name:
-            return []
-
-        # subfolders are only checked in show folder, so names will always be exactly alike
-        if subfolders:
-            # just create the list of all files starting with the basename
-            filelist = recursive_glob(os.path.dirname(globbable_file_path), base_name + '*')
+            filelist = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
         # this is called when PP, so we need to do the filename check case-insensitive
         else:
             filelist = []
 
             # get a list of all the files in the folder
-            checklist = glob.glob(os.path.join(os.path.dirname(globbable_file_path), '*'))
+            checklist = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
 
             # supported subtitle languages codes
-            language_extensions = tuple('.' + c for c in language_converters['opensubtitles'].codes)
+            language_extensions = tuple(c for c in language_converters['opensubtitles'].codes)
 
             # loop through all the files in the folder, and check if they are the same name
             # even when the cases don't match
@@ -226,14 +215,14 @@ class PostProcessor(object):
                     new_file_name = file_name
                     sub_file_name = file_name.rpartition('.')[0]
 
-                if is_subtitle and sub_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
+                if is_subtitle and sub_file_name.lower() == base_name.lower():
                     extension_len = len(filefound.rsplit('.', 2)[1])
                     if file_name.lower().endswith(language_extensions) and (extension_len in [2, 3]):
                         filelist.append(filefound)
                     elif file_name.lower().endswith('pt-br') and extension_len == 5:
                         filelist.append(filefound)
                 # if there's no difference in the filename add it to the filelist
-                elif new_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
+                elif new_file_name.lower() == base_name.lower():
                     filelist.append(filefound)
 
         for associated_file_path in filelist:
