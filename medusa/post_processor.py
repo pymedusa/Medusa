@@ -17,7 +17,6 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import fnmatch
-import glob
 import os
 import re
 import stat
@@ -25,11 +24,11 @@ import subprocess
 
 import adba
 
-from babelfish import language_converters
-
 import medusa as app
 
 from six import text_type
+
+from subtitles import from_code, from_ietf_code
 
 from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension, replace_extension, subtitle_extensions
@@ -183,47 +182,25 @@ class PostProcessor(object):
 
         file_path_list = []
         extensions_to_delete = []
-        base_name = os.path.basename(file_path)
+        processed_file_name = os.path.basename(file_path).rpartition('.')[0]
 
-        if subfolders:
-            filelist = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
-        # this is called when PP, so we need to do the filename check case-insensitive
-        else:
-            filelist = []
+        # get a list of all the files in the folder
+        file_list = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
 
-            # get a list of all the files in the folder
-            checklist = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
+        # loop through all the files in the folder, and check if they are the same name
+        # even when the cases don't match
+        filelist = []
+        for file in file_list:
 
-            # supported subtitle languages codes
-            language_extensions = tuple(c for c in language_converters['opensubtitles'].codes)
+            file_name = os.path.basename(file)
+            code = file_name.rsplit('.', 2)[1].lower().replace('_', '-')
+            language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+            if language:
+                filelist.append(file)
 
-            # loop through all the files in the folder, and check if they are the same name
-            # even when the cases don't match
-            for filefound in checklist:
-
-                file_name = filefound.rpartition('.')[0]
-                file_extension = filefound.rpartition('.')[2]
-                is_subtitle = None
-
-                if file_extension in subtitle_extensions:
-                    is_subtitle = True
-
-                if not base_name_only:
-                    new_file_name = file_name + '.'
-                    sub_file_name = file_name.rpartition('.')[0] + '.'
-                else:
-                    new_file_name = file_name
-                    sub_file_name = file_name.rpartition('.')[0]
-
-                if is_subtitle and sub_file_name.lower() == base_name.lower():
-                    extension_len = len(filefound.rsplit('.', 2)[1])
-                    if file_name.lower().endswith(language_extensions) and (extension_len in [2, 3]):
-                        filelist.append(filefound)
-                    elif file_name.lower().endswith('pt-br') and extension_len == 5:
-                        filelist.append(filefound)
-                # if there's no difference in the filename add it to the filelist
-                elif new_file_name.lower() == base_name.lower():
-                    filelist.append(filefound)
+            # if there's no difference in the filename add it to the filelist
+            elif file_name.startswith(processed_file_name.lower()):
+                filelist.append(file)
 
         for associated_file_path in filelist:
             # Exclude the video file we are post-processing
@@ -231,8 +208,8 @@ class PostProcessor(object):
                 continue
 
             # Exlude non-subtitle files with the 'only subtitles' option (not implemented yet)
-            # if subtitles_only and not associated_file_path[-3:] in subtitle_extensions:
-            #     continue
+            if subtitles_only and not associated_file_path[-3:] in subtitle_extensions:
+                continue
 
             # Exclude .rar files from associated list
             if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
