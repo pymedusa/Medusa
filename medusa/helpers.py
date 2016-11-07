@@ -80,11 +80,6 @@ except ImportError:
 shutil.copyfile = shutil_custom.copyfile_custom
 
 
-def fixGlob(path):
-    path = re.sub(r'\[', '[[]', path)
-    return re.sub(r'(?<!\[)\]', '[]]', path)
-
-
 def indentXML(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
     i = "\n" + level * "  "
