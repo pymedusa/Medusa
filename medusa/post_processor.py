@@ -199,7 +199,7 @@ class PostProcessor(object):
                 filelist.append(file)
 
             # if there's no difference in the filename add it to the filelist
-            elif file_name.startswith(processed_file_name.lower()):
+            elif file_name.lower().startswith(processed_file_name.lower()):
                 filelist.append(file)
 
         for associated_file_path in filelist:
