@@ -8,7 +8,7 @@ import enzyme
 from .. import OrderedDict
 from ..properties import (
     AudioChannelsRule, AudioCodec, HearingImpairedRule, Integer,
-    Language, Property, ResolutionRule, VideoCodec, YesNo
+    Language, LanguageRule, Property, ResolutionRule, VideoCodec, YesNo
 )
 from ..provider import MalformedFileError, Provider
 from ..utils import todict
@@ -31,6 +31,7 @@ class EnzymeProvider(Provider):
                 ('number', Property('number', Integer('video track number'))),
                 ('name', Property('name')),
                 ('language', Property('language', Language())),
+                ('_language', Property(handler=LanguageRule())),
                 ('width', Property('width', Integer('width'))),
                 ('height', Property('height', Integer('height'))),
                 ('scan_type', Property('interlaced', YesNo('Interlaced', 'Progressive'), default='Progressive')),
@@ -45,6 +46,7 @@ class EnzymeProvider(Provider):
                 ('number', Property('number', Integer('audio track number'))),
                 ('name', Property('name')),
                 ('language', Property('language', Language())),
+                ('_language', Property(handler=LanguageRule())),
                 ('codec', Property('codec_id', AudioCodec())),
                 ('channels_count', Property('channels', Integer('audio channels'))),
                 ('channels', Property(handler=AudioChannelsRule())),
@@ -56,6 +58,7 @@ class EnzymeProvider(Provider):
                 ('number', Property('number', Integer('subtitle track number'))),
                 ('name', Property('name')),
                 ('language', Property('language', Language())),
+                ('_language', Property(handler=LanguageRule())),
                 ('hearing_impaired', Property(handler=HearingImpairedRule())),
                 ('forced', Property('forced', YesNo(hide_value=False))),
                 ('default', Property('default', YesNo(hide_value=False))),
@@ -81,5 +84,5 @@ class EnzymeProvider(Provider):
         if options.get('raw'):
             return data
 
-        return self._describe_tracks(data.get('info'), data.get('video_tracks'),
-                                     data.get('audio_tracks'), data.get('subtitle_tracks'))
+        return self._describe_tracks(data.get('info'), data.get('video_tracks', []),
+                                     data.get('audio_tracks', []), data.get('subtitle_tracks', []))

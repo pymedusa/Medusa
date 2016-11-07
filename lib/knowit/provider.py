@@ -132,6 +132,8 @@ class Provider(object):
                 result = prop.handler.handle(value, context) if prop.handler else value
                 if result is not None and not is_unknown(result):
                     if not prop.private:
+                        if name.startswith('_'):
+                            name = name[1:]
                         props[name] = result
                     context[name] = result
 

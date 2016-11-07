@@ -8,6 +8,8 @@ import sys
 from argparse import ArgumentParser
 
 from babelfish.language import Language
+from enzyme import __version__ as enzyme_version
+from pymediainfo import __version__ as pymediainfo_version
 from six import PY2, text_type
 import yaml
 
@@ -51,6 +53,10 @@ def build_argument_parser():
                              help='Do not display properties output')
     output_opts.add_argument('-y', '--yaml', action='store_true', dest='yaml', default=False,
                              help='Display output in yaml format')
+
+    information_opts = opts.add_argument_group("Information")
+    information_opts.add_argument('--version', dest='version', action='store_true', default=False,
+                                  help='Display knowit version.')
 
     return opts
 
@@ -119,6 +125,29 @@ def main(args=None):
                 logger.exception('OS error when processing video')
             except UnicodeError:
                 logger.exception('Character encoding error when processing video')
+    elif options.version:
+        mi_location = api.available_providers['mediainfo'].native_lib
+        if mi_location and hasattr(mi_location, '_name'):
+            mi_location = getattr(mi_location, '_name')
+
+        console.info('+-------------------------------------------------------+')
+        console.info('|                   KnowIt %s %s |', __version__, (27 - len(__version__)) * ' ')
+        console.info('+-------------------------------------------------------+')
+        console.info('|                   Enzyme %s %s |', enzyme_version, (27 - len(enzyme_version)) * ' ')
+        console.info('|                   pymediainfo %s %s |',
+                     pymediainfo_version, (22 - len(pymediainfo_version)) * ' ')
+        if not mi_location:
+            console.info('|              MediaInfo not available                  |')
+            console.info('|      https://mediaarea.net/en/MediaInfo/Download      |')
+        else:
+            mi_location = mi_location[-52:]
+            spaces = max((53 - len(mi_location)), 0)
+            console.info('|                   MediaInfo available                 |')
+            console.info('| %s%s%s |', spaces / 2 * ' ', mi_location, (spaces / 2 + spaces % 2) * ' ')
+        console.info('+-------------------------------------------------------+')
+        console.info('|      Please report any bug or feature request at      |')
+        console.info('|     https://github.com/ratoaq2/knowit/issues.         |')
+        console.info('+-------------------------------------------------------+')
     else:
         argument_parser.print_help()
 
