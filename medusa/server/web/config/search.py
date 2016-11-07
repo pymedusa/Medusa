@@ -89,7 +89,7 @@ class ConfigSearch(Config):
         app.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)
 
         config.change_DOWNLOAD_PROPERS(download_propers)
-        app.PROPERS_SEARCH_DAYS = propers_search_days
+        app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
         app.CHECK_PROPERS_INTERVAL = check_propers_interval
 
         app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)
