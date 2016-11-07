@@ -180,28 +180,30 @@ class PostProcessor(object):
         if not file_path:
             return []
 
-        file_path_list = []
-        extensions_to_delete = []
-        processed_file_name = os.path.basename(file_path).rpartition('.')[0]
-
         # get a list of all the files in the folder
         file_list = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
+
+        processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
 
         # loop through all the files in the folder, and check if they are the same name
         # even when the cases don't match
         filelist = []
-        for file in file_list:
+        for found_file in file_list:
 
-            file_name = os.path.basename(file)
-            code = file_name.rsplit('.', 2)[1].lower().replace('_', '-')
-            language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
-            if language:
-                filelist.append(file)
+            file_name = os.path.basename(found_file).lower()
+
+            if file_name[-3:] in subtitle_extensions:
+                code = file_name.rsplit('.', 2)[1].replace('_', '-')
+                language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+                if language:
+                    filelist.append(found_file)
 
             # if there's no difference in the filename add it to the filelist
-            elif file_name.lower().startswith(processed_file_name.lower()):
-                filelist.append(file)
+            elif file_name.startswith(processed_file_name):
+                filelist.append(found_file)
 
+        file_path_list = []
+        extensions_to_delete = []
         for associated_file_path in filelist:
             # Exclude the video file we are post-processing
             if associated_file_path == file_path:
