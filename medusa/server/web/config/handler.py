@@ -9,10 +9,10 @@ from __future__ import unicode_literals
 import os
 
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from ..core import PageTemplate, WebRoot
 from .... import db
-from ....versionChecker import CheckVersion
+from ....version_checker import CheckVersion
 
 
 @route('/config(/?.*)')

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import markdown2
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
 from .... import logger
@@ -27,6 +27,6 @@ class HomeNews(Home):
         app.save_config()
 
         t = PageTemplate(rh=self, filename='markdown.mako')
-        data = markdown2.markdown(news if news else 'The was a problem connecting to github, please refresh and try again', extras=['header-ids'])
+        data = markdown2.markdown(news if news else 'The was a problem connecting to GitHub, please refresh and try again', extras=['header-ids'])
 
         return t.render(title='News', header='News', topmenu='system', data=data, controller='news', action='index')

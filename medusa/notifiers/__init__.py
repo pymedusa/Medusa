@@ -20,7 +20,7 @@
 
 import medusa as app
 from ..notifiers import boxcar2, emailnotify, emby, freemobile, growl, kodi, libnotify, nma, nmj, nmjv2, plex, prowl, pushalot, pushbullet, pushover, \
-    pytivo, synoindex, synologynotifier, telegram, trakt, tweet
+    pytivo, synoindex, synology_notifier, telegram, trakt, tweet
 
 # home theater / nas
 kodi_notifier = kodi.Notifier()
@@ -29,7 +29,7 @@ emby_notifier = emby.Notifier()
 nmj_notifier = nmj.Notifier()
 nmjv2_notifier = nmjv2.Notifier()
 synoindex_notifier = synoindex.Notifier()
-synology_notifier = synologynotifier.Notifier()
+synology_notifier = synology_notifier.Notifier()
 pytivo_notifier = pytivo.Notifier()
 
 # devices

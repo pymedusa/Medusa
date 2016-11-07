@@ -39,6 +39,12 @@ expected_groups = {
     r're:\bF4ST\b',
     r're:\bTGNF4ST\b',
     r're:\bTV2LAX9\b',
+
+    # https://github.com/guessit-io/guessit/issues/352
+    r're:\bS4L\b',
+
+    # https://github.com/guessit-io/guessit/issues/356
+    r're:\bDHD\b',
 }
 
 allowed_languages = {
@@ -88,7 +94,18 @@ def guessit(name, options=None):
     return default_api.guessit(name, options=final_options)
 
 
-@memory_cache.cache_on_arguments(expiration_time=EXPECTED_TITLES_EXPIRATION_TIME)
+def _key_generator(namespace, fn):
+    fname = fn.__name__
+
+    def generate_key(show_list):
+        names = []
+        for show in show_list:
+            names.extend([show.name] + show.exceptions)
+        return '{0}:{1}:{2}'.format(namespace, fname, names)
+    return generate_key
+
+
+@memory_cache.cache_on_arguments(expiration_time=EXPECTED_TITLES_EXPIRATION_TIME, function_key_generator=_key_generator)
 def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 

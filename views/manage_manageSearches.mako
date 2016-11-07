@@ -30,7 +30,7 @@
 <a class="btn" href="manage/manageSearches/forceSearch"><i class="icon-exclamation-sign"></i> Force</a>
 ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 <br>
-<h3>Find Propers Search:</h3>
+<h3>Propers Search:</h3>
 <a class="btn ${('disabled', '')[bool(app.DOWNLOAD_PROPERS)]}" href="manage/manageSearches/forceFindPropers"><i class="icon-exclamation-sign"></i> Force</a>
 % if not app.DOWNLOAD_PROPERS:
     Propers search disabled <br>

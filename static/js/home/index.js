@@ -7,7 +7,7 @@ MEDUSA.home.index = function() {
     // Handle filtering in the poster layout
     $('#filterShowName').on('input', _.debounce(function() { // eslint-disable-line no-undef
         $('.show-grid').isotope({
-            filter: function () {
+            filter: function() {
                 var name = $(this).attr('data-name').toLowerCase();
                 return name.indexOf($('#filterShowName').val().toLowerCase()) > -1;
             }
@@ -65,7 +65,7 @@ MEDUSA.home.index = function() {
         min: 75,
         max: 250,
         value: posterSize,
-        change: function (e, ui) {
+        change: function(e, ui) {
             if (typeof (Storage) !== 'undefined') {
                 localStorage.setItem('posterSize', ui.value);
             }
@@ -178,27 +178,27 @@ MEDUSA.home.index = function() {
         sortAppend: [[2, 0]]
     });
 
-    $('.show-grid').imagesLoaded(function () {
+    $('.show-grid').imagesLoaded(function() {
         $('.loading-spinner').hide();
         $('.show-grid').show().isotope({
             itemSelector: '.show-container',
-            sortBy: MEDUSA.info.posterSortby,
-            sortAscending: MEDUSA.info.posterSortdir,
+            sortBy: MEDUSA.config.posterSortby,
+            sortAscending: MEDUSA.config.posterSortdir,
             layoutMode: 'masonry',
             masonry: {
                 isFitWidth: true
             },
             getSortData: {
-                name: function (itemElem) {
+                name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.info.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 network: '[data-network]',
-                date: function (itemElem) {
+                date: function(itemElem) {
                     var date = $(itemElem).attr('data-date');
                     return (date.length && parseInt(date, 10)) || Number.POSITIVE_INFINITY;
                 },
-                progress: function (itemElem) {
+                progress: function(itemElem) {
                     var progress = $(itemElem).attr('data-progress');
                     return (progress.length && parseInt(progress, 10)) || Number.NEGATIVE_INFINITY;
                 }
@@ -208,12 +208,12 @@ MEDUSA.home.index = function() {
         // When posters are small enough to not display the .show-details
         // table, display a larger poster when hovering.
         var posterHoverTimer = null;
-        $('.show-container').on('mouseenter', function () {
+        $('.show-container').on('mouseenter', function() {
             var poster = $(this);
             if (poster.find('.show-details').css('display') !== 'none') {
                 return;
             }
-            posterHoverTimer = setTimeout(function () {
+            posterHoverTimer = setTimeout(function() {
                 posterHoverTimer = null;
                 $('#posterPopup').remove();
                 var popup = poster.clone().attr({
@@ -228,7 +228,7 @@ MEDUSA.home.index = function() {
                     left: origLeft
                 });
                 popup.find('.show-details').show();
-                popup.on('mouseleave', function () {
+                popup.on('mouseleave', function() {
                     $(this).remove();
                 });
                 popup.zIndex(9999);
@@ -265,7 +265,7 @@ MEDUSA.home.index = function() {
                     height: 438
                 });
             }, 300);
-        }).on('mouseleave', function () {
+        }).on('mouseleave', function() {
             if (posterHoverTimer !== null) {
                 clearTimeout(posterHoverTimer);
             }
@@ -286,10 +286,10 @@ MEDUSA.home.index = function() {
         placement: 'bottom',
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTableShows'), '#popover-target');
-        if (MEDUSA.info.animeSplitHome) {
+        if (MEDUSA.config.animeSplitHome) {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });

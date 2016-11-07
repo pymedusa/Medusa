@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    function setFromPresets (preset) {
+    function setFromPresets(preset) {
         if (parseInt(preset, 10) === 0) {
             $('#customQuality').show();
             return;

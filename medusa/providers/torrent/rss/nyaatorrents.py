@@ -21,8 +21,8 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 
 
@@ -45,14 +45,15 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         self.supports_absolute_numbering = True
         self.anime_only = True
         self.confirmed = False
-        self.regex = re.compile(r'(\d+) seeder\(s\), (\d+) leecher\(s\), \d+ download\(s\) - (\d+.?\d* [KMGT]iB)(.*)', re.DOTALL)
+        self.regex = re.compile(r'(\d+) seeder\(s\), (\d+) leecher\(s\), \d+ download\(s\) - (\d+.?\d* [KMGT]iB)(.*)',
+                                re.DOTALL)
 
         # Torrent Stats
         self.minseed = 0
         self.minleech = 0
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -93,7 +94,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                     continue
                 if not data['entries']:
                     logger.log('Data returned from provider does not contain any {0}torrents'.format(
-                               'confirmed ' if self.confirmed else ''), logger.DEBUG)
+                        'confirmed ' if self.confirmed else ''), logger.DEBUG)
                     continue
 
                 results += self.parse(data, mode)

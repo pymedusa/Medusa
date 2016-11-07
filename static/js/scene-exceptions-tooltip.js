@@ -1,5 +1,5 @@
-$(function () {
-    $('.title a').each(function () {
+$(function() {
+    $('.title a').each(function() {
         var match = $(this).parent().attr('id').match(/^scene_exception_(\d+)$/);
         $(this).qtip({
             content: {
@@ -10,7 +10,7 @@ $(function () {
                     data: {
                         show: match[1]
                     },
-                    success: function (data) {
+                    success: function(data) {
                         this.set('content.text', data);
                     }
                 }
@@ -19,7 +19,6 @@ $(function () {
                 solo: true
             },
             position: {
-                viewport: $(window),
                 my: 'bottom center',
                 at: 'top center',
                 adjust: {

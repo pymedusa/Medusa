@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import os
 
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import (
@@ -52,8 +52,8 @@ class ConfigSubtitles(Config):
         app.SUBTITLES_DIR = subtitles_dir
         app.SUBTITLES_PERFECT_MATCH = config.checkbox_to_value(subtitles_perfect_match)
         app.SUBTITLES_HISTORY = config.checkbox_to_value(subtitles_history)
-        app.EMBEDDED_SUBTITLES_ALL = config.checkbox_to_value(embedded_subtitles_all)
-        app.EMBEDDED_SUBTITLES_UNKNOWN_LANG = config.checkbox_to_value(embedded_subtitles_unknown_lang)
+        app.IGNORE_EMBEDDED_SUBS = config.checkbox_to_value(embedded_subtitles_all)
+        app.ACCEPT_UNKNOWN_EMBEDDED_SUBS = config.checkbox_to_value(embedded_subtitles_unknown_lang)
         app.SUBTITLES_STOP_AT_FIRST = config.checkbox_to_value(subtitles_stop_at_first)
         app.SUBTITLES_HEARING_IMPAIRED = config.checkbox_to_value(subtitles_hearing_impaired)
         app.SUBTITLES_MULTI = 1 if len(app.SUBTITLES_LANGUAGES) > 1 else config.checkbox_to_value(subtitles_multi)

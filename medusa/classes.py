@@ -141,16 +141,16 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.config = config
         self.log = log
 
-    def selectSeries(self, allSeries):
+    def select_series(self, all_series):
         search_results = []
         series_names = []
 
         # get all available shows
-        if allSeries:
+        if all_series:
             if 'searchterm' in self.config:
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
-                for curShow in allSeries:
+                for curShow in all_series:
                     if curShow in search_results:
                         continue
 
@@ -184,18 +184,18 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     @staticmethod
-    def selectSeries(allSeries):
+    def select_series(all_series):
         try:
             # try to pick a show that's in my show list
             show_id_list = [int(x.indexerid) for x in app.showList]
-            for curShow in allSeries:
+            for curShow in all_series:
                 if int(curShow['id']) in show_id_list:
                     return curShow
         except Exception:
             pass
 
         # if nothing matches then return first result
-        return allSeries[0]
+        return all_series[0]
 
 
 class Proper(object):

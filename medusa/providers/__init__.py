@@ -46,7 +46,7 @@ __all__ = [
 ]
 
 
-def sortedProviderList(randomize=False):
+def sorted_provider_list(randomize=False):
     initial_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
     provider_dict = dict(zip([x.get_id() for x in initial_list], initial_list))
 
@@ -73,11 +73,11 @@ def sortedProviderList(randomize=False):
     return new_list
 
 
-def makeProviderList():
-    return [x.provider for x in (getProviderModule(y) for y in __all__) if x]
+def make_provider_list():
+    return [x.provider for x in (get_provider_module(y) for y in __all__) if x]
 
 
-def getProviderModule(name):
+def get_provider_module(name):
     name = name.lower()
     prefixes = [modname + '.' for importer, modname, ispkg in pkgutil.walk_packages(
         path=__path__, prefix=__name__ + '.', onerror=lambda x: None) if ispkg]
@@ -89,6 +89,6 @@ def getProviderModule(name):
     raise Exception("Can't find " + prefix + name + " in " + "Providers")
 
 
-def getProviderClass(provider_id):
+def get_provider_class(provider_id):
     provider_list = app.providerList + app.newznabProviderList + app.torrentRssProviderList
     return next((provider for provider in provider_list if provider.get_id() == provider_id), None)

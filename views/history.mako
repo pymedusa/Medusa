@@ -9,8 +9,8 @@
     from medusa.sbdatetime import sbdatetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
     from medusa.common import Quality, statusStrings, Overview
-    from medusa.show.History import History
-    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.show.history import History
+    from medusa.providers.generic_provider import GenericProvider
 %>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -64,7 +64,7 @@
                     <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                     <time datetime="${isoDate}" class="date">${airDate}</time>
                 </td>
-                <td class="tvShow"><a href="home/displayShow?show=${hItem.show_id}#season-{hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </a></td>
+                <td class="tvShow"><a href="home/displayShow?show=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </a></td>
                 <td align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                 % if composite.status == SUBTITLED:
                     <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
@@ -84,7 +84,7 @@
                 % else:
                     % if hItem.provider > 0:
                         % if composite.status in [SNATCHED, FAILED]:
-                            <% provider = providers.getProviderClass(GenericProvider.make_id(hItem.provider)) %>
+                            <% provider = providers.get_provider_class(GenericProvider.make_id(hItem.provider)) %>
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" /> <span style="vertical-align:middle;">${provider.name}</span>
                             % else:
@@ -134,18 +134,21 @@
                     <span><a href="home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
                 </td>
                 <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
-                    % for cur_action in sorted(hItem.actions):
+                    % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
                         <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
-                        % if composite.status in [SNATCHED, FAILED]:
-                            <% provider = providers.getProviderClass(GenericProvider.make_id(cur_action.provider)) %>
+                        % if composite.status == SNATCHED:
+                            <% provider = providers.get_provider_class(GenericProvider.make_id(cur_action.provider)) %>
                             % if provider is not None:
-                                <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${os.path.basename(cur_action.resource)}"/>
+                                <img src="images/providers/${provider.image_name()}" width="16" height="16" style="vertical-align:middle;" alt="${provider.name}" style="cursor: help;" title="${provider.name}: ${cur_action.resource}"/>
                                 % if cur_action.proper_tags:
                                     <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${cur_action.proper_tags.replace('|', ', ')}"/>
                                 % endif
                             % else:
-                                <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="missing provider"/>
+                                <img src="images/providers/missing.png" width="16" height="16" style="vertical-align:middle;" alt="missing provider" title="Missing provider: ${cur_action.provider}"/>
                             % endif
+                        % endif
+                        % if composite.status == FAILED:
+                                <img src="images/no16.png" width="16" height="16" style="vertical-align:middle;" title="${provider.name if provider else cur_action.provider} download failed: ${cur_action.resource}"/>
                         % endif
                     % endfor
                 </td>

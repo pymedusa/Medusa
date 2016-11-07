@@ -12,6 +12,7 @@ import medusa as app
 from simpleanidb import Anidb
 from .recommended import RecommendedShow
 from ... import helpers, logger
+from ...indexers.indexer_config import INDEXER_TVDBV2
 
 
 class ImdbPopular(object):
@@ -44,7 +45,7 @@ class ImdbPopular(object):
         rec_show = RecommendedShow(self,
                                    show_obj.get('imdb_tt'),
                                    show_obj.get('name'),
-                                   1,
+                                   INDEXER_TVDBV2,
                                    int(tvdb_id),
                                    **{'rating': show_obj.get('rating'),
                                       'votes': show_obj.get('votes'),

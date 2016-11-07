@@ -22,8 +22,8 @@ import re
 import traceback
 
 import medusa as app
-from .NZBProvider import NZBProvider
-from ... import logger, tvcache
+from .nzb_provider import NZBProvider
+from ... import logger, tv_cache
 from ...helper.common import convert_size, try_int
 
 
@@ -81,15 +81,15 @@ class OmgwtfnzbsProvider(NZBProvider):
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
 
-                if not self._check_auth_from_data(response, is_XML=False):
+                if not self._check_auth_from_data(response, is_xml=False):
                     return items
 
                 for item in response:
                     try:
-                        if not self._get_title_and_url(item):
+                        if not all(self._get_title_and_url(item)):
                             continue
 
-                        logger.log('Found result: {0}'.format(item.get('title')), logger.DEBUG)
+                        logger.log('Found result: {0}'.format(item.get('release')), logger.DEBUG)
                         items.append(item)
                     except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                             logger.log('Failed parsing provider. Traceback: {0!r}'.format
@@ -108,12 +108,12 @@ class OmgwtfnzbsProvider(NZBProvider):
 
         return True
 
-    def _check_auth_from_data(self, parsed_data, is_XML=True):
+    def _check_auth_from_data(self, parsed_data, is_xml=True):
 
         if not parsed_data:
             return self._check_auth()
 
-        if is_XML:
+        if is_xml:
             # provider doesn't return xml on error
             return True
 
@@ -145,7 +145,7 @@ class OmgwtfnzbsProvider(NZBProvider):
         return try_int(size)
 
 
-class OmgwtfnzbsCache(tvcache.TVCache):
+class OmgwtfnzbsCache(tv_cache.TVCache):
     def _get_title_and_url(self, item):
         title = item.get('title')
         if title:

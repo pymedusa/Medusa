@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for SceneTime."""
 from __future__ import unicode_literals
 
 import re
@@ -23,17 +23,18 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
 class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """SceneTime Torrent provider"""
-    def __init__(self):
+    """SceneTime Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, 'SceneTime')
 
         # Credentials
@@ -43,25 +44,27 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # URLs
         self.url = 'https://www.scenetime.com'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php'),
+            'login': urljoin(self.url, 'login.php'),
+            'search': urljoin(self.url, 'browse_API.php'),
             'download': urljoin(self.url, 'download.php/{0}/{1}'),
         }
 
         # Proper Strings
 
         # Miscellaneous Options
+        self.enable_cookies = True
+        self.cookies = ''
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)  # only poll SceneTime every 20 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=20)  # only poll SceneTime every 20 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -74,6 +77,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         # Search Params
         search_params = {
+            'sec': 'jax',
+            'cata': 'yes',
             'c2': 1,  # TV/XviD
             'c43': 1,  # TV/Packs
             'c9': 1,  # TV-HD
@@ -95,7 +100,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                                (search=search_string), logger.DEBUG)
                     search_params['search'] = search_string
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.get_url(self.urls['search'], post_data=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -113,14 +118,10 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('div', id='torrenttable')
-            torrent_rows = []
-            if torrent_table:
-                torrent_rows = torrent_table.select('tr')
+            torrent_rows = html.find_all('tr')
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
@@ -130,7 +131,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             # Scenetime apparently uses different number of cells in #torrenttable based
             # on who you are. This works around that by extracting labels from the first
             # <tr> and using their index to find the correct download/seeders/leechers td.
-            labels = [label.get_text(strip=True) for label in torrent_rows[0]('td')]
+            labels = [label.get_text(strip=True) or label.img['title'] for label in torrent_rows[0]('td')]
 
             # Skip column headers
             for row in torrent_rows[1:]:
@@ -142,7 +143,8 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     link = cells[labels.index('Name')].find('a')
                     torrent_id = link['href'].replace('details.php?id=', '').split('&')[0]
                     title = link.get_text(strip=True)
-                    download_url = self.urls['download'].format(torrent_id, '{0}.torrent'.format(title.replace(' ', '.')))
+                    download_url = self.urls['download'].format(torrent_id,
+                                                                '{0}.torrent'.format(title.replace(' ', '.')))
                     if not all([title, download_url]):
                         continue
 
@@ -158,6 +160,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         continue
 
                     torrent_size = cells[labels.index('Size')].get_text()
+                    torrent_size = re.sub(r'(\d+\.?\d*)', r'\1 ', torrent_size)
                     size = convert_size(torrent_size) or -1
 
                     item = {
@@ -182,12 +185,21 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        if dict_from_cookiejar(self.session.cookies).get('uid') and \
+                dict_from_cookiejar(self.session.cookies).get('pass'):
             return True
+
+        if self.cookies:
+            self.add_cookies_from_ui()
+        else:
+            logger.log('Failed to login, you must add your cookies in the provider settings', logger.WARNING)
+            return False
 
         login_params = {
             'username': self.username,
             'password': self.password,
+            'submit.x': 0,
+            'submit.y': 0,
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
@@ -199,7 +211,13 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
-        return True
+        if (dict_from_cookiejar(self.session.cookies).get('uid') and
+                dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
+            return True
+        else:
+            logger.log('Failed to login, check your cookies', logger.WARNING)
+            self.session.cookies.clear()
+            return False
 
 
 provider = SceneTimeProvider()

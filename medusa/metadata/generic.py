@@ -24,7 +24,7 @@ import re
 import medusa as app
 from six import iterkeys
 from tmdb_api.tmdb_api import TMDB
-from .. import helpers, logger
+from .. import exception_handler, helpers, logger
 from ..helper.common import replace_extension
 from ..helper.exceptions import ex
 from ..metadata import helpers as metadata_helpers
@@ -408,8 +408,7 @@ class GenericMetadata(object):
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
         except IOError as e:
-            logger.log(u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
-                       logger.ERROR)
+            exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
 
         return True
@@ -451,8 +450,7 @@ class GenericMetadata(object):
             nfo_file.close()
             helpers.chmodAsParent(nfo_file_path)
         except IOError as e:
-            logger.log(u"Unable to write file to " + nfo_file_path + " - are you sure the folder is writable? " + ex(e),
-                       logger.ERROR)
+            exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
 
         return True
@@ -697,12 +695,7 @@ class GenericMetadata(object):
             outFile.close()
             helpers.chmodAsParent(image_path)
         except IOError as e:
-            if hasattr(e, 'errno') and e.errno in (13, 28):  # Permission denied and No space left on device
-                msg_level = logger.WARNING
-            else:
-                msg_level = logger.ERROR
-            logger.log(u'Unable to write image to {0}. Error: {1}'.format
-                       (image_path, e), msg_level)
+            exception_handler.handle(e, u'Unable to write image to {location}', location=image_path)
             return False
 
         return True
@@ -733,9 +726,12 @@ class GenericMetadata(object):
             if show_obj.dvdorder != 0:
                 lINDEXER_API_PARMS['dvdorder'] = True
 
+            # New feature, specify the image_type, which makes us do calls for only that image type.
+            lINDEXER_API_PARMS['image_type'] = image_type
+
             t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + app.indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
             logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
@@ -796,7 +792,7 @@ class GenericMetadata(object):
 
             t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + app.indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
             logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
@@ -850,7 +846,7 @@ class GenericMetadata(object):
 
             t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.indexer_error, IOError) as e:
+        except (app.IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + app.indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
             logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)

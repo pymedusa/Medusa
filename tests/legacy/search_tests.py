@@ -24,7 +24,7 @@ import unittest
 
 import medusa as app
 import medusa.common as common
-from medusa.providers.GenericProvider import GenericProvider
+from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         for name, data in TESTS.items():
             filename = name.replace(' ', '_')
 
-            for provider in app.providers.sortedProviderList():
+            for provider in app.providers.sorted_provider_list():
                 if provider.provider_type == GenericProvider.TORRENT:
                     if forceSearch:
                         test_name = 'test_manual_%s_%s_%s' % (filename, data["tvdbid"], provider.name)

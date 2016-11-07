@@ -21,8 +21,8 @@ import json
 import traceback
 
 from requests.compat import urlencode, urljoin
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
@@ -56,7 +56,7 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)  # only poll Norbits every 15 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=20)  # only poll Norbits every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
         """

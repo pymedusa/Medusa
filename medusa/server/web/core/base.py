@@ -22,17 +22,17 @@ from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
-from tornado.routes import route
 from tornado.web import HTTPError, RequestHandler, authenticated
+from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import (
-    classes, db, helpers, logger, network_timezones, ui
+    classes, db, exception_handler, helpers, logger, network_timezones, ui
 )
-from ....media.ShowBanner import ShowBanner
-from ....media.ShowFanArt import ShowFanArt
-from ....media.ShowNetworkLogo import ShowNetworkLogo
-from ....media.ShowPoster import ShowPoster
-from ....show.ComingEpisodes import ComingEpisodes
+from ....media.banner import ShowBanner
+from ....media.fan_art import ShowFanArt
+from ....media.network_logo import ShowNetworkLogo
+from ....media.poster import ShowPoster
+from ....show.coming_episodes import ComingEpisodes
 
 
 mako_lookup = None
@@ -229,9 +229,7 @@ class BaseHandler(RequestHandler):
         if not isinstance(self, UI):
             if app.WEB_USERNAME and app.WEB_PASSWORD:
                 return self.get_secure_cookie(app.SECURE_TOKEN)
-            else:
-                return True
-        return None
+        return True
 
 
 class WebHandler(BaseHandler):
@@ -272,9 +270,8 @@ class WebHandler(BaseHandler):
 
             result = function(**kwargs)
             return result
-        except Exception:
-            logger.log(u'Failed doing web ui callback: {error}'.format(error=traceback.format_exc()), logger.ERROR)
-            raise
+        except Exception as e:
+            exception_handler.handle(e)
 
     # post uses get method
     post = get
@@ -349,7 +346,7 @@ class WebRoot(WebHandler):
         return None
 
     def setHomeLayout(self, layout):
-
+        # @TODO: Replace this with home={poster, small, banner, simple, coverflow} PATCH /api/v2/config/layout
         if layout not in ('poster', 'small', 'banner', 'simple', 'coverflow'):
             layout = 'poster'
 
@@ -359,6 +356,7 @@ class WebRoot(WebHandler):
 
     @staticmethod
     def setPosterSortBy(sort):
+        # @TODO: Replace this with poster.sort.field={name, date, network, progress} PATCH /api/v2/config/layout
         if sort not in ('name', 'date', 'network', 'progress'):
             sort = 'name'
 
@@ -367,12 +365,12 @@ class WebRoot(WebHandler):
 
     @staticmethod
     def setPosterSortDir(direction):
-
+        # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.save_config()
 
     def setHistoryLayout(self, layout):
-
+        # @TODO: Replace this with history={compact, detailed} PATCH /api/v2/config/layout
         if layout not in ('compact', 'detailed'):
             layout = 'detailed'
 
@@ -381,12 +379,12 @@ class WebRoot(WebHandler):
         return self.redirect('/history/')
 
     def toggleDisplayShowSpecials(self, show):
-
         app.DISPLAY_SHOW_SPECIALS = not app.DISPLAY_SHOW_SPECIALS
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def setScheduleLayout(self, layout):
+        # @TODO: Replace this with schedule={poster, banner, list, calandar} PATCH /api/v2/config/layout
         if layout not in ('poster', 'banner', 'list', 'calendar'):
             layout = 'banner'
 
@@ -398,7 +396,6 @@ class WebRoot(WebHandler):
         return self.redirect('/schedule/')
 
     def toggleScheduleDisplayPaused(self):
-
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
 
         return self.redirect('/schedule/')

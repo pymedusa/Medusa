@@ -22,14 +22,15 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
 class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """BIT-HDTV Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -58,7 +59,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Torrent Stats
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -146,7 +147,8 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = '{size} {unit}'.format(size=cells[6].contents[0], unit=cells[6].contents[1].get_text())
+                    torrent_size = '{size} {unit}'.format(size=cells[6].contents[0],
+                                                          unit=cells[6].contents[1].get_text())
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {

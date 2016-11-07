@@ -8,15 +8,29 @@ import threading
 import medusa as app
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
-from tornado.routes import route
-from tornado.web import Application, RedirectHandler, StaticFileHandler
+from tornado.web import Application, RedirectHandler, StaticFileHandler, url
+from tornroutes import route
 from .api.v1.core import ApiHandler
-from .api.v2.info import InfoHandler
+from .api.v2.config import ConfigHandler
 from .api.v2.log import LogHandler
 from .api.v2.show import ShowHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import logger
 from ..helpers import create_https_certificates, generateApiKey
+
+
+def get_apiv2_handlers(base):
+    """Return api v2 handlers."""
+    show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
+    ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
+    query = r'(?P<query>[\w]+)'
+    log_level = r'(?P<log_level>[a-zA-Z]+)'
+
+    return [
+        (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id, query=query), ShowHandler),
+        (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
+        (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
+    ]
 
 
 class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attributes
@@ -106,15 +120,9 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
             # webui handlers
-        ] + route.get_routes(self.options['web_root']))
+        ] + self._get_webui_routes())
 
-        # API v2 handlers
-        self.app.add_handlers('.*$', [
-            # Shows handler
-            (r'{base}/show/?([0-9]*)/?'.format(base=self.options['api_v2_root']), ShowHandler),
-            (r'{base}/info/?([A-Za-z0-9_-]*)/?'.format(base=self.options['api_v2_root']), InfoHandler),
-            (r'{base}/log/?(?P<log_level>[0-9]*)/?'.format(base=self.options['api_v2_root']), LogHandler)
-        ])
+        self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
         # Static File Handlers
         self.app.add_handlers('.*$', [
@@ -146,6 +154,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': self.video_root})
         ])
+
+    def _get_webui_routes(self):
+        webroot = self.options['web_root']
+        route._routes = list(reversed([url(webroot + u.regex.pattern, u.handler_class, u.kwargs, u.name) for u in route.get_routes()]))
+        return route.get_routes()
 
     def run(self):
         if self.enable_https:

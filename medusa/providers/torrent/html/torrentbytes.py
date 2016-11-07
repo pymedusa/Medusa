@@ -23,14 +23,15 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
 class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """TorrentBytes Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -58,7 +59,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self)
+        self.cache = tv_cache.TVCache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -133,16 +134,18 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     continue
 
                 try:
-                    download_url = urljoin(self.url, cells[labels.index('Name')].find('a', href=re.compile(r'download.php\?id='))['href'])
+                    download_url = urljoin(self.url, cells[labels.index('Name')].find('a',
+                                           href=re.compile(r'download.php\?id='))['href'])
                     title_element = cells[labels.index('Name')].find('a', href=re.compile(r'details.php\?id='))
                     title = title_element.get('title', '') or title_element.get_text(strip=True)
                     if not all([title, download_url]):
                         continue
 
-                    if self.freeleech:
-                        # Free leech torrents are marked with green [F L] in the title (i.e. <font color=green>[F&nbsp;L]</font>)
-                        freeleech = cells[labels.index('Name')].find('font', color='green')
-                        if not freeleech or freeleech.get_text(strip=True) != '[F\xa0L]':
+                    # Free leech torrents are marked with green [F L] in the title (i.e. <font color=green>[F&nbsp;L]</font>)
+                    freeleech = cells[labels.index('Name')].find('font', color='green')
+                    if freeleech:
+                        title = title[:-5]  # Remove trailing "[F L]"
+                        if self.freeleech and freeleech.get_text(strip=True) != '[F\xa0L]':
                             continue
 
                     seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))

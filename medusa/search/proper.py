@@ -36,7 +36,7 @@ from ..helper.common import enabled_providers
 from ..helper.exceptions import AuthException, ex
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..search.core import pickBestResult, snatchEpisode
-from ..show.History import History
+from ..show.history import History
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
@@ -66,6 +66,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         if force:
             current_processed_propers = self.processed_propers
             self.processed_propers = []
+
+        logger.log('Using proper search days: {0}'.format(app.PROPERS_SEARCH_DAYS))
 
         propers = self._get_proper_results()
 
@@ -101,7 +103,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         original_thread_name = threading.currentThread().name
         providers = enabled_providers('backlog')
 
-        search_date = datetime.datetime.today() - datetime.timedelta(days=2)
+        search_date = datetime.datetime.today() - datetime.timedelta(days=app.PROPERS_SEARCH_DAYS)
         main_db_con = db.DBConnection()
         if not app.POSTPONE_IF_NO_SUBS:
             # Get the recently aired (last 2 days) shows from DB
@@ -137,7 +139,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 logger.log('Authentication error: {error}'.format
                            (error=ex(e)), logger.DEBUG)
                 continue
-            except (SocketTimeout) as e:
+            except SocketTimeout as e:
                 logger.log('Socket time out while searching for propers in {provider}, skipping: {error}'.format
                            (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue

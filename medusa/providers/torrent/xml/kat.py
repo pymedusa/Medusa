@@ -23,14 +23,15 @@ import traceback
 import medusa as app
 from requests.compat import urljoin
 import validators
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
 class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """KAT Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -57,7 +58,7 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, search_params={'RSS': ['tv', 'anime']})
+        self.cache = tv_cache.TVCache(self, search_params={'RSS': ['tv', 'anime']})
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -100,7 +101,8 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:
-                    logger.log('No data returned from provider, maybe try a custom url, or a different one', logger.DEBUG)
+                    logger.log('No data returned from provider, maybe try a custom url, or a different one',
+                               logger.DEBUG)
                     continue
                 elif not response or not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
@@ -134,7 +136,8 @@ class KatProvider(TorrentProvider):  # pylint: disable=too-many-instance-attribu
                     # so that proxies work.
                     download_url = row.enclosure['url']
                     if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
-                        download_url = row.find('torrent:magneturi').next.replace('CDATA', '').strip('[!]') + self._custom_trackers
+                        download_url = row.find('torrent:magneturi').next.replace('CDATA', '').strip('[!]') + \
+                            self._custom_trackers
 
                     if not (title and download_url):
                         continue

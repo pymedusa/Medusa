@@ -55,7 +55,7 @@ class RecommendedShow(object):
         try:
             self.indexer_id = int(indexer_id)
         except ValueError:
-            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % (indexer_id))
+            raise MissingTvdbMapping('Could not parse the indexer_id [%s]' % indexer_id)
 
         self.rating = show_attr.get('rating') or 0
 
@@ -77,6 +77,7 @@ class RecommendedShow(object):
         """Store cache of image in cache dir
 
         :param image_url: Source URL
+        :param default: default folder
         """
         if default:
             self.image_src = posixpath.join('images', default)

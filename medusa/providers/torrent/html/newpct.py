@@ -23,14 +23,15 @@ import re
 import traceback
 
 from requests.compat import urljoin
-from ..TorrentProvider import TorrentProvider
-from .... import helpers, logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import helpers, logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size
 
 
-class newpctProvider(TorrentProvider):
+class NewpctProvider(TorrentProvider):
     """Newpct Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -52,7 +53,7 @@ class newpctProvider(TorrentProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=20)
+        self.cache = tv_cache.TVCache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -201,11 +202,12 @@ class newpctProvider(TorrentProvider):
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':
             kwargs['returns'] = 'text'
-            data = super(newpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout, **kwargs)
+            data = super(NewpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout,
+                                                       **kwargs)
             url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
         kwargs['returns'] = trickery
-        return super(newpctProvider, self).get_url(url, post_data=post_data, params=params,
+        return super(NewpctProvider, self).get_url(url, post_data=post_data, params=params,
                                                    timeout=timeout, **kwargs)
 
     def download_result(self, result):
@@ -243,4 +245,4 @@ class newpctProvider(TorrentProvider):
         return False
 
 
-provider = newpctProvider()
+provider = NewpctProvider()

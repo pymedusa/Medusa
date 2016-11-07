@@ -1,115 +1,154 @@
 # coding=utf-8
 """Request handler for shows."""
 
-import datetime
-
 import medusa as app
-from .base import BaseRequestHandler
-from .... import helpers, network_timezones, sbdatetime
-from ....helper.common import dateFormat, try_int
-from ....helper.quality import get_quality_string
-from ....server.api.v1.core import CMD_ShowCache, CMD_ShowSeasonList, _map_quality
-from ....show.Show import Show
 
-MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
+from .base import BaseRequestHandler
+from ....indexers import indexer_config
+from ....show.show import Show
+from ....show_queue import ShowQueueActions
+
+
+class EpisodeIdentifier(object):
+    """Episode Identifier."""
+
+    def __init__(self, season, episode, absolute_episode, air_date):
+        """Default constructor."""
+        self.season = season
+        self.episode = episode
+        self.absolute_episode = absolute_episode
+        self.air_date = air_date
+
+    def __bool__(self):
+        """Boolean function."""
+        return (self.season or self.episode or self.absolute_episode or self.air_date) is not None
+
+    __nonzero__ = __bool__
 
 
 class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
-    def get(self, show_id):
+    def get(self, show_indexer, show_id, season, episode, absolute_episode, air_date, query):
         """Query show information.
 
+        :param show_indexer:
         :param show_id:
         :type show_id: str
+        :param season:
+        :param episode:
+        :param absolute_episode:
+        :param air_date:
+        :param query:
         """
-        # This should be completely replaced with show_id
-        indexerid = show_id
+        # @TODO: This should be completely replaced with show_id
+        show_indexer = indexer_config.mapping[show_indexer] if show_indexer else None
+        indexerid = self._parse(show_id)
+        season = self._parse(season)
+        episode = self._parse(episode)
+        absolute_episode = self._parse(absolute_episode)
+        air_date = self._parse_date(air_date)
 
-        arg_paused = self.get_argument('paused', default=None)
-        arg_sort = self.get_argument('sort', default='name')
+        # @TODO: https://github.com/SiCKRAGETV/SiCKRAGE/pull/2558
 
-        shows = {}
-        show_list = app.showList if not show_id else [Show.find(app.showList, int(indexerid))]
-        for show in show_list:
-            if show_id and show is None:
+        arg_paused = self._parse(self.get_argument('paused', default=None))
+        if show_id is not None:
+            tv_show = Show.find(app.showList, indexerid, show_indexer)
+            if not self._match(tv_show, arg_paused):
                 return self.api_finish(status=404, error='Show not found')
 
-            # If self.get_argument('paused') is None: show all, 0: show un-paused, 1: show paused
-            if arg_paused is not None and try_int(arg_paused, -1) != show.paused:
-                continue
+            ep_id = EpisodeIdentifier(season, episode, absolute_episode, air_date)
+            if ep_id or query == 'episodes':
+                return self._handle_episode(tv_show, ep_id, query)
 
-            indexer_show = helpers.mapIndexersToShow(show)
+            return self._handle_detailed_show(tv_show, query)
 
-            dt_episode_airs = (
-                sbdatetime.sbdatetime.convert_to_setting(
-                    network_timezones.parse_date_time(show.nextaired, show.airs, show.network)
-                ) if try_int(show.nextaired, 1) > MILLIS_YEAR_1900 else None)
+        data = [s.to_json(detailed=False) for s in app.showList if self._match(s, arg_paused)]
+        return self._paginate(data, 'title')
 
-            show_dict = {
-                'name': show.name,
-                'paused': bool(show.paused),
-                'quality': get_quality_string(show.quality),
-                'language': show.lang,
-                'air_by_date': bool(show.air_by_date),
-                'sports': bool(show.sports),
-                'anime': bool(show.anime),
-                'ids': {
-                    'thetvdb': indexer_show[1],
-                    'imdb': show.imdbid,
-                },
-                'network': show.network if show.network else '',
-                'next_ep_airdate': sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat) if dt_episode_airs else '',
-                'status': show.status,
-                'subtitles': bool(show.subtitles),
-                'cache': CMD_ShowCache((), {'indexerid': show.indexerid}).run()['data']
-            }
+    @staticmethod
+    def _match(tv_show, paused):
+        return tv_show and (paused is None or tv_show.paused == paused)
 
-            # Detailed information
-            if show_id:
-                any_qualities, best_qualities = _map_quality(show.quality)
+    def _handle_detailed_show(self, tv_show, query):
+        data = tv_show.to_json()
+        if query:
+            if query == 'queue':
+                action, message = app.showQueueScheduler.action.get_queue_action(tv_show)
+                data = {
+                    'action': ShowQueueActions.names[action],
+                    'message': message,
+                } if action is not None else dict()
+            elif query in data:
+                data = data[query]
+            else:
+                return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
 
-                # @TODO: Replace these with commands from here
-                detailed = {
-                    'season_list': CMD_ShowSeasonList((), {'indexerid': indexerid}).run()['data'],
-                    'genre': [genre for genre in show.genre.split('|') if genre] if show.genre else [],
-                    'quality_details': {'initial': any_qualities, 'archive': best_qualities},
-                    'location': show.raw_location,
-                    'flatten_folders': bool(show.flatten_folders),
-                    'airs': str(show.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' '),
-                    'dvdorder': bool(show.dvdorder),
-                    'rls_require_words': [w.strip() for w in show.rls_require_words.split(',')] if show.rls_require_words else [],
-                    'rls_ignore_words': [w.strip() for w in show.rls_ignore_words.split(',')] if show.rls_ignore_words else [],
-                    'scene': bool(show.scene),
-                }
-                show_dict.update(detailed)
+        self.api_finish(data=data)
 
-                return self.api_finish(**{'show': show_dict})
+    def _handle_episode(self, tv_show, ep_id, query):
+        if (ep_id.episode or ep_id.absolute_episode or ep_id.air_date) is not None:
+            tv_episode = self._find_tv_episode(tv_show=tv_show, ep_id=ep_id)
+            if not tv_episode:
+                return self.api_finish(status=404, error='Episode not found')
+            return self._handle_detailed_episode(tv_episode, query)
 
-            key = show.name if arg_sort == 'name' else show.indexerid
-            shows[key] = show_dict
+        tv_episodes = tv_show.get_all_episodes(season=ep_id.season)
+        data = [e.to_json(detailed=False) for e in tv_episodes]
 
-        self.api_finish(**{'shows': shows})
+        return self._paginate(data, 'airDate')
+
+    @staticmethod
+    def _find_tv_episode(tv_show, ep_id):
+        """Find TVEpisode based on specified criteria.
+
+        :param tv_show:
+        :param ep_id:
+        :return:
+        :rtype: medusa.tv.TVEpisode or tuple(int, string)
+        """
+        if ep_id.season is not None and ep_id.episode is not None:
+            tv_episode = tv_show.get_episode(season=ep_id.season, episode=ep_id.episode, should_cache=False)
+        elif ep_id.absolute_episode is not None:
+            tv_episode = tv_show.get_episode(absolute_number=ep_id.absolute_episode, should_cache=False)
+        elif ep_id.air_date:
+            tv_episode = tv_show.get_episode(air_date=ep_id.air_date, should_cache=False)
+        else:
+            # if this happens then it's a bug!
+            raise ValueError
+
+        if tv_episode and tv_episode.loaded:
+            return tv_episode
+
+    def _handle_detailed_episode(self, tv_episode, query):
+        data = tv_episode.to_json()
+        if query:
+            if query == 'metadata':
+                data = tv_episode.metadata() if tv_episode.is_location_valid() else dict()
+            elif query in data:
+                data = data[query]
+            else:
+                return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
+
+        return self.api_finish(data=data)
 
     def put(self, show_id):
         """Update show information.
 
         :param show_id:
-        :type show_id: int
+        :type show_id: str
         """
-        return self.finish({
-        })
+        return self.api_finish()
 
     def post(self):
         """Add a show."""
-        return self.finish({
-        })
+        return self.api_finish()
 
     def delete(self, show_id):
         """Delete a show.
 
         :param show_id:
-        :type show_id: int
+        :type show_id: str
         """
-        return self.finish({
-        })
+        error, show = Show.delete(indexer_id=show_id, remove_files=self.get_argument('remove_files', default=False))
+        return self.api_finish(error=error, data=show)

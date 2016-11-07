@@ -21,14 +21,15 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
 class CpasbienProvider(TorrentProvider):
     """Cpasbien Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -50,7 +51,7 @@ class CpasbienProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self)
+        self.cache = tv_cache.TVCache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -71,7 +72,8 @@ class CpasbienProvider(TorrentProvider):
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_url = self.url + '/recherche/' + search_string.replace('.', '-').replace(' ', '-') + '.html,trie-seeds-d'
+                    search_url = self.url + '/recherche/' + \
+                        search_string.replace('.', '-').replace(' ', '-') + '.html,trie-seeds-d'
                 else:
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
 

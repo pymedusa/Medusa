@@ -1,7 +1,7 @@
 MEDUSA.addShows.init = function() {
     $('#tabs').tabs({
         collapsible: true,
-        selected: (MEDUSA.info.sortArticle ? -1 : 0)
+        selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
     $.initRemoteShowGrid = function() {
@@ -49,7 +49,7 @@ MEDUSA.addShows.init = function() {
             getSortData: {
                 name: function(itemElem) {
                     var name = $(itemElem).attr('data-name') || '';
-                    return (MEDUSA.info.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
+                    return (MEDUSA.config.sortArticle ? name : name.replace(/^((?:The|A|An)\s)/i, '')).toLowerCase();
                 },
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'
@@ -58,7 +58,7 @@ MEDUSA.addShows.init = function() {
     };
 
     $.fn.loadRemoteShows = function(path, loadingTxt, errorTxt) {
-        $(this).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.info.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
+        $(this).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="32" width="32" />&nbsp;' + loadingTxt);
         $(this).load(path + ' #container', function(response, status) {
             if (status === 'error') {
                 $(this).empty().html(errorTxt);
@@ -104,10 +104,10 @@ MEDUSA.addShows.init = function() {
 
             var anyQualArray = [];
             var bestQualArray = [];
-            $('#anyQualities option:selected').each(function (i, d) {
+            $('#anyQualities option:selected').each(function(i, d) {
                 anyQualArray.push($(d).val());
             });
-            $('#bestQualities option:selected').each(function (i, d) {
+            $('#bestQualities option:selected').each(function(i, d) {
                 bestQualArray.push($(d).val());
             });
 
@@ -136,10 +136,10 @@ MEDUSA.addShows.init = function() {
         $('#saveDefaultsButton').on('click', function() {
             var anyQualArray = [];
             var bestQualArray = [];
-            $('#anyQualities option:selected').each(function (i, d) {
+            $('#anyQualities option:selected').each(function(i, d) {
                 anyQualArray.push($(d).val());
             });
-            $('#bestQualities option:selected').each(function (i, d) {
+            $('#bestQualities option:selected').each(function(i, d) {
                 bestQualArray.push($(d).val());
             });
 
@@ -162,7 +162,7 @@ MEDUSA.addShows.init = function() {
             });
         });
 
-        $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').change(function () {
+        $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
             $('#saveDefaultsButton').prop('disabled', false);
         });
 
@@ -172,7 +172,7 @@ MEDUSA.addShows.init = function() {
             $('span.next').click();
         });
     };
-    $.updateBlackWhiteList = function (showName) {
+    $.updateBlackWhiteList = function(showName) {
         $('#white').children().remove();
         $('#black').children().remove();
         $('#pool').children().remove();
@@ -182,7 +182,7 @@ MEDUSA.addShows.init = function() {
             if (showName) {
                 $.getJSON('home/fetch_releasegroups', {
                     show_name: showName // eslint-disable-line camelcase
-                }, function (data) {
+                }, function(data) {
                     if (data.result === 'success') {
                         $.each(data.groups, function(i, group) {
                             var option = $('<option>');

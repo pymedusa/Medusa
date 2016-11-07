@@ -19,7 +19,7 @@ function disableLink(el) {
 }
 
 function updateImages(data) {
-    $.each(data.episodes, function (name, ep) {
+    $.each(data.episodes, function(name, ep) {
         // Get td element for current ep
         var loadingImage = 'loading16.gif';
         var queuedImage = 'queued.png';
@@ -95,29 +95,27 @@ function checkManualSearches() {
     var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
     $.ajax({
         url: url,
-        done: function (data) {
-            if (data.episodes) {
-                pollInterval = 5000;
-            } else {
-                pollInterval = 15000;
-            }
-
-            updateImages(data);
-            // cleanupManualSearches(data);
-        },
-        error: function () {
+        error: function() {
             pollInterval = 30000;
         },
         type: 'GET',
         dataType: 'JSON',
-        complete: function () {
+        complete: function() {
             setTimeout(checkManualSearches, pollInterval);
         },
         timeout: 15000 // timeout every 15 secs
+    }).done(function(data) {
+        if (data.episodes) {
+            pollInterval = 5000;
+        } else {
+            pollInterval = 15000;
+        }
+        updateImages(data);
+        // cleanupManualSearches(data);
     });
 }
 
-$(document).ready(function () {
+$(document).ready(function() {
     checkManualSearches();
 });
 
@@ -216,7 +214,8 @@ $(document).ready(function () {
 
             selectedEpisode = $(this);
 
-            if ($(this).parent().parent().children('.col-status').children('.quality').length) {
+            // @TODO: Replace this with an easier to read selector
+            if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {
                 $('#forcedSearchModalQuality').modal('show');
             } else {
                 forcedSearch();

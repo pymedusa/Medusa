@@ -1,12 +1,12 @@
 MEDUSA.home.snatchSelection = function() {
-    if (MEDUSA.info.fanartBackground) {
+    if (MEDUSA.config.fanartBackground) {
         $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', MEDUSA.info.fanartBackgroundOpacity).fadeIn(500);
+        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
     var spinner = $('#searchNotification');
     var updateSpinner = function(spinner, message, showSpinner) {
         if (showSpinner) {
-            $(spinner).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.info.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
+            $(spinner).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
         } else {
             $(spinner).empty().html(message);
         }
@@ -37,7 +37,7 @@ MEDUSA.home.snatchSelection = function() {
         event.preventDefault();
         var link = this;
         $(link).children('img').prop('src', 'images/loading16.gif');
-        $.getJSON(this.href, function (data) {
+        $.getJSON(this.href, function(data) {
             if (data.result === 'success') {
                 $(link).children('img').prop('src', 'images/save.png');
             } else {
@@ -102,52 +102,51 @@ MEDUSA.home.snatchSelection = function() {
             type: 'GET',
             data: data,
             contentType: 'application/json',
-            success: function (data) {
-                if (data.result === 'refresh') {
-                    self.refreshResults();
-                    updateSpinner(spinner, 'Refreshed results...', true);
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'searching') {
-                    // ep is searched, you will get a results any minute now
-                    pollInterval = 5000;
-                    $('.manualSearchButton').prop('disabled', true);
-                    updateSpinner(spinner, 'The episode is being searched, please wait......', true);
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'queued') {
-                    // ep is queued, this might take some time to get results
-                    pollInterval = 7000;
-                    $('.manualSearchButton').prop('disabled', true);
-                    updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'finished') {
-                    // ep search is finished
-                    updateSpinner(spinner, 'Search finished', false);
-                    $('.manualSearchButton').removeAttr('disabled');
-                    repeat = false;
-                    initTableSorter('#showTable');
-                }
-                if (data.result === 'error') {
-                    // ep search is finished
-                    console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
-                    $('.manualSearchButton').removeAttr('disabled');
-                    repeat = true;
-                    initTableSorter('#showTable');
-                }
-            },
-            error: function () {
+            error: function() {
                 // repeat = false;
                 console.log('Error occurred!!');
                 $('.manualSearchButton').removeAttr('disabled');
             },
-            complete: function () {
+            complete: function() {
                 if (repeat) {
                     setTimeout(checkCacheUpdates, pollInterval);
                 }
             },
             timeout: 15000 // timeout after 15s
+        }).done(function(data) {
+            if (data.result === 'refresh') {
+                self.refreshResults();
+                updateSpinner(spinner, 'Refreshed results...', true);
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'searching') {
+                // ep is searched, you will get a results any minute now
+                pollInterval = 5000;
+                $('.manualSearchButton').prop('disabled', true);
+                updateSpinner(spinner, 'The episode is being searched, please wait......', true);
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'queued') {
+                // ep is queued, this might take some time to get results
+                pollInterval = 7000;
+                $('.manualSearchButton').prop('disabled', true);
+                updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'finished') {
+                // ep search is finished
+                updateSpinner(spinner, 'Search finished', false);
+                $('.manualSearchButton').removeAttr('disabled');
+                repeat = false;
+                initTableSorter('#showTable');
+            }
+            if (data.result === 'error') {
+                // ep search is finished
+                console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
+                $('.manualSearchButton').removeAttr('disabled');
+                repeat = true;
+                initTableSorter('#showTable');
+            }
         });
     }
 
@@ -187,7 +186,7 @@ MEDUSA.home.snatchSelection = function() {
         placement: 'bottom',
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable'), '#popover-target');
     });
 
@@ -199,11 +198,11 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $(function() {
-        $('body').on('hide.bs.collapse', '.collapse.toggle', function () {
+        $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Show History');
             $('#wrapper').prop('data-history-toggle', 'hide');
         });
-        $('body').on('show.bs.collapse', '.collapse.toggle', function () {
+        $('body').on('show.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Hide History');
             $('#wrapper').prop('data-history-toggle', 'show');
         });

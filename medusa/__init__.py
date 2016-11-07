@@ -32,8 +32,8 @@ from configobj import ConfigObj
 import requests
 import shutil_custom
 from . import (
-    app, auto_postprocessor, cache, db, helpers, logger, metadata, naming, providers,
-    scheduler, showUpdater, show_queue, subtitles, traktChecker, versionChecker
+    app, auto_post_processor, cache, db, helpers, logger, metadata, naming, providers,
+    scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -45,17 +45,17 @@ from .github_client import authenticate
 from .helper import exceptions
 from .indexers import indexer_api
 from .indexers.indexer_exceptions import (
-    indexer_attributenotfound, indexer_episodenotfound, indexer_error, indexer_exception,
-    indexer_seasonnotfound, indexer_showincomplete, indexer_shownotfound, indexer_userabort
+    IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerException,
+    IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound, IndexerUserAbort
 )
 from .providers import NewznabProvider, TorrentRssProvider
-from .providers.GenericProvider import GenericProvider
+from .providers.generic_provider import GenericProvider
 from .search import backlog, daily, proper
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .system.Shutdown import Shutdown
+from .system.shutdown import Shutdown
 
 shutil.copyfile = shutil_custom.copyfile_custom
 requests.packages.urllib3.disable_warnings()
@@ -93,6 +93,14 @@ SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
 PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
 RARBG_APPID = 'medusa'
 SECURE_TOKEN = 'medusa_user'
+
+# static configuration
+LOCALE = None, None
+OS_USER = None
+OPENSSL_VERSION = None
+APP_VERSION = None
+MAJOR_DB_VERSION = None
+MINOR_DB_VERSION = None
 
 PID = None
 CFG = None
@@ -169,6 +177,7 @@ NEWS_LATEST = None
 NEWS_UNREAD = 0
 
 BROKEN_PROVIDERS = ''
+BROKEN_PROVIDERS_UPDATE = None
 
 INIT_LOCK = Lock()
 started = False
@@ -275,6 +284,7 @@ TORRENT_METHOD = None
 TORRENT_DIR = None
 DOWNLOAD_PROPERS = False
 CHECK_PROPERS_INTERVAL = None
+PROPERS_SEARCH_DAYS = 2
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
@@ -565,8 +575,8 @@ SUBTITLES_SERVICES_LIST = []
 SUBTITLES_SERVICES_ENABLED = []
 SUBTITLES_HISTORY = False
 SUBTITLES_PERFECT_MATCH = False
-EMBEDDED_SUBTITLES_ALL = False
-EMBEDDED_SUBTITLES_UNKNOWN_LANG = False
+IGNORE_EMBEDDED_SUBS = False
+ACCEPT_UNKNOWN_EMBEDDED_SUBS = False
 SUBTITLES_STOP_AT_FIRST = False
 SUBTITLES_HEARING_IMPAIRED = False
 SUBTITLES_FINDER_FREQUENCY = 1
@@ -682,14 +692,15 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             HOME_LAYOUT, HISTORY_LAYOUT, DISPLAY_SHOW_SPECIALS, COMING_EPS_LAYOUT, COMING_EPS_SORT, COMING_EPS_DISPLAY_PAUSED, COMING_EPS_MISSED_RANGE, FUZZY_DATING, TRIM_ZERO, DATE_PRESET, TIME_PRESET, TIME_PRESET_W_SECONDS, THEME_NAME, \
             POSTER_SORTBY, POSTER_SORTDIR, HISTORY_LIMIT, CREATE_MISSING_SHOW_DIRS, ADD_SHOWS_WO_DIR, \
             METADATA_WDTV, METADATA_TIVO, METADATA_MEDE8ER, IGNORE_WORDS, PREFERRED_WORDS, UNDESIRED_WORDS, TRACKERS_LIST, IGNORED_SUBS_LIST, REQUIRE_WORDS, CALENDAR_UNPROTECTED, CALENDAR_ICONS, NO_RESTART, IGNORE_UND_SUBS, \
-            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_KEEP_ONLY_WANTED, EMBEDDED_SUBTITLES_ALL, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, EMBEDDED_SUBTITLES_UNKNOWN_LANG, SUBTITLES_STOP_AT_FIRST, \
+            USE_SUBTITLES, SUBTITLES_LANGUAGES, SUBTITLES_DIR, SUBTITLES_SERVICES_LIST, SUBTITLES_SERVICES_ENABLED, SUBTITLES_HISTORY, SUBTITLES_FINDER_FREQUENCY, SUBTITLES_MULTI, SUBTITLES_KEEP_ONLY_WANTED, IGNORE_EMBEDDED_SUBS, SUBTITLES_EXTRA_SCRIPTS, SUBTITLES_PRE_SCRIPTS, SUBTITLES_PERFECT_MATCH, subtitlesFinderScheduler, ACCEPT_UNKNOWN_EMBEDDED_SUBS, SUBTITLES_STOP_AT_FIRST, \
             SUBTITLES_HEARING_IMPAIRED, ADDIC7ED_USER, ADDIC7ED_PASS, ITASA_USER, ITASA_PASS, LEGENDASTV_USER, LEGENDASTV_PASS, OPENSUBTITLES_USER, OPENSUBTITLES_PASS, \
             USE_FAILED_DOWNLOADS, DELETE_FAILED, ANON_REDIRECT, LOCALHOST_IP, DEBUG, DBDEBUG, DEFAULT_PAGE, SEEDERS_LEECHERS_IN_NOTIFY, PROXY_SETTING, PROXY_INDEXERS, \
             AUTOPOSTPROCESSOR_FREQUENCY, SHOWUPDATE_HOUR, \
             ANIME_DEFAULT, NAMING_ANIME, ANIMESUPPORT, USE_ANIDB, ANIDB_USERNAME, ANIDB_PASSWORD, ANIDB_USE_MYLIST, \
             ANIME_SPLIT_HOME, SCENE_DEFAULT, DOWNLOAD_URL, BACKLOG_DAYS, GIT_USERNAME, GIT_PASSWORD, \
             DEVELOPER, DISPLAY_ALL_SEASONS, SSL_VERIFY, NEWS_LAST_READ, NEWS_LATEST, BROKEN_PROVIDERS, SOCKET_TIMEOUT, RECENTLY_DELETED, \
-            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP
+            FANART_BACKGROUND, FANART_BACKGROUND_OPACITY, GIT_REMOTE_BRANCHES, RELEASES_IN_PP, PROPERS_SEARCH_DAYS, \
+            LOCALE, OS_USER, OPENSSL_VERSION, APP_VERSION, MAJOR_DB_VERSION, MINOR_DB_VERSION, BROKEN_PROVIDERS_UPDATE
 
         if __INITIALIZED__:
             return False
@@ -896,6 +907,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
             TORRENT_METHOD = 'blackhole'
 
         DOWNLOAD_PROPERS = bool(check_setting_int(CFG, 'General', 'download_propers', 1))
+        PROPERS_SEARCH_DAYS = check_setting_int(CFG, 'General', 'propers_search_days', 2)
+        if PROPERS_SEARCH_DAYS not in range(2, 8):
+            PROPERS_SEARCH_DAYS = 2
         CHECK_PROPERS_INTERVAL = check_setting_str(CFG, 'General', 'check_propers_interval', '')
         if CHECK_PROPERS_INTERVAL not in ('15m', '45m', '90m', '4h', 'daily'):
             CHECK_PROPERS_INTERVAL = 'daily'
@@ -944,7 +958,8 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         NEWS_LAST_READ = check_setting_str(CFG, 'General', 'news_last_read', '1970-01-01')
         NEWS_LATEST = NEWS_LAST_READ
 
-        BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers', ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS)
+        BROKEN_PROVIDERS = check_setting_str(CFG, 'General', 'broken_providers',
+                                             helpers.get_broken_providers() or BROKEN_PROVIDERS)
 
         NZB_DIR = check_setting_str(CFG, 'Blackhole', 'nzb_dir', '')
         TORRENT_DIR = check_setting_str(CFG, 'Blackhole', 'torrent_dir', '')
@@ -1199,9 +1214,9 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         SUBTITLES_DEFAULT = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_default', 0))
         SUBTITLES_HISTORY = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_history', 0))
         SUBTITLES_PERFECT_MATCH = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_perfect_match', 1))
-        EMBEDDED_SUBTITLES_ALL = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_all', 0))
+        IGNORE_EMBEDDED_SUBS = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_all', 0))
         SUBTITLES_STOP_AT_FIRST = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_stop_at_first', 0))
-        EMBEDDED_SUBTITLES_UNKNOWN_LANG = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_unknown_lang', 0))
+        ACCEPT_UNKNOWN_EMBEDDED_SUBS = bool(check_setting_int(CFG, 'Subtitles', 'embedded_subtitles_unknown_lang', 0))
         SUBTITLES_HEARING_IMPAIRED = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_hearing_impaired', 0))
         SUBTITLES_FINDER_FREQUENCY = check_setting_int(CFG, 'Subtitles', 'subtitles_finder_frequency', 1)
         SUBTITLES_MULTI = bool(check_setting_int(CFG, 'Subtitles', 'subtitles_multi', 1))
@@ -1285,8 +1300,38 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         # reconfigure the logger
         logger.reconfigure()
 
+        # initialize static configuration
+        try:
+            import pwd
+            OS_USER = pwd.getpwuid(os.getuid()).pw_name
+        except ImportError:
+            try:
+                import getpass
+                OS_USER = getpass.getuser()
+            except StandardError:
+                pass
+
+        try:
+            import locale
+            LOCALE = locale.getdefaultlocale()
+        except StandardError:
+            LOCALE = None, None
+
+        try:
+            import ssl
+            OPENSSL_VERSION = ssl.OPENSSL_VERSION
+        except StandardError:
+            pass
+
+        if VERSION_NOTIFY:
+            updater = version_checker.CheckVersion().updater
+            if updater:
+                APP_VERSION = updater.get_cur_version()
+
+        MAJOR_DB_VERSION, MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
+
         # initialize NZB and TORRENT providers
-        providerList = providers.makeProviderList()
+        providerList = providers.make_provider_list()
 
         NEWZNAB_DATA = check_setting_str(CFG, 'Newznab', 'newznab_data', '')
         newznabProviderList = NewznabProvider.get_providers_list(NEWZNAB_DATA)
@@ -1294,7 +1339,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         TORRENTRSS_DATA = check_setting_str(CFG, 'TorrentRss', 'torrentrss_data', '')
         torrentRssProviderList = TorrentRssProvider.get_providers_list(TORRENTRSS_DATA)
 
-        all_providers = providers.sortedProviderList()
+        all_providers = providers.sorted_provider_list()
 
         # dynamically load provider settings
         for provider in all_providers:
@@ -1364,7 +1409,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
         metadata_provider_dict = metadata.get_metadata_generator_dict()
         for cur_metadata_tuple in [(METADATA_KODI, metadata.kodi),
                                    (METADATA_KODI_12PLUS, metadata.kodi_12plus),
-                                   (METADATA_MEDIABROWSER, metadata.mediabrowser),
+                                   (METADATA_MEDIABROWSER, metadata.media_browser),
                                    (METADATA_PS3, metadata.ps3),
                                    (METADATA_WDTV, metadata.wdtv),
                                    (METADATA_TIVO, metadata.tivo),
@@ -1377,7 +1422,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # initialize schedulers
         # updaters
-        versionCheckScheduler = scheduler.Scheduler(versionChecker.CheckVersion(),
+        versionCheckScheduler = scheduler.Scheduler(version_checker.CheckVersion(),
                                                     cycleTime=datetime.timedelta(hours=UPDATE_FREQUENCY),
                                                     threadName="CHECKVERSION",
                                                     silent=False)
@@ -1386,7 +1431,7 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
                                                  cycleTime=datetime.timedelta(seconds=3),
                                                  threadName="SHOWQUEUE")
 
-        showUpdateScheduler = scheduler.Scheduler(showUpdater.ShowUpdater(),
+        showUpdateScheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                   cycleTime=datetime.timedelta(hours=1),
                                                   threadName="SHOWUPDATER",
                                                   start_time=datetime.time(hour=SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
@@ -1433,13 +1478,13 @@ def initialize(consoleLogging=True):  # pylint: disable=too-many-locals, too-man
 
         # processors
         update_interval = datetime.timedelta(minutes=AUTOPOSTPROCESSOR_FREQUENCY)
-        autoPostProcessorScheduler = scheduler.Scheduler(auto_postprocessor.PostProcessor(),
+        autoPostProcessorScheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
                                                          cycleTime=update_interval,
                                                          threadName="POSTPROCESSOR",
                                                          silent=not PROCESS_AUTOMATICALLY,
                                                          run_delay=update_interval)
         update_interval = datetime.timedelta(minutes=5)
-        traktCheckerScheduler = scheduler.Scheduler(traktChecker.TraktChecker(),
+        traktCheckerScheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                     cycleTime=datetime.timedelta(hours=1),
                                                     threadName="TRAKTCHECKER",
                                                     run_delay=update_interval,
@@ -1697,6 +1742,7 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['update_frequency'] = int(UPDATE_FREQUENCY)
     new_config['General']['showupdate_hour'] = int(SHOWUPDATE_HOUR)
     new_config['General']['download_propers'] = int(DOWNLOAD_PROPERS)
+    new_config['General']['propers_search_days'] = int(PROPERS_SEARCH_DAYS)
     new_config['General']['randomize_providers'] = int(RANDOMIZE_PROVIDERS)
     new_config['General']['check_propers_interval'] = CHECK_PROPERS_INTERVAL
     new_config['General']['allow_high_priority'] = int(ALLOW_HIGH_PRIORITY)
@@ -1780,14 +1826,14 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['General']['developer'] = int(DEVELOPER)
     new_config['General']['display_all_seasons'] = int(DISPLAY_ALL_SEASONS)
     new_config['General']['news_last_read'] = NEWS_LAST_READ
-    new_config['General']['broken_providers'] = ','.join(helpers.get_broken_providers()) or BROKEN_PROVIDERS
+    new_config['General']['broken_providers'] = helpers.get_broken_providers() or BROKEN_PROVIDERS
 
     new_config['Blackhole'] = {}
     new_config['Blackhole']['nzb_dir'] = NZB_DIR
     new_config['Blackhole']['torrent_dir'] = TORRENT_DIR
 
     # dynamically save provider settings
-    all_providers = providers.sortedProviderList()
+    all_providers = providers.sorted_provider_list()
     for provider in all_providers:
         name = provider.get_id()
         section = name.upper()
@@ -2097,9 +2143,9 @@ def save_config():  # pylint: disable=too-many-statements, too-many-branches
     new_config['Subtitles']['subtitles_default'] = int(SUBTITLES_DEFAULT)
     new_config['Subtitles']['subtitles_history'] = int(SUBTITLES_HISTORY)
     new_config['Subtitles']['subtitles_perfect_match'] = int(SUBTITLES_PERFECT_MATCH)
-    new_config['Subtitles']['embedded_subtitles_all'] = int(EMBEDDED_SUBTITLES_ALL)
+    new_config['Subtitles']['embedded_subtitles_all'] = int(IGNORE_EMBEDDED_SUBS)
     new_config['Subtitles']['subtitles_stop_at_first'] = int(SUBTITLES_STOP_AT_FIRST)
-    new_config['Subtitles']['embedded_subtitles_unknown_lang'] = int(EMBEDDED_SUBTITLES_UNKNOWN_LANG)
+    new_config['Subtitles']['embedded_subtitles_unknown_lang'] = int(ACCEPT_UNKNOWN_EMBEDDED_SUBS)
     new_config['Subtitles']['subtitles_hearing_impaired'] = int(SUBTITLES_HEARING_IMPAIRED)
     new_config['Subtitles']['subtitles_finder_frequency'] = int(SUBTITLES_FINDER_FREQUENCY)
     new_config['Subtitles']['subtitles_multi'] = int(SUBTITLES_MULTI)

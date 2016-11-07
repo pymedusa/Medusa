@@ -62,11 +62,13 @@
             <%include file="/partials/footer.mako" />
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
+		<script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>		
         <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/timeago.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
@@ -105,7 +107,7 @@
         <script type="text/javascript" src="js/manage/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/manage/subtitle-missedPP.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
         <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>

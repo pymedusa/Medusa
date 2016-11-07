@@ -24,15 +24,15 @@ import re
 
 from bencode import bdecode
 import medusa as app
-from ..TorrentProvider import TorrentProvider
-from .... import helpers, logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import helpers, logger, tv_cache
 from ....helper.exceptions import ex
 
 
 class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
 
     def __init__(self, name, url, cookies='',  # pylint: disable=too-many-arguments
-                 titleTAG='title', search_mode='eponly', search_fallback=False,
+                 title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
 
         # Provider Init
@@ -54,7 +54,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.enable_backlog = enable_backlog
         self.enable_cookies = True
         self.cookies = cookies
-        self.titleTAG = titleTAG
+        self.title_tag = title_tag
 
         # Torrent Stats
 
@@ -63,7 +63,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def _get_title_and_url(self, item):
 
-        title = item.get(self.titleTAG, '').replace(' ', '.')
+        title = item.get(self.title_tag, '').replace(' ', '.')
 
         attempt_list = [
             lambda: item.get('torrent_magneturi'),
@@ -88,7 +88,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             self.name or '',
             self.url or '',
             self.cookies or '',
-            self.titleTAG or '',
+            self.title_tag or '',
             int(self.enabled),
             self.search_mode or '',
             int(self.search_fallback),
@@ -148,7 +148,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return None
 
         new_provider = TorrentRssProvider(
-            name, url, cookies=cookies, titleTAG=title_tag, search_mode=search_mode, search_fallback=search_fallback,
+            name, url, cookies=cookies, title_tag=title_tag, search_mode=search_mode, search_fallback=search_fallback,
             enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
         )
         new_provider.enabled = enabled == '1'
@@ -213,7 +213,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return True
 
 
-class TorrentRssCache(tvcache.TVCache):
+class TorrentRssCache(tv_cache.TVCache):
     def _getRSSData(self):
         self.provider.add_cookies_from_ui()
         return self.getRSSFeed(self.provider.url)

@@ -22,7 +22,6 @@ import logging
 import zipfile
 import datetime as dt
 import requests
-
 import xmltodict
 
 try:
@@ -36,7 +35,6 @@ except ImportError:
     gzip = None
 
 from dateutil.parser import parse
-from cachecontrol import CacheControl, caches
 
 from tvdb_ui import BaseUI, ConsoleUI
 from tvdb_exceptions import (tvdb_error, tvdb_userabort, tvdb_shownotfound, tvdb_showincomplete,
@@ -156,12 +154,6 @@ class Show(dict):
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
             raise tvdb_attributenotfound("Cannot find attribute %s" % (repr(key)))
-
-    def airedOn(self, date):
-        ret = self.search(str(date), 'firstaired')
-        if len(ret) == 0:
-            raise tvdb_episodenotfound("Could not find any episodes that aired on %s" % date)
-        return ret
 
     def search(self, term=None, key=None):
         """
@@ -365,10 +357,12 @@ class Tvdb:
                  language=None,
                  search_all_languages=False,
                  apikey=None,
-                 forceConnect=False,
-                 useZip=False,
+                 force_connect=False,
+                 use_zip=False,
                  dvdorder=False,
-                 proxy=None):
+                 proxy=None,
+                 session=None,
+                 image_type=None):
 
         """interactive (True/False):
             When True, uses built-in console UI is used to select the correct show.
@@ -430,13 +424,13 @@ class Tvdb:
             tvdb_api in a larger application)
             See http://thetvdb.com/?tab=apiregister to get your own key
 
-        forceConnect (bool):
+        force_connect (bool):
             If true it will always try to connect to theTVDB.com even if we
             recently timed out. By default it will wait one minute before
             trying again, and any requests within that one minute window will
             return an exception immediately.
 
-        useZip (bool):
+        use_zip (bool):
             Download the zip archive where possibale, instead of the xml.
             This is only used when all episodes are pulled.
             And only the main language xml is used, the actor and banner xml are lost.
@@ -462,7 +456,7 @@ class Tvdb:
 
         self.config['search_all_languages'] = search_all_languages
 
-        self.config['useZip'] = useZip
+        self.config['use_zip'] = use_zip
 
         self.config['dvdorder'] = dvdorder
 
@@ -479,7 +473,7 @@ class Tvdb:
         else:
             raise ValueError("Invalid value for Cache %r (type was %s)" % (cache, type(cache)))
 
-        self.config['session'] = requests.Session()
+        self.config['session'] = session if session else requests.Session()
 
         self.config['banners_enabled'] = banners
         self.config['actors_enabled'] = actors
@@ -543,12 +537,14 @@ class Tvdb:
         self.config['url_updates_week'] = u"%(base_url)s/api/%(apikey)s/updates_week.zip" % self.config
         self.config['url_updates_day'] = u"%(base_url)s/api/%(apikey)s/updates_day.zip" % self.config
 
+        self.config['image_type'] = image_type
+
     def _getTempDir(self):
         """Returns the [system temp dir]/tvdb_api-u501 (or
         tvdb_api-myuser)
         """
         if hasattr(os, 'getuid'):
-            uid = "u%d" % (os.getuid())
+            uid = "u%d" % (os.getuid())  # pylint: disable=no-member
         else:
             # For Windows
             try:
@@ -565,8 +561,6 @@ class Tvdb:
 
             # get response from TVDB
             if self.config['cache_enabled']:
-                # Lets try without caching sessions to disk for awhile
-                # session = CacheControl(sess=self.config['session'], cache=caches.FileCache(self.config['cache_location'], use_dir_lock=True), cache_etags=False)
                 session = self.config['session']
                 if self.config['proxy']:
                     log().debug("Using proxy for URL: %s" % url)
@@ -798,6 +792,7 @@ class Tvdb:
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
+
         log().debug("Getting actors for %s" % (sid))
         actorsEt = self._getetsrc(self.config['url_actorsInfo'] % (sid))
 
@@ -874,7 +869,7 @@ class Tvdb:
 
             # Parse episode data
             log().debug('Getting all episodes of %s' % (sid))
-            if self.config['useZip']:
+            if self.config['use_zip']:
                 url = self.config['url_epInfo_zip'] % (sid, language)
             else:
                 url = self.config['url_epInfo'] % (sid, language)

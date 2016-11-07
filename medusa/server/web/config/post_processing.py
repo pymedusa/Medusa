@@ -9,7 +9,7 @@ from __future__ import unicode_literals
 import os
 
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from unrar2 import RarFile
 from .handler import Config
 from ..core import PageTemplate

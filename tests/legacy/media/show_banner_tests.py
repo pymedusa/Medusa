@@ -18,7 +18,7 @@
 
 from __future__ import print_function
 
-from medusa.media.ShowBanner import ShowBanner
+from medusa.media.banner import ShowBanner
 from .generic_media_tests import GenericMediaTests
 
 

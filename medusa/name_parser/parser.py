@@ -104,7 +104,7 @@ class NameParser(object):
                         indexer_api_params['language'] = result.show.lang
 
                     t = app.indexerApi(result.show.indexer).indexer(**indexer_api_params)
-                    tv_episode = t[result.show.indexerid].airedOn(result.air_date)[0]
+                    tv_episode = t[result.show.indexerid].aired_on(result.air_date)[0]
 
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]

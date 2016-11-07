@@ -29,8 +29,8 @@ import copy
 import re
 
 from guessit.rules.common import seps
-
 from guessit.rules.common.comparators import marker_sorted
+from guessit.rules.common.date import search_date
 from guessit.rules.common.formatters import cleanup
 from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
@@ -48,7 +48,7 @@ class BlacklistedReleaseGroup(Rule):
 
     priority = POST_PROCESS
     consequence = RemoveMatch
-    blacklist = ('private', 'req', 'no.rar')
+    blacklist = ('private', 'req', 'no.rar', 'season')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -60,6 +60,249 @@ class BlacklistedReleaseGroup(Rule):
         :return:
         """
         return matches.named('release_group', predicate=lambda match: match.value.lower() in self.blacklist)
+
+
+class EpisodeNumberRule(Rule):
+    """Episode numbers in episode title are wrongly detected as episodes.
+
+    guessit -t episode "Show Name - S02E31 - Episode 55 (720p.HDTV)"
+
+    Before the rule:
+    For: Show Name - S02E31 - Episode 55 (720p.HDTV)
+    GuessIt found: {
+        "title": "Show Name",
+        "season": 2,
+        "episode": [
+            31,
+            55
+        ],
+        "screen_size": "720p",
+        "format": "HDTV",
+        "type": "episode"
+    }
+
+    After the rule:
+    For: Show Name - S02E31 - Episode 55 (720p.HDTV)
+    GuessIt found: {
+        "title": "Show Name",
+        "season": 2,
+        "episode": 31,
+        "screen_size": "720p",
+        "format": "HDTV",
+        "type": "episode"
+    }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            episodes = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'episode')
+            if len(episodes) < 2:
+                continue
+
+            strong_episodes = [m for m in episodes if 'SxxExx' in m.tags]
+            weak_episodes = [m for m in episodes if 'SxxExx' not in m.tags]
+            if not strong_episodes or not weak_episodes:
+                continue
+
+            numbers = [m.value for m in episodes]
+            # check if we have consecutive numbers
+            if sorted(numbers) == range(min(numbers), max(numbers) + 1):
+                continue
+
+            to_remove = weak_episodes
+            to_append = []
+            for e in weak_episodes:
+                if matches.previous(e, lambda match: match.name == 'episode' and 'SxxExx' in match.tags):
+                    episode_title = copy.copy(e.initiator)
+                    episode_title.name = 'episode_title'
+                    episode_title.private = False
+                    to_append.append(episode_title)
+                    break
+
+            return to_remove, to_append
+
+
+class FixDateFollowedByScreenSizeRule(Rule):
+    """Date is not properly detected when followed by screen_size.
+
+    https://github.com/guessit-io/guessit/issues/351
+    guessit -t episode "Show Name - S02E31 - Episode 55 (720p.HDTV)"
+
+    Before the rule:
+    guessit -t episode "Vice.News.Tonight.2016.10.10.1080p.HBO.WEBRip.AAC2.0.H.264-monkee"
+    For: Show.Name.2016.10.10.1080p.HBO.WEBRip.AAC2.0.H.264-group
+    GuessIt found: {
+        "title": "Show Name",
+        "year": 2016,
+        "episode_title": "10 10",
+        "screen_size": "1080p",
+        "format": "WEBRip",
+        "audio_codec": "AAC",
+        "audio_channels": "2.0",
+        "video_codec": "h264",
+        "release_group": "group",
+        "type": "episode"
+    }
+
+    After the rule:
+    For: Show.Name.2016.10.10.1080p.HBO.WEBRip.AAC2.0.H.264-group
+    GuessIt found: {
+        "title": "Show.Name",
+        "date": "2016-10-10",
+        "screen_size": "1080p",
+        "format": "WEBRip",
+        "audio_codec": "AAC",
+        "audio_channels": "2.0",
+        "video_codec": "h264",
+        "release_group": "group",
+        "type": "episode"
+    }
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        fileparts = matches.markers.named('path')
+        for filepart in marker_sorted(fileparts, matches):
+            screen_size = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'screen_size', index=0)
+            if not screen_size:
+                continue
+
+            episode_title = matches.previous(screen_size, lambda match: match.name == 'episode_title', index=-1)
+            if not episode_title:
+                continue
+
+            year = matches.previous(episode_title, lambda match: match.name == 'year', index=-1)
+            if not year:
+                continue
+
+            candidate = matches.input_string[year.start:episode_title.end]
+            ret = search_date(candidate, context.get('date_year_first'), context.get('date_day_first'))
+            if ret:
+                to_remove = []
+                to_append = []
+
+                start, end, value = ret
+                d = copy.copy(year)
+                d.name = 'date'
+                d.start = year.start + start
+                d.end = year.start + end
+                d.value = value
+                to_append.append(d)
+                to_remove.append(episode_title)
+                to_remove.append(year)
+
+                return to_remove, to_append
+
+
+class FixMissingEpisodeOnSmallerFilepartRule(Rule):
+    """Episode numbers are not detected for some scenarios where season is present in folder name.
+
+    https://github.com/guessit-io/guessit/issues/357
+
+    guessit -t episode "Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv"
+
+    Before the rule:
+    For: Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv
+    GuessIt found: {
+        "title": "Show Name",
+        "season": 1,
+        "screen_size": "720p",
+        "format": "HDTV",
+        "audio_codec": "DolbyDigital",
+        "audio_channels": "5.1",
+        "video_codec": "h264",
+        "release_group": "GrOuP",
+        "container": "mkv",
+        "mimetype": "video/x-matroska",
+        "type": "episode"
+    }
+
+    After the rule:
+    For: Show.Name.S01.720p.HDTV.DD5.1.x264-GrOuP/show.name.0106.720p-group.mkv
+    GuessIt found: {
+        "title": "Show Name",
+        "season": 1,
+        "episode": 6,
+        "screen_size": "720p",
+        "format": "HDTV",
+        "audio_codec": "DolbyDigital",
+        "audio_channels": "5.1",
+        "video_codec": "h264",
+        "release_group": "GrOuP",
+        "container": "mkv",
+        "mimetype": "video/x-matroska",
+        "type": "episode"
+    }
+    """
+
+    priority = POST_PROCESS
+    consequence = AppendMatch
+    season_episode_re = re.compile(r'\b(?P<season>\d{2})(?P<episode>\d{2})\b')
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        if matches.named('episode'):
+            return
+
+        fileparts = marker_sorted(matches.markers.named('path'), matches)
+        if len(fileparts) < 2:
+            return
+
+        if matches.range(fileparts[1].start, fileparts[1].end, predicate=lambda m: m.name == 'season', index=0):
+            return
+
+        season = matches.range(fileparts[0].start, fileparts[0].end, predicate=lambda m: m.name == 'season', index=0)
+        for hole in matches.holes(fileparts[1].start, fileparts[1].end):
+            if len(hole.value) < 4:
+                continue
+
+            match = self.season_episode_re.search(hole.value)
+            if not match:
+                continue
+
+            new_season = int(match.group('season'))
+            if season and season.value != new_season:
+                continue
+            to_append = []
+            if not season:
+                season = copy.copy(hole)
+                season.name = 'season'
+                season.value = new_season
+                to_append.append(season)
+            episode = copy.copy(hole)
+            episode.name = 'episode'
+            episode.value = int(match.group('episode'))
+            to_append.append(episode)
+            return to_append
 
 
 class FixAnimeReleaseGroup(Rule):
@@ -122,16 +365,18 @@ class FixAnimeReleaseGroup(Rule):
                 if group:
                     # https://github.com/guessit-io/guessit/issues/345
                     if self.website_rebulk.matches(group.raw, context):
-                        ws = copy.copy(matches.at_span(group.span, index=0))
+                        release_group = matches.at_span(group.span, index=0)
+                        ws = copy.copy(release_group)
                         ws.tags = []
                         ws.name = 'website'
                         ws.value = ws.value.strip(seps)
                         to_append.append(ws)
-                        to_remove.append(group)
+                        to_remove.append(release_group)
                     elif [rg for rg in groups if group and rg.span == group.span and rg.value.lower()]:
                         to_remove.extend([rg for rg in groups if rg.span != group.span])
-                # anime should pick the first in the list and discard the rest
-                to_remove.append(groups[1:])
+                else:
+                    # anime should pick the first in the list and discard the rest
+                    to_remove.append(groups[1:])
             else:
                 # non anime should pick the last in the list and discard the rest
                 to_remove.append(groups[:-1])
@@ -330,11 +575,11 @@ class FixSeasonAndEpisodeConflicts(Rule):
 
         screen_sizes = matches.named('screen_size')
         for screen_size in screen_sizes:
-            to_remove.extend(matches.at_match(screen_size, predicate=lambda match: match.name in ('season', 'episode')))
+            to_remove.extend(matches.range(screen_size.start, screen_size.end, predicate=lambda match: match.name in ('season', 'episode')))
 
         release_groups = matches.named('release_group')
         for group in release_groups:
-            to_remove.extend(matches.at_match(group, predicate=lambda match: match.name in ('season', 'episode')))
+            to_remove.extend(matches.range(group.start, group.end, predicate=lambda match: match.name in ('season', 'episode')))
 
         return to_remove
 
@@ -1399,8 +1644,12 @@ class FixMultipleReleaseGroups(Rule):
         # In case of duplicated titles, keep only the first one
         release_groups = matches.named('release_group')
 
-        if release_groups and len(release_groups) > 1:
-            selected = release_groups[0] if matches.tagged('anime') else release_groups[-1]
+        if len(release_groups) > 1:
+            selected = [r for r in release_groups if r.pattern]
+            if selected:
+                selected = selected[0]
+            else:
+                selected = release_groups[0] if matches.tagged('anime') else release_groups[-1]
             # Safety:
             # Only remove matches that are different from the first match
             to_remove = matches.named('release_group', predicate=lambda match: match.span != selected.span)
@@ -1674,6 +1923,9 @@ def rules():
     return Rebulk().rules(
         BlacklistedReleaseGroup,
         FixTvChaosUkWorkaround,
+        EpisodeNumberRule,
+        FixMissingEpisodeOnSmallerFilepartRule,
+        FixDateFollowedByScreenSizeRule,
         FixReleaseGroupGuessedAsTitle,
         FixAnimeReleaseGroup,
         SpanishNewpctReleaseName,

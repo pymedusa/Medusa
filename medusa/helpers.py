@@ -23,6 +23,7 @@ import ctypes
 import datetime
 import errno
 import hashlib
+import imghdr
 import io
 import logging
 import os
@@ -33,6 +34,7 @@ import shutil
 import socket
 import ssl
 import stat
+import struct
 import time
 import traceback
 import uuid
@@ -42,7 +44,8 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
-from cachecontrol import CacheControl
+from cachecontrol import CacheControlAdapter
+from cachecontrol.cache import DictCache
 import certifi
 import cfscrape
 from contextlib2 import closing, suppress
@@ -57,7 +60,8 @@ from . import classes, db
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
-from .show.Show import Show
+from .show.show import Show
+
 
 logger = logging.getLogger(__name__)
 
@@ -146,8 +150,8 @@ def isRarFile(filename):
 def remove_file_failed(failed_file):
     """Remove file from filesystem.
 
-    :param file: File to remove
-    :type file: str
+    :param failed_file: File to remove
+    :type failed_file: str
     """
     try:
         os.remove(failed_file)
@@ -674,6 +678,7 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
 def sanitizeSceneName(name, anime=False):
     """Take a show name and returns the "scenified" version of it.
 
+    :param name: Show name to be sanitized.
     :param anime: Some show have a ' in their name(Kuroko's Basketball) and is needed for search.
     :return: A string containing the scene version of the show name given.
     """
@@ -993,7 +998,7 @@ def validateShow(show, season=None, episode=None):
             return t
 
         return t[show.indexerid][season][episode]
-    except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
+    except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
         pass
 
 
@@ -1147,12 +1152,24 @@ def touchFile(fname, atime=None):
     return False
 
 
-def make_session():
+def make_session(cache_etags=True, serializer=None, heuristic=None):
     session = requests.Session()
+
+    adapter = CacheControlAdapter(
+        DictCache(),
+        cache_etags=cache_etags,
+        serializer=serializer,
+        heuristic=heuristic,
+    )
+
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    session.cache_controller = adapter.controller
 
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
-    return CacheControl(sess=session, cache_etags=True)
+    return session
 
 
 def request_defaults(kwargs):
@@ -1432,7 +1449,7 @@ def isFileLocked(check_file, write_lock_check=False):
         3. If the readLockCheck parameter is True, attempts to rename the file. If this fails the
             file is open by some other process for reading. The file can be read, but not written to
             or deleted.
-    :param file: the file being checked
+    :param check_file: the file being checked
     :param write_lock_check: when true will check if the file is locked for writing (prevents move operations)
     """
     check_file = os.path.abspath(check_file)
@@ -1490,7 +1507,7 @@ def getTVDBFromID(indexer_id, indexer):
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.getiterator("Series"):
+            for show in tree.iter("Series"):
                 tvdb_id = show.findtext("seriesid")
 
         if tvdb_id:
@@ -1504,7 +1521,7 @@ def getTVDBFromID(indexer_id, indexer):
 
         with suppress(SyntaxError):
             tree = ET.fromstring(data)
-            for show in tree.getiterator("Series"):
+            for show in tree.iter("Series"):
                 tvdb_id = show.findtext("seriesid")
 
         return tvdb_id
@@ -1543,6 +1560,36 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
         return s.data.get('seriesname')
 
     return None
+
+
+# http://stackoverflow.com/a/20380514
+def get_image_size(image_path):
+    """Determine the image type of image_path and return its size.."""
+    with open(image_path, 'rb') as f:
+        head = f.read(24)
+        if len(head) != 24:
+            return
+        if imghdr.what(image_path) == 'png':
+            check = struct.unpack('>i', head[4:8])[0]
+            if check != 0x0d0a1a0a:
+                return
+            return struct.unpack('>ii', head[16:24])
+        elif imghdr.what(image_path) == 'gif':
+            return struct.unpack('<HH', head[6:10])
+        elif imghdr.what(image_path) == 'jpeg':
+            f.seek(0)  # Read 0xff next
+            size = 2
+            ftype = 0
+            while not 0xc0 <= ftype <= 0xcf:
+                f.seek(size, 1)
+                byte = f.read(1)
+                while ord(byte) == 0xff:
+                    byte = f.read(1)
+                ftype = ord(byte)
+                size = struct.unpack('>H', f.read(2))[0] - 2
+            # We are at a SOFn block
+            f.seek(1, 1)  # Skip `precision' byte.
+            return struct.unpack('>HH', f.read(4))
 
 
 def remove_folder(folder_path, level=logging.WARNING):
@@ -1644,6 +1691,15 @@ def canonical_name(obj, fmt=u'{key}:{value}', separator=u'|', ignore_list=frozen
 
 def get_broken_providers():
     """Get broken providers from cdn.pymedusa.com."""
+    # Check if last broken providers update happened less than 60 minutes ago
+    if app.BROKEN_PROVIDERS_UPDATE and isinstance(app.BROKEN_PROVIDERS_UPDATE, datetime.datetime) and \
+            (datetime.datetime.now() - app.BROKEN_PROVIDERS_UPDATE).seconds < 3600:
+        logger.debug('Broken providers already updated in the last hour')
+        return
+
+    # Update last broken providers update-timestamp to avoid updating again in less than 60 minutes
+    app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
+
     url = 'https://cdn.pymedusa.com/providers/broken_providers.json'
     response = getURL(url, session=make_session(), returns='json')
     if not response:
@@ -1651,5 +1707,6 @@ def get_broken_providers():
                        'This list is used to disable broken providers. '
                        'You may encounter errors in the logfiles if you are using a broken provider.')
         return []
+
     logger.info('Broken providers found: {0}'.format(response))
-    return response
+    return ','.join(response)

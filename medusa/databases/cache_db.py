@@ -123,3 +123,13 @@ class ConvertSceneNamesToIndexerScheme(AddSceneExceptionsRefresh):  # pylint:dis
         self.connection.action("CREATE TABLE scene_names (indexer_id INTEGER, name TEXT);")
         self.connection.action("INSERT INTO scene_names SELECT * FROM tmp_scene_names;")
         self.connection.action("DROP TABLE tmp_scene_names;")
+
+
+class AddIndexerUpdateSchema(ConvertSceneNamesToIndexerScheme):  # pylint:disable=too-many-ancestors
+    def test(self):
+        return self.hasTable("indexer_update")
+
+    def execute(self):
+        self.connection.action(
+            "CREATE TABLE indexer_update (indexer_update_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+            " indexer INTEGER, indexer_id INTEGER, season INTEGER, next_update INTEGER);")

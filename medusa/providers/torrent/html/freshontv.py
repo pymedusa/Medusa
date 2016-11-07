@@ -25,14 +25,15 @@ import traceback
 from requests.compat import urljoin
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 from six import text_type
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
 class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """FreshOnTV Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -66,7 +67,7 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self)
+        self.cache = tv_cache.TVCache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -251,13 +252,11 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
                     return False
             else:
-                if re.search('Username does not exist in the userbase or the account is not confirmed yet.', response.text) or \
-                    re.search('Username or password is incorrect. If you have an account here please use the'
-                              ' recovery system or try again.', response.text):
+                if re.search('Username does not exist in the userbase or the account is not confirmed yet.',
+                             response.text) or re.search('Username or password is incorrect. If you have an account '
+                                                         'here please use the recovery system or try again.',
+                                                         response.text):
                     logger.log('Invalid username or password. Check your settings', logger.WARNING)
-
-                if re.search('DDoS protection by CloudFlare', response.text):
-                    logger.log('Unable to login to provider due to CloudFlare DDoS javascript check', logger.WARNING)
 
                     return False
 

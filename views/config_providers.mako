@@ -2,7 +2,7 @@
 <%!
     import medusa as app
     from medusa.helpers import anon_url
-    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.providers.generic_provider import GenericProvider
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/config-providers.js"></script>
@@ -12,12 +12,12 @@ $(document).ready(function(){
     % if app.USE_NZBS:
         var show_nzb_providers = ${("false", "true")[bool(app.USE_NZBS)]};
         % for curNewznabProvider in app.newznabProviderList:
-        $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.catIDs}', ${int(curNewznabProvider.default)}, show_nzb_providers);
+        $(this).addProvider('${curNewznabProvider.get_id()}', '${curNewznabProvider.name}', '${curNewznabProvider.url}', '${curNewznabProvider.key}', '${curNewznabProvider.cat_ids}', ${int(curNewznabProvider.default)}, show_nzb_providers);
         % endfor
     % endif
     % if app.USE_TORRENTS:
         % for curTorrentRssProvider in app.torrentRssProviderList:
-        $(this).addTorrentRssProvider('${curTorrentRssProvider.get_id()}', '${curTorrentRssProvider.name}', '${curTorrentRssProvider.url}', '${curTorrentRssProvider.cookies}', '${curTorrentRssProvider.titleTAG}');
+        $(this).addTorrentRssProvider('${curTorrentRssProvider.get_id()}', '${curTorrentRssProvider.name}', '${curTorrentRssProvider.url}', '${curTorrentRssProvider.cookies}', '${curTorrentRssProvider.title_tag}');
         % endfor
     % endif
 });
@@ -62,7 +62,7 @@ $('#config-components').tabs();
                     </div>
                     <fieldset class="component-group-list">
                         <ul id="provider_order_list">
-                        % for curProvider in app.providers.sortedProviderList():
+                        % for curProvider in app.providers.sorted_provider_list():
                             <%
                                 ## These will show the '!' not saying they are broken
                                 if curProvider.provider_type == GenericProvider.NZB and not app.USE_NZBS:
@@ -89,7 +89,7 @@ $('#config-components').tabs();
                             </li>
                         % endfor
                         </ul>
-                        <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in app.providers.sortedProviderList()])}"/>
+                        <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in app.providers.sorted_provider_list()])}"/>
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
@@ -106,7 +106,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <%
                                         provider_config_list = []
-                                        for curProvider in app.providers.sortedProviderList():
+                                        for curProvider in app.providers.sorted_provider_list():
                                             if curProvider.provider_type == GenericProvider.NZB and (not app.USE_NZBS or not curProvider.is_enabled()):
                                                 continue
                                             elif curProvider.provider_type == GenericProvider.TORRENT and ( not app.USE_TORRENTS or not curProvider.is_enabled()):
@@ -141,7 +141,7 @@ $('#config-components').tabs();
                             <label for="${curNewznabProvider.get_id()}_hash">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="text" id="${curNewznabProvider.get_id()}_hash" value="${curNewznabProvider.key}" newznab_name="${curNewznabProvider.get_id()}_hash" class="newznab_key form-control input-sm input350"/>
+                                    <input type="password" id="${curNewznabProvider.get_id()}_hash" value="${curNewznabProvider.key}" newznab_name="${curNewznabProvider.get_id()}_hash" class="newznab_key form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -214,7 +214,7 @@ $('#config-components').tabs();
                         % endif
                     </div>
                     % endfor
-                    % for curNzbProvider in [curProvider for curProvider in app.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.NZB and curProvider not in app.newznabProviderList]:
+                    % for curNzbProvider in [curProvider for curProvider in app.providers.sorted_provider_list() if curProvider.provider_type == GenericProvider.NZB and curProvider not in app.newznabProviderList]:
                     <div class="providerDiv" id="${curNzbProvider.get_id()}Div">
                         % if hasattr(curNzbProvider, 'username'):
                         <div class="field-pair">
@@ -305,7 +305,7 @@ $('#config-components').tabs();
                         % endif
                     </div>
                     % endfor
-                    % for curTorrentProvider in [curProvider for curProvider in app.providers.sortedProviderList() if curProvider.provider_type == GenericProvider.TORRENT]:
+                    % for curTorrentProvider in [curProvider for curProvider in app.providers.sorted_provider_list() if curProvider.provider_type == GenericProvider.TORRENT]:
                     <div class="providerDiv" id="${curTorrentProvider.get_id()}Div">
                         % if hasattr(curTorrentProvider, 'custom_url'):
                         <div class="field-pair">
@@ -723,9 +723,9 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         <div class="field-pair">
-                            <label for="torrentrss_titleTAG">
+                            <label for="torrentrss_title_tag">
                                 <span class="component-title">Search element:</span>
-                                <input type="text" id="torrentrss_titleTAG" class="form-control input-sm input200" value="title"/>
+                                <input type="text" id="torrentrss_title_tag" class="form-control input-sm input200" value="title"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>

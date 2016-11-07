@@ -26,11 +26,11 @@ from socket import timeout as SocketTimeout
 
 import medusa as app
 import requests
-from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzbSplitter, nzbget, sab, show_name_helpers, ui
+from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from ..helper.common import enabled_providers, episode_num
 from ..helper.exceptions import AuthException, ex
-from ..providers.GenericProvider import GenericProvider
+from ..providers.generic_provider import GenericProvider
 
 
 def _downloadResult(result):
@@ -380,10 +380,6 @@ def wantedEpisodes(show, fromDate):
     :return: list of wanted episodes
     """
     wanted = []
-    if show.paused:
-        logger.log(u"Not checking for episodes of %s because the show is paused" % show.name, logger.DEBUG)
-        return wanted
-
     allowed_qualities, preferred_qualities = common.Quality.splitQuality(show.quality)
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
@@ -430,8 +426,10 @@ def searchForNeededEpisodes():
     episodes = []
 
     for curShow in show_list:
-        if not curShow.paused:
-            episodes.extend(wantedEpisodes(curShow, fromDate))
+        if curShow.paused:
+            logger.log(u"Not checking for needed episodes of %s because the show is paused" % curShow.name, logger.DEBUG)
+            continue
+        episodes.extend(wantedEpisodes(curShow, fromDate))
 
     if not episodes:
         # nothing wanted so early out, ie: avoid whatever abritrarily
@@ -502,6 +500,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
     :param forced_search: Boolean, is this a forced search?
     :param downCurQuality: Boolean, should we re-download currently available quality file
     :param manual_search: Boolean, should we choose what to download?
+    :param manual_search_type: Episode or Season search
     :return: results for search
     """
     foundResults = {}
@@ -517,10 +516,10 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
 
     if manual_search:
         logger.log("Using manual search providers")
-        providers = [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
+        providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_manualsearch]
     else:
-        providers = [x for x in app.providers.sortedProviderList(app.RANDOMIZE_PROVIDERS)
+        providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_backlog]
 
     if not forced_search:
@@ -712,7 +711,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
                     logger.log(u"Breaking apart the NZB and adding the individual ones to our results", logger.DEBUG)
 
                     # if not, break it apart and add them as the lowest priority results
-                    individualResults = nzbSplitter.split_result(bestSeasonResult)
+                    individualResults = nzb_splitter.split_result(bestSeasonResult)
                     for curResult in individualResults:
                         if len(curResult.episodes) == 1:
                             epNum = curResult.episodes[0].episode
