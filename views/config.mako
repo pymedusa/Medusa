@@ -1,5 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%block name="content">
+<h1 class="header">Medusa Configuration</h1>
 <div id="config-content">
     <table class="infoTable" cellspacing="1" border="0" cellpadding="0" width="100%">
         <tr v-if="release">
