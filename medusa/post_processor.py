@@ -209,7 +209,7 @@ class PostProcessor(object):
             if associated_file_path == file_path:
                 continue
 
-            # Exlude non-subtitle files with the 'only subtitles' option (not implemented yet)
+            # Exlude non-subtitle files with the 'only subtitles' option
             if subtitles_only and not associated_file_path[-3:] in subtitle_extensions:
                 continue
 
