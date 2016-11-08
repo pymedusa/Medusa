@@ -56,3 +56,10 @@ var startVue = function(){
 };
 </script>
 </%block>
+<%block name="css">
+<style>
+.infoTable tr td:first-child {
+  vertical-align: top;
+}
+</style>
+</%block>
