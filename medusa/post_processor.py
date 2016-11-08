@@ -28,7 +28,6 @@ import medusa as app
 
 from six import text_type
 
-from subtitles import from_code, from_ietf_code
 
 from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension, replace_extension, subtitle_extensions
@@ -36,6 +35,7 @@ from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingF
                                 ShowDirectoryNotFoundException)
 from .helpers import verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .subtitles import from_code, from_ietf_code
 
 
 class PostProcessor(object):
@@ -155,8 +155,7 @@ class PostProcessor(object):
     def list_associated_files(self, file_path, base_name_only=False,
                               subtitles_only=False, subfolders=False):
         """
-        For a given file path searches for files with the same name but
-        different extension and returns their absolute paths.
+        For a given file path search for files in the same directory and return their absolute paths.
 
         :param file_path: The file to check for associated files
         :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
@@ -939,7 +938,8 @@ class PostProcessor(object):
             return False
 
         if not os.path.exists(self.file_path):
-            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format(self.file_path))
+            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format
+                                                       (self.file_path))
 
         for ignore_file in self.IGNORED_FILESTRINGS:
             if ignore_file in self.file_path:
@@ -1004,8 +1004,9 @@ class PostProcessor(object):
                 else:
                     _, preferred_qualities = common.Quality.splitQuality(int(show.quality))
                     if new_ep_quality not in preferred_qualities:
-                        raise EpisodePostProcessingFailedException(u'File exists and new file quality is not in a preferred quality list, '
-                                                                   u'marking it unsafe to replace')
+                        raise EpisodePostProcessingFailedException(
+                            u'File exists and new file quality is not in a preferred '
+                            u'quality list, marking it unsafe to replace')
                     else:
                         self._log(u'File exists and new file quality is in a preferred quality list, '
                                   u'marking it safe to replace')
