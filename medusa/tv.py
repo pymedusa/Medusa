@@ -833,9 +833,10 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, seasons=None):
+    def load_episodes_from_indexer(self, tvapi=None, seasons=None):
         """Load episodes from indexer.
 
+        :param tvapi: indexer_object
         :param seasons: Only load episodes for these seasons (only if supported by the indexer)
         :type: list of integers or integer
         :return:
@@ -843,21 +844,27 @@ class TVShow(TVObject):
         """
         indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
-        indexer_api_params['cache'] = False
+        if tvapi:
+            t = tvapi
+            show_obj = t[self.indexerid]
+        else:
+            indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
-        if self.lang:
-            indexer_api_params['language'] = self.lang
+            indexer_api_params['cache'] = False
 
-        if self.dvdorder != 0:
-            indexer_api_params['dvdorder'] = True
+            if self.lang:
+                indexer_api_params['language'] = self.lang
 
-        try:
-            t = indexerApi(self.indexer).indexer(**indexer_api_params)
-            show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
-        except IndexerError:
-            logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
-                       (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.WARNING)
-            return None
+            if self.dvdorder != 0:
+                indexer_api_params['dvdorder'] = True
+
+            try:
+                t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
+                show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
+            except app.IndexerError:
+                logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
+                           (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.WARNING)
+                return None
 
         logger.log(u'{id}: Loading all episodes from {indexer}'.format
                    (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.DEBUG)
