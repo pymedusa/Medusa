@@ -26,8 +26,8 @@ from tvdbapiv2.rest import ApiException
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete,
-                                  IndexerShowNotFound)
+from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
+                                  IndexerShowNotFoundInLanguage)
 
 
 def log():
@@ -189,6 +189,10 @@ class TVDBv2(BaseIndexer):
 
         if not results:
             return
+
+        if not getattr(results.data, 'series_name', None):
+            raise IndexerShowNotFoundInLanguage('Missing attribute series_name, cant index in language: {0}'
+                                                .format(request_language), request_language)
 
         mapped_results = self._object_to_dict(results, self.series_map, '|')
 
