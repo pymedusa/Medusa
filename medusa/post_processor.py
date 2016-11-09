@@ -28,12 +28,11 @@ import medusa as app
 
 from six import text_type
 
-
 from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, remove_extension, replace_extension, subtitle_extensions
+from .helper.common import episode_num, remove_extension, replace_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
-from .helpers import verify_freespace
+from .helpers import is_subtitle, verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .subtitles import from_code, from_ietf_code
 
@@ -191,7 +190,7 @@ class PostProcessor(object):
 
             file_name = os.path.basename(found_file).lower()
 
-            if file_name[-3:] in subtitle_extensions:
+            if is_subtitle(found_file):
                 code = file_name.rsplit('.', 2)[1].replace('_', '-')
                 language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
                 if language:
@@ -209,7 +208,7 @@ class PostProcessor(object):
                 continue
 
             # Exlude non-subtitle files with the 'only subtitles' option
-            if subtitles_only and not associated_file_path[-3:] in subtitle_extensions:
+            if subtitles_only and not is_subtitle(associated_file_path):
                 continue
 
             # Exclude .rar files from associated list
@@ -326,10 +325,11 @@ class PostProcessor(object):
 
             # file extension without leading dot (for example: de.srt)
             cur_extension = cur_file_path[old_base_name_length + 1:]
-
+            # split the extension in two parts. E.g.: ('de', 'srt')
             split_extension = os.path.splitext(cur_extension)
-            # check if file has a subtitle language
-            if split_extension[1][1:] in subtitle_extensions:
+
+            # check if it's a subtitle and also has a subtitle language
+            if is_subtitle(cur_file_path) and all(split_extension):
                 cur_lang = split_extension[0]
                 if cur_lang:
                     cur_lang = cur_lang.lower()
@@ -343,7 +343,7 @@ class PostProcessor(object):
                 cur_extension = 'nfo-orig'
                 changed_extension = True
 
-            # rename file with new new base name
+            # rename file with new base name
             if new_base_name:
                 new_file_name = new_base_name + '.' + cur_extension
             else:
@@ -353,7 +353,7 @@ class PostProcessor(object):
                 if changed_extension:
                     new_file_name = replace_extension(new_file_name, cur_extension)
 
-            if app.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
+            if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
                 subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
                 dir_exists = helpers.makeDir(subs_new_path)
                 if not dir_exists:

@@ -142,6 +142,28 @@ def isRarFile(filename):
     return bool(re.search(archive_regex, filename))
 
 
+def is_subtitle(file_path):
+    """Return whether the file is a subtitle or not.
+
+    :param file_path: path to the file
+    :type file_path: text_type
+    :return: True if it is a subtitle, else False
+    :rtype: bool
+    """
+    return get_extension(file_path) in subtitle_extensions
+
+
+def get_extension(file_path):
+    """Return the file extension without leading dot.
+
+    :param file_path: path to the file
+    :type file_path: text_type
+    :return: extension or empty string
+    :rtype: text_type
+    """
+    return os.path.splitext(file_path)[1][1:]
+
+
 def remove_file_failed(failed_file):
     """Remove file from filesystem.
 
