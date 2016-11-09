@@ -213,6 +213,8 @@ class BaseIndexer(object):
             # get series data / add the base_url to the image urls
             if image_type in ['banner', 'fanart', 'poster']:
                 # For each image type, where going to save one image based on the highest rating
+                if not len(images[image_type]):
+                    continue
                 merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
                 highest_rated = sorted(merged_image_list, key=lambda k: k['rating'], reverse=True)[0]
                 self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
