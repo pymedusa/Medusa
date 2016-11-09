@@ -66,9 +66,15 @@ $.ajaxSetup({
     }
 });
 
-if (document.location.pathname.endsWith('/login/')) {
-    $('[v-cloak]').removeAttr('v-cloak');
-} else {
+$(document).ready(function() {
+    if (typeof startVue === 'function') { // eslint-disable-line no-undef
+        startVue(); // eslint-disable-line no-undef
+    } else {
+        $('[v-cloak]').removeAttr('v-cloak');
+    }
+});
+
+if (!document.location.pathname.endsWith('/login/')) {
     $.ajax({
         url: apiRoot + 'config?api_key=' + apiKey,
         type: 'GET',
@@ -77,11 +83,6 @@ if (document.location.pathname.endsWith('/login/')) {
         $.extend(MEDUSA.config, data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
-        if (typeof startVue === 'undefined') { // eslint-disable-line no-undef
-            $('[v-cloak]').removeAttr('v-cloak');
-        } else {
-            startVue(); // eslint-disable-line no-undef
-        }
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);
