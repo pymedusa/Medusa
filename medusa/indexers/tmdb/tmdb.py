@@ -61,11 +61,9 @@ class Tmdb(BaseIndexer):
             'overview': 'overview',
             'air_date': 'firstaired',
             'first_air_date': 'firstaired',
-            'backdrop_path': 'banner',
+            'backdrop_path': 'fanart',
             'url': 'show_url',
-            'epnum': 'absolute_number',
-            'episode_name': 'episodename',
-            'aired_episode_number': 'episodenumber',
+            'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
             'dvd_episode_number': 'dvd_episodenumber',
             'airs_day_of_week': 'airs_dayofweek',
@@ -73,11 +71,21 @@ class Tmdb(BaseIndexer):
             'network_id': 'networkid',
             'vote_average': 'contentrating',
             'poster_path': 'poster',
-            'episode_run_time': 'runtime',
-            'episode_number': 'episodenumber',
             'genres': 'genre',
             'type': 'classification',
             'networks': 'network'
+        }
+
+        self.episodes_map = {
+            'id': 'id',
+            'name': 'episodename',
+            'overview': 'overview',
+            'air_date': 'firstaired',
+            'episode_run_time': 'runtime',
+            'episode_number': 'episodenumber',
+            'season_number': 'seasonnumber',
+            'still_path': 'poster',
+            'vote_average': 'contentrating',
         }
 
     def _map_results(self, tmdb_response, key_mappings=None, list_separator='|'):
@@ -205,7 +213,7 @@ class Tmdb(BaseIndexer):
             log().debug('Series results incomplete')
             raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
 
-        mapped_episodes = self._map_results(results, self.series_map, '|')
+        mapped_episodes = self._map_results(results, self.episodes_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
 
         if 'episode' not in episode_data:
@@ -235,15 +243,16 @@ class Tmdb(BaseIndexer):
             seas_no = int(float(seasnum))
             ep_no = int(float(epno))
 
+            image_width = {'fanart': 'w1280', 'poster': 'w780'}
             for k, v in cur_ep.items():
                 k = k.lower()
 
                 if v is not None:
-                    if k == 'still_path':
+                    if k in ['fanart', 'poster']:
                         # I'm using the default 'original' quality. But you could also check tmdb_configuration,
                         # for the available image sizes.
                         v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
-                                                                 image_size='original',
+                                                                 image_size=image_width[k],
                                                                  file_path=v)
 
                 self._set_item(tmdb_id, seas_no, ep_no, k, v)
@@ -298,8 +307,8 @@ class Tmdb(BaseIndexer):
 
         This interface will be improved in future versions.
         """
-        key_mapping = {'file_name': 'bannerpath', 'language_id': 'language', 'key_type': 'bannertype', 'resolution': 'bannertype2',
-                       'ratings_info': {'count': 'ratingcount', 'average': 'rating'}, 'thumbnail': 'thumbnailpath', 'sub_key': 'sub_key', 'id': 'id'}
+        key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
+        image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
 
         search_for_image_type = self.config['image_type']
 
@@ -307,49 +316,47 @@ class Tmdb(BaseIndexer):
         _images = {}
 
         # Let's fget the different type of images available for this series
+        params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
 
-        try:
-            series_images_count = self.series_api.series_id_images_get(sid, accept_language=self.config['language'])
-        except Exception as e:
-            log().debug('Could not get image count for showid: %s, with exception: %r', sid, e)
-            return False
-
-        for image_type, image_count in self._map_results(series_images_count).iteritems():
+        images = self.tmdb.TV(sid).images(params=params)
+        bid = images['id']
+        for image_type, images in {'poster': images['posters'], 'fanart': images['backdrops']}.iteritems():
             try:
-
-                if search_for_image_type and search_for_image_type != image_type:
-                    continue
-
-                if not image_count:
-                    continue
-
                 if image_type not in _images:
                     _images[image_type] = {}
 
-                images = self.series_api.series_id_images_query_get(sid, key_type=image_type)
-                for image in images.data:
-                    # Store the images for each resolution available
-                    if image.resolution not in _images[image_type]:
-                        _images[image_type][image.resolution] = {}
+                for image in images:
+                    image_mapped = self._map_results(image, key_mappings=key_mapping)
 
-                    # _images[image_type][image.resolution][image.id] = image_dict
-                    image_attributes = self._map_results(image, key_mapping)
-                    bid = image_attributes.pop('id')
-                    _images[image_type][image.resolution][bid] = {}
+                    for size in self.tmdb_configuration.images.get(image_sizes[image_type]):
+                        if size == 'original':
+                            width = image_mapped['width']
+                            height = image_mapped['height']
+                        else:
+                            width = int(size[1:])
+                            height = int(round(width / image_mapped['aspect_ratio']))
+                        resolution = '{0}x{1}'.format(width, height)
 
-                    for k, v in image_attributes.items():
-                        if k is None or v is None:
-                            continue
+                        if resolution not in _images[image_type]:
+                            _images[image_type][resolution] = {}
 
-                        k, v = k.lower(), v.lower()
-                        _images[image_type][image.resolution][bid][k] = v
+                        if bid not in _images[image_type][resolution]:
+                            _images[image_type][resolution][bid] = {}
 
-                    for k, v in _images[image_type][image.resolution][bid].items():
-                        if k.endswith('path'):
-                            new_key = '_%s' % (k)
-                            log().debug('Adding base url for image: %s', v)
-                            new_url = self.config['artwork_prefix'] % (v)
-                            _images[image_type][image.resolution][bid][new_key] = new_url
+                        for k, v in image_mapped.items():
+                            if k is None or v is None:
+                                continue
+
+                            _images[image_type][resolution][bid][k] = v
+
+                        for k, v in _images[image_type][resolution][bid].items():
+                            if k.endswith('path'):
+                                new_key = '_%s' % k
+                                log().debug('Adding base url for image: %s', v)
+                                _images[image_type][resolution][bid][new_key] = self.config['artwork_prefix'].format(
+                                    base_url=self.tmdb_configuration.images['base_url'],
+                                    image_size=size,
+                                    file_path=v)
 
             except Exception as e:
                 log().warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
@@ -431,11 +438,16 @@ class Tmdb(BaseIndexer):
             raise IndexerError('Series result returned zero')
 
         # get series data / add the base_url to the image urls
+        # Create a key/value dict, to map the image type to a default image width.
+        # possitlbe widths can also be retrieved from self.configuration.images['poster_sizes'] and
+        # self.configuration.images['still_sizes']
+        image_width = {'fanart': 'w1280', 'poster': 'w500'}
+
         for k, v in series_info['series'].items():
             if v is not None:
                 if k in ['banner', 'fanart', 'poster']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
-                                                             image_size='original',
+                                                             image_size=image_width[k],
                                                              file_path=v)
 
             self._set_show_data(sid, k, v)
