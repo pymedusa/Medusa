@@ -391,20 +391,24 @@ class Tmdb(BaseIndexer):
         """
         log().debug('Getting actors for %s', sid)
 
-        actors = self.series_api.series_id_actors_get(sid)
+        # TMDB also support passing language here as a param.
+        credits = self.tmdb.TV(38472).credits()
 
-        if not actors or not actors.data:
+        if not credits or not credits.get('cast'):
             log().debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
-        for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
+        for cur_actor in credits.get('cast'):
             new_actor = Actor()
-            new_actor['id'] = cur_actor.id
-            new_actor['image'] = cur_actor.image
-            new_actor['name'] = cur_actor.name
-            new_actor['role'] = cur_actor.role
-            new_actor['sortorder'] = 0
+            new_actor['id'] = cur_actor['credit_id']
+            new_actor['image'] = \
+                '{base_url}{image_size}{profile_path}'.format(base_url=self.tmdb_configuration.images['base_url'],
+                                                              image_size='original',
+                                                              profile_path=cur_actor['profile_path'])
+            new_actor['name'] = cur_actor['name']
+            new_actor['role'] = cur_actor['character']
+            new_actor['sortorder'] = cur_actor['order']
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
