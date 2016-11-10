@@ -410,7 +410,7 @@ class TVDBv2(BaseIndexer):
         for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
             new_actor = Actor()
             new_actor['id'] = cur_actor.id
-            new_actor['image'] = cur_actor.image
+            new_actor['image'] = self.config['artwork_prefix'] % cur_actor.image
             new_actor['name'] = cur_actor.name
             new_actor['role'] = cur_actor.role
             new_actor['sortorder'] = 0
