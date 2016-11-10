@@ -22,10 +22,12 @@ from collections import OrderedDict
 from requests.compat import urljoin
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
+from tvdbapiv2.rest import ApiException
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound)
+from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete,
+                                  IndexerShowNotFound)
 
 
 def log():
@@ -139,8 +141,12 @@ class TVDBv2(BaseIndexer):
         """
         try:
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
+        except ApiException as e:
+            raise IndexerShowNotFound(
+                'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
+            )
         except Exception as e:
-            raise IndexerException('Show search failed in getting a result with error: %r', e)
+            raise IndexerException('Show search failed in getting a result with error: %r' % e)
 
         if results:
             return results

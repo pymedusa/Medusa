@@ -20,7 +20,7 @@
 
 import logging
 import warnings
-from .tvdbv2_exceptions import tvdbv2_userabort
+from .tvdbv2_exceptions import Tvdb2UserAbort
 
 __author__ = 'p0psicles'
 __version__ = '1.0'
@@ -92,9 +92,9 @@ class ConsoleUI(BaseUI):
                 print "Enter choice (first number, return for default, 'all', ? for help):"
                 ans = raw_input()
             except KeyboardInterrupt:
-                raise tvdbv2_userabort('User aborted (^c keyboard interupt)')
+                raise Tvdb2UserAbort('User aborted (^c keyboard interupt)')
             except EOFError:
-                raise tvdbv2_userabort('User aborted (EOF received)')
+                raise Tvdb2UserAbort('User aborted (EOF received)')
 
             log().debug('Got choice of: %s', ans)
             try:
@@ -106,7 +106,7 @@ class ConsoleUI(BaseUI):
                     return all_series[0]
                 if ans == 'q':
                     log().debug('Got quit command (q)')
-                    raise tvdbv2_userabort("User aborted ('q' quit command)")
+                    raise Tvdb2UserAbort("User aborted ('q' quit command)")
                 elif ans == '?':
                     print '## Help'
                     print '# Enter the number that corresponds to the correct show.'
