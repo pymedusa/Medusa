@@ -65,8 +65,9 @@ class PostProcessor(object):
         # file name only
         self.file_name = os.path.basename(file_path)
 
-        # the name of the folder only
-        self.folder_name = os.path.basename(self.folder_path)
+        # relative path to the file that is being processed
+        self.rel_path = os.path.relpath(file_path, app.TV_DOWNLOAD_DIR) if app.TV_DOWNLOAD_DIR else \
+            os.path.relpath(file_path, os.path.dirname(self.folder_path))
 
         # name of the NZB that resulted in this folder
         self.nzb_name = nzb_name
@@ -524,7 +525,7 @@ class PostProcessor(object):
             lambda: self._analyze_name(self.file_name),
 
             # try to analyze the file path
-            lambda: self._analyze_name(self.file_path)
+            lambda: self._analyze_name(self.rel_path)
         ]
 
         # Try every possible method to get our info
@@ -742,7 +743,7 @@ class PostProcessor(object):
                 return ep_quality
 
         # NZB name is the most reliable if it exists, followed by file name and lastly folder name
-        name_list = [self.nzb_name, self.file_name, self.folder_name]
+        name_list = [self.nzb_name, self.file_name, self.rel_path]
 
         for cur_name in name_list:
 
