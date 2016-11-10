@@ -107,7 +107,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         """
 
         show_id = show_obj.indexerid
-
+        indexer_name = app.indexerApi(show_obj.indexer).name
         indexer_lang = show_obj.lang
         l_indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
 
@@ -127,19 +127,19 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             my_show = t[int(show_id)]
         except app.IndexerShowNotFound:
             logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name,
+                       (indexer=indexer_name,
                         id=show_id), logger.ERROR)
             raise
 
         except app.IndexerError:
             logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name), logger.ERROR)
+                       (indexer=indexer_name), logger.ERROR)
             raise
 
         # check for title and id
         if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
             logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name,
+                       (indexer=indexer_name,
                         id=show_id), logger.ERROR)
             return False
 
@@ -227,7 +227,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_role.text = actor['role'].strip()
 
                 if 'image' in actor and actor['image'].strip():
-                    cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
+                    indexer_url = ''
+                    if indexer_name == 'thetvdb':
+                        indexer_url = 'http://thetvdb.com/banners/'
+                    cur_actor_thumb = indexer_url + etree.SubElement(cur_actor, 'thumb')
                     cur_actor_thumb.text = actor['image'].strip()
 
         # Make it purdy
@@ -248,6 +251,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
         indexer_lang = ep_obj.show.lang
+        indexer_name = app.indexerApi(ep_obj.show.indexer).name
 
         # There's gotta be a better way of doing this but we don't wanna
         # change the language value elsewhere
@@ -268,7 +272,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             raise ShowNotFoundException(e.message)
         except app.IndexerError:
             logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=app.indexerApi(ep_obj.show.indexer).name), logger.WARNING)
+                       (indexer=indexer_name), logger.WARNING)
             return
 
         if len(eps_to_write) > 1:
@@ -285,7 +289,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                 logger.log(u'Unable to find episode {ep_num} on {indexer}... '
                            u'has it been removed? Should I delete from db?'.format
                            (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=app.indexerApi(ep_obj.show.indexer).name))
+                            indexer=indexer_name))
                 return None
 
             if not getattr(my_ep, 'firstaired', None):
@@ -382,7 +386,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                         cur_actor_role.text = actor['role'].strip()
 
                     if 'image' in actor and actor['image'].strip():
-                        cur_actor_thumb = etree.SubElement(cur_actor, 'thumb')
+                        indexer_url = ''
+                        if indexer_name == 'thetvdb':
+                            indexer_url = 'http://thetvdb.com/banners/'
+                        cur_actor_thumb = indexer_url + etree.SubElement(cur_actor, 'thumb')
                         cur_actor_thumb.text = actor['image'].strip()
 
         # Make it purdy
