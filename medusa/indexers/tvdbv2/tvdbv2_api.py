@@ -163,8 +163,13 @@ class TVDBv2(BaseIndexer):
             return
 
         mapped_results = self._object_to_dict(results, self.series_map, '|')
+        mapped_results = [mapped_results] if not isinstance(mapped_results, list) else mapped_results
 
-        return OrderedDict({'series': mapped_results})['series']
+        # Remove results with an empty series_name.
+        # Skip shows when they do not have a series_name in the searched language. example: '24 h berlin' in 'en'
+        cleaned_results = [show for show in mapped_results if show.get('seriesname')]
+
+        return OrderedDict({'series': cleaned_results})['series']
 
     def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
         """Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
