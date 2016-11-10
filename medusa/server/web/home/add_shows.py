@@ -23,7 +23,7 @@ from ....common import Quality
 from ....helper.common import sanitize_filename, try_int
 from ....helpers import get_showname_from_indexer
 from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException, IndexerShowNotFoundInLanguage
+from ....indexers.indexer_exceptions import IndexerException
 from ....show.recommendations.anidb import AnidbPopular
 from ....show.recommendations.imdb import ImdbPopular
 from ....show.recommendations.trakt import TraktPopular
@@ -71,7 +71,6 @@ class HomeAddShows(Home):
 
         results = {}
         final_results = []
-        messages = []
 
         # Query Indexers for each search term and build the list of results
         for indexer in app.indexerApi().indexers if not int(indexer) else [int(indexer)]:
@@ -87,11 +86,6 @@ class HomeAddShows(Home):
                     indexer_results = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except IndexerShowNotFoundInLanguage as e:
-                    messages.append(u"No results found in indexer {indexer_name} using language"
-                                    u" {language}. Try changing language or indexer.".
-                                    format(indexer_name=app.indexerApi(indexer).name,
-                                           language=e.language))
                 except IndexerException as msg:
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
@@ -100,7 +94,7 @@ class HomeAddShows(Home):
                                    show['seriesname'].encode('utf-8'), show['firstaired']) for show in shows})
 
         lang_id = app.indexerApi().config['langabbv_to_id'][lang]
-        return json.dumps({'results': final_results, 'langid': lang_id, 'messages': messages}, '')
+        return json.dumps({'results': final_results, 'langid': lang_id})
 
     def massAddTable(self, rootDir=None):
         t = PageTemplate(rh=self, filename='home_massAddTable.mako')

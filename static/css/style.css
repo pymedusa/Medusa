@@ -805,12 +805,6 @@ div.buttontext p {
     background-position: -150px 0;
 }
 
-ul.indexer-search-message {
-    font-weight: bold;
-    padding-left: 0px;
-    margin: 5px 0 5px 0;
-}
-
 /* =======================================================================
 home_newShow.mako
 ========================================================================== */

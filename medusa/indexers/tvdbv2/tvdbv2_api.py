@@ -27,7 +27,7 @@ from tvdbapiv2.rest import ApiException
 from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete,
-                                  IndexerShowNotFound, IndexerShowNotFoundInLanguage)
+                                  IndexerShowNotFound)
 
 
 def log():
@@ -142,15 +142,9 @@ class TVDBv2(BaseIndexer):
         try:
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
         except ApiException as e:
-            if request_language != 'en' and e.status == 404:
-                raise IndexerShowNotFoundInLanguage(
-                    'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status),
-                    request_language
-                )
-            else:
-                raise IndexerShowNotFound(
-                    'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
-                )
+            raise IndexerShowNotFound(
+                'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
+            )
         except Exception as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)
 
