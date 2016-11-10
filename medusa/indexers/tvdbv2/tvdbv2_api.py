@@ -167,11 +167,7 @@ class TVDBv2(BaseIndexer):
 
         # Remove results with an empty series_name.
         # Skip shows when they do not have a series_name in the searched language. example: '24 h berlin' in 'en'
-        cleaned_results = []
-        for show in mapped_results:
-            if not show.get('seriesname'):
-                continue
-            cleaned_results.append(show)
+        cleaned_results = [show for show in mapped_results if show.get('seriesname')]
 
         return OrderedDict({'series': cleaned_results})['series']
 
