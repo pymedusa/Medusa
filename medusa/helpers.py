@@ -860,7 +860,9 @@ def check_url(url):
 
 def anon_url(*url):
     """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
-    return '' if None in url else '%s%s' % (app.ANON_REDIRECT, ''.join(str(s) for s in url))
+    # normalize to byte
+    url = [u.encode('utf-8') if isinstance(u, unicode) else str(u) for u in url]
+    return '' if None in url else '{0}{1}'.format(app.ANON_REDIRECT, ''.join(url)).decode('utf-8')
 
 # Encryption
 # ==========
