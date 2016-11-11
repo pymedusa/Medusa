@@ -58,6 +58,7 @@ class Tmdb(BaseIndexer):
         self.series_map = {
             'id': 'id',
             'name': 'seriesname',
+            'original_name': 'aliasnames',
             'overview': 'overview',
             'air_date': 'firstaired',
             'first_air_date': 'firstaired',
@@ -135,11 +136,22 @@ class Tmdb(BaseIndexer):
     def _show_search(self, show, request_language='en'):
         """
         Uses the TMDB API to search for a show
-        @param show: The show name that's searched for as a string
-        @return: A list of Show objects.
+        :param show: The show name that's searched for as a string
+        :param request_language: Language in two letter code. TMDB fallsback to en itself.
+        :return: A list of Show objects.
         """
         try:
-            results = self.tmdb.Search().tv({'query': show, 'language': 'en-US'})
+            # get paginated pages
+            page = 1
+            last = 1
+            results = []
+            while page <= last:
+                search_result = self.tmdb.Search().tv({'query': show,
+                                                       'language': request_language,
+                                                       'page': page})
+                last = search_result.get('total_pages', 0)
+                results += search_result.get('results')
+                page += 1
         except Exception as e:
             raise IndexerException('Show search failed in getting a result with error: %r', e)
 
@@ -160,10 +172,10 @@ class Tmdb(BaseIndexer):
 
         results = self._show_search(series, request_language=self.config['language'])
 
-        if not results and not results.get('results', None):
+        if not results:
             return
 
-        mapped_results = self._map_results(results.get('results'), self.series_map, '|')
+        mapped_results = self._map_results(results, self.series_map, '|')
 
         return OrderedDict({'series': mapped_results})['series']
 
@@ -177,7 +189,7 @@ class Tmdb(BaseIndexer):
 
         if tmdb_id:
             log().debug('Getting all show data for %s', [tmdb_id])
-            results = self.tmdb.TV(tmdb_id).info()
+            results = self.tmdb.TV(tmdb_id).info({'language': '{0},null'.format(request_language)})
 
         if not results:
             return
@@ -206,12 +218,13 @@ class Tmdb(BaseIndexer):
 
         # get episodes for each season
         for season in aired_season:
-            season_info = self.tmdb.TV_Seasons(tmdb_id, season).info()
+            season_info = self.tmdb.TV_Seasons(tmdb_id, season).info({'language': self.config['language']})
             results += season_info['episodes']
 
         if not results:
             log().debug('Series results incomplete')
-            raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+            raise IndexerShowIncomplete('Show search returned incomplete results '
+                                        '(cannot find complete show on TheMovieDb)')
 
         mapped_episodes = self._map_results(results, self.episodes_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
@@ -226,7 +239,7 @@ class Tmdb(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 log().debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] != None and cur_ep['dvd_episodenumber'] != None
+                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
             else:
                 use_dvd = False
 
@@ -239,9 +252,8 @@ class Tmdb(BaseIndexer):
                 log().warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
                 continue  # Skip to next episode
 
-            # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
-            seas_no = int(float(seasnum))
-            ep_no = int(float(epno))
+            seas_no = int(seasnum)
+            ep_no = int(epno)
 
             image_width = {'fanart': 'w1280', 'poster': 'w780'}
             for k, v in cur_ep.items():
@@ -257,49 +269,17 @@ class Tmdb(BaseIndexer):
 
                 self._set_item(tmdb_id, seas_no, ep_no, k, v)
 
-    def _get_series(self, series):
-        """This searches themoviedb.org for the series name,
-        If a custom_ui UI is configured, it uses this to select the correct
-        series. If not, and interactive == True, ConsoleUI is used, if not
-        BaseUI is used to select the first result.
-
-        :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
-        """
-
-        allSeries = self.search(series)
-        if not allSeries:
-            log().debug('Series result returned zero')
-            IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
-
-        if not isinstance(allSeries, list):
-            allSeries = [allSeries]
-
-        if self.config['custom_ui'] is not None:
-            log().debug('Using custom UI %s', [repr(self.config['custom_ui'])])
-            CustomUI = self.config['custom_ui']
-            ui = CustomUI(config=self.config)
-        else:
-            if not self.config['interactive']:
-                log().debug('Auto-selecting first search result using BaseUI')
-                ui = BaseUI(config=self.config)
-            else:
-                log().debug('Interactively selecting show using ConsoleUI')
-                ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
-
-        return ui.select_series(allSeries)
-
     def _parse_images(self, sid):
         """Parses images XML, from
-        http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
+        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
 
         images are retrieved using t['show name]['_banners'], for example:
 
-        >>> t = Tvdb(images = True)
+        >>> t = TMDB(images = True)
         >>> t['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
-        u'http://thetvdb.com/banners/posters/76156-2.jpg'
+        u'http://theTMDB.com/banners/posters/76156-2.jpg'
         >>>
 
         Any key starting with an underscore has been processed (not the raw
@@ -367,16 +347,16 @@ class Tmdb(BaseIndexer):
 
     def _parse_actors(self, sid):
         """Parsers actors XML, from
-        http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
 
         Actors are retrieved using t['show name]['_actors'], for example:
 
-        >>> t = Tvdb(actors = True)
+        >>> t = TMDB(actors = True)
         >>> actors = t['scrubs']['_actors']
         >>> type(actors)
-        <class 'tvdb_api.Actors'>
+        <class 'TMDB_api.Actors'>
         >>> type(actors[0])
-        <class 'tvdb_api.Actor'>
+        <class 'TMDB_api.Actor'>
         >>> actors[0]
         <Actor "Zach Braff">
         >>> sorted(actors[0].keys())
@@ -384,7 +364,7 @@ class Tmdb(BaseIndexer):
         >>> actors[0]['name']
         u'Zach Braff'
         >>> actors[0]['image']
-        u'http://thetvdb.com/banners/actors/43640.jpg'
+        u'http://theTMDB.com/banners/actors/43640.jpg'
 
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
@@ -392,7 +372,7 @@ class Tmdb(BaseIndexer):
         log().debug('Getting actors for %s', sid)
 
         # TMDB also support passing language here as a param.
-        credits = self.tmdb.TV(38472).credits()
+        credits = self.tmdb.TV(38472).credits({'language': self.config['language']})
 
         if not credits or not credits.get('cast'):
             log().debug('Actors result returned zero')
@@ -413,7 +393,7 @@ class Tmdb(BaseIndexer):
         self._set_show_data(sid, '_actors', cur_actors)
 
     def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
+        """Takes a series ID, gets the epInfo URL and parses the TheTMDB json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
