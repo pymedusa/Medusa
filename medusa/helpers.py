@@ -54,7 +54,7 @@ import medusa as app
 import requests
 from requests.compat import urlparse
 import shutil_custom
-from six import string_types, text_type
+from six import string_types, text_type, binary_type
 from six.moves import http_client
 from . import classes, db
 from .common import USER_AGENT
@@ -861,7 +861,7 @@ def check_url(url):
 def anon_url(*url):
     """Return a URL string consisting of the Anonymous redirect URL and an arbitrary number of values appended."""
     # normalize to byte
-    url = [u.encode('utf-8') if isinstance(u, unicode) else str(u) for u in url]
+    url = [u.encode('utf-8') if isinstance(u, text_type) else binary_type(u) for u in url]
     return '' if None in url else '{0}{1}'.format(app.ANON_REDIRECT, ''.join(url)).decode('utf-8')
 
 # Encryption
