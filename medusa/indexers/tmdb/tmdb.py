@@ -46,7 +46,7 @@ class Tmdb(BaseIndexer):
 
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
-        self.tmdb = TMDB(app.TMDB_API_KEY)
+        self.tmdb = TMDB(app.TMDB_API_KEY, session=self.config['session'])
         self.tmdb_configuration = self.tmdb.Configuration()
         self.response = self.tmdb_configuration.info()
 
