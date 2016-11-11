@@ -10,30 +10,35 @@ import json
 import requests
 
 
+__version__ = 0, 1, 0
+
+
 class TMDB(object):  # pylint: disable=too-few-public-methods
-    def __init__(self, api_key, version=3):
+    def __init__(self, api_key, version=3, session=None):
         TMDB.api_key = str(api_key)
         TMDB.url = 'https://api.themoviedb.org' + '/' + str(version)
+        TMDB.session = session or requests.Session()
+        TMDB.session.headers.setdefault('user-agent', 'tmdb_api/{}.{}.{}'.format(*__version__))
 
     @staticmethod
     def _request(method, path, params={}, json_body={}, verify=False):
         url = TMDB.url + '/' + path + '?api_key=' + TMDB.api_key
         if method == 'GET':
             headers = {'Accept': 'application/json'}
-            content = requests.get(url, params=params, headers=headers, verify=verify).content
+            content = TMDB.session.get(url, params=params, headers=headers, verify=verify).content
         elif method == 'POST':
             for key in params.keys():
                 url += '&' + key + '=' + params[key]
             headers = {'Content-Type': 'application/json',
                        'Accept': 'application/json'}
-            content = requests.post(url, data=json.dumps(json_body),
+            content = TMDB.session.post(url, data=json.dumps(json_body),
                                     headers=headers, verify=verify).content
         elif method == 'DELETE':
             for key in params.keys():
                 url += '&' + key + '=' + params[key]
             headers = {'Content-Type': 'application/json',
                        'Accept': 'application/json'}
-            content = requests.delete(url, data=json.dumps(json_body),
+            content = TMDB.session.delete(url, data=json.dumps(json_body),
                                       headers=headers, verify=verify).content
         else:
             raise Exception('method: ' + method + ' not supported.')
@@ -250,9 +255,9 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
         def __init__(self):
             pass
 
-        # optional parameters: page, language, sort_by, include_adult, year, 
-        # primary_release_year, vote_count.gte, vote_average.gte, with_genres, 
-        # release_date.gte, release_date.lte, certification_country, 
+        # optional parameters: page, language, sort_by, include_adult, year,
+        # primary_release_year, vote_count.gte, vote_average.gte, with_genres,
+        # release_date.gte, release_date.lte, certification_country,
         # certification.lte, with_companies
         def movie(self, params):
             path = 'discover/movie'
@@ -461,21 +466,21 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, language
         def reviews(self, params={}):
             path = 'movie' + '/' + str(self.id) + '/reviews'
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, language
         def lists(self, params={}):
             path = 'movie' + '/' + str(self.id) + '/lists'
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: start_date, end_date
         def changes(self, params={}):
             path = 'movie' + '/' + str(self.id) + '/changes'
@@ -502,7 +507,7 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameters: page, language
         def popular(self, params={}):
             path = 'movie/popular'
@@ -630,7 +635,7 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
             pass
 
         # required parameters: query
-        # optional parameters: page, language, include_adult, year, 
+        # optional parameters: page, language, include_adult, year,
         # primary_release_year, search_type
         def movie(self, params):
             path = 'search/movie'
@@ -700,7 +705,7 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response
-            
+
         # optional parameter: language
         def credits(self, params={}):
             path = 'tv' + '/' + str(self.id) + '/credits'
