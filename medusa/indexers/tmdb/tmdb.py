@@ -21,11 +21,9 @@ from __future__ import unicode_literals
 import medusa as app
 from collections import OrderedDict
 import logging
-from requests.compat import urljoin
 
 from tmdb_api import TMDB
 
-from ..indexer_ui import BaseUI, ConsoleUI
 from ..indexer_base import (BaseIndexer, Actors, Actor)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound)
 
@@ -429,7 +427,7 @@ class Tmdb(BaseIndexer):
 
         for k, v in series_info['series'].items():
             if v is not None:
-                if k in ['banner', 'fanart', 'poster']:
+                if k in ['fanart', 'banner', 'poster']:
                     v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
                                                              image_size=image_width[k],
                                                              file_path=v)
