@@ -54,7 +54,7 @@ import medusa as app
 import requests
 from requests.compat import urlparse
 import shutil_custom
-from six import string_types, text_type, binary_type
+from six import binary_type, string_types, text_type
 from six.moves import http_client
 from . import classes, db
 from .common import USER_AGENT
