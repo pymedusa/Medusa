@@ -755,7 +755,7 @@ class GenericMetadata(object):
         else:
             if getattr(indexer_show_obj, image_type, None):
                 image_url = indexer_show_obj[image_type]
-            if not image_url:
+            if not image_url and show_obj.indexer != 4:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 
