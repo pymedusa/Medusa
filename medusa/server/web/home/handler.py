@@ -1222,6 +1222,27 @@ class Home(WebRoot):
             out.append('S{season}: {names}'.format(season=season, names=', '.join(names)))
         return '<br>'.join(out)
 
+    @staticmethod
+    def check_show_for_language(show_obj, language):
+        """Request the show in a specific language from the indexer.
+
+        If the indexer throws the ShowNotFoundInLanguage Exception, we catch it,
+        and report it's not available in this language.
+        :param show_obj: (TVShow) Show object.
+        :param language: Language passed as string as a two letter country ccde. For ex: 'en'.
+
+        :returns: True (show found in language) False (show not found in language)
+        """
+        indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
+        indexer_api_params['language'] = language
+        indexer_api_params['episodes'] = False
+        t = app.indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+        try:
+            t[show_obj.indexerid]
+        except app.IndexerShowNotFoundInLanguage:
+            return False
+        return True
+
     def editShow(self, show=None, location=None, anyQualities=None, bestQualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvdorder=None, indexerLang=None,
@@ -1236,6 +1257,8 @@ class Home(WebRoot):
         preferred_qualities = bestQualities
 
         anidb_failed = False
+        errors = []
+
         if show is None:
             error_string = 'Invalid show ID: {show}'.format(show=show)
             if directCall:
@@ -1296,7 +1319,11 @@ class Home(WebRoot):
         subtitles = config.checkbox_to_value(subtitles)
 
         if indexerLang and indexerLang in app.indexerApi(show_obj.indexer).indexer().config['valid_languages']:
-            indexer_lang = indexerLang
+            if self.check_show_for_language(show_obj, indexerLang):
+                indexer_lang = indexerLang
+            else:
+                errors.append('Could not change language to {language}'.format(language=indexerLang))
+                indexer_lang = show_obj.lang
         else:
             indexer_lang = show_obj.lang
 
@@ -1346,7 +1373,6 @@ class Home(WebRoot):
                     else:
                         show_obj.release_groups.set_black_keywords([])
 
-        errors = []
         with show_obj.lock:
             new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
             show_obj.quality = new_quality
