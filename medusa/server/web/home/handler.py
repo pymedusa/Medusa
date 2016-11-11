@@ -1322,7 +1322,12 @@ class Home(WebRoot):
             if self.check_show_for_language(show_obj, indexerLang):
                 indexer_lang = indexerLang
             else:
-                errors.append('Could not change language to {language}'.format(language=indexerLang))
+                errors.append(u"Could not change language to '{language} for show {show_id} on indexer {indexer_name}'".
+                              format(language=indexerLang, show_id=show_obj.indexerid,
+                                     indexer_name=app.indexerApi(show_obj.indexer).name))
+                logger.log(u"Could not change language to '{language}' for show {show_id} on indexer {indexer_name}".
+                           format(language=indexerLang, show_id=show_obj.indexerid,
+                                  indexer_name=app.indexerApi(show_obj.indexer).name), logger.WARNING)
                 indexer_lang = show_obj.lang
         else:
             indexer_lang = show_obj.lang
