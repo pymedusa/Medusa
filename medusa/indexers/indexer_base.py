@@ -40,6 +40,7 @@ class BaseIndexer(object):
                  select_first=False,
                  debug=False,
                  cache=True,
+                 episodes=True,
                  banners=False,
                  actors=False,
                  custom_ui=None,
@@ -87,6 +88,7 @@ class BaseIndexer(object):
 
         self.config['session'] = session if session else requests.Session()
 
+        self.config['episodes_enabled'] = episodes
         self.config['banners_enabled'] = banners
         self.config['image_type'] = image_type
         self.config['actors_enabled'] = actors
@@ -137,7 +139,7 @@ class BaseIndexer(object):
 
         return os.path.join(tempfile.gettempdir(), 'tvdbv2_api-{0}'.format(uid))
 
-    def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
+    def _get_show_data(self, sid, language):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
         """Dummy _get_show_data method."""
         return None
 
@@ -220,7 +222,7 @@ class BaseIndexer(object):
         if isinstance(key, (int, long)):
             # Item is integer, treat as show id
             if key not in self.shows:
-                self._get_show_data(key, self.config['language'], True)
+                self._get_show_data(key, self.config['language'])
             return self.shows[key]
 
         key = str(key).lower()

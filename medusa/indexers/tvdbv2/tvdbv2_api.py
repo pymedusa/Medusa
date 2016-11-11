@@ -26,8 +26,8 @@ from tvdbapiv2.rest import ApiException
 
 from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete,
-                                  IndexerShowNotFound)
+from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
+                                  IndexerShowNotFoundInLanguage)
 
 
 def log():
@@ -189,6 +189,10 @@ class TVDBv2(BaseIndexer):
 
         if not results:
             return
+
+        if not getattr(results.data, 'series_name', None):
+            raise IndexerShowNotFoundInLanguage('Missing attribute series_name, cant index in language: {0}'
+                                                .format(request_language), request_language)
 
         mapped_results = self._object_to_dict(results, self.series_map, '|')
 
@@ -428,7 +432,7 @@ class TVDBv2(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language, get_ep_info=False):
+    def _get_show_data(self, sid, language):
         """Parse TheTVDB json response.
 
         Takes a series ID, gets the epInfo URL and parses the TheTVDB json response
@@ -467,7 +471,7 @@ class TVDBv2(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # get episode data
-        if get_ep_info:
+        if self.config['episodes_enabled']:
             self._get_episodes(sid, specials=False, aired_season=None)
 
         # Parse banners

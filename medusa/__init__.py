@@ -45,8 +45,8 @@ from .github_client import authenticate
 from .helper import exceptions
 from .indexers import indexer_api
 from .indexers.indexer_exceptions import (
-    IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerException,
-    IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound, IndexerUserAbort
+    IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerException, IndexerSeasonNotFound,
+    IndexerShowIncomplete, IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUserAbort
 )
 from .providers import NewznabProvider, TorrentRssProvider
 from .providers.generic_provider import GenericProvider
