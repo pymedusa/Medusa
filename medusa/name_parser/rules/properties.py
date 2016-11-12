@@ -42,16 +42,26 @@ def format_():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='format')
 
+    # More accurate formats
+    rebulk.regex('AHDTV', value='AHDTV')
+    rebulk.regex('BD(?!\d)', 'BD-?Rip', 'BD-?Mux', 'BD-?Rip-?Mux',
+                 value='BDRip', validator=seps_surround,
+                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+    rebulk.regex('BR-?Rip', 'BR-?Mux', 'BR-?Rip-?Mux',
+                 value='BRRip',
+                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+    rebulk.regex('DVD-?Rip', value='DVDRip',
+                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+
     # https://github.com/guessit-io/guessit/issues/307
     rebulk.regex('HDTV-?Mux', value='HDTV')
-    rebulk.regex('B[RD]-?Mux', 'Blu-?ray-?Mux', value='BluRay')
+    rebulk.regex('Blu-?ray-?Mux', value='BluRay')
     rebulk.regex('DVD-?Mux', value='DVD')
     rebulk.regex('WEB-?Mux', 'DL-?WEB-?Mux', 'WEB-?DL-?Mux', 'DL-?Mux', value='WEB-DL')
 
     # https://github.com/guessit-io/guessit/issues/315
-    rebulk.regex('WEB-?DL-?Rip', value='WEBRip')
-    rebulk.regex('WEB-?Cap', value='WEBCap')
-    rebulk.regex('DSR', 'DS-?Rip', 'SAT-?Rip', 'DTH-?Rip', value='DSRip')
+    rebulk.regex('WEB-?DL-?Rip', 'WEB-?Cap', value='WEBRip')
+    rebulk.regex('DSR', 'DS-?Rip', 'SAT-?Rip', 'DTH-?Rip', value='SATRip')
     rebulk.regex('LDTV', value='TV')
     rebulk.regex('DVD\d', value='DVD')
 
@@ -67,7 +77,8 @@ def screen_size():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE)
     rebulk.defaults(name='screen_size', validator=seps_surround)
 
-    rebulk.regex('NetflixUHD', value='4k')
+    rebulk.regex('NetflixUHD', value='2160p')
+    rebulk.regex(r'(?:\d{3,}(?:x|\*))?4320(?:p?x?)', value='4320p')
 
     return rebulk
 
