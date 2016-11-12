@@ -18,6 +18,7 @@
 
 from __future__ import unicode_literals
 
+from dateutil import parser
 import medusa as app
 from collections import OrderedDict
 import logging
@@ -72,7 +73,8 @@ class Tmdb(BaseIndexer):
             'poster_path': 'poster',
             'genres': 'genre',
             'type': 'classification',
-            'networks': 'network'
+            'networks': 'network',
+            'episode_run_time': 'runtime'
         }
 
         self.episodes_map = {
@@ -93,6 +95,11 @@ class Tmdb(BaseIndexer):
 
         :type tmdb_response: object
         """
+        def week_day(input_date):
+            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            week_day_number = parser.parse(input_date).weekday()
+            return days[week_day_number]
+
         parsed_response = []
 
         if not isinstance(tmdb_response, list):
@@ -117,12 +124,18 @@ class Tmdb(BaseIndexer):
                     if key == 'networks':
                         value = list_separator.join(item['name'] for item in value)
 
+                    if key == 'last_air_date':
+                        return_dict['airs_dayofweek'] = week_day(value)
+
                     # Try to map the key
                     if key in key_mappings:
                         key = key_mappings[key]
 
                     # Set value to key
                     return_dict[key] = value
+
+                # Add static values
+                return_dict['airs_time'] = '0:00AM'
 
             except Exception as e:
                 log().warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
