@@ -25,23 +25,27 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
         url = TMDB.url + '/' + path + '?api_key=' + TMDB.api_key
         if method == 'GET':
             headers = {'Accept': 'application/json'}
-            content = TMDB.session.get(url, params=params, headers=headers, verify=verify).content
+            r = TMDB.session.get(url, params=params, headers=headers, verify=verify)
         elif method == 'POST':
             for key in params.keys():
                 url += '&' + key + '=' + params[key]
             headers = {'Content-Type': 'application/json',
                        'Accept': 'application/json'}
-            content = TMDB.session.post(url, data=json.dumps(json_body),
-                                    headers=headers, verify=verify).content
+            r = TMDB.session.post(url, data=json.dumps(json_body),
+                                  headers=headers, verify=verify)
         elif method == 'DELETE':
             for key in params.keys():
                 url += '&' + key + '=' + params[key]
             headers = {'Content-Type': 'application/json',
                        'Accept': 'application/json'}
-            content = TMDB.session.delete(url, data=json.dumps(json_body),
-                                      headers=headers, verify=verify).content
+            r = TMDB.session.delete(url, data=json.dumps(json_body),
+                                    headers=headers, verify=verify)
         else:
             raise Exception('method: ' + method + ' not supported.')
+
+        r.raise_for_status()
+        content = r.content
+
         response = json.loads(content.decode('utf-8'))
         return response
 

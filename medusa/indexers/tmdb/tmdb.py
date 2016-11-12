@@ -218,8 +218,9 @@ class Tmdb(BaseIndexer):
         if aired_season:
             aired_season = [aired_season] if not isinstance(aired_season, list) else aired_season
         else:
-            if tmdb_id not in self.shows:
-                self._get_show_by_id(tmdb_id)
+            if tmdb_id not in self.shows or not len(self.shows[tmdb_id].data.get('seasons')):
+                self.config['episodes_enabled'] = False  # Don't want to get episodes, as where already doing that.
+                self._get_show_data(tmdb_id)  # Get show data, with the list of seasons
             aired_season = [season['season_number'] for season in self.shows[tmdb_id].data.get('seasons')]
 
         # Parse episode data
@@ -401,7 +402,7 @@ class Tmdb(BaseIndexer):
             cur_actors.append(new_actor)
         self._set_show_data(sid, '_actors', cur_actors)
 
-    def _get_show_data(self, sid, language, get_ep_info=False):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
+    def _get_show_data(self, sid, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
         """Takes a series ID, gets the epInfo URL and parses the TheTMDB json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
