@@ -493,8 +493,9 @@ class TVDBv2(BaseIndexer):
     def get_last_updated_series(self, from_time, weeks=1):
         """Retrieve a list with updated shows.
 
-        @param from_time: epoch timestamp, with the start date/time
-        @param weeks: default last update week check
+        :param from_time: epoch timestamp, with the start date/time
+        :param weeks: default last update week check
+        :returns: A list of show_id's.
         """
         total_updates = []
         updates = True
@@ -504,7 +505,7 @@ class TVDBv2(BaseIndexer):
             updates = self.updates_api.updated_query_get(from_time).data
             last_update_ts = max(x.last_updated for x in updates)
             from_time = last_update_ts
-            total_updates += updates
+            total_updates += [int(_.id) for _ in updates]
             count += 1
 
         return total_updates
