@@ -447,7 +447,7 @@ class Tmdb(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # get episode data
-        if get_ep_info:
+        if self.config['episodes_enabled']:
             self._get_episodes(sid, specials=False, aired_season=None)
 
         # Parse banners
@@ -497,8 +497,8 @@ class Tmdb(BaseIndexer):
         """Retrieve a list with updated shows
 
         :param from_time: epoch timestamp, with the start date/time
-        :param until_time: epoch timestamp, with the end date/time (not mandatory)
         :param weeks: number of weeks to get updates for.
+        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
         total_updates = []
         dt_start = datetime.fromtimestamp(from_time)

@@ -247,10 +247,6 @@ class BaseIndexer(object):
 
     def __getitem__(self, key):
         """Handle tvdbv2_instance['seriesname'] calls. The dict index should be the show id."""
-        import medusa as app
-        shows_updated = self.get_last_updated_series(1473161845, 8, app.showList)
-        self.get_last_updated_seasons(shows_updated, 1473161845, 8)
-
         if isinstance(key, (int, long)):
             # Item is integer, treat as show id
             if key not in self.shows:
