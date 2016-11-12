@@ -1794,6 +1794,122 @@ class CreateProperTags(Rule):
         return to_append
 
 
+class ScreenSizeStandardizer(Rule):
+    """Standardize the screen size.
+
+    Fix 360i, 480i, 576i, etc which are detected as progressive.
+    Rename 4K to 2160p
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+        for screen_size in matches.named('screen_size'):
+            if screen_size.raw.lower().endswith('i'):
+                new_size = copy.copy(screen_size)
+                new_size.value = screen_size.value.replace('p', 'i')
+                to_remove.append(screen_size)
+                to_append.append(new_size)
+            elif screen_size.value == '4K':
+                new_size = copy.copy(screen_size)
+                new_size.value = '2160p'
+                to_remove.append(screen_size)
+                to_append.append(new_size)
+
+        return to_remove, to_append
+
+
+class AudioCodecStandardizer(Rule):
+    """DolbyDigital is AC3.
+
+    Rename DolbyDigital to AC3
+    """
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+        for audio_codec in matches.named('audio_codec', predicate=lambda m: m.value in ('DolbyDigital', )):
+            new_codec = copy.copy(audio_codec)
+            new_codec.value = 'AC3'
+            to_remove.append(audio_codec)
+            to_append.append(new_codec)
+
+        return to_remove, to_append
+
+
+class FormatStandardizer(Rule):
+    """DVB renamed to PDTV."""
+
+    priority = POST_PROCESS
+    consequence = [RemoveMatch, AppendMatch]
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        to_append = []
+        for source in matches.named('format', predicate=lambda m: m.value in ('DVB', )):
+            new_format = copy.copy(source)
+            new_format.value = 'PDTV'
+            to_remove.append(source)
+            to_append.append(new_format)
+
+        return to_remove, to_append
+
+
+class VideoEncoderRule(Rule):
+    """Add video encoders: x264, x265."""
+
+    priority = POST_PROCESS
+    consequence = AppendMatch
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_append = []
+        for video_codec in matches.named('video_codec', lambda m: m.value in ('h264', 'h265') and 'x26' in m.raw.lower()):
+            encoder = copy.copy(video_codec)
+            encoder.name = 'video_encoder'
+            encoder.value = encoder.value.replace('h', 'x')
+            to_append.append(encoder)
+
+        return to_append
+
+
 class ReleaseGroupPostProcessor(Rule):
     """Post process release group.
 
@@ -1944,5 +2060,9 @@ def rules():
         FixMultipleTitles,
         FixMultipleFormats,
         FixMultipleReleaseGroups,
+        ScreenSizeStandardizer,
+        AudioCodecStandardizer,
+        FormatStandardizer,
+        VideoEncoderRule,
         CreateProperTags
     )
