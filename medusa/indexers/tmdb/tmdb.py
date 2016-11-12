@@ -43,12 +43,13 @@ class Tmdb(BaseIndexer):
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         super(Tmdb, self).__init__(*args, **kwargs)
 
-        self.config['base_url'] = 'http://themoviedb.'
+
 
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
         self.tmdb = TMDB(app.TMDB_API_KEY, session=self.config['session'])
         self.tmdb_configuration = self.tmdb.Configuration()
+        self.config['base_url'] = self.tmdb_configuration.images['base_url']
         self.response = self.tmdb_configuration.info()
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
