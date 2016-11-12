@@ -87,13 +87,21 @@ class ShowUpdater(object):
                     # Marked as a refresh, we don't need to check on season.
                     refresh_shows.append(show)
                 else:
-                    # We know there is a season
-                    if updated_shows and show_id in [_.id for _ in updated_shows]:
-                        # Refresh this season, because it was expired AND it's in the indexer updated shows list.
-                        # Meaning A change to a episode occurred. Altough we don't update all seasons. But only
-                        # the expired one.
-                        for season in expired_seasons[indexer][show_id]:
-                            season_updates.append((show, season))
+                    # These support getting a list of seasons updated per show.
+                    if hasattr(t, 'get_last_updated_seasons'):
+                        # Get updated seasons
+                        updated_seasons = t.get_last_updated_seasons(updated_shows, last_update, update_max_weeks)
+                        for season in updated_seasons[show_id]:
+                            season_updates.append((show_id, season))
+                    else:
+                        # We only know the show has been updated, so let's be smart about it, and only update those
+                        # seasons, that got back from the expired_seasons list.
+                        if updated_shows and show_id in updated_shows:
+                            # Refresh this season, because it was expired AND it's in the indexer updated shows list.
+                            # Meaning A change to a episode occurred. Altough we don't update all seasons. But only
+                            # the expired one.
+                            for season in expired_seasons[indexer][show_id]:
+                                season_updates.append((show, season))
 
             # update the lastUpdate for this indexer
             self.last_update.set_last_indexer_update(indexerApi(indexer).name)

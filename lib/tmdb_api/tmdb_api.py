@@ -189,6 +189,13 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
             TMDB._set_attrs_to_values(self, response)
             return response
 
+        # optional parameters: page, start_date, end_date
+        def tv(self, params={}):
+            path = 'tv/changes'
+            response = TMDB._request('GET', path, params)
+            TMDB._set_attrs_to_values(self, response)
+            return response
+
     #
     # Collections
     # http://docs.themoviedb.apiary.io/#collections
@@ -743,6 +750,12 @@ class TMDB(object):  # pylint: disable=too-few-public-methods
         # optional parameter: page, language
         def popular(self, params={}):
             path = 'tv/popular'
+            response = TMDB._request('GET', path, params)
+            TMDB._set_attrs_to_values(self, response)
+            return response
+
+        def changes(self, params={}):
+            path = 'tv' + '/' + str(self.id) + '/changes'
             response = TMDB._request('GET', path, params)
             TMDB._set_attrs_to_values(self, response)
             return response

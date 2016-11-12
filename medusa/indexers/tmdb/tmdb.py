@@ -19,6 +19,8 @@
 from __future__ import unicode_literals
 
 from dateutil import parser
+from time import strftime
+from datetime import datetime, timedelta
 import medusa as app
 from collections import OrderedDict
 import logging
@@ -43,13 +45,8 @@ class Tmdb(BaseIndexer):
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         super(Tmdb, self).__init__(*args, **kwargs)
 
-
-
-        # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
-
         self.tmdb = TMDB(app.TMDB_API_KEY, session=self.config['session'])
         self.tmdb_configuration = self.tmdb.Configuration()
-        self.config['base_url'] = self.tmdb_configuration.images['base_url']
         self.response = self.tmdb_configuration.info()
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
@@ -384,7 +381,7 @@ class Tmdb(BaseIndexer):
         log().debug('Getting actors for %s', sid)
 
         # TMDB also support passing language here as a param.
-        credits = self.tmdb.TV(38472).credits({'language': self.config['language']})
+        credits = self.tmdb.TV(sid).credits({'language': self.config['language']})
 
         if not credits or not credits.get('cast'):
             log().debug('Actors result returned zero')
@@ -409,6 +406,7 @@ class Tmdb(BaseIndexer):
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
+
         if self.config['language'] is None:
             log().debug('Config language is none, using show language')
             if language is None:
@@ -462,24 +460,94 @@ class Tmdb(BaseIndexer):
 
         return True
 
+    def _get_series_season_updates(self, sid, start_date=None, end_date=None):
+        """"Retrieve all updates (show,season,episode) from TMDB
+        :returns: A list of updated seasons for a show id.
+        """
+        results = []
+        page = 1
+        total_pages = 1
+        while page <= total_pages:
+            updates = self.tmdb.TV(sid).changes({'start_date': start_date, 'end_date': end_date})
+            if updates and updates.get('changes'):
+                for item in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
+                    results += [item[0]['value']['season_number']]
+                total_pages = updates.get('total_pages', 0)
+            page += 1
+
+        return set(results)
+
+    def _get_all_updates(self, sid, start_date=None, end_date=None):
+        """"Retrieve all updates (show,season,episode) from TMDB"""
+        results = []
+        page = 1
+        total_pages = 1
+        while page <= total_pages:
+            updates = self.tmdb.Changes().tv({'start_date': start_date, 'end_date': end_date, 'page': page})
+            if not updates or not updates.get('results'):
+                break
+            results += [_.get('id') for _ in updates.get('results')]
+            total_pages = updates.get('total_pages')
+            page += 1
+
+        return set(results)
+
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1):
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows
 
-        @param from_time: epoch timestamp, with the start date/time
-        @param until_time: epoch timestamp, with the end date/time (not mandatory)"""
+        :param from_time: epoch timestamp, with the start date/time
+        :param until_time: epoch timestamp, with the end date/time (not mandatory)
+        :param weeks: number of weeks to get updates for.
+        """
         total_updates = []
-        updates = True
+        dt_start = datetime.fromtimestamp(from_time)
+        search_max_weeks = 2
 
-        count = 0
-        while updates and count < weeks:
-            updates = self.updates_api.updated_query_get(from_time).data
-            last_update_ts = max(x.last_updated for x in updates)
-            from_time = last_update_ts
-            total_updates += updates
-            count += 1
+        for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
+            search_from = dt_start + timedelta(weeks=week - search_max_weeks)
+            search_until = dt_start + timedelta(weeks=week)
+            # No use searching in the future
+            if search_from > datetime.today():
+                break
+            # Get the updates
+            total_updates += self._get_all_updates(search_from.strftime('%Y-%m-%d'), search_until.strftime('%Y-%m-%d'))
+
+        total_updates = set(total_updates)
+        if total_updates and filter_show_list:
+            new_list = []
+            for show in filter_show_list:
+                if show.indexerid in total_updates:
+                    new_list.append(show.indexerid)
+            total_updates = new_list
 
         return total_updates
+
+    # Public methods, usable separate from the default api's interface api['show_id']
+    def get_last_updated_seasons(self, show_list, from_time, weeks=1):
+        """Retrieve a list with updated shows.
+
+        @param from_time: epoch timestamp, with the start date/time
+        @param weeks: default last update week check
+        """
+        show_season_updates = {}
+        dt_start = datetime.fromtimestamp(from_time)
+        search_max_weeks = 2
+
+        for show in show_list:
+            total_updates = []
+            for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
+                search_from = dt_start + timedelta(weeks=week - search_max_weeks)
+                search_until = dt_start + timedelta(weeks=week)
+                # No use searching in the future
+                if search_from > datetime.today():
+                    break
+                # Get the updates
+                total_updates += self._get_series_season_updates(show, search_from.strftime('%Y-%m-%d'),
+                                                                 search_until.strftime('%Y-%m-%d'))
+            show_season_updates[show] = set(total_updates)
+
+        return show_season_updates
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):
         self._get_episodes(show_id, *args, **kwargs)
