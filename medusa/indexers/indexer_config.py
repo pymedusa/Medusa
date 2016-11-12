@@ -74,11 +74,10 @@ indexerConfig = {
         },
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
-        'icon': 'thetvdb16.png',
+        'icon': 'tmdb16.png',
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
-        'base_url': 'https://api.thetvdb.com',
-        'show_url': 'http://thetvdb.com/?tab=series&id=',
+        'base_url': '',
+        'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
     }
-
 }
