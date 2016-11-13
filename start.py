@@ -168,12 +168,6 @@ class Application(object):
         """
         Start Application
         """
-        try:
-            self._do_start(args)
-        except Exception as e:
-            exception_handler.handle(e)
-
-    def _do_start(self, args):
         # do some preliminary stuff
         app.MY_FULLNAME = os.path.normpath(os.path.abspath(__file__))
         app.MY_NAME = os.path.basename(app.MY_FULLNAME)
