@@ -139,7 +139,7 @@
                             <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
                         % endfor
                     % elif show.genre:
-                        % for genre in show.genre[1:-1].split('|'):
+                        % for genre in show.genre.split('|'):
                             <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
                         % endfor
                     % endif
