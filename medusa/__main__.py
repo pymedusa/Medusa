@@ -19,7 +19,7 @@
 
 
 """
-Usage: start.py [OPTION]...
+Usage: python -m medusa [OPTION]...
 
 Options:
   -h,  --help            Prints this message
@@ -110,7 +110,6 @@ class Application(object):
     def help_message():
         """Print help message for commandline options."""
         help_msg = __doc__
-        help_msg = help_msg.replace('start.py', app.MY_FULLNAME)
         help_msg = help_msg.replace('Medusa directory', app.PROG_DIR)
 
         return help_msg
