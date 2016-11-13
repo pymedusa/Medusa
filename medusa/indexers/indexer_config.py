@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from .tvdbv2.tvdbv2_api import TVDBv2
+from .tvmaze.tvmaze_api import TVmaze
 from .tmdb.tmdb import Tmdb
 from .. import helpers
 
@@ -35,7 +36,7 @@ initConfig = {
 
 INDEXER_TVDBV2 = 1
 INDEXER_TVRAGE = 2  # Must keep
-# INDEXER_TVMAZE = 3
+INDEXER_TVMAZE = 3
 INDEXER_TMDB = 4
 
 mapping = {
@@ -62,6 +63,25 @@ indexerConfig = {
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
     },
+    INDEXER_TVMAZE: {
+        'enabled': True,
+        'id': INDEXER_TVMAZE,
+        'name': 'TVmaze',
+        'module': TVmaze,
+        'api_params': {
+            'language': 'en',
+            'use_zip': True,
+            'session': helpers.make_session(cache_etags=False),
+        },
+        'trakt_id': 'tvdb_id',
+        'xem_origin': 'tvdb',
+        'xem_mapped_to': INDEXER_TVDBV2,
+        'icon': 'tvmaze16.png',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'show_url': 'http://www.tvmaze.com/shows/',
+        'base_url': 'http://api.tvmaze.com/',
+        'mapped_to': 'tvmazeid'  # The attribute to which other indexers can map there tvmaze id to
+    },
     INDEXER_TMDB: {
         'enabled': True,
         'id': INDEXER_TMDB,
@@ -78,6 +98,6 @@ indexerConfig = {
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'base_url': 'https://www.themoviedb.org',
         'show_url': 'https://www.themoviedb.org/tv/',
-        'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
+        'mapped_to': 'tmdbid'  # The attribute to which other indexers can map there tmdb id to
     }
 }
