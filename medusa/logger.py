@@ -642,11 +642,6 @@ class Logger(object):
             if handler:
                 handler.setLevel(self.log_level)
 
-    @staticmethod
-    def shutdown():
-        """Shut down the logger."""
-        logging.shutdown()
-
     def log(self, msg, level=INFO, *args, **kwargs):
         """Create log entry.
 
