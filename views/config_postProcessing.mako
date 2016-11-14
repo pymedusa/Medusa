@@ -415,7 +415,7 @@
                                             <tr class="even">
                                               <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored"></i> <b>Release Name:</b></td>
                                               <td>%RN</td>
-                                              <td>Show.Name.S02E03.HDTV.XviD-RLSGROUP</td>
+                                              <td>Show.Name.S02E03.HDTV.x264-RLSGROUP</td>
                                             </tr>
                                             <tr>
                                               <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
@@ -615,7 +615,7 @@
                                                 <tr>
                                                   <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored"></i> <b>Release Name:</b></td>
                                                   <td>%RN</td>
-                                                  <td>Show.Name.2010.03.09.HDTV.XviD-RLSGROUP</td>
+                                                  <td>Show.Name.2010.03.09.HDTV.x264-RLSGROUP</td>
                                                 </tr>
                                                 <tr class="even">
                                                   <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
@@ -786,7 +786,7 @@
                                                 <tr>
                                                   <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored"></i> <b>Release Name:</b></td>
                                                   <td>%RN</td>
-                                                  <td>Show.Name.9th.Mar.2011.HDTV.XviD-RLSGROUP</td>
+                                                  <td>Show.Name.9th.Mar.2011.HDTV.x264-RLSGROUP</td>
                                                 </tr>
                                                 <tr class="even">
                                                   <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
@@ -953,7 +953,7 @@
                                                 <tr class="even">
                                                   <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="Multi-EP style is ignored"></i> <b>Release Name:</b></td>
                                                   <td>%RN</td>
-                                                  <td>Show.Name.S02E03.HDTV.XviD-RLSGROUP</td>
+                                                  <td>Show.Name.S02E03.HDTV.x264-RLSGROUP</td>
                                                 </tr>
                                                 <tr>
                                                   <td class="align-right"><i class="glyphicon glyphicon-info-sign" title="'${app.UNKNOWN_RELEASE_GROUP}' is used in place of RLSGROUP if it could not be properly detected"></i> <b>Release Group:</b></td>
