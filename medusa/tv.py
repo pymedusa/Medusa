@@ -2312,10 +2312,11 @@ class TVEpisode(TVObject):
             elif self.status in (UNAIRED, UNKNOWN):
                 # Only do UNAIRED/UNKNOWN, it could already be snatched/ignored/skipped,
                 # or downloaded/archived to disconnected media
+                new_status = self.show.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
                 logger.log(u"{id}: {show} {ep} has already aired, marking it '{status}'".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                            status=statusStrings[self.status].upper()), logger.DEBUG)
-                self.status = self.show.default_ep_status if self.season > 0 else SKIPPED  # auto-skip specials
+                            status=statusStrings[new_status].upper()), logger.DEBUG)
+                self.status = new_status
             else:
                 logger.log(u"{id}: {show} {ep} status untouched: '{status}'".format
                            (id=self.show.indexerid, show=self.show.name,
