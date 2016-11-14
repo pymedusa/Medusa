@@ -483,7 +483,7 @@ class TVDBv2(BaseIndexer):
             self._set_show_data(sid, k, v)
 
         # Create the externals structure
-        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self, 'imdbId', ''))})
+        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self[sid], 'imdb_id', ''))})
 
         # get episode data
         if self.config['episodes_enabled']:

@@ -38,11 +38,14 @@ INDEXER_TVDBV2 = 1
 INDEXER_TVRAGE = 2  # Must keep
 INDEXER_TVMAZE = 3
 INDEXER_TMDB = 4
+EXTERNAL_IMDB = 10
+EXTERNAL_ANIDB = 11
 
-mapping = {
-    'tvdb': INDEXER_TVDBV2
-}
-reverse_mapping = {v: k for k, v in mapping.items()}
+# mapping = {
+#     'tvdb': INDEXER_TVDBV2
+# }
+# reverse_mapping = {v: k for k, v in mapping.items()}
+EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id', INDEXER_TVRAGE: 'tvrage_id'}
 
 indexerConfig = {
     INDEXER_TVDBV2: {
@@ -101,3 +104,9 @@ indexerConfig = {
         'mapped_to': 'tmdb_id'  # The attribute to which other indexers can map there tmdb id to
     }
 }
+
+mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
+mappings.update(EXTERNAL_MAPPINGS)
+
+reverse_mappings = {indexerConfig[indexer]['mapped_to']: indexer for indexer in indexerConfig}
+reverse_mappings.update({v: k for k, v in EXTERNAL_MAPPINGS.iteritems()})
