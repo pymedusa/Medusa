@@ -266,7 +266,7 @@
     <% epSize = 0 %>
     <% epList = [] %>
 
-    f for epResult in sql_results:
+    % for epResult in sql_results:
         <%
         epStr = str(epResult["season"]) + "x" + str(epResult["episode"])
         if not epStr in epCats:
