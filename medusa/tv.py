@@ -186,6 +186,7 @@ class TVShow(TVObject):
         self.nextaired = ''
         self.release_groups = None
         self.exceptions = []
+        self.externals = {}
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
@@ -1184,8 +1185,8 @@ class TVShow(TVObject):
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
         self.runtime = getattr(indexed_show, 'runtime', '')
-
-        self.imdbid = getattr(indexed_show, 'imdb_id', '')
+        self.externals = getattr(indexed_show, 'externals', {})
+        self.imdbid = getattr(indexed_show, 'imdb_id', '') or self.externals.get('imdb_id')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],

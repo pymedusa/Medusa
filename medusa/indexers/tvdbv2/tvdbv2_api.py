@@ -92,6 +92,7 @@ class TVDBv2(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'rating': 'contentrating',
+            'imdbId': 'imdb_id'
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
@@ -480,6 +481,9 @@ class TVDBv2(BaseIndexer):
                 if k in ['banner', 'fanart', 'poster']:
                     v = self.config['artwork_prefix'] % v
             self._set_show_data(sid, k, v)
+
+        # Create the externals structure
+        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self, 'imdbId', ''))})
 
         # get episode data
         if self.config['episodes_enabled']:

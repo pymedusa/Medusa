@@ -448,6 +448,10 @@ class Tmdb(BaseIndexer):
 
             self._set_show_data(sid, k, v)
 
+        # Get external ids.
+        # As the external id's are not part of the shows default response, we need to make an additional call for it.
+        self._set_show_data(sid, 'externals', self.tmdb.TV(sid).external_ids())
+
         # get episode data
         if self.config['episodes_enabled']:
             self._get_episodes(sid, specials=False, aired_season=None)

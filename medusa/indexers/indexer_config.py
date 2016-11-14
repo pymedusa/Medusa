@@ -61,7 +61,7 @@ indexerConfig = {
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'base_url': 'https://api.thetvdb.com',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
-        'mapped_to': 'tvdbid'  # The attribute to which other indexers can map there thetvdb id to
+        'mapped_to': 'tvdb_id'  # The attribute to which other indexers can map there thetvdb id to
     },
     INDEXER_TVMAZE: {
         'enabled': True,
@@ -80,7 +80,7 @@ indexerConfig = {
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
-        'mapped_to': 'tvmazeid'  # The attribute to which other indexers can map there tvmaze id to
+        'mapped_to': 'tvmaze_id'  # The attribute to which other indexers can map there tvmaze id to
     },
     INDEXER_TMDB: {
         'enabled': True,
@@ -98,6 +98,6 @@ indexerConfig = {
         'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
         'base_url': 'https://www.themoviedb.org',
         'show_url': 'https://www.themoviedb.org/tv/',
-        'mapped_to': 'tmdbid'  # The attribute to which other indexers can map there tmdb id to
+        'mapped_to': 'tmdb_id'  # The attribute to which other indexers can map there tmdb id to
     }
 }

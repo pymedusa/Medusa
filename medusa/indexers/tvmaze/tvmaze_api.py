@@ -81,7 +81,7 @@ class TVmaze(BaseIndexer):
             'screencap': 'filename',
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
-            'rating': 'contentrating'
+            'rating': 'contentrating',
         }
 
     def _map_results(self, tvmaze_response, key_mappings=None, list_separator='|'):
@@ -379,6 +379,11 @@ class TVmaze(BaseIndexer):
         for k, v in series_info['series'].items():
             if v is not None:
                 self._set_show_data(tvmaze_id, k, v)
+
+        # Get external ids.
+        # As the external id's are not part of the shows default response, we need to make an additional call for it.
+        self._set_show_data(tvmaze_id, 'externals', {external_id: str(getattr(self.shows[tvmaze_id], external_id, ''))
+                                                     for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']})
 
         # get episode data
         if self.config['episodes_enabled']:
