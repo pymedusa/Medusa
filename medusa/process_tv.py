@@ -652,6 +652,9 @@ def subtitles_enabled(*args):
     :rtype: bool
     """
     for name in args:
+        if not name:
+            continue
+
         try:
             parse_result = NameParser().parse(name, cache_result=True)
             if parse_result.show.indexerid:
