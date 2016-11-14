@@ -26,6 +26,7 @@ have a fixed execution order, that's why the rules() method should add the rules
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
 import copy
+import logging
 import re
 
 from guessit.rules.common import seps
@@ -37,6 +38,9 @@ from guessit.rules.properties.release_group import clean_groupname
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
+
+
+logger = logging.getLogger(__name__)
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
@@ -1910,6 +1914,33 @@ class VideoEncoderRule(Rule):
         return to_append
 
 
+class AvoidMultipleValuesRule(Rule):
+    """Avoid multiple values."""
+
+    priority = POST_PROCESS
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """Evaluate the rule.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        for name in ('episode_title', 'format', 'release_group', 'title'):
+            values = matches.named(name)
+            unique_values = {v.value for v in values}
+            if len(unique_values) > 1:
+                logger.error(u"Guessed more than one '{name}' for '{input}': {values}",
+                             name=name, input=matches.input_string, values=u' '.join(unique_values))
+                to_remove.extend(values)
+
+        return to_remove
+
+
 class ReleaseGroupPostProcessor(Rule):
     """Post process release group.
 
@@ -2064,5 +2095,6 @@ def rules():
         AudioCodecStandardizer,
         FormatStandardizer,
         VideoEncoderRule,
-        CreateProperTags
+        CreateProperTags,
+        AvoidMultipleValuesRule,
     )
