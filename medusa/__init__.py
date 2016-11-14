@@ -19,7 +19,6 @@
 
 import datetime
 import os
-import os.path
 import random
 import re
 import shutil
@@ -28,9 +27,7 @@ import sys
 from threading import Lock
 from xmlrpclib import APPLICATION_ERROR
 
-from configobj import ConfigObj
-import requests
-import shutil_custom
+# only system libs should be imported above here
 from . import (
     app, auto_post_processor, cache, db, helpers, logger, metadata, naming, providers,
     scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
@@ -56,9 +53,6 @@ from .search.daily import DailySearcher
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from .system.shutdown import Shutdown
-
-shutil.copyfile = shutil_custom.copyfile_custom
-requests.packages.urllib3.disable_warnings()
 
 indexerApi = indexer_api.indexerApi
 
@@ -1680,7 +1674,8 @@ def saveAll():
     save_config()
 
 
-def save_config():  # pylint: disable=too-many-statements, too-many-branches
+def save_config():
+    from configobj import ConfigObj
     new_config = ConfigObj(encoding='UTF-8', default_encoding='UTF-8')
     new_config.filename = CONFIG_FILE
 
