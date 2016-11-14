@@ -214,23 +214,28 @@ class TVDBv2(BaseIndexer):
         # get paginated pages
         page = 1
         last = 1
-        if aired_season:
-            for season in aired_season:
-                page = 1
-                last = 1
+        try:
+            if aired_season:
+                for season in aired_season:
+                    page = 1
+                    last = 1
+                    while page <= last:
+                        paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page, aired_season=season,
+                                                                                      accept_language=self.config['language'])
+                        results += paged_episodes.data
+                        last = paged_episodes.links.last
+                        page += 1
+            else:
                 while page <= last:
-                    paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page, aired_season=season,
+                    paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page,
                                                                                   accept_language=self.config['language'])
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
-        else:
-            while page <= last:
-                paged_episodes = self.series_api.series_id_episodes_query_get(tvdb_id, page=page,
-                                                                              accept_language=self.config['language'])
-                results += paged_episodes.data
-                last = paged_episodes.links.last
-                page += 1
+        except ApiException:
+            log().debug('Error trying to index the episodes')
+            raise IndexerShowIncomplete(
+                'Show search returned incomplete results (cannot find complete show on TheTVDB)')
 
         if not results:
             log().debug('Series results incomplete')
