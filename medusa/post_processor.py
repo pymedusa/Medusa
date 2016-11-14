@@ -66,7 +66,7 @@ class PostProcessor(object):
         self.file_name = os.path.basename(file_path)
 
         # relative path to the file that is being processed
-        self.parent_path = os.path.join(os.path.basename(self.folder_path), self.file_name)
+        self.rel_path = self._get_rel_path()
 
         # name of the NZB that resulted in this folder
         self.nzb_name = nzb_name
@@ -98,6 +98,23 @@ class PostProcessor(object):
         """
         logger.log(message, level)
         self.log += message + '\n'
+
+    def _get_rel_path(self):
+        """Return the relative path to the file if possible, else the parent dir.
+
+        :param file_path: path to the file
+        :type file_path: text_type
+        :return: relative path to file or parent dir to file
+        :rtype: text_type
+        """
+        if app.TV_DOWNLOAD_DIR:
+            rel_path = os.path.relpath(self.file_path, app.TV_DOWNLOAD_DIR)
+            # check if we really found the relative path
+            if not rel_path.startswith('..'):
+                return rel_path
+
+        parent_name = os.path.basename(os.path.dirname(self.file_path))
+        return os.path.join(parent_name, self.file_name)
 
     def _checkForExistingFile(self, existing_file):
         """
@@ -524,7 +541,7 @@ class PostProcessor(object):
             lambda: self._analyze_name(self.file_name),
 
             # try to analyze the file path
-            lambda: self._analyze_name(self.parent_path)
+            lambda: self._analyze_name(self.rel_path)
         ]
 
         # Try every possible method to get our info
@@ -742,7 +759,7 @@ class PostProcessor(object):
                 return ep_quality
 
         # NZB name is the most reliable if it exists, followed by file name and lastly folder name
-        name_list = [self.nzb_name, self.file_name, self.parent_path]
+        name_list = [self.nzb_name, self.file_name, self.rel_path]
 
         for cur_name in name_list:
 
