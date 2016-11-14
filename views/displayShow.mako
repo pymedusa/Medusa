@@ -134,15 +134,13 @@
             </div>
             <div id="tags">
                 <ul class="tags">
-                    % if show.imdb_info.get('genres'):
-                        % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
-                            <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
-                        % endfor
-                    % elif show.genre:
-                        % for genre in show.genre[1:-1].split('|'):
-                            <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
-                        % endfor
+                % for genre in show.get_genres():
+                    % if not show.genre:
+                        <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on IMDB."><li>${genre}</li></a>
+                    % else:
+                        <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
                     % endif
+                % endfor
                 </ul>
             </div>
 
