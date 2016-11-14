@@ -120,7 +120,7 @@ class Application(object):
         signal.signal(signal.SIGTERM, app.sig_handler)
 
         # do some preliminary stuff
-        app.MY_FULLNAME = os.path.normpath(os.path.abspath(os.path.join(__file__, '..')))
+        app.MY_FULLNAME = os.path.normpath(os.path.abspath(os.path.join(__file__, '..', '..', 'start.py')))
         app.MY_NAME = os.path.basename(app.MY_FULLNAME)
         app.PROG_DIR = os.path.dirname(app.MY_FULLNAME)
         app.DATA_DIR = app.PROG_DIR
@@ -527,6 +527,7 @@ class Application(object):
                     logger.info('Restarting Medusa with {options}', options=popen_list)
                     # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
                     logging.shutdown()
+                    print(popen_list)
                     subprocess.Popen(popen_list, cwd=os.getcwd())
 
         # Make sure the logger has stopped, just in case
