@@ -24,9 +24,10 @@ from collections import OrderedDict
 import logging
 
 from pytvmaze import API
+from pytvmaze.exceptions import ShowNotFound
 
 from ..indexer_base import (BaseIndexer, Actors, Actor)
-from ..indexer_exceptions import IndexerError
+from ..indexer_exceptions import IndexerError, IndexerShowNotFound, IndexerException
 
 
 def log():
@@ -172,7 +173,15 @@ class TVmaze(BaseIndexer):
         :param request_language: Language in two letter code. TVMaze fallsback to en itself.
         :return: A list of Show objects.
         """
-        results = self.API.show_search(show)
+        try:
+            results = self.API.show_search(show)
+        except ShowNotFound as e:
+            raise IndexerShowNotFound(
+                'Show search failed in getting a result with reason: %s' % e
+            )
+        except Exception as e:
+            raise IndexerException('Show search failed in getting a result with error: %r' % e)
+
         if results:
             return results
         else:
