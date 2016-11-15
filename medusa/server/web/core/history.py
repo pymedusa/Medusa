@@ -3,11 +3,11 @@
 from __future__ import unicode_literals
 
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .base import PageTemplate, WebRoot
 from .... import ui
 from ....helper.common import try_int
-from ....show.History import History as HistoryTool
+from ....show.history import History as HistoryTool
 
 
 @route('/history(/?.*)')
@@ -18,7 +18,6 @@ class History(WebRoot):
         self.history = HistoryTool()
 
     def index(self, limit=None):
-
         if limit is None:
             if app.HISTORY_LIMIT:
                 limit = int(app.HISTORY_LIMIT)
@@ -44,6 +43,7 @@ class History(WebRoot):
                         topmenu='history', controller='history', action='index')
 
     def clearHistory(self):
+        # @TODO: Replace this with DELETE /api/v2/history
         self.history.clear()
 
         ui.notifications.message('History cleared')
@@ -51,6 +51,8 @@ class History(WebRoot):
         return self.redirect('/history/')
 
     def trimHistory(self):
+        # @TODO: Replace this with DELETE /api/v2/history?gt={days}
+        # gt and lt would be greater than and less than x days old
         self.history.trim()
 
         ui.notifications.message('Removed history entries older than 30 days')

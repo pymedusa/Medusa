@@ -17,7 +17,7 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
@@ -47,7 +47,7 @@ class LanguagesApi(object):
 
     def languages_get(self, **kwargs):
         """
-        
+
         All available languages. These language abbreviations can be used in the `Accept-Language` header for routes that return translation records.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -120,7 +120,7 @@ class LanguagesApi(object):
 
     def languages_id_get(self, id, **kwargs):
         """
-        
+
         Information about a particular language, given the language ID.
 
         This method makes a synchronous HTTP request by default. To make an

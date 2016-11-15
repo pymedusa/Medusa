@@ -12,14 +12,15 @@ import adba
 import medusa as app
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
-from tornado.routes import route
+from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
 from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui
-from ....blackandwhitelist import BlackAndWhiteList, short_group_names
+from ....black_and_white_list import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
@@ -34,10 +35,10 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
-from ....show.Show import Show
-from ....system.Restart import Restart
-from ....system.Shutdown import Shutdown
-from ....versionChecker import CheckVersion
+from ....show.show import Show
+from ....system.restart import Restart
+from ....system.shutdown import Shutdown
+from ....version_checker import CheckVersion
 
 
 @route('/home(/?.*)')
@@ -157,18 +158,22 @@ class Home(WebRoot):
         )
 
     @staticmethod
+    # @TODO: Replace with /api/v2/config/kodi, check if enabled === true
     def haveKODI():
         return app.USE_KODI and app.KODI_UPDATE_LIBRARY
 
     @staticmethod
+    # @TODO: Replace with /api/v2/config/plex, check if enabled === true
     def havePLEX():
         return app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY
 
     @staticmethod
+    # @TODO: Replace with /api/v2/config/emby, check if enabled === true
     def haveEMBY():
         return app.USE_EMBY
 
     @staticmethod
+    # @TODO: Replace with /api/v2/config/torrents, check if enabled === true
     def haveTORRENT():
         return bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
                     (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not
@@ -176,8 +181,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
-        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-
         host = config.clean_url(host)
 
         connection, acces_msg = sab.getSabAccesMethod(host)
@@ -193,8 +196,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
-        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-
         connected_status = nzbget.testNZB(host, username, password, use_https)
         if connected_status:
             return 'Success. Connected and authenticated'
@@ -203,7 +204,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testTorrent(torrent_method=None, host=None, username=None, password=None):
-
         host = config.clean_url(host)
 
         client = clients.get_client_class(torrent_method)
@@ -214,7 +214,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testFreeMobile(freemobile_id=None, freemobile_apikey=None):
-
         result, message = notifiers.freemobile_notifier.test_notify(freemobile_id, freemobile_apikey)
         if result:
             return 'SMS sent successfully'
@@ -223,7 +222,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testTelegram(telegram_id=None, telegram_apikey=None):
-
         result, message = notifiers.telegram_notifier.test_notify(telegram_id, telegram_apikey)
         if result:
             return 'Telegram notification succeeded. Check your Telegram clients to make sure it worked'
@@ -232,7 +230,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testGrowl(host=None, password=None):
-        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
         success = 'Registered and Tested growl successfully'
         failure = 'Registration and Testing of growl failed'
 
@@ -247,7 +244,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testProwl(prowl_api=None, prowl_priority=0):
-
         result = notifiers.prowl_notifier.test_notify(prowl_api, prowl_priority)
         if result:
             return 'Test prowl notice sent successfully'
@@ -256,7 +252,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testBoxcar2(accesstoken=None):
-
         result = notifiers.boxcar2_notifier.test_notify(accesstoken)
         if result:
             return 'Boxcar2 notification succeeded. Check your Boxcar2 clients to make sure it worked'
@@ -265,7 +260,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testPushover(userKey=None, apiKey=None):
-
         result = notifiers.pushover_notifier.test_notify(userKey, apiKey)
         if result:
             return 'Pushover notification succeeded. Check your Pushover clients to make sure it worked'
@@ -278,7 +272,6 @@ class Home(WebRoot):
 
     @staticmethod
     def twitterStep2(key):
-
         result = notifiers.twitter_notifier._get_credentials(key)  # pylint: disable=protected-access
         logger.log(u'result: {result}'.format(result=result))
 
@@ -286,13 +279,11 @@ class Home(WebRoot):
 
     @staticmethod
     def testTwitter():
-
         result = notifiers.twitter_notifier.test_notify()
         return 'Tweet successful, check your twitter to make sure it worked' if result else 'Error sending tweet'
 
     @staticmethod
     def testKODI(host=None, username=None, password=None):
-
         host = config.clean_hosts(host)
         final_result = ''
         for curHost in [x.strip() for x in host.split(',')]:
@@ -344,7 +335,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testLibnotify():
-
         if notifiers.libnotify_notifier.test_notify():
             return 'Tried sending desktop notification via libnotify'
         else:
@@ -352,7 +342,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testEMBY(host=None, emby_apikey=None):
-
         host = config.clean_host(host)
         result = notifiers.emby_notifier.test_notify(unquote_plus(host), emby_apikey)
         if result:
@@ -362,7 +351,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNMJ(host=None, database=None, mount=None):
-
         host = config.clean_host(host)
         result = notifiers.nmj_notifier.test_notify(unquote_plus(host), database, mount)
         if result:
@@ -372,7 +360,6 @@ class Home(WebRoot):
 
     @staticmethod
     def settingsNMJ(host=None):
-
         host = config.clean_host(host)
         result = notifiers.nmj_notifier.notify_settings(unquote_plus(host))
         if result:
@@ -391,7 +378,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNMJv2(host=None):
-
         host = config.clean_host(host)
         result = notifiers.nmjv2_notifier.test_notify(unquote_plus(host))
         if result:
@@ -401,7 +387,6 @@ class Home(WebRoot):
 
     @staticmethod
     def settingsNMJv2(host=None, dbloc=None, instance=None):
-
         host = config.clean_host(host)
         result = notifiers.nmjv2_notifier.notify_settings(unquote_plus(host), dbloc, instance)
         if result:
@@ -418,7 +403,6 @@ class Home(WebRoot):
 
     @staticmethod
     def getTraktToken(trakt_pin=None):
-
         trakt_settings = {"trakt_api_key": app.TRAKT_API_KEY,
                           "trakt_api_secret": app.TRAKT_API_SECRET}
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
@@ -457,7 +441,6 @@ class Home(WebRoot):
 
     @staticmethod
     def loadShowNotifyLists():
-
         main_db_con = db.DBConnection()
         rows = main_db_con.select(
             b'SELECT show_id, show_name, notify_list '
@@ -491,7 +474,6 @@ class Home(WebRoot):
 
     @staticmethod
     def saveShowNotifyList(show=None, emails=None, prowlAPIs=None):
-
         entries = {'emails': '', 'prowlAPIs': ''}
         main_db_con = db.DBConnection()
 
@@ -534,7 +516,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testEmail(host=None, port=None, smtp_from=None, use_tls=None, user=None, pwd=None, to=None):
-
         host = config.clean_host(host)
         if notifiers.email_notifier.test_notify(host, port, smtp_from, use_tls, user, pwd, to):
             return 'Test email sent successfully! Check inbox.'
@@ -543,7 +524,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testNMA(nma_api=None, nma_priority=0):
-
         result = notifiers.nma_notifier.test_notify(nma_api, nma_priority)
         if result:
             return 'Test NMA notice sent successfully'
@@ -552,7 +532,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testPushalot(authorizationToken=None):
-
         result = notifiers.pushalot_notifier.test_notify(authorizationToken)
         if result:
             return 'Pushalot notification succeeded. Check your Pushalot clients to make sure it worked'
@@ -561,7 +540,6 @@ class Home(WebRoot):
 
     @staticmethod
     def testPushbullet(api=None):
-
         result = notifiers.pushbullet_notifier.test_notify(api)
         if result:
             return 'Pushbullet notification succeeded. Check your device to make sure it worked'
@@ -570,8 +548,6 @@ class Home(WebRoot):
 
     @staticmethod
     def getPushbulletDevices(api=None):
-        # self.set_header('Cache-Control', 'max-age=0,no-cache,no-store')
-
         result = notifiers.pushbullet_notifier.get_devices(api)
         if result:
             return result
@@ -624,7 +600,6 @@ class Home(WebRoot):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
     def update(self, pid=None, branch=None):
-
         if str(pid) != str(app.PID):
             return self.redirect('/home/')
 
@@ -666,8 +641,7 @@ class Home(WebRoot):
 
     @staticmethod
     def getDBcompare():
-
-        checkversion = CheckVersion()  # TODO: replace with settings var
+        checkversion = CheckVersion()  # @TODO: replace with settings var
         db_status = checkversion.getDBcompare()
 
         if db_status == 'upgrade':
@@ -710,7 +684,7 @@ class Home(WebRoot):
         })
 
     def displayShow(self, show=None):
-        # TODO: add more comprehensive show validation
+        # @TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(app.showList, show)
@@ -853,11 +827,14 @@ class Home(WebRoot):
                     anime.append(show)
                 else:
                     shows.append(show)
-            sorted_show_lists = [['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
-                               ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]]
+            sorted_show_lists = [
+                ['Shows', sorted(shows, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))],
+                ['Anime', sorted(anime, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+            ]
         else:
             sorted_show_lists = [
-                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]]
+                ['Shows', sorted(app.showList, lambda x, y: cmp(titler(x.name).lower(), titler(y.name).lower()))]
+            ]
 
         bwl = None
         if show_obj.is_anime:
@@ -908,12 +885,13 @@ class Home(WebRoot):
 
         @param provider: The provider id, passed as usenet_crawler and not the provider name (Usenet-Crawler)
         @param rowid: The provider's cache table's rowid. (currently the implicit sqlites rowid is used, needs to be replaced in future)
+        @param manual_search_type: Episode or Season search
 
         @return: A json with a {'success': true} or false.
         """
 
         # Try to retrieve the cached result from the providers cache table.
-        # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
+        # @TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
 
         try:
             main_db_con = db.DBConnection('cache.db')
@@ -1057,8 +1035,7 @@ class Home(WebRoot):
                         perform_search=0, down_cur_quality=0, show_all_results=0):
         """ The view with results for the manual selected show/episode """
 
-        indexer_tvdb = 1
-        # TODO: add more comprehensive show validation
+        # @TODO: add more comprehensive show validation
         try:
             show = int(show)  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(app.showList, show)
@@ -1071,7 +1048,7 @@ class Home(WebRoot):
         # Retrieve cache results from providers
         search_show = {'show': show, 'season': season, 'episode': episode, 'manual_search_type': manual_search_type}
 
-        provider_results = get_provider_cache_results(indexer_tvdb, perform_search=perform_search,
+        provider_results = get_provider_cache_results(INDEXER_TVDBV2, perform_search=perform_search,
                                                       show_all_results=show_all_results, **search_show)
 
         t = PageTemplate(rh=self, filename='snatchSelection.mako')
@@ -1221,6 +1198,7 @@ class Home(WebRoot):
 
     @staticmethod
     def plotDetails(show, season, episode):
+        # @TODO: Replace with plot from GET /api/v2/show/{id}
         main_db_con = db.DBConnection()
         result = main_db_con.selectOne(
             b'SELECT description '
@@ -1232,6 +1210,7 @@ class Home(WebRoot):
 
     @staticmethod
     def sceneExceptions(show):
+        # @TODO: Replace with plot from GET /api/v2/show/{id}
         exceptions_list = get_all_scene_exceptions(show)
         if not exceptions_list:
             return 'No scene exceptions'
@@ -1243,12 +1222,34 @@ class Home(WebRoot):
             out.append('S{season}: {names}'.format(season=season, names=', '.join(names)))
         return '<br>'.join(out)
 
+    @staticmethod
+    def check_show_for_language(show_obj, language):
+        """Request the show in a specific language from the indexer.
+
+        If the indexer throws the ShowNotFoundInLanguage Exception, we catch it,
+        and report it's not available in this language.
+        :param show_obj: (TVShow) Show object.
+        :param language: Language passed as string as a two letter country ccde. For ex: 'en'.
+
+        :returns: True (show found in language) False (show not found in language)
+        """
+        indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
+        indexer_api_params['language'] = language
+        indexer_api_params['episodes'] = False
+        t = app.indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+        try:
+            t[show_obj.indexerid]
+        except app.IndexerShowNotFoundInLanguage:
+            return False
+        return True
+
     def editShow(self, show=None, location=None, anyQualities=None, bestQualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvdorder=None, indexerLang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
+        # @TODO: Replace with PATCH /api/v2/show/{id}
         anyQualities = anyQualities or []
         bestQualities = bestQualities or []
         exceptions_list = exceptions_list or []
@@ -1256,6 +1257,8 @@ class Home(WebRoot):
         preferred_qualities = bestQualities
 
         anidb_failed = False
+        errors = []
+
         if show is None:
             error_string = 'Invalid show ID: {show}'.format(show=show)
             if directCall:
@@ -1316,7 +1319,16 @@ class Home(WebRoot):
         subtitles = config.checkbox_to_value(subtitles)
 
         if indexerLang and indexerLang in app.indexerApi(show_obj.indexer).indexer().config['valid_languages']:
-            indexer_lang = indexerLang
+            if self.check_show_for_language(show_obj, indexerLang):
+                indexer_lang = indexerLang
+            else:
+                errors.append(u"Could not change language to '{language} for show {show_id} on indexer {indexer_name}'".
+                              format(language=indexerLang, show_id=show_obj.indexerid,
+                                     indexer_name=app.indexerApi(show_obj.indexer).name))
+                logger.log(u"Could not change language to '{language}' for show {show_id} on indexer {indexer_name}".
+                           format(language=indexerLang, show_id=show_obj.indexerid,
+                                  indexer_name=app.indexerApi(show_obj.indexer).name), logger.WARNING)
+                indexer_lang = show_obj.lang
         else:
             indexer_lang = show_obj.lang
 
@@ -1366,7 +1378,6 @@ class Home(WebRoot):
                     else:
                         show_obj.release_groups.set_black_keywords([])
 
-        errors = []
         with show_obj.lock:
             new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
             show_obj.quality = new_quality
@@ -1458,10 +1469,9 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def erase_cache(self, show_obj):
-
         try:
             main_db_con = db.DBConnection('cache.db')
-            for cur_provider in app.providers.sortedProviderList():
+            for cur_provider in app.providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     b'SELECT name '
@@ -1486,6 +1496,7 @@ class Home(WebRoot):
                        (show=show_obj.name), logger.DEBUG)
 
     def togglePause(self, show=None):
+        # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
         error, show_obj = Show.pause(show)
 
         if error is not None:
@@ -1497,6 +1508,7 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def deleteShow(self, show=None, full=0):
+        # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}
         if show:
             error, show_obj = Show.delete(show, full)
 
@@ -1518,6 +1530,7 @@ class Home(WebRoot):
         return self.redirect('/home/')
 
     def refreshShow(self, show=None):
+        # @TODO: Replace with status=refresh from PATCH /api/v2/show/{id}
         error, show_obj = Show.refresh(show)
 
         # This is a show validation error
@@ -1533,7 +1546,7 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def updateShow(self, show=None):
-
+        # @TODO: Replace with status=update or status=updating from PATCH /api/v2/show/{id}
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
@@ -1554,7 +1567,6 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def subtitleShow(self, show=None):
-
         if show is None:
             return self._genericMessage('Error', 'Invalid show ID')
 
@@ -1620,7 +1632,7 @@ class Home(WebRoot):
             return self.redirect('/home/')
 
     def setStatus(self, show=None, eps=None, status=None, direct=False):
-
+        # @TODO: Merge this with the other PUT commands for /api/v2/show/{id}
         if not all([show, eps, status]):
             error_message = 'You must specify a show and at least one episode'
             if direct:
@@ -1787,7 +1799,6 @@ class Home(WebRoot):
             return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def testRename(self, show=None):
-
         if show is None:
             return self._genericMessage('Error', 'You must specify a show')
 
@@ -1917,7 +1928,6 @@ class Home(WebRoot):
     # Possible status: Downloaded, Snatched, etc...
     # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, show=None):
-
         episodes = collectEpisodesFromSearchThread(show)
 
         return json.dumps({

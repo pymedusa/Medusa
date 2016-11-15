@@ -41,6 +41,7 @@ missing_network_timezones = set()
 def update_network_dict():
     """Update timezone information from Medusa repositories"""
 
+    logger.log(u'Started updating network timezones', logger.DEBUG)
     url = 'https://cdn.pymedusa.com/sb_network_timezones/network_timezones.txt'
     response = helpers.getURL(url, session=helpers.make_session(), returns='response')
     if not response or not response.text:
@@ -116,7 +117,7 @@ def get_network_timezone(network, _network_dict):
     # Get the name of the networks timezone from _network_dict
     network_tz_name = _network_dict[network] if network in _network_dict else None
 
-    if network_tz_name is None and network not in missing_network_timezones:
+    if not network_tz_name and network and network not in missing_network_timezones:
         missing_network_timezones.add(network)
         if network is not None:
             logger.log(u'Missing time zone for network: %s' % network, logger.ERROR)

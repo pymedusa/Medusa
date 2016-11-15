@@ -19,8 +19,8 @@
 from __future__ import unicode_literals
 
 from requests.compat import urljoin
-from .NZBProvider import NZBProvider
-from ... import logger, tvcache
+from .nzb_provider import NZBProvider
+from ... import logger, tv_cache
 
 
 class WombleProvider(NZBProvider):
@@ -48,7 +48,7 @@ class WombleProvider(NZBProvider):
         self.cache = WombleCache(self, min_time=20)
 
 
-class WombleCache(tvcache.TVCache):
+class WombleCache(tv_cache.TVCache):
     def updateCache(self):
 
         if not self.shouldUpdate():

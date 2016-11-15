@@ -27,8 +27,8 @@ import traceback
 import medusa as app
 from requests.compat import urljoin
 import validators
-from .NZBProvider import NZBProvider
-from ... import logger, tvcache
+from .nzb_provider import NZBProvider
+from ... import logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
@@ -41,9 +41,10 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
     compatible api.
     Tested with: newznab, nzedb, spotweb, torznab
     """
+
     # pylint: disable=too-many-arguments
 
-    def __init__(self, name, url, key='0', catIDs='5030,5040', search_mode='eponly',
+    def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
 
         NZBProvider.__init__(self, name)
@@ -61,7 +62,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         self.needs_auth = self.key != '0'
         self.public = not self.needs_auth
 
-        self.catIDs = catIDs if catIDs else '5030,5040'
+        self.cat_ids = cat_ids if cat_ids else '5030,5040'
 
         self.default = False
 
@@ -73,9 +74,9 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Searches indexer using the params in search_strings, either for latest releases, or a string/id search
         Returns: list of results in dict form
@@ -96,7 +97,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) and not self.force_query else 'search',
                 'limit': 100,
                 'offset': 0,
-                'cat': self.catIDs.strip(', ') or '5030,5040',
+                'cat': self.cat_ids.strip(', ') or '5030,5040',
                 'maxage': app.USENET_RETENTION
             }
 
@@ -262,7 +263,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         Generates a '|' delimited string of instance attributes, for saving to config.ini
         """
         return '|'.join([
-            self.name, self.url, self.key, self.catIDs, str(int(self.enabled)),
+            self.name, self.url, self.key, self.cat_ids, str(int(self.enabled)),
             self.search_mode, str(int(self.search_fallback)),
             str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
         ])
@@ -342,7 +343,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
             return None
 
         new_provider = NewznabProvider(
-            name, url, key=key, catIDs=category_ids,
+            name, url, key=key, cat_ids=category_ids,
             search_mode=search_mode or 'eponly',
             search_fallback=search_fallback or 0,
             enable_daily=enable_daily or 0,
@@ -411,10 +412,9 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     @staticmethod
     def _get_default_providers():
-        # name|url|key|catIDs|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
+        # name|url|key|cat_ids|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
         return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
-            'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
-            'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
-
+               'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
+               'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
+               'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
+               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'

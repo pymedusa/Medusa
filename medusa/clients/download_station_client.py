@@ -34,7 +34,6 @@ from requests.exceptions import RequestException
 from .generic import GenericClient
 from ..helpers import handle_requests_exception
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -222,7 +221,8 @@ class DownloadStationAPI(GenericClient):
                         if destination and os.path.isabs(destination):
                             torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
-                            logger.info('Default destination could not be determined for DSM6: {response}', response=jdata)
+                            logger.info('Default destination could not be determined for DSM6: {response}',
+                                        response=jdata)
                             return False
 
         if destination or torrent_path:
@@ -231,5 +231,6 @@ class DownloadStationAPI(GenericClient):
         self.checked_destination = True
         self.destination = torrent_path
         return True
+
 
 api = DownloadStationAPI

@@ -36,7 +36,7 @@
                         % else:
                             <input type="text" id="nameToSearch" value="${default_show_name}" class="form-control form-control-inline input-sm input350"/>
                             &nbsp;&nbsp;
-                            <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${app.INDEXER_DEFAULT_LANGUAGE}" data-available="${','.join(app.indexerApi().config['valid_languages'])}">
+                            <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${app.INDEXER_DEFAULT_LANGUAGE}" data-available="${','.join(app.indexerApi().config['valid_languages'])}">
                             </select><b>*</b>
                             &nbsp;
                             <select name="providedIndexer" id="providedIndexer" class="form-control form-control-inline input-sm">

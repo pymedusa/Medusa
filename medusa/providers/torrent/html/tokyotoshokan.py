@@ -22,8 +22,8 @@ import re
 import traceback
 
 from requests.compat import urljoin
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
@@ -56,7 +56,7 @@ class TokyoToshokanProvider(TorrentProvider):  # pylint: disable=too-many-instan
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=15)  # only poll TokyoToshokan every 15 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=15)  # only poll TokyoToshokan every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

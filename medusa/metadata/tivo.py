@@ -185,9 +185,9 @@ class TIVOMetadata(generic.GenericMetadata):
 
             t = app.indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
             my_show = t[ep_obj.show.indexerid]
-        except app.indexer_shownotfound as e:
+        except app.IndexerShowNotFound as e:
             raise ShowNotFoundException(e.message)
-        except app.indexer_error:
+        except app.IndexerError:
             logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
                        (indexer=app.indexerApi(ep_obj.show.indexer).name), logger.WARNING)
             return False
@@ -196,7 +196,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
-            except (app.indexer_episodenotfound, app.indexer_seasonnotfound):
+            except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
                 logger.log(u'Unable to find episode {ep_num} on {indexer}... '
                            u'has it been removed? Should I delete from db?'.format
                            (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),

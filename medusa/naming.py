@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
@@ -97,7 +96,7 @@ class TVEpisode(tv.TVEpisode):  # pylint: disable=too-many-instance-attributes
         self.scene_absolute_number = absolute_number
         self.airdate = datetime.date(2010, 3, 9)
         self.status = Quality.compositeStatus(common.DOWNLOADED, common.Quality.SDTV)
-        self.release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
+        self.release_name = 'Show.Name.S02E03.HDTV.x264-RLSGROUP'
         self.is_proper = True
         self.show = TVShow()
 
@@ -237,17 +236,17 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
     ep.airdate = datetime.date(2011, 3, 9)
 
     if abd:
-        ep.release_name = 'Show.Name.2011.03.09.HDTV.XviD-RLSGROUP'
+        ep.release_name = 'Show.Name.2011.03.09.HDTV.x264-RLSGROUP'
         ep.show.air_by_date = 1
     elif sports:
-        ep.release_name = 'Show.Name.2011.03.09.HDTV.XviD-RLSGROUP'
+        ep.release_name = 'Show.Name.2011.03.09.HDTV.x264-RLSGROUP'
         ep.show.sports = 1
     else:
         if anime_type != 3:
             ep.show.anime = 1
-            ep.release_name = 'Show.Name.003.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.003.HDTV.x264-RLSGROUP'
         else:
-            ep.release_name = 'Show.Name.S02E03.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.S02E03.HDTV.x264-RLSGROUP'
 
     if multi is not None:
         ep.name = "Ep Name (1)"
@@ -255,7 +254,7 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
         if anime_type != 3:
             ep.show.anime = 1
 
-            ep.release_name = 'Show.Name.003-004.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.003-004.HDTV.x264-RLSGROUP'
 
             secondEp = TVEpisode(2, 4, 4, "Ep Name (2)")
             secondEp.status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)
@@ -263,7 +262,7 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
 
             ep.related_episodes.append(secondEp)
         else:
-            ep.release_name = 'Show.Name.S02E03E04E05.HDTV.XviD-RLSGROUP'
+            ep.release_name = 'Show.Name.S02E03E04E05.HDTV.x264-RLSGROUP'
 
             secondEp = TVEpisode(2, 4, 4, "Ep Name (2)")
             secondEp.status = Quality.compositeStatus(DOWNLOADED, Quality.HDTV)

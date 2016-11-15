@@ -25,8 +25,8 @@ import traceback
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from six.moves.urllib_parse import parse_qs
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
@@ -64,7 +64,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """

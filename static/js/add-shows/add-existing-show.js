@@ -27,7 +27,7 @@ MEDUSA.addShows.addExistingShow = function() {
         var url = '';
         $('.dir_check').each(function(i, w) {
             if ($(w).is(':checked')) {
-                if (url.length) {
+                if (url.length !== 0) {
                     url += '&';
                 }
                 url += 'rootDir=' + encodeURIComponent($(w).attr('id'));

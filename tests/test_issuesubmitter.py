@@ -4,7 +4,7 @@
 from github.GithubException import BadCredentialsException, RateLimitExceededException
 from medusa import classes
 from medusa.classes import ErrorViewer
-from medusa.issuesubmitter import IssueSubmitter
+from medusa.issue_submitter import IssueSubmitter
 from medusa.logger import LogLine
 from mock.mock import Mock
 import pytest

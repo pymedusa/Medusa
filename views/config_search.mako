@@ -58,7 +58,16 @@
                                         </span>
                                     </label>
                                 </div>
-                            </div><!-- check propers -->
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Proper search days</span>
+                                        <span class="component-desc">
+                                            <input type="number" min="2" max="7" step="1" name="propers_search_days" value="${app.PROPERS_SEARCH_DAYS}" class="form-control input-sm input75"/>
+                                            <p>how many days to keep searching for propers since episode airdate (default: 2 days)</p>
+                                        </span>
+                                    </label>
+                                </div><!-- check propers -->
+                            </div>
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Backlog search day(s)</span>

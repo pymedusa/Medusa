@@ -5,16 +5,16 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     });
 
     // http://stackoverflow.com/questions/2219924/idiomatic-jquery-delayed-event-only-after-a-short-pause-in-typing-e-g-timew
-    var typewatch = (function () {
+    var typewatch = (function() {
         var timer = 0;
-        return function (callback, ms) {
+        return function(callback, ms) {
             clearTimeout(timer);
             timer = setTimeout(callback, ms);
         };
     })();
 
     function isRarSupported() {
-        $.get('config/postProcessing/isRarSupported', function (data) {
+        $.get('config/postProcessing/isRarSupported', function(data) {
             if (data !== 'supported') {
                 $('#unpack').qtip('option', {
                     'content.text': 'Unrar Executable not found.',
@@ -36,7 +36,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/testNaming', {
             pattern: example.pattern,
             anime_type: 3 // eslint-disable-line camelcase
-        }, function (data) {
+        }, function(data) {
             if (data) {
                 $('#naming_example').text(data + '.ext');
                 $('#naming_example_div').show();
@@ -49,7 +49,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: 3 // eslint-disable-line camelcase
-        }, function (data) {
+        }, function(data) {
             if (data) {
                 $('#naming_example_multi').text(data + '.ext');
                 $('#naming_example_multi_div').show();
@@ -62,7 +62,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function (data) {
+        }, function(data) {
             if (data === 'invalid') {
                 $('#naming_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -94,7 +94,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/testNaming', {
             pattern: pattern,
             abd: 'True'
-        }, function (data) {
+        }, function(data) {
             if (data) {
                 $('#naming_abd_example').text(data + '.ext');
                 $('#naming_abd_example_div').show();
@@ -106,7 +106,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/isNamingValid', {
             pattern: pattern,
             abd: 'True'
-        }, function (data) {
+        }, function(data) {
             if (data === 'invalid') {
                 $('#naming_abd_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -138,7 +138,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/testNaming', {
             pattern: pattern,
             sports: 'True' // @TODO does this actually need to be a string or can it be a boolean?
-        }, function (data) {
+        }, function(data) {
             if (data) {
                 $('#naming_sports_example').text(data + '.ext');
                 $('#naming_sports_example_div').show();
@@ -150,7 +150,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/isNamingValid', {
             pattern: pattern,
             sports: 'True' // @TODO does this actually need to be a string or can it be a boolean?
-        }, function (data) {
+        }, function(data) {
             if (data === 'invalid') {
                 $('#naming_sports_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -185,7 +185,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $.get('config/postProcessing/testNaming', {
             pattern: example.pattern,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function (data) {
+        }, function(data) {
             if (data) {
                 $('#naming_example_anime').text(data + '.ext');
                 $('#naming_example_anime_div').show();
@@ -198,7 +198,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function (data) {
+        }, function(data) {
             if (data) {
                 $('#naming_example_multi_anime').text(data + '.ext');
                 $('#naming_example_multi_anime_div').show();
@@ -211,7 +211,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
             pattern: example.pattern,
             multi: example.multi,
             anime_type: example.animeType // eslint-disable-line camelcase
-        }, function (data) {
+        }, function(data) {
             if (data === 'invalid') {
                 $('#naming_pattern').qtip('option', {
                     'content.text': 'This pattern is invalid.',
@@ -332,7 +332,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     $('#naming_multi_ep').on('change', fillExamples);
     $('#naming_pattern').on('focusout', fillExamples);
     $('#naming_pattern').on('keyup', function() {
-        typewatch(function () {
+        typewatch(function() {
             fillExamples();
         }, 500);
     });
@@ -340,28 +340,28 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     $('#naming_anime_multi_ep').on('change', fillAnimeExamples);
     $('#naming_anime_pattern').on('focusout', fillAnimeExamples);
     $('#naming_anime_pattern').on('keyup', function() {
-        typewatch(function () {
+        typewatch(function() {
             fillAnimeExamples();
         }, 500);
     });
 
     $('#naming_abd_pattern').on('focusout', fillExamples);
     $('#naming_abd_pattern').on('keyup', function() {
-        typewatch(function () {
+        typewatch(function() {
             fillAbdExamples();
         }, 500);
     });
 
     $('#naming_sports_pattern').on('focusout', fillExamples);
     $('#naming_sports_pattern').on('keyup', function() {
-        typewatch(function () {
+        typewatch(function() {
             fillSportsExamples();
         }, 500);
     });
 
     $('#naming_anime_pattern').on('focusout', fillExamples);
     $('#naming_anime_pattern').on('keyup', function() {
-        typewatch(function () {
+        typewatch(function() {
             fillAnimeExamples();
         }, 500);
     });
@@ -391,12 +391,12 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     setupAnimeNaming();
 
     // -- start of metadata options div toggle code --
-    $('#metadataType').on('change keyup', function () {
+    $('#metadataType').on('change keyup', function() {
         $(this).showHideMetadata();
     });
 
-    $.fn.showHideMetadata = function () {
-        $('.metadataDiv').each(function () {
+    $.fn.showHideMetadata = function() {
+        $('.metadataDiv').each(function() {
             var targetName = $(this).attr('id');
             var selectedTarget = $('#metadataType :selected').val();
 
@@ -415,7 +415,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         $(this).refreshMetadataConfig(false);
     });
 
-    $.fn.refreshMetadataConfig = function (first) {
+    $.fn.refreshMetadataConfig = function(first) {
         var curMost = 0;
         var curMostProvider = '';
 
@@ -476,7 +476,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     $(this).refreshMetadataConfig(true);
     $('img[title]').qtip({
         position: {
-            viewport: $(window),
             at: 'bottom center',
             my: 'top right'
         },
@@ -490,7 +489,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     });
     $('i[title]').qtip({
         position: {
-            viewport: $(window),
             at: 'top center',
             my: 'bottom center'
         },
@@ -510,7 +508,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         },
         hide: false,
         position: {
-            viewport: $(window),
             at: 'center left',
             my: 'center right'
         },

@@ -23,7 +23,7 @@ import re
 from . import db, logger
 from .common import FAILED, Quality, WANTED
 from .helper.exceptions import EpisodeNotFoundException, ex
-from .show.History import History
+from .show.history import History
 
 
 def prepareFailedName(release):

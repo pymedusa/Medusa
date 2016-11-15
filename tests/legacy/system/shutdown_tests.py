@@ -22,7 +22,7 @@ import unittest
 
 import medusa as app
 from medusa.event_queue import Events
-from medusa.system.Shutdown import Shutdown
+from medusa.system.shutdown import Shutdown
 from six import iteritems
 
 

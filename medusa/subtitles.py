@@ -30,6 +30,7 @@ import traceback
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
+import knowit
 import medusa as app
 from six import iteritems, string_types, text_type
 from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
@@ -37,13 +38,13 @@ from subliminal import (ProviderPool, compute_score, provider_manager, refine, r
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-from . import db, history, processTV
+from . import db, history
 from .cache import cache, memory_cache
 from .common import cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
 from .helpers import isMediaFile, isRarFile
-from .show.Show import Show
+from .show.show import Show
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 
 basename = __name__.split('.')[0]
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
-refiner_manager.register('tvepisode = {basename}.refiners.tvepisode:refine'.format(basename=basename))
+refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
 
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
@@ -139,8 +140,8 @@ def get_needed_languages(subtitles):
     :rtype: set of babelfish.Language
     """
     if not app.SUBTITLES_MULTI:
-        return set() if 'und' in subtitles else {from_code(language) for language in wanted_languages()}
-    return {from_code(language) for language in wanted_languages().difference(subtitles)}
+        return set() if 'und' in subtitles else from_codes(wanted_languages())
+    return from_codes(wanted_languages().difference(subtitles))
 
 
 def subtitle_code_filter():
@@ -190,6 +191,17 @@ def from_code(code, unknown='und'):
     return Language(unknown) if unknown else None
 
 
+def from_codes(codes):
+    """Convert opensubtitles language codes to a proper babelfish.Language object.
+
+    :param codes: an opensubtitles language code to be converted
+    :type codes: set of str or list of str
+    :return: a list of language object
+    :rtype: set of babelfish.Language
+    """
+    return {from_code(language) for language in codes}
+
+
 def from_ietf_code(code, unknown='und'):
     """Convert an IETF code to a proper babelfish.Language object.
 
@@ -228,6 +240,45 @@ def code_from_code(code):
     return from_code(code).opensubtitles
 
 
+def accept_unknown(subtitles):
+    """Whether or not there's any valid unknown subtitle for the specified video.
+
+    :param subtitles:
+    :type subtitles: set of babelfish.Language
+    :return:
+    :rtype: bool
+    """
+    return app.ACCEPT_UNKNOWN_EMBEDDED_SUBS and Language('und') in subtitles
+
+
+def accept_any(subtitles):
+    """Whether or not there's any valid subtitle for the specified video.
+
+    :param subtitles:
+    :type subtitles: set of babelfish.Language
+    :return:
+    :rtype: bool
+    """
+    wanted = from_codes(wanted_languages())
+    return bool(subtitles & wanted)
+
+
+def get_embedded_subtitles(video_path):
+    """Return all embedded subtitles for the given video path.
+
+    :param video_path: video filename to be checked
+    :type video_path: str
+    :return:
+    :rtype: set of babelfish.Language
+    """
+    knowledge = knowit.know(video_path)
+    tracks = knowledge.get('subtitle', [])
+    found_languages = {s['language'] for s in tracks if 'language' in s}
+    if found_languages:
+        logger.info(u'Found embedded subtitles: {subs}', subs=found_languages)
+    return found_languages
+
+
 def score_subtitles(subtitles_list, video):
     """Score all subtitles in the specified list for the given video.
 
@@ -260,7 +311,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     subtitles_dir = get_subtitles_dir(video_path)
     release_name = tv_episode.release_name
 
-    languages = {from_code(language) for language in wanted_languages()}
+    languages = from_codes(wanted_languages())
 
     video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=False,
                       embedded_subtitles=False, release_name=release_name)
@@ -603,6 +654,8 @@ def get_subtitle_description(subtitle):
         desc = text_type(subtitle.hash)
     if hasattr(subtitle, 'filename') and subtitle.filename:
         desc = subtitle.filename
+    elif hasattr(subtitle, 'version') and subtitle.version:
+        desc = text_type(subtitle.version)
     elif hasattr(subtitle, 'name') and subtitle.name:
         desc = subtitle.name
     if hasattr(subtitle, 'release') and subtitle.release:
@@ -665,7 +718,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
 
         if embedded_subtitles is None:
-            embedded_subtitles = bool(not app.EMBEDDED_SUBTITLES_ALL and video_path.endswith('.mkv'))
+            embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
@@ -716,24 +769,6 @@ def get_subtitles(video):
     return sorted(result_list)
 
 
-def unpack_rar_files(dirpath):
-    """Unpack any existing rar files present in the specified dirpath.
-
-    :param dirpath: the directory path to be used
-    :type dirpath: str
-    """
-    for root, _, files in os.walk(dirpath, topdown=False):
-        rar_files = [rar_file for rar_file in files if isRarFile(rar_file)]
-        if rar_files and app.UNPACK:
-            video_files = [video_file for video_file in files if isMediaFile(video_file)]
-            if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
-                logger.debug(u'Found rar files in post-process folder: %s', rar_files)
-                result = processTV.ProcessResult()
-                processTV.unRAR(root, rar_files, False, result)
-        elif rar_files and not app.UNPACK:
-            logger.warning(u'Unpack is disabled. Skipping: %s', rar_files)
-
-
 def delete_unwanted_subtitles(dirpath, filename):
     """Delete unwanted subtitles for the given filename in the specified dirpath.
 
@@ -771,6 +806,7 @@ class SubtitlesFinder(object):
     @staticmethod
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
+        from . import process_tv
         from .tv import TVEpisode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
@@ -784,7 +820,7 @@ class SubtitlesFinder(object):
         if not wanted_languages():
             return
 
-        unpack_rar_files(app.TV_DOWNLOAD_DIR)
+        SubtitlesFinder.unpack_rar_files(app.TV_DOWNLOAD_DIR)
 
         run_post_process = False
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
@@ -816,20 +852,42 @@ class SubtitlesFinder(object):
                                  tv_episode.release_name, new_release_name)
                     tv_episode.subtitles = []
                     tv_episode.release_name = new_release_name
+                embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
                 downloaded_languages = download_subtitles(tv_episode, video_path=video_path,
-                                                          subtitles=False, embedded_subtitles=False)
+                                                          subtitles=False, embedded_subtitles=embedded_subtitles)
 
                 # Don't run post processor unless at least one file has all of the needed subtitles OR
                 # if user don't want to ignore embedded subtitles and wants to consider 'unknown' as wanted sub,
                 # and .mkv has one.
-                if not app.PROCESS_AUTOMATICALLY and not run_post_process and (
-                        not needs_subtitles(downloaded_languages) or
-                        processTV.has_matching_unknown_subtitles(video_path)):
-                    run_post_process = True
+                if not app.PROCESS_AUTOMATICALLY and not run_post_process:
+                    if not needs_subtitles(downloaded_languages):
+                        run_post_process = True
+                    elif not app.IGNORE_EMBEDDED_SUBS:
+                        embedded_subs = get_embedded_subtitles(video_path)
+                        run_post_process = accept_unknown(embedded_subs) or accept_any(embedded_subs)
 
         if run_post_process:
             logger.info(u'Starting post-process with default settings now that we found subtitles')
-            processTV.processDir(app.TV_DOWNLOAD_DIR)
+            process_tv.processDir(app.TV_DOWNLOAD_DIR)
+
+    @staticmethod
+    def unpack_rar_files(dirpath):
+        """Unpack any existing rar files present in the specified dirpath.
+
+        :param dirpath: the directory path to be used
+        :type dirpath: str
+        """
+        from . import process_tv
+        for root, _, files in os.walk(dirpath, topdown=False):
+            rar_files = [rar_file for rar_file in files if isRarFile(rar_file)]
+            if rar_files and app.UNPACK:
+                video_files = [video_file for video_file in files if isMediaFile(video_file)]
+                if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
+                    logger.debug(u'Found rar files in post-process folder: %s', rar_files)
+                    result = process_tv.ProcessResult()
+                    process_tv.unRAR(root, rar_files, False, result)
+            elif rar_files and not app.UNPACK:
+                logger.warning(u'Unpack is disabled. Skipping: %s', rar_files)
 
     def run(self, force=False):  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """Check for needed subtitles for users' shows.

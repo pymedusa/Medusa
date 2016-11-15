@@ -27,7 +27,7 @@ import adba
 import medusa as app
 from six import iteritems, text_type
 from . import db, helpers, logger
-from .indexers.indexer_config import INDEXER_TVDB
+from .indexers.indexer_config import INDEXER_TVDBV2
 
 exceptionsCache = {}
 exceptionsSeasonCache = {}
@@ -254,10 +254,10 @@ def _get_custom_exceptions():
             break
 
     if do_refresh:
-        location = app.indexerApi(INDEXER_TVDB).config['scene_loc']
+        location = app.indexerApi(INDEXER_TVDBV2).config['scene_loc']
         logger.log('Checking for scene exception updates from {0}'.format(location))
 
-        response = helpers.getURL(location, session=app.indexerApi(INDEXER_TVDB).session,
+        response = helpers.getURL(location, session=app.indexerApi(INDEXER_TVDBV2).session,
                                   timeout=60, returns='response')
         try:
             jdata = response.json()

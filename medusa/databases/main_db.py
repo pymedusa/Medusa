@@ -109,7 +109,7 @@ class MainSanityCheck(db.DBSanityCheck):
     def convert_tvrage_to_tvdb(self):
         logger.log(u"Checking for shows with tvrage id's, since tvrage is gone", logger.DEBUG)
         from ..indexers.indexer_config import INDEXER_TVRAGE
-        from ..indexers.indexer_config import INDEXER_TVDB
+        from ..indexers.indexer_config import INDEXER_TVDBV2
 
         sql_results = self.connection.select("SELECT indexer_id, show_name, location FROM tv_shows WHERE indexer = %i" % INDEXER_TVRAGE)
 
@@ -119,7 +119,7 @@ class MainSanityCheck(db.DBSanityCheck):
         for tvrage_show in sql_results:
             logger.log(u"Processing %s at %s" % (tvrage_show['show_name'], tvrage_show['location']))
             mapping = self.connection.select("SELECT mindexer_id FROM indexer_mapping WHERE indexer_id=%i AND indexer=%i AND mindexer=%i" %
-                                             (tvrage_show['indexer_id'], INDEXER_TVRAGE, INDEXER_TVDB))
+                                             (tvrage_show['indexer_id'], INDEXER_TVRAGE, INDEXER_TVDBV2))
 
             if len(mapping) != 1:
                 logger.log(u"Error mapping show from tvrage to tvdb for %s (%s), found %i mapping results. Cannot convert automatically!" %
@@ -130,12 +130,12 @@ class MainSanityCheck(db.DBSanityCheck):
                 continue
 
             logger.log(u'Checking if there is already a show with id:%i in the show list')
-            duplicate = self.connection.select("SELECT show_name, indexer_id, location FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (mapping[0]['mindexer_id'], INDEXER_TVDB))
+            duplicate = self.connection.select("SELECT show_name, indexer_id, location FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (mapping[0]['mindexer_id'], INDEXER_TVDBV2))
             if duplicate:
                 logger.log(u'Found %s which has the same id as %s, cannot convert automatically so I am pausing %s' %
                            (duplicate[0]['show_name'], tvrage_show['show_name'], duplicate[0]['show_name']), logger.WARNING)
                 self.connection.action("UPDATE tv_shows SET paused=1 WHERE indexer=%i AND indexer_id=%i" %
-                                       (INDEXER_TVDB, duplicate[0]['indexer_id']))
+                                       (INDEXER_TVDBV2, duplicate[0]['indexer_id']))
 
                 logger.log(u"Removing %s and it's episodes from the DB" % tvrage_show['show_name'], logger.WARNING)
                 self.connection.action("DELETE FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (tvrage_show['indexer_id'], INDEXER_TVRAGE))
@@ -148,13 +148,13 @@ class MainSanityCheck(db.DBSanityCheck):
 
             self.connection.action(
                 "UPDATE tv_shows SET indexer=%i, indexer_id=%i WHERE indexer_id=%i" %
-                (INDEXER_TVDB, mapping[0]['mindexer_id'], tvrage_show['indexer_id'])
+                (INDEXER_TVDBV2, mapping[0]['mindexer_id'], tvrage_show['indexer_id'])
             )
 
             logger.log(u'Relinking episodes to show')
             self.connection.action(
                 "UPDATE tv_episodes SET indexer=%i, showid=%i, indexerid=0 WHERE showid=%i" %
-                (INDEXER_TVDB, mapping[0]['mindexer_id'], tvrage_show['indexer_id'])
+                (INDEXER_TVDBV2, mapping[0]['mindexer_id'], tvrage_show['indexer_id'])
             )
 
             logger.log(u'Please perform a full update on %s' % tvrage_show['show_name'], logger.WARNING)

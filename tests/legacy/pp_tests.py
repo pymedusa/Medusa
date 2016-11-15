@@ -23,7 +23,7 @@ import unittest
 
 import medusa as app
 from medusa.name_cache import addNameToCache
-from medusa.postProcessor import PostProcessor
+from medusa.post_processor import PostProcessor
 from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 
@@ -39,7 +39,7 @@ class PPInitTests(unittest.TestCase):
         self.assertEqual(self.post_processor.file_name, test.FILENAME)
 
     def test_init_folder_name(self):
-        self.assertEqual(self.post_processor.folder_name, test.SHOW_NAME)
+        self.assertEqual(self.post_processor.rel_path, test.REL_PATH)
 
 
 class PPBasicTests(test.AppTestDBCase):

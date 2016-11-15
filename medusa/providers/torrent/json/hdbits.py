@@ -20,13 +20,14 @@ from __future__ import unicode_literals
 import json
 
 from requests.compat import urlencode, urljoin
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....helper.exceptions import AuthException
 
 
 class HDBitsProvider(TorrentProvider):
     """HDBits Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -192,13 +193,14 @@ class HDBitsProvider(TorrentProvider):
         return json.dumps(post_data)
 
 
-class HDBitsCache(tvcache.TVCache):
+class HDBitsCache(tv_cache.TVCache):
     def _getRSSData(self):
         self.search_params = None  # HDBits cache does not use search_params so set it to None
         results = []
 
         try:
-            parsed_json = self.provider.get_url(self.provider.urls['rss'], post_data=self.provider._make_post_data_json(), returns='json')
+            parsed_json = self.provider.get_url(self.provider.urls['rss'],
+                                                post_data=self.provider._make_post_data_json(), returns='json')
 
             if self.provider._check_auth_from_data(parsed_json):
                 results = parsed_json['data']

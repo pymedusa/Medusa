@@ -18,7 +18,7 @@ Copyright 2015 SmartBear Software
 Credit: this file (rest.py) is modified based on rest.py in Dropbox Python SDK:
 https://www.dropbox.com/developers/core/sdks/python
 """
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import sys
 import io

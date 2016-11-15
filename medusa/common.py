@@ -18,6 +18,7 @@
 """Common interface for Quality and Status."""
 
 import operator
+import os
 import platform
 import re
 import uuid
@@ -26,9 +27,7 @@ from collections import namedtuple
 from os import path
 
 from fake_useragent import UserAgent, settings as UA_SETTINGS
-from hachoir_core.log import log as hachoir_log
-from hachoir_metadata import extractMetadata
-from hachoir_parser import createParser
+import knowit
 from six import PY3
 from six.moves import reduce
 from .numdict import NumDict
@@ -412,45 +411,27 @@ class Quality(object):
         """
         Get quality file file metadata.
 
-        :param filename: File path to analyse
+        :param file_path: File path to analyse
         :return: Quality prefix
         """
-        hachoir_log.use_print = False
-
-        try:
-            parser = createParser(file_path)
-        except Exception:  # pylint: disable=broad-except
-            parser = None
-
-        if not parser:
+        if not os.path.isfile(file_path):
             return Quality.UNKNOWN
 
-        try:
-            metadata = extractMetadata(parser)
-        except Exception:  # pylint: disable=broad-except
-            metadata = None
+        knowledge = knowit.know(file_path)
 
-        try:
-            parser.stream._input.close()  # pylint: disable=protected-access
-        except Exception:  # pylint: disable=broad-except
-            pass
-
-        if not metadata:
+        if not knowledge:
             return Quality.UNKNOWN
 
-        height = 0
-        if metadata.has('height'):
-            height = int(metadata.get('height') or 0)
-        else:
-            test = getattr(metadata, "iterGroups", None)
-            if callable(test):
-                for metagroup in metadata.iterGroups():
-                    if metagroup.has('height'):
-                        height = int(metagroup.get('height') or 0)
+        height = None
+        for track in knowledge.get('video') or []:
+            height = track.get('height')
+            if height:
+                break
 
         if not height:
             return Quality.UNKNOWN
 
+        # TODO: Use knowledge information like 'resolution'
         base_filename = path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None

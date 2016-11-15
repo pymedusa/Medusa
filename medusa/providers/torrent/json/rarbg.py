@@ -23,10 +23,10 @@ import time
 import traceback
 
 import medusa as app
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
-from ....indexers.indexer_config import INDEXER_TVDB
+from ....indexers.indexer_config import INDEXER_TVDBV2
 
 
 class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
@@ -60,9 +60,9 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals, too-many-statements
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 
@@ -105,7 +105,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             else:
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
-                search_params['search_tvdb'] = ep_indexerid if ep_indexer == INDEXER_TVDB and ep_indexerid else None
+                search_params['search_tvdb'] = ep_indexerid if ep_indexer == INDEXER_TVDBV2 and ep_indexerid else None
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
@@ -143,7 +143,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     if error_code == 5:
                         # 5 = Too many requests per second
                         log_level = logger.INFO
-                    elif error_code not in (8, 10, 12, 14, 20):
+                    elif error_code not in (4, 8, 10, 12, 14, 20):
+                        # 4 = Invalid token. Use get_token for a new one!
                         # 8, 10, 12, 14 = Cant find * in database. Are you sure this * exists?
                         # 20 = No results found
                         log_level = logger.WARNING

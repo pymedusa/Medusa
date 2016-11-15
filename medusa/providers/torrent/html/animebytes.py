@@ -24,12 +24,11 @@ import traceback
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from six.moves.urllib_parse import parse_qs
-from ..TorrentProvider import TorrentProvider
-from .... import logger, tvcache
+from ..torrent_provider import TorrentProvider
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size
 from ....show_name_helpers import allPossibleShowNames
-
 
 SEASON_PACK = 1
 SINGLE_EP = 2
@@ -41,6 +40,7 @@ OTHER = 6
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
     """AnimeBytes Torrent provider"""
+
     def __init__(self):
 
         # Provider Init
@@ -69,7 +69,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         self.minleech = None
 
         # Cache
-        self.cache = tvcache.TVCache(self, min_time=30)
+        self.cache = tv_cache.TVCache(self, min_time=30)
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
@@ -185,7 +185,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                 hrefs = show_info[index]('a')
                                 params = parse_qs(hrefs[0].get('href', ''))
                                 properties_string = hrefs[1].get_text().rstrip(' |').replace('|', '.').replace(' ', '')
-                                properties_string = properties_string.replace('h26410-bit', 'h264.hi10p')  # Hack for the h264 10bit stuff
+                                # Hack for the h264 10bit stuff
+                                properties_string = properties_string.replace('h26410-bit', 'h264.hi10p')
                                 properties = properties_string.split('.')
                                 download_url = self.urls['download'].format(torrent_id=params['id'][0],
                                                                             passkey=params['torrent_pass'][0])
@@ -234,11 +235,11 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                 if release_type == MULTI_SEASON:
                                     # Create the multi season pack release_name
                                     # Multiple.Episode.TV.Show.EXX-EXX[Episode.Part].[Episode.Title].TAGS.[LANGUAGE].720p.FORMAT.x264-GROUP
-                                        title = '{title}.{episode}.{tags}' \
-                                                '{release_group}'.format(title=show_name,
-                                                                         episode=episode,
-                                                                         tags=tags,
-                                                                         release_group=release_group)
+                                    title = '{title}.{episode}.{tags}' \
+                                            '{release_group}'.format(title=show_name,
+                                                                     episode=episode,
+                                                                     tags=tags,
+                                                                     release_group=release_group)
 
                                 seeders = show_info[index + 3].get_text()
                                 leechers = show_info[index + 4].get_text()
@@ -306,7 +307,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         """Login method used for logging in before doing search and torrent downloads."""
         if (any(dict_from_cookiejar(self.session.cookies).values()) and
                 dict_from_cookiejar(self.session.cookies).get('session')):
-                    return True
+            return True
 
         # Get csrf_token
         response = self.get_url(self.urls['login'], returns='resposne')

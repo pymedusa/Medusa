@@ -14,9 +14,9 @@
     from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
     from medusa.helper.common import pretty_file_size, episode_num
     from medusa.sbdatetime import sbdatetime
-    from medusa.show.History import History
+    from medusa.show.history import History
     from medusa.failed_history import prepareFailedName
-    from medusa.providers.GenericProvider import GenericProvider
+    from medusa.providers.generic_provider import GenericProvider
     from medusa import providers
 %>
 <%block name="scripts">
@@ -399,7 +399,7 @@
                         ${statusStrings[status]} ${renderQualityPill(quality)}
                         </td>
                         <td align="center" style="width: auto;">
-                            <% provider = providers.getProviderClass(GenericProvider.make_id(item["provider"])) %>
+                            <% provider = providers.get_provider_class(GenericProvider.make_id(item["provider"])) %>
                             % if provider is not None:
                                 <img src="images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
                             % else:

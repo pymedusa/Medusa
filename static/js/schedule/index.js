@@ -5,16 +5,16 @@ MEDUSA.schedule.index = function() {
             show: 2,
             network: 5
         };
-        var sort = MEDUSA.info.comingEpsSort;
+        var sort = MEDUSA.config.comingEpsSort;
         var sortList = (sort in sortCodes) ? [[sortCodes[sort], 0]] : [[0, 0]];
 
         $('#showListTable:has(tbody tr)').tablesorter({
             widgets: ['stickyHeaders', 'filter', 'columnSelector', 'saveSort'],
             sortList: sortList,
             textExtraction: {
-                0: function(node) { return $(node).find('time').attr('datetime'); },
-                1: function(node) { return $(node).find('time').attr('datetime'); },
-                7: function(node) { return $(node).find('span').text().toLowerCase(); }
+                0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                1: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
+                7: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
             },
             headers: {
                 0: {sorter: 'realISODate'},
@@ -39,7 +39,7 @@ MEDUSA.schedule.index = function() {
     if ($.isMeta('comingEpsLayout', ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
-            loadingImage: 'loading16' + MEDUSA.info.themeSpinner + '.gif'
+            loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
         });
         $('.ep_summary').hide();
         $('.ep_summaryTrigger').on('click', function() {
@@ -55,7 +55,7 @@ MEDUSA.schedule.index = function() {
         placement: 'bottom',
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
-    }).on('shown.bs.popover', function () { // bootstrap popover event triggered when the popover opens
+    }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });

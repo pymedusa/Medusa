@@ -17,7 +17,7 @@ Copyright 2015 SmartBear Software
    limitations under the License.
 """
 
-from __future__ import absolute_import, unicode_literals
+from __future__ import absolute_import
 
 import sys
 import os
@@ -287,7 +287,7 @@ class SeriesApi(object):
 
     def series_id_episodes_get(self, id, **kwargs):
         """
-        
+
         All episodes for a given series. Paginated with 100 results per page.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -627,7 +627,7 @@ class SeriesApi(object):
 
     def series_id_filter_get(self, id, keys, **kwargs):
         """
-        
+
         Returns a series records, filtered by the supplied comma-separated list of keys. Query keys can be found at the `/series/{id}/filter/params` route.
 
         This method makes a synchronous HTTP request by default. To make an
@@ -715,7 +715,7 @@ class SeriesApi(object):
 
     def series_id_filter_params_get(self, id, **kwargs):
         """
-        
+
         Returns the list of keys available for the `/series/{id}/filter` route
 
         This method makes a synchronous HTTP request by default. To make an
@@ -970,7 +970,7 @@ class SeriesApi(object):
 
     def series_id_images_query_params_get(self, id, **kwargs):
         """
-        
+
         Returns the allowed query keys for the `/series/{id}/images/query` route. Contains a parameter record for each unique `keyType`, listing values that will return results.
 
         This method makes a synchronous HTTP request by default. To make an

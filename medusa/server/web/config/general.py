@@ -6,7 +6,7 @@ import os
 
 from github import GithubException
 import medusa as app
-from tornado.routes import route
+from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import config, github_client, helpers, logger, ui

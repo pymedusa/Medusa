@@ -21,7 +21,7 @@ from __future__ import print_function
 import unittest
 
 from medusa.common import Quality
-from medusa.show.History import History
+from medusa.show.history import History
 from six import iteritems
 
 

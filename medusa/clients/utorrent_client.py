@@ -50,7 +50,8 @@ class UTorrentAPI(GenericClient):
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
         if cookies:
-            logger.debug('{name}: Received unused argument {arg}: {value}', name=self.name, arg='cookies', value=cookies)
+            logger.debug('{name}: Received unused argument {arg}: {value}', name=self.name, arg='cookies',
+                         value=cookies)
 
         # Workaround for uTorrent 2.2.1
         # Need an OrderedDict but only supported in 2.7+
