@@ -463,11 +463,12 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     make_dirs(os.path.dirname(new_path))
 
     # move the file
+    # TODO: Check if new != old before calling shutil.move
     try:
-        logger.info(u'Renaming file from {old} to new', old=cur_path, new=new_path)
+        logger.info(u"Renaming file from '{old}' to '{new}'", old=cur_path, new=new_path)
         shutil.move(cur_path, new_path)
     except (OSError, IOError) as e:
-        logger.error(u'Failed renaming {old} to {new} : {error!r}', old=cur_path, new=new_path, error=e)
+        logger.error(u"Failed renaming '{old}' to '{new}' : {error!r}", old=cur_path, new=new_path, error=e)
         return False
 
     # clean up any old folders that are empty
