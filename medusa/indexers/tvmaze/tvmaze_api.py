@@ -19,14 +19,14 @@
 from __future__ import unicode_literals
 
 from dateutil import parser
-from datetime import datetime, timedelta
+from time import time
 from collections import OrderedDict
 import logging
 
 from pytvmaze import API
 
 from ..indexer_base import (BaseIndexer, Actors, Actor)
-from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound)
+from ..indexer_exceptions import IndexerError
 
 
 def log():
@@ -399,37 +399,16 @@ class TVmaze(BaseIndexer):
 
         return True
 
-    def _get_series_season_updates(self, tvmaze_id, start_date=None, end_date=None):
-        """"Retrieve all updates (show,season,episode) from TVMaze
-        :returns: A list of updated seasons for a show id.
-        """
+    def _get_all_updates(self, tvmaze_id=None, start_date=None, end_date=None):
+        """Retrieve all updates (show,season,episode) from TVMaze"""
         results = []
-        page = 1
-        total_pages = 1
-        while page <= total_pages:
-            updates = self.tvmaze.TV(tvmaze_id).changes({'start_date': start_date, 'end_date': end_date})
-            if updates and updates.get('changes'):
-                for item in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
-                    results += [item[0]['value']['season_number']]
-                total_pages = updates.get('total_pages', 0)
-            page += 1
+        updates = self.API.show_updates()
+        if getattr(updates, 'updates', None):
+            for show_id, update_ts in updates.updates.iteritems():
+                if start_date < update_ts < (end_date or time()):
+                    results.append(int(show_id))
 
-        return set(results)
-
-    def _get_all_updates(self, tvmaze_id, start_date=None, end_date=None):
-        """"Retrieve all updates (show,season,episode) from TVMaze"""
-        results = []
-        page = 1
-        total_pages = 1
-        while page <= total_pages:
-            updates = self.tvmaze.Changes().tv({'start_date': start_date, 'end_date': end_date, 'page': page})
-            if not updates or not updates.get('results'):
-                break
-            results += [_.get('id') for _ in updates.get('results')]
-            total_pages = updates.get('total_pages')
-            page += 1
-
-        return set(results)
+        return results
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
@@ -440,54 +419,13 @@ class TVmaze(BaseIndexer):
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
         total_updates = []
-        dt_start = datetime.fromtimestamp(from_time)
-        search_max_weeks = 2
+        updates = self._get_all_updates(from_time, from_time + (weeks * 604800))  # + seconds in a week
 
-        for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
-            search_from = dt_start + timedelta(weeks=week - search_max_weeks)
-            search_until = dt_start + timedelta(weeks=week)
-            # No use searching in the future
-            if search_from > datetime.today():
-                break
-            # Get the updates
-            total_updates += self._get_all_updates(search_from.strftime('%Y-%m-%d'), search_until.strftime('%Y-%m-%d'))
-
-        total_updates = set(total_updates)
-        if total_updates and filter_show_list:
+        if updates and filter_show_list:
             new_list = []
             for show in filter_show_list:
                 if show.indexerid in total_updates:
                     new_list.append(show.indexerid)
-            total_updates = new_list
+            updates = new_list
 
-        return total_updates
-
-    # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_seasons(self, show_list, from_time, weeks=1):
-        """Retrieve a list with updated shows.
-
-        @param from_time: epoch timestamp, with the start date/time
-        @param weeks: default last update week check
-        """
-        show_season_updates = {}
-        dt_start = datetime.fromtimestamp(from_time)
-        search_max_weeks = 2
-
-        for show in show_list:
-            total_updates = []
-            for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
-                search_from = dt_start + timedelta(weeks=week - search_max_weeks)
-                search_until = dt_start + timedelta(weeks=week)
-                # No use searching in the future
-                if search_from > datetime.today():
-                    break
-                # Get the updates
-                total_updates += self._get_series_season_updates(show, search_from.strftime('%Y-%m-%d'),
-                                                                 search_until.strftime('%Y-%m-%d'))
-            show_season_updates[show] = set(total_updates)
-
-        return show_season_updates
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]
+        return updates

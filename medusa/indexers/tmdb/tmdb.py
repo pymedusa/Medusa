@@ -554,7 +554,3 @@ class Tmdb(BaseIndexer):
             show_season_updates[show] = set(total_updates)
 
         return show_season_updates
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]

@@ -519,8 +519,3 @@ class TVDBv2(BaseIndexer):
             count += 1
 
         return total_updates
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        """Return all episodes of given season."""
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]
