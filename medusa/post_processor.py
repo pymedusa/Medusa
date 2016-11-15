@@ -102,8 +102,6 @@ class PostProcessor(object):
     def _get_rel_path(self):
         """Return the relative path to the file if possible, else the parent dir.
 
-        :param file_path: path to the file
-        :type file_path: text_type
         :return: relative path to file or parent dir to file
         :rtype: text_type
         """
