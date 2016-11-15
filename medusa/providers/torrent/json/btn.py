@@ -201,8 +201,7 @@ class BTNProvider(TorrentProvider):
 
         return title, url
 
-    @staticmethod
-    def _season_search_params(ep_obj):
+    def _season_search_params(self, ep_obj):
 
         search_params = []
         current_params = {'category': 'Season'}
@@ -218,7 +217,7 @@ class BTNProvider(TorrentProvider):
 
         # Search
         if ep_obj.show.indexer == 1:
-            current_params['tvdb'] = ep_obj.show.indexerid
+            current_params['tvdb'] = self._get_tvdb_id()
             search_params.append(current_params)
         else:
             name_exceptions = list(
@@ -230,8 +229,7 @@ class BTNProvider(TorrentProvider):
 
         return search_params
 
-    @staticmethod
-    def _episode_search_params(ep_obj):
+    def _episode_search_params(self, ep_obj):
 
         if not ep_obj:
             return [{}]
@@ -254,7 +252,7 @@ class BTNProvider(TorrentProvider):
 
         # Search
         if ep_obj.show.indexer == 1:
-            search_params['tvdb'] = ep_obj.show.indexerid
+            search_params['tvdb'] = self._get_tvdb_id()
             to_return.append(search_params)
         else:
             # Add new query string for every exception

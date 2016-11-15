@@ -105,7 +105,7 @@ class NewznabProvider(NZBProvider):
 
             if mode != 'RSS':
                 if search_params['t'] == 'tvsearch':
-                    search_params['tvdbid'] = ep_obj.show.indexerid
+                    search_params['tvdbid'] = self._get_tvdb_id()
 
                     if ep_obj.show.air_by_date or ep_obj.show.sports:
                         date_str = str(ep_obj.airdate)

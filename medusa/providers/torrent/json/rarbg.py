@@ -88,13 +88,6 @@ class RarbgProvider(TorrentProvider):
             'mode': 'list',
         }
 
-        if ep_obj is not None:
-            ep_indexerid = ep_obj.show.indexerid
-            ep_indexer = ep_obj.show.indexer
-        else:
-            ep_indexerid = None
-            ep_indexer = None
-
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -104,7 +97,7 @@ class RarbgProvider(TorrentProvider):
             else:
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
-                search_params['search_tvdb'] = ep_indexerid if ep_indexer == INDEXER_TVDBV2 and ep_indexerid else None
+                search_params['search_tvdb'] = self._get_tvdb_id()
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':

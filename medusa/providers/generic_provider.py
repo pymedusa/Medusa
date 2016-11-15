@@ -37,6 +37,7 @@ from ..name_parser.parser import InvalidNameException, InvalidShowException, Nam
 from ..show.show import Show
 from ..show_name_helpers import allPossibleShowNames
 from ..tv_cache import TVCache
+from ..indexers.indexer_config import INDEXER_TVDBV2
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -479,6 +480,10 @@ class GenericProvider(object):
             search_string['Episode'].append(episode_string.strip())
 
         return [search_string]
+
+    def _get_tvdb_id(self):
+        """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
+        return self.show.indexerid if self.show.indexer == INDEXER_TVDBV2 else self.show.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):
         search_string = {
