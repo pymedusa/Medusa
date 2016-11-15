@@ -87,7 +87,8 @@ class Tmdb(BaseIndexer):
             'vote_average': 'contentrating',
         }
 
-    def _map_results(self, tmdb_response, key_mappings=None, list_separator='|'):
+    @staticmethod
+    def _map_results(tmdb_response, key_mappings=None, list_separator='|'):
         """
         Map results to a a key_mapping dict.
 
@@ -120,7 +121,7 @@ class Tmdb(BaseIndexer):
                         value = list_separator.join(item['name'] for item in value)
 
                     if key == 'networks':
-                        value = list_separator.join(item['name'] for item in value)
+                        value = value[0].get('name') if value else ''
 
                     if key == 'last_air_date':
                         return_dict['airs_dayofweek'] = week_day(value)
