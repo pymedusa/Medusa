@@ -14,7 +14,6 @@ class FeedParserTests(unittest.TestCase):
     def test_womble(self):
         result = womble.cache.getRSSFeed(womble.urls['rss'], params={'sec': 'tv-sd', 'fr': 'false'})
         self.assertTrue('entries' in result)
-        self.assertTrue('feed' in result)
         for item in result['entries'] or []:
             title, url = womble._get_title_and_url(item)     # pylint: disable=protected-access
             self.assertTrue(title and url)
