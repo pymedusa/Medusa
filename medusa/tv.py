@@ -836,12 +836,13 @@ class TVShow(TVObject):
 
         return scanned_eps
 
-    def load_episodes_from_indexer(self, tvapi=None, seasons=None):
+    def load_episodes_from_indexer(self, seasons=None, tvapi=None):
         """Load episodes from indexer.
 
-        :param tvapi: indexer_object
         :param seasons: Only load episodes for these seasons (only if supported by the indexer)
-        :type: list of integers or integer
+        :type seasons: list of integers or integer
+        :param tvapi: indexer_object
+        :type tvapi: indexer object
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
