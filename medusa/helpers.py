@@ -437,7 +437,7 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     :param  cur_path: The absolute path to the file you want to move/rename
     :type cur_path: str
     :param new_path: The absolute path to the destination for the file WITHOUT THE EXTENSION
-    :type new_path: sr
+    :type new_path: str
     :param old_path_length: The length of media file path (old name) WITHOUT THE EXTENSION
     :type old_path_length: int
     """
@@ -460,10 +460,13 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     # put the extension on the incoming file
     new_path += cur_file_ext
 
+    # Only rename if something has changed in the new name
+    if cur_path == new_path:
+        return True
+
     make_dirs(os.path.dirname(new_path))
 
     # move the file
-    # TODO: Check if new != old before calling shutil.move
     try:
         logger.info(u"Renaming file from '{old}' to '{new}'", old=cur_path, new=new_path)
         shutil.move(cur_path, new_path)
