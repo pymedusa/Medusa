@@ -21,8 +21,7 @@ import threading
 import time
 import traceback
 
-import medusa as app
-from .. import common, failed_history, generic_queue, history, logger, providers, ui
+from .. import app, common, failed_history, generic_queue, history, logger, providers, ui
 from ..search.core import (
     searchForNeededEpisodes,
     searchProviders,

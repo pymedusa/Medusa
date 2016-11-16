@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa.helpers import anon_url
 %>
 <%block name="scripts">
@@ -61,8 +61,8 @@
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % endif
-                <a href="${anon_url(app.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${app.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
-                    <img alt="${app.indexerApi(show.indexer).name}" height="16" width="16" src='images/${app.indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
+                <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title='${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}'>
+                    <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src='images/${indexerApi(show.indexer).config["icon"]}' style="margin-top: -1px; vertical-align:middle;"/>
                 </a>
             % if xem_numbering or xem_absolute_numbering:
                 <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">

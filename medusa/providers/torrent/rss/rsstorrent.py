@@ -23,9 +23,8 @@ import os
 import re
 
 from bencode import bdecode
-import medusa as app
 from ..torrent_provider import TorrentProvider
-from .... import helpers, logger, tv_cache
+from .... import app, helpers, logger, tv_cache
 from ....helper.exceptions import ex
 
 

@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as app
 from ..generic_provider import GenericProvider
+from ... import app
 from ...classes import NZBSearchResult
 from ...helper.common import try_int
 

@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa import clients
 %>
 <%block name="content">

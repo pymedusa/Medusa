@@ -28,14 +28,12 @@ import traceback
 from collections import OrderedDict
 from datetime import date, datetime
 
-
-import medusa as app
 from requests.compat import unquote_plus
 from six import iteritems, text_type
 from tornado.web import RequestHandler
 from .... import (
-    classes, db, helpers, image_cache, logger, network_timezones,
-    process_tv, sbdatetime, ui,
+    app, classes, db, helpers, image_cache, logger, network_timezones,
+    process_tv, sbdatetime, subtitles, ui,
 )
 from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, \
     statusStrings
@@ -45,6 +43,8 @@ from ....helper.common import (
 )
 from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....helper.quality import get_quality_string
+from ....indexers.indexer_api import indexerApi
+from ....indexers.indexer_exceptions import IndexerShowNotFound, IndexerError, IndexerShowIncomplete
 from ....logger import filter_logline, read_loglines
 from ....media.banner import ShowBanner
 from ....media.fan_art import ShowFanArt
@@ -940,7 +940,7 @@ class CMD_SubtitleSearch(ApiCall):
             return _responds(RESULT_FAILURE, msg='Unable to find subtitles')
 
         if new_subtitles:
-            new_languages = [app.subtitles.name_from_code(code) for code in new_subtitles]
+            new_languages = [subtitles.name_from_code(code) for code in new_subtitles]
             status = 'New subtitles downloaded: %s' % ', '.join(new_languages)
             response = _responds(RESULT_SUCCESS, msg='New subtitles found')
         else:
@@ -1583,7 +1583,7 @@ class CMD_SearchIndexers(ApiCall):
     }
 
     def __init__(self, args, kwargs):
-        self.valid_languages = app.indexerApi().config['langabbv_to_id']
+        self.valid_languages = indexerApi().config['langabbv_to_id']
         # required
         # optional
         self.name, args = self.check_params(args, kwargs, "name", None, False, "string", [])
@@ -1601,8 +1601,8 @@ class CMD_SearchIndexers(ApiCall):
         lang_id = self.valid_languages[self.lang]
 
         if self.name and not self.indexerid:  # only name was given
-            for _indexer in app.indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
-                indexer_api_params = app.indexerApi(_indexer).api_params.copy()
+            for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
+                indexer_api_params = indexerApi(_indexer).api_params.copy()
 
                 if self.lang and not self.lang == app.INDEXER_DEFAULT_LANGUAGE:
                     indexer_api_params['language'] = self.lang
@@ -1610,11 +1610,11 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api_params['actors'] = False
                 indexer_api_params['custom_ui'] = classes.AllShowsListUI
 
-                t = app.indexerApi(_indexer).indexer(**indexer_api_params)
+                t = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
                     api_data = t[str(self.name).encode()]
-                except (app.IndexerShowNotFound, app.IndexerShowIncomplete, app.IndexerError):
+                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     continue
 
@@ -1627,19 +1627,19 @@ class CMD_SearchIndexers(ApiCall):
             return _responds(RESULT_SUCCESS, {"results": results, "langid": lang_id})
 
         elif self.indexerid:
-            for _indexer in app.indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
-                indexer_api_params = app.indexerApi(_indexer).api_params.copy()
+            for _indexer in indexerApi().indexers if self.indexer == 0 else [int(self.indexer)]:
+                indexer_api_params = indexerApi(_indexer).api_params.copy()
 
                 if self.lang and not self.lang == app.INDEXER_DEFAULT_LANGUAGE:
                     indexer_api_params['language'] = self.lang
 
                 indexer_api_params['actors'] = False
 
-                t = app.indexerApi(_indexer).indexer(**indexer_api_params)
+                t = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
                     my_show = t[int(self.indexerid)]
-                except (app.IndexerShowNotFound, app.IndexerShowIncomplete, app.IndexerError):
+                except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     return _responds(RESULT_SUCCESS, {"results": [], "langid": lang_id})
 
@@ -1998,7 +1998,7 @@ class CMD_ShowAddNew(ApiCall):
     }
 
     def __init__(self, args, kwargs):
-        self.valid_languages = app.indexerApi().config['langabbv_to_id']
+        self.valid_languages = indexerApi().config['langabbv_to_id']
         # required
         self.indexerid, args = self.check_params(args, kwargs, "indexerid", None, True, "int", [])
         # optional

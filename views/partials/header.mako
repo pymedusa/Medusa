@@ -1,7 +1,7 @@
 <%!
     import datetime
     import re
-    import medusa as app
+    from medusa import app, logger
     from medusa.helper.common import pretty_file_size
     from medusa.show.show import Show
     from time import time
@@ -109,7 +109,7 @@
                             <li><a href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
                         %endif
                         %if numWarnings:
-                            <li><a href="errorlogs/?level=${app.logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
+                            <li><a href="errorlogs/?level=${logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
                         %endif
                         <li><a href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</a></li>
                         <li role="separator" class="divider"></li>

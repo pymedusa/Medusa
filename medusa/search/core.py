@@ -24,12 +24,15 @@ import threading
 import traceback
 from socket import timeout as SocketTimeout
 
-import medusa as app
 import requests
-from .. import clients, common, db, failed_history, helpers, history, logger, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
+from .. import (
+    app, clients, common, db, failed_history, helpers, history, logger,
+    name_cache, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
+)
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
 from ..helper.common import enabled_providers, episode_num
 from ..helper.exceptions import AuthException, ex
+from ..providers import sorted_provider_list
 from ..providers.generic_provider import GenericProvider
 
 
@@ -510,17 +513,17 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
     didSearch = False
 
     # build name cache for show
-    app.name_cache.buildNameCache(show)
+    name_cache.buildNameCache(show)
 
     original_thread_name = threading.currentThread().name
 
     if manual_search:
         logger.log("Using manual search providers")
-        providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
+        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_manualsearch]
     else:
         logger.log("Using backlog search providers")
-        providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
+        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_backlog]
 
     threading.currentThread().name = original_thread_name

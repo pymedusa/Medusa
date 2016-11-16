@@ -17,8 +17,8 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from chardet import detect
-import medusa as app
 from six import text_type
+from .. import app
 
 
 def ss(var):

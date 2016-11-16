@@ -1,11 +1,11 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
     import adba
-    from medusa import common
+    from medusa import app, common
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import statusStrings
     from medusa.helper import exceptions
+    from medusa.indexers.indexer_api import indexerApi
     from medusa import scene_exceptions
 %>
 <%block name="metas">
@@ -73,7 +73,7 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${show.lang}" data-available="${','.join(app.indexerApi().config['valid_languages'])}"></select>
+                                    <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>

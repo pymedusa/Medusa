@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones

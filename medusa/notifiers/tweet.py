@@ -17,11 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as app
 import oauth2 as oauth
 import pythontwitter as twitter
 from six.moves.urllib.parse import parse_qsl
-from .. import common, logger
+from .. import app, common, logger
 
 
 class Notifier(object):

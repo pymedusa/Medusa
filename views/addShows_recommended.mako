@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa.helpers import anon_url
-    import medusa as app
+    from medusa import app
 %>
 <%block name="scripts">
     <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>

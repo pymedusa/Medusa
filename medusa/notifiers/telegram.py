@@ -21,10 +21,9 @@
 
 from __future__ import unicode_literals
 
-import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.request import Request, urlopen
-from .. import logger
+from .. import app, logger
 from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
     NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
 from ..helper.common import http_status_code

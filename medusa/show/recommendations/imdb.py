@@ -8,10 +8,9 @@ import traceback
 from datetime import date
 
 from bs4 import BeautifulSoup
-import medusa as app
 from simpleanidb import Anidb
 from .recommended import RecommendedShow
-from ... import helpers, logger
+from ... import app, helpers, logger
 from ...indexers.indexer_config import INDEXER_TVDBV2
 
 

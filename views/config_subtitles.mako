@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import subtitles
-    import medusa as app
+    from medusa import app
     from medusa.helpers import anon_url
 %>
 <%block name="scripts">

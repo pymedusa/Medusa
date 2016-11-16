@@ -20,7 +20,7 @@
 
 from __future__ import print_function
 
-import medusa as app
+from medusa import app
 from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 

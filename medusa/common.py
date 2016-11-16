@@ -32,7 +32,6 @@ from six import PY3
 from six.moves import reduce
 from .numdict import NumDict
 from .recompiled import tags
-from .tagger.episode import EpisodeTags
 
 
 if PY3:
@@ -311,7 +310,7 @@ class Quality(object):
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :return: Quality
         """
-
+        from .tagger.episode import EpisodeTags
         if not name:
             return Quality.UNKNOWN
         else:

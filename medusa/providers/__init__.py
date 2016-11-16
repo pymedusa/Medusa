@@ -19,7 +19,6 @@ import pkgutil
 from os import sys
 from random import shuffle
 
-import medusa as app
 from .nzb import (
     anizb, binsearch, womble,
 )
@@ -32,6 +31,7 @@ from .torrent import (
     torrentshack, torrentz2, transmitthenet, tvchaosuk, xthor, zooqle
 )
 from .torrent.rss.rsstorrent import TorrentRssProvider
+from .. import app
 
 __all__ = [
     'womble', 'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents',

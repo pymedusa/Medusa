@@ -17,10 +17,14 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from dateutil import parser
-import medusa as app
+import logging
 from six.moves.urllib.request import FancyURLopener
+from . import app
 from .common import Quality, USER_AGENT
-from .helper.common import dateTimeFormat
+from .indexers.indexer_api import indexerApi
+
+
+logger = logging.getLogger(__name__)
 
 
 class ApplicationURLopener(FancyURLopener, object):
@@ -142,6 +146,8 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
         self.log = log
 
     def select_series(self, all_series):
+        from .helper.common import dateTimeFormat
+
         search_results = []
         series_names = []
 
@@ -224,7 +230,7 @@ class Proper(object):
     def __str__(self):
         return u'{date} {name} {season}x{episode} of {series_id} from {indexer}'.format(
             date=self.date, name=self.name, season=self.season, episode=self.episode,
-            series_id=self.indexerid, indexer=app.indexerApi(self.indexer).name)
+            series_id=self.indexerid, indexer=indexerApi(self.indexer).name)
 
 
 class Viewer(object):
@@ -263,6 +269,12 @@ class Viewer(object):
         :rtype: list of medusa.logger.LogLine
         """
         return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
+
+try:
+    import urllib
+    urllib._urlopener = ApplicationURLopener()
+except ImportError:
+    logger.debug(u'Unable to import _urlopener, not using user_agent for urllib')
 
 
 # The warning viewer: TODO: Change CamelCase to snake_case

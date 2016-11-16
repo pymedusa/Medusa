@@ -22,8 +22,7 @@ from __future__ import print_function
 import socket
 
 from libgrowl import gntp
-import medusa as app
-from .. import common, logger
+from .. import app, common, logger
 from ..helper.exceptions import ex
 
 

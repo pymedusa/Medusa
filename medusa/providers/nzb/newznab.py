@@ -24,12 +24,11 @@ import re
 import time
 import traceback
 
-import medusa as app
 from dateutil import parser
 from requests.compat import urljoin
 import validators
 from .nzb_provider import NZBProvider
-from ... import logger, tv_cache
+from ... import app, logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int

@@ -20,9 +20,8 @@ from __future__ import unicode_literals
 
 import datetime
 
-import medusa as app
 from requests.compat import urljoin
-from . import helpers, logger
+from . import app, helpers, logger
 
 session = helpers.make_session()
 

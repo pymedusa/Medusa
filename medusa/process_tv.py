@@ -20,12 +20,11 @@ import os
 import shutil
 import stat
 
-import medusa as app
 import shutil_custom
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-from . import db, failed_processor, helpers, logger, notifiers, post_processor
+from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from .helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
 from .helper.encoding import ss
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex

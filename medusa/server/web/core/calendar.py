@@ -10,12 +10,9 @@ from __future__ import unicode_literals
 import datetime
 
 from dateutil import tz
-import medusa as app
 from tornado.web import authenticated
 from .base import BaseHandler
-from .... import (
-    db, logger, network_timezones,
-)
+from .... import app, db, logger, network_timezones
 from ....helper.common import try_int
 
 

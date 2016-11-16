@@ -17,8 +17,8 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import medusa as app
 from .indexer_config import indexerConfig, initConfig
+from .. import app
 from ..helper.common import try_int
 
 

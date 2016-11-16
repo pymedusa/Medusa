@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import os
 import threading
 
-import medusa as app
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
@@ -15,7 +14,7 @@ from .api.v2.config import ConfigHandler
 from .api.v2.log import LogHandler
 from .api.v2.show import ShowHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
-from .. import logger
+from .. import app, logger
 from ..helpers import create_https_certificates, generateApiKey
 
 
@@ -175,7 +174,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             self.server.listen(self.options['port'], self.options['host'])
         except Exception:
             if app.LAUNCH_BROWSER and not self.daemon:
-                app.launchBrowser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
+                app.instance.launchBrowser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 logger.log('Launching browser and exiting')
             logger.log('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
             os._exit(1)  # pylint: disable=protected-access

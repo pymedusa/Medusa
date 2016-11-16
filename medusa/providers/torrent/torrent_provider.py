@@ -20,9 +20,8 @@ import os
 import bencode
 from bencode.BTL import BTFailure
 from feedparser.util import FeedParserDict
-import medusa as app
 from ..generic_provider import GenericProvider
-from ... import logger
+from ... import app, logger
 from ...classes import TorrentSearchResult
 from ...helper.common import try_int
 from ...helper.exceptions import ex

@@ -4,10 +4,9 @@
 import platform
 import sys
 
-import medusa as app
-
 from six import text_type
 from .base import BaseRequestHandler
+from .... import app, db
 
 
 class ConfigHandler(BaseRequestHandler):
@@ -51,7 +50,7 @@ class ConfigHandler(BaseRequestHandler):
             'localUser': app.OS_USER or 'Unknown',
             'programDir': app.PROG_DIR,
             'configFile': app.CONFIG_FILE,
-            'dbFilename': app.db.dbFilename(),
+            'dbFilename': db.dbFilename(),
             'cacheDir': app.CACHE_DIR,
             'logDir': app.LOG_DIR,
             'appArgs': app.MY_ARGS,

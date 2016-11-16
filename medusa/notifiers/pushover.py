@@ -20,11 +20,10 @@
 
 import time
 
-import medusa as app
 from requests.compat import urlencode
 from six.moves.http_client import HTTPSConnection
 from six.moves.urllib.error import HTTPError
-from .. import logger
+from .. import app, logger
 from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
     NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
 from ..helper.exceptions import ex

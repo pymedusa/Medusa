@@ -20,12 +20,13 @@ import datetime
 import re
 
 from babelfish import Country
-import medusa as app
 from six import string_types
 from . import generic
-from .. import helpers, logger
+from .. import app, helpers, logger
 from ..helper.common import dateFormat, episode_num
 from ..helper.exceptions import ShowNotFoundException
+from ..indexers.indexer_api import indexerApi
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerError, IndexerShowNotFound
 
 try:
     import xml.etree.cElementTree as etree
@@ -109,7 +110,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         show_id = show_obj.indexerid
 
         indexer_lang = show_obj.lang
-        l_indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
+        l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
 
         l_indexer_api_params['actors'] = True
 
@@ -119,27 +120,27 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         if show_obj.dvdorder != 0:
             l_indexer_api_params['dvdorder'] = True
 
-        t = app.indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+        t = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
 
         tv_node = etree.Element('tvshow')
 
         try:
             my_show = t[int(show_id)]
-        except app.IndexerShowNotFound:
+        except IndexerShowNotFound:
             logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name,
+                       (indexer=indexerApi(show_obj.indexer).name,
                         id=show_id), logger.ERROR)
             raise
 
-        except app.IndexerError:
+        except IndexerError:
             logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name), logger.ERROR)
+                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
             raise
 
         # check for title and id
         if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
             logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name,
+                       (indexer=indexerApi(show_obj.indexer).name,
                         id=show_id), logger.ERROR)
             return False
 
@@ -167,7 +168,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             episode_guide = etree.SubElement(tv_node, 'episodeguide')
             episode_guide_url = etree.SubElement(episode_guide, 'url')
             episode_guide_url.text = '{url}{id}/all/en.zip'.format(
-                url=app.indexerApi(show_obj.indexer).config['base_url'],
+                url=indexerApi(show_obj.indexer).config['base_url'],
                 id=my_show['id']
             )
 
@@ -251,7 +252,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         # There's gotta be a better way of doing this but we don't wanna
         # change the language value elsewhere
-        l_indexer_api_params = app.indexerApi(ep_obj.show.indexer).api_params.copy()
+        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
 
         l_indexer_api_params[b'actors'] = True
 
@@ -262,13 +263,13 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             l_indexer_api_params[b'dvdorder'] = True
 
         try:
-            t = app.indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
+            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
             my_show = t[ep_obj.show.indexerid]
-        except app.IndexerShowNotFound as e:
+        except IndexerShowNotFound as e:
             raise ShowNotFoundException(e.message)
-        except app.IndexerError:
+        except IndexerError:
             logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=app.indexerApi(ep_obj.show.indexer).name), logger.WARNING)
+                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
             return
 
         if len(eps_to_write) > 1:
@@ -281,11 +282,11 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
-            except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
+            except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 logger.log(u'Unable to find episode {ep_num} on {indexer}... '
                            u'has it been removed? Should I delete from db?'.format
                            (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=app.indexerApi(ep_obj.show.indexer).name))
+                            indexer=indexerApi(ep_obj.show.indexer).name))
                 return None
 
             if not getattr(my_ep, 'firstaired', None):

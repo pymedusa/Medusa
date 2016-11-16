@@ -23,9 +23,8 @@ import itertools
 import time
 import traceback
 
-import medusa as app
 from six import text_type
-from . import db, logger, show_name_helpers
+from . import app, db, logger, show_name_helpers
 from .helper.common import episode_num
 from .helper.exceptions import AuthException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser

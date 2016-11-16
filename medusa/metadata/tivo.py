@@ -22,10 +22,11 @@ import datetime
 import io
 import os
 
-import medusa as app
-from .. import helpers, logger
+from .. import app, helpers, logger
 from ..helper.common import episode_num
 from ..helper.exceptions import ShowNotFoundException, ex
+from ..indexers.indexer_api import indexerApi
+from ..indexers.indexer_exceptions import IndexerShowNotFound, IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerError
 from ..metadata import generic
 
 
@@ -173,7 +174,7 @@ class TIVOMetadata(generic.GenericMetadata):
         indexer_lang = ep_obj.show.lang
 
         try:
-            l_indexer_api_params = app.indexerApi(ep_obj.show.indexer).api_params.copy()
+            l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
 
             l_indexer_api_params['actors'] = True
 
@@ -183,24 +184,24 @@ class TIVOMetadata(generic.GenericMetadata):
             if ep_obj.show.dvdorder != 0:
                 l_indexer_api_params['dvdorder'] = True
 
-            t = app.indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
+            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
             my_show = t[ep_obj.show.indexerid]
-        except app.IndexerShowNotFound as e:
+        except IndexerShowNotFound as e:
             raise ShowNotFoundException(e.message)
-        except app.IndexerError:
+        except IndexerError:
             logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=app.indexerApi(ep_obj.show.indexer).name), logger.WARNING)
+                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
             return False
 
         for ep_to_write in eps_to_write:
 
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
-            except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
+            except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 logger.log(u'Unable to find episode {ep_num} on {indexer}... '
                            u'has it been removed? Should I delete from db?'.format
                            (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=app.indexerApi(ep_obj.show.indexer).name))
+                            indexer=indexerApi(ep_obj.show.indexer).name))
                 return None
 
             if ep_obj.season == 0 and not getattr(my_ep, 'firstaired', None):

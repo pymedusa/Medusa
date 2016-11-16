@@ -1,5 +1,5 @@
 <%!
-    import medusa as app
+    from medusa import app
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
 <%

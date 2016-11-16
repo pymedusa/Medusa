@@ -20,7 +20,7 @@ import datetime
 import functools
 import locale
 
-import medusa as app
+from . import app
 from .network_timezones import app_timezone
 
 date_presets = (

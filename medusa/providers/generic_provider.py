@@ -25,9 +25,8 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-import medusa as app
 from requests.utils import add_dict_to_cookiejar
-from .. import logger, ui
+from .. import app, config, logger, ui
 from ..classes import Proper, SearchResult
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
@@ -447,7 +446,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             elif episode.show.anime:
                 episode_string += '%02d' % int(episode.scene_absolute_number)
             else:
-                episode_string += app.config.naming_ep_type[2] % {
+                episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
                     'episodenumber': episode.scene_episode,
                 }

@@ -21,13 +21,12 @@
 
 from __future__ import unicode_literals
 
-import medusa as app
-from .. import common, logger
+from .. import app, common, helpers, logger
 
 
 class Notifier(object):
     def __init__(self):
-        self.session = app.helpers.make_session()
+        self.session = helpers.make_session()
         self.url = 'https://new.boxcar.io/api/notifications'
 
     def test_notify(self, accesstoken, title='Medusa: Test'):
@@ -54,7 +53,7 @@ class Notifier(object):
             'notification[icon_url]': app.LOGO_URL
         }
 
-        response = app.helpers.getURL(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
+        response = helpers.getURL(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
         if not response:
             logger.log('Boxcar2 notification failed.', logger.ERROR)
             return False

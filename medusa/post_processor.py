@@ -24,11 +24,9 @@ import subprocess
 
 import adba
 
-import medusa as app
-
 from six import text_type
 
-from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
+from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension, replace_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)

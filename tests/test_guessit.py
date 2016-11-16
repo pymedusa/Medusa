@@ -6,6 +6,7 @@ import datetime
 import os
 
 import guessit
+from medusa import app
 import medusa.name_parser.guessit_parser as sut
 import pytest
 from six import binary_type, text_type
@@ -82,7 +83,7 @@ def test_pre_configured_guessit():
 @pytest.mark.parametrize('release_name,expected', _parameters())
 def test_guess(monkeypatch, show_list, release_name, expected):
     # Given
-    monkeypatch.setattr('medusa.showList', show_list)
+    monkeypatch.setattr(app, 'showList', show_list)
     options = expected.pop('options', {})
 
     # When

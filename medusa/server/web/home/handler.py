@@ -9,19 +9,20 @@ import time
 from datetime import date, datetime
 
 import adba
-import medusa as app
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
 from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
-from .... import clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
+from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
 from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....failed_history import prepareFailedName
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from ....indexers.indexer_api import indexerApi
 from ....indexers.indexer_config import INDEXER_TVDBV2
+from ....indexers.indexer_exceptions import IndexerShowNotFoundInLanguage
 from ....providers.generic_provider import GenericProvider
 from ....sbdatetime import sbdatetime
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
@@ -1257,13 +1258,13 @@ class Home(WebRoot):
 
         :returns: True (show found in language) False (show not found in language)
         """
-        indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
+        indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
         indexer_api_params['language'] = language
         indexer_api_params['episodes'] = False
-        t = app.indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+        t = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
         try:
             t[show_obj.indexerid]
-        except app.IndexerShowNotFoundInLanguage:
+        except IndexerShowNotFoundInLanguage:
             return False
         return True
 
@@ -1342,16 +1343,16 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
-        if indexerLang and indexerLang in app.indexerApi(show_obj.indexer).indexer().config['valid_languages']:
+        if indexerLang and indexerLang in indexerApi(show_obj.indexer).indexer().config['valid_languages']:
             if self.check_show_for_language(show_obj, indexerLang):
                 indexer_lang = indexerLang
             else:
                 errors.append(u"Could not change language to '{language} for show {show_id} on indexer {indexer_name}'".
                               format(language=indexerLang, show_id=show_obj.indexerid,
-                                     indexer_name=app.indexerApi(show_obj.indexer).name))
+                                     indexer_name=indexerApi(show_obj.indexer).name))
                 logger.log(u"Could not change language to '{language}' for show {show_id} on indexer {indexer_name}".
                            format(language=indexerLang, show_id=show_obj.indexerid,
-                                  indexer_name=app.indexerApi(show_obj.indexer).name), logger.WARNING)
+                                  indexer_name=indexerApi(show_obj.indexer).name), logger.WARNING)
                 indexer_lang = show_obj.lang
         else:
             indexer_lang = show_obj.lang
@@ -1495,7 +1496,7 @@ class Home(WebRoot):
     def erase_cache(self, show_obj):
         try:
             main_db_con = db.DBConnection('cache.db')
-            for cur_provider in app.providers.sorted_provider_list():
+            for cur_provider in providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     b'SELECT name '

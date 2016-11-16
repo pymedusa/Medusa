@@ -22,8 +22,8 @@ import unittest
 
 import certifi
 import medusa.providers as providers
-from medusa import ex
 import requests
+from medusa.helper.exceptions import ex
 
 
 def generator(_provider):

@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import unittest
 
-import medusa as app
+from medusa import app
 from medusa.event_queue import Events
 from medusa.system.restart import Restart
 from six import iteritems

@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa import classes
     from medusa.logger import LOGGING_LEVELS
 %>

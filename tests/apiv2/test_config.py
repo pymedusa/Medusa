@@ -4,7 +4,7 @@ import json
 import platform
 import sys
 
-import medusa as app
+from medusa import app, db
 import pytest
 from tornado.httpclient import HTTPError
 
@@ -49,7 +49,7 @@ def config(monkeypatch, app_config):
         'localUser': os_user,
         'programDir': app.PROG_DIR,
         'configFile': app.CONFIG_FILE,
-        'dbFilename': app.db.dbFilename(),
+        'dbFilename': db.dbFilename(),
         'cacheDir': app.CACHE_DIR,
         'logDir': app.LOG_DIR,
         'appArgs': app.MY_ARGS,

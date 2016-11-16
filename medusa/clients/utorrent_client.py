@@ -23,10 +23,11 @@ from __future__ import unicode_literals
 import logging
 import re
 
-import medusa as app
 from requests.compat import urljoin
 from six import iteritems
 from .generic import GenericClient
+from .. import app
+
 
 logger = logging.getLogger(__name__)
 

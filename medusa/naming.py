@@ -19,8 +19,7 @@
 import datetime
 import os
 
-import medusa as app
-from . import common, logger, tv
+from . import app, common, logger, tv
 from .common import DOWNLOADED, Quality
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 

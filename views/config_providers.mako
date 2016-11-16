@@ -1,7 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa.helpers import anon_url
+    from medusa.providers import sorted_provider_list
     from medusa.providers.generic_provider import GenericProvider
 %>
 <%block name="scripts">
@@ -62,7 +63,7 @@ $('#config-components').tabs();
                     </div>
                     <fieldset class="component-group-list">
                         <ul id="provider_order_list">
-                        % for curProvider in app.providers.sorted_provider_list():
+                        % for curProvider in sorted_provider_list():
                             <%
                                 ## These will show the '!' not saying they are broken
                                 if curProvider.provider_type == GenericProvider.NZB and not app.USE_NZBS:
@@ -89,7 +90,7 @@ $('#config-components').tabs();
                             </li>
                         % endfor
                         </ul>
-                        <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in app.providers.sorted_provider_list()])}"/>
+                        <input type="hidden" name="provider_order" id="provider_order" value="${" ".join([x.get_id()+':'+str(int(x.is_enabled())) for x in sorted_provider_list()])}"/>
                         <br><input type="submit" class="btn config_submitter" value="Save Changes" /><br>
                     </fieldset>
                 </div><!-- /component-group1 //-->
@@ -106,7 +107,7 @@ $('#config-components').tabs();
                                 <span class="component-desc">
                                     <%
                                         provider_config_list = []
-                                        for curProvider in app.providers.sorted_provider_list():
+                                        for curProvider in sorted_provider_list():
                                             if curProvider.provider_type == GenericProvider.NZB and (not app.USE_NZBS or not curProvider.is_enabled()):
                                                 continue
                                             elif curProvider.provider_type == GenericProvider.TORRENT and ( not app.USE_TORRENTS or not curProvider.is_enabled()):
@@ -214,7 +215,7 @@ $('#config-components').tabs();
                         % endif
                     </div>
                     % endfor
-                    % for curNzbProvider in [curProvider for curProvider in app.providers.sorted_provider_list() if curProvider.provider_type == GenericProvider.NZB and curProvider not in app.newznabProviderList]:
+                    % for curNzbProvider in [curProvider for curProvider in sorted_provider_list() if curProvider.provider_type == GenericProvider.NZB and curProvider not in app.newznabProviderList]:
                     <div class="providerDiv" id="${curNzbProvider.get_id()}Div">
                         % if hasattr(curNzbProvider, 'username'):
                         <div class="field-pair">
@@ -305,7 +306,7 @@ $('#config-components').tabs();
                         % endif
                     </div>
                     % endfor
-                    % for curTorrentProvider in [curProvider for curProvider in app.providers.sorted_provider_list() if curProvider.provider_type == GenericProvider.TORRENT]:
+                    % for curTorrentProvider in [curProvider for curProvider in sorted_provider_list() if curProvider.provider_type == GenericProvider.TORRENT]:
                     <div class="providerDiv" id="${curTorrentProvider.get_id()}Div">
                         % if hasattr(curTorrentProvider, 'custom_url'):
                         <div class="field-pair">

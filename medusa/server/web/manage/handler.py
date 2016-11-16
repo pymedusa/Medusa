@@ -7,14 +7,10 @@ import json
 import os
 import re
 
-import medusa as app
 from tornroutes import route
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import (
-    db, helpers, logger, post_processor,
-    subtitles, ui
-)
+from .... import app, db, helpers, logger, post_processor, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )

@@ -16,8 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as app
-
+from .. import app
 from ..event_queue import Events
 
 

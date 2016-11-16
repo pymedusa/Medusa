@@ -22,9 +22,8 @@
 import time
 from xml.dom.minidom import parseString
 
-import medusa as app
 from six.moves.urllib.request import Request, urlopen
-from .. import logger
+from .. import app, logger
 
 try:
     import xml.etree.cElementTree as etree

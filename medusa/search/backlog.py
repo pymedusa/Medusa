@@ -20,10 +20,9 @@
 import datetime
 import threading
 
-import medusa as app
 from six import iteritems
 from .queue import BacklogQueueItem
-from .. import common, db, logger, scheduler, ui
+from .. import app, common, db, logger, scheduler, ui
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):

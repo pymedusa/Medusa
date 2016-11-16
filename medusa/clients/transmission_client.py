@@ -25,9 +25,9 @@ import os
 import re
 from base64 import b64encode
 
-import medusa as app
 from requests.compat import urljoin
 from .generic import GenericClient
+from .. import app
 
 
 class TransmissionAPI(GenericClient):

@@ -27,12 +27,7 @@ import tarfile
 import time
 import traceback
 
-import medusa as app
-import shutil_custom
-
-shutil.copyfile = shutil_custom.copyfile_custom
-
-from . import db, helpers, logger, notifiers, ui
+from . import app, db, helpers, logger, notifiers, ui
 from .github_client import get_github_repo
 from .helper.exceptions import ex
 

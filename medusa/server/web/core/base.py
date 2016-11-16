@@ -14,7 +14,6 @@ from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
-import medusa as app
 from requests.compat import urljoin
 from six import binary_type, iteritems, text_type
 from tornado.concurrent import run_on_executor
@@ -25,9 +24,7 @@ from tornado.process import cpu_count
 from tornado.web import HTTPError, RequestHandler, authenticated
 from tornroutes import route
 from ...api.v1.core import function_mapper
-from .... import (
-    classes, db, exception_handler, helpers, logger, network_timezones, ui
-)
+from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
 from ....media.banner import ShowBanner
 from ....media.fan_art import ShowFanArt
 from ....media.network_logo import ShowNetworkLogo
@@ -361,13 +358,13 @@ class WebRoot(WebHandler):
             sort = 'name'
 
         app.POSTER_SORTBY = sort
-        app.save_config()
+        app.instance.save_config()
 
     @staticmethod
     def setPosterSortDir(direction):
         # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
-        app.save_config()
+        app.instance.save_config()
 
     def setHistoryLayout(self, layout):
         # @TODO: Replace this with history={compact, detailed} PATCH /api/v2/config/layout

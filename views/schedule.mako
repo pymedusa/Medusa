@@ -1,7 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa.helpers import anon_url
+    from medusa.indexers.indexer_api import indexerApi
     from medusa import sbdatetime
     import datetime
     import time
@@ -139,8 +140,8 @@
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                 </a>
 % endif
-                <a href="${anon_url(app.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${app.indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
-                    <img alt="${app.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${app.indexerApi(cur_indexer).config['icon']}" />
+                <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
+                    <img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
             <td align="center">
@@ -272,7 +273,7 @@
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                         </a>
 % endif
-                        <a href="${anon_url(app.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${app.indexerApi(cur_indexer).config['show_url']}"><img alt="${app.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${app.indexerApi(cur_indexer).config['icon']}" /></a>
+                        <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}"><img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" /></a>
                         <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
                         <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                     </span>

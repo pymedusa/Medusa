@@ -20,8 +20,7 @@
 import cgi
 import os
 
-import medusa as app
-from .. import common, logger
+from .. import app, common, logger
 
 
 def diagnose():

@@ -20,13 +20,12 @@
 
 from __future__ import unicode_literals
 
-import medusa as app
-from .. import common, logger
+from .. import app, common, helpers, logger
 
 
 class Notifier(object):
     def __init__(self):
-        self.session = app.helpers.make_session()
+        self.session = helpers.make_session()
 
     def test_notify(self, pushalot_authorizationtoken):
         return self._sendPushalot(
@@ -95,7 +94,7 @@ class Notifier(object):
             'Body': message or ''
         }
 
-        jdata = app.helpers.getURL(
+        jdata = helpers.getURL(
             'https://pushalot.com/api/sendmessage',
             post_data=post_data, session=self.session,
             returns='json'

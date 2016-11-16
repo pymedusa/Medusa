@@ -2,10 +2,9 @@
 
 from __future__ import unicode_literals
 
-import medusa as app
 from tornroutes import route
 from .base import PageTemplate, WebRoot
-from .... import ui
+from .... import app, ui
 from ....helper.common import try_int
 from ....show.history import History as HistoryTool
 
@@ -28,7 +27,7 @@ class History(WebRoot):
 
         app.HISTORY_LIMIT = limit
 
-        app.save_config()
+        app.instance.save_config()
 
         history = self.history.get(limit)
 

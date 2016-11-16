@@ -10,8 +10,7 @@ from github.Issue import Issue
 from github.MainClass import Github
 from github.Organization import Organization
 from github.Repository import Repository
-import medusa as app
-from medusa import cache
+from medusa import app, cache
 from medusa.common import DOWNLOADED, Quality
 from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
@@ -120,7 +119,7 @@ def create_sub(monkeypatch):
 def create_tvshow(monkeypatch):
     def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
                enabled_subtitles=0, **kwargs):
-        monkeypatch.setattr('medusa.tv.TVShow._load_from_db', lambda method: None)
+        monkeypatch.setattr(TVShow, '_load_from_db', lambda method: None)
         target = TVShow(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
                         flatten_folders=flatten_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
@@ -131,7 +130,7 @@ def create_tvshow(monkeypatch):
 @pytest.fixture
 def create_tvepisode(monkeypatch):
     def create(show, season, episode, filepath='', **kwargs):
-        monkeypatch.setattr('medusa.tv.TVEpisode._specify_episode', lambda method, season, episode: None)
+        monkeypatch.setattr(TVEpisode, '_specify_episode', lambda method, season, episode: None)
         target = TVEpisode(show=show, season=season, episode=episode, filepath=filepath)
         return _patch_object(monkeypatch, target, **kwargs)
 
@@ -158,7 +157,7 @@ def version_checker(monkeypatch):
 @pytest.fixture
 def commit_hash(monkeypatch):
     target = 'abcdef0'
-    monkeypatch.setattr('medusa.CUR_COMMIT_HASH', target)
+    monkeypatch.setattr(app, 'CUR_COMMIT_HASH', target)
     return target
 
 

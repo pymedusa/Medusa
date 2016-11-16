@@ -30,8 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 
-import medusa as app
-from .. import db, logger
+from .. import app, db, logger
 from ..helper.encoding import ss
 
 
