@@ -215,7 +215,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             common_sql = b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image', \
                           ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
                           name, season, episodes, indexerid, url, time, proper_tags, \
-                          quality, release_group, version, seeders, leechers, size, time \
+                          quality, release_group, version, seeders, leechers, size, time, pubdate \
                           FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ? "
 

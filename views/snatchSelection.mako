@@ -8,6 +8,7 @@
     import time
     from medusa import subtitles, sbdatetime, network_timezones, helpers
     import medusa.helpers
+    from dateutil import parser
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
@@ -443,7 +444,8 @@
                         <th>Peers</th>
                         <th>Size</th>
                         <th>Type</th>
-                        <th>Date</th>
+                        <th>Updated</th>
+                        <th>Published</th>
                         <th data-priority="critical" class="col-search">Snatch</th>
                     </tr>
                 </thead>
@@ -538,6 +540,7 @@
                         <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
                         <td align="center">${hItem["provider_type"]}</td>
                         <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(app.DATE_PRESET+" "+app.TIME_PRESET)}</td>
+                        <td class="col-date">${sbdatetime.convert_to_setting(parser.parse(hItem["pubdate"])).strftime(app.DATE_PRESET+" "+app.TIME_PRESET) if hItem["pubdate"] else '-'}</td>
                         <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
                 % endfor
