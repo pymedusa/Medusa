@@ -109,7 +109,7 @@ MEDUSA.addShows.newShow = function() {
                     var whichSeries = obj.join('|');
 
                     resultStr += '<input type="radio" id="whichSeries" name="whichSeries" value="' + whichSeries.replace(/"/g, '') + '"' + checked + ' /> ';
-                    if (data.langid && data.langid !== '') {
+                    if (data.langid && data.langid !== '' && obj[1] === 1) { //For now only add the language id to the tvdb url, as the others might have different routes.)
                         resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '&lid=' + data.langid + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
                     } else {
                         resultStr += '<a href="' + MEDUSA.config.anonRedirect + obj[2] + obj[3] + '" onclick="window.open(this.href, \'_blank\'); return false;" ><b>' + obj[4] + '</b></a>';
