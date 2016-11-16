@@ -32,7 +32,13 @@ from ....helpers import sanitizeSceneName
 
 
 class BTNProvider(TorrentProvider):
-    """BTN Torrent provider."""
+    """BTN Torrent provider.
+
+    BTN's api docs for future reference
+    http://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
+    and
+    http://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
+    """
 
     def __init__(self):
         """Initialize the class."""
