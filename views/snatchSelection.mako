@@ -10,7 +10,7 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
-    from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
+    from medusa.show_name_helpers import filterBadReleases
     from medusa.helper.common import episode_num, pretty_file_size
     from medusa.failed_history import prepareFailedName
 %>
@@ -450,31 +450,7 @@
                         if manual_search_type == 'season' and 'E00' in hItem["name"]:
                             continue
 
-                        hItem = dict(hItem)
-                        release_group = hItem["release_group"]
-                        if ignore_words and release_group in ignored:
-                            rg_highlight = 'ignored'
-                        elif require_words and release_group in required:
-                            rg_highlight = 'required'
-                        elif preferred_words and release_group in preferred:
-                            rg_highlight = 'preferred'
-                        elif undesired_words and release_group in undesired:
-                            rg_highlight = 'undesired'
-                        else:
-                            rg_highlight = ''
-                        if containsAtLeastOneWord(hItem["name"], require_words):
-                            name_highlight = 'required'
-                        elif containsAtLeastOneWord(hItem["name"], ignore_words) or not filterBadReleases(hItem["name"], parse=False):
-                            name_highlight = 'ignored'
-                        elif containsAtLeastOneWord(hItem["name"], undesired_words):
-                            name_highlight = 'undesired'
-                        elif containsAtLeastOneWord(hItem["name"], preferred_words):
-                            name_highlight = 'preferred'
-                        else:
-                            name_highlight = ''
-                        seed_highlight = 'ignored' if hItem.get("provider_minseed") > hItem.get("seeders", -1) >= 0 else ''
-                        leech_highlight = 'ignored' if hItem.get("provider_minleech") > hItem.get("leechers", -1) >= 0 else ''
-                        failed_statuses = [FAILED, ]
+                        failed_statuses = [FAILED]
                         snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
                         if any([item for item in episode_history
                                 if all([prepareFailedName(hItem["name"]) in item['resource'],
@@ -493,13 +469,13 @@
                     %>
                     <tr id='${episode_num(int(season), int(episode))} ${hItem["name"]}' class="skipped season-${season} seasonstyle ${status_highlight}" role="row">
                         <td class="tvShow">
-                            <span class="break-word ${name_highlight}">
+                            <span class="break-word ${hItem['name_highlight']}">
                                 ${hItem["name"]}
                             </span>
                         </td>
                         <td class="col-group">
-                            <span class="break-word ${rg_highlight}">
-                                ${release_group}
+                            <span class="break-word ${hItem['rg_highlight']}">
+                                ${hItem['release_group']}
                             </span>
                         </td>
                         <td class="col-provider">
@@ -512,12 +488,12 @@
                         % endif
                         </td>
                         <td align="center">
-                            <span class="${seed_highlight}">
+                            <span class="${hItem['seed_highlight']}">
                                 ${hItem["seeders"]}
                             </span>
                         </td>
                         <td align="center">
-                            <span class="${leech_highlight}">
+                            <span class="${hItem['leech_highlight']}">
                                 ${hItem["leechers"]}
                             </span>
                         </td>

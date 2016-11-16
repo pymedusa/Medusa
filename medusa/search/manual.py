@@ -26,8 +26,9 @@ from datetime import datetime
 from dateutil import parser
 import medusa as app
 from medusa.sbdatetime import sbdatetime
+from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
 from .queue import ForcedSearchQueueItem
-from .. import db, logger
+from .. import db, logger, show_name_helpers
 from ..common import Overview, Quality, cpu_presets, statusStrings
 from ..helper.common import enabled_providers, pretty_file_size
 
@@ -192,6 +193,11 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
     down_cur_quality = 0
     show_obj = Show.find(app.showList, int(show))
+    show_words = show_name_helpers.show_words(show_obj)
+    preferred_words=show_words.preferred_words.lower().split(',')
+    undesired_words=show_words.undesired_words.lower().split(',')
+    ignore_words=show_words.ignore_words.lower().split(',')
+    require_words=show_words.require_words.lower().split(',')
 
     main_db_con = db.DBConnection('cache.db')
 
@@ -282,6 +288,29 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
             i['pubdate'] = sbdatetime.convert_to_setting(parser.parse(i["pubdate"])).strftime(
                 app.DATE_PRESET + " " + app.TIME_PRESET) if i["pubdate"] else '-'
+            release_group = i['release_group']
+            if ignore_words and release_group in ignore_words:
+                i["rg_highlight"] = 'ignored'
+            elif require_words and release_group in require_words:
+                i["rg_highlight"] = 'required'
+            elif preferred_words and release_group in preferred_words:
+                i["rg_highlight"] = 'preferred'
+            elif undesired_words and release_group in undesired_words:
+                i["rg_highlight"] = 'undesired'
+            else:
+                i["rg_highlight"] = ''
+            if containsAtLeastOneWord(i["name"], require_words):
+                i["name_highlight"] = 'required'
+            elif containsAtLeastOneWord(i["name"], ignore_words) or not filterBadReleases(i["name"], parse=False):
+                i["name_highlight"] = 'ignored'
+            elif containsAtLeastOneWord(i["name"], undesired_words):
+                i["name_highlight"] = 'undesired'
+            elif containsAtLeastOneWord(i["name"], preferred_words):
+                i["name_highlight"] = 'preferred'
+            else:
+                i["name_highlight"] = ''
+            i["seed_highlight"] = 'ignored' if i.get("provider_minseed") > i.get("seeders", -1) >= 0 else ''
+            i["leech_highlight"] = 'ignored' if i.get("provider_minleech") > i.get("leechers", -1) >= 0 else ''
         provider_results['found_items'] = cached_results
 
     # Remove provider from thread name before return results
