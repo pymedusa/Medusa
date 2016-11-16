@@ -114,7 +114,6 @@ class PostProcessor(object):
             except ValueError:
                 pass
 
-        self._log(u"Couldn't get the relative path, using the parent folder instead", logger.DEBUG)
         parent_name = os.path.basename(os.path.dirname(self.file_path))
         # return self.file_path once this bug is fixed: goo.gl/U4XNoP
         return os.path.join(parent_name, self.file_name)
