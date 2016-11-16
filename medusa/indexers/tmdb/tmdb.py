@@ -130,6 +130,9 @@ class Tmdb(BaseIndexer):
                     if key in key_mappings:
                         key = key_mappings[key]
 
+                    if isinstance(value, float):
+                        value = str(value)
+
                     # Set value to key
                     return_dict[key] = value
 
