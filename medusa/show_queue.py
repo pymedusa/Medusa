@@ -505,7 +505,7 @@ class QueueItemAdd(ShowQueueItem):
         app.showList.append(self.show)
 
         try:
-            self.show.load_episodes_from_indexer()
+            self.show.load_episodes_from_indexer(tvapi=t)
         except Exception as e:
             logger.log(
                 u"Error with " + app.indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
