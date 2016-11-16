@@ -105,8 +105,10 @@ indexerConfig = {
     }
 }
 
+# For example: {1: 'tvdb_id', 3: 'tvmaze_id', 4: 'tmdb_id'}
 mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
 mappings.update(EXTERNAL_MAPPINGS)
 
+# For example: {'tvdb_id': 1, 'tvmaze_id': 3, 'tmdb_id': 4}
 reverse_mappings = {indexerConfig[indexer]['mapped_to']: indexer for indexer in indexerConfig}
 reverse_mappings.update({v: k for k, v in EXTERNAL_MAPPINGS.iteritems()})
