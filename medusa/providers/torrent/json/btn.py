@@ -83,11 +83,10 @@ class BTNProvider(TorrentProvider):
 
             if mode != 'RSS':
                 search_params = self._episode_search_params(ep_obj)
+                if mode == 'Season':
+                    search_params = self._season_search_params(ep_obj)
                 logger.log('Search string: {search}'.format
                            (search=search_params), logger.DEBUG)
-
-            if mode == 'Season':
-                search_params = self._season_search_params(ep_obj)
 
             response = self._api_call(self.api_key, search_params)
             if not response:
