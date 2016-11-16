@@ -1,24 +1,18 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    from datetime import datetime
     import urllib
     import ntpath
     import os.path
     import medusa as app
     import time
-    from medusa import subtitles, sbdatetime, network_timezones, helpers
+    from medusa import subtitles, network_timezones, helpers
     import medusa.helpers
-    from dateutil import parser
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
     from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
-    from medusa.helper.common import pretty_file_size, episode_num
-    from medusa.sbdatetime import sbdatetime
-    from medusa.show.history import History
+    from medusa.helper.common import episode_num, pretty_file_size
     from medusa.failed_history import prepareFailedName
-    from medusa.providers.generic_provider import GenericProvider
-    from medusa import providers
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -384,7 +378,7 @@
                 </tbody>
                 <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
                     % for item in episode_history:
-                        <% status, quality = Quality.splitCompositeStatus(item['action']) %>
+                        <% status = item['status'] %>
                         % if status == DOWNLOADED:
                     <tr style="background-color:rgb(195, 227, 200);!important">
                         % elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
@@ -393,22 +387,16 @@
                             <tr style="background-color:rgb(255, 153, 153);!important">
                         % endif
                         <td align="center" style="width: auto;">
-                            <% action_date = sbdatetime.sbfdatetime(datetime.strptime(str(item['date']), History.date_format), show_seconds=True) %>
-                            ${action_date}
+                            ${item['action_date']}
                         </td>
                         <td  align="center" style="width: auto;">
-                        ${statusStrings[status]} ${renderQualityPill(quality)}
+                        ${statusStrings[status]} ${renderQualityPill(item['quality'])}
                         </td>
                         <td align="center" style="width: auto;">
-                            <% provider = providers.get_provider_class(GenericProvider.make_id(item["provider"])) %>
-                            % if provider is not None:
-                                <img src="images/providers/${provider.image_name()}" width="16" height="16" alt="${provider.name}" title="${provider.name}"/> ${item["provider"]}
-                            % else:
-                                ${item['provider'] if item['provider'] != "-1" else 'Unknown'}
-                            % endif
+                                <img src="${item['provider_img_link']}" width="16" height="16" alt="${item['provider_name']}" title="${item['provider_name']}"/> ${item["provider_name"]}
                         </td>
                         <td style="width: auto;">
-                        ${os.path.basename(item['resource'])}
+                        ${item['resource_file']}
                         </td>
                         </tr>
                     % endfor
@@ -463,7 +451,7 @@
                             continue
 
                         hItem = dict(hItem)
-                        release_group = (hItem["release_group"] or 'None')
+                        release_group = hItem["release_group"]
                         if ignore_words and release_group in ignored:
                             rg_highlight = 'ignored'
                         elif require_words and release_group in required:
@@ -491,13 +479,13 @@
                         if any([item for item in episode_history
                                 if all([prepareFailedName(hItem["name"]) in item['resource'],
                                         item['provider'] in (hItem['provider'], hItem['release_group'],),
-                                        Quality.splitCompositeStatus(item['action']).status in failed_statuses])
+                                        item['status'] in failed_statuses])
                                 ]):
                             status_highlight = 'failed'
                         elif any([item for item in episode_history
                                   if all([hItem["name"] in item['resource'],
                                           item['provider'] in (hItem['provider'],),
-                                          Quality.splitCompositeStatus(item['action']).status in snatched_statuses])
+                                          item['status'] in snatched_statuses])
                                   ]):
                             status_highlight = 'snatched'
                         else:
@@ -515,32 +503,28 @@
                             </span>
                         </td>
                         <td class="col-provider">
-                            <%
-                                provider_img = hItem.get("provider_image")
-                                provider = hItem["provider"] if provider_img else 'missing provider'
-                            %>
-                            <img src="images/providers/${provider_img or 'missing.png'}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${provider}" title="${provider}"/>
+                            <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                             ${hItem["provider"]}
                         </td>
                         <td align="center">${renderQualityPill(int(hItem["quality"]))}
                         % if hItem["proper_tags"]:
-                            <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"].replace('|', ', ')}"/>
+                            <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"]}"/>
                         % endif
                         </td>
                         <td align="center">
                             <span class="${seed_highlight}">
-                                ${hItem["seeders"] if hItem["seeders"] >= 0 else '-'}
+                                ${hItem["seeders"]}
                             </span>
                         </td>
                         <td align="center">
                             <span class="${leech_highlight}">
-                                ${hItem["leechers"] if hItem["leechers"] > -1 else '-'}
+                                ${hItem["leechers"]}
                             </span>
                         </td>
-                        <td class="col-size">${pretty_file_size(hItem["size"]) if hItem["size"] > -1 else 'N/A'}</td>
+                        <td class="col-size">${hItem["pretty_size"]}</td>
                         <td align="center">${hItem["provider_type"]}</td>
-                        <td class="col-date">${datetime.fromtimestamp(hItem["time"]).strftime(app.DATE_PRESET+" "+app.TIME_PRESET)}</td>
-                        <td class="col-date">${sbdatetime.convert_to_setting(parser.parse(hItem["pubdate"])).strftime(app.DATE_PRESET+" "+app.TIME_PRESET) if hItem["pubdate"] else '-'}</td>
+                        <td class="col-date">${hItem["time"]}</td>
+                        <td class="col-date">${hItem["pubdate"]}</td>
                         <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                     </tr>
                 % endfor

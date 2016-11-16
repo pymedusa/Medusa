@@ -7,9 +7,14 @@ import json
 import os
 import time
 from datetime import date
+from datetime import datetime
 
 import adba
 import medusa as app
+from medusa import providers
+from medusa.providers.generic_provider import GenericProvider
+from medusa.sbdatetime import sbdatetime
+from medusa.show.history import History
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
 from tornroutes import route
@@ -1169,9 +1174,19 @@ class Home(WebRoot):
                 b'ORDER BY date DESC',
                 [indexer_id, season, episode]
             )
-            if episode_status_result:
-                for item in episode_status_result:
-                    episode_history.append(dict(item))
+            episode_history = [dict(row) for row in episode_status_result]
+            for i in episode_history:
+                i['status'], i['quality'] = Quality.splitCompositeStatus(i['action'])
+                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
+                i['resource_file'] = os.path.basename(i['resource'])
+                provider = providers.get_provider_class(GenericProvider.make_id(i["provider"]))
+                if provider is not None:
+                    i['provider_name'] = provider.name
+                    i['provider_img_link'] = 'images/providers/' + provider.image_name()
+                else:
+                    i['provider_name'] = i['provider'] if i['provider'] != "-1" else 'Unknown'
+                    i['provider_img_link'] = ''
+
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
