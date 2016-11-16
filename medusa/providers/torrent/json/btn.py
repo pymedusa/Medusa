@@ -175,7 +175,7 @@ class BTNProvider(TorrentProvider):
     def _process_title_and_url(parsed_json):
 
         # Try to get the release name,
-        # if it doesn't exist make one up 
+        # if it doesn't exist make one up
         # from the proprieties obtained.
 
         title = parsed_json.get('ReleaseName')
