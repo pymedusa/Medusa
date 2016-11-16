@@ -174,36 +174,28 @@ class BTNProvider(TorrentProvider):
     @staticmethod
     def _process_title_and_url(parsed_json):
 
-        # The BTN API gives a lot of information in response,
-        # however this application is built mostly around Scene or
-        # release names, which is why we are using them here.
+        # Try to get the release name,
+        # if it doesn't exist make one up 
+        # from the proprieties obtained.
 
-        if 'ReleaseName' in parsed_json and parsed_json['ReleaseName']:
-            title = parsed_json['ReleaseName']
-
-        else:
+        title = parsed_json.get('ReleaseName')
+        if not title:
             # If we don't have a release name we need to get creative
             title = ''
             if 'Series' in parsed_json:
-                title += parsed_json['Series']
+                title += parsed_json.get('Series')
             if 'GroupName' in parsed_json:
-                title += '.' + parsed_json['GroupName'] if title else parsed_json['GroupName']
+                title += '.' + parsed_json.get('GroupName')
             if 'Resolution' in parsed_json:
-                title += '.' + parsed_json['Resolution'] if title else parsed_json['Resolution']
+                title += '.' + parsed_json.get('Resolution')
             if 'Source' in parsed_json:
-                title += '.' + parsed_json['Source'] if title else parsed_json['Source']
+                title += '.' + parsed_json.get('Source')
             if 'Codec' in parsed_json:
-                title += '.' + parsed_json['Codec'] if title else parsed_json['Codec']
+                title += '.' + parsed_json.get('Codec')
             if title:
                 title = title.replace(' ', '.')
 
-        url = None
-        if 'DownloadURL' in parsed_json:
-            url = parsed_json['DownloadURL']
-            if url:
-                # Unescaped / is valid in JSON, but it can be escaped
-                url = url.replace('\\/', '/')
-
+        url = parsed_json.get('DownloadURL').replace('\\/', '/')
         return title, url
 
     def _season_search_params(self, ep_obj):
