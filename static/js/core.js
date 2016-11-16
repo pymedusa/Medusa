@@ -34,6 +34,12 @@ var UTIL = {
         UTIL.exec('common');
         UTIL.exec(controller);
         UTIL.exec(controller, action);
+
+        if (typeof startVue === 'function') { // eslint-disable-line no-undef
+            startVue(); // eslint-disable-line no-undef
+        } else {
+            $('[v-cloak]').removeAttr('v-cloak');
+        }
     }
 };
 
@@ -63,14 +69,6 @@ $.ajaxSetup({
         if (/^https?:\/\/|^\/\//i.test(options.url) === false) {
             options.url = webRoot + options.url;
         }
-    }
-});
-
-$(document).ready(function() {
-    if (typeof startVue === 'function') { // eslint-disable-line no-undef
-        startVue(); // eslint-disable-line no-undef
-    } else {
-        $('[v-cloak]').removeAttr('v-cloak');
     }
 });
 

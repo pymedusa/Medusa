@@ -24,7 +24,7 @@
         <tr><td><i class="icon16-config-db"></i> Database File:</td><td>{{dbFilename}}</td></tr>
         <tr><td><i class="icon16-config-cache"></i> Cache Folder:</td><td>{{cacheDir}}</td></tr>
         <tr><td><i class="icon16-config-log"></i> Log Folder:</td><td>{{logDir}}</td></tr>
-        <tr v-if="appArgs.length"><td><i class="icon16-config-arguments"></i> Arguments:</td><td>{{appArgs}}</td></tr>
+        <tr v-if="appArgs.length"><td><i class="icon16-config-arguments"></i> Arguments:</td><td><pre style="background-color: #222222;border-color: #222222;padding: 0;border: 0;margin: 0;">{{prettyPrintJSON(appArgs)}}</pre></td></tr>
         <tr v-if="webRoot"><td><i class="icon16-config-folder"></i> Web Root:</td><td>{{webRoot}}</td></tr>
         <tr><td>&nbsp;</td><td>&nbsp;</td></tr>
         <tr class="infoTableSeperator"><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -49,6 +49,9 @@ var startVue = function(){
             anonRedirect: function(e){
                 e.preventDefault();
                 window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
+            },
+            prettyPrintJSON: function(x){
+                return JSON.stringify(x, undefined, 4)
             }
         }
     });
