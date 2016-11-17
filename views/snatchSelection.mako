@@ -7,7 +7,7 @@
     import time
     from medusa import subtitles, network_timezones, helpers
     import medusa.helpers
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
+    from medusa.common import FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
     from medusa.show_name_helpers import filterBadReleases
@@ -378,19 +378,12 @@
                 </tbody>
                 <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
                     % for item in episode_history:
-                        <% status = item['status'] %>
-                        % if status == DOWNLOADED:
-                    <tr style="background-color:rgb(195, 227, 200);!important">
-                        % elif status in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                            <tr style="background-color:rgb(235, 193, 234);!important">
-                        % elif status == FAILED:
-                            <tr style="background-color:rgb(255, 153, 153);!important">
-                        % endif
+                        <tr class="${item['status_color_style']}">
                         <td align="center" style="width: auto;">
                             ${item['action_date']}
                         </td>
                         <td  align="center" style="width: auto;">
-                        ${statusStrings[status]} ${renderQualityPill(item['quality'])}
+                        ${item['status_name']} ${renderQualityPill(item['quality'])}
                         </td>
                         <td align="center" style="width: auto;">
                                 <img src="${item['provider_img_link']}" width="16" height="16" alt="${item['provider_name']}" title="${item['provider_name']}"/> ${item["provider_name"]}
@@ -444,7 +437,7 @@
                         if manual_search_type == 'season' and 'E00' in hItem["name"]:
                             continue
 
-                        failed_statuses = [FAILED]
+                        failed_statuses = [FAILED, ]
                         snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
                         if any([item for item in episode_history
                                 if all([prepareFailedName(hItem["name"]) in item['resource'],

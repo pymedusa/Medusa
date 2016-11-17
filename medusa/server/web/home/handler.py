@@ -6,26 +6,23 @@ import ast
 import json
 import os
 import time
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 
 import adba
 import medusa as app
-from medusa import providers
-from medusa.providers.generic_provider import GenericProvider
-from medusa.sbdatetime import sbdatetime
-from medusa.show.history import History
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
 from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
-from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, subtitles, ui
+from .... import clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_config import INDEXER_TVDBV2
+from ....providers.generic_provider import GenericProvider
+from ....sbdatetime import sbdatetime
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
@@ -40,6 +37,7 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
+from ....show.history import History
 from ....show.show import Show
 from ....system.restart import Restart
 from ....system.shutdown import Shutdown
@@ -1171,6 +1169,13 @@ class Home(WebRoot):
                 i['status'], i['quality'] = Quality.splitCompositeStatus(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
+                i['status_name'] = statusStrings[i['status']]
+                if i['status'] == DOWNLOADED:
+                    i['status_color_style'] = "downloaded-color"
+                elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+                    i['status_color_style'] = "snatched-color"
+                elif i['status'] == FAILED:
+                    i['status_color_style'] = "failed-color"
                 provider = providers.get_provider_class(GenericProvider.make_id(i["provider"]))
                 if provider is not None:
                     i['provider_name'] = provider.name

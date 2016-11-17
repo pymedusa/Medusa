@@ -3673,6 +3673,18 @@ div#searchNotification {
     word-break: break-all;
 }
 
+.downloaded-color {
+background-color:rgb(195, 227, 200);!important
+}
+
+.snatched-color {
+background-color:rgb(235, 193, 234);!important
+}
+
+.failed-color {
+background-color:rgb(255, 153, 153);!important
+}
+
 /* =======================================================================
 viewLog.mako
 ========================================================================== */

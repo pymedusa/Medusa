@@ -185,7 +185,7 @@
                 % if show.show_words().preferred_words:
                     <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${show.show_words().preferred_words}</span></td></tr>
                 % endif
-                % if show.show_words().undesired_words::
+                % if show.show_words().undesired_words:
                     <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${show.show_words().undesidered_words}</span></td></tr>
                 % endif
                 % if bwl and bwl.whitelist:
