@@ -39,11 +39,11 @@ from . import db, helpers, image_cache, logger, network_timezones, notifiers, po
 from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
-    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, qualityPresets, SKIPPED, SNATCHED, SNATCHED_PROPER,
     UNAIRED, UNKNOWN, WANTED, statusStrings
 )
 from .helper.common import (
-    dateFormat, dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
+    dateFormat, dateTimeFormat, episode_num, pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
 )
 from .helper.exceptions import (
     EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
@@ -281,6 +281,27 @@ class TVShow(TVObject):
         :rtype: bool
         """
         return os.path.isdir(location or self._location)
+
+    @property
+    def current_qualities(self):
+        allowed_qualities, preferred_qualities = Quality.splitQuality(int(self.quality))
+        return (allowed_qualities, preferred_qualities)
+
+    @property
+    def using_preset_quality(self):
+        return self.quality in qualityPresets
+
+    @property
+    def default_ep_status_name(self):
+        return statusStrings[self.default_ep_status]
+
+    def show_size(self, pretty=False):
+        show_size = app.helpers.get_size(self.raw_location)
+        return pretty_file_size(show_size) if pretty else show_size
+
+    @property
+    def subtitle_flag(self):
+        return subtitles.code_from_code(self.lang) if self.lang else ''
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -1067,7 +1088,7 @@ class TVShow(TVObject):
                 self.status = 'Unknown'
 
             self.airs = sql_results[0]['airs']
-            if self.airs is None:
+            if self.airs is None or not network_timezones.test_timeformat(self.airs):
                 self.airs = ''
 
             self.startyear = int(sql_results[0][b'startyear'] or 0)

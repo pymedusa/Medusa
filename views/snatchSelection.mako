@@ -1,18 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import urllib
-    import ntpath
-    import os.path
     import medusa as app
-    import time
-    from medusa import subtitles, network_timezones, helpers
-    import medusa.helpers
-    from medusa.common import FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
-    from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
-    from medusa.show_name_helpers import filterBadReleases
-    from medusa.helper.common import episode_num, pretty_file_size
-    from medusa.failed_history import prepareFailedName
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -98,13 +87,13 @@
         </div><!-- #tags //-->
         <div id="summary" ${"class=\"summaryFanArt\"" if app.FANART_BACKGROUND else ""}>
             <table class="summaryTable pull-left">
-                <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
+                <% allowed_qualities, preferred_qualities = show.current_qualities %>
                 <tr>
                     <td class="showLegend">
                         Quality:
                     </td>
                     <td>
-                    % if show.quality in qualityPresets:
+                    % if show.using_preset_quality:
                         ${renderQualityPill(show.quality)}
                     % else:
                         % if allowed_qualities:
@@ -123,9 +112,8 @@
                     <td>
                         % if show.airs:
                         ${show.airs}
-                            % if not network_timezones.test_timeformat(show.airs):
+                        % else:
                         <strong class="warning">(invalid Timeformat)</strong>
-                            % endif
                         % endif
                         % if show.network:
                             % if show.airs:
@@ -148,7 +136,7 @@
                         Default EP Status:
                     </td>
                     <td>
-                        ${statusStrings[show.default_ep_status]}
+                        ${show.default_ep_status_name}
                     </td>
                 </tr><!-- Row: Ep Status //-->
             % if showLoc[1]:
@@ -256,13 +244,12 @@
                         Size:
                     </td>
                     <td>
-                        ${pretty_file_size(app.helpers.get_size(showLoc[0]))}
+                        ${show.show_size(pretty=True)}
                     </td>
                 </tr><!-- Row: Size //-->
             </table><!-- Table: Summary //-->
             <table style="width:180px; float: right; vertical-align: middle; height: 100%;">
                 <%
-                    info_flag = subtitles.code_from_code(show.lang) if show.lang else ''
                     yes_img = '<img src="images/yes16.png" alt="Y" width="16" height="16" />'
                     no_img = '<img src="images/no16.png" alt="N" width="16" height="16" />'
                 %>
@@ -271,7 +258,7 @@
                         Info Language:
                     </td>
                     <td>
-                        <img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
+                        <img src="images/subtitles/flags/${show.subtitle_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
                     </td>
                 </tr><!-- Row: Language //-->
                 % if app.USE_SUBTITLES:
@@ -396,7 +383,6 @@
                 </tbody>
             </table>
         % endif
-        <!-- @TODO: Change this to use the REST API -->
         <!-- add provider meta data -->
             <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
             <table id="showTableSeason" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
@@ -432,7 +418,7 @@
                 </thead>
                 <tbody aria-live="polite" aria-relevant="all">
                 % for hItem in provider_results['found_items']:
-                    <tr id='${episode_num(int(season), int(episode))} ${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
+                    <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                         <td class="tvShow">
                             <span class="break-word ${hItem['name_highlight']}">
                                 ${hItem["name"]}
