@@ -62,3 +62,7 @@ class IndexerAttributeNotFound(IndexerException):
 
 class IndexerSeasonUpdatesNotSupported(IndentationError):
     """Raised if an episode does not have the requested attribute (such as a episode name)."""
+
+
+class IndexerUnavailable(IndexerError):
+    """Indexer API is unavailable, for example when giving back a 5xx response."""
