@@ -487,7 +487,7 @@
                                 filename = filename.replace(rootDir, "")
                         filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
                     %>
-                    <center><a href="${filename}">Download</a></center>
+                    <a href="${filename}">Download</a>
                 % endif
             </td>
             <td class="col-subtitles" align="center">

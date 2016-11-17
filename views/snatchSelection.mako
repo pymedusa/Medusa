@@ -349,7 +349,7 @@
     <div id="searchNotification"></div><!-- #searchNotification //-->
     <div class="pull-right clearfix" id="filterControls">
         <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
-        <button id="btnReset" type="button" class="btn btn-xs">Reset Sort</b></button>
+        <button id="btnReset" type="button" class="btn btn-xs">Reset Sort</button>
     </div><!-- #filterControls //-->
     <div class="clearfix"></div><!-- .clearfix //-->
     <div id="wrapper" data-history-toggle="hide">
