@@ -1172,11 +1172,11 @@ class Home(WebRoot):
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
-                    i['status_color_style'] = "downloaded-color"
+                    i['status_color_style'] = "downloaded"
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                    i['status_color_style'] = "snatched-color"
+                    i['status_color_style'] = "snatched"
                 elif i['status'] == FAILED:
-                    i['status_color_style'] = "failed-color"
+                    i['status_color_style'] = "failed"
                 provider = providers.get_provider_class(GenericProvider.make_id(i["provider"]))
                 if provider is not None:
                     i['provider_name'] = provider.name
