@@ -68,8 +68,8 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            log().warning('could not authenticate to the indexer TheTvdb.com, with reason %s (%s)', e.reason, e.status)
-            raise IndexerUnavailable('Indexer unavailable with reason %s (%s)' % (e.reason, e.status))
+            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s' (%s)", e.reason, e.status)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
 
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
