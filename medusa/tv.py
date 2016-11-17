@@ -2503,9 +2503,9 @@ class TVEpisode(TVObject):
                     raise NoNFOException('Error in NFO format')
 
                 for ep_details in list(show_xml.iter('episodedetails')):
-                    if ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or \
-                            ep_details.findtext('episode') is None or int(
-                        ep_details.findtext('episode')) != self.episode:
+                    if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
+                        ep_details.findtext('episode') is None or
+                            int(ep_details.findtext('episode')) != self.episode):
                         logger.log(u'{id}: NFO has an <episodedetails> block for a different episode - '
                                    u'wanted {ep_wanted} but got {ep_found}'.format
                                    (id=self.show.indexerid, ep_wanted=episode_num(self.season, self.episode),
@@ -2519,8 +2519,6 @@ class TVEpisode(TVObject):
                     self.name = ep_details.findtext('title')
                     self.episode = int(ep_details.findtext('episode'))
                     self.season = int(ep_details.findtext('season'))
-
-                    xem_refresh(self.show.indexerid, self.show.indexer)
 
                     self.scene_absolute_number = get_scene_absolute_numbering(
                         self.show.indexerid,

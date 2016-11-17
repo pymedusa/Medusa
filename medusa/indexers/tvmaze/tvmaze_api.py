@@ -24,7 +24,7 @@ from collections import OrderedDict
 import logging
 
 from pytvmaze import API
-from pytvmaze.exceptions import ShowNotFound
+from pytvmaze.exceptions import ShowNotFound, CastNotFound, EpisodeNotFound, UpdateNotFound
 
 from ..indexer_base import (BaseIndexer, Actors, Actor)
 from ..indexer_exceptions import IndexerError, IndexerShowNotFound, IndexerException
@@ -234,7 +234,11 @@ class TVmaze(BaseIndexer):
         """
         # Parse episode data
         log().debug('Getting all episodes of %s', [tvmaze_id])
-        results = self.API.episode_list(tvmaze_id, specials)
+        try:
+            results = self.API.episode_list(tvmaze_id, specials)
+        except EpisodeNotFound:
+            log().debug('Episode search did not return any results.')
+            return False
 
         episodes = self._map_results(results,  self.series_map)
 
@@ -337,9 +341,9 @@ class TVmaze(BaseIndexer):
         data from the indexer)
         """
         log().debug('Getting actors for %s', [tvmaze_id])
-        actors = self.API.show_cast(tvmaze_id)
-
-        if not actors:
+        try:
+            actors = self.API.show_cast(tvmaze_id)
+        except CastNotFound:
             log().debug('Actors result returned zero')
             return
 
@@ -411,7 +415,11 @@ class TVmaze(BaseIndexer):
     def _get_all_updates(self, tvmaze_id=None, start_date=None, end_date=None):
         """Retrieve all updates (show,season,episode) from TVMaze"""
         results = []
-        updates = self.API.show_updates()
+        try:
+            updates = self.API.show_updates()
+        except UpdateNotFound:
+            return False
+
         if getattr(updates, 'updates', None):
             for show_id, update_ts in updates.updates.iteritems():
                 if start_date < update_ts < (end_date or time()):
