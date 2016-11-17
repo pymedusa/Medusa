@@ -25,13 +25,13 @@ import time
 from datetime import datetime
 from dateutil import parser
 import medusa as app
-from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
 from .queue import ForcedSearchQueueItem
 from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
 from ..helper.common import enabled_providers, pretty_file_size
 from ..sbdatetime import sbdatetime
 from ..show.show import Show
+from ..show_name_helpers import containsAtLeastOneWord, filterBadReleases
 
 SEARCH_STATUS_FINISHED = "finished"
 SEARCH_STATUS_QUEUED = "queued"
