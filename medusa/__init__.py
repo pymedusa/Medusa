@@ -43,7 +43,7 @@ from .helper import exceptions
 from .indexers import indexer_api
 from .indexers.indexer_exceptions import (
     IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerException, IndexerSeasonNotFound,
-    IndexerShowIncomplete, IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUserAbort
+    IndexerShowIncomplete, IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUserAbort, IndexerUnavailable
 )
 from .providers import NewznabProvider, TorrentRssProvider
 from .providers.generic_provider import GenericProvider
