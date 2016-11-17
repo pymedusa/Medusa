@@ -18,6 +18,7 @@ from ..core import PageTemplate, WebRoot
 from .... import clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
 from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....failed_history import prepareFailedName
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_config import INDEXER_TVDBV2
@@ -1183,6 +1184,25 @@ class Home(WebRoot):
                 else:
                     i['provider_name'] = i['provider'] if i['provider'] != "-1" else 'Unknown'
                     i['provider_img_link'] = ''
+
+            # Compare manual search results with history and set status
+            for provider_result in provider_results['found_items']:
+                failed_statuses = [FAILED, ]
+                snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+                if any([item for item in episode_history
+                        if all([prepareFailedName(provider_result["name"]) in item['resource'],
+                                item['provider'] in (provider_result['provider'], provider_result['release_group'],),
+                                item['status'] in failed_statuses])
+                        ]):
+                    provider_result['status_highlight'] = 'failed'
+                elif any([item for item in episode_history
+                          if all([provider_result["name"] in item['resource'],
+                                  item['provider'] in (provider_result['provider'],),
+                                  item['status'] in snatched_statuses])
+                          ]):
+                    provider_result['status_highlight'] = 'snatched'
+                else:
+                    provider_result['status_highlight'] = ''
 
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))

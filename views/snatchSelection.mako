@@ -432,29 +432,7 @@
                 </thead>
                 <tbody aria-live="polite" aria-relevant="all">
                 % for hItem in provider_results['found_items']:
-                    <%
-                        # Hides special episodes from season search
-                        if manual_search_type == 'season' and 'E00' in hItem["name"]:
-                            continue
-
-                        failed_statuses = [FAILED, ]
-                        snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
-                        if any([item for item in episode_history
-                                if all([prepareFailedName(hItem["name"]) in item['resource'],
-                                        item['provider'] in (hItem['provider'], hItem['release_group'],),
-                                        item['status'] in failed_statuses])
-                                ]):
-                            status_highlight = 'failed'
-                        elif any([item for item in episode_history
-                                  if all([hItem["name"] in item['resource'],
-                                          item['provider'] in (hItem['provider'],),
-                                          item['status'] in snatched_statuses])
-                                  ]):
-                            status_highlight = 'snatched'
-                        else:
-                            status_highlight = ''
-                    %>
-                    <tr id='${episode_num(int(season), int(episode))} ${hItem["name"]}' class="skipped season-${season} seasonstyle ${status_highlight}" role="row">
+                    <tr id='${episode_num(int(season), int(episode))} ${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                         <td class="tvShow">
                             <span class="break-word ${hItem['name_highlight']}">
                                 ${hItem["name"]}
