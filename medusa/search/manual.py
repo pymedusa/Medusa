@@ -28,7 +28,7 @@ import medusa as app
 from medusa.sbdatetime import sbdatetime
 from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
 from .queue import ForcedSearchQueueItem
-from .. import db, logger, show_name_helpers
+from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
 from ..helper.common import enabled_providers, pretty_file_size
 
@@ -193,11 +193,10 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
     down_cur_quality = 0
     show_obj = Show.find(app.showList, int(show))
-    show_words = show_name_helpers.show_words(show_obj)
-    preferred_words=show_words.preferred_words.lower().split(',')
-    undesired_words=show_words.undesired_words.lower().split(',')
-    ignore_words=show_words.ignore_words.lower().split(',')
-    require_words=show_words.require_words.lower().split(',')
+    preferred_words = show_obj.show_words().preferred_words.lower().split(',')
+    undesired_words = show_obj.show_words().undesired_words.lower().split(',')
+    ignored_words = show_obj.show_words().ignored_words.lower().split(',')
+    required_words = show_obj.show_words().required_words.lower().split(',')
 
     main_db_con = db.DBConnection('cache.db')
 
@@ -279,7 +278,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         for i in cached_results:
             i['quality_name'] = Quality.splitQuality(i['quality'])
             i['time'] = datetime.fromtimestamp(i["time"]).strftime(app.DATE_PRESET + " " + app.TIME_PRESET)
-            i['release_group'] = i["release_group"] or 'None'            
+            i['release_group'] = i["release_group"] or 'None'
             i['provider_img_link'] = 'images/providers/' + i['provider_image'] or 'missing.png'
             i['provider'] = i['provider'] if i['provider_image'] else 'missing provider'
             i['proper_tags'] = i["proper_tags"].replace('|', ', ')
@@ -289,9 +288,9 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             i['pubdate'] = sbdatetime.convert_to_setting(parser.parse(i["pubdate"])).strftime(
                 app.DATE_PRESET + " " + app.TIME_PRESET) if i["pubdate"] else '-'
             release_group = i['release_group']
-            if ignore_words and release_group in ignore_words:
+            if ignored_words and release_group in ignored_words:
                 i["rg_highlight"] = 'ignored'
-            elif require_words and release_group in require_words:
+            elif required_words and release_group in required_words:
                 i["rg_highlight"] = 'required'
             elif preferred_words and release_group in preferred_words:
                 i["rg_highlight"] = 'preferred'
@@ -299,9 +298,9 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 i["rg_highlight"] = 'undesired'
             else:
                 i["rg_highlight"] = ''
-            if containsAtLeastOneWord(i["name"], require_words):
+            if containsAtLeastOneWord(i["name"], required_words):
                 i["name_highlight"] = 'required'
-            elif containsAtLeastOneWord(i["name"], ignore_words) or not filterBadReleases(i["name"], parse=False):
+            elif containsAtLeastOneWord(i["name"], ignored_words) or not filterBadReleases(i["name"], parse=False):
                 i["name_highlight"] = 'ignored'
             elif containsAtLeastOneWord(i["name"], undesired_words):
                 i["name_highlight"] = 'undesired'

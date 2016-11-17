@@ -26,7 +26,7 @@ import stat
 import threading
 import time
 import traceback
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -550,6 +550,32 @@ class TVShow(TVObject):
             return True
 
         return False
+
+    def show_words(self):
+        """
+        Returns all related words to show: preferred, undesired, ignore, require.
+        """
+        words = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignored_words', 'required_words'])
+
+        preferred_words = ",".join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''
+        undesired_words = ",".join(app.UNDESIRED_WORDS.split(',')) if app.UNDESIRED_WORDS.split(',') else ''
+
+        global_ignore = app.IGNORE_WORDS.split(',') if app.IGNORE_WORDS else []
+        global_require = app.REQUIRE_WORDS.split(',') if app.REQUIRE_WORDS else []
+        show_ignore = self.rls_ignore_words.split(',') if self.rls_ignore_words else []
+        show_require = self.rls_require_words.split(',') if self.rls_require_words else []
+
+        # If word is in global ignore and also in show require, then remove it from global ignore
+        # Join new global ignore with show ignore
+        final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
+        # If word is in global require and also in show ignore, then remove it from global require
+        # Join new global required with show require
+        final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+
+        ignored_words = ",".join(final_ignore)
+        required_words = ",".join(final_require)
+
+        return words(preferred_words, undesired_words, ignored_words, required_words)
 
     def __write_show_nfo(self):
 

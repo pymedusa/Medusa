@@ -20,7 +20,7 @@ from six import iteritems
 from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
-from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui
+from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
 from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
 from ....helper.common import enabled_providers, try_int
@@ -864,8 +864,6 @@ class Home(WebRoot):
             'name': show_obj.name,
         })
 
-        show_words = show_name_helpers.show_words(show_obj)
-
         return t.render(
             submenu=submenu, showLoc=show_loc, show_message=show_message,
             show=show_obj, sql_results=sql_results, seasonResults=season_results,
@@ -875,13 +873,7 @@ class Home(WebRoot):
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
-            title=show_obj.name,
-            controller='home',
-            action='displayShow',
-            preferred_words=show_words.preferred_words,
-            undesired_words=show_words.undesired_words,
-            ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words
+            title=show_obj.name, controller='home', action='displayShow',
         )
 
     def pickManualSearch(self, provider=None, rowid=None, manual_search_type='episode'):
@@ -1190,8 +1182,6 @@ class Home(WebRoot):
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
-        show_words = show_name_helpers.show_words(show_obj)
-
         return t.render(
             submenu=submenu, showLoc=show_loc, show_message=show_message,
             show=show_obj, provider_results=provider_results, episode=episode,
@@ -1201,13 +1191,7 @@ class Home(WebRoot):
             xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
-            title=show_obj.name,
-            controller='home',
-            action='snatchSelection',
-            preferred_words=show_words.preferred_words,
-            undesired_words=show_words.undesired_words,
-            ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words,
+            title=show_obj.name, controller='home', action='snatchSelection',
             episode_history=episode_history
         )
 

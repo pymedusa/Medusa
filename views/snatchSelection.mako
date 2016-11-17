@@ -185,50 +185,50 @@
                     </td>
                 </tr><!-- Row: Scene exceptions //-->
             % endif
-            % if require_words:
+            % if show.show_words().required_words:
                 <tr>
                     <td class="showLegend" style="vertical-align: top;">
                         Required Words:
                     </td>
                     <td>
                         <span class="break-word required">
-                            ${require_words}
+                            ${show.show_words().required_words.replace(',', ', ')}
                         </span>
                     </td>
                 </tr><!-- Row: Required words //-->
             % endif
-            % if ignore_words:
+            % if show.show_words().ignored_words:
                 <tr>
                     <td class="showLegend" style="vertical-align: top;">
                         Ignored Words:
                     </td>
                     <td>
                         <span class="break-word ignored">
-                                ${ignore_words}
+                                ${show.show_words().ignored_words.replace(',', ', ')}
                         </span>
                     </td>
                 </tr><!-- Row: Ignored words //-->
             % endif
-            % if preferred_words:
+            % if show.show_words().preferred_words:
                 <tr>
                     <td class="showLegend" style="vertical-align: top;">
                         Preferred Words:
                     </td>
                     <td>
                         <span class="break-word preferred">
-                            ${preferred_words}
+                            ${show.show_words().preferred_words.replace(',', ', ')}
                         </span>
                     </td>
                 </tr><!-- Row: Preferred words //-->
             % endif
-            % if undesired_words:
+            % if show.show_words().undesired_words:
                 <tr>
                     <td class="showLegend" style="vertical-align: top;">
                         Undesired Words:
                     </td>
                     <td>
                         <span class="break-word undesired">
-                            ${undesired_words}
+                            ${show.show_words().undesired_words.replace(',', ', ')}
                         </span>
                     </td>
                 </tr><!-- Row: Undesired words //-->
@@ -438,12 +438,6 @@
                     </tr>
                 </thead>
                 <tbody aria-live="polite" aria-relevant="all">
-                <%
-                    ignored = ignore_words.lower().split(',') if ignore_words else []
-                    required = require_words.lower().split(',') if require_words else []
-                    preferred = preferred_words.lower().split(',') if preferred_words else []
-                    undesired = undesired_words.lower().split(',') if undesired_words else []
-                %>
                 % for hItem in provider_results['found_items']:
                     <%
                         # Hides special episodes from season search
