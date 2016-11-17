@@ -256,19 +256,18 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
                         cur_result.seeders, cur_result.leechers))
             continue
 
-        show_words = show_name_helpers.show_words(cur_result.show)
-        ignore_words = show_words.ignore_words
-        require_words = show_words.require_words
-        found_ignore_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignore_words)
-        found_require_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, require_words)
+        ignored_words = show.show_words().ignored_words
+        required_words = show.show_words().required_words
+        found_ignored_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignored_words)
+        found_required_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, required_words)
 
-        if ignore_words and found_ignore_word:
-            logger.log(u"Ignoring " + cur_result.name + u" based on ignored words filter: " + found_ignore_word,
+        if ignored_words and found_ignored_word:
+            logger.log(u"Ignoring " + cur_result.name + u" based on ignored words filter: " + found_ignored_word,
                        logger.INFO)
             continue
 
-        if require_words and not found_require_word:
-            logger.log(u"Ignoring " + cur_result.name + u" based on required words filter: " + require_words,
+        if required_words and not found_required_word:
+            logger.log(u"Ignoring " + cur_result.name + u" based on required words filter: " + required_words,
                        logger.INFO)
             continue
 
