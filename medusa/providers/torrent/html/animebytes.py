@@ -23,7 +23,9 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from six.moves.urllib_parse import parse_qs
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -39,11 +41,10 @@ OTHER = 6
 
 
 class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """AnimeBytes Torrent provider"""
+    """AnimeBytes Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'AnimeBytes')
 
         # Credentials
@@ -51,11 +52,11 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         self.password = None
 
         # URLs
-        self.url = 'https://animebytes.tv/'
+        self.url = 'https://animebytes.tv'
         self.urls = {
-            'login': urljoin(self.url, '/user/login'),
+            'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'torrents.php'),
-            'download': urljoin(self.url, '/torrent/{torrent_id}/download/{passkey}'),
+            'download': urljoin(self.url, 'torrent/{torrent_id}/download/{passkey}'),
         }
 
         # Proper Strings
@@ -71,17 +72,15 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
-        _ = age
-        _ = ep_obj
         results = []
 
         if self.show and not self.show.is_anime:
@@ -139,7 +138,6 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
 
         :return: A list of items found
         """
-
         items = []
 
         episode = None
@@ -164,7 +162,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                         show_info = show_table('td')
 
                         # A type of release used to determine how to parse the release
-                        # For example a SINGLE_EP should be parsed like: show_name.episode.12.[source].[codec].[release_group]
+                        # For example a SINGLE_EP should be parsed like:
+                        # show_name.episode.12.[source].[codec].[release_group]
                         # A multi ep release should look like: show_name.episode.1-12.[source]..
                         release_type = OTHER
 
@@ -201,7 +200,8 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                                                 torrent_audio=properties[4])
 
                                 last_field = re.match(r'(.*)\((.*)\)', properties[-1])
-                                # subs = last_field.group(1) if last_field else ''  # We're not doing anything with this for now
+                                # subs = last_field.group(1) if last_field else ''
+                                # We're not doing anything with this for now
                                 release_group = '-{0}'.format(last_field.group(2)) if last_field else ''
 
                                 # Construct title based on the release type
@@ -305,25 +305,15 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if (any(dict_from_cookiejar(self.session.cookies).values()) and
-                dict_from_cookiejar(self.session.cookies).get('session')):
+        if any(dict_from_cookiejar(self.session.cookies).values()) and \
+                dict_from_cookiejar(self.session.cookies).get('session'):
             return True
-
-        # Get csrf_token
-        response = self.get_url(self.urls['login'], returns='resposne')
-        with BS4Parser(response.text, 'html5lib') as html:
-            csrf_token = html.find('input', {'name': 'csrf_token'}).get('value')
-
-        if not csrf_token:
-            logger.log("Unable to get csrf_token, can't login", logger.WARNING)
-            return False
 
         login_params = {
             'username': self.username,
             'password': self.password,
-            'csrf_token': csrf_token,
             'login': 'Log In!',
-            'keeplogged_sent': 'true',
+            'keeplogged': 'on',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
@@ -339,7 +329,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         return True
 
     def _get_episode_search_strings(self, episode, add_string=''):
-        """Method override because AnimeBytes doesnt support searching showname + episode number"""
+        """Method override because AnimeBytes doesnt support searching showname + episode number."""
         if not episode:
             return []
 
@@ -353,7 +343,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
         return [search_string]
 
     def _get_season_search_strings(self, episode):
-        """Method override because AnimeBytes doesnt support searching showname + season number"""
+        """Method override because AnimeBytes doesnt support searching showname + season number."""
         search_string = {
             'Season': []
         }
