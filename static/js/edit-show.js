@@ -23,7 +23,7 @@ $('#submit').on('click', function() {
 
     $('#exceptions_list').val(allExceptions);
 
-    if (metaToBool['show.is_anime']) {
+    if (metaToBool('show.is_anime')) {
         generateBlackWhiteList(); // eslint-disable-line no-undef
     }
 });
