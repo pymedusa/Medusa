@@ -920,7 +920,6 @@ class Application(object):
                     pass
 
             try:
-                import locale
                 app.LOCALE = locale.getdefaultlocale()
             except StandardError:
                 app.LOCALE = None, None
