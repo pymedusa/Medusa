@@ -27,7 +27,7 @@ from tvdbapiv2.rest import ApiException
 from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
-                                  IndexerShowNotFoundInLanguage)
+                                  IndexerShowNotFoundInLanguage, IndexerUnavailable)
 
 
 def log():
@@ -61,10 +61,16 @@ class TVDBv2(BaseIndexer):
         apikey = '0629B785CE550C8D'
 
         authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
-        unauthenticated_client = ApiClient(api_base_url)
-        auth_api = AuthenticationApi(unauthenticated_client)
-        access_token = auth_api.login_post(authentication_string)
-        auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
+
+        try:
+            unauthenticated_client = ApiClient(api_base_url)
+            auth_api = AuthenticationApi(unauthenticated_client)
+            access_token = auth_api.login_post(authentication_string)
+            auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
+        except ApiException as e:
+            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s' (%s)", e.reason, e.status)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
+
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
         self.updates_api = UpdatesApi(auth_client)

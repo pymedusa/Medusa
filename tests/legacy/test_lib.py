@@ -50,7 +50,6 @@ EPISODE = 2
 FILENAME = u"show name - s0" + str(SEASON) + "e0" + str(EPISODE) + ".mkv"
 FILE_DIR = os.path.join(TEST_DIR, SHOW_NAME)
 FILE_PATH = os.path.join(FILE_DIR, FILENAME)
-REL_PATH = os.path.join(os.path.basename(os.path.dirname(FILE_PATH)), FILENAME)
 SHOW_DIR = os.path.join(TEST_DIR, SHOW_NAME + " final")
 
 

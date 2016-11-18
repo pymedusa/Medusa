@@ -77,7 +77,12 @@ class HomeAddShows(Home):
             l_indexer_api_parms = app.indexerApi(indexer).api_params.copy()
             l_indexer_api_parms['language'] = lang
             l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
-            t = app.indexerApi(indexer).indexer(**l_indexer_api_parms)
+            try:
+                t = app.indexerApi(indexer).indexer(**l_indexer_api_parms)
+            except app.IndexerUnavailable as msg:
+                logger.log(u'Could not initialize Indexer {indexer}: {error}'.
+                           format(indexer=app.indexerApi(indexer).name, error=msg))
+                continue
 
             logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
                 search_terms, app.indexerApi(indexer).name), logger.DEBUG)
