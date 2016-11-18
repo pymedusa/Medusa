@@ -39,7 +39,7 @@ class PPInitTests(unittest.TestCase):
         self.assertEqual(self.post_processor.file_name, test.FILENAME)
 
     def test_init_folder_name(self):
-        self.assertEqual(self.post_processor.rel_path, test.REL_PATH)
+        self.assertEqual(self.post_processor.rel_path, test.FILE_PATH)
 
 
 class PPBasicTests(test.AppTestDBCase):
