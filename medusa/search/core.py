@@ -519,14 +519,9 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
         providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_manualsearch]
     else:
+        logger.log("Using backlog search providers")
         providers = [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_backlog]
-
-    if not forced_search:
-        for cur_provider in providers:
-            threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
-                                                                               provider=cur_provider.name)
-            cur_provider.cache.updateCache()
 
     threading.currentThread().name = original_thread_name
 
