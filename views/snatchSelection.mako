@@ -373,7 +373,11 @@
                         ${item['status_name']} ${renderQualityPill(item['quality'])}
                         </td>
                         <td align="center" style="width: auto;">
-                                <img src="${item['provider_img_link']}" width="16" height="16" alt="${item['provider_name']}" title="${item['provider_name']}"/> ${item["provider_name"]}
+                                % if item['provider_img_link']:
+                                    <img src="${item['provider_img_link']}" width="16" height="16" alt="${item['provider_name']}" title="${item['provider_name']}"/> ${item["provider_name"]}
+                                % else:
+                                    ${item['provider_name']}
+                                % endif
                         </td>
                         <td style="width: auto;">
                         ${item['resource_file']}
