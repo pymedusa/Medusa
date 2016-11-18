@@ -440,6 +440,7 @@ def searchForNeededEpisodes():
     original_thread_name = threading.currentThread().name
 
     providers = enabled_providers('daily')
+    logger.log("Using daily search providers")
     for cur_provider in providers:
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
                                                                            provider=cur_provider.name)
