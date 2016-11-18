@@ -1935,7 +1935,7 @@ class AvoidMultipleValuesRule(Rule):
             unique_values = {v.value for v in values}
             if len(unique_values) > 1:
                 logger.info(u"Guessed more than one '%s' for '%s': %s",
-                             name, matches.input_string, u','.join(unique_values), exc_info=False)
+                            name, matches.input_string, u','.join(unique_values), exc_info=False)
                 to_remove.extend(values)
 
         return to_remove
