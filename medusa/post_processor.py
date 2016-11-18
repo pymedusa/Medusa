@@ -114,9 +114,7 @@ class PostProcessor(object):
             except ValueError:
                 pass
 
-        parent_name = os.path.basename(os.path.dirname(self.file_path))
-        # return self.file_path once this bug is fixed: goo.gl/U4XNoP
-        return os.path.join(parent_name, self.file_name)
+        return self.file_path
 
     def _checkForExistingFile(self, existing_file):
         """
