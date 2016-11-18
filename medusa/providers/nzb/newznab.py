@@ -417,4 +417,5 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
                'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
                'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
-               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
+               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0' + \
+               'Omgwtfnzbs|https://api.omgwtfnzbs.me||5030,5040,5060,5070|0|eponly|0|0|0|0'
