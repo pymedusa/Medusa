@@ -21,7 +21,7 @@ from random import shuffle
 
 import medusa as app
 from .nzb import (
-    anizb, binsearch, omgwtfnzbs, womble,
+    anizb, binsearch, womble,
 )
 from .nzb.newznab import NewznabProvider
 from .torrent import (
@@ -35,7 +35,7 @@ from .torrent.rss.rsstorrent import TorrentRssProvider
 
 __all__ = [
     'womble', 'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents',
-    'torrentday', 'hdbits', 'hounddawgs', 'iptorrents', 'omgwtfnzbs',
+    'torrentday', 'hdbits', 'hounddawgs', 'iptorrents',
     'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'cpasbien',
     'morethantv', 't411', 'tokyotoshokan', 'alpharatio',
     'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'bluetigers',
