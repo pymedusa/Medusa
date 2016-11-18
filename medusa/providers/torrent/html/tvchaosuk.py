@@ -135,9 +135,11 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             # Skip column headers
             for row in torrent_rows[1:]:
                 try:
+                    # Skip highlighted torrents
+                    if (row['class'] == 'highlight even') or (row['class'] == 'highlight odd'):
+                        continue
                     if self.freeleech and not row.find('img', alt=re.compile('Free Torrent')):
                         continue
-
                     title = row.find(class_='tooltip-content')
                     title = title.div.get_text(strip=True) if title else None
                     download_url = row.find(title='Click to Download this Torrent!')
