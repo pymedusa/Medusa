@@ -7,6 +7,7 @@ import babelfish
 from guessit.reutils import build_or_pattern
 from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
+from guessit.rules.properties.audio_codec import Ac3Rule, AudioValidatorRule, HqConflictRule
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
@@ -68,6 +69,19 @@ def format_():
     return rebulk
 
 
+def audio_codec():
+    """Audio codec property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(name='audio_codec', flags=re.IGNORECASE)
+    rebulk.regex(r'DDP', value='AC3')
+    rebulk.rules(Ac3Rule, AudioValidatorRule, HqConflictRule)
+
+    return rebulk
+
+
 def screen_size():
     """Screen size property.
 
@@ -98,7 +112,6 @@ def other():
     rebulk.regex('DIRFIX', value='DirFix')
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
-    rebulk.regex(r'HBO', value='HBO')
     rebulk.regex(r'UNCENSORED', value='Uncensored')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
@@ -106,6 +119,52 @@ def other():
     rebulk.regex('DownRev', 'small-size', private=True)
 
     rebulk.rules(ValidateHardcodedSubs)
+
+    return rebulk
+
+
+def streaming_service():
+    """Streaming service property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='streaming_service', validator=seps_surround)
+
+    # https://github.com/guessit-io/guessit/issues/344
+    rebulk.regex(r'AE', value='A&E')
+    rebulk.regex(r'AMBC', value='ABC')
+    rebulk.regex(r'AMZN', value='Amazon Prime')
+    rebulk.regex(r'AS', value='Adult Swim')
+    rebulk.regex(r'iP', value='BBC iPlayer')
+    rebulk.regex(r'CBS', value='CBS')
+    rebulk.regex(r'CC', value='Comedy Central',
+                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
+    rebulk.regex(r'CR', value='Crunchy Roll')
+    rebulk.regex(r'CW', value='The CW')
+    rebulk.regex(r'DISC', value='Discovery')
+    rebulk.regex(r'DSNY', value='Disney')
+    rebulk.regex(r'EPIX', value='ePix')
+    rebulk.regex(r'HBO', value='HBO Go')
+    rebulk.regex(r'HIST', value='History')
+    rebulk.regex(r'IFC', value='IFC')
+    rebulk.regex(r'PBS', value='PBS')
+    rebulk.regex(r'NATG', value='National Geographic')
+    rebulk.regex(r'NBA', value='NBA TV')
+    rebulk.regex(r'NBC', value='NBC')
+    rebulk.regex(r'NFL', value='NFL')
+    rebulk.regex(r'NICK', value='Nickelodeon')
+    rebulk.regex(r'NF', value='Netflix',
+                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
+    rebulk.regex(r'SESO', value='SeeSo')
+    rebulk.regex(r'SPKE', value='Spike TV')
+    rebulk.regex(r'SYFY', value='Syfy')
+    rebulk.regex(r'TFOU', value='TFou')
+    rebulk.regex(r'TVL', value='TV Land')
+    rebulk.regex(r'UFC', value='UFC')
+
+    rebulk.rules(ValidateStreamingService)
 
     return rebulk
 
@@ -227,6 +286,38 @@ class ValidateHardcodedSubs(Rule):
                 continue
 
             to_remove.append(hc)
+
+        return to_remove
+
+
+class ValidateStreamingService(Rule):
+    """Validate streaming service matches."""
+
+    priority = 32
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """Streaming service is always after screen_size and before format.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        for ss in matches.named('streaming_service'):
+            next_match = matches.next(ss, predicate=lambda match: match.name == 'format', index=0)
+            if next_match and not matches.holes(ss.end, next_match.start,
+                                                predicate=lambda match: match.value.strip(seps)):
+                continue
+
+            previous_match = matches.previous(ss, predicate=lambda match: match.name == 'screen_size', index=0)
+            if previous_match and not matches.holes(previous_match.end, ss.start,
+                                                    predicate=lambda match: match.value.strip(seps)):
+                continue
+
+            to_remove.append(ss)
 
         return to_remove
 
