@@ -211,7 +211,7 @@ class BTNProvider(TorrentProvider):
         elif ep_obj.show.is_anime:
             current_params['name'] = '%d' % ep_obj.scene_absolute_number
         else:
-            current_params['name'] = 'Season ' + str(ep_obj.scene_season)
+            current_params['name'] = 'Season ' + str(ep_obj.season)
 
         # Search
         if ep_obj.show.indexer == 1:
@@ -246,7 +246,7 @@ class BTNProvider(TorrentProvider):
             search_params['name'] = '%i' % int(ep_obj.scene_absolute_number)
         else:
             # Do a general name search for the episode, formatted like SXXEYY
-            search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.scene_season, ep_obj.scene_episode))
+            search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))
 
         # Search
         if ep_obj.show.indexer == 1:
