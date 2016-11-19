@@ -29,7 +29,7 @@ class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
     def set_default_headers(self):
-        BaseRequestHandler.set_default_headers(self)
+        super(ShowHandler, self).set_default_headers()
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
 
     def get(self, show_indexer, show_id, season, episode, absolute_episode, air_date, query):
