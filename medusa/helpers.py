@@ -80,11 +80,6 @@ except ImportError:
 shutil.copyfile = shutil_custom.copyfile_custom
 
 
-def fixGlob(path):
-    path = re.sub(r'\[', '[[]', path)
-    return re.sub(r'(?<!\[)\]', '[]]', path)
-
-
 def indentXML(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
     i = "\n" + level * "  "
@@ -145,6 +140,28 @@ def isRarFile(filename):
     archive_regex = r'(?P<file>^(?P<base>(?:(?!\.part\d+\.rar$).)*)\.(?:(?:part0*1\.)?rar)$)'
 
     return bool(re.search(archive_regex, filename))
+
+
+def is_subtitle(file_path):
+    """Return whether the file is a subtitle or not.
+
+    :param file_path: path to the file
+    :type file_path: text_type
+    :return: True if it is a subtitle, else False
+    :rtype: bool
+    """
+    return get_extension(file_path) in subtitle_extensions
+
+
+def get_extension(file_path):
+    """Return the file extension without leading dot.
+
+    :param file_path: path to the file
+    :type file_path: text_type
+    :return: extension or empty string
+    :rtype: text_type
+    """
+    return os.path.splitext(file_path)[1][1:]
 
 
 def remove_file_failed(failed_file):

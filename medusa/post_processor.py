@@ -17,7 +17,6 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import fnmatch
-import glob
 import os
 import re
 import stat
@@ -25,18 +24,17 @@ import subprocess
 
 import adba
 
-from babelfish import language_converters
-
 import medusa as app
 
 from six import text_type
 
 from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, remove_extension, replace_extension, subtitle_extensions
+from .helper.common import episode_num, remove_extension, replace_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
-from .helpers import verify_freespace
+from .helpers import is_subtitle, verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .subtitles import from_code, from_ietf_code
 
 
 class PostProcessor(object):
@@ -153,11 +151,43 @@ class PostProcessor(object):
                       (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
-    def list_associated_files(self, file_path, base_name_only=False,
-                              subtitles_only=False, subfolders=False):
+    @staticmethod
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=True):
         """
-        For a given file path searches for files with the same name but
-        different extension and returns their absolute paths.
+        Search for files in a given path.
+
+        :param path: path to file or folder (NOTE: folder paths must end with slashes)
+        :type path: text_type
+        :param pattern: pattern used to match the files
+        :type pattern: text_type
+        :param subfolders: search for files in subfolders
+        :type subfolders: bool
+        :param base_name_only: only match files with the same file name
+        :type base_name_only: bool
+        :param sort: return files sorted by size
+        :type sort: bool
+        :return: list with found files or empty list
+        :rtype: list
+        """
+        directory = os.path.dirname(path)
+        if base_name_only and os.path.isfile(path):
+            pattern = os.path.basename(path).rpartition('.')[0] + pattern
+
+        found_files = []
+        for root, _, filenames in os.walk(directory):
+            for filename in fnmatch.filter(filenames, pattern):
+                found_files.append(os.path.join(root, filename))
+            if not subfolders:
+                break
+
+        if sort:
+            found_files = sorted(found_files, key=os.path.getsize, reverse=True)
+
+        return found_files
+
+    def list_associated_files(self, file_path, base_name_only=False, subtitles_only=False, subfolders=False):
+        """
+        For a given file path search for files in the same directory and return their absolute paths.
 
         :param file_path: The file to check for associated files
         :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
@@ -165,85 +195,38 @@ class PostProcessor(object):
         :param subfolders: check subfolders while listing files
         :return: A list containing all files which are associated to the given file
         """
-        def recursive_glob(treeroot, pattern):
-            results = []
-            for base, _, files in os.walk(treeroot):
-                goodfiles = fnmatch.filter(files, pattern)
-                results.extend(os.path.join(base, f) for f in goodfiles)
-            return results
+        # file path to the video file that is being processed (without extension)
+        processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
 
-        if not file_path:
-            return []
+        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
 
-        # don't confuse glob with chars we didn't mean to use
-        globbable_file_path = helpers.fixGlob(file_path)
+        # loop through all the files in the folder, and check if they are the same name
+        # even when the cases don't match
+        filelist = []
+        for found_file in file_list:
+
+            file_name = os.path.basename(found_file).lower()
+
+            if is_subtitle(found_file):
+                code = file_name.rsplit('.', 2)[1].replace('_', '-')
+                language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+                if language:
+                    filelist.append(found_file)
+
+            # if there's no difference in the filename add it to the filelist
+            elif file_name.startswith(processed_file_name):
+                filelist.append(found_file)
 
         file_path_list = []
-
         extensions_to_delete = []
-
-        if subfolders:
-            base_name = os.path.basename(globbable_file_path).rpartition('.')[0]
-        else:
-            base_name = globbable_file_path.rpartition('.')[0]
-
-        if not base_name_only:
-            base_name += '.'
-
-        # don't strip it all and use cwd by accident
-        if not base_name:
-            return []
-
-        # subfolders are only checked in show folder, so names will always be exactly alike
-        if subfolders:
-            # just create the list of all files starting with the basename
-            filelist = recursive_glob(os.path.dirname(globbable_file_path), base_name + '*')
-        # this is called when PP, so we need to do the filename check case-insensitive
-        else:
-            filelist = []
-
-            # get a list of all the files in the folder
-            checklist = glob.glob(os.path.join(os.path.dirname(globbable_file_path), '*'))
-
-            # supported subtitle languages codes
-            language_extensions = tuple('.' + c for c in language_converters['opensubtitles'].codes)
-
-            # loop through all the files in the folder, and check if they are the same name
-            # even when the cases don't match
-            for filefound in checklist:
-
-                file_name = filefound.rpartition('.')[0]
-                file_extension = filefound.rpartition('.')[2]
-                is_subtitle = None
-
-                if file_extension in subtitle_extensions:
-                    is_subtitle = True
-
-                if not base_name_only:
-                    new_file_name = file_name + '.'
-                    sub_file_name = file_name.rpartition('.')[0] + '.'
-                else:
-                    new_file_name = file_name
-                    sub_file_name = file_name.rpartition('.')[0]
-
-                if is_subtitle and sub_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
-                    extension_len = len(filefound.rsplit('.', 2)[1])
-                    if file_name.lower().endswith(language_extensions) and (extension_len in [2, 3]):
-                        filelist.append(filefound)
-                    elif file_name.lower().endswith('pt-br') and extension_len == 5:
-                        filelist.append(filefound)
-                # if there's no difference in the filename add it to the filelist
-                elif new_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
-                    filelist.append(filefound)
-
         for associated_file_path in filelist:
             # Exclude the video file we are post-processing
             if associated_file_path == file_path:
                 continue
 
-            # Exlude non-subtitle files with the 'only subtitles' option (not implemented yet)
-            # if subtitles_only and not associated_file_path[-3:] in subtitle_extensions:
-            #     continue
+            # Exlude non-subtitle files with the 'only subtitles' option
+            if subtitles_only and not is_subtitle(associated_file_path):
+                continue
 
             # Exclude .rar files from associated list
             if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
@@ -359,10 +342,11 @@ class PostProcessor(object):
 
             # file extension without leading dot (for example: de.srt)
             cur_extension = cur_file_path[old_base_name_length + 1:]
-
+            # split the extension in two parts. E.g.: ('de', 'srt')
             split_extension = os.path.splitext(cur_extension)
-            # check if file has a subtitle language
-            if split_extension[1][1:] in subtitle_extensions:
+
+            # check if it's a subtitle and also has a subtitle language
+            if is_subtitle(cur_file_path) and all(split_extension):
                 cur_lang = split_extension[0]
                 if cur_lang:
                     cur_lang = cur_lang.lower()
@@ -376,7 +360,7 @@ class PostProcessor(object):
                 cur_extension = 'nfo-orig'
                 changed_extension = True
 
-            # rename file with new new base name
+            # rename file with new base name
             if new_base_name:
                 new_file_name = new_base_name + '.' + cur_extension
             else:
@@ -386,7 +370,7 @@ class PostProcessor(object):
                 if changed_extension:
                     new_file_name = replace_extension(new_file_name, cur_extension)
 
-            if app.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
+            if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
                 subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
                 dir_exists = helpers.makeDir(subs_new_path)
                 if not dir_exists:
@@ -971,7 +955,8 @@ class PostProcessor(object):
             return False
 
         if not os.path.exists(self.file_path):
-            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format(self.file_path))
+            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format
+                                                       (self.file_path))
 
         for ignore_file in self.IGNORED_FILESTRINGS:
             if ignore_file in self.file_path:
@@ -1036,8 +1021,9 @@ class PostProcessor(object):
                 else:
                     _, preferred_qualities = common.Quality.splitQuality(int(show.quality))
                     if new_ep_quality not in preferred_qualities:
-                        raise EpisodePostProcessingFailedException(u'File exists and new file quality is not in a preferred quality list, '
-                                                                   u'marking it unsafe to replace')
+                        raise EpisodePostProcessingFailedException(
+                            u'File exists and new file quality is not in a preferred '
+                            u'quality list, marking it unsafe to replace')
                     else:
                         self._log(u'File exists and new file quality is in a preferred quality list, '
                                   u'marking it safe to replace')
