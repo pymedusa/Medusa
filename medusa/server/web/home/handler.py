@@ -6,7 +6,7 @@ import ast
 import json
 import os
 import time
-from datetime import date
+from datetime import date, datetime
 
 import adba
 import medusa as app
@@ -15,12 +15,15 @@ from six import iteritems
 from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
-from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui
+from .... import clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....failed_history import prepareFailedName
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_config import INDEXER_TVDBV2
+from ....providers.generic_provider import GenericProvider
+from ....sbdatetime import sbdatetime
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
@@ -35,6 +38,7 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
+from ....show.history import History
 from ....show.show import Show
 from ....system.restart import Restart
 from ....system.shutdown import Shutdown
@@ -859,8 +863,6 @@ class Home(WebRoot):
             'name': show_obj.name,
         })
 
-        show_words = show_name_helpers.show_words(show_obj)
-
         return t.render(
             submenu=submenu, showLoc=show_loc, show_message=show_message,
             show=show_obj, sql_results=sql_results, seasonResults=season_results,
@@ -870,13 +872,7 @@ class Home(WebRoot):
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
-            title=show_obj.name,
-            controller='home',
-            action='displayShow',
-            preferred_words=show_words.preferred_words,
-            undesired_words=show_words.undesired_words,
-            ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words
+            title=show_obj.name, controller='home', action='displayShow',
         )
 
     def pickManualSearch(self, provider=None, rowid=None, manual_search_type='episode'):
@@ -1169,13 +1165,47 @@ class Home(WebRoot):
                 b'ORDER BY date DESC',
                 [indexer_id, season, episode]
             )
-            if episode_status_result:
-                for item in episode_status_result:
-                    episode_history.append(dict(item))
+            episode_history = [dict(row) for row in episode_status_result]
+            for i in episode_history:
+                i['status'], i['quality'] = Quality.splitCompositeStatus(i['action'])
+                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
+                i['resource_file'] = os.path.basename(i['resource'])
+                i['status_name'] = statusStrings[i['status']]
+                if i['status'] == DOWNLOADED:
+                    i['status_color_style'] = 'downloaded'
+                elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+                    i['status_color_style'] = 'snatched'
+                elif i['status'] == FAILED:
+                    i['status_color_style'] = 'failed'
+                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                if provider is not None:
+                    i['provider_name'] = provider.name
+                    i['provider_img_link'] = 'images/providers/' + provider.image_name()
+                else:
+                    i['provider_name'] = i['provider'] if i['provider'] != '-1' else 'Unknown'
+                    i['provider_img_link'] = ''
+
+            # Compare manual search results with history and set status
+            for provider_result in provider_results['found_items']:
+                failed_statuses = [FAILED, ]
+                snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+                if any([item for item in episode_history
+                        if all([prepareFailedName(provider_result['name']) in item['resource'],
+                                item['provider'] in (provider_result['provider'], provider_result['release_group'],),
+                                item['status'] in failed_statuses])
+                        ]):
+                    provider_result['status_highlight'] = 'failed'
+                elif any([item for item in episode_history
+                          if all([provider_result['name'] in item['resource'],
+                                  item['provider'] in (provider_result['provider'],),
+                                  item['status'] in snatched_statuses])
+                          ]):
+                    provider_result['status_highlight'] = 'snatched'
+                else:
+                    provider_result['status_highlight'] = ''
+
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
-
-        show_words = show_name_helpers.show_words(show_obj)
 
         return t.render(
             submenu=submenu, showLoc=show_loc, show_message=show_message,
@@ -1186,13 +1216,7 @@ class Home(WebRoot):
             xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
-            title=show_obj.name,
-            controller='home',
-            action='snatchSelection',
-            preferred_words=show_words.preferred_words,
-            undesired_words=show_words.undesired_words,
-            ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words,
+            title=show_obj.name, controller='home', action='snatchSelection',
             episode_history=episode_history
         )
 

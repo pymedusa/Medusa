@@ -1147,10 +1147,12 @@ ul.tags li a {
     background-color: rgb(235, 193, 234);
 }
 
+.downloaded {
+background-color: rgb(195, 227, 200);
+}
+
 .failed {
-    text-decoration: line-through;
-    text-decoration-color: red;
-    background-color: grey;
+background-color: rgb(255, 153, 153);
 }
 
 span.unaired {

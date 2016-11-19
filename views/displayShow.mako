@@ -176,17 +176,17 @@
                 % if all_scene_exceptions:
                     <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
                 % endif
-                % if require_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
+                % if show.show_words().required_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${show.show_words().required_words}</span></td></tr>
                 % endif
-                % if ignore_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${ignore_words}</span></td></tr>
+                % if show.show_words().ignored_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${show.show_words().ignored_words}</span></td></tr>
                 % endif
-                % if preferred_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${preferred_words}</span></td></tr>
+                % if show.show_words().preferred_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${show.show_words().preferred_words}</span></td></tr>
                 % endif
-                % if undesired_words:
-                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${undesired_words}</span></td></tr>
+                % if show.show_words().undesired_words:
+                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${show.show_words().undesired_words}</span></td></tr>
                 % endif
                 % if bwl and bwl.whitelist:
                     <tr>
@@ -487,7 +487,7 @@
                                 filename = filename.replace(rootDir, "")
                         filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
                     %>
-                    <center><a href="${filename}">Download</a></center>
+                    <a href="${filename}">Download</a>
                 % endif
             </td>
             <td class="col-subtitles" align="center">

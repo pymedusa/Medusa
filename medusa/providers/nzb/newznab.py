@@ -25,6 +25,7 @@ import time
 import traceback
 
 import medusa as app
+from dateutil import parser
 from requests.compat import urljoin
 import validators
 from .nzb_provider import NZBProvider
@@ -184,6 +185,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 continue
 
                             size = convert_size(item_size) or -1
+                            pubdate_raw = item.pubdate.get_text(strip=True)
+                            pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                             item = {
                                 'title': title,
@@ -191,7 +194,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 'size': size,
                                 'seeders': seeders,
                                 'leechers': leechers,
-                                'pubdate': None,
+                                'pubdate': pubdate,
                                 'torrent_hash': None,
                             }
                             if mode != 'RSS':

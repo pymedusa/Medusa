@@ -22,12 +22,16 @@ import json
 import threading
 import time
 
+from datetime import datetime
+from dateutil import parser
 import medusa as app
 from .queue import ForcedSearchQueueItem
 from .. import db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
-from ..helper.common import enabled_providers
+from ..helper.common import enabled_providers, pretty_file_size
+from ..sbdatetime import sbdatetime
 from ..show.show import Show
+from ..show_name_helpers import containsAtLeastOneWord, filterBadReleases
 
 SEARCH_STATUS_FINISHED = "finished"
 SEARCH_STATUS_QUEUED = "queued"
@@ -188,6 +192,10 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
     down_cur_quality = 0
     show_obj = Show.find(app.showList, int(show))
+    preferred_words = show_obj.show_words().preferred_words.lower().split(',')
+    undesired_words = show_obj.show_words().undesired_words.lower().split(',')
+    ignored_words = show_obj.show_words().ignored_words.lower().split(',')
+    required_words = show_obj.show_words().required_words.lower().split(',')
 
     main_db_con = db.DBConnection('cache.db')
 
@@ -215,7 +223,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             common_sql = b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image', \
                           ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
                           name, season, episodes, indexerid, url, time, proper_tags, \
-                          quality, release_group, version, seeders, leechers, size, time \
+                          quality, release_group, version, seeders, leechers, size, time, pubdate \
                           FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
             additional_sql = " AND episodes LIKE ? AND season = ? "
 
@@ -265,7 +273,43 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[app.CPU_PRESET])
     else:
-        provider_results['found_items'] = sql_total
+        cached_results = [dict(row) for row in sql_total]
+        for i in cached_results:
+            i['quality_name'] = Quality.splitQuality(i['quality'])
+            i['time'] = datetime.fromtimestamp(i['time']).strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET)
+            i['release_group'] = i['release_group'] or 'None'
+            i['provider_img_link'] = 'images/providers/' + i['provider_image'] or 'missing.png'
+            i['provider'] = i['provider'] if i['provider_image'] else 'missing provider'
+            i['proper_tags'] = i['proper_tags'].replace('|', ', ')
+            i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
+            i['seeders'] = i['seeders'] if i['seeders'] >= 0 else '-'
+            i['leechers'] = i['leechers'] if i['leechers'] >= 0 else '-'
+            i['pubdate'] = sbdatetime.convert_to_setting(parser.parse(i['pubdate'])).strftime(
+                app.DATE_PRESET + ' ' + app.TIME_PRESET) if i['pubdate'] else '-'
+            release_group = i['release_group']
+            if ignored_words and release_group in ignored_words:
+                i['rg_highlight'] = 'ignored'
+            elif required_words and release_group in required_words:
+                i['rg_highlight'] = 'required'
+            elif preferred_words and release_group in preferred_words:
+                i['rg_highlight'] = 'preferred'
+            elif undesired_words and release_group in undesired_words:
+                i['rg_highlight'] = 'undesired'
+            else:
+                i['rg_highlight'] = ''
+            if containsAtLeastOneWord(i['name'], required_words):
+                i['name_highlight'] = 'required'
+            elif containsAtLeastOneWord(i['name'], ignored_words) or not filterBadReleases(i['name'], parse=False):
+                i['name_highlight'] = 'ignored'
+            elif containsAtLeastOneWord(i['name'], undesired_words):
+                i['name_highlight'] = 'undesired'
+            elif containsAtLeastOneWord(i['name'], preferred_words):
+                i['name_highlight'] = 'preferred'
+            else:
+                i['name_highlight'] = ''
+            i['seed_highlight'] = 'ignored' if i.get('provider_minseed') > i.get('seeders', -1) >= 0 else ''
+            i['leech_highlight'] = 'ignored' if i.get('provider_minleech') > i.get('leechers', -1) >= 0 else ''
+        provider_results['found_items'] = cached_results
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

@@ -26,7 +26,7 @@ import stat
 import threading
 import time
 import traceback
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -39,11 +39,11 @@ from . import db, helpers, image_cache, logger, network_timezones, notifiers, po
 from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
-    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER,
+    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, qualityPresets, SKIPPED, SNATCHED, SNATCHED_PROPER,
     UNAIRED, UNKNOWN, WANTED, statusStrings
 )
 from .helper.common import (
-    dateFormat, dateTimeFormat, episode_num, remove_extension, replace_extension, sanitize_filename, try_int
+    dateFormat, dateTimeFormat, episode_num, pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
 )
 from .helper.exceptions import (
     EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
@@ -281,6 +281,27 @@ class TVShow(TVObject):
         :rtype: bool
         """
         return os.path.isdir(location or self._location)
+
+    @property
+    def current_qualities(self):
+        allowed_qualities, preferred_qualities = Quality.splitQuality(int(self.quality))
+        return (allowed_qualities, preferred_qualities)
+
+    @property
+    def using_preset_quality(self):
+        return self.quality in qualityPresets
+
+    @property
+    def default_ep_status_name(self):
+        return statusStrings[self.default_ep_status]
+
+    def show_size(self, pretty=False):
+        show_size = app.helpers.get_size(self.raw_location)
+        return pretty_file_size(show_size) if pretty else show_size
+
+    @property
+    def subtitle_flag(self):
+        return subtitles.code_from_code(self.lang) if self.lang else ''
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -550,6 +571,32 @@ class TVShow(TVObject):
             return True
 
         return False
+
+    def show_words(self):
+        """
+        Returns all related words to show: preferred, undesired, ignore, require.
+        """
+        words = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignored_words', 'required_words'])
+
+        preferred_words = ','.join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''
+        undesired_words = ','.join(app.UNDESIRED_WORDS.split(',')) if app.UNDESIRED_WORDS.split(',') else ''
+
+        global_ignore = app.IGNORE_WORDS.split(',') if app.IGNORE_WORDS else []
+        global_require = app.REQUIRE_WORDS.split(',') if app.REQUIRE_WORDS else []
+        show_ignore = self.rls_ignore_words.split(',') if self.rls_ignore_words else []
+        show_require = self.rls_require_words.split(',') if self.rls_require_words else []
+
+        # If word is in global ignore and also in show require, then remove it from global ignore
+        # Join new global ignore with show ignore
+        final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
+        # If word is in global require and also in show ignore, then remove it from global require
+        # Join new global required with show require
+        final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
+
+        ignored_words = ','.join(final_ignore)
+        required_words = ','.join(final_require)
+
+        return words(preferred_words, undesired_words, ignored_words, required_words)
 
     def __write_show_nfo(self):
 
@@ -1041,7 +1088,7 @@ class TVShow(TVObject):
                 self.status = 'Unknown'
 
             self.airs = sql_results[0]['airs']
-            if self.airs is None:
+            if self.airs is None or not network_timezones.test_timeformat(self.airs):
                 self.airs = ''
 
             self.startyear = int(sql_results[0][b'startyear'] or 0)
