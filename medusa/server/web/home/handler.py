@@ -1172,17 +1172,17 @@ class Home(WebRoot):
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
-                    i['status_color_style'] = "downloaded"
+                    i['status_color_style'] = 'downloaded'
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                    i['status_color_style'] = "snatched"
+                    i['status_color_style'] = 'snatched'
                 elif i['status'] == FAILED:
-                    i['status_color_style'] = "failed"
-                provider = providers.get_provider_class(GenericProvider.make_id(i["provider"]))
+                    i['status_color_style'] = 'failed'
+                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 if provider is not None:
                     i['provider_name'] = provider.name
                     i['provider_img_link'] = 'images/providers/' + provider.image_name()
                 else:
-                    i['provider_name'] = i['provider'] if i['provider'] != "-1" else 'Unknown'
+                    i['provider_name'] = i['provider'] if i['provider'] != '-1' else 'Unknown'
                     i['provider_img_link'] = ''
 
             # Compare manual search results with history and set status
@@ -1190,13 +1190,13 @@ class Home(WebRoot):
                 failed_statuses = [FAILED, ]
                 snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
                 if any([item for item in episode_history
-                        if all([prepareFailedName(provider_result["name"]) in item['resource'],
+                        if all([prepareFailedName(provider_result['name']) in item['resource'],
                                 item['provider'] in (provider_result['provider'], provider_result['release_group'],),
                                 item['status'] in failed_statuses])
                         ]):
                     provider_result['status_highlight'] = 'failed'
                 elif any([item for item in episode_history
-                          if all([provider_result["name"] in item['resource'],
+                          if all([provider_result['name'] in item['resource'],
                                   item['provider'] in (provider_result['provider'],),
                                   item['status'] in snatched_statuses])
                           ]):
