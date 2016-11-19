@@ -3183,6 +3183,7 @@
   episode_title: eps2 4 m4ster-s1ave aes
   screen_size: 1080p
   format: WEBRip
+  network: Amazon
   audio_codec: AC3
   audio_channels: '5.1'
   video_codec: h264
@@ -3383,7 +3384,7 @@
   episode: 2
   episode_title: Chestbun
   screen_size: 720p
-  other: HBO
+  network: HBO
   format: WEBRip
   audio_codec: AC3
   audio_channels: '5.1'
@@ -3548,4 +3549,19 @@
   video_codec: h264
   video_encoder: x264
   container: MP4
+  type: episode
+
+# Network
+? Show.Name.S07E04.Service.1080p.AMZN.WEBRip.DD+5.1.x264
+: title: Show Name
+  season: 7
+  episode: 4
+  episode_title: Service
+  screen_size: 1080p
+  network: Amazon
+  format: WEBRip
+  audio_codec: AC3
+  audio_channels: '5.1'
+  video_codec: h264
+  video_encoder: x264
   type: episode

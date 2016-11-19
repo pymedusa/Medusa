@@ -98,7 +98,6 @@ def other():
     rebulk.regex('DIRFIX', value='DirFix')
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
-    rebulk.regex(r'HBO', value='HBO')
     rebulk.regex(r'UNCENSORED', value='Uncensored')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
@@ -106,6 +105,21 @@ def other():
     rebulk.regex('DownRev', 'small-size', private=True)
 
     rebulk.rules(ValidateHardcodedSubs)
+
+    return rebulk
+
+
+def network():
+    """Network property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk.defaults(name='network', validator=seps_surround)
+
+    rebulk.regex(r'AMZN', value='Amazon')
+    rebulk.regex(r'HBO', value='HBO')
 
     return rebulk
 
