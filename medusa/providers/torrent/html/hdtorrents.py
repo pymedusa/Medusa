@@ -35,7 +35,7 @@ class HDTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     """HDTorrents Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'HDTorrents')
 
         # Credentials

@@ -34,7 +34,7 @@ class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
     """SceneTime Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'SceneTime')
 
         # Credentials

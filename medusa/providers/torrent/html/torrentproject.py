@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TorrentProject."""
 from __future__ import unicode_literals
 
 import traceback
@@ -33,7 +33,7 @@ class TorrentProjectProvider(TorrentProvider):
     """TorrentProject Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'TorrentProject')
 
         # Credentials

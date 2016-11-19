@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for BlueTigers."""
 from __future__ import unicode_literals
 
 import re
@@ -29,10 +29,10 @@ from ....bs4_parser import BS4Parser
 
 
 class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """BlueTigers Torrent provider"""
-    def __init__(self):
+    """BlueTigers Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'BLUETIGERS')
 
         # Credentials
@@ -62,7 +62,7 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -113,7 +113,6 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:

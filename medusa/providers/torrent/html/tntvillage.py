@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TNTVillage."""
 from __future__ import unicode_literals
 
 import re
@@ -33,10 +33,10 @@ from ....helper.exceptions import AuthException
 
 
 class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """TNTVillage Torrent provider"""
-    def __init__(self):
+    """TNTVillage Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'TNTVillage')
 
         # Credentials
@@ -68,7 +68,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -115,7 +115,6 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:

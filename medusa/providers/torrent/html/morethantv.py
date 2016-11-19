@@ -39,7 +39,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     """MoreThanTV Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'MoreThanTV')
 
         # Credentials

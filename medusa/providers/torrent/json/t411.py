@@ -34,7 +34,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
     """T411 Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, "T411")
 
         # Credentials

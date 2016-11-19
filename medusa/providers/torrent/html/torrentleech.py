@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TorrentLeech."""
 from __future__ import unicode_literals
 
 import re
@@ -30,10 +30,10 @@ from ....helper.common import convert_size, try_int
 
 
 class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """TorrentLeech Torrent provider"""
-    def __init__(self):
+    """TorrentLeech Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'TorrentLeech')
 
         # Credentials
@@ -61,7 +61,7 @@ class TorrentLeechProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used

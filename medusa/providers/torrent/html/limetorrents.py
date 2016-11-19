@@ -19,11 +19,10 @@
 from __future__ import unicode_literals
 
 import re
-import requests
 import traceback
-
-
 from contextlib2 import suppress
+import requests
+
 # from dateutil import parser
 from requests.compat import urljoin
 from ..torrent_provider import TorrentProvider
@@ -39,7 +38,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
     """LimeTorrents Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'LimeTorrents')
 
         # Credentials

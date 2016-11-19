@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for HoundDawgs."""
 from __future__ import unicode_literals
 
 import re
@@ -30,10 +30,10 @@ from ....helper.common import convert_size, try_int
 
 
 class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """HoundDawgs Torrent provider"""
-    def __init__(self):
+    """HoundDawgs Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'HoundDawgs')
 
         # Credentials
@@ -63,7 +63,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -127,7 +127,6 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:

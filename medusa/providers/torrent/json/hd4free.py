@@ -31,7 +31,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
     """HD4Free Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'HD4Free')
 
         # Credentials

@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Bithdtv."""
 from __future__ import unicode_literals
 
 import traceback
@@ -29,11 +29,10 @@ from ....helper.common import convert_size, try_int
 
 
 class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """BIT-HDTV Torrent provider"""
+    """BIT-HDTV Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'BITHDTV')
 
         # Credentials
@@ -63,7 +62,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used

@@ -18,9 +18,8 @@
 from __future__ import unicode_literals
 
 import traceback
-import validators
-
 from requests.compat import urljoin
+import validators
 
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
@@ -32,7 +31,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
     """ExtraTorrent Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'ExtraTorrent')
 
         # Credentials

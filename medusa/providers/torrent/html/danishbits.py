@@ -33,7 +33,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
     """Danishbits Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'Danishbits')
 
         # Credentials

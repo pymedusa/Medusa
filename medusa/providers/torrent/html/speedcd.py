@@ -33,7 +33,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
     """SpeedCD Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'Speedcd')
 
         # Credentials

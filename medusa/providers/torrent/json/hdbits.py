@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for HDBits."""
 from __future__ import unicode_literals
 
 import json
@@ -26,11 +26,10 @@ from ....helper.exceptions import AuthException
 
 
 class HDBitsProvider(TorrentProvider):
-    """HDBits Torrent provider"""
+    """HDBits Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'HDBits')
 
         # Credentials
@@ -56,7 +55,7 @@ class HDBitsProvider(TorrentProvider):
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -97,7 +96,6 @@ class HDBitsProvider(TorrentProvider):
 
         :return: A list of items found
         """
-
         items = []
 
         torrent_rows = data.get('data')
@@ -194,7 +192,10 @@ class HDBitsProvider(TorrentProvider):
 
 
 class HDBitsCache(tv_cache.TVCache):
+    """Provider cache class."""
+
     def _getRSSData(self):
+        """Get RSS data."""
         self.search_params = None  # HDBits cache does not use search_params so set it to None
         results = []
 

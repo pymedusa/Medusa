@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Provider code for Generic NZB Provider."""
 
 from ..generic_provider import GenericProvider
 from ... import app
@@ -22,18 +23,24 @@ from ...helper.common import try_int
 
 
 class NZBProvider(GenericProvider):
+    """Generic NZB provider."""
+
     def __init__(self, name):
+        """Initialize the class."""
         GenericProvider.__init__(self, name)
 
         self.provider_type = GenericProvider.NZB
 
     def is_active(self):
+        """Check if provider is active."""
         return bool(app.USE_NZBS) and self.is_enabled()
 
     def _get_result(self, episodes):
+        """Return provider result."""
         return NZBSearchResult(episodes)
 
     def _get_size(self, item):
+        """Get result size."""
         try:
             size = item.get('links')[1].get('length', -1)
         except (AttributeError, IndexError, TypeError):
@@ -47,10 +54,9 @@ class NZBProvider(GenericProvider):
         return try_int(seeders, -1), try_int(leechers, -1)
 
     def _get_storage_dir(self):
+        """Get nzb storage dir."""
         return app.NZB_DIR
 
     def _get_pubdate(self, item):
-        """
-        Return publish date of the item.
-        """
+        """Return publish date of the item."""
         return item.get('pubdate')

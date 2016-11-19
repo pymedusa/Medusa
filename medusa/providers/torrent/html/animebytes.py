@@ -44,7 +44,7 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
     """AnimeBytes Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
+        """Initialize the class."""
         TorrentProvider.__init__(self, 'AnimeBytes')
 
         # Credentials
