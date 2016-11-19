@@ -7,6 +7,7 @@ import babelfish
 from guessit.reutils import build_or_pattern
 from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
+from guessit.rules.properties.audio_codec import Ac3Rule, AudioValidatorRule, HqConflictRule
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
@@ -68,6 +69,19 @@ def format_():
     return rebulk
 
 
+def audio_codec():
+    """Audio codec property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(name='audio_codec', flags=re.IGNORECASE)
+    rebulk.regex(r'DDP', value='AC3')
+    rebulk.rules(Ac3Rule, AudioValidatorRule, HqConflictRule)
+
+    return rebulk
+
+
 def screen_size():
     """Screen size property.
 
@@ -109,14 +123,14 @@ def other():
     return rebulk
 
 
-def network():
-    """Network property.
+def streaming_service():
+    """Streaming service property.
 
     :return:
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='network', validator=seps_surround)
+    rebulk.defaults(name='streaming_service', validator=seps_surround)
 
     # https://github.com/guessit-io/guessit/issues/344
     rebulk.regex(r'AE', value='A&E')
@@ -292,18 +306,18 @@ class ValidateNetwork(Rule):
         :return:
         """
         to_remove = []
-        for nw in matches.named('network'):
-            next_match = matches.next(nw, predicate=lambda match: match.name == 'format', index=0)
-            if next_match and not matches.holes(nw.end, next_match.start,
+        for ss in matches.named('streaming_service'):
+            next_match = matches.next(ss, predicate=lambda match: match.name == 'format', index=0)
+            if next_match and not matches.holes(ss.end, next_match.start,
                                                 predicate=lambda match: match.value.strip(seps)):
                 continue
 
-            previous_match = matches.previous(nw, predicate=lambda match: match.name == 'screen_size', index=0)
-            if previous_match and not matches.holes(previous_match.end, nw.start,
+            previous_match = matches.previous(ss, predicate=lambda match: match.name == 'screen_size', index=0)
+            if previous_match and not matches.holes(previous_match.end, ss.start,
                                                     predicate=lambda match: match.value.strip(seps)):
                 continue
 
-            to_remove.append(nw)
+            to_remove.append(ss)
 
         return to_remove
 
