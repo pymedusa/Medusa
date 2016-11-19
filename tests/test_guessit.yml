@@ -3672,12 +3672,12 @@
   release_group: NTb
   type: episode
 
-# Network: BBC
+# Network: BBC iPlayer
 ? Show.Name.2016.08.18.Nice.Title.720p.iP.WEBRip.AAC2.0.H.264-monkee
 : title: Show Name
   date: 2016-08-18
   episode_title: Nice Title
-  network: BBC
+  network: BBC iPlayer
   screen_size: 720p
   format: WEBRip
   audio_codec: AAC
@@ -3788,6 +3788,174 @@
   episode_title: Nice Title
   screen_size: 720p
   network: NBC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: Syfy
+? Show.Name.S01E02.Nice.Title.720p.SYFY.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: Syfy
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: Spike TV
+? Show.Name.S01E02.Nice.Title.720p.SPKE.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: Spike TV
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: IFC
+? Show.Name.S01E02.Nice.Title.720p.IFC.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: IFC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: NATG
+? Show.Name.S01E02.Nice.Title.720p.NATG.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: National Geographic
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: NFL
+? Show.Name.S01E02.Nice.Title.720p.NFL.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: NFL
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: UFC
+? Show.Name.S01E02.Nice.Title.720p.UFC.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: UFC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: TV Land
+? Show.Name.S01E02.Nice.Title.720p.TVL.WEBRip.AAC2.0.x264-group
+: title: Show Name
+  season: 1
+  episode: 2
+  episode_title: Nice Title
+  screen_size: 720p
+  network: TV Land
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: group
+  type: episode
+
+# Network: Crunchy Roll
+? Show.Name.S01.1080p.CR.WEBRip.AAC.2.0.x264-monkee
+: title: Show Name
+  season: 1
+  screen_size: 1080p
+  network: Crunchy Roll
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: Disney
+? Show.Name.S01.1080p.DSNY.WEBRip.AAC.2.0.x264-monkee
+: title: Show Name
+  season: 1
+  screen_size: 1080p
+  network: Disney
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: Nickelodeon
+? Show.Name.S01.1080p.NICK.WEBRip.AAC.2.0.x264-monkee
+: title: Show Name
+  season: 1
+  screen_size: 1080p
+  network: Nickelodeon
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: TFou
+? Show.Name.S01.1080p.TFOU.WEBRip.AAC.2.0.x264-monkee
+: title: Show Name
+  season: 1
+  screen_size: 1080p
+  network: TFou
   format: WEBRip
   audio_codec: AAC
   audio_channels: '2.0'
