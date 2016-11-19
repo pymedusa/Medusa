@@ -4,7 +4,7 @@
 import base64
 import medusa as app
 from .base import BaseRequestHandler
-from .... import logger, helpers
+from .... import logger, notifiers, helpers
 
 
 class LoginHandler(BaseRequestHandler):
