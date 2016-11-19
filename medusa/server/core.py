@@ -21,17 +21,22 @@ def get_apiv2_handlers(base):
     from .api.v2.log import LogHandler
     from .api.v2.show import ShowHandler
     from .api.v2.auth import LoginHandler
+    from .api.v2.asset import AssetHandler
+    from .api.v2.base import NotFoundHandler
 
     show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
     ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
     query = r'(?P<query>[\w]+)'
     log_level = r'(?P<log_level>[a-zA-Z]+)'
+    asset_group = r'(?P<asset_group>[a-z]+)'
 
     return [
         (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id, query=query), ShowHandler),
         (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
         (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
-        (r'{base}/auth/login(/?)'.format(base=base), LoginHandler)
+        (r'{base}/auth/login(/?)'.format(base=base), LoginHandler),
+        (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group, query=query), AssetHandler),
+        (r'{base}(/?.*)'.format(base=base), NotFoundHandler)
     ]
 
 

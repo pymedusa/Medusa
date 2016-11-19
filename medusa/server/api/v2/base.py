@@ -102,6 +102,12 @@ class BaseRequestHandler(RequestHandler):
         return BaseRequestHandler._parse(value, lambda d: datetime.strptime(d, fmt))
 
 
+class NotFoundHandler(BaseRequestHandler):
+    """A class used for the API v2 404 page."""
+    def get(self, *args, **kwargs):
+        self.api_finish(status=404)
+
+
 def json_string_encoder(o):
     """Convert properties to string."""
     if isinstance(o, Language):
