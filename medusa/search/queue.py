@@ -450,7 +450,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                search_result = searchProviders(self.show, self.segment, False, False)
+                search_result = searchProviders(self.show, self.segment)
 
                 if search_result:
                     for result in search_result:
