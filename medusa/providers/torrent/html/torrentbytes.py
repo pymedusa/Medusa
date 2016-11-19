@@ -15,12 +15,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TorrentBytes."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
+from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
@@ -30,11 +31,10 @@ from ....helper.common import convert_size, try_int
 
 
 class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """TorrentBytes Torrent provider"""
+    """TorrentBytes Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'TorrentBytes')
 
         # Credentials
@@ -63,7 +63,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -111,7 +111,6 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -165,6 +164,9 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
+                    time = str(cells[labels.index("Added")])
+                    pubdate_raw = re.sub(r'<.*?>', ' ', time) if time else None
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -172,7 +174,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                         'torrent_hash': None,
                     }
                     if mode != 'RSS':
