@@ -118,8 +118,28 @@ def network():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='network', validator=seps_surround)
 
-    rebulk.regex(r'AMZN', value='Amazon')
-    rebulk.regex(r'HBO', value='HBO')
+    # https://github.com/guessit-io/guessit/issues/344
+    rebulk.regex(r'AE', value='A&E')
+    rebulk.regex(r'AMBC', value='ABC')
+    rebulk.regex(r'AMZN', value='Amazon Prime')
+    rebulk.regex(r'AS', value='Adult Swim')
+    rebulk.regex(r'iP', value='BBC')
+    rebulk.regex(r'CBS', value='CBS')
+    rebulk.regex(r'CC', value='Comedy Central',
+                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
+    rebulk.regex(r'CW', value='The CW')
+    rebulk.regex(r'DISC', value='Discovery')
+    rebulk.regex(r'EPIX', value='ePix')
+    rebulk.regex(r'HBO', value='HBO Go')
+    rebulk.regex(r'HIST', value='History')
+    rebulk.regex(r'PBS', value='PBS')
+    rebulk.regex(r'NBA', value='NBA TV')
+    rebulk.regex(r'NBC', value='NBC')
+    rebulk.regex(r'NF', value='Netflix',
+                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
+    rebulk.regex(r'SESO', value='SeeSo')
+
+    rebulk.rules(ValidateNetwork)
 
     return rebulk
 
@@ -241,6 +261,38 @@ class ValidateHardcodedSubs(Rule):
                 continue
 
             to_remove.append(hc)
+
+        return to_remove
+
+
+class ValidateNetwork(Rule):
+    """Validate network matches."""
+
+    priority = 32
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        """Network is always after screen_size and before format.
+
+        :param matches:
+        :type matches: rebulk.match.Matches
+        :param context:
+        :type context: dict
+        :return:
+        """
+        to_remove = []
+        for nw in matches.named('network'):
+            next_match = matches.next(nw, predicate=lambda match: match.name == 'format', index=0)
+            if next_match and not matches.holes(nw.end, next_match.start,
+                                                predicate=lambda match: match.value.strip(seps)):
+                continue
+
+            previous_match = matches.previous(nw, predicate=lambda match: match.name == 'screen_size', index=0)
+            if previous_match and not matches.holes(previous_match.end, nw.start,
+                                                    predicate=lambda match: match.value.strip(seps)):
+                continue
+
+            to_remove.append(nw)
 
         return to_remove
 

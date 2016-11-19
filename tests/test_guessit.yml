@@ -3183,7 +3183,7 @@
   episode_title: eps2 4 m4ster-s1ave aes
   screen_size: 1080p
   format: WEBRip
-  network: Amazon
+  network: Amazon Prime
   audio_codec: AC3
   audio_channels: '5.1'
   video_codec: h264
@@ -3384,7 +3384,7 @@
   episode: 2
   episode_title: Chestbun
   screen_size: 720p
-  network: HBO
+  network: HBO Go
   format: WEBRip
   audio_codec: AC3
   audio_channels: '5.1'
@@ -3551,17 +3551,247 @@
   container: MP4
   type: episode
 
-# Network
+# Network: Amazon
 ? Show.Name.S07E04.Service.1080p.AMZN.WEBRip.DD+5.1.x264
 : title: Show Name
   season: 7
   episode: 4
   episode_title: Service
   screen_size: 1080p
-  network: Amazon
+  network: Amazon Prime
   format: WEBRip
   audio_codec: AC3
   audio_channels: '5.1'
   video_codec: h264
   video_encoder: x264
+  type: episode
+
+# Network: Comedy Central
+? Show.Name.2016.09.28.Nice.Title.Extended.1080p.CC.WEBRip.AAC2.0.x264-monkee
+: title: Show Name
+  date: 2016-09-28
+  episode_title: Nice Title
+  other: Extended
+  screen_size: 1080p
+  network: Comedy Central
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: The CW
+? Show.Name.US.S12E20.Nice.Title.720p.CW.WEBRip.AAC2.0.x264-monkee
+: title: Show Name
+  alias: Show Name US
+  country: US
+  season: 12
+  episode: 20
+  episode_title: Nice Title
+  screen_size: 720p
+  network: The CW
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: AMBC
+? Show.Name.2016.09.27.Nice.Title.720p.AMBC.WEBRip.AAC2.0.x264-monkee
+: title: Show Name
+  date: 2016-09-27
+  episode_title: Nice Title
+  screen_size: 720p
+  network: ABC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: AMBC
+? Show.Name.720p.HIST.WEBRip.AAC2.0.H.264-monkee
+: title: Show Name
+  screen_size: 720p
+  network: History
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: PBS
+? Show.Name.2015.Nice.Title.1080p.PBS.WEBRip.AAC2.0.H264-monkee
+: title: Show Name
+  year: 2015
+  episode_title: Nice Title
+  screen_size: 1080p
+  network: PBS
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: SeeSo
+? Show.Name.2016.Nice.Title.1080p.SESO.WEBRip.AAC2.0.x264-monkee
+: title: Show Name
+  year: 2016
+  episode_title: Nice Title
+  screen_size: 1080p
+  network: SeeSo
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: Discovery
+? Show.Name.S01E03.Nice.Title.720p.DISC.WEBRip.AAC2.0.x264-NTb
+: title: Show Name
+  season: 1
+  episode: 3
+  episode_title: Nice Title
+  screen_size: 720p
+  network: Discovery
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: NTb
+  type: episode
+
+# Network: BBC
+? Show.Name.2016.08.18.Nice.Title.720p.iP.WEBRip.AAC2.0.H.264-monkee
+: title: Show Name
+  date: 2016-08-18
+  episode_title: Nice Title
+  network: BBC
+  screen_size: 720p
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: A&E
+? Show.Name.S15E18.Nice.Title.720p.AE.WEBRip.AAC2.0.H.264-monkee
+: title: Show Name
+  season: 15
+  episode: 18
+  episode_title: Nice Title
+  screen_size: 720p
+  network: A&E
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: Adult Swim
+? Show.Name.S04E01.Nice.Title.1080p.AS.WEBRip.AAC2.0.H.264-monkee
+: title: Show Name
+  season: 4
+  episode: 1
+  episode_title: Nice Title
+  screen_size: 1080p
+  network: Adult Swim
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: Netflix
+? Show.Name.2013.S02E03.1080p.NF.WEBRip.DD5.1.x264-NTb.mkv
+: title: Show Name
+  alias: Show Name 2013
+  year: 2013
+  season: 2
+  episode: 3
+  screen_size: 1080p
+  network: Netflix
+  format: WEBRip
+  audio_codec: AC3
+  audio_channels: '5.1'
+  video_codec: h264
+  video_encoder: x264
+  release_group: NTb
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+# Network: CBS
+? Show.Name.2016.05.10.Nice.Title.720p.CBS.WEBRip.AAC2.0.x264-monkee
+: title: Show Name
+  date: 2016-05-10
+  episode_title: Nice Title
+  screen_size: 720p
+  network: CBS
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
+  type: episode
+
+# Network: NBA TV
+? NBA.2016.02.27.Team.A.vs.Team.B.720p.NBA.WEBRip.AAC2.0.H.264-monkee
+: title: NBA
+  date: 2016-02-27
+  episode_title: Team A vs Team B
+  screen_size: 720p
+  network: NBA TV
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: ePix
+? Show.Name.S05E04.Nice.Title.Part4.720p.EPIX.WEBRip.AAC2.0.H.264-monkee
+: title: Show Name
+  season: 5
+  episode: 4
+  episode_title: Nice Title
+  part: 4
+  screen_size: 720p
+  network: ePix
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: monkee
+  type: episode
+
+# Network: NBC
+? Show.Name.S41E03.Nice.Title.720p.NBC.WEBRip.AAC2.0.x264-monkee
+: title: Show Name
+  season: 41
+  episode: 3
+  episode_title: Nice Title
+  screen_size: 720p
+  network: NBC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  video_encoder: x264
+  release_group: monkee
   type: episode
