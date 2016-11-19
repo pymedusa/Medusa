@@ -164,7 +164,7 @@ def streaming_service():
     rebulk.regex(r'TVL', value='TV Land')
     rebulk.regex(r'UFC', value='UFC')
 
-    rebulk.rules(ValidateNetwork)
+    rebulk.rules(ValidateStreamingService)
 
     return rebulk
 
@@ -290,14 +290,14 @@ class ValidateHardcodedSubs(Rule):
         return to_remove
 
 
-class ValidateNetwork(Rule):
-    """Validate network matches."""
+class ValidateStreamingService(Rule):
+    """Validate streaming service matches."""
 
     priority = 32
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        """Network is always after screen_size and before format.
+        """Streaming service is always after screen_size and before format.
 
         :param matches:
         :type matches: rebulk.match.Matches
