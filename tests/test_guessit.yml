@@ -3537,3 +3537,15 @@
 : title: Show Name
   screen_size: 4320p
   type: episode
+
+# Removing TvChaosUK workaround
+? Show.Name.-.S012E01.(16.November.2016).[PDTV.mp4].hdtv.x264
+: title: Show Name
+  season: 12
+  episode: 1
+  date: 2016-11-16
+  format: PDTV
+  video_codec: h264
+  video_encoder: x264
+  container: MP4
+  type: episode
