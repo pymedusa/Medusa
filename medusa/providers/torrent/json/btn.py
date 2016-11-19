@@ -34,7 +34,7 @@ from ....helpers import sanitizeSceneName
 class BTNProvider(TorrentProvider):
     """BTN Torrent provider.
 
-    BTN's api docs for future reference
+    API docs:
     http://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
     and
     http://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
@@ -173,25 +173,26 @@ class BTNProvider(TorrentProvider):
 
     @staticmethod
     def _process_title_and_url(parsed_json):
+        """Create the title base on properties.
 
-        # Try to get the release name,
-        # if it doesn't exist make one up
-        # from the proprieties obtained.
-
+        Try to get the release name,
+        if it doesn't exist make one up
+        from the proprieties obtained.
+        """
         title = parsed_json.get('ReleaseName')
         if not title:
             # If we don't have a release name we need to get creative
             title = ''
             if 'Series' in parsed_json:
-                title += parsed_json.get('Series')
+                title += parsed_json['Series']
             if 'GroupName' in parsed_json:
-                title += '.' + parsed_json.get('GroupName')
+                title += '.' + parsed_json['GroupName']
             if 'Resolution' in parsed_json:
-                title += '.' + parsed_json.get('Resolution')
+                title += '.' + parsed_json['Resolution']
             if 'Source' in parsed_json:
-                title += '.' + parsed_json.get('Source')
+                title += '.' + parsed_json['Source']
             if 'Codec' in parsed_json:
-                title += '.' + parsed_json.get('Codec')
+                title += '.' + parsed_json['Codec']
             if title:
                 title = title.replace(' ', '.')
 
@@ -262,7 +263,7 @@ class BTNProvider(TorrentProvider):
         return to_return
 
     def _api_call(self, apikey, params=None, results_per_page=300, offset=0):
-
+        """Call provider API."""
         server = jsonrpclib.Server(self.urls['base_url'])
         parsed_json = {}
 
