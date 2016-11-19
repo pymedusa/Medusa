@@ -1024,20 +1024,24 @@ class FixTvChaosUkWorkaround(Rule):
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
+            m_x264 = matches.ending(filepart.end, predicate=lambda match: match.name == 'video_codec' and match.value == 'h264', index=0)
+            if not m_x264:
+                continue
+
+            m_hdtv = matches.previous(m_x264, predicate=lambda match: match.name == 'format' and match.value == 'HDTV', index=0)
+            if not m_hdtv:
+                continue
+
             video_codecs = matches.range(filepart.start, filepart.end, lambda match: match.name == 'video_codec')
             formats = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'format')
-            if len(video_codecs) != 2 or len(formats) != 1:
-                continue
-
-            m_x264 = video_codecs[-1]
-            m_hdtv = matches.previous(m_x264, index=0)
-
-            if m_x264.end != filepart.end or m_x264.value != 'h264' or m_hdtv.name != 'format' \
-                    or m_hdtv.value != 'HDTV':
-                continue
-
-            to_remove.append(m_x264)
-            m_hdtv.tags.append('tvchaosuk')
+            unique_codecs = {v.value for v in video_codecs}
+            unique_formats = {v.value for v in formats}
+            if len(unique_codecs) > 1:
+                to_remove.append(m_x264)
+                m_hdtv.tags.append('tvchaosuk')
+            if len(unique_formats) > 1:
+                to_remove.append(m_hdtv)
+                m_x264.tags.append('tvchaosuk')
 
         return to_remove
 
