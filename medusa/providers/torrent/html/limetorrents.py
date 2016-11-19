@@ -15,14 +15,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Limetorrents."""
 from __future__ import unicode_literals
 
 import re
+import requests
 import traceback
 
+
 from contextlib2 import suppress
-import requests
+# from dateutil import parser
 from requests.compat import urljoin
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
@@ -34,10 +36,10 @@ hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
 class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """LimeTorrents Torrent provider"""
-    def __init__(self):
+    """LimeTorrents Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, 'LimeTorrents')
 
         # Credentials
@@ -67,7 +69,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used

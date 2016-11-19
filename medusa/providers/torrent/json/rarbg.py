@@ -15,13 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for RARBG."""
 from __future__ import unicode_literals
 
 import datetime
 import time
 import traceback
 
+from dateutil import parser
 from ..torrent_provider import TorrentProvider
 from .... import app, logger, tv_cache
 from ....helper.common import convert_size, try_int
@@ -32,8 +33,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
     """RARBG Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
+        """Provider Init."""
         TorrentProvider.__init__(self, 'Rarbg')
 
         # Credentials
@@ -194,6 +194,8 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
 
                 torrent_size = row.pop('size', -1)
                 size = convert_size(torrent_size) or -1
+                pubdate = row.pop("pubdate")
+                pubdate = parser.parse(pubdate, fuzzy=True)
 
                 item = {
                     'title': title,
@@ -201,7 +203,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                     'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
-                    'pubdate': None,
+                    'pubdate': pubdate,
                     'torrent_hash': None,
                 }
                 if mode != 'RSS':
@@ -216,6 +218,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         return items
 
     def login(self):
+        """Login method used for logging in before doing search and torrent downloads."""
         if self.token and self.token_expires and datetime.datetime.now() < self.token_expires:
             return True
 

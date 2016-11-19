@@ -15,11 +15,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Danishbits."""
 from __future__ import unicode_literals
 
 import traceback
 
+from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
@@ -29,10 +30,10 @@ from ....helper.common import convert_size, try_int
 
 
 class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Danishbits Torrent provider"""
-    def __init__(self):
+    """Danishbits Torrent provider."""
 
-        # Provider Init
+    def __init__(self):
+        """Provider Init."""
         TorrentProvider.__init__(self, 'Danishbits')
 
         # Credentials
@@ -60,7 +61,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -161,6 +162,8 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     torrent_size = cells[labels.index('Størrelse')].contents[0]
                     size = convert_size(torrent_size, units=units) or -1
+                    pubdate_raw = cells[labels.index('Tilføjet')].find('span')['title']
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -168,7 +171,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                         'torrent_hash': None,
                     }
                     if mode != 'RSS':
