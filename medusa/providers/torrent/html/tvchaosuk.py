@@ -28,7 +28,7 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class TVChaosUKProvider(TorrentProvider):
     """TVChaosUK Torrent provider."""
 
     def __init__(self):
@@ -59,7 +59,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

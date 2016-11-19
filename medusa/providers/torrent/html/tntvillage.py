@@ -32,7 +32,7 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class TNTVillageProvider(TorrentProvider):
     """TNTVillage Torrent provider."""
 
     def __init__(self):
@@ -66,7 +66,7 @@ class TNTVillageProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

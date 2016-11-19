@@ -40,7 +40,7 @@ COMPLETE = 5
 OTHER = 6
 
 
-class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class AnimeBytes(TorrentProvider):
     """AnimeBytes Torrent provider."""
 
     def __init__(self):

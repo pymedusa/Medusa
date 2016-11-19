@@ -28,10 +28,10 @@ from .... import app, helpers, logger, tv_cache
 from ....helper.exceptions import ex
 
 
-class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class TorrentRssProvider(TorrentProvider):
     """Torrent RSS provider."""
 
-    def __init__(self, name, url, cookies='',  # pylint: disable=too-many-arguments
+    def __init__(self, name, url, cookies='',
                  title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""

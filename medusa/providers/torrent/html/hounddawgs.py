@@ -29,7 +29,7 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class HoundDawgsProvider(TorrentProvider):
     """HoundDawgs Torrent provider."""
 
     def __init__(self):
@@ -61,7 +61,7 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

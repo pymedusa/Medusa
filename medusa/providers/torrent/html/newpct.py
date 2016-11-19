@@ -54,7 +54,7 @@ class NewpctProvider(TorrentProvider):
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 
@@ -192,7 +192,7 @@ class NewpctProvider(TorrentProvider):
 
         return title.strip()
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):  # pylint: disable=too-many-arguments
+    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """
         Previously we must parse the URL to get torrent file.
 

@@ -29,7 +29,7 @@ from ....helper.common import convert_size, try_int
 from ....indexers.indexer_config import INDEXER_TVDBV2
 
 
-class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class RarbgProvider(TorrentProvider):
     """RARBG Torrent provider."""
 
     def __init__(self):

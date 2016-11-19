@@ -42,7 +42,7 @@ from ..tv_cache import TVCache
 recent_results = {}
 
 
-class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
+class GenericProvider(object):
     """Generic provider."""
 
     NZB = 'nzb'
@@ -305,7 +305,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             if add_cache_entry:
                 logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
-                # pylint: disable=protected-access
+
                 # Access to a protected member of a client class
                 ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash)
 
@@ -364,7 +364,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 results[episode_number].append(result)
 
         if cl:
-            # pylint: disable=protected-access
+
             # Access to a protected member of a client class
             db = self.cache._get_db()
             db.mass_action(cl)
@@ -580,7 +580,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return urls, filename
 
-    def _verify_download(self, file_name=None):  # pylint: disable=unused-argument,no-self-use
+    def _verify_download(self, file_name=None):
         return True
 
     @property

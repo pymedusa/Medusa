@@ -34,7 +34,7 @@ id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*)\.html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
-class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class LimeTorrentsProvider(TorrentProvider):
     """LimeTorrents Torrent provider."""
 
     def __init__(self):
@@ -66,7 +66,7 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

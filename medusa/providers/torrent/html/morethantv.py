@@ -35,7 +35,7 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class MoreThanTVProvider(TorrentProvider):
     """MoreThanTV Torrent provider."""
 
     def __init__(self):
@@ -67,7 +67,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)

@@ -29,7 +29,7 @@ from .... import logger, tv_cache
 from ....helper.common import convert_size
 
 
-class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class TorrentDayProvider(TorrentProvider):
     """TorrentDay Torrent provider."""
 
     def __init__(self):
@@ -65,7 +65,7 @@ class TorrentDayProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

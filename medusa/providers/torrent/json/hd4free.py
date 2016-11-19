@@ -27,7 +27,7 @@ from .... import logger, tv_cache
 from ....helper.common import convert_size
 
 
-class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class HD4FreeProvider(TorrentProvider):
     """HD4Free Torrent provider."""
 
     def __init__(self):
@@ -56,7 +56,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

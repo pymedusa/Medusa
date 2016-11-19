@@ -29,7 +29,7 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class TorrentShackProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class TorrentShackProvider(TorrentProvider):
     """TorrentShack Torrent provider."""
 
     def __init__(self):
@@ -59,7 +59,7 @@ class TorrentShackProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)  # Only poll TorrentShack every 20 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

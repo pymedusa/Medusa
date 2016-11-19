@@ -53,7 +53,7 @@ class HDBitsProvider(TorrentProvider):
         # Cache
         self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

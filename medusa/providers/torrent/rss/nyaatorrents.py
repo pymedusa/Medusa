@@ -26,7 +26,7 @@ from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 
 
-class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class NyaaProvider(TorrentProvider):
     """Nyaa Torrent provider."""
 
     def __init__(self):
@@ -55,7 +55,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

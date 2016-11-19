@@ -29,7 +29,7 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class ThePirateBayProvider(TorrentProvider):
     """ThePirateBay Torrent provider."""
 
     def __init__(self):

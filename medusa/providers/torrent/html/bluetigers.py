@@ -28,7 +28,7 @@ from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 
 
-class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class BlueTigersProvider(TorrentProvider):
     """BlueTigers Torrent provider."""
 
     def __init__(self):
@@ -60,7 +60,7 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BLUETIGERS every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

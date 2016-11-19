@@ -52,7 +52,7 @@ class BitCannonProvider(TorrentProvider):
         cache_params = {'RSS': ['tv', 'anime']}
         self.cache = tv_cache.TVCache(self, search_params=cache_params)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 

@@ -85,7 +85,7 @@ class ShazbatCache(tv_cache.TVCache):
 
     def _checkAuth(self, data):
         """Check if we are autenticated."""
-        return self.provider._check_auth_from_data(data)  # pylint: disable=protected-access
+        return self.provider._check_auth_from_data(data)
 
 
 provider = ShazbatProvider()

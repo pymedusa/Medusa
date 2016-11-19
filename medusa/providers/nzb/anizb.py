@@ -27,7 +27,7 @@ from ...bs4_parser import BS4Parser
 from ...helper.common import try_int
 
 
-class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
+class Anizb(NZBProvider):
     """Nzb Provider using the open api of anizb.org for daily (rss) and backlog/forced searches."""
 
     def __init__(self):
@@ -55,7 +55,7 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """Start searching for anime using the provided search_strings. Used for backlog and daily."""
         results = []
         if self.show and not self.show.is_anime:
