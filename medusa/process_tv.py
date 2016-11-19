@@ -577,9 +577,6 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
             result.result = False
             process_fail_message = ex(e)
 
-        if processor:
-            result.output += processor.log
-
         if result.result:
             result.output += logHelper(u"Processing succeeded for %s" % cur_video_file_path)
         else:
