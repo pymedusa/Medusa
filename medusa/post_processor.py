@@ -151,8 +151,41 @@ class PostProcessor(object):
                       (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
-    def list_associated_files(self, file_path, base_name_only=False,
-                              subtitles_only=False, subfolders=False):
+    @staticmethod
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=True):
+        """
+        Search for files in a given path.
+
+        :param path: path to file or folder (NOTE: folder paths must end with slashes)
+        :type path: text_type
+        :param pattern: pattern used to match the files
+        :type pattern: text_type
+        :param subfolders: search for files in subfolders
+        :type subfolders: bool
+        :param base_name_only: only match files with the same file name
+        :type base_name_only: bool
+        :param sort: return files sorted by size
+        :type sort: bool
+        :return: list with found files or empty list
+        :rtype: list
+        """
+        directory = os.path.dirname(path)
+        if base_name_only and os.path.isfile(path):
+            pattern = os.path.basename(path).rpartition('.')[0] + pattern
+
+        found_files = []
+        for root, _, filenames in os.walk(directory):
+            for filename in fnmatch.filter(filenames, pattern):
+                found_files.append(os.path.join(root, filename))
+            if not subfolders:
+                break
+
+        if sort:
+            found_files = sorted(found_files, key=os.path.getsize, reverse=True)
+
+        return found_files
+
+    def list_associated_files(self, file_path, base_name_only=False, subtitles_only=False, subfolders=False):
         """
         For a given file path search for files in the same directory and return their absolute paths.
 
@@ -162,26 +195,10 @@ class PostProcessor(object):
         :param subfolders: check subfolders while listing files
         :return: A list containing all files which are associated to the given file
         """
-        def find_files(file_path, pattern='*', subfolders=None, base_name_only=None):
-            directory = os.path.dirname(file_path)
-            if base_name_only:
-                pattern = os.path.basename(file_path).rpartition('.')[0] + pattern
-
-            found_files = []
-            for root, _, filenames in os.walk(directory):
-                for filename in fnmatch.filter(filenames, pattern):
-                    found_files.append(os.path.join(root, filename))
-                if not subfolders:
-                    break
-            return found_files
-
-        if not file_path:
-            return []
-
-        # get a list of all the files in the folder
-        file_list = find_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
-
+        # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
+
+        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
 
         # loop through all the files in the folder, and check if they are the same name
         # even when the cases don't match
