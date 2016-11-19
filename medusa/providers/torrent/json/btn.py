@@ -296,7 +296,7 @@ class BTNProvider(TorrentProvider):
             if errorstring.startswith('<') and errorstring.endswith('>'):
                 errorstring = errorstring[1:-1]
             logger.log('Unknown error while accessing provider. Error: {msg}'.format
-                       (msg=errorstring), logger.WARNING)
+                       (msg=errorstring), logger.ERROR)
 
         return parsed_json
 
