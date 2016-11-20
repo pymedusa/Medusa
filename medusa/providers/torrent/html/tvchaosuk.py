@@ -136,7 +136,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             for row in torrent_rows[1:]:
                 try:
                     # Skip highlighted torrents
-                    if row.get('class'):
+                    if mode == 'RSS' and row.find('tr', class_='highlight'):
                         continue
 
                     if self.freeleech and not row.find('img', alt=re.compile('Free Torrent')):
