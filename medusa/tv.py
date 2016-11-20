@@ -42,14 +42,15 @@ from .common import (
     SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, qualityPresets, statusStrings
 )
 from .helper.common import (
-    dateFormat, dateTimeFormat, episode_num, pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
+    dateFormat, dateTimeFormat, episode_num, pretty_file_size, remove_extension, replace_extension, sanitize_filename,
+    try_int
 )
 from .helper.exceptions import (
     EpisodeDeletedException, EpisodeNotFoundException, MultipleEpisodesInDatabaseException,
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
-from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, mappings, reverse_mappings
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, mappings, reverse_mappings, indexerConfig
 from .indexers.indexer_exceptions import IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .sbdatetime import sbdatetime
@@ -974,8 +975,8 @@ class TVShow(TVObject):
             season_all_poster_result = cur_provider.create_season_all_poster(self) or season_all_poster_result
             season_all_banner_result = cur_provider.create_season_all_banner(self) or season_all_banner_result
 
-        return fanart_result or poster_result or banner_result or season_posters_result or \
-               season_banners_result or season_all_poster_result or season_all_banner_result
+        return (fanart_result or poster_result or banner_result or season_posters_result or
+                season_banners_result or season_all_poster_result or season_all_banner_result)
 
     def make_ep_from_file(self, filepath):
         """Make a TVEpisode object from a media file.
@@ -1485,8 +1486,8 @@ class TVShow(TVObject):
                 continue
 
             # if the path doesn't exist or if it's not in our show dir
-            if not os.path.isfile(cur_loc) or not os.path.normpath(cur_loc).startswith(
-                os.path.normpath(self.location)):
+            if (not os.path.isfile(cur_loc) or
+                    not os.path.normpath(cur_loc).startswith(os.path.normpath(self.location))):
 
                 # check if downloaded files still exist, update our data if this has changed
                 if not app.SKIP_REMOVED_FILES:
@@ -1675,7 +1676,7 @@ class TVShow(TVObject):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        indexer_name = reverse_mapping[self.indexer]
+        indexer_name = indexerConfig[self.indexer].name
         result = OrderedDict([
             ('id', OrderedDict([
                 (indexer_name, self.indexerid),
@@ -2406,10 +2407,12 @@ class TVEpisode(TVObject):
             return False
 
         # don't update show status if show dir is missing, unless it's missing on purpose
-        if not self.show.is_location_valid() and \
-            not app.CREATE_MISSING_SHOW_DIRS and not app.ADD_SHOWS_WO_DIR:
-            logger.log(u"{id}: Show {show} location '{location}' is missing. Keeping current episode statuses".format
-                       (id=self.show.indexerid, show=self.show.name, location=self.show.raw_location), logger.WARNING)
+        if all([not self.show.is_location_valid(),
+                not app.CREATE_MISSING_SHOW_DIRS,
+                not app.ADD_SHOWS_WO_DIR]):
+            logger.log(u"{id}: Show {show} location '{location}' is missing. Keeping current episode statuses"
+                       .format(id=self.show.indexerid, show=self.show.name, location=self.show.raw_location),
+                       logger.WARNING)
             return
 
         if self.location:
@@ -2503,8 +2506,8 @@ class TVEpisode(TVObject):
 
                 for ep_details in list(show_xml.iter('episodedetails')):
                     if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
-                        ep_details.findtext('episode') is None or
-                            int(ep_details.findtext('episode')) != self.episode):
+                                ep_details.findtext('episode') is None or
+                                int(ep_details.findtext('episode')) != self.episode):
                         logger.log(u'{id}: NFO has an <episodedetails> block for a different episode - '
                                    u'wanted {ep_wanted} but got {ep_found}'.format
                                    (id=self.show.indexerid, ep_wanted=episode_num(self.season, self.episode),
@@ -2568,7 +2571,7 @@ class TVEpisode(TVObject):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        indexer_name = reverse_mapping[self.indexer]
+        indexer_name = indexerConfig[self.indexer].name
         data = OrderedDict([
             ('identifier', self.identifier),
             ('id', OrderedDict([

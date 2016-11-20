@@ -239,7 +239,7 @@ class TVmaze(BaseIndexer):
             log().debug('Episode search did not return any results.')
             return False
 
-        episodes = self._map_results(results,  self.series_map)
+        episodes = self._map_results(results, self.series_map)
 
         if not episodes:
             return False

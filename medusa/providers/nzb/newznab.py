@@ -360,7 +360,7 @@ class NewznabProvider(NZBProvider):
                     if map_caps[map_indexer] == search_type:
                         if self.show.indexer == map_indexer:
                             # We have a direct match on the indexer used, no need to try the externals.
-                            return_mapping[map_caps[map_indexer]] =  self.show.indexer
+                            return_mapping[map_caps[map_indexer]] = self.show.indexer
                         elif self.show.externals.get(mappings[map_indexer]):
                             # No direct match, let's see if one of the externals provides a valid search_type.
                             return_mapping[map_caps[map_indexer]] = self.show.externals.get(mappings[map_indexer])
