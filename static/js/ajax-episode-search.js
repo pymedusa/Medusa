@@ -224,8 +224,6 @@ $(document).ready(function() {
 
         $('.epManualSearch').on('click', function(event) {
             event.preventDefault();
-            var performSearch = '0';
-            var showAllResults = '0';
 
             // @TODO: Omg this disables all the manual snatch icons, when one is clicked
             if ($(this).hasClass('disabled')) {
@@ -235,7 +233,7 @@ $(document).ready(function() {
             $('.epManualSearch').addClass('disabled');
             $('.epManualSearch').fadeTo(1, 0.1);
 
-            var url = this.href + '&perform_search=' + performSearch + '&show_all_results=' + showAllResults;
+            var url = this.href;
             if (event.shiftKey || event.ctrlKey || event.which === 2) {
                 window.open(url, '_blank');
             } else {
