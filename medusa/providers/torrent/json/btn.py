@@ -88,9 +88,10 @@ class BTNProvider(TorrentProvider):
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             if mode != 'RSS':
-                search_params = self._episode_search_params(ep_obj)
                 if mode == 'Season':
                     search_params = self._season_search_params(ep_obj)
+                else:
+                    search_params = self._episode_search_params(ep_obj)
                 logger.log('Search string: {search}'.format
                            (search=search_params), logger.DEBUG)
 
@@ -175,9 +176,8 @@ class BTNProvider(TorrentProvider):
     def _process_title_and_url(parsed_json):
         """Create the title base on properties.
 
-        Try to get the release name,
-        if it doesn't exist make one up
-        from the proprieties obtained.
+        Try to get the release name, if it doesn't exist make one up
+        from the properties obtained.
         """
         title = parsed_json.get('ReleaseName')
         if not title:
