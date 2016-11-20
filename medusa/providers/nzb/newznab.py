@@ -345,7 +345,7 @@ class NewznabProvider(NZBProvider):
         return_mapping = {}
 
         if self.cap_tv_search == 'True':
-            # We didn't get back a supportedParams, lest return, and continue with doing a search string search.
+            # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
             return {}
 
         for search_type in self.cap_tv_search.split(','):

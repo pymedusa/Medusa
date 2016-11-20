@@ -50,6 +50,7 @@ from .helper.exceptions import (
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
+from .indexers.indexer_api import indexerApi
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, mappings, reverse_mappings, indexerConfig
 from .indexers.indexer_exceptions import IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
