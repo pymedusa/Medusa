@@ -152,12 +152,12 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 try:
                     title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
                     download_url = urljoin(self.url,
-                                           cells[labels.index('Download')].find(title='Download').parent['href'])
+                                           cells[labels.index('Date')].find(title='Download').parent['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Size')].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('Seeders')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -167,7 +167,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[labels.index('Size')].get_text()
+                    torrent_size = cells[labels.index('Comments')].get_text()
                     torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                     size = convert_size(torrent_size, units=units) or -1
 
