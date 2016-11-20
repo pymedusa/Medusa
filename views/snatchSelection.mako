@@ -2,6 +2,7 @@
 <%!
     from medusa import app
     from medusa.helpers import anon_url
+    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
