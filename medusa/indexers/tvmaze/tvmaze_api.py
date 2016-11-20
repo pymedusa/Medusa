@@ -89,13 +89,13 @@ class TVmaze(BaseIndexer):
         """
         Map results to a a key_mapping dict.
 
-        :type tvmaze_response: object
+        :param tvmaze_response: tvmaze response obect, or a list of response objects.
+        :type tvmaze_response: list(object)
+        :param key_mappings: Dict of tvmaze attributes, that are mapped to normalized keys.
+        :type key_mappings: dictionary
+        :param list_separator: A list separator used to transform lists to a character separator string.
+        :type list_separator: string.
         """
-        def week_day(input_date):
-            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-            week_day_number = parser.parse(input_date).weekday()
-            return days[week_day_number]
-
         parsed_response = []
 
         if not isinstance(tvmaze_response, list):

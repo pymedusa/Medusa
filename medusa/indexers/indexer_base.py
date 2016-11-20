@@ -264,8 +264,13 @@ class BaseIndexer(object):
                 self._set_show_data(show['id'], k, v)
         return selected_series
 
-    def get_last_updated_series(self, from_time, weeks=1):
-        """Retrieve a list with updated shows."""
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+        """Retrieve a list with updated shows
+
+        :param from_time: epoch timestamp, with the start date/time
+        :param weeks: number of weeks to get updates for.
+        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
+        """
         raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
 
     def get_episodes_for_season(self, show_id, *args, **kwargs):

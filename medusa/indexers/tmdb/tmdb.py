@@ -19,7 +19,6 @@
 from __future__ import unicode_literals
 
 from dateutil import parser
-from time import strftime
 from datetime import datetime, timedelta
 import medusa as app
 from collections import OrderedDict
@@ -28,7 +27,7 @@ import logging
 from tmdb_api import TMDB
 
 from ..indexer_base import (BaseIndexer, Actors, Actor)
-from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound)
+from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete
 
 
 def log():
@@ -304,8 +303,6 @@ class Tmdb(BaseIndexer):
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
 
-        search_for_image_type = self.config['image_type']
-
         log().debug('Getting show banners for %s', sid)
         _images = {}
 
@@ -386,7 +383,7 @@ class Tmdb(BaseIndexer):
         log().debug('Getting actors for %s', sid)
 
         # TMDB also support passing language here as a param.
-        credits = self.tmdb.TV(sid).credits({'language': self.config['language']})
+        credits = self.tmdb.TV(sid).credits({'language': self.config['language']})  # pylint: disable=W0622
 
         if not credits or not credits.get('cast'):
             log().debug('Actors result returned zero')
@@ -534,10 +531,11 @@ class Tmdb(BaseIndexer):
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_seasons(self, show_list, from_time, weeks=1):
-        """Retrieve a list with updated shows.
+        """Retrieve a list with updated shows
 
-        @param from_time: epoch timestamp, with the start date/time
-        @param weeks: default last update week check
+        :param show_list: The list of shows, where seasons updates are retrieved for.
+        :param from_time: epoch timestamp, with the start date/time
+        :param weeks: number of weeks to get updates for.
         """
         show_season_updates = {}
         dt_start = datetime.fromtimestamp(from_time)

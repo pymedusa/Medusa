@@ -49,8 +49,7 @@ from .helper.exceptions import (
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
-from .indexers.indexer_config import (INDEXER_TVDBV2, INDEXER_TVRAGE, indexerConfig, mappings,
-                                      reverse_mappings)
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, mappings, reverse_mappings
 from .indexers.indexer_exceptions import IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .sbdatetime import sbdatetime
