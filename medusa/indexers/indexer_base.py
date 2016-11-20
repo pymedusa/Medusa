@@ -24,17 +24,18 @@ import os
 import re
 import tempfile
 import time
-import warnings
-import requests
-from six import iteritems
 
-from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerShowNotFound,
-                                 IndexerSeasonNotFound, IndexerSeasonUpdatesNotSupported)
+import requests
+import warnings
+from six import iteritems
+from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerSeasonNotFound,
+                                 IndexerSeasonUpdatesNotSupported, IndexerShowNotFound)
 
 from .indexer_ui import BaseUI, ConsoleUI
 
 
 def log():
+    """Log init."""
     return logging.getLogger('indexer_base')
 
 
@@ -150,7 +151,8 @@ class BaseIndexer(object):
         return None
 
     def _get_series(self, series):
-        """This searches themoviedb.org for the series name,
+        """Search themoviedb.org for the series name.
+
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
@@ -158,7 +160,6 @@ class BaseIndexer(object):
         :param series: the query for the series name
         :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
         """
-
         all_series = self.search(series)
         if not all_series:
             log().debug('Series result returned zero')

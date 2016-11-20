@@ -18,7 +18,6 @@
 
 from __future__ import unicode_literals
 
-from dateutil import parser
 from time import time
 from collections import OrderedDict
 import logging
