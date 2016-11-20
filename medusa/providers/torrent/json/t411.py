@@ -44,9 +44,8 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         self.tokenLastUpdate = None
 
         # URLs
-        self.url = 'https://api.t411.ch'
+        self.url = 'https://api.t411.li'
         self.urls = {
-            'base_url': 'http://www.t411.ch/',
             'search': urljoin(self.url, 'torrents/search/%s*?cid=%s&limit=100'),
             'rss': urljoin(self.url, 'torrents/top/today'),
             'login_page': urljoin(self.url, 'auth'),
