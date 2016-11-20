@@ -140,7 +140,7 @@ class DanishbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                 try:
                     title = row.find(class_='croptorrenttext').get_text(strip=True)
-                    download_url = self.url + row.find(title='Direkte download link')['href']
+                    download_url = urljoin(self.url, row.find(title='Direkte download link')['href'])
                     if not all([title, download_url]):
                         continue
 
