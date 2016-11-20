@@ -218,7 +218,7 @@ class TorrentRssProvider(TorrentProvider):
 class TorrentRssCache(tv_cache.TVCache):
     """RSS torrent cache class."""
 
-    def _getRSSData(self):
+    def _get_rss_data(self):
         """Get RSS data."""
         self.provider.add_cookies_from_ui()
-        return self.getRSSFeed(self.provider.url)
+        return self.get_rss_feed(self.provider.url)

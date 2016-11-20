@@ -446,7 +446,7 @@ def searchForNeededEpisodes():
     for cur_provider in providers:
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
                                                                            provider=cur_provider.name)
-        cur_provider.cache.updateCache()
+        cur_provider.cache.update_cache()
 
     for cur_provider in providers:
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
@@ -493,7 +493,7 @@ def searchForNeededEpisodes():
     return foundResults.values()
 
 
-def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
+def searchProviders(show, episodes, forced_search=False, down_cur_quality=False,
                     manual_search=False, manual_search_type='episode'):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
     """
     Walk providers for information on shows.
@@ -501,7 +501,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
     :param show: Show we are looking for
     :param episodes: List, episodes we hope to find
     :param forced_search: Boolean, is this a forced search?
-    :param downCurQuality: Boolean, should we re-download currently available quality file
+    :param down_cur_quality: Boolean, should we re-download currently available quality file
     :param manual_search: Boolean, should we choose what to download?
     :param manual_search_type: Episode or Season search
     :return: results for search
@@ -557,7 +557,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
 
             try:
                 searchResults = cur_provider.find_search_results(show, episodes, search_mode, forced_search,
-                                                                 downCurQuality, manual_search, manual_search_type)
+                                                                 down_cur_quality, manual_search, manual_search_type)
             except AuthException as e:
                 logger.log(u"Authentication error: " + ex(e), logger.ERROR)
                 break
@@ -676,7 +676,7 @@ def searchProviders(show, episodes, forced_search=False, downCurQuality=False,
             anyWanted = False
             for curEpNum in allEps:
                 for season in {x.season for x in episodes}:
-                    if not show.want_episode(season, curEpNum, seasonQual, downCurQuality):
+                    if not show.want_episode(season, curEpNum, seasonQual, down_cur_quality):
                         allWanted = False
                     else:
                         anyWanted = True

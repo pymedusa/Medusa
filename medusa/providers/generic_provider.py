@@ -171,8 +171,8 @@ class GenericProvider(object):
 
         for episode in episodes:
             if not manual_search:
-                cache_result = self.cache.searchCache(episode, forced_search=forced_search,
-                                                      downCurQuality=download_current_quality)
+                cache_result = self.cache.search_cache(episode, forced_search=forced_search,
+                                                       down_cur_quality=download_current_quality)
                 if cache_result:
                     if episode.episode not in results:
                         results[episode.episode] = cache_result
@@ -307,7 +307,7 @@ class GenericProvider(object):
                 logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
 
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash)
 
                 if ci is not None:
                     cl.append(ci)
@@ -425,7 +425,7 @@ class GenericProvider(object):
 
     def search_rss(self, episodes):
         """Find cached needed episodes."""
-        return self.cache.findNeededEpisodes(episodes)
+        return self.cache.find_needed_episodes(episodes)
 
     def seed_ratio(self):
         """Return ratio."""
