@@ -91,7 +91,8 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
-
+                if mode == 'Season':
+                    search_params['view'] = 1 #Browse/Gems a.k.a. Season packs
                 if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
