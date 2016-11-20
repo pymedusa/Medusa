@@ -90,7 +90,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 if mode == 'Season':
                     search_string = re.sub(r'(.*)S0?', r'\1Series ', search_string)
 
-                if mode != 'RSS':
+                elif mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
