@@ -39,7 +39,7 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         self.public = True
 
         # URLs
-        self.url = 'http://bitsnoop.com'
+        self.url = 'https://bitsnoop.com'
         self.urls = {
             'base': self.url,
             'rss': urljoin(self.url, '/new_video.html?fmt=rss'),
