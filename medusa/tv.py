@@ -847,8 +847,6 @@ class TVShow(TVObject):
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
-        indexer_api_params = indexerApi(self.indexer).api_params.copy()
-
         if tvapi:
             t = tvapi
             show_obj = t[self.indexerid]
