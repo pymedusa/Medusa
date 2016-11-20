@@ -27,7 +27,7 @@ class NZBProvider(GenericProvider):
 
     def __init__(self, name):
         """Initialize the class."""
-        GenericProvider.__init__(self, name)
+        super(NZBProvider, self).__init__(name)
 
         self.provider_type = GenericProvider.NZB
 

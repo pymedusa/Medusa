@@ -32,7 +32,8 @@ class TorrentProvider(GenericProvider):
 
     def __init__(self, name):
         """Initialize the class."""
-        GenericProvider.__init__(self, name)
+        super(TorrentProvider, self).__init__(name)
+
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
 

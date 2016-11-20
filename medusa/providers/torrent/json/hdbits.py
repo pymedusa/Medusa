@@ -30,7 +30,7 @@ class HDBitsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        TorrentProvider.__init__(self, 'HDBits')
+        super(self.__class__, self).__init__('HDBits')
 
         # Credentials
         self.username = None

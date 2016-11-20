@@ -35,7 +35,7 @@ class TransmitTheNetProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        TorrentProvider.__init__(self, 'TransmitTheNet')
+        super(self.__class__, self).__init__('TransmitTheNet')
 
         # Credentials
         self.username = None

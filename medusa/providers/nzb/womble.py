@@ -28,7 +28,7 @@ class WombleProvider(NZBProvider):
 
     def __init__(self):
         """Initialize the class."""
-        NZBProvider.__init__(self, "Womble's Index")
+        super(self.__class__, self).__init__("Womble's Index")
 
         # Credentials
         self.public = True

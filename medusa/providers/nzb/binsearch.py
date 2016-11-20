@@ -30,7 +30,7 @@ class BinSearchProvider(NZBProvider):
 
     def __init__(self):
         """Initialize the class."""
-        NZBProvider.__init__(self, 'BinSearch')
+        super(self.__class__, self).__init__('BinSearch')
 
         # Credentials
         self.public = True

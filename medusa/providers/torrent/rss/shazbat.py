@@ -29,7 +29,7 @@ class ShazbatProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        TorrentProvider.__init__(self, 'Shazbat.tv')
+        super(self.__class__, self).__init__('Shazbat.tv')
 
         # Credentials
         self.passkey = None

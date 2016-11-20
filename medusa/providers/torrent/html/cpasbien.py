@@ -32,7 +32,7 @@ class CpasbienProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        TorrentProvider.__init__(self, 'Cpasbien')
+        super(self.__class__, self).__init__('Cpasbien')
 
         # Credentials
         self.public = True
