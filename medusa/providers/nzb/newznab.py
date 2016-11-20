@@ -91,12 +91,10 @@ class NewznabProvider(NZBProvider):
             if not self.caps:
                 return results
 
-        match_indexer = self._match_indexer()
-
         for mode in search_strings:
             self.torznab = False
             search_params = {
-                't': 'tvsearch' if match_indexer and not self.force_query else 'search',
+                't': 'search',
                 'limit': 100,
                 'offset': 0,
                 'cat': self.cat_ids.strip(', ') or '5030,5040',
@@ -107,6 +105,9 @@ class NewznabProvider(NZBProvider):
                 search_params['apikey'] = self.key
 
             if mode != 'RSS':
+                match_indexer = self._match_indexer()
+                search_params['t'] = 'tvsearch' if match_indexer and not self.force_query else 'search'
+
                 if search_params['t'] == 'tvsearch':
                     search_params.update(match_indexer)
 
@@ -344,10 +345,8 @@ class NewznabProvider(NZBProvider):
         return_mapping = {}
 
         if self.cap_tv_search == 'True':
-            # We didn't get back a supportedParams, left default to tvdb.
-            return_mapping['tvdbid'] = self._get_tvdb_id()
-            if return_mapping['tvdbid']:
-                return return_mapping
+            # We didn't get back a supportedParams, lest return, and continue with doing a search string search.
+            return {}
 
         for search_type in self.cap_tv_search.split(','):
             if search_type == 'tvdbid':
