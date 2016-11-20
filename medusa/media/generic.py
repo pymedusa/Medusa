@@ -20,7 +20,7 @@ from abc import abstractmethod
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
-import medusa as app
+from .. import app
 from ..helper.common import try_int
 from ..helper.exceptions import MultipleShowObjectsException
 from ..show.show import Show

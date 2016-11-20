@@ -7,8 +7,7 @@ import locale
 import os.path
 import unittest
 
-import medusa as app
-from medusa import ex
+from medusa import app
 from medusa.helper.common import sanitize_filename
 from six import text_type
 
@@ -33,8 +32,5 @@ class EncodingTests(unittest.TestCase):
             app.SYS_ENCODING = 'UTF-8'
 
         for test in strings:
-            try:
-                show_dir = os.path.join(root_dir, sanitize_filename(test))
-                self.assertTrue(isinstance(show_dir, text_type))
-            except Exception as error:  # pylint: disable=broad-except
-                ex(error)
+            show_dir = os.path.join(root_dir, sanitize_filename(test))
+            self.assertTrue(isinstance(show_dir, text_type))

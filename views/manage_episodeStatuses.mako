@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import common
-    import medusa as app
+    from medusa import app
 %>
 <%block name="content">
 <div id="content960">

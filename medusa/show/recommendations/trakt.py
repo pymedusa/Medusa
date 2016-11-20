@@ -16,13 +16,12 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-import medusa as app
 import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
 from .recommended import RecommendedShow
-from ... import logger
+from ... import app, logger
 from ...helper.common import try_int
 from ...helper.exceptions import MultipleShowObjectsException, ex
 from ...indexers.indexer_config import INDEXER_TVDBV2

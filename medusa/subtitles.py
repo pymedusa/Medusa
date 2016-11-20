@@ -31,14 +31,13 @@ import traceback
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
 import knowit
-import medusa as app
 from six import iteritems, string_types, text_type
 from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
                         scan_video)
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
-from . import db, history
+from . import app, db, helpers, history
 from .cache import cache, memory_cache
 from .common import cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
@@ -480,8 +479,8 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
                     subtitle.provider_name, subtitle.language.opensubtitles)
         subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-        app.helpers.chmodAsParent(subtitle_path)
-        app.helpers.fixSetGroupID(subtitle_path)
+        helpers.chmodAsParent(subtitle_path)
+        helpers.fixSetGroupID(subtitle_path)
 
         if app.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
             subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
@@ -749,8 +748,8 @@ def get_subtitles_dir(video_path):
         return _decode(app.SUBTITLES_DIR)
 
     new_subtitles_path = os.path.join(os.path.dirname(video_path), app.SUBTITLES_DIR)
-    if app.helpers.makeDir(new_subtitles_path):
-        app.helpers.chmodAsParent(new_subtitles_path)
+    if helpers.makeDir(new_subtitles_path):
+        helpers.chmodAsParent(new_subtitles_path)
     else:
         logger.warning(u'Unable to create subtitles folder %s', new_subtitles_path)
 
@@ -903,7 +902,7 @@ class SubtitlesFinder(object):
             logger.log(u"Subtitle search is disabled. Please enabled it", logger.WARNING)
             return
 
-        if not app.subtitles.enabled_service_list():
+        if not enabled_service_list():
             logger.warning(u'Not enough services selected. At least 1 service is required to search subtitles in the '
                            u'background')
             return

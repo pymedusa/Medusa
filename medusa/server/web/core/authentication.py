@@ -9,12 +9,9 @@ from __future__ import unicode_literals
 
 import traceback
 
-import medusa as app
 from tornado.web import RequestHandler
 from .base import BaseHandler, PageTemplate
-from .... import (
-    helpers, logger, notifiers,
-)
+from .... import app, helpers, logger, notifiers
 
 
 class KeyHandler(RequestHandler):

@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as app
+from .. import app
 from ..notifiers import boxcar2, emailnotify, emby, freemobile, growl, kodi, libnotify, nma, nmj, nmjv2, plex, prowl, pushalot, pushbullet, pushover, \
     pytivo, synoindex, synology_notifier, telegram, trakt, tweet
 

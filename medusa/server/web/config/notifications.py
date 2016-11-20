@@ -8,13 +8,10 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import (
-    config, logger, ui,
-)
+from .... import app, config, logger, ui
 from ....helper.common import try_int
 
 
@@ -257,7 +254,7 @@ class ConfigNotifications(Config):
         app.PUSHBULLET_API = pushbullet_api
         app.PUSHBULLET_DEVICE = pushbullet_device_list
 
-        app.save_config()
+        app.instance.save_config()
 
         if results:
             for x in results:

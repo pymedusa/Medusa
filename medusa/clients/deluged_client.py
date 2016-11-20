@@ -11,9 +11,9 @@ from __future__ import unicode_literals
 import logging
 from base64 import b64encode
 
-import medusa as app
 from synchronousdeluge import DelugeClient
 from .generic import GenericClient
+from .. import app
 
 
 logger = logging.getLogger(__name__)

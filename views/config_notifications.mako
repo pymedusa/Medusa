@@ -1,10 +1,11 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
     import re
+    from medusa import app
     from medusa.helpers import anon_url
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
+    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -1563,8 +1564,8 @@
                                         <span class="component-title">Default indexer</span>
                                         <span class="component-desc">
                                             <select id="trakt_default_indexer" name="trakt_default_indexer" class="form-control input-sm">
-                                                % for indexer in app.indexerApi().indexers:
-                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${app.indexerApi().indexers[indexer]}</option>
+                                                % for indexer in indexerApi().indexers:
+                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexerApi().indexers[indexer]}</option>
                                                 % endfor
                                             </select>
                                         </span>

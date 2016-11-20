@@ -50,13 +50,12 @@ import certifi
 import cfscrape
 from contextlib2 import closing, suppress
 import guessit
-import medusa as app
 import requests
 from requests.compat import urlparse
-import shutil_custom
 from six import binary_type, string_types, text_type
 from six.moves import http_client
-from . import classes, db
+
+from . import app
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
@@ -67,17 +66,9 @@ logger = logging.getLogger(__name__)
 
 
 try:
-    import urllib
-    urllib._urlopener = classes.ApplicationURLopener()
-except ImportError:
-    logger.debug(u'Unable to import _urlopener, not using user_agent for urllib')
-
-try:
     from urllib.parse import splittype
 except ImportError:
     from urllib2 import splittype
-
-shutil.copyfile = shutil_custom.copyfile_custom
 
 
 def indentXML(elem, level=0):
@@ -207,12 +198,13 @@ def searchIndexerForShowID(show_name, indexer=None, indexer_id=None, ui=None):
     :param ui: Custom UI for indexer use
     :return:
     """
+    from .indexers.indexer_api import indexerApi
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
-    for i in app.indexerApi().indexers if not indexer else int(indexer or []):
+    for i in indexerApi().indexers if not indexer else int(indexer or []):
         # Query Indexers for each search term and build the list of results
-        indexer_api = app.indexerApi(i)
+        indexer_api = indexerApi(i)
         indexer_api_params = indexer_api.api_params.copy()
         if ui is not None:
             indexer_api_params['custom_ui'] = ui
@@ -458,6 +450,7 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     :param old_path_length: The length of media file path (old name) WITHOUT THE EXTENSION
     :type old_path_length: int
     """
+    from . import subtitles
     if old_path_length == 0 or old_path_length > len(cur_path):
         # approach from the right
         cur_file_name, cur_file_ext = os.path.splitext(cur_path)
@@ -471,7 +464,7 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
         sublang = os.path.splitext(cur_file_name)[1][1:]
 
         # Check if the language extracted from filename is a valid language
-        if sublang in app.subtitles.subtitle_code_filter():
+        if sublang in subtitles.subtitle_code_filter():
             cur_file_ext = '.' + sublang + cur_file_ext
 
     # put the extension on the incoming file
@@ -660,6 +653,7 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
+    from . import db
     absolute_number = None
 
     if season and episode:
@@ -933,7 +927,7 @@ def full_sanitizeSceneName(name):
 
 
 def get_show(name, tryIndexers=False):
-    from . import name_cache, scene_exceptions
+    from . import classes, name_cache, scene_exceptions
     if not app.showList:
         return
 
@@ -1005,10 +999,12 @@ def real_path(path):
 
 
 def validateShow(show, season=None, episode=None):
+    from .indexers.indexer_api import indexerApi
+    from .indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
     indexer_lang = show.lang
 
     try:
-        indexer_api_params = app.indexerApi(show.indexer).api_params.copy()
+        indexer_api_params = indexerApi(show.indexer).api_params.copy()
 
         if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
             indexer_api_params['language'] = indexer_lang
@@ -1016,12 +1012,12 @@ def validateShow(show, season=None, episode=None):
         if show.dvdorder != 0:
             indexer_api_params['dvdorder'] = True
 
-        t = app.indexerApi(show.indexer).indexer(**indexer_api_params)
+        t = indexerApi(show.indexer).indexer(**indexer_api_params)
         if season is None and episode is None:
             return t
 
         return t[show.indexerid][season][episode]
-    except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
+    except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
         pass
 
 
@@ -1105,10 +1101,12 @@ def restoreConfigZip(archive, targetDir):
 
 
 def mapIndexersToShow(show):
+    from . import classes, db
+    from .indexers.indexer_api import indexerApi
     mapped = {}
 
     # init mapped indexers object
-    for indexer in app.indexerApi().indexers:
+    for indexer in indexerApi().indexers:
         mapped[indexer] = show.indexerid if int(indexer) == int(show.indexer) else 0
 
     main_db_con = db.DBConnection()
@@ -1126,24 +1124,24 @@ def mapIndexersToShow(show):
             break
     else:
         sql_l = []
-        for indexer in app.indexerApi().indexers:
+        for indexer in indexerApi().indexers:
             if indexer == show.indexer:
                 mapped[indexer] = show.indexerid
                 continue
 
-            indexer_api_params = app.indexerApi(indexer).api_params.copy()
+            indexer_api_params = indexerApi(indexer).api_params.copy()
             indexer_api_params['custom_ui'] = classes.ShowListUI
-            t = app.indexerApi(indexer).indexer(**indexer_api_params)
+            t = indexerApi(indexer).indexer(**indexer_api_params)
 
             try:
                 mapped_show = t[show.name]
             except Exception:
-                logger.debug(u"Unable to map " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
+                logger.debug(u"Unable to map " + indexerApi(show.indexer).name + "->" + indexerApi(
                     indexer).name + " for show: " + show.name + ", skipping it")
                 continue
 
             if mapped_show and len(mapped_show) == 1:
-                logger.debug(u"Mapping " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
+                logger.debug(u"Mapping " + indexerApi(show.indexer).name + "->" + indexerApi(
                     indexer).name + " for show: " + show.name)
 
                 mapped[indexer] = int(mapped_show[0]['id'])
@@ -1570,13 +1568,14 @@ def getTVDBFromID(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    indexer_api_params = app.indexerApi(indexer).api_params.copy()
+    from .indexers.indexer_api import indexerApi
+    indexer_api_params = indexerApi(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang
 
-    logger.info(u"" + str(app.indexerApi(indexer).name) + ": " + repr(indexer_api_params))
+    logger.info(u"" + str(indexerApi(indexer).name) + ": " + repr(indexer_api_params))
 
-    t = app.indexerApi(indexer).indexer(**indexer_api_params)
+    t = indexerApi(indexer).indexer(**indexer_api_params)
     s = t[int(indexer_id)]
 
     if hasattr(s, 'data'):

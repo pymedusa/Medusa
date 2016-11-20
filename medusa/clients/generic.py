@@ -11,10 +11,9 @@ from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-import medusa as app
 import requests
 from six.moves.http_cookiejar import CookieJar
-from .. import db, helpers, logger
+from .. import app, db, helpers, logger
 from ..helper.common import http_code_description
 
 

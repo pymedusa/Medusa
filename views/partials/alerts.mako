@@ -1,5 +1,5 @@
 <%!
-    import medusa as app
+    from medusa import app
 %>
 <!-- BEGIN ALERTS -->
 % if app.BRANCH and app.BRANCH != 'master' and not app.DEVELOPER and loggedIn:

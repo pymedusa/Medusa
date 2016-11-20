@@ -2,7 +2,7 @@
 <%!
     import datetime
     import locale
-    import medusa as app
+    from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets

@@ -21,9 +21,8 @@ from __future__ import unicode_literals
 
 import re
 
-import medusa as app
 from requests.compat import urljoin
-from .. import common, helpers, logger
+from .. import app, common, helpers, logger
 
 
 class Notifier(object):

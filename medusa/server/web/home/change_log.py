@@ -3,13 +3,10 @@
 from __future__ import unicode_literals
 
 import markdown2
-import medusa as app
 from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
-from .... import (
-    helpers, logger,
-)
+from .... import app, helpers, logger
 
 
 @route('/changes(/?.*)')

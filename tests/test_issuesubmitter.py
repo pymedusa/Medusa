@@ -2,7 +2,7 @@
 """Tests for medusa.server.web.core.error_logs.py."""
 
 from github.GithubException import BadCredentialsException, RateLimitExceededException
-from medusa import classes
+from medusa import app, classes
 from medusa.classes import ErrorViewer
 from medusa.issue_submitter import IssueSubmitter
 from medusa.logger import LogLine
@@ -77,10 +77,10 @@ def test_submit_github_issue__basic_validations(monkeypatch, logger, version_che
     classes.ErrorViewer.clear()
     for error in p.get('errors', []):
         logger.error(error)
-    monkeypatch.setattr('medusa.DEBUG', p.get('debug'))
-    monkeypatch.setattr('medusa.GIT_USERNAME', p.get('username'))
-    monkeypatch.setattr('medusa.GIT_PASSWORD', p.get('password'))
-    monkeypatch.setattr('medusa.DEVELOPER', p.get('developer', False))
+    monkeypatch.setattr(app, 'DEBUG', p.get('debug'))
+    monkeypatch.setattr(app, 'GIT_USERNAME', p.get('username'))
+    monkeypatch.setattr(app, 'GIT_PASSWORD', p.get('password'))
+    monkeypatch.setattr(app, 'DEVELOPER', p.get('developer', False))
     monkeypatch.setattr(version_checker, 'need_update', lambda: p.get('need_update', False))
     monkeypatch.setattr(sut, 'running', p.get('running', False))
     if 'exception' in p:

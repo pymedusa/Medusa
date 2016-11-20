@@ -22,9 +22,8 @@ from __future__ import unicode_literals
 import threading
 from datetime import date, datetime, timedelta
 
-import medusa as app
 from .queue import DailySearchQueueItem
-from .. import common, logger
+from .. import app, common, logger
 from ..db import DBConnection
 from ..helper.common import try_int
 from ..helper.exceptions import MultipleShowObjectsException

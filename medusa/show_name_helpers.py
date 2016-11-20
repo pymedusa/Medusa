@@ -20,9 +20,8 @@ import fnmatch
 import os
 import re
 
-import medusa as app
 from six import string_types
-from . import common, logger
+from . import app, common, logger
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_exceptions import get_scene_exceptions
 

@@ -22,7 +22,7 @@ from __future__ import print_function, unicode_literals
 
 import re
 
-import medusa as app
+from medusa import app
 from medusa.tv import TVShow
 from . import test_lib as test
 

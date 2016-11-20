@@ -18,7 +18,7 @@
 
 from datetime import date
 
-import medusa as app
+from .. import app
 from ..common import Quality, SKIPPED, WANTED
 from ..db import DBConnection
 from ..helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex

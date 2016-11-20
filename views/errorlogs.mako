@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import logger
     from medusa import classes
 %>
 <%block name="css">
@@ -14,7 +14,7 @@ pre {
 </%block>
 <%block name="content">
 <%
-    if logLevel == app.logger.WARNING:
+    if logLevel == logger.WARNING:
         errors = classes.WarningViewer.errors
         title = 'WARNING logs'
     else:

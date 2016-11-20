@@ -20,9 +20,8 @@
 
 import re
 
-import medusa as app
 from six import iteritems
-from .. import common, logger
+from .. import app, common, logger
 from ..helper.exceptions import ex
 from ..helpers import getURL, make_session
 
@@ -37,7 +36,7 @@ class Notifier(object):
         self.headers = {
             'X-Plex-Device-Name': 'Medusa',
             'X-Plex-Product': 'Medusa Notifier',
-            'X-Plex-Client-Identifier': app.common.USER_AGENT,
+            'X-Plex-Client-Identifier': common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
         self.session = make_session()
@@ -59,7 +58,7 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-
+        from . import notifiers
         # suppress notifications if the notifier is disabled but the notify options are checked
         if not app.USE_PLEX_CLIENT and not force:
             return False
@@ -68,7 +67,7 @@ class Notifier(object):
         username = username or app.PLEX_CLIENT_USERNAME
         password = password or app.PLEX_CLIENT_PASSWORD
 
-        return app.notifiers.kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
+        return notifiers.kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
 
 ##############################################################################
 # Public functions

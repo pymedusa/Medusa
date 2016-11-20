@@ -28,9 +28,8 @@ import time
 import traceback
 from socket import timeout as SocketTimeout
 
-import medusa as app
 from requests import exceptions as requests_exceptions
-from .. import db, helpers, logger
+from .. import app, db, helpers, logger
 from ..common import Quality, cpu_presets
 from ..helper.common import enabled_providers
 from ..helper.exceptions import AuthException, ex

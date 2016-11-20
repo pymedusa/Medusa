@@ -18,12 +18,11 @@ from __future__ import unicode_literals
 
 import logging
 import traceback
-import medusa as app
 
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from .recommended import (MissingTvdbMapping, RecommendedShow)
-from ... import helpers
+from ... import app, helpers
 from ...indexers.indexer_config import INDEXER_TVDBV2
 
 

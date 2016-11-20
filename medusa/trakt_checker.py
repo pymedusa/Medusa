@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 import datetime
 import traceback
 
-import medusa as app
 from traktor import TraktApi, TraktException
-from . import db, logger, ui
+from . import app, db, logger, ui
 from .common import Quality, SKIPPED, UNKNOWN, WANTED
 from .helper.common import episode_num
 from .helper.exceptions import ex
+from .indexers.indexer_api import indexerApi
 from .search.queue import BacklogQueueItem
 from .show.show import Show
 
@@ -114,7 +114,7 @@ class TraktChecker(object):
     def remove_show_trakt_library(self, show_obj):
         """Remove Show from trakt collections"""
         if self.find_show(show_obj.indexerid):
-            trakt_id = app.indexerApi(show_obj.indexer).config['trakt_id']
+            trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
 
             # URL parameters
             data = {
@@ -156,7 +156,7 @@ class TraktChecker(object):
         data = {}
 
         if not self.find_show(show_obj.indexerid):
-            trakt_id = app.indexerApi(show_obj.indexer).config['trakt_id']
+            trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
             # URL parameters
             data = {
                 'shows': [
@@ -208,7 +208,7 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for cur_episode in episodes:
-                    trakt_id = app.indexerApi(cur_episode[b'indexer']).config['trakt_id']
+                    trakt_id = indexerApi(cur_episode[b'indexer']).config['trakt_id']
 
                     if self._check_list(trakt_id, cur_episode[b'showid'], cur_episode[b'season'], cur_episode[b'episode'],
                                         List='Collection'):
@@ -244,7 +244,7 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for cur_episode in episodes:
-                    trakt_id = app.indexerApi(cur_episode[b'indexer']).config['trakt_id']
+                    trakt_id = indexerApi(cur_episode[b'indexer']).config['trakt_id']
 
                     if not self._check_list(trakt_id, cur_episode[b'showid'], cur_episode[b'season'], cur_episode[b'episode'], List='Collection'):
                         logger.log('Adding Episode {show} {ep} to collection'.format
@@ -292,7 +292,7 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for cur_episode in episodes:
-                    trakt_id = app.indexerApi(cur_episode[b'indexer']).config['trakt_id']
+                    trakt_id = indexerApi(cur_episode[b'indexer']).config['trakt_id']
 
                     if self._check_list(trakt_id, cur_episode[b'showid'], cur_episode[b'season'], cur_episode[b'episode']):
                         if cur_episode[b'status'] not in Quality.SNATCHED + Quality.SNATCHED_PROPER + [UNKNOWN] + [WANTED]:
@@ -323,7 +323,7 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for cur_episode in episodes:
-                    trakt_id = app.indexerApi(cur_episode[b'indexer']).config['trakt_id']
+                    trakt_id = indexerApi(cur_episode[b'indexer']).config['trakt_id']
 
                     if not self._check_list(trakt_id, cur_episode[b'showid'], cur_episode[b'season'], cur_episode[b'episode']):
                         logger.log('Adding Episode {show} {ep} to watchlist'.format
@@ -349,7 +349,7 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for show_obj in app.showList:
-                    trakt_id = app.indexerApi(show_obj.indexer).config['trakt_id']
+                    trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
 
                     if not self._check_list(trakt_id, show_obj.indexerid, 0, 0, List='Show'):
                         logger.log('Adding Show {0} with ID: {1} to Trakt watchlist'.format(show_obj.name, show_obj.indexerid), logger.DEBUG)
@@ -401,7 +401,7 @@ class TraktChecker(object):
             logger.log('No shows found in your watchlist, aborting watchlist update', logger.DEBUG)
         else:
             indexer = int(app.TRAKT_DEFAULT_INDEXER)
-            trakt_id = app.indexerApi(indexer).config['trakt_id']
+            trakt_id = indexerApi(indexer).config['trakt_id']
 
             for watchlisted_show in self.show_watchlist[trakt_id]:
                 indexer_id = int(watchlisted_show)
@@ -437,7 +437,7 @@ class TraktChecker(object):
         managed_show = []
 
         indexer = int(app.TRAKT_DEFAULT_INDEXER)
-        trakt_id = app.indexerApi(indexer).config['trakt_id']
+        trakt_id = indexerApi(indexer).config['trakt_id']
 
         for watchlist_item in self.episode_watchlist[trakt_id]:
             indexer_id = int(watchlist_item)
@@ -668,7 +668,7 @@ class TraktChecker(object):
         for showid, indexerid, show_name, startyear, season, episode in data:
             if showid not in uniqueShows:
                 uniqueShows[showid] = {'title': show_name, 'year': startyear, 'ids': {}, 'seasons': []}
-                trakt_id = app.indexerApi(indexerid).config['trakt_id']
+                trakt_id = indexerApi(indexerid).config['trakt_id']
 
                 if trakt_id == 'tvdb_id':
                     uniqueShows[showid]['ids']['tvdb'] = showid

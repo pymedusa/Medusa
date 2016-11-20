@@ -1,5 +1,5 @@
 <%!
-    import medusa as app
+    from medusa import app
 %>
 <!DOCTYPE html>
 <html>

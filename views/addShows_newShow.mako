@@ -1,7 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa.helpers import anon_url
+    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
@@ -28,7 +29,7 @@
                     <div class="stepDiv">
                         <input type="hidden" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" />
                         % if use_provided_info:
-                            Show retrieved from existing metadata: <a href="${anon_url(app.indexerApi(provided_indexer).config['show_url'], provided_indexer_id)}">${provided_indexer_name}</a>
+                            Show retrieved from existing metadata: <a href="${anon_url(indexerApi(provided_indexer).config['show_url'], provided_indexer_id)}">${provided_indexer_name}</a>
                             <input type="hidden" id="indexerLang" name="indexerLang" value="en" />
                             <input type="hidden" id="whichSeries" name="whichSeries" value="${provided_indexer_id}" />
                             <input type="hidden" id="providedIndexer" name="providedIndexer" value="${provided_indexer}" />
@@ -36,7 +37,7 @@
                         % else:
                             <input type="text" id="nameToSearch" value="${default_show_name}" class="form-control form-control-inline input-sm input350"/>
                             &nbsp;&nbsp;
-                            <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${app.INDEXER_DEFAULT_LANGUAGE}" data-available="${','.join(app.indexerApi().config['valid_languages'])}">
+                            <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${app.INDEXER_DEFAULT_LANGUAGE}" data-available="${','.join(indexerApi().config['valid_languages'])}">
                             </select><b>*</b>
                             &nbsp;
                             <select name="providedIndexer" id="providedIndexer" class="form-control form-control-inline input-sm">

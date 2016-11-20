@@ -20,12 +20,11 @@ import logging
 import threading
 import time
 
-import medusa as app
-
 from six import text_type
 
-from . import db, helpers, network_timezones, ui
+from . import app, db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from .indexers.indexer_api import indexerApi
 from .show.show import Show
 
 logger = logging.getLogger(__name__)
@@ -63,14 +62,14 @@ class ShowUpdater(object):
             # network_timezones.update_network_dict()
 
             # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
-            last_update = self.last_update.get_last_indexer_update(app.indexerApi(indexer).name)
+            last_update = self.last_update.get_last_indexer_update(indexerApi(indexer).name)
 
             if not last_update or last_update < time.time() - 604800 * update_max_weeks:
                 # no entry in lastUpdate, or last update was too long ago, let's refresh the show for this indexer
                 refresh = True
             else:
-                indexer_api_params = app.indexerApi(indexer).api_params.copy()
-                t = app.indexerApi(indexer).indexer(**indexer_api_params)
+                indexer_api_params = indexerApi(indexer).api_params.copy()
+                t = indexerApi(indexer).indexer(**indexer_api_params)
                 updated_shows = t.get_last_updated_series(last_update, update_max_weeks)
 
             # Move through each show from the expired season cache table. And run the full show or per season update.
@@ -97,7 +96,7 @@ class ShowUpdater(object):
                             season_updates.append((show, season))
 
             # update the lastUpdate for this indexer
-            self.last_update.set_last_indexer_update(app.indexerApi(indexer).name)
+            self.last_update.set_last_indexer_update(indexerApi(indexer).name)
 
         pi_list = []
 

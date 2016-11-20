@@ -25,9 +25,10 @@ import time
 from collections import OrderedDict
 
 import guessit
-import medusa as app
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 from ..helper.common import episode_num
+from ..indexers.indexer_api import indexerApi
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError
 
 
 logger = logging.getLogger(__name__)
@@ -96,25 +97,25 @@ class NameParser(object):
 
             if season_number is None or not episode_numbers:
                 logger.debug('Show {name} has no season or episodes, using indexer...', name=result.show.name)
-                indexer_api = app.indexerApi(result.show.indexer)
+                indexer_api = indexerApi(result.show.indexer)
                 try:
                     indexer_api_params = indexer_api.api_params.copy()
 
                     if result.show.lang:
                         indexer_api_params['language'] = result.show.lang
 
-                    t = app.indexerApi(result.show.indexer).indexer(**indexer_api_params)
+                    t = indexerApi(result.show.indexer).indexer(**indexer_api_params)
                     tv_episode = t[result.show.indexerid].aired_on(result.air_date)[0]
 
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]
                     logger.debug('Indexer info for show {name}: {ep}',
                                  name=result.show.name, ep=episode_num(season_number, episode_numbers[0]))
-                except app.IndexerEpisodeNotFound:
+                except IndexerEpisodeNotFound:
                     logger.warn("Unable to find episode with date {date} for show '{name}'. Skipping",
                                 date=result.air_date, name=result.show.name)
                     episode_numbers = []
-                except app.IndexerError as e:
+                except IndexerError as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
                     episode_numbers = []
 

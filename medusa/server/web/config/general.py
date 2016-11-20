@@ -5,11 +5,10 @@ from __future__ import unicode_literals
 import os
 
 from github import GithubException
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import config, github_client, helpers, logger, ui
+from .... import app, config, github_client, helpers, logger, ui
 from ....common import Quality, WANTED
 from ....helper.common import try_int
 
@@ -53,7 +52,7 @@ class ConfigGeneral(Config):
         app.ANIME_DEFAULT = config.checkbox_to_value(anime)
 
         app.SCENE_DEFAULT = config.checkbox_to_value(scene)
-        app.save_config()
+        app.instance.save_config()
 
     def saveGeneral(self, log_dir=None, log_nr=5, log_size=1, web_port=None, notify_on_login=None, web_log=None, encryption_version=None, web_ipv6=None,
                     trash_remove_show=None, trash_rotate_logs=None, update_frequency=None, skip_removed_files=None,
@@ -174,7 +173,7 @@ class ConfigGeneral(Config):
 
         app.DEFAULT_PAGE = default_page
 
-        app.save_config()
+        app.instance.save_config()
 
         if results:
             for x in results:

@@ -8,8 +8,7 @@ sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '../l
 sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from guessit import __version__ as guessit_version
-import medusa as app
-from medusa import cache
+from medusa import app, cache
 from medusa.name_parser.guessit_parser import guessit
 from rebulk.__version__ import __version__ as rebulk_version
 
@@ -44,4 +43,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main(['', 'programas2/show.name.s01'])

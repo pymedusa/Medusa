@@ -23,10 +23,9 @@ import ast
 import socket
 import time
 
-import medusa as app
 from requests.compat import urlencode
 from six.moves.http_client import HTTPException, HTTPSConnection
-from .. import common, db, logger
+from .. import app, common, db, logger
 from ..helper.encoding import ss
 
 try:

@@ -16,10 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 
-
-import medusa as app
-
-from . import logger, show_name_helpers
+from . import app, logger, show_name_helpers
 from .helper.exceptions import FailedPostProcessingFailedException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .search.queue import FailedQueueItem

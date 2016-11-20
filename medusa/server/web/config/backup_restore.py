@@ -5,11 +5,10 @@ from __future__ import unicode_literals
 import os
 import time
 
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import helpers
+from .... import app, helpers
 
 
 @route('/config/backuprestore(/?.*)')

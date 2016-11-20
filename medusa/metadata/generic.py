@@ -21,12 +21,13 @@ import io
 import os
 import re
 
-import medusa as app
 from six import iterkeys
 from tmdb_api.tmdb_api import TMDB
-from .. import exception_handler, helpers, logger
+from .. import app, exception_handler, helpers, logger
 from ..helper.common import replace_extension
 from ..helper.exceptions import ex
+from ..indexers.indexer_api import indexerApi
+from ..indexers.indexer_exceptions import IndexerError
 from ..metadata import helpers as metadata_helpers
 from ..show_name_helpers import allPossibleShowNames
 
@@ -716,7 +717,7 @@ class GenericMetadata(object):
         try:
             # There's gotta be a better way of doing this but we don't wanna
             # change the language value elsewhere
-            lINDEXER_API_PARMS = app.indexerApi(show_obj.indexer).api_params.copy()
+            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
 
             lINDEXER_API_PARMS['banners'] = True
 
@@ -729,16 +730,16 @@ class GenericMetadata(object):
             # New feature, specify the image_type, which makes us do calls for only that image type.
             lINDEXER_API_PARMS['image_type'] = image_type
 
-            t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + app.indexerApi(
+        except (IndexerError, IOError) as e:
+            logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
+            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name, logger.DEBUG)
             return None
 
         if image_type not in ('fanart', 'poster', 'banner', 'poster_thumb', 'banner_thumb'):
-            logger.log(u"Invalid image type " + str(image_type) + ", couldn't find it in the " + app.indexerApi(
+            logger.log(u"Invalid image type " + str(image_type) + ", couldn't find it in the " + indexerApi(
                 show_obj.indexer).name + " object", logger.ERROR)
             return None
 
@@ -780,7 +781,7 @@ class GenericMetadata(object):
         try:
             # There's gotta be a better way of doing this but we don't wanna
             # change the language value elsewhere
-            lINDEXER_API_PARMS = app.indexerApi(show_obj.indexer).api_params.copy()
+            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
 
             lINDEXER_API_PARMS['banners'] = True
 
@@ -790,12 +791,12 @@ class GenericMetadata(object):
             if show_obj.dvdorder != 0:
                 lINDEXER_API_PARMS['dvdorder'] = True
 
-            t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + app.indexerApi(
+        except (IndexerError, IOError) as e:
+            logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
+            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name, logger.DEBUG)
             return result
 
         # if we have no season banners then just finish
@@ -837,19 +838,19 @@ class GenericMetadata(object):
         try:
             # There's gotta be a better way of doing this but we don't wanna
             # change the language value elsewhere
-            lINDEXER_API_PARMS = app.indexerApi(show_obj.indexer).api_params.copy()
+            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
 
             lINDEXER_API_PARMS['banners'] = True
 
             if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
                 lINDEXER_API_PARMS['language'] = indexer_lang
 
-            t = app.indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
             indexer_show_obj = t[show_obj.indexerid]
-        except (app.IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + app.indexerApi(
+        except (IndexerError, IOError) as e:
+            logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % app.indexerApi(show_obj.indexer).name, logger.DEBUG)
+            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name, logger.DEBUG)
             return result
 
         # if we have no season banners then just finish

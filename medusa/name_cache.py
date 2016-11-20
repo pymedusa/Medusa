@@ -19,9 +19,8 @@
 
 import threading
 
-import medusa as app
 from six import iteritems
-from . import db, logger
+from . import app, db, logger
 from .helpers import full_sanitizeSceneName
 from .scene_exceptions import get_scene_exceptions, get_scene_seasons, retrieve_exceptions
 

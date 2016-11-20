@@ -4,7 +4,7 @@
 
 import unittest
 
-from medusa import ex
+from medusa.helper.exceptions import ex
 
 
 class ExceptionsHelperTestCase(unittest.TestCase):

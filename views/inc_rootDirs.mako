@@ -1,5 +1,5 @@
 <%
-    import medusa as app
+    from medusa import app
     if app.ROOT_DIRS:
         backend_pieces = app.ROOT_DIRS.split('|')
         backend_default = 'rd-' + backend_pieces[0]

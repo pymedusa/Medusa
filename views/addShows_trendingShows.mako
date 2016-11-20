@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>

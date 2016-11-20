@@ -21,7 +21,6 @@ import datetime
 import os.path
 import warnings
 
-import medusa as app
 from six import iteritems
 from .. import common, db, helpers, logger, subtitles
 from ..helper.common import dateTimeFormat, episode_num

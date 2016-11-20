@@ -24,9 +24,8 @@ import time
 
 from datetime import datetime
 from dateutil import parser
-import medusa as app
-from .queue import ForcedSearchQueueItem
-from .. import db, logger
+from .queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from .. import app, db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
 from ..helper.common import enabled_providers, pretty_file_size
 from ..sbdatetime import sbdatetime
@@ -122,7 +121,7 @@ def update_finished_search_queue_item(snatch_queue_item):
     """
     # Finished Searches
 
-    for search_thread in app.search.queue.FORCED_SEARCH_HISTORY:
+    for search_thread in FORCED_SEARCH_HISTORY:
         if snatch_queue_item.show and not search_thread.show.indexerid == snatch_queue_item.show.indexerid:
             continue
 
@@ -164,7 +163,7 @@ def collectEpisodesFromSearchThread(show):
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
-    for search_thread in app.search.queue.FORCED_SEARCH_HISTORY:
+    for search_thread in FORCED_SEARCH_HISTORY:
         if show and not search_thread.show.indexerid == int(show):
             continue
 

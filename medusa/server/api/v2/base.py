@@ -7,11 +7,10 @@ import operator
 
 from datetime import datetime
 from babelfish.language import Language
-
-import medusa as app
 from six import text_type
-
 from tornado.web import RequestHandler
+
+from .... import app
 
 
 class BaseRequestHandler(RequestHandler):

@@ -7,7 +7,6 @@ import json
 import os
 import re
 
-import medusa as app
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems
@@ -15,15 +14,14 @@ from tornroutes import route
 from traktor import TraktApi
 from .handler import Home
 from ..core import PageTemplate
-from .... import (
-    classes, config, db, helpers, logger, ui,
-)
+from .... import app, classes, config, db, helpers, logger, ui
 from ....black_and_white_list import short_group_names
 from ....common import Quality
 from ....helper.common import sanitize_filename, try_int
 from ....helpers import get_showname_from_indexer
+from ....indexers.indexer_api import indexerApi
 from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException
+from ....indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from ....show.recommendations.anidb import AnidbPopular
 from ....show.recommendations.imdb import ImdbPopular
 from ....show.recommendations.trakt import TraktPopular
@@ -41,7 +39,7 @@ class HomeAddShows(Home):
 
     @staticmethod
     def getIndexerLanguages():
-        result = app.indexerApi().config['valid_languages']
+        result = indexerApi().config['valid_languages']
 
         return json.dumps({'results': result})
 
@@ -73,19 +71,19 @@ class HomeAddShows(Home):
         final_results = []
 
         # Query Indexers for each search term and build the list of results
-        for indexer in app.indexerApi().indexers if not int(indexer) else [int(indexer)]:
-            l_indexer_api_parms = app.indexerApi(indexer).api_params.copy()
+        for indexer in indexerApi().indexers if not int(indexer) else [int(indexer)]:
+            l_indexer_api_parms = indexerApi(indexer).api_params.copy()
             l_indexer_api_parms['language'] = lang
             l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
             try:
-                t = app.indexerApi(indexer).indexer(**l_indexer_api_parms)
-            except app.IndexerUnavailable as msg:
+                t = indexerApi(indexer).indexer(**l_indexer_api_parms)
+            except IndexerUnavailable as msg:
                 logger.log(u'Could not initialize Indexer {indexer}: {error}'.
-                           format(indexer=app.indexerApi(indexer).name, error=msg))
+                           format(indexer=indexerApi(indexer).name, error=msg))
                 continue
 
             logger.log(u'Searching for Show with searchterm(s): %s on Indexer: %s' % (
-                search_terms, app.indexerApi(indexer).name), logger.DEBUG)
+                search_terms, indexerApi(indexer).name), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
                     indexer_results = t[searchTerm]
@@ -95,10 +93,10 @@ class HomeAddShows(Home):
                     logger.log(u'Error searching for show: {error}'.format(error=msg))
 
         for i, shows in iteritems(results):
-            final_results.extend({(app.indexerApi(i).name, i, app.indexerApi(i).config['show_url'], int(show['id']),
+            final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
                                    show['seriesname'].encode('utf-8'), show['firstaired']) for show in shows})
 
-        lang_id = app.indexerApi().config['langabbv_to_id'][lang]
+        lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
 
     def massAddTable(self, rootDir=None):
@@ -223,7 +221,7 @@ class HomeAddShows(Home):
             default_show_name=default_show_name, other_shows=other_shows,
             provided_show_dir=show_dir, provided_indexer_id=provided_indexer_id,
             provided_indexer_name=provided_indexer_name, provided_indexer=provided_indexer,
-            indexers=app.indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
+            indexers=indexerApi().indexers, whitelist=[], blacklist=[], groups=[],
             title='New Show', header='New Show', topmenu='home',
             controller='addShows', action='newShow'
         )

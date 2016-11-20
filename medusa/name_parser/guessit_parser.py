@@ -8,6 +8,7 @@ from datetime import timedelta
 
 from guessit.rules.common.date import valid_year
 from .rules import default_api
+from .. import app
 from ..cache import memory_cache
 
 
@@ -83,11 +84,10 @@ def guessit(name, options=None):
     :return: the guessed properties
     :rtype: dict
     """
-    from .. import showList
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=get_expected_titles(showList),
+                              expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))

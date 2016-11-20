@@ -23,8 +23,8 @@ import re
 import traceback
 from fnmatch import fnmatch
 
-import medusa as app
 from six import PY3, text_type
+from .. import app
 
 logger = logging.getLogger(__name__)
 
@@ -335,7 +335,8 @@ def enabled_providers(search_type):
     """
     Return providers based on search type: daily, backlog and manualsearch
     """
-    return [x for x in app.providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
+    from .. import providers
+    return [x for x in providers.sorted_provider_list(app.RANDOMIZE_PROVIDERS)
             if x.is_active() and x.get_id() not in app.BROKEN_PROVIDERS and
             hasattr(x, 'enable_{}'.format(search_type)) and
             getattr(x, 'enable_{}'.format(search_type))]

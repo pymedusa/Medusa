@@ -32,16 +32,13 @@ from collections import OrderedDict
 from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
-import medusa as app
 from requests.compat import quote
 from six import itervalues, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
 
-from . import classes
-from .helper.common import dateTimeFormat
-
+from . import app
 
 # log levels
 CRITICAL = logging.CRITICAL
@@ -516,10 +513,11 @@ class CensoredFormatter(logging.Formatter, object):
         :return:
         :rtype: str
         """
-        privacy_level = app.common.privacy_levels[app.PRIVACY_LEVEL]
+        from . import classes, common
+        privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
         if not privacy_level:
             msg = super(CensoredFormatter, self).format(record)
-        elif privacy_level == app.common.privacy_levels['absurd']:
+        elif privacy_level == common.privacy_levels['absurd']:
             msg = self.absurd_re.sub('*', super(CensoredFormatter, self).format(record))
         else:
             msg = super(CensoredFormatter, self).format(record)
@@ -569,7 +567,9 @@ class Logger(object):
         :param console_logging: True if logging to console
         :type console_logging: bool
         """
-        self.loggers.extend(get_loggers(app))
+        import medusa
+        from .helper.common import dateTimeFormat
+        self.loggers.extend(get_loggers(medusa))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
@@ -601,6 +601,7 @@ class Logger(object):
 
     def reconfigure_file_handler(self):
         """Reconfigure rotating file handler."""
+        from .helper.common import dateTimeFormat
         target_file = os.path.join(app.LOG_DIR, app.LOG_FILENAME)
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)
@@ -791,6 +792,11 @@ def reconfigure():
     """Shortcut to reconfigure logging."""
     instance.reconfigure_levels()
     instance.reconfigure_file_handler()
+
+
+def log_error_and_exit(error_msg, *args, **kwargs):
+    """Shortcut to log_error_and_exit."""
+    instance.log_error_and_exit(error_msg, *args, **kwargs)
 
 
 def backwards_compatibility():

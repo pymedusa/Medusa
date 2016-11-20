@@ -21,7 +21,7 @@ from __future__ import print_function
 import os
 import unittest
 
-import medusa as app
+from medusa import app
 from medusa.media.generic import GenericMedia
 from six import iteritems
 

@@ -31,11 +31,10 @@ from collections import namedtuple, OrderedDict
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
 import knowit
-import medusa as app
 import shutil_custom
 
 from six import text_type
-from . import db, helpers, image_cache, logger, network_timezones, notifiers, post_processor, subtitles
+from . import app, db, helpers, image_cache, logger, network_timezones, notifiers, post_processor, subtitles
 from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
@@ -50,7 +49,9 @@ from .helper.exceptions import (
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
+from .indexers.indexer_api import indexerApi
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, reverse_mapping
+from .indexers.indexer_exceptions import IndexerSeasonNotFound, IndexerError, IndexerAttributeNotFound, IndexerEpisodeNotFound
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .sbdatetime import sbdatetime
 from .scene_exceptions import get_scene_exceptions
@@ -296,7 +297,7 @@ class TVShow(TVObject):
         return statusStrings[self.default_ep_status]
 
     def show_size(self, pretty=False):
-        show_size = app.helpers.get_size(self.raw_location)
+        show_size = helpers.get_size(self.raw_location)
         return pretty_file_size(show_size) if pretty else show_size
 
     @property
@@ -764,7 +765,7 @@ class TVShow(TVObject):
                        (id=self.indexerid, error_msg=error), logger.ERROR)
             return scanned_eps
 
-        indexer_api_params = app.indexerApi(self.indexer).api_params.copy()
+        indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
         if self.lang:
             indexer_api_params[b'language'] = self.lang
@@ -774,7 +775,7 @@ class TVShow(TVObject):
         if self.dvdorder != 0:
             indexer_api_params[b'dvdorder'] = True
 
-        t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
+        t = indexerApi(self.indexer).indexer(**indexer_api_params)
 
         cached_show = t[self.indexerid]
         cached_seasons = {}
@@ -797,10 +798,10 @@ class TVShow(TVObject):
             if cur_season not in cached_seasons:
                 try:
                     cached_seasons[cur_season] = cached_show[cur_season]
-                except app.IndexerSeasonNotFound as error:
+                except IndexerSeasonNotFound as error:
                     logger.log(u'{id}: {error_msg} (unaired/deleted) in the indexer {indexer} for {show}. '
                                u'Removing existing records from database'.format
-                               (id=cur_show_id, error_msg=error.message, indexer=app.indexerApi(self.indexer).name,
+                               (id=cur_show_id, error_msg=error.message, indexer=indexerApi(self.indexer).name,
                                 show=cur_show_name), logger.DEBUG)
                     delete_ep = True
 
@@ -837,7 +838,7 @@ class TVShow(TVObject):
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
-        indexer_api_params = app.indexerApi(self.indexer).api_params.copy()
+        indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
         indexer_api_params['cache'] = False
 
@@ -848,15 +849,15 @@ class TVShow(TVObject):
             indexer_api_params['dvdorder'] = True
 
         try:
-            t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
+            t = indexerApi(self.indexer).indexer(**indexer_api_params)
             show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
-        except app.IndexerError:
+        except IndexerError:
             logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
-                       (id=self.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
+                       (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.WARNING)
             return None
 
         logger.log(u'{id}: Loading all episodes from {indexer}'.format
-                   (id=self.indexerid, indexer=app.indexerApi(self.indexer).name), logger.DEBUG)
+                   (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.DEBUG)
 
         scanned_eps = {}
 
@@ -873,7 +874,7 @@ class TVShow(TVObject):
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
                     logger.log(u'{id}: {indexer} object for {ep} is incomplete, skipping this episode'.format
-                               (id=self.indexerid, indexer=app.indexerApi(self.indexer).name,
+                               (id=self.indexerid, indexer=indexerApi(self.indexer).name,
                                 ep=episode_num(season, episode)))
                     continue
                 else:
@@ -1010,7 +1011,7 @@ class TVShow(TVObject):
                         cur_ep.status = Quality.compositeStatus(DOWNLOADED, new_quality)
 
             # check for status/quality changes as long as it's a new file
-            elif not same_file and app.helpers.isMediaFile(filepath) and (
+            elif not same_file and helpers.isMediaFile(filepath) and (
                     cur_ep.status not in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]):
                 old_status, old_quality = Quality.splitCompositeStatus(cur_ep.status)
                 new_quality = Quality.nameQuality(filepath, self.is_anime)
@@ -1142,14 +1143,14 @@ class TVShow(TVObject):
             return
 
         logger.log(u'{0}: Loading show info from {1}'.format(
-            self.indexerid, app.indexerApi(self.indexer).name), logger.DEBUG)
+            self.indexerid, indexerApi(self.indexer).name), logger.DEBUG)
 
         # There's gotta be a better way of doing this but we don't wanna
         # change the cache value elsewhere
         if tvapi:
             t = tvapi
         else:
-            indexer_api_params = app.indexerApi(self.indexer).api_params.copy()
+            indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
             indexer_api_params['cache'] = False
 
@@ -1159,14 +1160,14 @@ class TVShow(TVObject):
             if self.dvdorder != 0:
                 indexer_api_params['dvdorder'] = True
 
-            t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
+            t = indexerApi(self.indexer).indexer(**indexer_api_params)
 
         indexed_show = t[self.indexerid]
 
         try:
             self.name = indexed_show['seriesname'].strip()
         except AttributeError:
-            raise app.IndexerAttributeNotFound(
+            raise IndexerAttributeNotFound(
                 "Found {id}, but attribute 'seriesname' was empty.".format(id=self.indexerid))
 
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
@@ -2238,7 +2239,7 @@ class TVEpisode(TVObject):
                 if tvapi:
                     t = tvapi
                 else:
-                    indexer_api_params = app.indexerApi(self.indexer).api_params.copy()
+                    indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
                     indexer_api_params['cache'] = False
 
@@ -2248,24 +2249,24 @@ class TVEpisode(TVObject):
                     if self.show.dvdorder != 0:
                         indexer_api_params['dvdorder'] = True
 
-                    t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
+                    t = indexerApi(self.indexer).indexer(**indexer_api_params)
                 my_ep = t[self.show.indexerid][season][episode]
 
-        except (app.IndexerError, IOError) as e:
+        except (IndexerError, IOError) as e:
             logger.log(u'{id}: {indexer} threw up an error: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, indexer=indexerApi(self.indexer).name, error_msg=ex(e)), logger.WARNING)
             # if the episode is already valid just log it, if not throw it up
             if self.name:
                 logger.log(u'{id}: {indexer} timed out but we have enough info from other sources, allowing the error'.format
-                           (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.DEBUG)
+                           (id=self.show.indexerid, indexer=indexerApi(self.indexer).name), logger.DEBUG)
                 return
             else:
                 logger.log(u'{id}: {indexer} timed out, unable to create the episode'.format
-                           (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.WARNING)
+                           (id=self.show.indexerid, indexer=indexerApi(self.indexer).name), logger.WARNING)
                 return False
-        except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
+        except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
             logger.log(u'{id}: Unable to find the episode on {indexer}. Deleting it from db'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.DEBUG)
+                       (id=self.show.indexerid, indexer=indexerApi(self.indexer).name), logger.DEBUG)
             # if I'm no longer on the Indexers but I once was then delete myself from the DB
             if self.indexerid != -1:
                 self.delete_episode()
@@ -2274,13 +2275,13 @@ class TVEpisode(TVObject):
         if getattr(my_ep, 'episodename', None) is None:
             logger.log(u'{id}: {show} {ep} has no name on {indexer}. Setting to an empty string'.format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                        indexer=app.indexerApi(self.indexer).name))
+                        indexer=indexerApi(self.indexer).name))
             setattr(my_ep, 'episodename', '')
 
         if getattr(my_ep, 'absolute_number', None) is None:
             logger.log(u'{id}: {show} {ep} has no absolute number on {indexer}'.format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                        indexer=app.indexerApi(self.indexer).name), logger.DEBUG)
+                        indexer=indexerApi(self.indexer).name), logger.DEBUG)
         else:
             logger.log(u'{id}: {show} {ep} has absolute number: {absolute} '.format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode), absolute=my_ep['absolute_number']),
@@ -2316,7 +2317,7 @@ class TVEpisode(TVObject):
             self.airdate = datetime.date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
         except (ValueError, IndexError):
             logger.log(u'{id}: Malformed air date of {aired} retrieved from {indexer} for {show} {ep}'.format
-                       (id=self.show.indexerid, aired=firstaired, indexer=app.indexerApi(self.indexer).name,
+                       (id=self.show.indexerid, aired=firstaired, indexer=indexerApi(self.indexer).name,
                         show=self.show.name, ep=episode_num(season, episode)), logger.WARNING)
             # if I'm incomplete on the indexer but I once was complete then just delete myself from the DB for now
             if self.indexerid != -1:
@@ -2327,7 +2328,7 @@ class TVEpisode(TVObject):
         self.indexerid = getattr(my_ep, 'id', None)
         if self.indexerid is None:
             logger.log(u'{id}: Failed to retrieve ID from {indexer}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.indexer).name), logger.ERROR)
+                       (id=self.show.indexerid, indexer=indexerApi(self.indexer).name), logger.ERROR)
             if self.indexerid != -1:
                 self.delete_episode()
             return False
@@ -2370,7 +2371,7 @@ class TVEpisode(TVObject):
                             ep=episode_num(season, episode), status=statusStrings[self.status].upper()), logger.DEBUG)
 
         # if we have a media file then it's downloaded
-        elif app.helpers.isMediaFile(self.location):
+        elif helpers.isMediaFile(self.location):
             # leave propers alone, you have to either post-process them or manually change them back
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + Quality.ARCHIVED:
                 old_status = self.status
@@ -2405,7 +2406,7 @@ class TVEpisode(TVObject):
 
         if self.location != '':
 
-            if self.status == UNKNOWN and app.helpers.isMediaFile(self.location):
+            if self.status == UNKNOWN and helpers.isMediaFile(self.location):
                 self.status = Quality.statusFromName(self.location, anime=self.show.is_anime)
                 logger.log(u"{id}: {show} {ep} status changed from 'UNKNOWN' to '{new_status}'".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(self.season, self.episode),

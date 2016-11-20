@@ -1,5 +1,5 @@
 <%
-    import medusa as app
+    from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
     from medusa import subtitles

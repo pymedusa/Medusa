@@ -20,8 +20,7 @@
 import os
 import subprocess
 
-import medusa as app
-from .. import common, logger
+from .. import app, common, logger
 from ..helper.exceptions import ex
 
 

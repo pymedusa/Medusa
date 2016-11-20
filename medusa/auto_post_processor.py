@@ -21,8 +21,7 @@ from __future__ import unicode_literals
 import logging
 import os.path
 
-import medusa as app
-from . import process_tv
+from . import app
 
 
 logger = logging.getLogger(__name__)
@@ -41,6 +40,7 @@ class PostProcessor(object):
         :param force: Forces postprocessing run
         :type force: bool
         """
+        import process_tv
         self.amActive = True
         try:
             if not os.path.isdir(app.TV_DOWNLOAD_DIR):

@@ -20,12 +20,8 @@ from __future__ import unicode_literals
 
 import os.path
 
-import medusa as app
-
-from . import helpers, logger
-from .helper.common import try_int
+from . import app, logger
 from .helper.exceptions import ShowDirectoryNotFoundException
-from .helpers import get_image_size
 from .metadata.generic import GenericMetadata
 
 
@@ -143,6 +139,9 @@ class ImageCache(object):
         :param image_path: full path to the image
         :return: BANNER, POSTER if it concluded one or the other, or None if the image was neither (or didn't exist)
         """
+        from .helpers import get_image_size
+        from .helper.common import try_int
+
         if not os.path.isfile(image_path):
             logger.log("Couldn't check the type of {image_path} because it doesn't exist".format
                        (image_path=image_path), logger.WARNING)
@@ -191,6 +190,7 @@ class ImageCache(object):
         :param indexer_id: id of the show this image belongs to
         :return: bool representing success
         """
+        from . import helpers
         # generate the path based on the type and the indexer_id
         if img_type == self.POSTER:
             dest_path = self.poster_path(indexer_id)

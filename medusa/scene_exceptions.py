@@ -24,9 +24,9 @@ import threading
 import time
 
 import adba
-import medusa as app
+from medusa.indexers.indexer_api import indexerApi
 from six import iteritems, text_type
-from . import db, helpers, logger
+from . import app, db, helpers, logger
 from .indexers.indexer_config import INDEXER_TVDBV2
 
 exceptionsCache = {}
@@ -248,16 +248,16 @@ def _get_custom_exceptions():
     custom_exceptions = {}
 
     do_refresh = False
-    for indexer in app.indexerApi().indexers:
-        if should_refresh(app.indexerApi(indexer).name):
+    for indexer in indexerApi().indexers:
+        if should_refresh(indexerApi(indexer).name):
             do_refresh = True
             break
 
     if do_refresh:
-        location = app.indexerApi(INDEXER_TVDBV2).config['scene_loc']
+        location = indexerApi(INDEXER_TVDBV2).config['scene_loc']
         logger.log('Checking for scene exception updates from {0}'.format(location))
 
-        response = helpers.getURL(location, session=app.indexerApi(INDEXER_TVDBV2).session,
+        response = helpers.getURL(location, session=indexerApi(INDEXER_TVDBV2).session,
                                   timeout=60, returns='response')
         try:
             jdata = response.json()
@@ -266,13 +266,13 @@ def _get_custom_exceptions():
                        (location, error), logger.DEBUG)
             return custom_exceptions
 
-        for indexer in app.indexerApi().indexers:
+        for indexer in indexerApi().indexers:
             try:
-                for indexer_id in jdata[app.indexerApi(indexer).config['xem_origin']]:
+                for indexer_id in jdata[indexerApi(indexer).config['xem_origin']]:
                     alias_list = [
                         {scene_exception: int(scene_season)}
-                        for scene_season in jdata[app.indexerApi(indexer).config['xem_origin']][indexer_id]
-                        for scene_exception in jdata[app.indexerApi(indexer).config
+                        for scene_season in jdata[indexerApi(indexer).config['xem_origin']][indexer_id]
+                        for scene_exception in jdata[indexerApi(indexer).config
                                                      ['xem_origin']][indexer_id][scene_season]
                     ]
                     custom_exceptions[indexer_id] = alias_list
@@ -281,7 +281,7 @@ def _get_custom_exceptions():
                            (indexer, error), logger.ERROR)
                 continue
 
-            set_last_refresh(app.indexerApi(indexer).name)
+            set_last_refresh(indexerApi(indexer).name)
 
     return custom_exceptions
 
@@ -290,24 +290,24 @@ def _get_xem_exceptions():
     xem_exceptions = {}
 
     if should_refresh('xem'):
-        for indexer in app.indexerApi().indexers:
+        for indexer in indexerApi().indexers:
             logger.log('Checking for XEM scene exceptions updates for {0}'.format
-                       (app.indexerApi(indexer).name))
+                       (indexerApi(indexer).name))
 
             xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'.format(
-                      app.indexerApi(indexer).config['xem_origin'])
+                      indexerApi(indexer).config['xem_origin'])
 
             response = helpers.getURL(xem_url, session=xem_session, timeout=60, returns='response')
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:
                 logger.log('Check scene exceptions update failed for {0}. Unable to get URL: {1}'.format
-                           (app.indexerApi(indexer).name, xem_url), logger.DEBUG)
+                           (indexerApi(indexer).name, xem_url), logger.DEBUG)
                 continue
 
             if not jdata['data'] or jdata['result'] == 'failure':
                 logger.log('No data returned from XEM while checking for scene exceptions. '
-                           'Update failed for {0}'.format(app.indexerApi(indexer).name), logger.DEBUG)
+                           'Update failed for {0}'.format(indexerApi(indexer).name), logger.DEBUG)
                 continue
 
             for indexer_id, exceptions in iteritems(jdata['data']):
