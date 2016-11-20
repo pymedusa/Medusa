@@ -271,7 +271,7 @@ class BTNProvider(TorrentProvider):
             parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
             time.sleep(cpu_presets[app.CPU_PRESET])
             if parsed_json.get('results') == '0':
-                return parsed_json
+                return {}
 
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message == 'Call Limit Exceeded':
