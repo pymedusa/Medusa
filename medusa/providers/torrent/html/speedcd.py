@@ -119,16 +119,6 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Units
         units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
-        def process_column_header(td):
-            result = ''
-            if td.a and td.a.img:
-                result = td.a.img.get('alt', td.a.get_text(strip=True))
-            if td.img and not result:
-                result = td.img.get('alt', '')
-            if not result:
-                result = td.get_text(strip=True)
-            return result
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -141,23 +131,19 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
-            labels = [process_column_header(label) for label in torrent_rows[0]('th')]
-
             # Skip column headers
             for row in torrent_rows[1:]:
                 cells = row('td')
-                if len(cells) < len(labels):
-                    continue
 
                 try:
-                    title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
+                    title = cells[1].find('a', class_='torrent').get_text()
                     download_url = urljoin(self.url,
-                                           cells[labels.index('Download')].find(title='Download').parent['href'])
+                                           cells[2].find(title='Download').parent['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                    seeders = try_int(cells[5].get_text(strip=True))
+                    leechers = try_int(cells[6].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -167,7 +153,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[labels.index('Size')].get_text()
+                    torrent_size = cells[4].get_text()
                     torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                     size = convert_size(torrent_size, units=units) or -1
 
