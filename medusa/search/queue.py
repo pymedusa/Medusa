@@ -450,7 +450,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                search_result = searchProviders(self.show, self.segment, False, False)
+                search_result = searchProviders(self.show, self.segment)
 
                 if search_result:
                     for result in search_result:
@@ -515,7 +515,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
             # If it is wanted, self.downCurQuality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = searchProviders(self.show, self.segment, True, False, False)
+            search_result = searchProviders(self.show, self.segment, True)
 
             if search_result:
                 for result in search_result:

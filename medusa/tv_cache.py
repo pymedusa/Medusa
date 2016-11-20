@@ -345,6 +345,7 @@ class TVCache(object):
             logger.log('Last update was too soon, using old cache: {0}. '
                        'Updated less then {1} minutes ago'.format(self.lastUpdate, self.minTime), logger.DEBUG)
             return False
+        logger.log("Updating providers cache", logger.DEBUG)
 
         return True
 
