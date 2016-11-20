@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+from datetime import datetime, timedelta
 import re
 
 from . import db, logger
@@ -193,15 +193,22 @@ def deleteLoggedSnatch(release, size, provider):
     release = prepareFailedName(release)
 
     failed_db_con = db.DBConnection('failed.db')
-    failed_db_con.action("DELETE FROM history WHERE release=? AND size=? AND provider=?",
+    failed_db_con.action("DELETE FROM history "
+                         "WHERE release=? AND size=? AND provider=?",
                          [release, size, provider])
 
 
-def trimHistory():
-    """Trims history table to 1 month of history from today"""
+def trim_history(days=30, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=0, weeks=0):
+    """Trims old results from failed history."""
+    today = datetime.today()
+    age = timedelta(days, seconds, microseconds, milliseconds, minutes, hours, weeks)
+
     failed_db_con = db.DBConnection('failed.db')
-    failed_db_con.action("DELETE FROM history WHERE date < " + str(
-        (datetime.datetime.today() - datetime.timedelta(days=30)).strftime(History.date_format)))
+    failed_db_con.action(
+        'DELETE FROM history '
+        'WHERE date < ?',
+        [(today - age).strftime(History.date_format)]
+    )
 
 
 def findRelease(epObj):
