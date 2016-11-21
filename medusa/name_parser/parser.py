@@ -62,7 +62,8 @@ class NameParser(object):
         guess = guessit.guessit(name, dict(show_type=self.show_type))
         result = self.to_parse_result(name, guess)
 
-        show = helpers.get_show(result.series_name, self.try_indexers) if not self.naming_pattern else None
+        show = helpers.get_show(result.series_name, self.try_indexers, result.season_number)\
+            if not self.naming_pattern else None
 
         # confirm passed in show object indexer id matches result show object indexer id
         show = None if show and self.show and show.indexerid != self.show.indexerid else show

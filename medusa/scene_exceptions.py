@@ -135,12 +135,12 @@ def get_scene_seasons(indexer_id):
     return exceptions_season_list
 
 
-def get_scene_exception_by_name(show_name):
+def get_scene_exception_by_name(show_name, season_number=None):
     """Given a show name, return the first indexerid and season of the exceptions list."""
-    return get_scene_exception_by_name_multiple(show_name)[0]
+    return get_scene_exception_by_name_multiple(show_name, season_number)[0]
 
 
-def get_scene_exception_by_name_multiple(show_name):
+def get_scene_exception_by_name_multiple(show_name, season_number):
     """Given a show name, return the indexerid of the exception, None if no exception is present."""
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
@@ -151,7 +151,10 @@ def get_scene_exception_by_name_multiple(show_name):
         return [(int(x[b'indexer_id']), int(x[b'season'])) for x in exception_result]
 
     out = []
-    all_exception_results = cache_db_con.select(b'SELECT show_name, indexer_id, season FROM scene_exceptions')
+    sql = b'SELECT show_name, indexer_id, season FROM scene_exceptions'
+    if season_number:
+        sql += b" WHERE season = '{0}'".format(season_number)
+    all_exception_results = cache_db_con.select(sql)
 
     for cur_exception in all_exception_results:
 
@@ -163,6 +166,8 @@ def get_scene_exception_by_name_multiple(show_name):
 
             logger.log('Scene exception lookup got indexer ID {0}, using that'.format
                        (cur_indexer_id), logger.DEBUG)
+            # This function returns only the first one in the list. No reason to continue if find more than one
+            break
 
             out.append((cur_indexer_id, int(cur_exception[b'season'])))
 
