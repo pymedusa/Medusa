@@ -153,7 +153,8 @@ def get_scene_exception_by_name_multiple(show_name, season_number):
     out = []
     sql = b'SELECT show_name, indexer_id, season FROM scene_exceptions'
     if season_number:
-        sql += b" WHERE season = '{0}'".format(season_number)
+        # Make sure we also get scene exception when no season exception. Also make sure is the first result
+        sql += b" WHERE season = '-1' or season = '{0}' ORDER by season".format(season_number)
     all_exception_results = cache_db_con.select(sql)
 
     for cur_exception in all_exception_results:
