@@ -27,7 +27,7 @@ import adba
 from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, remove_extension, replace_extension
+from .helper.common import episode_num, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
