@@ -115,8 +115,8 @@ class TVmaze(BaseIndexer):
                     # These keys have more complex dictionaries, let's map these manually
                     if key in ['schedule', 'network', 'image', 'externals']:
                         if key == 'schedule':
-                            return_dict['airs_time'] = value.get('time')
-                            return_dict['airs_dayofweek'] = list_separator.join(value.get('days')) if value.get('days') else None
+                            return_dict['airs_time'] = value.get('time') or '0:00AM'
+                            return_dict['airs_dayofweek'] = value.get('days')[0] if value.get('days') else None
                         if key == 'network':
                             return_dict['network'] = value.get('name')
                             return_dict['code'] = value.get('country', {'code': 'NA'})['code']
