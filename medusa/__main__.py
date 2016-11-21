@@ -1013,7 +1013,7 @@ class Application(object):
             migrator.migrate_config()
 
             # initialize metadata_providers
-            metadata_provider_dict = metadata.get_metadata_generator_dict()
+            app.metadata_provider_dict = metadata.get_metadata_generator_dict()
             for cur_metadata_tuple in [(app.METADATA_KODI, metadata.kodi),
                                        (app.METADATA_KODI_12PLUS, metadata.kodi_12plus),
                                        (app.METADATA_MEDIABROWSER, metadata.media_browser),
@@ -1024,7 +1024,7 @@ class Application(object):
                 (cur_metadata_config, cur_metadata_class) = cur_metadata_tuple
                 tmp_provider = cur_metadata_class.metadata_class()
                 tmp_provider.set_config(cur_metadata_config)
-                metadata_provider_dict[tmp_provider.name] = tmp_provider
+                app.metadata_provider_dict[tmp_provider.name] = tmp_provider
 
             # initialize schedulers
             # updaters
