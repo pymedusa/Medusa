@@ -27,7 +27,7 @@ class AssetHandler(BaseRequestHandler):
         if path and filename:
             for infile in glob.glob(os.path.join(path, filename.lower() + '.*')):
                 path = infile
-            mime_type, encoding = mimetypes.guess_type(path)
+            mime_type, _ = mimetypes.guess_type(path)
             self.set_status(200)
             self.set_header('Content-type', mime_type)
             try:
