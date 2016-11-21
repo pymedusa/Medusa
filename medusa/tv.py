@@ -52,7 +52,8 @@ from .helper.exceptions import (
 )
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, mappings, reverse_mappings, indexerConfig
-from .indexers.indexer_exceptions import IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound
+from .indexers.indexer_exceptions import (IndexerSeasonNotFound, IndexerError, IndexerAttributeNotFound,
+                                          IndexerEpisodeNotFound)
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .sbdatetime import sbdatetime
 from .scene_exceptions import get_scene_exceptions
@@ -2075,8 +2076,8 @@ class TVEpisode(TVObject):
     def refresh_subtitles(self):
         """Look for subtitles files and refresh the subtitles property."""
         current_subtitles = subtitles.get_current_subtitles(self)
-        ep_num = episode_num(self.season, self.episode) or \
-            episode_num(self.season, self.episode, numbering='absolute')
+        ep_num = (episode_num(self.season, self.episode) or
+                  episode_num(self.season, self.episode, numbering='absolute'))
         if self.subtitles == current_subtitles:
             logger.log(u'{id}: No changed subtitles for {show} {ep}. Current subtitles: {subs}'.format
                        (id=self.show.indexerid, show=self.show.name, ep=ep_num, subs=current_subtitles), logger.DEBUG)
@@ -2505,8 +2506,8 @@ class TVEpisode(TVObject):
 
                 for ep_details in list(show_xml.iter('episodedetails')):
                     if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
-                                ep_details.findtext('episode') is None or
-                                int(ep_details.findtext('episode')) != self.episode):
+                            ep_details.findtext('episode') is None or
+                            int(ep_details.findtext('episode')) != self.episode):
                         logger.log(u'{id}: NFO has an <episodedetails> block for a different episode - '
                                    u'wanted {ep_wanted} but got {ep_found}'.format
                                    (id=self.show.indexerid, ep_wanted=episode_num(self.season, self.episode),
