@@ -27,7 +27,7 @@ import adba
 from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, remove_extension, replace_extension
+from .helper.common import episode_num, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
@@ -337,36 +337,35 @@ class PostProcessor(object):
         for cur_file_path in file_list:
             # remember if the extension changed
             changed_extension = None
-
             # file extension without leading dot (for example: de.srt)
-            cur_extension = cur_file_path[old_base_name_length + 1:]
-            # split the extension in two parts. E.g.: ('de', 'srt')
-            split_extension = os.path.splitext(cur_extension)
+            extension = cur_file_path[old_base_name_length + 1:]
+            # initally set current extension as new extension
+            new_extension = extension
 
+            # split the extension in two parts. E.g.: ('de', '.srt')
+            split_extension = os.path.splitext(extension)
             # check if it's a subtitle and also has a subtitle language
             if is_subtitle(cur_file_path) and all(split_extension):
-                cur_lang = split_extension[0]
-                if cur_lang:
-                    cur_lang = cur_lang.lower()
-                    if cur_lang == 'pt-br':
-                        cur_lang = 'pt-BR'
-                    cur_extension = cur_lang + split_extension[1]
-                    changed_extension = True
+                sub_lang = split_extension[0].lower()
+                if sub_lang == 'pt-br':
+                    sub_lang = 'pt-BR'
+                new_extension = sub_lang + split_extension[1]
+                changed_extension = True
 
-            # replace .nfo with .nfo-orig to avoid conflicts
-            if cur_extension == 'nfo' and app.NFO_RENAME:
-                cur_extension = 'nfo-orig'
+            # replace nfo with nfo-orig to avoid conflicts
+            if extension == 'nfo' and app.NFO_RENAME:
+                new_extension = 'nfo-orig'
                 changed_extension = True
 
             # rename file with new base name
             if new_base_name:
-                new_file_name = new_base_name + '.' + cur_extension
+                new_file_name = new_base_name + '.' + new_extension
             else:
                 # current file name including extension
                 new_file_name = os.path.basename(cur_file_path)
                 # if we're not renaming we still need to change the extension sometimes
                 if changed_extension:
-                    new_file_name = replace_extension(new_file_name, cur_extension)
+                    new_file_name = new_file_name.replace(extension, new_extension)
 
             if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
                 subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
