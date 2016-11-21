@@ -408,7 +408,7 @@ class GenericProvider(object):
         return self.get_id() + '.png'
 
     def is_active(self):
-        """Check is provider is active."""
+        """Check if provider is active."""
         return False
 
     def is_enabled(self):
