@@ -96,7 +96,8 @@ class BTNProvider(TorrentProvider):
                            (search=search_params), logger.DEBUG)
 
             response = self._api_call(self.api_key, search_params)
-            if not response:
+            
+            if not response or parsed_json.get('results') == '0:
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
 
@@ -270,8 +271,6 @@ class BTNProvider(TorrentProvider):
         try:
             parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
             time.sleep(cpu_presets[app.CPU_PRESET])
-            if parsed_json.get('results') == '0':
-                return {}
 
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message == 'Call Limit Exceeded':
