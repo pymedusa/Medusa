@@ -952,7 +952,7 @@ class Home(WebRoot):
             'result': 'failure',
         })
 
-    def manualSearchCheckCache(self, show, season, episode, manual_search_type, **last_prov_updates):
+    def manualSearchCheckCache(self, show, season, episode, manual_search_type='episode', **last_prov_updates):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
