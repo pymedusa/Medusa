@@ -346,8 +346,8 @@ class PostProcessor(object):
             split_extension = os.path.splitext(extension)
             # check if it's a subtitle and also has a subtitle language
             if is_subtitle(cur_file_path) and all(split_extension):
-                sub_lang = split_extension[0]
-                if sub_lang.lower() == 'pt-br':
+                sub_lang = split_extension[0].lower()
+                if sub_lang == 'pt-br':
                     sub_lang = 'pt-BR'
                 new_extension = sub_lang + split_extension[1]
                 changed_extension = True
