@@ -22,7 +22,8 @@ import time
 
 from six import text_type
 
-from . import app, db, helpers, network_timezones, ui
+from . import db, helpers, network_timezones, ui
+from app import showList, showQueueScheduler
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
 from .show.show import Show
@@ -48,18 +49,18 @@ class ShowUpdater(object):
         logger.info(u'Started periodic show updates')
 
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
-        self.last_update.initialize_indexer_update(app.showList)
+        self.last_update.initialize_indexer_update(showList)
 
         # Get a list of seasons that have reached their update timer
         expired_seasons = self.last_update.expired_seasons()
 
         # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
-        for show in app.showList:
-            indexer_api_params = app.indexerApi(show.indexer).api_params.copy()
-            t = app.indexerApi(show.indexer).indexer(**indexer_api_params)
+        for show in showList:
+            indexer_api_params = indexerApi(show.indexer).api_params.copy()
+            t = indexerApi(show.indexer).indexer(**indexer_api_params)
             if hasattr(t, 'get_last_updated_seasons'):
                 # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
-                last_update = self.last_update.get_last_indexer_update(app.indexerApi(show.indexer).name)
+                last_update = self.last_update.get_last_indexer_update(indexerApi(show.indexer).name)
 
                 # Get updated seasons
                 updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
@@ -89,7 +90,7 @@ class ShowUpdater(object):
                 # Loop through the shows.
 
                 # Get the show object and check, to prevent issues further down the line.
-                show = Show.find_by_id(app.showList, indexer, show_id)
+                show = Show.find_by_id(showList, indexer, show_id)
 
                 if not show:
                     logger.warning(u'Could not get show object for indexer id: {show_id} '
@@ -127,7 +128,7 @@ class ShowUpdater(object):
             if not show.paused:
                 logger.info(u'Full update on show: {show}', show=show.name)
                 try:
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show))
+                    pi_list.append(showQueueScheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
@@ -141,7 +142,7 @@ class ShowUpdater(object):
             if not show[1].paused:
                 logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
                 try:
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show[1], season=show[2]))
+                    pi_list.append(showQueueScheduler.action.updateShow(show[1], season=show[2]))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
