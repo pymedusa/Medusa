@@ -58,7 +58,7 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-        from . import notifiers
+        from . import kodi_notifier
         # suppress notifications if the notifier is disabled but the notify options are checked
         if not app.USE_PLEX_CLIENT and not force:
             return False
@@ -67,7 +67,7 @@ class Notifier(object):
         username = username or app.PLEX_CLIENT_USERNAME
         password = password or app.PLEX_CLIENT_PASSWORD
 
-        return notifiers.kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
+        return kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
 
 ##############################################################################
 # Public functions
