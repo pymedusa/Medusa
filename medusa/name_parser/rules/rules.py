@@ -1038,10 +1038,12 @@ class FixTvChaosUkWorkaround(Rule):
             unique_formats = {v.value for v in formats}
             if len(unique_codecs) > 1:
                 to_remove.append(m_x264)
-                m_hdtv.tags.append('tvchaosuk')
+                if len(unique_formats) <= 1:
+                    m_hdtv.tags.append('tvchaosuk')
             if len(unique_formats) > 1:
                 to_remove.append(m_hdtv)
-                m_x264.tags.append('tvchaosuk')
+                if len(unique_codecs) <= 1:
+                    m_x264.tags.append('tvchaosuk')
 
         return to_remove
 

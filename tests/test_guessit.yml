@@ -3980,3 +3980,13 @@
   video_encoder: x264
   release_group: monkee
   type: episode
+
+# Regression test: tvchaosuk conflicting format and video_codec
+? Show.Name.S10E06.(18.November.2016).[PDTV.XviD].hdtv.x264
+: title: Show Name
+  season: 10
+  episode: 6
+  date: 2016-11-18
+  format: PDTV
+  video_codec: XviD
+  type: episode
