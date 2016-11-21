@@ -363,7 +363,9 @@ class NewznabProvider(NZBProvider):
                             return_mapping[map_caps[map_indexer]] = self.show.indexer
                         elif self.show.externals.get(mappings[map_indexer]):
                             # No direct match, let's see if one of the externals provides a valid search_type.
-                            return_mapping[map_caps[map_indexer]] = self.show.externals.get(mappings[map_indexer])
+                            mapped_external_indexer = self.show.externals.get(mappings[map_indexer])
+                            if mapped_external_indexer:
+                                return_mapping[map_caps[map_indexer]] = mapped_external_indexer
 
         return return_mapping
 
