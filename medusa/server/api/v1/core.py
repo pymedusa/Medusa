@@ -44,7 +44,7 @@ from ....helper.common import (
 from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....helper.quality import get_quality_string
 from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_exceptions import IndexerShowNotFound, IndexerError, IndexerShowIncomplete
+from ....indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
 from ....logger import filter_logline, read_loglines
 from ....media.banner import ShowBanner
 from ....media.fan_art import ShowFanArt

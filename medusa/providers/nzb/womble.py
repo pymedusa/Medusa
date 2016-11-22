@@ -49,7 +49,6 @@ class WombleProvider(NZBProvider):
 
 
 class WombleCache(tv_cache.TVCache):
-
     """Provider cache class."""
 
     def update_cache(self):

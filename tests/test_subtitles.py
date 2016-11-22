@@ -5,8 +5,8 @@ import subprocess
 import sys
 
 from babelfish.language import Language
-from medusa import app
 import medusa.subtitles as sut
+from medusa import app
 from mock.mock import Mock
 import pytest
 

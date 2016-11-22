@@ -26,7 +26,7 @@ import stat
 import threading
 import time
 import traceback
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict, namedtuple
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -38,8 +38,8 @@ from . import app, db, helpers, image_cache, logger, network_timezones, notifier
 from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
-    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, qualityPresets, SKIPPED, SNATCHED, SNATCHED_PROPER,
-    UNAIRED, UNKNOWN, WANTED, statusStrings
+    NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED,
+    SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, qualityPresets, statusStrings
 )
 from .helper.common import (
     dateFormat, dateTimeFormat, episode_num, pretty_file_size, remove_extension, replace_extension, sanitize_filename, try_int
@@ -51,7 +51,7 @@ from .helper.exceptions import (
 )
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, reverse_mapping
-from .indexers.indexer_exceptions import IndexerSeasonNotFound, IndexerError, IndexerAttributeNotFound, IndexerEpisodeNotFound
+from .indexers.indexer_exceptions import IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .sbdatetime import sbdatetime
 from .scene_exceptions import get_scene_exceptions
@@ -285,23 +285,28 @@ class TVShow(TVObject):
 
     @property
     def current_qualities(self):
+        """Current qualities."""
         allowed_qualities, preferred_qualities = Quality.splitQuality(int(self.quality))
         return (allowed_qualities, preferred_qualities)
 
     @property
     def using_preset_quality(self):
+        """Whether preset is used."""
         return self.quality in qualityPresets
 
     @property
     def default_ep_status_name(self):
+        """Default episode status name."""
         return statusStrings[self.default_ep_status]
 
     def show_size(self, pretty=False):
+        """Show size."""
         show_size = helpers.get_size(self.raw_location)
         return pretty_file_size(show_size) if pretty else show_size
 
     @property
     def subtitle_flag(self):
+        """Subtitle flag."""
         return subtitles.code_from_code(self.lang) if self.lang else ''
 
     def flush_episodes(self):
@@ -574,9 +579,7 @@ class TVShow(TVObject):
         return False
 
     def show_words(self):
-        """
-        Returns all related words to show: preferred, undesired, ignore, require.
-        """
+        """Return all related words to show: preferred, undesired, ignore, require."""
         words = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignored_words', 'required_words'])
 
         preferred_words = ','.join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''

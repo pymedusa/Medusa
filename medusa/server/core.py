@@ -174,7 +174,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             self.server.listen(self.options['port'], self.options['host'])
         except Exception:
             if app.LAUNCH_BROWSER and not self.daemon:
-                app.instance.launchBrowser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
+                app.instance.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.options['port'], app.WEB_ROOT)
                 logger.log('Launching browser and exiting')
             logger.log('Could not start the web server on port {port}, already in use!'.format(port=self.options['port']))
             os._exit(1)  # pylint: disable=protected-access

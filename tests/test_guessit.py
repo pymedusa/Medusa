@@ -6,8 +6,8 @@ import datetime
 import os
 
 import guessit
-from medusa import app
 import medusa.name_parser.guessit_parser as sut
+from medusa import app
 import pytest
 from six import binary_type, text_type
 import yaml

@@ -43,4 +43,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(['', 'programas2/show.name.s01'])
+    main(sys.argv)

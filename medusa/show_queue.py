@@ -32,7 +32,7 @@ from .helper.exceptions import (
 )
 from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
 from .indexers.indexer_api import indexerApi
-from .indexers.indexer_exceptions import IndexerException, IndexerError, IndexerAttributeNotFound, IndexerShowNotFoundInLanguage
+from .indexers.indexer_exceptions import IndexerAttributeNotFound, IndexerError, IndexerException, IndexerShowNotFoundInLanguage
 from .tv import TVShow
 
 
