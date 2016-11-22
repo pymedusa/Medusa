@@ -1936,12 +1936,7 @@ class TVShow(TVObject):
         elif ep_status in Quality.SNATCHED_BEST:
             return Overview.SNATCHED_BEST
         elif ep_status in Quality.DOWNLOADED:
-            allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
-            ep_status, cur_quality = Quality.splitCompositeStatus(ep_status)
-
-            if cur_quality not in allowed_qualities + preferred_qualities:
-                return Overview.QUAL
-            elif preferred_qualities and cur_quality not in preferred_qualities:
+            if Quality.wanted_quality_from_status(ep_status, self):
                 return Overview.QUAL
             else:
                 return Overview.GOOD
