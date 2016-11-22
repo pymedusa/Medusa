@@ -97,7 +97,7 @@ class BTNProvider(TorrentProvider):
 
             response = self._api_call(self.api_key, search_params)
             
-            if not response or parsed_json.get('results') == '0:
+            if not response or parsed_json.get('results') == '0':
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
 
