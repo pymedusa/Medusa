@@ -57,7 +57,7 @@ indexerConfig = {
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
-        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvdb.json',
         'base_url': 'https://api.thetvdb.com',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdb_id'  # The attribute to which other indexers can map there thetvdb id to
@@ -73,10 +73,10 @@ indexerConfig = {
             'session': helpers.make_session(cache_etags=False),
         },
         'trakt_id': 'tvdb_id',
-        'xem_origin': 'tvdb',
+        'xem_origin': 'tvmaze',
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
-        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvmaze.json',
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id'  # The attribute to which other indexers can map there tvmaze id to
@@ -92,9 +92,9 @@ indexerConfig = {
             'session': helpers.make_session(cache_etags=False),
         },
         'trakt_id': 'tvdb_id',
-        'xem_origin': 'tvdb',
+        'xem_origin': 'tmdb',
         'icon': 'tmdb16.png',
-        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions.json',
+        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tmdb.json',
         'base_url': 'https://www.themoviedb.org',
         'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tmdb_id'  # The attribute to which other indexers can map there tmdb id to
@@ -107,4 +107,4 @@ mappings.update(EXTERNAL_MAPPINGS)
 
 # For example: {'tvdb_id': 1, 'tvmaze_id': 3, 'tmdb_id': 4}
 reverse_mappings = {indexerConfig[indexer]['mapped_to']: indexer for indexer in indexerConfig}
-reverse_mappings.update({v: k for k, v in EXTERNAL_MAPPINGS.iteritems()})
+reverse_mappings.update({v: k for k, v in EXTERNAL_MAPPINGS.items()})
