@@ -64,7 +64,7 @@ from configobj import ConfigObj
 from six import text_type
 
 from . import (
-    app, auto_post_processor, cache, db, event_queue, exception_handler, failed_history,
+    app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
     scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
 )
@@ -352,9 +352,9 @@ class Application(object):
         # Pre-populate network timezones, it isn't thread safe
         network_timezones.update_network_dict()
 
-        # sure, why not?
-        if app.USE_FAILED_DOWNLOADS:
-            failed_history.trimHistory()
+        # # why???
+        # if app.USE_FAILED_DOWNLOADS:
+        #     failed_history.trim_history()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
         # app.showUpdateScheduler.forceRun()
