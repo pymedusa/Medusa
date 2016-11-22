@@ -272,11 +272,11 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ForcedSearchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False, manual_search=False, manual_search_type='episode'):
+    def __init__(self, show, segment, down_cur_quality=False, manual_search=False, manual_search_type='episode'):
         """A Queueitem used to queue Forced Searches and Manual Searches
         @param show: A show object
         @param segment: A list of episode objects. Needs to be passed as list!
-        @param downCurQuality: Not sure what it's used for. Maybe legacy.
+        @param down_cur_quality: Not sure what it's used for. Maybe legacy.
         @param manual_search: Passed as True (bool) when the search should be performed without automatially snatching a result
         @param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
 
@@ -295,7 +295,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
-        self.downCurQuality = downCurQuality
+        self.down_cur_quality = down_cur_quality
         self.manual_search = manual_search
         self.manual_search_type = manual_search_type
 
@@ -311,7 +311,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                        format(('forced', 'manual')[bool(self.manual_search)],
                               ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
 
-            search_result = searchProviders(self.show, self.segment, True, self.downCurQuality,
+            search_result = searchProviders(self.show, self.segment, True, self.down_cur_quality,
                                             self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
@@ -478,7 +478,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
 
 class FailedQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False):
+    def __init__(self, show, segment, down_cur_quality=False):
         generic_queue.QueueItem.__init__(self, u'Retry', FAILED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'RETRY-' + str(show.indexerid)
@@ -488,7 +488,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
-        self.downCurQuality = downCurQuality
+        self.down_cur_quality = down_cur_quality
 
     def run(self):
         """
@@ -512,7 +512,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                 failed_history.revertEpisode(epObj)
                 logger.log(u"Beginning failed download search for: [" + epObj.pretty_name() + "]")
 
-            # If it is wanted, self.downCurQuality doesnt matter
+            # If it is wanted, self.down_cur_quality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
             search_result = searchProviders(self.show, self.segment, True)
 

@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""tv_cache code."""
 from __future__ import unicode_literals
 
 import datetime
@@ -33,7 +33,10 @@ from .show.show import Show
 
 
 class CacheDBConnection(db.DBConnection):
+    """Cache database class."""
+
     def __init__(self, provider_id):
+        """Initialize the class."""
         db.DBConnection.__init__(self, 'cache.db')
 
         # Create the table if it's not already there
@@ -107,7 +110,10 @@ class CacheDBConnection(db.DBConnection):
 
 
 class TVCache(object):
+    """TVCache class."""
+
     def __init__(self, provider, **kwargs):
+        """Initialize class."""
         self.provider = provider
         self.provider_id = self.provider.get_id()
         self.provider_db = None
@@ -115,16 +121,14 @@ class TVCache(object):
         self.search_params = kwargs.pop('search_params', dict(RSS=['']))
 
     def _get_db(self):
-        # init provider database if not done already
+        """Initialize provider database if not done already."""
         if not self.provider_db:
             self.provider_db = CacheDBConnection(self.provider_id)
 
         return self.provider_db
 
-    def _clearCache(self):
-        """
-        Performs requalar cache cleaning as required
-        """
+    def _clear_cache(self):
+        """Perform reqular cache cleaning as required."""
         # if cache trimming is enabled
         if app.CACHE_TRIMMING:
             # trim items older than MAX_CACHE_AGE days
@@ -132,7 +136,7 @@ class TVCache(object):
 
     def trim_cache(self, days=None):
         """
-        Remove old items from cache
+        Remove old items from cache.
 
         :param days: Number of days to retain
         """
@@ -149,50 +153,51 @@ class TVCache(object):
             )
 
     def _get_title_and_url(self, item):
-        return self.provider._get_title_and_url(item)  # pylint:disable=protected-access
+        """Return title and url from item."""
+        return self.provider._get_title_and_url(item)
 
     def _get_result_info(self, item):
+        """Return seeders and leechers from item."""
         return self.provider._get_result_info(item)
 
     def _get_size(self, item):
+        """Return size of the item."""
         return self.provider._get_size(item)
 
     def _get_pubdate(self, item):
-        """
-        Return publish date of the item. If provider doesnt
-        have _get_pubdate function this will be used
-        """
+        """Return publish date of the item."""
         return self.provider._get_pubdate(item)
 
     def _get_torrent_hash(self, item):
-        """
-        Return hash of the item. If provider doesnt
-        have _get_torrent_hash function this will be used
-        """
+        """Return hash of the item."""
         return self.provider._get_torrent_hash(item)
 
-    def _getRSSData(self):
+    def _get_rss_data(self):
+        """Return rss data."""
         return {'entries': self.provider.search(self.search_params)} if self.search_params else None
 
-    def _checkAuth(self, data):  # pylint:disable=unused-argument, no-self-use
+    def _check_auth(self, data):
+        """Check if we are autenticated."""
         return True
 
-    def _checkItemAuth(self, title, url):  # pylint:disable=unused-argument, no-self-use
+    def _check_item_auth(self, title, url):
+        """Check item auth."""
         return True
 
-    def updateCache(self):
+    def update_cache(self):
+        """Update provider cache."""
         # check if we should update
-        if not self.shouldUpdate():
+        if not self.should_update():
             return
 
         try:
-            data = self._getRSSData()
-            if self._checkAuth(data):
+            data = self._get_rss_data()
+            if self._check_auth(data):
                 # clear cache
-                self._clearCache()
+                self._clear_cache()
 
                 # set updated
-                self.setLastUpdate()
+                self.set_last_update()
 
                 # get last 5 rss cache results
                 recent_results = self.provider.recent_results
@@ -209,7 +214,7 @@ class TVCache(object):
                                    (self.provider_id), logger.DEBUG)
                         break
                     try:
-                        ci = self._parseItem(item)
+                        ci = self._parse_item(item)
                         if ci is not None:
                             cl.append(ci)
                     except UnicodeDecodeError as e:
@@ -228,14 +233,15 @@ class TVCache(object):
             logger.log('Authentication error: {0!r}'.format(e), logger.ERROR)
 
     def update_cache_manual_search(self, manual_data=None):
+        """Update cache using manual search results."""
         # clear cache
-        self._clearCache()
+        self._clear_cache()
 
         try:
             cl = []
             for item in manual_data:
                 logger.log('Adding to cache item found in manual search: {0}'.format(item.name), logger.DEBUG)
-                ci = self._addCacheEntry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate, item.hash)
+                ci = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate, item.hash)
                 if ci is not None:
                     cl.append(ci)
         except Exception as e:
@@ -251,34 +257,38 @@ class TVCache(object):
 
         return any(results)
 
-    def getRSSFeed(self, url, params=None):
+    def get_rss_feed(self, url, params=None):
+        """Get rss feed entries."""
         if self.provider.login():
             return getFeed(url, params=params, request_hook=self.provider.get_url)
         return {'entries': []}
 
     @staticmethod
-    def _translateTitle(title):
+    def _translate_title(title):
+        """Sanitize title."""
         return '{0}'.format(title.replace(' ', '.'))
 
     @staticmethod
-    def _translateLinkURL(url):
+    def _translate_link_url(url):
+        """Sanitize url."""
         return url.replace('&amp;', '&')
 
-    def _parseItem(self, item):
+    def _parse_item(self, item):
+        """Parse item to create cache entry."""
         title, url = self._get_title_and_url(item)
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
         torrent_hash = self._get_torrent_hash(item)
 
-        self._checkItemAuth(title, url)
+        self._check_item_auth(title, url)
 
         if title and url:
-            title = self._translateTitle(title)
-            url = self._translateLinkURL(url)
+            title = self._translate_title(title)
+            url = self._translate_link_url(url)
 
             # logger.log('Attempting to add item to cache: ' + title, logger.DEBUG)
-            return self._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash)
 
         else:
             logger.log(
@@ -287,58 +297,63 @@ class TVCache(object):
 
         return False
 
-    def _getLastUpdate(self):
+    def _get_last_update(self):
+        """Get last provider update."""
         cache_db_con = self._get_db()
         sql_results = cache_db_con.select(b'SELECT time FROM lastUpdate WHERE provider = ?', [self.provider_id])
 
         if sql_results:
-            lastTime = int(sql_results[0][b'time'])
-            if lastTime > int(time.mktime(datetime.datetime.today().timetuple())):
-                lastTime = 0
+            last_time = int(sql_results[0][b'time'])
+            if last_time > int(time.mktime(datetime.datetime.today().timetuple())):
+                last_time = 0
         else:
-            lastTime = 0
+            last_time = 0
 
-        return datetime.datetime.fromtimestamp(lastTime)
+        return datetime.datetime.fromtimestamp(last_time)
 
-    def _getLastSearch(self):
+    def _get_last_search(self):
+        """Get provider last search."""
         cache_db_con = self._get_db()
         sql_results = cache_db_con.select(b'SELECT time FROM lastSearch WHERE provider = ?', [self.provider_id])
 
         if sql_results:
-            lastTime = int(sql_results[0][b'time'])
-            if lastTime > int(time.mktime(datetime.datetime.today().timetuple())):
-                lastTime = 0
+            last_time = int(sql_results[0][b'time'])
+            if last_time > int(time.mktime(datetime.datetime.today().timetuple())):
+                last_time = 0
         else:
-            lastTime = 0
+            last_time = 0
 
-        return datetime.datetime.fromtimestamp(lastTime)
+        return datetime.datetime.fromtimestamp(last_time)
 
-    def setLastUpdate(self, toDate=None):
-        if not toDate:
-            toDate = datetime.datetime.today()
+    def set_last_update(self, to_date=None):
+        """Set provider last update."""
+        if not to_date:
+            to_date = datetime.datetime.today()
 
         cache_db_con = self._get_db()
         cache_db_con.upsert(
             b'lastUpdate',
-            {b'time': int(time.mktime(toDate.timetuple()))},
+            {b'time': int(time.mktime(to_date.timetuple()))},
             {b'provider': self.provider_id}
         )
 
-    def setLastSearch(self, toDate=None):
-        if not toDate:
-            toDate = datetime.datetime.today()
+    def set_last_search(self, to_date=None):
+        """Ser provider last search."""
+        if not to_date:
+            to_date = datetime.datetime.today()
 
         cache_db_con = self._get_db()
         cache_db_con.upsert(
             b'lastSearch',
-            {b'time': int(time.mktime(toDate.timetuple()))},
+            {b'time': int(time.mktime(to_date.timetuple()))},
             {b'provider': self.provider_id}
         )
 
-    lastUpdate = property(_getLastUpdate)
-    lastSearch = property(_getLastSearch)
+    lastUpdate = property(_get_last_update)
+    lastSearch = property(_get_last_search)
 
-    def shouldUpdate(self):
+    def should_update(self):
+        """Check if we should update provider cache."""
         # if we've updated recently then skip the update
         if datetime.datetime.today() - self.lastUpdate < datetime.timedelta(minutes=self.minTime):
             logger.log('Last update was too soon, using old cache: {0}. '
@@ -348,15 +363,15 @@ class TVCache(object):
 
         return True
 
-    def shouldClearCache(self):
+    def should_clear_cache(self):
+        """Check if we should clear cache."""
         # # if daily search hasn't used our previous results yet then don't clear the cache
         # if self.lastUpdate > self.lastSearch:
         #     return False
-
         return False
 
-    def _addCacheEntry(self, name, url, seeders, leechers, size, pubdate, torrent_hash):
-
+    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, torrent_hash):
+        """Add item into cache database."""
         try:
             parse_result = NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
@@ -372,7 +387,7 @@ class TVCache(object):
 
         if season is not None and episodes is not None:
             # store episodes as a seperated string
-            episodeText = '|{0}|'.format('|'.join({str(episode) for episode in episodes if episode}))
+            episode_text = '|{0}|'.format('|'.join({str(episode) for episode in episodes if episode}))
 
             # get the current timestamp
             cur_timestamp = int(time.mktime(datetime.datetime.today().timetuple()))
@@ -396,16 +411,17 @@ class TVCache(object):
             return [
                 b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
                 b'leechers, size, pubdate, hash, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
-                [name, season, episodeText, parse_result.show.indexerid, url, cur_timestamp, quality,
+                [name, season, episode_text, parse_result.show.indexerid, url, cur_timestamp, quality,
                  release_group, version, seeders, leechers, size, pubdate, torrent_hash, proper_tags]]
 
-    def searchCache(self, episode, forced_search=False, downCurQuality=False):
-        needed_eps = self.findNeededEpisodes(episode, forced_search, downCurQuality)
+    def search_cache(self, episode, forced_search=False, down_cur_quality=False):
+        """Search cache for needed episodes."""
+        needed_eps = self.find_needed_episodes(episode, forced_search, down_cur_quality)
         return needed_eps[episode] if episode in needed_eps else []
 
-    def listPropers(self, date=None):
-        """
-        Method is currently not used anywhere.
+    def list_propers(self, date=None):
+        """Method is currently not used anywhere.
+
         It can be usefull with some small modifications. First we'll need to flag the propers in db.
         Then this method can be used to retrieve those, and let the properFinder use results from cache,
         before moving on with hitting the providers.
@@ -419,7 +435,8 @@ class TVCache(object):
         propers_results = cache_db_con.select(sql)
         return [x for x in propers_results if x[b'indexerid']]
 
-    def findNeededEpisodes(self, episode, forced_search=False, downCurQuality=False):  # pylint:disable=too-many-locals, too-many-branches
+    def find_needed_episodes(self, episode, forced_search=False, down_cur_quality=False):
+        """Find needed episodes."""
         needed_eps = {}
         cl = []
 
@@ -479,7 +496,7 @@ class TVCache(object):
             cur_version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not show_obj.want_episode(cur_season, cur_ep, cur_quality, forced_search, downCurQuality):
+            if not show_obj.want_episode(cur_season, cur_ep, cur_quality, forced_search, down_cur_quality):
                 logger.log('Ignoring {0}'.format(cur_result[b'name']), logger.DEBUG)
                 continue
 
@@ -513,6 +530,6 @@ class TVCache(object):
                 needed_eps[ep_obj].append(result)
 
         # datetime stamp this search so cache gets cleared
-        self.setLastSearch()
+        self.set_last_search()
 
         return needed_eps

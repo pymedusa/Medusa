@@ -194,7 +194,7 @@ class HDBitsProvider(TorrentProvider):
 class HDBitsCache(tv_cache.TVCache):
     """Provider cache class."""
 
-    def _getRSSData(self):
+    def _get_rss_data(self):
         """Get RSS data."""
         self.search_params = None  # HDBits cache does not use search_params so set it to None
         results = []

@@ -55,7 +55,7 @@ class BinSearchCache(tv_cache.TVCache):
 
     def __init__(self, provider_obj, **kwargs):
         """Initialize the class."""
-        kwargs.pop('search_params', None)  # does not use _getRSSData so strip param from kwargs...
+        kwargs.pop('search_params', None)  # does not use _get_rss_data so strip param from kwargs...
         search_params = None  # ...and pass None instead
         tv_cache.TVCache.__init__(self, provider_obj, search_params=search_params, **kwargs)
 
@@ -98,28 +98,28 @@ class BinSearchCache(tv_cache.TVCache):
 
         return title, url
 
-    def updateCache(self):
+    def update_cache(self):
         """Updade provider cache."""
         # check if we should update
-        if not self.shouldUpdate():
+        if not self.should_update():
             return
 
         # clear cache
-        self._clearCache()
+        self._clear_cache()
 
         # set updated
-        self.setLastUpdate()
+        self.set_last_update()
 
         cl = []
         for group in ['alt.binaries.hdtv', 'alt.binaries.hdtv.x264', 'alt.binaries.tv', 'alt.binaries.tvseries']:
             search_params = {'max': 50, 'g': group}
-            data = self.getRSSFeed(self.provider.urls['rss'], search_params)['entries']
+            data = self.get_rss_feed(self.provider.urls['rss'], search_params)['entries']
             if not data:
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
 
             for item in data:
-                ci = self._parseItem(item)
+                ci = self._parse_item(item)
                 if ci:
                     cl.append(ci)
 
@@ -127,7 +127,7 @@ class BinSearchCache(tv_cache.TVCache):
             cache_db_con = self._get_db()
             cache_db_con.mass_action(cl)
 
-    def _checkAuth(self, data):
+    def _check_auth(self, data):
         return data if data['feed'] and data['feed']['title'] != 'Invalid Link' else None
 
 

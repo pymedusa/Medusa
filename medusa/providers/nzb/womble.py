@@ -49,15 +49,16 @@ class WombleProvider(NZBProvider):
 
 
 class WombleCache(tv_cache.TVCache):
+
     """Provider cache class."""
 
-    def updateCache(self):
+    def update_cache(self):
         """Update provider cache."""
-        if not self.shouldUpdate():
+        if not self.should_update():
             return
 
-        self._clearCache()
-        self.setLastUpdate()
+        self._clear_cache()
+        self.set_last_update()
 
         cl = []
         search_params_list = [
@@ -68,13 +69,13 @@ class WombleCache(tv_cache.TVCache):
         ]
         for search_params in search_params_list:
             search_params.update({'fr': 'false'})
-            data = self.getRSSFeed(self.provider.urls['rss'], params=search_params)['entries']
+            data = self.get_rss_feed(self.provider.urls['rss'], params=search_params)['entries']
             if not data:
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
 
             for item in data:
-                ci = self._parseItem(item)
+                ci = self._parse_item(item)
                 if ci:
                     cl.append(ci)
 
@@ -82,7 +83,7 @@ class WombleCache(tv_cache.TVCache):
             cache_db_con = self._get_db()
             cache_db_con.mass_action(cl)
 
-    def _checkAuth(self, data):
+    def _check_auth(self, data):
         return data if data['feed'] and data['feed']['title'] != 'Invalid Link' else None
 
 

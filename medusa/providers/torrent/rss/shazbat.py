@@ -72,7 +72,7 @@ class ShazbatProvider(TorrentProvider):
 class ShazbatCache(tv_cache.TVCache):
     """Provider cache class."""
 
-    def _getRSSData(self):
+    def _get_rss_data(self):
         """Get RSS data."""
         params = {
             'passkey': self.provider.passkey,
@@ -81,9 +81,9 @@ class ShazbatCache(tv_cache.TVCache):
             'duration': '2 hours'
         }
 
-        return self.getRSSFeed(self.provider.urls['rss_recent'], params=params)
+        return self.get_rss_feed(self.provider.urls['rss_recent'], params=params)
 
-    def _checkAuth(self, data):
+    def _check_auth(self, data):
         """Check if we are autenticated."""
         return self.provider._check_auth_from_data(data)
 

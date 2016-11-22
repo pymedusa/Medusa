@@ -88,7 +88,7 @@ class NyaaProvider(TorrentProvider):
                         logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                     search_params['term'] = search_string
-                data = self.cache.getRSSFeed(self.url, params=search_params)
+                data = self.cache.get_rss_feed(self.url, params=search_params)
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
