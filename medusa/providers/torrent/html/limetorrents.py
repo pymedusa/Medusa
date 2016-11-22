@@ -22,8 +22,6 @@ import re
 import traceback
 from contextlib2 import suppress
 import requests
-
-# from dateutil import parser
 from requests.compat import urljoin
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
