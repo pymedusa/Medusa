@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <https://www.gnu.org/licenses/>.
 """Provider code for BTN."""
 from __future__ import unicode_literals
 
@@ -35,9 +35,9 @@ class BTNProvider(TorrentProvider):
     """BTN Torrent provider.
 
     API docs:
-    http://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
+    https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
     and
-    http://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
+    https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
     """
 
     def __init__(self):
@@ -48,9 +48,9 @@ class BTNProvider(TorrentProvider):
         self.api_key = None
 
         # URLs
-        self.url = 'http://broadcasthe.net/'
+        self.url = 'https://broadcasthe.net/'
         self.urls = {
-            'base_url': 'http://api.btnapps.net',
+            'base_url': 'https://api.btnapps.net',
         }
 
         # Proper Strings
