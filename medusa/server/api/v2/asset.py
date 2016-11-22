@@ -13,7 +13,6 @@ class AssetHandler(BaseRequestHandler):
     def get(self, asset_group=None, query=None, *args, **kwargs):
         """Get an asset.
         """
-        print query
         if asset_group and query:
             if asset_group == 'show':
                 asset_type = self.get_argument('type', default='banner')
@@ -28,15 +27,18 @@ class AssetHandler(BaseRequestHandler):
             for infile in glob.glob(os.path.join(path, filename.lower() + '.*')):
                 path = infile
             mime_type, _ = mimetypes.guess_type(path)
-            self.set_status(200)
-            self.set_header('Content-type', mime_type)
-            try:
-                with open(path, 'rb') as f:
-                    while 1:
-                        data = f.read(16384)
-                        if not data:
-                            break
-                        self.write(data)
-                self.finish()
-            except IOError:
+            if mime_type:
+                self.set_status(200)
+                self.set_header('Content-type', mime_type)
+                try:
+                    with open(path, 'rb') as f:
+                        while 1:
+                            data = f.read(16384)
+                            if not data:
+                                break
+                            self.write(data)
+                    self.finish()
+                except IOError:
+                    self.api_finish(status=404, error='Asset or Asset Type Does Not Exist')
+            else:
                 self.api_finish(status=404, error='Asset or Asset Type Does Not Exist')

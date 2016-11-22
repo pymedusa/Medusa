@@ -66,7 +66,7 @@ class ShowHandler(BaseRequestHandler):
 
             return self._handle_detailed_show(tv_show, query)
 
-        data = [s.to_json(detailed=False) for s in app.showList if self._match(s, arg_paused)]
+        data = [s.to_json(detailed=self.get_argument('detailed', default=False)) for s in app.showList if self._match(s, arg_paused)]
         return self._paginate(data, 'title')
 
     @staticmethod
