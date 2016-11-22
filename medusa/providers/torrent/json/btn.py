@@ -97,12 +97,9 @@ class BTNProvider(TorrentProvider):
 
             response = self._api_call(self.api_key, search_params)
             
-            if not response or parsed_json.get('results') == '0':
+            if not response or parsed_json.get('results') == '0:
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
-
-            if not self._check_auth_from_data(response):
-                return results
 
             results += self.parse(response.get('torrents', {}), mode)
 
@@ -159,16 +156,6 @@ class BTNProvider(TorrentProvider):
 
         if not self.api_key:
             logger.log('Missing API key. Check your settings', logger.WARNING)
-            return False
-
-        return True
-
-    @staticmethod
-    def _check_auth_from_data(parsed_json):
-
-        if 'api-error' in parsed_json:
-            logger.log('Incorrect authentication credentials: {0}'.format
-                       (parsed_json['api-error']), logger.DEBUG)
             return False
 
         return True
@@ -273,14 +260,15 @@ class BTNProvider(TorrentProvider):
             time.sleep(cpu_presets[app.CPU_PRESET])
 
         except jsonrpclib.jsonrpc.ProtocolError as error:
-            if error.message == 'Call Limit Exceeded':
+            if error.message[1] == 'Invalid API Key':
+                logger.log('Incorrect authentication credentials', logger.WARNING)
+            elif error.message[1] == 'Call Limit Exceeded':
                 logger.log('You have exceeded the limit of 150 calls per hour,'
                            ' per API key which is unique to your user account', logger.WARNING)
             else:
                 logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
                            (msg=error), logger.ERROR)
-            parsed_json = {'api-error': ex(error)}
-            return parsed_json
+            return {}
 
         except socket.timeout:
             logger.log('Timeout while accessing provider', logger.WARNING)
@@ -291,9 +279,6 @@ class BTNProvider(TorrentProvider):
                        (msg=error[1]), logger.WARNING)
 
         except Exception as error:
-            errorstring = str(error)
-            if errorstring.startswith('<') and errorstring.endswith('>'):
-                errorstring = errorstring[1:-1]
             logger.log('Unknown error while accessing provider. Error: {msg}'.format
                        (msg=errorstring), logger.ERROR)
 
