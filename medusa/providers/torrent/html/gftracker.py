@@ -92,7 +92,10 @@ class GFTrackerProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
 
-                if mode != 'RSS':
+                if mode == 'Season':
+                    search_params['view'] = 1  # Browse/Gems a.k.a. Season packs
+
+                elif mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
