@@ -15,12 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Limetorrents."""
 from __future__ import unicode_literals
 
 import re
 import traceback
-
 from contextlib2 import suppress
 import requests
 from requests.compat import urljoin
@@ -33,12 +32,12 @@ id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*)\.html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
 
 
-class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """LimeTorrents Torrent provider"""
-    def __init__(self):
+class LimeTorrentsProvider(TorrentProvider):
+    """LimeTorrents Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'LimeTorrents')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('LimeTorrents')
 
         # Credentials
         self.public = True
@@ -65,9 +64,9 @@ class LimeTorrentsProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used

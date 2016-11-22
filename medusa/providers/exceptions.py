@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Exceptions raised by Medusa providers
-"""
+"""Exceptions raised by Medusa providers."""
 
 from __future__ import unicode_literals
 

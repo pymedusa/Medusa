@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Norbits."""
 from __future__ import unicode_literals
 
 import json
@@ -27,14 +27,12 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Main provider object"""
+class NorbitsProvider(TorrentProvider):
+    """Norbits Torrent provider."""
 
     def __init__(self):
-        """ Initialize the class """
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'Norbits')
+        """.Initialize the class."""
+        super(self.__class__, self).__init__('Norbits')
 
         # Credentials
         self.username = None
@@ -58,9 +56,9 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)  # only poll Norbits every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -113,7 +111,6 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         :return: A list of items found
         """
-
         items = []
         data.get('data', '')
         torrent_rows = data.get('torrents', [])
@@ -171,9 +168,8 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         return True
 
-    def _check_auth_from_data(self, parsed_json):  # pylint: disable=invalid-name
-        """ Check that we are authenticated. """
-
+    def _check_auth_from_data(self, parsed_json):
+        """Check that we are authenticated."""
         if 'status' in parsed_json and 'message' in parsed_json:
             if parsed_json.get('status') == 3:
                 logger.log('Invalid username or password. '
@@ -182,4 +178,4 @@ class NorbitsProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         return True
 
 
-provider = NorbitsProvider()  # pylint: disable=invalid-name
+provider = NorbitsProvider()

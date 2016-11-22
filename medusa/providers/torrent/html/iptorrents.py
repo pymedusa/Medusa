@@ -35,8 +35,8 @@ class IPTorrentsProvider(TorrentProvider):
     """IPTorrents Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'IPTorrents')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('IPTorrents')
 
         # Credentials
         self.username = None

@@ -14,12 +14,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TransmitTheNet."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
+from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
@@ -29,12 +30,12 @@ from ....helper.common import try_int
 from ....helper.exceptions import AuthException
 
 
-class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """TransmitTheNet Torrent provider"""
-    def __init__(self):
+class TransmitTheNetProvider(TorrentProvider):
+    """TransmitTheNet Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'TransmitTheNet')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('TransmitTheNet')
 
         # Credentials
         self.username = None
@@ -59,9 +60,9 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -109,7 +110,6 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -163,6 +163,8 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                         continue
 
                     size = temp_anchor['data-filesize'] or -1
+                    pubdate_raw = cells[4].find('span')['title']
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -170,7 +172,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                         'torrent_hash': None,
                     }
                     if mode != 'RSS':
@@ -209,7 +211,7 @@ class TransmitTheNetProvider(TorrentProvider):  # pylint: disable=too-many-insta
         return True
 
     def _check_auth(self):
-
+        """Check if user credentials."""
         if not self.username or not self.password:
             raise AuthException('Your authentication credentials for {0} are missing,'
                                 ' check your config.'.format(self.name))

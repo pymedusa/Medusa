@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Torrentz2."""
 from __future__ import unicode_literals
 
 import re
@@ -28,12 +28,12 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size
 
 
-class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """Torrentz2 Torrent provider"""
-    def __init__(self):
+class Torrentz2Provider(TorrentProvider):
+    """Torrentz2 Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'Torrentz2')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Torrentz2')
 
         # Credentials
         self.public = True
@@ -58,9 +58,9 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=15)  # only poll Torrentz every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -106,7 +106,6 @@ class Torrentz2Provider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:

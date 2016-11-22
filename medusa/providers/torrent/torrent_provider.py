@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Generic Torrent Provider."""
 import os
 
 import bencode
@@ -28,25 +28,33 @@ from ...helper.exceptions import ex
 
 
 class TorrentProvider(GenericProvider):
+    """Generic Torrent provider."""
+
     def __init__(self, name):
-        GenericProvider.__init__(self, name)
+        """Initialize the class."""
+        super(TorrentProvider, self).__init__(name)
+
         self.ratio = None
         self.provider_type = GenericProvider.TORRENT
 
     def is_active(self):
+        """Check if provider is enabled."""
         return bool(app.USE_TORRENTS) and self.is_enabled()
 
     @property
     def _custom_trackers(self):
+        """Check if provider has custom trackers."""
         if not (app.TRACKERS_LIST and self.public):
             return ''
 
         return '&tr=' + '&tr='.join({x.strip() for x in app.TRACKERS_LIST.split(',') if x.strip()})
 
     def _get_result(self, episodes):
+        """Return provider result."""
         return TorrentSearchResult(episodes)
 
     def _get_size(self, item):
+        """Get result size."""
         if isinstance(item, dict):
             size = item.get('size', -1)
         elif isinstance(item, (list, tuple)) and len(item) > 2:
@@ -61,9 +69,11 @@ class TorrentProvider(GenericProvider):
         return try_int(size, -1)
 
     def _get_storage_dir(self):
+        """Get torrent storage dir."""
         return app.TORRENT_DIR
 
     def _get_result_info(self, item):
+        """Return seeders and leechers from result."""
         if isinstance(item, (dict, FeedParserDict)):
             seeders = item.get('seeders', '-1')
             leechers = item.get('leechers', '-1')
@@ -78,6 +88,7 @@ class TorrentProvider(GenericProvider):
         return seeders, leechers
 
     def _get_title_and_url(self, item):
+        """Get title and url from result."""
         if isinstance(item, (dict, FeedParserDict)):
             download_url = item.get('url', '')
             title = item.get('title', '')
@@ -100,6 +111,7 @@ class TorrentProvider(GenericProvider):
         return title, download_url
 
     def _verify_download(self, file_name=None):
+        """Validate torrent file."""
         if not file_name or not os.path.isfile(file_name):
             return False
 
@@ -114,12 +126,13 @@ class TorrentProvider(GenericProvider):
         return False
 
     def seed_ratio(self):
+        """Return seed ratio of provider."""
         return self.ratio
 
     def _get_pubdate(self, item):
-        """
-        Return publish date of the item. If provider doesnt
-        have _get_pubdate function this will be used
+        """Return publish date of the item.
+
+        If provider doesnt have _get_pubdate function this will be used
         """
         if isinstance(item, dict):
             pubdate = item.get('pubdate')
@@ -132,8 +145,9 @@ class TorrentProvider(GenericProvider):
 
     def _get_torrent_hash(self, item):
         """
-        Return torrent_hash of the item. If provider doesnt
-        have _get_torrent_hash function this will be used
+        Return torrent_hash of the item.
+
+        If provider doesnt have _get_torrent_hash function this will be used
         """
         if isinstance(item, dict):
             torrent_hash = item.get('torrent_hash')

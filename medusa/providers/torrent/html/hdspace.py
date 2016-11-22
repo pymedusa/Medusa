@@ -17,7 +17,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for HDSpace."""
 from __future__ import unicode_literals
 
 import re
@@ -36,8 +36,8 @@ class HDSpaceProvider(TorrentProvider):
     """HDSpace Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'HDSpace')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('HDSpace')
 
         # Credentials
         self.username = None

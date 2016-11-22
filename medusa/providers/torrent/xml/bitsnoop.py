@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Bitsnoop."""
 from __future__ import unicode_literals
 
 import traceback
@@ -27,13 +27,12 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """BitSnoop Torrent provider"""
+class BitSnoopProvider(TorrentProvider):
+    """BitSnoop Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'BitSnoop')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('BitSnoop')
 
         # Credentials
         self.public = True
@@ -58,9 +57,9 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Cache
         self.cache = tv_cache.TVCache(self, search_params={'RSS': ['rss']})
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -99,7 +98,6 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:

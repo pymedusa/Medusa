@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Zooqle."""
 from __future__ import unicode_literals
 
 import traceback
@@ -27,13 +27,12 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class ZooqleProvider(TorrentProvider):
     """Zooqle Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'Zooqle')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Zooqle')
 
         # Credentials
         self.public = True
@@ -56,9 +55,9 @@ class ZooqleProvider(TorrentProvider):  # pylint: disable=too-many-instance-attr
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=15)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used

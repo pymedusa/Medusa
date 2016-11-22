@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Womble provider."""
 from __future__ import unicode_literals
 
 from requests.compat import urljoin
@@ -24,11 +24,11 @@ from ... import logger, tv_cache
 
 
 class WombleProvider(NZBProvider):
-    """Womble Newznab provider"""
-    def __init__(self):
+    """Womble Newznab provider."""
 
-        # Provider Init
-        NZBProvider.__init__(self, "Womble's Index")
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__("Womble's Index")
 
         # Credentials
         self.public = True
@@ -49,8 +49,10 @@ class WombleProvider(NZBProvider):
 
 
 class WombleCache(tv_cache.TVCache):
-    def updateCache(self):
+    """Provider cache class."""
 
+    def updateCache(self):
+        """Update provider cache."""
         if not self.shouldUpdate():
             return
 

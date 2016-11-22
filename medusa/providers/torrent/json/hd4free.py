@@ -15,23 +15,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for HD4Free."""
 from __future__ import unicode_literals
 
 import traceback
 
+from dateutil import parser
 from requests.compat import urljoin
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.common import convert_size
 
 
-class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """HD4Free Torrent provider"""
-    def __init__(self):
+class HD4FreeProvider(TorrentProvider):
+    """HD4Free Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'HD4Free')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('HD4Free')
 
         # Credentials
         self.username = None
@@ -55,9 +56,9 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -123,7 +124,6 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
         :return: A list of items found
         """
-
         items = []
 
         torrent_rows = data
@@ -148,6 +148,8 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
 
                 torrent_size = str(torrent_rows[row]['size']) + ' MB'
                 size = convert_size(torrent_size) or -1
+                pubdate_raw = torrent_rows[row]["added"]
+                pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
 
                 item = {
                     'title': title,
@@ -155,7 +157,7 @@ class HD4FreeProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                     'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
-                    'pubdate': None,
+                    'pubdate': pubdate,
                     'torrent_hash': None,
                 }
                 if mode != 'RSS':

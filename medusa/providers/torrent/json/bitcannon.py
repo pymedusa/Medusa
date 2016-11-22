@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Bitcannon."""
 from __future__ import unicode_literals
 
 import traceback
@@ -28,11 +28,11 @@ from ....helper.common import convert_size, try_int
 
 
 class BitCannonProvider(TorrentProvider):
-    """BitCannon Torrent provider"""
-    def __init__(self):
+    """BitCannon Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'BitCannon')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('BitCannon')
 
         # Credentials
         self.api_key = None
@@ -52,9 +52,9 @@ class BitCannonProvider(TorrentProvider):
         cache_params = {'RSS': ['tv', 'anime']}
         self.cache = tv_cache.TVCache(self, search_params=cache_params)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches, too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -114,9 +114,7 @@ class BitCannonProvider(TorrentProvider):
 
         :return: A list of items found
         """
-
         items = []
-
         torrent_rows = data.pop('torrents', {})
 
         # Skip column headers

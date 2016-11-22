@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Cpasbien."""
 from __future__ import unicode_literals
 
 import re
@@ -28,12 +28,11 @@ from ....helper.common import convert_size, try_int
 
 
 class CpasbienProvider(TorrentProvider):
-    """Cpasbien Torrent provider"""
+    """Cpasbien Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'Cpasbien')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Cpasbien')
 
         # Credentials
         self.public = True
@@ -53,9 +52,9 @@ class CpasbienProvider(TorrentProvider):
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used

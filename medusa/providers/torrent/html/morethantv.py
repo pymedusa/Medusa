@@ -22,6 +22,7 @@ import re
 import time
 import traceback
 
+from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -34,12 +35,12 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class MoreThanTVProvider(TorrentProvider):
     """MoreThanTV Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'MoreThanTV')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('MoreThanTV')
 
         # Credentials
         self.username = None
@@ -66,7 +67,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
@@ -178,6 +179,8 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
+                    pubdate_raw = cells[labels.index('Time')].find('span')['title']
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -185,7 +188,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                         'torrent_hash': None,
                     }
                     if mode != 'RSS':

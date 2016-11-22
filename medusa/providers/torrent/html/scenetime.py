@@ -30,12 +30,12 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class SceneTimeProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class SceneTimeProvider(TorrentProvider):
     """SceneTime Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'SceneTime')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('SceneTime')
 
         # Credentials
         self.username = None

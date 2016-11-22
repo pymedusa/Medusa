@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TPB."""
 from __future__ import unicode_literals
 
 import re
@@ -29,12 +29,12 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class ThePirateBayProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class ThePirateBayProvider(TorrentProvider):
     """ThePirateBay Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'ThePirateBay')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('ThePirateBay')
 
         # Credentials
         self.public = True
