@@ -152,17 +152,8 @@ class BacklogSearcher(object):
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            cur_status, cur_quality = common.Quality.splitCompositeStatus(int(sql_result["status"] or -1))
-
-            if cur_status not in {common.WANTED, common.DOWNLOADED, common.SNATCHED, common.SNATCHED_PROPER}:
+            if not common.Quality.wanted_quality_from_status(sql_result['status'], show):
                 continue
-
-            if cur_status != common.WANTED:
-                if preferred_qualities:
-                    if cur_quality in preferred_qualities:
-                        continue
-                elif cur_quality in allowed_qualities:
-                    continue
 
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 

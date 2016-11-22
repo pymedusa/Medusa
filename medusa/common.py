@@ -584,6 +584,23 @@ class Quality(object):
     }
 
     @staticmethod
+    def wanted_quality_from_status(status, show_obj):
+        """Return true if that quality is wanted based on show quality and episode status."""
+        cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or -1)
+        allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
+
+        if cur_status not in {WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER}:
+            return False
+
+        if cur_status != WANTED:
+            if preferred_qualities:
+                if cur_quality in preferred_qualities:
+                    return False
+            elif cur_quality in allowed_qualities:
+                return False
+        return True
+
+    @staticmethod
     def from_guessit(guess):
         """
 

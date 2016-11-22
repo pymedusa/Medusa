@@ -395,16 +395,9 @@ def wantedEpisodes(show, fromDate):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        cur_status, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if cur_status not in {common.WANTED, common.DOWNLOADED, common.SNATCHED, common.SNATCHED_PROPER}:
+        _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
+        if not Quality.wanted_quality_from_status(result['status'], show):
             continue
-
-        if cur_status != common.WANTED:
-            if preferred_qualities:
-                if cur_quality in preferred_qualities:
-                    continue
-            elif cur_quality in allowed_qualities:
-                continue
 
         epObj = show.get_episode(result["season"], result["episode"])
         epObj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
