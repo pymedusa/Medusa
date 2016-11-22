@@ -16,9 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from dateutil import parser
 import logging
+
+from dateutil import parser
 from six.moves.urllib.request import FancyURLopener
+
 from . import app
 from .common import Quality, USER_AGENT
 from .indexers.indexer_api import indexerApi

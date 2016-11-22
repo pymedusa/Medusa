@@ -31,8 +31,8 @@ import re
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 from .generic import GenericClient
-from ..helpers import handle_requests_exception
 from .. import app
+from ..helpers import handle_requests_exception
 
 logger = logging.getLogger(__name__)
 

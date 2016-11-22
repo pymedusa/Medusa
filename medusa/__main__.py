@@ -74,13 +74,13 @@ from .config import (
     check_setting_int, check_setting_str, load_provider_setting, save_provider_setting
 )
 from .databases import cache_db, failed_db, main_db
+from .event_queue import Events
 from .providers import NewznabProvider, TorrentRssProvider
 from .providers.generic_provider import GenericProvider
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
-from .event_queue import Events
 from .server.core import AppWebServer
 from .system.shutdown import Shutdown
 from .tv import TVShow
@@ -291,7 +291,7 @@ class Application(object):
         app.CFG = ConfigObj(app.CONFIG_FILE)
 
         # Initialize the config and our threads
-        self.initialize(consoleLogging=self.console_logging)
+        self.initialize(console_logging=self.console_logging)
 
         if self.run_as_daemon:
             self.daemonize()
@@ -361,13 +361,14 @@ class Application(object):
 
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
-            Application.launchBrowser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
+            Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
 
         # main loop
         while True:
             time.sleep(1)
 
-    def initialize(self, consoleLogging=True):
+    def initialize(self, console_logging=True):
+        """Initialize global variables and configuration."""
         with app.INIT_LOCK:
             if app.__INITIALIZED__:
                 return False
@@ -408,7 +409,7 @@ class Application(object):
 
             # init logging
             app_logger.backwards_compatibility()
-            app_logger.init_logging(console_logging=consoleLogging)
+            app_logger.init_logging(console_logging=console_logging)
 
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
@@ -1079,6 +1080,7 @@ class Application(object):
 
     @staticmethod
     def get_backlog_cycle_time():
+        """Return backlog cycle frequency."""
         cycletime = app.DAILYSEARCH_FREQUENCY * 2 + 7
         return max([cycletime, 720])
 
@@ -1118,6 +1120,7 @@ class Application(object):
 
     @staticmethod
     def start_threads():
+        """Start application threads."""
         with app.INIT_LOCK:
             if not app.__INITIALIZED__:
                 return
@@ -1197,6 +1200,7 @@ class Application(object):
 
     @staticmethod
     def halt():
+        """Halt the system."""
         with app.INIT_LOCK:
             if not app.__INITIALIZED__:
                 return
@@ -1241,7 +1245,8 @@ class Application(object):
             app.__INITIALIZED__ = False
             app.started = False
 
-    def saveAll(self):
+    def save_all(self):
+        """Save all information to database and config file."""
         # write all shows
         logger.info(u'Saving all shows to the database')
         for show in app.showList:
@@ -1253,6 +1258,7 @@ class Application(object):
 
     @staticmethod
     def save_config():
+        """Save configuration."""
         new_config = ConfigObj(encoding='UTF-8', default_encoding='UTF-8')
         new_config.filename = app.CONFIG_FILE
 
@@ -1752,17 +1758,18 @@ class Application(object):
         new_config.write()
 
     @staticmethod
-    def launchBrowser(protocol='http', startPort=None, web_root='/'):
+    def launch_browser(protocol='http', start_port=None, web_root='/'):
+        """Launch web browser."""
         try:
             import webbrowser
         except ImportError:
             logger.warning(u'Unable to load the webbrowser module, cannot launch the browser.')
             return
 
-        if not startPort:
-            startPort = app.WEB_PORT
+        if not start_port:
+            start_port = app.WEB_PORT
 
-        browser_url = '%s://localhost:%d%s/home/' % (protocol, startPort, web_root)
+        browser_url = '%s://localhost:%d%s/home/' % (protocol, start_port, web_root)
 
         try:
             webbrowser.open(browser_url, 2, 1)
@@ -1774,6 +1781,7 @@ class Application(object):
 
     @staticmethod
     def sig_handler(signum=None, frame=None):
+        """Signal handler function."""
         if not isinstance(signum, type(None)):
             logger.info(u'Signal {number} caught, saving and exiting...', number=signum)
             Shutdown.stop(app.PID)
@@ -1921,7 +1929,7 @@ class Application(object):
         """
         if app.started:
             self.halt()  # stop all tasks
-            self.saveAll()  # save all shows to DB
+            self.save_all()  # save all shows to DB
 
             # shutdown web server
             if self.web_server:
