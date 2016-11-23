@@ -24,6 +24,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -93,7 +94,10 @@ class GFTrackerProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode == 'Season':
-                    search_params['view'] = 1  # Browse/Gems a.k.a. Season packs
+                    search_params.update({
+                        'view': 1,  # Browse/Gems a.k.a. Season packs
+                        'c42': 1,  # TV/Gems
+                    })
 
                 elif mode != 'RSS':
                     logger.log('Search string: {search}'.format
