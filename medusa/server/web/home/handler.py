@@ -17,7 +17,7 @@ from ..core import PageTemplate, WebRoot
 from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
 from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
-from ....failed_history import prepareFailedName
+from ....failed_history import prepare_failed_name
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_api import indexerApi
@@ -1191,7 +1191,7 @@ class Home(WebRoot):
                 failed_statuses = [FAILED, ]
                 snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
                 if any([item for item in episode_history
-                        if all([prepareFailedName(provider_result['name']) in item['resource'],
+                        if all([prepare_failed_name(provider_result['name']) in item['resource'],
                                 item['provider'] in (provider_result['provider'], provider_result['release_group'],),
                                 item['status'] in failed_statuses])
                         ]):

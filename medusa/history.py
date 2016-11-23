@@ -47,7 +47,7 @@ def _logHistoryItem(action, showid, season, episode, quality, resource, provider
         [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags])
 
 
-def logSnatch(searchResult):
+def log_snatch(searchResult):
     """
     Log history of snatch
 
@@ -121,7 +121,7 @@ def logSubtitle(showid, season, episode, status, subtitleResult):
     _logHistoryItem(action, showid, season, episode, quality, resource, provider)
 
 
-def logFailed(epObj, release, provider=None):
+def log_failed(epObj, release, provider=None):
     """
     Log a failed download
 

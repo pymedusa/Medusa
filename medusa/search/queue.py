@@ -502,14 +502,14 @@ class FailedQueueItem(generic_queue.QueueItem):
 
                 logger.log(u"Marking episode as bad: [" + epObj.pretty_name() + "]")
 
-                failed_history.markFailed(epObj)
+                failed_history.mark_failed(epObj)
 
-                (release, provider) = failed_history.findRelease(epObj)
+                (release, provider) = failed_history.find_release(epObj)
                 if release:
-                    failed_history.logFailed(release)
-                    history.logFailed(epObj, release, provider)
+                    failed_history.log_failed(release)
+                    history.log_failed(epObj, release, provider)
 
-                failed_history.revertEpisode(epObj)
+                failed_history.revert_episode(epObj)
                 logger.log(u"Beginning failed download search for: [" + epObj.pretty_name() + "]")
 
             # If it is wanted, self.down_cur_quality doesnt matter
