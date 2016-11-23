@@ -587,7 +587,7 @@ class Quality(object):
     def is_wanted_quality(status, show_obj):
         """Return true if that quality is wanted based on show quality and episode status."""
         cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or -1)
-        allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
+        allowed_qualities, preferred_qualities = show_obj.current_qualities
 
         if cur_status not in {WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER}:
             return False

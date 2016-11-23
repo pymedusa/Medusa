@@ -584,7 +584,7 @@ class Manage(Home, WebRoot):
             new_subtitles = 'on' if new_subtitles else 'off'
 
             if quality_preset == 'keep':
-                allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
+                allowed_qualities, preferred_qualities = show_obj.current_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 

@@ -1824,7 +1824,7 @@ class TVShow(TVObject):
         :rtype: bool
         """
         # if the quality isn't one we want under any circumstances then just say no
-        allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
+        allowed_qualities, preferred_qualities = self.current_qualities
         logger.log(u'{id}: Any,Best = [ {any} ] [ {best} ] Found = [ {found} ]'.format
                    (id=self.indexerid, any=self.__qualities_to_string(allowed_qualities),
                     best=self.__qualities_to_string(preferred_qualities),
