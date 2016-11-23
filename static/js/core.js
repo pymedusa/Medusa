@@ -27,6 +27,12 @@ var UTIL = {
         }
     },
     init: function() {
+        if (typeof startVue === 'function') { // eslint-disable-line no-undef
+            startVue(); // eslint-disable-line no-undef
+        } else {
+            $('[v-cloak]').removeAttr('v-cloak');
+        }
+
         var body = document.body;
         var controller = body.getAttribute('data-controller');
         var action = body.getAttribute('data-action');
@@ -34,12 +40,6 @@ var UTIL = {
         UTIL.exec('common');
         UTIL.exec(controller);
         UTIL.exec(controller, action);
-
-        if (typeof startVue === 'function') { // eslint-disable-line no-undef
-            startVue(); // eslint-disable-line no-undef
-        } else {
-            $('[v-cloak]').removeAttr('v-cloak');
-        }
     }
 };
 
