@@ -863,9 +863,9 @@ class TVShow(TVObject):
                 indexer_api_params['dvdorder'] = True
 
             try:
-                t = app.indexerApi(self.indexer).indexer(**indexer_api_params)
+                t = indexerApi(self.indexer).indexer(**indexer_api_params)
                 show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
-            except app.IndexerError:
+            except IndexerError:
                 logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
                            (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.WARNING)
                 return None
