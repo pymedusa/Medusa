@@ -1127,7 +1127,7 @@ class PostProcessor(object):
         # Just want to keep this consistent for failed handling right now
         release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
         if release_name is not None:
-            failed_history.logSuccess(release_name)
+            failed_history.log_success(release_name)
         else:
             self._log(u"Couldn't determine release name, aborting", logger.WARNING)
 

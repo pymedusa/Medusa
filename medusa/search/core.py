@@ -143,11 +143,11 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
         return False
 
     if app.USE_FAILED_DOWNLOADS:
-        failed_history.logSnatch(result)
+        failed_history.log_snatch(result)
 
     ui.notifications.message('Episode snatched', result.name)
 
-    history.logSnatch(result)
+    history.log_snatch(result)
 
     # don't notify when we re-download an episode
     sql_l = []
@@ -278,8 +278,8 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
             continue
 
         if hasattr(cur_result, 'size'):
-            if app.USE_FAILED_DOWNLOADS and failed_history.hasFailed(cur_result.name, cur_result.size,
-                                                                     cur_result.provider.name):
+            if app.USE_FAILED_DOWNLOADS and failed_history.has_failed(cur_result.name, cur_result.size,
+                                                                      cur_result.provider.name):
                 logger.log(cur_result.name + u" has previously failed, rejecting it")
                 continue
         preferred_words = ''
