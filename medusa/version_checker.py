@@ -943,8 +943,10 @@ class SourceUpdateManager(UpdateManager):
                     # Avoid DLL access problem on WIN32/64
                     # These files needing to be updated manually
                     # or find a way to kill the access from memory
-                    if curfile in ('unrar.dll', 'unrar64.dll'):
+                    extension = os.path.splitext(curfile)[1]
+                    if extension == '.dll':
                         try:
+                            logger.log(u'Special handling for {0}'.format(curfile), logger.DEBUG)
                             os.chmod(new_path, stat.S_IWRITE)
                             os.remove(new_path)
                             os.renames(old_path, new_path)
