@@ -231,7 +231,7 @@ MEDUSA.home.index = function() {
                 popup.on('mouseleave', function() {
                     $(this).remove();
                 });
-                popup.zIndex(9999);
+                popup.css({zIndex: '9999'})
                 popup.appendTo('body');
 
                 var height = 438;
