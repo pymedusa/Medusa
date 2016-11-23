@@ -205,14 +205,15 @@ class PostProcessor(object):
 
             file_name = os.path.basename(found_file).lower()
 
-            if is_subtitle(found_file):
-                code = file_name.rsplit('.', 2)[1].replace('_', '-')
-                language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
-                if language:
-                    filelist.append(found_file)
+            if file_name.startswith(processed_file_name):
 
-            # if there's no difference in the filename add it to the filelist
-            elif file_name.startswith(processed_file_name):
+                # only add subtitles with valid languages to the list
+                if is_subtitle(found_file):
+                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
+                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+                    if not language:
+                        continue
+
                 filelist.append(found_file)
 
         file_path_list = []
