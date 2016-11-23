@@ -509,6 +509,22 @@ class TVShow(TVObject):
                             {'next_update': int(next_update)},
                             {'indexer': self.indexer, 'indexer_id': self.indexerid, 'season': season})
 
+    def cleanup_season_updates(self, season):
+        """Remove the season from the season update table.
+
+        This could happen when the indexer adds a new season/episode, but later decides to remove it.
+        """
+        sql_episodes_left_in_season = b'SELECT season FROM tv_episodes WHERE showid = ? AND season = ?'
+        main_db_con = db.DBConnection()
+        if not main_db_con.select(sql_episodes_left_in_season, [self.indexerid, season]):
+            logger.log(u'{id}: Cleaning up indexer_update table for {show} {season} from the DB'.format
+                       (id=self.indexerid, show=self.name,
+                        season=season), logger.DEBUG)
+
+            cache_db = db.DBConnection('cache.db')
+            sql = b'DELETE FROM indexer_update WHERE indexer = ? indexer_id = ? AND season = ?'
+            cache_db.action(sql, [self.indexer, self.indexerid, season])
+
     def should_update(self, update_date=datetime.date.today()):
         """Whether the show information should be updated.
 
@@ -2656,9 +2672,12 @@ class TVEpisode(TVObject):
         logger.log(u'{id}: Deleting myself from the database'.format
                    (id=self.show.indexerid), logger.DEBUG)
         main_db_con = db.DBConnection()
-        sql = b'DELETE FROM tv_episodes WHERE showid=' + str(self.show.indexerid) + b' AND season=' + str(
-            self.season) + b' AND episode=' + str(self.episode)
-        main_db_con.action(sql)
+        sql = b'DELETE FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?'
+        main_db_con.action(sql, [self.show.indexerid, self.season, self.episode])
+
+        # If there are now no more episodes in the db, also cleanup the indexer_update table. As we don't want
+        # it to schedule updates for this season anymore.
+        self.show.cleanup_season_updates(self.season)
 
         raise EpisodeDeletedException()
 
