@@ -200,7 +200,7 @@ def logSnatch(searchResult):
 
     :param searchResult: Search result that was successful
     """
-    logDate = datetime.datetime.today().strftime(History.date_format)
+    logDate = datetime.today().strftime(History.date_format)
     release = prepareFailedName(searchResult.name)
 
     providerClass = searchResult.provider
