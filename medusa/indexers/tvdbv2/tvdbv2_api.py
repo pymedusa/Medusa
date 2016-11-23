@@ -239,14 +239,23 @@ class TVDBv2(BaseIndexer):
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
-        except ApiException:
+        except ApiException as e:
             log().debug('Error trying to index the episodes')
             raise IndexerShowIncomplete(
-                'Show search returned incomplete results (cannot find complete show on TheTVDB)')
+                'Show episode search exception, '
+                'could not get any episodes. Did a {search_type} search. Exception: {ex}'.
+                format(search_type='full' if not aired_season else
+                       'season {season}'.format(aired_season), ex=e)
+            )
 
         if not results:
             log().debug('Series results incomplete')
-            raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+            raise IndexerShowIncomplete(
+                'Show episode search returned incomplete results, '
+                'could not get any episodes. Did a {search_type} search.'.
+                format(search_type='full' if not aired_season else
+                       'season {season}'.format(aired_season))
+            )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
