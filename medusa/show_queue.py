@@ -732,7 +732,7 @@ class QueueItemUpdate(ShowQueueItem):
             episodes_from_indexer = None
 
         if episodes_from_indexer is None:
-            logger.log(u'{id}: No data returned from {indexer}. Unable to update this show'.format
+            logger.log(u'{id}: No data returned from {indexer} during full show update. Unable to update this show'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                        logger.WARNING)
         else:
@@ -845,7 +845,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             episodes_from_indexer = None
 
         if episodes_from_indexer is None:
-            logger.log(u'{id}: No data returned from {indexer}. Unable to update this show'.format
+            logger.log(u'{id}: No data returned from {indexer} during season show update. Unable to update this show'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                        logger.WARNING)
         else:

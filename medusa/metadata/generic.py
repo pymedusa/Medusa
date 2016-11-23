@@ -22,7 +22,7 @@ import os
 import re
 
 from six import iterkeys
-from tmdb_api.tmdb_api import TMDB
+import tmdbsimple as tmdb
 from .. import app, exception_handler, helpers, logger
 from ..helper.common import replace_extension
 from ..helper.exceptions import ex
@@ -37,6 +37,7 @@ except ImportError:
     import xml.etree.ElementTree as etree
 
 # todo: Implement Fanart.tv v3 API
+
 
 class GenericMetadata(object):
     """
@@ -940,7 +941,7 @@ class GenericMetadata(object):
                  'banner_thumb': None}
 
         # get TMDB configuration info
-        tmdb = TMDB(app.TMDB_API_KEY)
+        tmdb.API_KEY = app.TMDB_API_KEY
         config = tmdb.Configuration()
         response = config.info()
         base_url = response['images']['base_url']

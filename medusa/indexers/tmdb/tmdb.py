@@ -20,11 +20,11 @@ from __future__ import unicode_literals
 
 from dateutil import parser
 from datetime import datetime, timedelta
-import medusa as app
+from ...app import TMDB_API_KEY
 from collections import OrderedDict
 import logging
 
-from tmdb_api import TMDB
+import tmdbsimple as tmdb
 
 from ..indexer_base import (BaseIndexer, Actors, Actor)
 from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete
@@ -44,7 +44,9 @@ class Tmdb(BaseIndexer):
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         super(Tmdb, self).__init__(*args, **kwargs)
 
-        self.tmdb = TMDB(app.TMDB_API_KEY, session=self.config['session'])
+        self.tmdb = tmdb
+        self.tmdb.API_KEY = TMDB_API_KEY
+        self.tmdb.REQUESTS_SESSION = self.config['session']
         self.tmdb_configuration = self.tmdb.Configuration()
         self.response = self.tmdb_configuration.info()
 
@@ -158,9 +160,9 @@ class Tmdb(BaseIndexer):
             last = 1
             results = []
             while page <= last:
-                search_result = self.tmdb.Search().tv({'query': show,
-                                                       'language': request_language,
-                                                       'page': page})
+                search_result = self.tmdb.Search().tv(query=show,
+                                                      language='request_language',
+                                                      page=page)
                 last = search_result.get('total_pages', 0)
                 results += search_result.get('results')
                 page += 1
@@ -201,7 +203,7 @@ class Tmdb(BaseIndexer):
 
         if tmdb_id:
             log().debug('Getting all show data for %s', [tmdb_id])
-            results = self.tmdb.TV(tmdb_id).info({'language': '{0},null'.format(request_language)})
+            results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
 
         if not results:
             return
@@ -231,7 +233,7 @@ class Tmdb(BaseIndexer):
 
         # get episodes for each season
         for season in aired_season:
-            season_info = self.tmdb.TV_Seasons(tmdb_id, season).info({'language': self.config['language']})
+            season_info = self.tmdb.TV_Seasons(tmdb_id, season).info(language=self.config['language'])
             results += season_info['episodes']
 
         if not results:
@@ -383,7 +385,7 @@ class Tmdb(BaseIndexer):
         log().debug('Getting actors for %s', sid)
 
         # TMDB also support passing language here as a param.
-        credits = self.tmdb.TV(sid).credits({'language': self.config['language']})  # pylint: disable=W0622
+        credits = self.tmdb.TV(sid).credits(language=self.config['language'])  # pylint: disable=W0622
 
         if not credits or not credits.get('cast'):
             log().debug('Actors result returned zero')
@@ -474,7 +476,7 @@ class Tmdb(BaseIndexer):
         page = 1
         total_pages = 1
         while page <= total_pages:
-            updates = self.tmdb.TV(sid).changes({'start_date': start_date, 'end_date': end_date})
+            updates = self.tmdb.TV(sid).changes(start_date=start_date, end_date=end_date)
             if updates and updates.get('changes'):
                 for item in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
                     results += [item[0]['value']['season_number']]
@@ -489,7 +491,7 @@ class Tmdb(BaseIndexer):
         page = 1
         total_pages = 1
         while page <= total_pages:
-            updates = self.tmdb.Changes().tv({'start_date': start_date, 'end_date': end_date, 'page': page})
+            updates = self.tmdb.Changes().tv(start_date=start_date, end_date=end_date, page=page)
             if not updates or not updates.get('results'):
                 break
             results += [_.get('id') for _ in updates.get('results')]
