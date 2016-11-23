@@ -916,11 +916,15 @@ class GenericMetadata(object):
                 return empty_return
 
             indexer = None
-            if showXML.find('episodeguide/url'):
+            if showXML.findtext('episodeguide/url'):
                 epg_url = showXML.findtext('episodeguide/url').lower()
                 if str(indexer_id) in epg_url:
                     if 'thetvdb.com' in epg_url:
                         indexer = 1
+                    elif 'tvmaze.com' in epg_url:
+                        indexer = 3
+                    elif 'themoviedb.org' in epg_url:
+                        indexer = 4
                     elif 'tvrage' in epg_url:
                         logger.log(u"Invalid Indexer ID (" + str(indexer_id) + "), not using metadata file because it has TVRage info", logger.WARNING)
                         return empty_return

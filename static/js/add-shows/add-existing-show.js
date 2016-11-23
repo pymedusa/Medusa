@@ -11,8 +11,16 @@ MEDUSA.addShows.addExistingShow = function() {
         $('.dirCheck').each(function() {
             if (this.checked === true) {
                 var show = $(this).attr('id');
+                var originalIndexer = $(this).attr('data-indexer')
+                var indexerId = '|' + $(this).attr('data-indexer-id')
+                var showName = $(this).attr('data-show-name')
+                var showDir = $(this).attr('data-show-dir')
+
                 var indexer = $(this).closest('tr').find('select').val();
-                dirArr.push(encodeURIComponent(indexer + '|' + show));
+                if (originalIndexer !== indexer || originalIndexer === '0') {
+                    indexerId = '';
+                }
+                dirArr.push(encodeURIComponent(indexer + '|' + showDir + indexerId + '|' + showName));
             }
         });
 
