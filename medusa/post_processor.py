@@ -1015,7 +1015,7 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    if not common.Quality.wanted_quality_from_status(ep_obj.status, show):
+                    if not common.Quality.is_wanted_quality(ep_obj.status, show):
                         raise EpisodePostProcessingFailedException(
                             u'File exists and new file quality is not in a preferred '
                             u'quality list, marking it unsafe to replace')

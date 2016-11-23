@@ -152,7 +152,7 @@ class BacklogSearcher(object):
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            if not common.Quality.wanted_quality_from_status(sql_result['status'], show):
+            if not common.Quality.is_wanted_quality(sql_result['status'], show):
                 continue
 
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])

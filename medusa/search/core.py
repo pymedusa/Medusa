@@ -396,7 +396,7 @@ def wantedEpisodes(show, fromDate):
     # check through the list of statuses to see if we want any
     for result in sql_results:
         _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if not Quality.wanted_quality_from_status(result['status'], show):
+        if not Quality.is_wanted_quality(result['status'], show):
             continue
 
         epObj = show.get_episode(result["season"], result["episode"])

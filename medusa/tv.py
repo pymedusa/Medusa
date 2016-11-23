@@ -1921,7 +1921,7 @@ class TVShow(TVObject):
 
         if ep_status == WANTED:
             return Overview.WANTED
-        elif Quality.wanted_quality_from_status(ep_status, self):
+        elif Quality.is_wanted_quality(ep_status, self):
             return Overview.QUAL
         else:
             return Overview.GOOD
