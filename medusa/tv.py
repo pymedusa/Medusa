@@ -1886,7 +1886,8 @@ class TVShow(TVObject):
 
         # if we are re-downloading then we only want it if it's in our
         # preferred_qualities list and better than what we have, or we only have
-        # one bestQuality and we do not have that quality yet
+        # one preferred_quality and we do not have that quality yet
+        # TODO: Put this in a method.
         if ep_status in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER and \
                 quality in preferred_qualities and (quality > cur_quality or cur_quality not in preferred_qualities):
             logger.log(u'{id}: Episode already exists with quality {existing_quality} but the found result'
@@ -1921,7 +1922,7 @@ class TVShow(TVObject):
 
         if ep_status == WANTED:
             return Overview.WANTED
-        elif Quality.is_wanted_quality(ep_status, self):
+        elif Quality.should_search(ep_status, self):
             return Overview.QUAL
         else:
             return Overview.GOOD

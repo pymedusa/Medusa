@@ -242,9 +242,9 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         logger.log(u"Quality of " + cur_result.name + u" is " + Quality.qualityStrings[cur_result.quality])
 
-        anyQualities, bestQualities = Quality.splitQuality(show.quality)
+        allowed_qualities, preferred_qualities = show.current_qualities
 
-        if cur_result.quality not in anyQualities + bestQualities:
+        if cur_result.quality not in allowed_qualities + preferred_qualities:
             logger.log(cur_result.name + u" is a quality we know we don't want, rejecting it", logger.DEBUG)
             continue
 
@@ -291,10 +291,11 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         if not bestResult:
             bestResult = cur_result
-        elif cur_result.quality in bestQualities and (bestResult.quality < cur_result.quality or
-                                                      bestResult.quality not in bestQualities):
+        # TODO: Put this in a method.
+        elif cur_result.quality in preferred_qualities and (bestResult.quality < cur_result.quality or
+                                                            bestResult.quality not in preferred_qualities):
             bestResult = cur_result
-        elif cur_result.quality in anyQualities and bestResult.quality not in bestQualities and \
+        elif cur_result.quality in allowed_qualities and bestResult.quality not in preferred_qualities and \
                 bestResult.quality < cur_result.quality:
             bestResult = cur_result
         elif bestResult.quality == cur_result.quality:
@@ -399,7 +400,7 @@ def wantedEpisodes(show, fromDate):
     # check through the list of statuses to see if we want any
     for result in sql_results:
         _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if not Quality.is_wanted_quality(result['status'], show):
+        if not Quality.should_search(result['status'], show):
             continue
 
         epObj = show.get_episode(result["season"], result["episode"])

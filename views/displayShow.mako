@@ -146,16 +146,16 @@
             <!-- Show Summary -->
             <div id="summary" ${'class="summaryFanArt"' if app.FANART_BACKGROUND else ''}>
                 <table class="summaryTable pull-left">
-                <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
+                <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
                     <tr><td class="showLegend">Quality: </td><td>
                 % if show.quality in qualityPresets:
                     ${renderQualityPill(show.quality)}
                 % else:
-                % if anyQualities:
-                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${'<br>' if bestQualities else ''}
+                % if allowed_qualities:
+                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
                 % endif
-                % if bestQualities:
-                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
+                % if preferred_qualities:
+                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
                 % endif
                 % endif
                 % if show.network and show.airs:

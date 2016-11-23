@@ -584,12 +584,12 @@ class Quality(object):
     }
 
     @staticmethod
-    def is_wanted_quality(status, show_obj):
-        """Return true if that quality is wanted based on show quality and episode status."""
+    def should_search(status, show_obj):
+        """Return true if that episodes should be search for a better quality."""
         cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or -1)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
-        if cur_status not in {WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER}:
+        if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             return False
 
         if cur_status != WANTED:

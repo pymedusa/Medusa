@@ -104,10 +104,10 @@ MEDUSA.addShows.init = function() {
 
             var anyQualArray = [];
             var bestQualArray = [];
-            $('#anyQualities option:selected').each(function(i, d) {
+            $('#allowed_qualities option:selected').each(function(i, d) {
                 anyQualArray.push($(d).val());
             });
-            $('#bestQualities option:selected').each(function(i, d) {
+            $('#preferred_qualities option:selected').each(function(i, d) {
                 bestQualArray.push($(d).val());
             });
 
@@ -136,17 +136,17 @@ MEDUSA.addShows.init = function() {
         $('#saveDefaultsButton').on('click', function() {
             var anyQualArray = [];
             var bestQualArray = [];
-            $('#anyQualities option:selected').each(function(i, d) {
+            $('#allowed_qualities option:selected').each(function(i, d) {
                 anyQualArray.push($(d).val());
             });
-            $('#bestQualities option:selected').each(function(i, d) {
+            $('#preferred_qualities option:selected').each(function(i, d) {
                 bestQualArray.push($(d).val());
             });
 
             $.get('config/general/saveAddShowDefaults', {
                 defaultStatus: $('#statusSelect').val(),
-                anyQualities: anyQualArray.join(','),
-                bestQualities: bestQualArray.join(','),
+                allowed_qualities: anyQualArray.join(','),
+                preferred_qualities: bestQualArray.join(','),
                 defaultFlattenFolders: $('#flatten_folders').prop('checked'),
                 subtitles: $('#subtitles').prop('checked'),
                 anime: $('#anime').prop('checked'),
@@ -162,7 +162,7 @@ MEDUSA.addShows.init = function() {
             });
         });
 
-        $('#statusSelect, #qualityPreset, #flatten_folders, #anyQualities, #bestQualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
+        $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
             $('#saveDefaultsButton').prop('disabled', false);
         });
 
