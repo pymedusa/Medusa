@@ -1937,7 +1937,7 @@ class TVShow(TVObject):
         elif ep_status in Quality.SNATCHED_BEST:
             return Overview.SNATCHED_BEST
         elif ep_status in Quality.DOWNLOADED:
-            if Quality.wanted_quality_from_status(ep_status, self):
+            if Quality.should_search(ep_status, self):
                 return Overview.QUAL
             else:
                 return Overview.GOOD
