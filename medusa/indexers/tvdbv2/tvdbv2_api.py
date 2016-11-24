@@ -24,10 +24,10 @@ from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
 
-from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
                                   IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from ..indexer_ui import BaseUI, ConsoleUI
 
 
 def log():
