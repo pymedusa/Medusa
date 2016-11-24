@@ -27,7 +27,6 @@ from ..torrent_provider import TorrentProvider
 from .... import app, logger, scene_exceptions, tv_cache
 from ....common import cpu_presets
 from ....helper.common import episode_num
-from ....helper.exceptions import ex
 from ....helpers import sanitizeSceneName
 
 
@@ -97,7 +96,7 @@ class BTNProvider(TorrentProvider):
 
             response = self._api_call(self.api_key, search_params)
 
-            if not response or parsed_json.get('results') == '0':
+            if not response or response.get('results') == '0':
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
 
@@ -278,7 +277,7 @@ class BTNProvider(TorrentProvider):
 
         except Exception as error:
             logger.log('Unknown error while accessing provider. Error: {msg}'.format
-                       (msg=errorstring), logger.ERROR)
+                       (msg=error), logger.ERROR)
 
         return parsed_json
 
