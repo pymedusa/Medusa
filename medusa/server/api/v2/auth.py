@@ -2,25 +2,27 @@
 """Request handler for authentication."""
 
 import base64
+
 import medusa as app
+
 from .base import BaseRequestHandler
-from .... import logger, notifiers, helpers
+from .... import helpers, logger, notifiers
 
 
 class LoginHandler(BaseRequestHandler):
     """Login request handler."""
 
     def set_default_headers(self):
+        """Set default CORS headers."""
         BaseRequestHandler.set_default_headers(self)
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     def prepare(self):
+        """Prepare."""
         pass
 
     def post(self, *args, **kwargs):
-        """Submit login
-        """
-
+        """Submit login."""
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
 

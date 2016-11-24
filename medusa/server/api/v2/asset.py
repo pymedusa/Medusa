@@ -1,18 +1,19 @@
 # coding=utf-8
 """Request handler for assets."""
-from .base import BaseRequestHandler
+import glob
 import mimetypes
 import os
-import glob
+
 import medusa as app
+
+from .base import BaseRequestHandler
 
 
 class AssetHandler(BaseRequestHandler):
     """Asset request handler."""
 
     def get(self, asset_group=None, query=None, *args, **kwargs):
-        """Get an asset.
-        """
+        """Get an asset."""
         if asset_group and query:
             if asset_group == 'show':
                 asset_type = self.get_argument('type', default='banner')
@@ -21,8 +22,7 @@ class AssetHandler(BaseRequestHandler):
                 return self._serve_asset(path=os.path.join(app.PROG_DIR, 'static/images/network/'), filename=query)
 
     def _serve_asset(self, path=None, filename=None):
-        """ Serve the asset from the provided path
-        """
+        """Serve the asset from the provided path."""
         if path and filename:
             for infile in glob.glob(os.path.join(path, filename.lower() + '.*')):
                 path = infile

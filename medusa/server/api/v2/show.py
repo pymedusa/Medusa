@@ -1,8 +1,9 @@
 # coding=utf-8
 """Request handler for shows."""
 
+import medusa as app
+
 from .base import BaseRequestHandler
-from .... import app
 from ....indexers import indexer_config
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
@@ -29,6 +30,7 @@ class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
     def set_default_headers(self):
+        """Set default CORS headers."""
         super(ShowHandler, self).set_default_headers()
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
 

@@ -5,11 +5,14 @@ import json
 import operator
 
 from datetime import datetime
-from babelfish.language import Language
-from six import text_type
-from tornado.web import RequestHandler
 
-from .... import app
+from babelfish.language import Language
+
+import medusa as app
+
+from six import text_type
+
+from tornado.web import RequestHandler
 
 
 class BaseRequestHandler(RequestHandler):
@@ -22,10 +25,12 @@ class BaseRequestHandler(RequestHandler):
                 self.api_finish(status=401, error='Invalid API key')
 
     def options(self, *args, **kwargs):
+        """Options."""
         self.set_status(204)
         self.finish()
 
     def set_default_headers(self):
+        """Set default CORS headers."""
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Api-Key')
         self.set_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
@@ -104,7 +109,9 @@ class BaseRequestHandler(RequestHandler):
 
 class NotFoundHandler(BaseRequestHandler):
     """A class used for the API v2 404 page."""
+
     def get(self, *args, **kwargs):
+        """Get."""
         self.api_finish(status=404)
 
 
