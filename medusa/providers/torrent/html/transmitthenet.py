@@ -163,7 +163,7 @@ class TransmitTheNetProvider(TorrentProvider):
                         continue
 
                     size = temp_anchor['data-filesize'] or -1
-                    pubdate_raw = cells[4].find('span')['title']
+                    pubdate_raw = cells[3].find('span')['title']
                     pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
