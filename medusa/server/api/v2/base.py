@@ -8,7 +8,7 @@ from datetime import datetime
 
 from babelfish.language import Language
 
-import medusa as app
+from .... import app
 
 from six import text_type
 

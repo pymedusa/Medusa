@@ -1,7 +1,7 @@
 # coding=utf-8
 """Request handler for shows."""
 
-import medusa as app
+from .... import app
 
 from .base import BaseRequestHandler
 from ....indexers import indexer_config

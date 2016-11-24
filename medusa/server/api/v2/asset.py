@@ -4,7 +4,7 @@ import glob
 import mimetypes
 import os
 
-import medusa as app
+from .... import app
 
 from .base import BaseRequestHandler
 

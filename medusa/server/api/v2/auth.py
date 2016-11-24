@@ -3,7 +3,7 @@
 
 import base64
 
-import medusa as app
+from .... import app
 
 from .base import BaseRequestHandler
 from .... import helpers, logger, notifiers
