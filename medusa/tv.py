@@ -1922,10 +1922,28 @@ class TVShow(TVObject):
 
         if ep_status == WANTED:
             return Overview.WANTED
-        elif Quality.should_search(ep_status, self):
-            return Overview.QUAL
-        else:
+        elif ep_status in (UNAIRED, UNKNOWN):
+            return Overview.UNAIRED
+        elif ep_status in (SKIPPED, IGNORED):
+            return Overview.SKIPPED
+        elif ep_status in Quality.ARCHIVED:
             return Overview.GOOD
+        elif ep_status in Quality.FAILED:
+            return Overview.WANTED
+        elif ep_status in Quality.SNATCHED:
+            return Overview.SNATCHED
+        elif ep_status in Quality.SNATCHED_PROPER:
+            return Overview.SNATCHED_PROPER
+        elif ep_status in Quality.SNATCHED_BEST:
+            return Overview.SNATCHED_BEST
+        elif ep_status in Quality.DOWNLOADED:
+            if Quality.wanted_quality_from_status(ep_status, self):
+                return Overview.QUAL
+            else:
+                return Overview.GOOD
+        else:
+            logger.log(u'Could not parse episode status into a valid overview status: {status}'.format
+                       (status=ep_status), logger.ERROR)
 
     def __getstate__(self):
         """Get threading lock state.
