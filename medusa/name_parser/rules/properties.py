@@ -44,7 +44,6 @@ def format_():
     rebulk.defaults(name='format')
 
     # More accurate formats
-    rebulk.regex('AHDTV', value='AHDTV')
     rebulk.regex('BD(?!\d)', 'BD-?Rip', 'BD-?Mux', 'BD-?Rip-?Mux',
                  value='BDRip', validator=seps_surround,
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
@@ -60,10 +59,6 @@ def format_():
     rebulk.regex('DVD-?Mux', value='DVD')
     rebulk.regex('WEB-?Mux', 'DL-?WEB-?Mux', 'WEB-?DL-?Mux', 'DL-?Mux', value='WEB-DL')
 
-    # https://github.com/guessit-io/guessit/issues/315
-    rebulk.regex('WEB-?DL-?Rip', 'WEB-?Cap', value='WEBRip')
-    rebulk.regex('DSR', 'DS-?Rip', 'SAT-?Rip', 'DTH-?Rip', value='SATRip')
-    rebulk.regex('LDTV', value='TV')
     rebulk.regex('DVD\d', value='DVD')
 
     return rebulk
@@ -113,6 +108,7 @@ def other():
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
     rebulk.regex(r'UNCENSORED', value='Uncensored')
+    rebulk.regex(r'MULTi', value='Multi Language')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
     # Discarded:
@@ -129,40 +125,39 @@ def streaming_service():
     :return:
     :rtype: Rebulk
     """
-    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
+    rebulk = Rebulk().string_defaults(ignore_case=True)
     rebulk.defaults(name='streaming_service', validator=seps_surround)
 
-    # https://github.com/guessit-io/guessit/issues/344
-    rebulk.regex(r'AE', value='A&E')
-    rebulk.regex(r'AMBC', value='ABC')
-    rebulk.regex(r'AMZN', value='Amazon Prime')
-    rebulk.regex(r'AS', value='Adult Swim')
-    rebulk.regex(r'iP', value='BBC iPlayer')
-    rebulk.regex(r'CBS', value='CBS')
-    rebulk.regex(r'CC', value='Comedy Central',
-                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
-    rebulk.regex(r'CR', value='Crunchy Roll')
-    rebulk.regex(r'CW', value='The CW')
-    rebulk.regex(r'DISC', value='Discovery')
-    rebulk.regex(r'DSNY', value='Disney')
-    rebulk.regex(r'EPIX', value='ePix')
-    rebulk.regex(r'HBO', value='HBO Go')
-    rebulk.regex(r'HIST', value='History')
-    rebulk.regex(r'IFC', value='IFC')
-    rebulk.regex(r'PBS', value='PBS')
-    rebulk.regex(r'NATG', value='National Geographic')
-    rebulk.regex(r'NBA', value='NBA TV')
-    rebulk.regex(r'NBC', value='NBC')
-    rebulk.regex(r'NFL', value='NFL')
-    rebulk.regex(r'NICK', value='Nickelodeon')
-    rebulk.regex(r'NF', value='Netflix',
-                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
-    rebulk.regex(r'SESO', value='SeeSo')
-    rebulk.regex(r'SPKE', value='Spike TV')
-    rebulk.regex(r'SYFY', value='Syfy')
-    rebulk.regex(r'TFOU', value='TFou')
-    rebulk.regex(r'TVL', value='TV Land')
-    rebulk.regex(r'UFC', value='UFC')
+    rebulk.string('AE', value='A&E')
+    rebulk.string('AMBC', value='ABC')
+    rebulk.string('AMZN', value='Amazon Prime')
+    rebulk.string('AS', value='Adult Swim')
+    rebulk.string('iP', value='BBC iPlayer')
+    rebulk.string('CBS', value='CBS')
+    rebulk.string('CC', value='Comedy Central',
+                  conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
+    rebulk.string('CR', value='Crunchy Roll')
+    rebulk.string('CW', value='The CW')
+    rebulk.string('DISC', value='Discovery')
+    rebulk.string('DSNY', value='Disney')
+    rebulk.string('EPIX', value='ePix')
+    rebulk.string('HBO', value='HBO Go')
+    rebulk.string('HIST', value='History')
+    rebulk.string('IFC', value='IFC')
+    rebulk.string('PBS', value='PBS')
+    rebulk.string('NATG', value='National Geographic')
+    rebulk.string('NBA', value='NBA TV')
+    rebulk.string('NBC', value='NBC')
+    rebulk.string('NFL', value='NFL')
+    rebulk.string('NICK', value='Nickelodeon')
+    rebulk.string('NF', value='Netflix',
+                  conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
+    rebulk.string('SESO', value='SeeSo')
+    rebulk.string('SPKE', value='Spike TV')
+    rebulk.string('SYFY', value='Syfy')
+    rebulk.string('TFOU', value='TFou')
+    rebulk.string('TVL', value='TV Land')
+    rebulk.string('UFC', value='UFC')
 
     rebulk.rules(ValidateStreamingService)
 
@@ -177,7 +172,7 @@ def size():
     :rtype: Rebulk
     """
     def format_size(value):
-        return re.sub(r'(?<=\d)[\.](?=[^\d])', '', value.upper())
+        return re.sub(r'(?<=\d)[.](?=[^\d])', '', value.upper())
 
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='size', validator=seps_surround)
