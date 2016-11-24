@@ -71,6 +71,10 @@ TIMEFORMATS = [
         DAYCLOCK=DAYCLOCK),
     r'{SECCLOCK}'.format(
         SECCLOCK=SECCLOCK),
+    #r'{YEARS}'.format(
+        #YEARS=YEARS),
+    #r'{MONTHS}'.format(
+        #MONTHS=MONTHS),
     ]
 
 MULTIPLIERS = dict([
@@ -98,6 +102,8 @@ def _interpret_as_minutes(sval, mdict):
         and (('hours' not in mdict) or (mdict['hours'] is None))
         and (('days' not in mdict) or (mdict['days'] is None))
         and (('weeks' not in mdict) or (mdict['weeks'] is None))
+        #and (('months' not in mdict) or (mdict['months'] is None))
+        #and (('years' not in mdict) or (mdict['years'] is None))
         ):   
         mdict['hours'] = mdict['mins']
         mdict['mins'] = mdict['secs']
