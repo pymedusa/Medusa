@@ -21,8 +21,8 @@ import datetime
 import re
 import traceback
 
-from pytimeparse import parse
 from dateutil import parser
+from pytimeparse import parse
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
@@ -165,7 +165,7 @@ class TransmitTheNetProvider(TorrentProvider):
                         continue
 
                     size = temp_anchor['data-filesize'] or -1
-                    date = parse(cells[4].find('span').get_text()[:-4]) # Strip unneded trailing " ago
+                    date = parse(cells[4].find('span').get_text()[:-4])  # Strip unneded trailing " ago
                     pubdate_raw = datetime.datetime.now() - datetime.timedelta(seconds=date)
                     pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
