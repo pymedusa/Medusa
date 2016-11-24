@@ -201,7 +201,7 @@ class HomeAddShows(Home):
 
         elif not show_name:
             default_show_name = re.sub(r' \(\d{4}\)', '',
-                                       os.path.basename(os.path.normpath(show_dir)).replace('.', ' '))
+                                       os.path.basename(os.path.normpath(show_dir)))
         else:
             default_show_name = show_name
 
@@ -637,6 +637,8 @@ class HomeAddShows(Home):
                 dirs_only.append(cur_dir)
             else:
                 indexer, show_dir, indexer_id, show_name = self.split_extra_show(cur_dir)
+                if indexer and show_dir and not indexer_id:
+                    dirs_only.append(cur_dir)
 
                 if not show_dir or not indexer_id or not show_name:
                     continue

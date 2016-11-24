@@ -33,6 +33,7 @@ from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
 from ...helper.encoding import ss
+from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
 
 class NewznabProvider(NZBProvider):
@@ -93,7 +94,7 @@ class NewznabProvider(NZBProvider):
         for mode in search_strings:
             self.torznab = False
             search_params = {
-                't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) and not self.force_query else 'search',
+                't': 'search',
                 'limit': 100,
                 'offset': 0,
                 'cat': self.cat_ids.strip(', ') or '5030,5040',
@@ -104,8 +105,11 @@ class NewznabProvider(NZBProvider):
                 search_params['apikey'] = self.key
 
             if mode != 'RSS':
+                match_indexer = self._match_indexer()
+                search_params['t'] = 'tvsearch' if match_indexer and not self.force_query else 'search'
+
                 if search_params['t'] == 'tvsearch':
-                    search_params['tvdbid'] = ep_obj.show.indexerid
+                    search_params.update(match_indexer)
 
                     if ep_obj.show.air_by_date or ep_obj.show.sports:
                         date_str = str(ep_obj.airdate)
@@ -124,12 +128,15 @@ class NewznabProvider(NZBProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
-
                     # If its a PROPER search, need to change param to 'search' so it searches using 'q' param
                     if any(proper_string in search_string for proper_string in self.proper_strings):
                         search_params['t'] = 'search'
+
+                    logger.log('Search show using {search}'.format
+                               (search='search string: {search_string}'.format(search_string=search_string if
+                                search_params['t'] != 'tvsearch' else
+                                'indexer_id: {indexer_id}'.format(indexer_id=match_indexer))),
+                               logger.DEBUG)
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
@@ -325,6 +332,44 @@ class NewznabProvider(NZBProvider):
         if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
+
+    def _match_indexer(self):
+        """Use the indexers id and externals, and return the most optimal indexer with value.
+
+        For newznab providers we prefer to use tvdb for searches, but if this is not available for shows that have
+        been indexed using an alternative indexer, we could also try other indexers id's that are available
+        and supported by this newznab provider.
+        """
+        # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
+        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
+
+        return_mapping = {}
+
+        if not self.cap_tv_search or self.cap_tv_search == 'True':
+            # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
+            return {}
+
+        for search_type in self.cap_tv_search.split(','):
+            if search_type == 'tvdbid' and self._get_tvdb_id():
+                return_mapping['tvdbid'] = self._get_tvdb_id()
+                # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
+                if return_mapping['tvdbid']:
+                    return return_mapping
+            else:
+                # Move to the configured capability / indexer mappings. To see if we can get a match.
+                for map_indexer in map_caps:
+                    if map_caps[map_indexer] == search_type:
+                        if self.show.indexer == map_indexer:
+                            # We have a direct match on the indexer used, no need to try the externals.
+                            return_mapping[map_caps[map_indexer]] = self.show.indexerid
+                            return return_mapping
+                        elif self.show.externals.get(mappings[map_indexer]):
+                            # No direct match, let's see if one of the externals provides a valid search_type.
+                            mapped_external_indexer = self.show.externals.get(mappings[map_indexer])
+                            if mapped_external_indexer:
+                                return_mapping[map_caps[map_indexer]] = mapped_external_indexer
+
+        return return_mapping
 
     @staticmethod
     def _make_provider(config):

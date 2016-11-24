@@ -1035,6 +1035,10 @@ h1.title a {
     top: -3px;
 }
 
+#showinfo a {
+    text-decoration: none;
+}
+
 span.imdbstars {
     display: inline-block;
     vertical-align: top;

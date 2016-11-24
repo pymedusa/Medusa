@@ -22,7 +22,7 @@ import os
 import re
 
 from six import iterkeys
-from tmdb_api.tmdb_api import TMDB
+import tmdbsimple as tmdb
 from .. import app, exception_handler, helpers, logger
 from ..helper.common import replace_extension
 from ..helper.exceptions import ex
@@ -37,6 +37,7 @@ except ImportError:
     import xml.etree.ElementTree as etree
 
 # todo: Implement Fanart.tv v3 API
+
 
 class GenericMetadata(object):
     """
@@ -755,7 +756,7 @@ class GenericMetadata(object):
         else:
             if getattr(indexer_show_obj, image_type, None):
                 image_url = indexer_show_obj[image_type]
-            if not image_url:
+            if not image_url and show_obj.indexer != 4:
                 # Try and get images from TMDB
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 
@@ -915,11 +916,15 @@ class GenericMetadata(object):
                 return empty_return
 
             indexer = None
-            if showXML.find('episodeguide/url'):
+            if showXML.findtext('episodeguide/url'):
                 epg_url = showXML.findtext('episodeguide/url').lower()
                 if str(indexer_id) in epg_url:
                     if 'thetvdb.com' in epg_url:
                         indexer = 1
+                    elif 'tvmaze.com' in epg_url:
+                        indexer = 3
+                    elif 'themoviedb.org' in epg_url:
+                        indexer = 4
                     elif 'tvrage' in epg_url:
                         logger.log(u"Invalid Indexer ID (" + str(indexer_id) + "), not using metadata file because it has TVRage info", logger.WARNING)
                         return empty_return
@@ -940,7 +945,7 @@ class GenericMetadata(object):
                  'banner_thumb': None}
 
         # get TMDB configuration info
-        tmdb = TMDB(app.TMDB_API_KEY)
+        tmdb.API_KEY = app.TMDB_API_KEY
         config = tmdb.Configuration()
         response = config.info()
         base_url = response['images']['base_url']

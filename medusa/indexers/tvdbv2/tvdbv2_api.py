@@ -24,10 +24,10 @@ from requests.compat import urljoin
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
 
-from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
                                   IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from ..indexer_ui import BaseUI, ConsoleUI
 
 
 def log():
@@ -92,6 +92,7 @@ class TVDBv2(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'rating': 'contentrating',
+            'imdbId': 'imdb_id'
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
@@ -238,14 +239,23 @@ class TVDBv2(BaseIndexer):
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
-        except ApiException:
+        except ApiException as e:
             log().debug('Error trying to index the episodes')
             raise IndexerShowIncomplete(
-                'Show search returned incomplete results (cannot find complete show on TheTVDB)')
+                'Show episode search exception, '
+                'could not get any episodes. Did a {search_type} search. Exception: {ex}'.
+                format(search_type='full' if not aired_season else
+                       'season {season}'.format(season=aired_season), ex=e)
+            )
 
         if not results:
             log().debug('Series results incomplete')
-            raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+            raise IndexerShowIncomplete(
+                'Show episode search returned incomplete results, '
+                'could not get any episodes. Did a {search_type} search.'.
+                format(search_type='full' if not aired_season else
+                       'season {season}'.format(season=aired_season))
+            )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
@@ -481,6 +491,9 @@ class TVDBv2(BaseIndexer):
                     v = self.config['artwork_prefix'] % v
             self._set_show_data(sid, k, v)
 
+        # Create the externals structure
+        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self[sid], 'imdb_id', ''))})
+
         # get episode data
         if self.config['episodes_enabled']:
             self._get_episodes(sid, specials=False, aired_season=None)
@@ -499,8 +512,9 @@ class TVDBv2(BaseIndexer):
     def get_last_updated_series(self, from_time, weeks=1):
         """Retrieve a list with updated shows.
 
-        @param from_time: epoch timestamp, with the start date/time
-        @param weeks: default last update week check
+        :param from_time: epoch timestamp, with the start date/time
+        :param weeks: default last update week check
+        :returns: A list of show_id's.
         """
         total_updates = []
         updates = True
@@ -510,12 +524,7 @@ class TVDBv2(BaseIndexer):
             updates = self.updates_api.updated_query_get(from_time).data
             last_update_ts = max(x.last_updated for x in updates)
             from_time = last_update_ts
-            total_updates += updates
+            total_updates += [int(_.id) for _ in updates]
             count += 1
 
         return total_updates
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        """Return all episodes of given season."""
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]

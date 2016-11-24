@@ -19,10 +19,11 @@
 import logging
 import threading
 import time
+from app import showList, showQueueScheduler
 
 from six import text_type
 
-from . import app, db, helpers, network_timezones, ui
+from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
 from .show.show import Show
@@ -48,10 +49,23 @@ class ShowUpdater(object):
         logger.info(u'Started periodic show updates')
 
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
-        self.last_update.initialize_indexer_update(app.showList)
+        self.last_update.initialize_indexer_update(showList)
 
         # Get a list of seasons that have reached their update timer
         expired_seasons = self.last_update.expired_seasons()
+
+        # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
+        for show in showList:
+            indexer_api_params = indexerApi(show.indexer).api_params.copy()
+            t = indexerApi(show.indexer).indexer(**indexer_api_params)
+            if hasattr(t, 'get_last_updated_seasons'):
+                # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
+                last_update = self.last_update.get_last_indexer_update(indexerApi(show.indexer).name)
+
+                # Get updated seasons
+                updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                for season in updated_seasons[show.indexerid]:
+                    season_updates.append((show.indexer, show, season))
 
         for indexer in expired_seasons:
             # Set refresh to True, to force refreshing of the entire show. Making sure per-season
@@ -60,7 +74,6 @@ class ShowUpdater(object):
             # Query the indexer for changed shows, since last update
             # refresh network timezones
             # network_timezones.update_network_dict()
-
             # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
             last_update = self.last_update.get_last_indexer_update(indexerApi(indexer).name)
 
@@ -77,23 +90,32 @@ class ShowUpdater(object):
                 # Loop through the shows.
 
                 # Get the show object and check, to prevent issues further down the line.
-                show = Show.find_by_id(app.showList, indexer, show_id)
+                show = Show.find_by_id(showList, indexer, show_id)
+
                 if not show:
                     logger.warning(u'Could not get show object for indexer id: {show_id} '
                                    u'and indexer: {indexer}', show_id=show_id, indexer=indexer)
+                    continue
+
+                # Check if this indexer/show combination is already scheduled for updating.
+                # probably it was scheduled for update using the get_last_updated_seasons method.
+                if show in [_[1] for _ in season_updates]:
                     continue
 
                 if refresh:
                     # Marked as a refresh, we don't need to check on season.
                     refresh_shows.append(show)
                 else:
-                    # We know there is a season
-                    if updated_shows and show_id in [_.id for _ in updated_shows]:
+                    # These support getting a list of seasons updated per show.
+
+                    # We only know the show has been updated, so let's be smart about it, and only update those
+                    # seasons, that got back from the expired_seasons list.
+                    if updated_shows and show_id in updated_shows:
                         # Refresh this season, because it was expired AND it's in the indexer updated shows list.
                         # Meaning A change to a episode occurred. Altough we don't update all seasons. But only
                         # the expired one.
                         for season in expired_seasons[indexer][show_id]:
-                            season_updates.append((show, season))
+                            season_updates.append((indexer, show, season))
 
             # update the lastUpdate for this indexer
             self.last_update.set_last_indexer_update(indexerApi(indexer).name)
@@ -106,7 +128,7 @@ class ShowUpdater(object):
             if not show.paused:
                 logger.info(u'Full update on show: {show}', show=show.name)
                 try:
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show))
+                    pi_list.append(showQueueScheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
@@ -117,16 +139,16 @@ class ShowUpdater(object):
         # Only update expired season
         for show in season_updates:
             # If the cur_show is not 'paused' then add to the showQueueScheduler
-            if not show[0].paused:
-                logger.info(u'Updating season {season} for show: {show}.', season=show[1], show=show[0].name)
+            if not show[1].paused:
+                logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
                 try:
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show[0], season=show[1]))
+                    pi_list.append(showQueueScheduler.action.updateShow(show[1], season=show[2]))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
             else:
-                logger.info(u'Show update skipped, show: {show} is paused.', show=show[0].name)
+                logger.info(u'Show update skipped, show: {show} is paused.', show=show[1].name)
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
