@@ -3,10 +3,8 @@
 
 import base64
 
-from .... import app
-
 from .base import BaseRequestHandler
-from .... import helpers, logger, notifiers
+from .... import app, helpers, logger, notifiers
 
 
 class LoginHandler(BaseRequestHandler):
@@ -14,7 +12,7 @@ class LoginHandler(BaseRequestHandler):
 
     def set_default_headers(self):
         """Set default CORS headers."""
-        BaseRequestHandler.set_default_headers(self)
+        super(LoginHandler, self).set_default_headers()
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     def prepare(self):
@@ -33,7 +31,7 @@ class LoginHandler(BaseRequestHandler):
             if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
                 notifiers.notify_login(self.request.remote_ip)
 
-            if (username != decoded_username or password != decoded_password):
+            if username != decoded_username or password != decoded_password:
                 logger.log('User attempted a failed login to the Medusa API from IP: {ip}'.format(ip=self.request.remote_ip), logger.WARNING)
                 self.api_finish(status=401, error='Invalid credentials')
             else:

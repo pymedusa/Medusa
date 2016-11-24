@@ -1,9 +1,8 @@
 # coding=utf-8
 """Request handler for shows."""
 
-from .... import app
-
 from .base import BaseRequestHandler
+from .... import app
 from ....indexers import indexer_config
 from ....show.show import Show
 from ....show_queue import ShowQueueActions

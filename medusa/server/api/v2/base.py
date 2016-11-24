@@ -5,14 +5,11 @@ import json
 import operator
 
 from datetime import datetime
-
 from babelfish.language import Language
+from six import text_type
+from tornado.web import RequestHandler
 
 from .... import app
-
-from six import text_type
-
-from tornado.web import RequestHandler
 
 
 class BaseRequestHandler(RequestHandler):

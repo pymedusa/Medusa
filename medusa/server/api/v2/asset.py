@@ -4,9 +4,8 @@ import glob
 import mimetypes
 import os
 
-from .... import app
-
 from .base import BaseRequestHandler
+from .... import app
 
 
 class AssetHandler(BaseRequestHandler):
