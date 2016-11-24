@@ -226,7 +226,6 @@ class BTNProvider(TorrentProvider):
         # Episode
         if ep_obj.show.air_by_date or ep_obj.show.sports:
             date_str = str(ep_obj.airdate)
-
             # BTN uses dots in dates, we just search for the date since that
             # combined with the series identifier should result in just one episode
             search_params['name'] = date_str.replace('-', '.')
@@ -261,13 +260,12 @@ class BTNProvider(TorrentProvider):
 
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message[1] == 'Invalid API Key':
-                logger.log('Incorrect authentication credentials', logger.WARNING)
+                logger.log('Incorrect authentication credentials.', logger.WARNING)
             elif error.message[1] == 'Call Limit Exceeded':
-                logger.log('You have exceeded the limit of 150 calls per hour,'
-                           ' per API key which is unique to your user account', logger.WARNING)
+                logger.log('You have exceeded the limit of 150 calls per hour.', logger.WARNING)
             else:
                 logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
-                           (msg=error), logger.ERROR)
+                           (msg=error.message[1]), logger.ERROR)
             return {}
 
         except socket.timeout:
