@@ -18,6 +18,8 @@
 """Provider code for Bitsnoop."""
 from __future__ import unicode_literals
 
+import datetime
+
 import traceback
 
 from medusa import (
@@ -27,6 +29,8 @@ from medusa import (
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, try_int
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from pytimeparse import parse
 
 from requests.compat import urljoin
 
@@ -138,13 +142,22 @@ class BitSnoopProvider(TorrentProvider):
                     torrent_size = element.size.text
                     size = convert_size(torrent_size) or -1
 
+                    pubdate = self._parse_pubdate(element.find('pubDate').text) if element.find('pubDate') else None
+                    if not pubdate:
+                        pubdate_raw = element.find("description").text.split(". Added")[1][:-4]
+                        if pubdate_raw != "long":  # If it's not "Added long ago"
+                            pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw))) \
+                                if pubdate_raw else None
+                        else:
+                            pubdate = None
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

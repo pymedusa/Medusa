@@ -170,13 +170,16 @@ class HDSpaceProvider(TorrentProvider):
                     torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row.findAll('td', class_='lista', attrs={'align': 'center'})[3].get_text()
+                    pubdate = self._parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

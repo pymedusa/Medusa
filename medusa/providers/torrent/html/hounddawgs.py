@@ -181,13 +181,16 @@ class HoundDawgsProvider(TorrentProvider):
                     if torrent_size:
                         size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row.find('td', class_='nobr').find('span')['title']
+                    pubdate = self._parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

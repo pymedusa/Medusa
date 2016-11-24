@@ -161,13 +161,16 @@ class BithdtvProvider(TorrentProvider):
                     torrent_size = cells[6].get_text(' ')
                     size = convert_size(torrent_size, units=units) or -1
 
+                    pubdate_raw = cells[5].get_text(" ")
+                    pubdate = self._parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

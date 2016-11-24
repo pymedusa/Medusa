@@ -17,12 +17,15 @@
 from __future__ import unicode_literals
 
 import re
+
 from base64 import b16encode, b32decode
 from collections import defaultdict
 from datetime import datetime
 from itertools import chain
 from os.path import join
 from random import shuffle
+
+from dateutil import parser
 
 from medusa import (
     app,
@@ -557,6 +560,14 @@ class GenericProvider(object):
         If provider doesnt have _get_pubdate function this will be used
         """
         return None
+
+    def _parse_pubdate(self, pubdate):
+        """Parse pubdate into a valid timedate format."""
+        try:
+            pubdate_parsed = parser.parse(pubdate, fuzzy=True) if pubdate else None
+        except ValueError:
+            pubdate_parsed = None
+        return pubdate_parsed
 
     def _get_title_and_url(self, item):
         """Return title and url from result."""
