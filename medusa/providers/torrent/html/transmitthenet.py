@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from pytimeparse import parse
 from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -163,7 +164,7 @@ class TransmitTheNetProvider(TorrentProvider):
                         continue
 
                     size = temp_anchor['data-filesize'] or -1
-                    pubdate_raw = cells[4].find('span')['title']
+                    pubdate_raw = parse(cells[4].find('span').get_text()[:-4]) # Strip unneded trailing " ago"
                     pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
