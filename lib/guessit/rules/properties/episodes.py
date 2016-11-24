@@ -25,7 +25,7 @@ def episodes():
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     rebulk = Rebulk()
     rebulk.regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'])
@@ -66,20 +66,53 @@ def episodes():
     season_ep_markers = ["x"]
     episode_markers = ["xE", "Ex", "EP", "E", "x"]
     range_separators = ['-', '~', 'to', 'a']
-    discrete_separators = [r'\+', '&', 'and', 'et']
+    weak_discrete_separators = list(sep for sep in seps if sep not in range_separators)
+    strong_discrete_separators = ['+', '&', 'and', 'et']
+    discrete_separators = strong_discrete_separators + weak_discrete_separators
 
     def ordering_validator(match):
         """
         Validator for season list. They should be in natural order to be validated.
+
+        episode/season separated by a weak discrete separator should be consecutive, unless a strong discrete separator
+        or a range separator is present in the chain (1.3&5 is valid, but 1.3-5 is not valid and 1.3.5 is not valid)
         """
         values = match.children.to_dict(implicit=True)
         if 'season' in values and is_iterable(values['season']):
             # Season numbers must be in natural order to be validated.
-            return list(sorted(values['season'])) == values['season']
+            if not list(sorted(values['season'])) == values['season']:
+                return False
         if 'episode' in values and is_iterable(values['episode']):
             # Season numbers must be in natural order to be validated.
-            return list(sorted(values['episode'])) == values['episode']
-        return True
+            if not list(sorted(values['episode'])) == values['episode']:
+                return False
+
+        def is_consecutive(property_name):
+            """
+            Check if the property season or episode has valid consecutive values.
+            :param property_name:
+            :type property_name:
+            :return:
+            :rtype:
+            """
+            previous_match = None
+            valid = True
+            for current_match in match.children.named(property_name):
+                if previous_match:
+                    match.children.previous(current_match,
+                                            lambda m: m.name == property_name + 'Separator')
+                    separator = match.children.previous(current_match,
+                                                        lambda m: m.name == property_name + 'Separator', 0)
+                    if separator.raw not in range_separators and separator.raw in weak_discrete_separators:
+                        if not current_match.value - previous_match.value == 1:
+                            valid = False
+                    if separator.raw in strong_discrete_separators:
+                        valid = True
+                        break
+                previous_match = current_match
+            return valid
+
+        return is_consecutive('episode') and is_consecutive('season')
 
     # S01E02, 01x02, S01S02S03
     rebulk.chain(formatter={'season': int, 'episode': int},
@@ -93,26 +126,35 @@ def episodes():
         .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)@?' +
                build_or_pattern(episode_markers) + r'@?(?P<episode>\d+)',
                validate_all=True,
-               validator={'__parent__': seps_before}) \
-        .regex(r'(?:(?P<episodeSeparator>' +
-               build_or_pattern(episode_markers + discrete_separators + range_separators) + ')' +
-               r'(?P<episode>\d+))').repeater('*') \
+               validator={'__parent__': seps_before}).repeater('+') \
+        .regex(build_or_pattern(episode_markers + discrete_separators + range_separators,
+                                name='episodeSeparator',
+                                escape=True) +
+               r'(?P<episode>\d+)').repeater('*') \
         .chain() \
         .regex(r'(?P<season>\d+)@?' +
                build_or_pattern(season_ep_markers) +
                r'@?(?P<episode>\d+)',
                validate_all=True,
                validator={'__parent__': seps_before}) \
-        .regex(r'(?:(?P<episodeSeparator>' +
-               build_or_pattern(season_ep_markers + discrete_separators + range_separators) + ')' +
-               r'(?P<episode>\d+))').repeater('*') \
+        .chain() \
+        .regex(r'(?P<season>\d+)@?' +
+               build_or_pattern(season_ep_markers) +
+               r'@?(?P<episode>\d+)',
+               validate_all=True,
+               validator={'__parent__': seps_before}) \
+        .regex(build_or_pattern(season_ep_markers + discrete_separators + range_separators,
+                                name='episodeSeparator',
+                                escape=True) +
+               r'(?P<episode>\d+)').repeater('*') \
         .chain() \
         .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)',
                validate_all=True,
                validator={'__parent__': seps_before}) \
-        .regex(r'(?:(?P<seasonSeparator>' +
-               build_or_pattern(season_markers + discrete_separators + range_separators) + ')' +
-               r'(?P<season>\d+))').repeater('*')
+        .regex(build_or_pattern(season_markers + discrete_separators + range_separators,
+                                name='seasonSeparator',
+                                escape=True) +
+               r'(?P<season>\d+)').repeater('*')
 
     # episode_details property
     for episode_detail in ('Special', 'Bonus', 'Omake', 'Ova', 'Oav', 'Pilot', 'Unaired'):
@@ -142,7 +184,8 @@ def episodes():
         .defaults(validator=None) \
         .regex(build_or_pattern(season_words) + '@?(?P<season>' + numeral + ')') \
         .regex(r'' + build_or_pattern(of_words) + '@?(?P<count>' + numeral + ')').repeater('?') \
-        .regex(r'@?(?P<seasonSeparator>' + build_or_pattern(range_separators + discrete_separators + ['@']) +
+        .regex(r'@?(?P<seasonSeparator>' +
+               build_or_pattern(range_separators + discrete_separators + ['@'], escape=True) +
                r')@?(?P<season>\d+)').repeater('*')
 
     rebulk.regex(build_or_pattern(episode_words) + r'-?(?P<episode>\d+)' +

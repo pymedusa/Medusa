@@ -462,6 +462,7 @@
   subtitle_language: fr
   release_group: Y-F
   other: HD
+  video_profile: 8bit
   type: episode
 
 # anime_french_fansub (FixTitlesContainsNumber)
@@ -2431,6 +2432,7 @@
 : title: Show Name
   season: 2
   episode: 1
+  other: Multi Language
   language: [fr, en]
   subtitle_language: fr
   screen_size: 1080p
@@ -2859,7 +2861,7 @@
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
-  episode_title: eps2 0 unm4sk
+  episode_title: eps2
   part: 1
   screen_size: 1080p
   format: WEB-DL
@@ -3113,7 +3115,7 @@
 : title: Show Name
   season: 2
   episode: 1
-  episode_title: eps2 0 title
+  episode_title: eps2
   part: 1 # not a big issue
   screen_size: 1080p
   format: WEB-DL
@@ -3180,7 +3182,7 @@
 : title: Show Name
   season: 2
   episode: 6
-  episode_title: eps2 4 m4ster-s1ave aes
+  episode_title: eps2
   screen_size: 1080p
   format: WEBRip
   streaming_service: Amazon Prime

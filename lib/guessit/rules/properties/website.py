@@ -57,9 +57,15 @@ def website():
         def when(self, matches, context):
             to_remove = []
             for website_match in matches.named('website'):
-                suffix = matches.next(website_match, PreferTitleOverWebsite.valid_followers, 0)
-                if suffix:
-                    to_remove.append(website_match)
+                safe = False
+                for safe_start in safe_subdomains + safe_prefix:
+                    if website_match.value.lower().startswith(safe_start):
+                        safe = True
+                        break
+                if not safe:
+                    suffix = matches.next(website_match, PreferTitleOverWebsite.valid_followers, 0)
+                    if suffix:
+                        to_remove.append(website_match)
             return to_remove
 
     rebulk.rules(PreferTitleOverWebsite)

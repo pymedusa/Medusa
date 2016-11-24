@@ -1503,9 +1503,8 @@
 ? '[Kaerizaki-Fansub] One Piece 603 VOSTFR PS VITA (960x544) V2.mp4'
 : options: -E
   episode: 603
-  release_group:
-    - Kaerizaki-Fansub
-    - PS VITA
+  release_group: Kaerizaki-Fansub
+  other: PS Vita
   screen_size: 960x544
   title: One Piece
   subtitle_language: fr
@@ -2003,7 +2002,7 @@
   other: Complete
   release_group: AR
   title: How I Met Your Mother
-  type: movie
+  type: movie # Should be episode
   video_codec: XviD
 
 ? Show Name The Complete Seasons 1 to 5 720p BluRay x265 HEVC-SUJAIDR[UTR]
@@ -2046,3 +2045,149 @@
   title: Game Of Thrones
   type: episode
   video_codec: h264
+
+? Marvels.Daredevil.S02E04.WEBRip.x264-NF69.mkv
+: container: mkv
+  episode: 4
+  format: WEBRip
+  release_group: NF69
+  season: 2
+  title: Marvels Daredevil
+  type: episode
+  video_codec: h264
+
+? The.Walking.Dead.S06E01.FRENCH.1080p.WEB-DL.DD5.1.HEVC.x265-GOLF68
+: audio_channels: '5.1'
+  audio_codec: DolbyDigital
+  episode: 1
+  format: WEB-DL
+  language: fr
+  release_group: GOLF68
+  screen_size: 1080p
+  season: 6
+  title: The Walking Dead
+  type: episode
+  video_codec: h265
+
+? American.Crime.S01E03.FASTSUB.VOSTFR.720p.HDTV.x264-F4ST
+: episode: 3
+  format: HDTV
+  other: Fastsub
+  release_group: F4ST
+  screen_size: 720p
+  season: 1
+  subtitle_language: fr
+  title: American Crime
+  type: episode
+  video_codec: h264
+
+? Gotham.S02E12.FASTSUB.VOSTFR.HDTV.X264-F4ST3R
+: episode: 12
+  format: HDTV
+  other: Fastsub
+  release_group: F4ST3R
+  season: 2
+  subtitle_language: fr
+  title: Gotham
+  type: episode
+  video_codec: h264
+
+# WEBRip + LD
+? Australian.Story.2016.05.23.Into.The.Fog.of.War.Part.1.360p.LDTV.WEBRIP.[MPup]
+: title: Australian Story
+  date: 2016-05-23
+  episode_title: Into The Fog of War
+  part: 1
+  screen_size: 360p
+  other: LD
+  format: WEBRip
+  release_group: MPup
+  type: episode
+
+# AHDTV
+? Show.Name.S04E06.FRENCH.AHDTV.XviD
+: title: Show Name
+  season: 4
+  episode: 6
+  language: fr
+  format: AHDTV
+  video_codec: XviD
+  type: episode
+
+# WEBDLRip
+? Show.Name.s06e14.WEBDLRip.-qqss44.avi
+: title: Show Name
+  season: 6
+  episode: 14
+  format: WEBRip
+  release_group: qqss44
+  container: avi
+  mimetype: video/x-msvideo
+  type: episode
+
+# WEBCap
+? Steven.Universe.S03E06.Steven.Floats.720p.WEBCap.x264-SRS
+: title: Steven Universe
+  season: 3
+  episode: 6
+  episode_title: Steven Floats
+  screen_size: 720p
+  format: WEBRip
+  video_codec: h264
+  release_group: SRS
+  type: episode
+
+# DSR
+? Show.Name.S05E09.Some.Episode.Title.WS.DSR.x264-[NY2]
+: title: Show Name
+  season: 5
+  episode: 9
+  episode_title: Some Episode Title
+  other: WideScreen
+  format: SATRip
+  video_codec: h264
+  release_group: NY2
+  type: episode
+
+# DSRip
+? Squidbillies.S04E05.WS.DSRip.XviD-aAF
+: title: Squidbillies
+  season: 4
+  episode: 5
+  other: WideScreen
+  format: SATRip
+  video_codec: XviD
+  release_group: aAF
+  type: episode
+
+
+? /series/The.B*.B*.T*.S10E01.1080p.HDTV.X264-DIMENSION[rarbg]/The.B*.B*.T*.S10E01.1080p.HDTV.X264-DIMENSION.mkv
+: container: mkv
+  episode: 1
+  format: HDTV
+  mimetype: video/x-matroska
+  release_group: DIMENSION[rarbg]
+  screen_size: 1080p
+  season: 10
+  title: The B B T
+  type: episode
+  video_codec: h264
+
+? '[Y-F] Very long Show Name Here - 03 Vostfr HD 8bits'
+: release_group: Y-F
+  title: Very long Show Name Here
+  episode: 3
+  subtitle_language: fr
+  other: HD
+  video_profile: 8bit
+  type: episode
+
+? '[.www.site.com.].-.Snooze.and.Go.Sleep.S03E02.1080p.HEVC.x265-MeGusta'
+: episode: 2
+  release_group: MeGusta
+  screen_size: 1080p
+  season: 3
+  title: Snooze and Go Sleep
+  type: episode
+  video_codec: h265
+  website: www.site.com

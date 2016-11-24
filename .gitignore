@@ -29,6 +29,8 @@ server.key
 ######################
 *.py[cod]
 
+venv
+
 #  IDE specific      #
 ######################
 *.bak
