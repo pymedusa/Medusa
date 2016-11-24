@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-"""Contains included user interface for TVmaze show selection"""
+"""Contains included user interface for TVmaze show selection."""
 
 import logging
 import warnings
@@ -27,13 +27,15 @@ __version__ = '1.0'
 
 
 def log():
+    """Log Initiator."""
     return logging.getLogger(__name__)
 
 
 class BaseUI(object):
-    """Default non-interactive UI, which auto-selects first results
-    """
+    """Default non-interactive UI, which auto-selects first results."""
+
     def __init__(self, config, enable_logging=None):
+        """BaseUI Constructor."""
         self.config = config
         if enable_logging is not None:
             warnings.warn("the UI's log parameter is deprecated, instead use\n"
@@ -42,16 +44,15 @@ class BaseUI(object):
             self.log = logging.getLogger(__name__)
 
     def select_series(self, all_series):
+        """Select series."""
         return all_series[0]
 
 
 class ConsoleUI(BaseUI):
-    """Interactively allows the user to select a show from a console based UI
-    """
+    """Interactively allows the user to select a show from a console based UI."""
 
     def _display_series(self, all_series, limit=6):
-        """Helper function, lists series with corresponding ID
-        """
+        """Helper function, lists series with corresponding ID."""
         if limit is not None:
             toshow = all_series[:limit]
         else:
@@ -76,6 +77,7 @@ class ConsoleUI(BaseUI):
             )
 
     def select_series(self, all_series):
+        """Select Series."""
         self._display_series(all_series)
 
         if len(all_series) == 1:

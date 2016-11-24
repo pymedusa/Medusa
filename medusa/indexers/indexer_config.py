@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
-from .tmdb.tmdb import Tmdb
 from .. import helpers
 
 initConfig = {

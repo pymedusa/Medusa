@@ -33,7 +33,7 @@ from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
 from ...helper.encoding import ss
-from ...indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE, INDEXER_TMDB, mappings
+from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
 
 class NewznabProvider(NZBProvider):
@@ -338,7 +338,8 @@ class NewznabProvider(NZBProvider):
 
         For newznab providers we prefer to use tvdb for searches, but if this is not available for shows that have
         been indexed using an alternative indexer, we could also try other indexers id's that are available
-        and supported by this newznab provider."""
+        and supported by this newznab provider.
+        """
         # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
         map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
 

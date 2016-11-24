@@ -25,8 +25,8 @@ import re
 import tempfile
 import time
 
-import requests
 import warnings
+import requests
 from six import iteritems
 from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerSeasonNotFound,
                                  IndexerSeasonUpdatesNotSupported, IndexerShowNotFound)

@@ -265,12 +265,10 @@ def _get_custom_exceptions():
                     custom_exceptions[indexer] = {}
 
                 for indexer_id in jdata[indexerApi(indexer).config['xem_origin']]:
-                    alias_list = [
-                        {scene_exception: int(scene_season)}
-                        for scene_season in jdata[indexerApi(indexer).config['xem_origin']][indexer_id]
-                        for scene_exception in jdata[indexerApi(indexer).config
-                        ['xem_origin']][indexer_id][scene_season]
-                        ]
+                    alias_list = [{scene_exception: int(scene_season)}
+                                  for scene_season in jdata[indexerApi(indexer).config['xem_origin']][indexer_id]
+                                  for scene_exception in jdata[indexerApi(indexer).config
+                                  ['xem_origin']][indexer_id][scene_season]]
                     custom_exceptions[indexer][indexer_id] = alias_list
             except Exception as error:
                 logger.log('Unable to update scene exceptions for {0}. Error: {1}'.format

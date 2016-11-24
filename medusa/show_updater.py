@@ -19,11 +19,11 @@
 import logging
 import threading
 import time
+from app import showList, showQueueScheduler
 
 from six import text_type
 
 from . import db, helpers, network_timezones, ui
-from app import showList, showQueueScheduler
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
 from .show.show import Show

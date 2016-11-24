@@ -245,7 +245,7 @@ class TVDBv2(BaseIndexer):
                 'Show episode search exception, '
                 'could not get any episodes. Did a {search_type} search. Exception: {ex}'.
                 format(search_type='full' if not aired_season else
-                       'season {season}'.format(aired_season), ex=e)
+                       'season {season}'.format(season=aired_season), ex=e)
             )
 
         if not results:
@@ -254,7 +254,7 @@ class TVDBv2(BaseIndexer):
                 'Show episode search returned incomplete results, '
                 'could not get any episodes. Did a {search_type} search.'.
                 format(search_type='full' if not aired_season else
-                       'season {season}'.format(aired_season))
+                       'season {season}'.format(season=aired_season))
             )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')

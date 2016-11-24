@@ -18,30 +18,31 @@
 
 from __future__ import unicode_literals
 
-from dateutil import parser
-from datetime import datetime, timedelta
-from ...app import TMDB_API_KEY
-from collections import OrderedDict
 import logging
-
+from collections import OrderedDict
+from datetime import datetime, timedelta
+from dateutil import parser
 import tmdbsimple as tmdb
-
-from ..indexer_base import (BaseIndexer, Actors, Actor)
+from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete
+from ...app import TMDB_API_KEY
 
 
 def log():
+    """Log Init."""
     return logging.getLogger('tmdb')
 
 
 class Tmdb(BaseIndexer):
-    """Create easy-to-use interface to name of season/episode name
+    """Create easy-to-use interface to name of season/episode name.
+
     >>> t = tmdb()
     >>> t['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
+        """Tmdb api constructor."""
         super(Tmdb, self).__init__(*args, **kwargs)
 
         self.tmdb = tmdb
@@ -90,8 +91,7 @@ class Tmdb(BaseIndexer):
 
     @staticmethod
     def _map_results(tmdb_response, key_mappings=None, list_separator='|'):
-        """
-        Map results to a a key_mapping dict.
+        """Map results to a a key_mapping dict.
 
         :type tmdb_response: object
         """
@@ -148,8 +148,8 @@ class Tmdb(BaseIndexer):
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
     def _show_search(self, show, request_language='en'):
-        """
-        Uses the TMDB API to search for a show
+        """Use TMDB API to search for a show.
+
         :param show: The show name that's searched for as a string
         :param request_language: Language in two letter code. TMDB fallsback to en itself.
         :return: A list of Show objects.
@@ -176,7 +176,7 @@ class Tmdb(BaseIndexer):
 
     # Tvdb implementation
     def search(self, series):
-        """This searches tmdb.com for the series name
+        """Search tmdb.com for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -194,13 +194,11 @@ class Tmdb(BaseIndexer):
         return OrderedDict({'series': mapped_results})['series']
 
     def _get_show_by_id(self, tmdb_id, request_language='en'):  # pylint: disable=unused-argument
-        """
-        Retrieve tmdb show information by tmdb id, or if no tmdb id provided by passed external id.
+        """Retrieve tmdb show information by tmdb id, or if no tmdb id provided by passed external id.
 
         :param tmdb_id: The shows tmdb id
         :return: An ordered dict with the show searched for.
         """
-
         if tmdb_id:
             log().debug('Getting all show data for %s', [tmdb_id])
             results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
@@ -213,8 +211,7 @@ class Tmdb(BaseIndexer):
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
-        """
-        Get all the episodes for a show by tmdb id
+        """Get all the episodes for a show by tmdb id.
 
         :param tmdb_id: Series tmdb id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
@@ -285,11 +282,10 @@ class Tmdb(BaseIndexer):
                 self._set_item(tmdb_id, seas_no, ep_no, k, v)
 
     def _parse_images(self, sid):
-        """Parses images XML, from
+        """Parse images.
+
         http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
-
         images are retrieved using t['show name]['_banners'], for example:
-
         >>> t = TMDB(images = True)
         >>> t['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
@@ -359,11 +355,10 @@ class Tmdb(BaseIndexer):
         self._set_show_data(sid, '_banners', _images)
 
     def _parse_actors(self, sid):
-        """Parsers actors XML, from
-        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        """Parse actors XML.
 
+        From http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
         Actors are retrieved using t['show name]['_actors'], for example:
-
         >>> t = TMDB(actors = True)
         >>> actors = t['scrubs']['_actors']
         >>> type(actors)
@@ -406,11 +401,11 @@ class Tmdb(BaseIndexer):
         self._set_show_data(sid, '_actors', cur_actors)
 
     def _get_show_data(self, sid, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the TheTMDB json response
+        """Take a series ID, gets the epInfo URL and parses the TheTMDB json response.
+
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
-
         if self.config['language'] is None:
             log().debug('Config language is none, using show language')
             if language is None:
@@ -469,7 +464,8 @@ class Tmdb(BaseIndexer):
         return True
 
     def _get_series_season_updates(self, sid, start_date=None, end_date=None):
-        """"Retrieve all updates (show,season,episode) from TMDB
+        """"Retrieve all updates (show,season,episode) from TMDB.
+
         :returns: A list of updated seasons for a show id.
         """
         results = []
@@ -486,7 +482,7 @@ class Tmdb(BaseIndexer):
         return set(results)
 
     def _get_all_updates(self, sid, start_date=None, end_date=None):
-        """"Retrieve all updates (show,season,episode) from TMDB"""
+        """"Retrieve all updates (show,season,episode) from TMDB."""
         results = []
         page = 1
         total_pages = 1
@@ -502,7 +498,7 @@ class Tmdb(BaseIndexer):
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
-        """Retrieve a list with updated shows
+        """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
         :param weeks: number of weeks to get updates for.
@@ -533,7 +529,7 @@ class Tmdb(BaseIndexer):
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_seasons(self, show_list, from_time, weeks=1):
-        """Retrieve a list with updated shows
+        """Retrieve a list with updated shows.
 
         :param show_list: The list of shows, where seasons updates are retrieved for.
         :param from_time: epoch timestamp, with the start date/time

@@ -18,15 +18,15 @@
 
 from __future__ import unicode_literals
 
-from time import time
-from collections import OrderedDict
 import logging
+from collections import OrderedDict
+from time import time
 
 from pytvmaze import API
-from pytvmaze.exceptions import ShowNotFound, CastNotFound, EpisodeNotFound, UpdateNotFound
+from pytvmaze.exceptions import CastNotFound, EpisodeNotFound, ShowNotFound, UpdateNotFound
 
-from ..indexer_base import (BaseIndexer, Actors, Actor)
-from ..indexer_exceptions import IndexerError, IndexerShowNotFound, IndexerException
+from ..indexer_base import (Actor, Actors, BaseIndexer)
+from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowNotFound
 
 
 def log():

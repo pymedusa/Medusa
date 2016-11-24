@@ -2,8 +2,8 @@
 """Request handler for shows."""
 
 from .base import BaseRequestHandler
-from ....indexers.indexer_config import indexerConfig
 from .... import app
+from ....indexers.indexer_config import indexerConfig
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
 
