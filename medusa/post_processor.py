@@ -1183,7 +1183,8 @@ class PostProcessor(object):
                 self._moveAndSymlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                                      app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
-                logger.log(u' "{0}" is an unknown file processing method. Please correct your app\'s usage of the api.'.format(self.process_method), logger.WARNING)
+                logger.log(u' "{0}" is an unknown file processing method. '
+                           u'Please correct your app\'s usage of the api.'.format(self.process_method), logger.WARNING)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
         except (OSError, IOError):
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
