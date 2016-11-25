@@ -1693,7 +1693,7 @@ class TVShow(TVObject):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        indexer_name = indexerConfig[self.indexer].name
+        indexer_name = indexerConfig[self.indexer]['name']
         result = OrderedDict([
             ('id', OrderedDict([
                 (indexer_name, self.indexerid),
@@ -2589,7 +2589,7 @@ class TVEpisode(TVObject):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        indexer_name = indexerConfig[self.indexer].name
+        indexer_name = indexerConfig[self.indexer]['name']
         data = OrderedDict([
             ('identifier', self.identifier),
             ('id', OrderedDict([
