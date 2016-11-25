@@ -22,7 +22,9 @@ import socket
 import time
 
 import jsonrpclib
+
 from six import itervalues
+
 from ..torrent_provider import TorrentProvider
 from .... import app, logger, scene_exceptions, tv_cache
 from ....common import cpu_presets

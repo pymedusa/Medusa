@@ -22,8 +22,10 @@ import time
 import traceback
 
 from operator import itemgetter
+
 from requests.auth import AuthBase
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....common import USER_AGENT

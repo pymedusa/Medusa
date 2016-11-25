@@ -21,6 +21,7 @@ import json
 import traceback
 
 from requests.compat import urlencode, urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int

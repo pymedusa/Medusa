@@ -21,8 +21,10 @@ from __future__ import unicode_literals
 import traceback
 
 from dateutil import parser
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser

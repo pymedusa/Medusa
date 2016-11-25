@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import re
 
 from requests.compat import urljoin
+
 from .nzb_provider import NZBProvider
 from ... import logger, tv_cache
 
