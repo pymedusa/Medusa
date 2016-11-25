@@ -509,11 +509,12 @@ class TVDBv2(BaseIndexer):
         return True
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1):
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
-        :param weeks: default last update week check
+        :param weeks: number of weeks to get updates for.
+        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         :returns: A list of show_id's.
         """
         total_updates = []
