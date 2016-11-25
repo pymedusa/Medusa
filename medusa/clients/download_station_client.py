@@ -189,7 +189,7 @@ class DownloadStationAPI(GenericClient):
             jdata = self.response.json()
             version_string = jdata.get('data', {}).get('version_string')
             if not version_string:
-                logger.log('Could not get the version string from DSM: {response}'.format
+                logger.warning('Could not get the version string from DSM: {response}'.format
                            (response=jdata))
                 return False
 
