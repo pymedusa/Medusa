@@ -42,6 +42,8 @@ class GenericQueue(object):
 
         self.lock = threading.Lock()
 
+        self.amActive = False
+
     def pause(self):
         """Pauses this queue"""
         logger.log(u"Pausing queue")

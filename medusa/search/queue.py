@@ -44,6 +44,7 @@ class SearchQueue(generic_queue.GenericQueue):
     def __init__(self):
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SEARCHQUEUE"
+        self.force = False
 
     def is_in_queue(self, show, segment):
         for cur_item in self.queue:
