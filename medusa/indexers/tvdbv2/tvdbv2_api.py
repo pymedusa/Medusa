@@ -528,4 +528,11 @@ class TVDBv2(BaseIndexer):
             total_updates += [int(_.id) for _ in updates]
             count += 1
 
+        if total_updates and filter_show_list:
+            new_list = []
+            for show in filter_show_list:
+                if show.indexerid in total_updates:
+                    new_list.append(show.indexerid)
+            total_updates = new_list
+
         return total_updates
