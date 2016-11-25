@@ -1119,7 +1119,7 @@ class TVShow(TVObject):
                         cur_ep.status = Quality.compositeStatus(new_status, new_quality)
                         logger.log(u'{0}: We have an associated file, '
                                    u'so setting the status from {1} to DOWNLOADED/{2}'.format
-                                   (self.indexerid, old_ep_status, cur_ep.status, logger.DEBUG))
+                                   (self.indexerid, old_ep_status, cur_ep.status), logger.DEBUG)
 
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
