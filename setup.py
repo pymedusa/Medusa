@@ -14,7 +14,7 @@ setup(
     description="Automatic Video Library Manager for TV Shows",
     long_description=long_description,
     packages=find_packages(),
-    install_requires=['six', 'profilehooks', 'contextlib2', ],
+    install_requires=['six', 'profilehooks', 'contextlib2', 'gi', ],
     test_suite="tests",
     tests_require=[
         'coveralls',
