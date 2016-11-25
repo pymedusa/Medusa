@@ -26,15 +26,19 @@ import stat
 import threading
 import time
 import traceback
+
 from collections import OrderedDict, namedtuple
 from itertools import groupby
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
+
 import knowit
+
 import shutil_custom
 
 from six import text_type
+
 from . import app, db, helpers, image_cache, logger, network_timezones, notifiers, post_processor, subtitles
 from .black_and_white_list import BlackAndWhiteList
 from .common import (
@@ -69,7 +73,8 @@ except ImportError:
 try:
     from send2trash import send2trash
 except ImportError:
-    pass
+    app.TRASH_REMOVE_SHOW = 0
+
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -323,13 +328,14 @@ class TVShow(TVObject):
     def get_all_seasons(self, last_airdate=False):
         """Retrieve a dictionary of seasons with the number of episodes, using the episodes table.
 
-        :param last_airdate: Option to pass the airdate of the last aired episode for the season in stead of the number of episodes
+        :param last_airdate: Option to pass the airdate of the last aired episode for the season in stead of the number
+        of episodes
         :type last_airdate: bool
         :return:
         :rtype: dictionary of seasons (int) and count(episodes) (int)
         """
-        sql_selection = b"select season, {summarize} as number_of_episodes from tv_episodes where showid = ? group by season". \
-            format(summarize=b'count(*)' if not last_airdate else b'max(airdate)')
+        sql_selection = b'SELECT season, {0} AS number_of_episodes FROM tv_episodes ' \
+                        b'WHERE showid = ? GROUP BY season'.format(b'count(*)' if not last_airdate else b'max(airdate)')
         main_db_con = db.DBConnection()
         results = main_db_con.select(sql_selection, [self.indexerid])
 
@@ -435,7 +441,9 @@ class TVShow(TVObject):
             sql = None
             sql_args = None
             if self.is_anime and absolute_number:
-                sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND absolute_number = ? AND season != 0'
+                sql = b'SELECT season, episode ' \
+                      b'FROM tv_episodes ' \
+                      b'WHERE showid = ? AND absolute_number = ? AND season != 0'
                 sql_args = [self.indexerid, absolute_number]
                 logger.log(u'{id}: Season and episode lookup for {show} using absolute number {absolute}'.
                            format(id=self.indexerid, absolute=absolute_number, show=self.name), logger.DEBUG)
@@ -523,7 +531,7 @@ class TVShow(TVObject):
                         season=season), logger.DEBUG)
 
             cache_db = db.DBConnection('cache.db')
-            sql = b'DELETE FROM indexer_update WHERE indexer = ? indexer_id = ? AND season = ?'
+            sql = b'DELETE FROM indexer_update WHERE indexer = ? AND indexer_id = ? AND season = ?'
             cache_db.action(sql, [self.indexer, self.indexerid, season])
 
     def should_update(self, update_date=datetime.date.today()):
@@ -1426,7 +1434,7 @@ class TVShow(TVObject):
                                (id=self.indexerid, location=self.location), logger.DEBUG)
                     try:
                         os.chmod(self.location, stat.S_IWRITE)
-                    except Exception:
+                    except OSError:
                         logger.log(u'{id}: Unable to change permissions of {location}'.format
                                    (id=self.indexerid, location=self.location), logger.WARNING)
 
@@ -1561,12 +1569,8 @@ class TVShow(TVObject):
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-    def download_subtitles(self, force=False):
-        """Download subtitles.
-
-        :param force:
-        :type force: bool
-        """
+    def download_subtitles(self):
+        """Download subtitles."""
         if not self.is_location_valid():
             logger.log(u"{id}: Show {show} location doesn't exist, can't download subtitles".format
                        (id=self.indexerid, show=self.name), logger.WARNING)
@@ -1582,7 +1586,7 @@ class TVShow(TVObject):
                 return
 
             for episode in episodes:
-                episode.download_subtitles(force=force)
+                episode.download_subtitles()
 
         except Exception:
             logger.log(u'{id}: Error occurred when downloading subtitles for show {show}'.format
@@ -2106,11 +2110,9 @@ class TVEpisode(TVObject):
             logger.log(u'{id}: Saving subtitles changes to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.save_to_db()
 
-    def download_subtitles(self, force=False, lang=None):
+    def download_subtitles(self, lang=None):
         """Download subtitles.
 
-        :param force:
-        :type force: bool
         :param lang:
         :type lang: string
         """
@@ -3413,8 +3415,6 @@ class TVEpisode(TVObject):
                 os.path.getmtime(self.location)).replace(tzinfo=network_timezones.app_timezone)
 
             if filemtime != airdatetime:
-                import time
-
                 airdatetime = airdatetime.timetuple()
                 logger.log(u"{id}: About to modify date of '{location}' to show air date {air_date}".format
                            (id=self.show.indexerid, location=self.location,
