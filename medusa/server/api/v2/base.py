@@ -1,7 +1,6 @@
 # coding=utf-8
 """Base module for request handlers."""
 
-import base64
 import json
 import operator
 
@@ -17,20 +16,21 @@ class BaseRequestHandler(RequestHandler):
     """A base class used for shared RequestHandler methods."""
 
     def prepare(self):
-        """Prepare request headers with authorization keys."""
-        web_username = app.WEB_USERNAME
-        web_password = app.WEB_PASSWORD
-        api_key = self.get_argument('api_key', default='')
-        api_username = ''
-        api_password = ''
+        """Check if API key is provided and valid."""
+        if self.request.method != 'OPTIONS':
+            if app.API_KEY not in (self.get_argument('api_key', default=''), self.request.headers.get('X-Api-Key')):
+                self.api_finish(status=401, error='Invalid API key')
 
-        if self.request.headers.get('Authorization'):
-            auth_header = self.request.headers.get('Authorization')
-            auth_decoded = base64.decodestring(auth_header[6:])
-            api_username, api_password = auth_decoded.split(':', 2)
+    def options(self, *args, **kwargs):
+        """Options."""
+        self.set_status(204)
+        self.finish()
 
-        if (web_username != api_username and web_password != api_password) and (app.API_KEY != api_key):
-            self.api_finish(status=401, error='Invalid API key')
+    def set_default_headers(self):
+        """Set default CORS headers."""
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Api-Key')
+        self.set_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
 
     def api_finish(self, status=None, error=None, data=None, headers=None, **kwargs):
         """End the api request writing error or data to http response."""
@@ -45,6 +45,7 @@ class BaseRequestHandler(RequestHandler):
         else:
             self.set_status(status or 200)
             if data is not None:
+                self.set_header('Content-Type', 'application/json; charset=UTF-8')
                 self.finish(json.JSONEncoder(default=json_string_encoder).encode(data))
             elif kwargs:
                 self.finish(kwargs)
@@ -101,6 +102,14 @@ class BaseRequestHandler(RequestHandler):
         :return:
         """
         return BaseRequestHandler._parse(value, lambda d: datetime.strptime(d, fmt))
+
+
+class NotFoundHandler(BaseRequestHandler):
+    """A class used for the API v2 404 page."""
+
+    def get(self, *args, **kwargs):
+        """Get."""
+        self.api_finish(status=404)
 
 
 def json_string_encoder(o):

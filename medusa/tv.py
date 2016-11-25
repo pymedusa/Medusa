@@ -27,6 +27,7 @@ import threading
 import time
 import traceback
 from collections import OrderedDict, namedtuple
+from itertools import groupby
 
 from imdb import imdb
 from imdb._exceptions import IMDbDataAccessError, IMDbParserError
@@ -1744,7 +1745,7 @@ class TVShow(TVObject):
                         ('requiredWords', [v for v in (self.rls_require_words or '').split(',') if v]),
                     ])),
                 ])),
-                ('episodes', OrderedDict([])),
+                ('seasons', OrderedDict([])),
             ]))
 
             if 'rating' in self.imdb_info and 'votes' in self.imdb_info:
@@ -1758,8 +1759,9 @@ class TVShow(TVObject):
                 result['cache']['banner'] = cache.banner_path(self.indexerid)
 
             episodes = self.get_all_episodes()
-            result['seasons'] = sorted(list(set([e.season for e in episodes])))
-            result['episodes'] = sorted(list(set([e.identifier for e in episodes])))
+            result['seasons'] = OrderedDict((k, list(v)) for k, v in groupby([ep.to_json() for ep in episodes],
+                                                                             lambda item: item['season']))
+            result['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
                 result['year']['end'] = last_episode.airdate.year
