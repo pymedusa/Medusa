@@ -1,9 +1,8 @@
 # coding=utf-8
 """Request handler for shows."""
-
 from .base import BaseRequestHandler
 from .... import app
-from ....indexers.indexer_config import indexerConfig
+from ....indexers.indexer_config import indexerConfig, reverse_mappings
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
 
@@ -46,7 +45,8 @@ class ShowHandler(BaseRequestHandler):
         :param query:
         """
         # @TODO: This should be completely replaced with show_id
-        show_indexer = indexerConfig[show_indexer].name if show_indexer else None
+        indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
+        show_indexer = indexer_cfg['id'] if indexer_cfg else None
         indexerid = self._parse(show_id)
         season = self._parse(season)
         episode = self._parse(episode)
