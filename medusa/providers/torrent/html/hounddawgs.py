@@ -22,7 +22,9 @@ import re
 import traceback
 
 from requests.compat import urljoin
+
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -107,14 +109,10 @@ class HoundDawgsProvider(TorrentProvider):
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-
-                str_table_start = "<table class='torrent_table"
-                start_table_index = response.text.find(str_table_start)
-                data = response.text[start_table_index:]
-                if not data:
+                if not response.text:
                     continue
 
-                results += self.parse(data, mode)
+                results += self.parse(response.text, mode)
 
         return results
 
