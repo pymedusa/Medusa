@@ -1226,6 +1226,7 @@ def prepare_cf_req(session, request):
             request.headers.update({u'User-Agent': user_agent})
         else:
             request.headers = {u'User-Agent': user_agent}
+        logger.debug(u'CloudFlare protection successfully bypassed.')
         return session.prepare_request(request)
     except (ValueError, AttributeError) as error:
         logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
