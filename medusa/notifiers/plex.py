@@ -139,7 +139,7 @@ class Notifier(object):
 
         for cur_host in host_list:
 
-            url = 'http{0}://{1}/library/sections'.format(('', 's')[app.PLEX_SERVER_HTTPS], cur_host)
+            url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
                 xml_response = getURL(url, headers=self.headers, session=self.session, returns='text')
                 if not xml_response:
@@ -198,7 +198,7 @@ class Notifier(object):
         hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
         for section_key, cur_host in iteritems(hosts_try):
 
-            url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[app.PLEX_SERVER_HTTPS], cur_host, section_key)
+            url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
             try:
                 getURL(url, headers=self.headers, session=self.session, returns='text')
             except Exception as error:
