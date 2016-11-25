@@ -36,8 +36,8 @@ def log():
 class Tmdb(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
-    >>> t = tmdb()
-    >>> t['Scrubs'][1][24]['episodename']
+    t = tmdb()
+    t['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
