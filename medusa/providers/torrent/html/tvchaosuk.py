@@ -229,7 +229,7 @@ class TVChaosUKProvider(TorrentProvider):
 
         raise AuthException('Your authentication credentials for {0} are missing,'
                             ' check your config.'.format(self.name))
-    
+
     def get_full_title(self, title):
         # Strip trailing 3 dots
         title = title[:-3]
