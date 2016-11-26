@@ -45,6 +45,7 @@ class TVChaosUKProvider(TorrentProvider):
             'login': urljoin(self.url, 'takelogin.php'),
             'index': urljoin(self.url, 'index.php'),
             'search': urljoin(self.url, 'browse.php'),
+            'query': urljoin(self.url, 'scripts/autocomplete/query.php'),
         }
 
         # Proper Strings
@@ -143,6 +144,8 @@ class TVChaosUKProvider(TorrentProvider):
 
                     title = row.find(class_='tooltip-content')
                     title = title.div.get_text(strip=True) if title else None
+                    if title.endswith("..."):
+                        title = self.get_full_title(title)
                     download_url = row.find(title='Click to Download this Torrent!')
                     download_url = download_url.parent['href'] if download_url else None
                     if not all([title, download_url]):
@@ -226,6 +229,17 @@ class TVChaosUKProvider(TorrentProvider):
 
         raise AuthException('Your authentication credentials for {0} are missing,'
                             ' check your config.'.format(self.name))
+    
+    def get_full_title(self, title):
+        # Strip trailing 3 dots
+        title = title[:-3]
+        search_params = {'input': title}
+        result = self.get_url(self.urls['query'], params=search_params, returns='response')
+        with BS4Parser(result.text, 'html5lib') as html:
+            titles = html('results')
+            for item in titles:
+                title = item.text
+        return title
 
 
 provider = TVChaosUKProvider()
