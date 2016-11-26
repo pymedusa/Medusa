@@ -144,12 +144,13 @@ class TVChaosUKProvider(TorrentProvider):
 
                     title = row.find(class_='tooltip-content')
                     title = title.div.get_text(strip=True) if title else None
-                    if title.endswith("..."):
-                        title = self.get_full_title(title)
                     download_url = row.find(title='Click to Download this Torrent!')
                     download_url = download_url.parent['href'] if download_url else None
                     if not all([title, download_url]):
                         continue
+
+                    if title.endswith('...'):
+                        title = self.get_full_title(title)
 
                     seeders = try_int(row.find(title='Seeders').get_text(strip=True))
                     leechers = try_int(row.find(title='Leechers').get_text(strip=True))
