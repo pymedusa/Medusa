@@ -63,6 +63,8 @@ class NewznabProvider(NZBProvider):
 
         self.cat_ids = cat_ids if cat_ids else '5030,5040'
 
+        self.torznab = False
+
         self.default = False
 
         self.caps = False

@@ -46,6 +46,7 @@ class BacklogSearcher(object):
         self.amActive = False
         self.amPaused = False
         self.amWaiting = False
+        self.currentSearchInfo = {}
 
         self._resetPI()
 
@@ -183,7 +184,7 @@ class BacklogSearcher(object):
         if not sql_results:
             main_db_con.action("INSERT INTO info (last_backlog, last_indexer) VALUES (?,?)", [str(when), 0])
         else:
-            main_db_con.action("UPDATE info SET last_backlog=" + str(when))
+            main_db_con.action("UPDATE info SET last_backlog={0}".format(when))
 
     def run(self, force=False):
         try:
