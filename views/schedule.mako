@@ -85,7 +85,7 @@
 <%
     cur_indexer = int(cur_result['indexer'])
     run_time = cur_result['runtime']
-    if int(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
+    if bool(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
         continue
     cur_ep_airdate = cur_result['localtime'].date()
     if run_time:
@@ -110,7 +110,7 @@
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
             <td class="tvShow" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
-% if int(cur_result['paused']):
+% if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
             </td>
@@ -173,7 +173,7 @@
 % for cur_result in results:
 <%
     cur_indexer = int(cur_result['indexer'])
-    if int(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
+    if bool(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
         continue
     run_time = cur_result['runtime']
     cur_ep_airdate = cur_result['localtime'].date()
@@ -264,7 +264,7 @@
                 <div class="clearfix">
                     <span class="tvshowTitle">
                         <a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}
-                            ${('', '<span class="pause">[paused]</span>')[int(cur_result['paused'])]}
+                            ${('', '<span class="pause">[paused]</span>')[bool(cur_result['paused'])]}
                         </a>
                     </span>
                     <span class="tvshowTitleIcons">
@@ -321,7 +321,7 @@
         <tbody>
         <% day_has_show = False %>
         % for cur_result in results:
-            % if int(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
+            % if bool(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
                 <% continue %>
             % endif
             <% cur_indexer = int(cur_result['indexer']) %>
