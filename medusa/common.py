@@ -586,7 +586,7 @@ class Quality(object):
     @staticmethod
     def should_search(status, show_obj):
         """Return true if that episodes should be search for a better quality."""
-        cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or -1)
+        cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or UNKNOWN)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
         if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
