@@ -231,6 +231,7 @@ class TVChaosUKProvider(TorrentProvider):
                             ' check your config.'.format(self.name))
 
     def get_full_title(self, title):
+        """Get full title of release as provider add a "..." in the end of title in the html."""
         # Strip trailing 3 dots
         title = title[:-3]
         search_params = {'input': title}
