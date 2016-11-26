@@ -149,7 +149,7 @@ class TVChaosUKProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    if title.endswith("..."):
+                    if title.endswith('...'):
                         title = self.get_full_title(title)
 
                     seeders = try_int(row.find(title='Seeders').get_text(strip=True))
