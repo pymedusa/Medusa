@@ -1830,7 +1830,7 @@ class TVShow(TVObject):
         :rtype: bool
         """
         # if the quality isn't one we want under any circumstances then just say no
-        allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
+        allowed_qualities, preferred_qualities = self.current_qualities
         logger.log(u'{id}: Any,Best = [ {any} ] [ {best} ] Found = [ {found} ]'.format
                    (id=self.indexerid, any=self.__qualities_to_string(allowed_qualities),
                     best=self.__qualities_to_string(preferred_qualities),
@@ -1892,7 +1892,8 @@ class TVShow(TVObject):
 
         # if we are re-downloading then we only want it if it's in our
         # preferred_qualities list and better than what we have, or we only have
-        # one bestQuality and we do not have that quality yet
+        # one preferred_quality and we do not have that quality yet
+        # TODO: Put this in a method.
         if ep_status in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER and \
                 quality in preferred_qualities and (quality > cur_quality or cur_quality not in preferred_qualities):
             logger.log(u'{id}: Episode already exists with quality {existing_quality} but the found result'
@@ -1942,12 +1943,7 @@ class TVShow(TVObject):
         elif ep_status in Quality.SNATCHED_BEST:
             return Overview.SNATCHED_BEST
         elif ep_status in Quality.DOWNLOADED:
-            allowed_qualities, preferred_qualities = Quality.splitQuality(self.quality)
-            ep_status, cur_quality = Quality.splitCompositeStatus(ep_status)
-
-            if cur_quality not in allowed_qualities + preferred_qualities:
-                return Overview.QUAL
-            elif preferred_qualities and cur_quality not in preferred_qualities:
+            if Quality.should_search(ep_status, self):
                 return Overview.QUAL
             else:
                 return Overview.GOOD

@@ -34,11 +34,11 @@ class ConfigGeneral(Config):
         app.ROOT_DIRS = rootDirString
 
     @staticmethod
-    def saveAddShowDefaults(defaultStatus, anyQualities, bestQualities, defaultFlattenFolders, subtitles=False,
+    def saveAddShowDefaults(defaultStatus, allowed_qualities, preferred_qualities, defaultFlattenFolders, subtitles=False,
                             anime=False, scene=False, defaultStatusAfter=WANTED):
 
-        allowed_qualities = anyQualities.split(',') if anyQualities else []
-        preferred_qualities = bestQualities.split(',') if bestQualities else []
+        allowed_qualities = allowed_qualities.split(',') if allowed_qualities else []
+        preferred_qualities = preferred_qualities.split(',') if preferred_qualities else []
 
         new_quality = Quality.combineQualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 

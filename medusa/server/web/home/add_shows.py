@@ -475,7 +475,7 @@ class HomeAddShows(Home):
         return self.redirect('/home/')
 
     def addNewShow(self, whichSeries=None, indexerLang=None, rootDir=None, defaultStatus=None,
-                   quality_preset=None, anyQualities=None, bestQualities=None, flatten_folders=None, subtitles=None,
+                   quality_preset=None, allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
                    scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
         """
@@ -483,8 +483,6 @@ class HomeAddShows(Home):
         provided then it forwards back to newShow, if not it goes to /home.
         """
         provided_indexer = providedIndexer
-        allowed_qualities = anyQualities
-        preferred_qualities = bestQualities
 
         indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexerLang else indexerLang
 

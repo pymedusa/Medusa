@@ -503,12 +503,10 @@ class Manage(Home, WebRoot):
 
     def massEditSubmit(self, paused=None, default_ep_status=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
-                       subtitles=None, air_by_date=None, anyQualities=None, bestQualities=None, toEdit=None, *args,
+                       subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
-        anyQualities = anyQualities or []
-        bestQualities = bestQualities or []
-        allowed_qualities = anyQualities
-        preferred_qualities = bestQualities
+        allowed_qualities = allowed_qualities or []
+        preferred_qualities = preferred_qualities or []
 
         dir_map = {}
         for cur_arg in kwargs:
@@ -584,7 +582,7 @@ class Manage(Home, WebRoot):
             new_subtitles = 'on' if new_subtitles else 'off'
 
             if quality_preset == 'keep':
-                allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
+                allowed_qualities, preferred_qualities = show_obj.current_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 

@@ -154,7 +154,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
     trakt_data = []
     for curEpObj in result.episodes:
         with curEpObj.lock:
-            if isFirstBestMatch(result):
+            if is_first_best_match(result):
                 curEpObj.status = Quality.compositeStatus(SNATCHED_BEST, result.quality)
             else:
                 curEpObj.status = Quality.compositeStatus(endStatus, result.quality)
@@ -242,9 +242,9 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         logger.log(u"Quality of " + cur_result.name + u" is " + Quality.qualityStrings[cur_result.quality])
 
-        anyQualities, bestQualities = Quality.splitQuality(show.quality)
+        allowed_qualities, preferred_qualities = show.current_qualities
 
-        if cur_result.quality not in anyQualities + bestQualities:
+        if cur_result.quality not in allowed_qualities + preferred_qualities:
             logger.log(cur_result.name + u" is a quality we know we don't want, rejecting it", logger.DEBUG)
             continue
 
@@ -291,10 +291,11 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         if not bestResult:
             bestResult = cur_result
-        elif cur_result.quality in bestQualities and (bestResult.quality < cur_result.quality or
-                                                      bestResult.quality not in bestQualities):
+        # TODO: Put this in a method.
+        elif cur_result.quality in preferred_qualities and (bestResult.quality < cur_result.quality or
+                                                            bestResult.quality not in preferred_qualities):
             bestResult = cur_result
-        elif cur_result.quality in anyQualities and bestResult.quality not in bestQualities and \
+        elif cur_result.quality in allowed_qualities and bestResult.quality not in preferred_qualities and \
                 bestResult.quality < cur_result.quality:
             bestResult = cur_result
         elif bestResult.quality == cur_result.quality:
@@ -322,9 +323,12 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
     return bestResult
 
 
-def isFinalResult(result):
+def is_final_result(result):
     """
     Checks if the given result is good enough quality that we can stop searching for other ones.
+
+    This is used while looping through providers while searching for episode.
+    If we find the best result in that provider we stop searching in the other providers
 
     :param result: quality to check
     :return: True if the result is the highest quality in both the any/best quality lists else False
@@ -334,10 +338,10 @@ def isFinalResult(result):
 
     show_obj = result.episodes[0].show
 
-    any_qualities, best_qualities = Quality.splitQuality(show_obj.quality)
+    allowed_qualities, preferred_qualities = show_obj.current_qualities
 
     # if there is a re-download that's higher than this then we definitely need to keep looking
-    if best_qualities and result.quality < max(best_qualities):
+    if preferred_qualities and result.quality < max(preferred_qualities):
         return False
 
     # if it does not match the shows black and white list its no good
@@ -345,10 +349,10 @@ def isFinalResult(result):
         return False
 
     # if there's no re-download that's higher (above) and this is the highest initial download then we're good
-    elif any_qualities and result.quality in any_qualities:
+    elif allowed_qualities and result.quality in allowed_qualities:
         return True
 
-    elif best_qualities and result.quality == max(best_qualities):
+    elif preferred_qualities and result.quality == max(preferred_qualities):
         return True
 
     # if we got here than it's either not on the lists, they're empty, or it's lower than the highest required
@@ -356,7 +360,7 @@ def isFinalResult(result):
         return False
 
 
-def isFirstBestMatch(result):
+def is_first_best_match(result):
     """
     Check if the given result is a best quality match and if we want to stop searching providers here.
 
@@ -368,9 +372,9 @@ def isFirstBestMatch(result):
 
     show_obj = result.episodes[0].show
 
-    _, best_qualities = Quality.splitQuality(show_obj.quality)
+    _, preferred_qualities = show_obj.current_qualities
 
-    return result.quality in best_qualities if best_qualities else False
+    return result.quality in preferred_qualities if preferred_qualities else False
 
 
 def wantedEpisodes(show, fromDate):
@@ -382,7 +386,7 @@ def wantedEpisodes(show, fromDate):
     :return: list of wanted episodes
     """
     wanted = []
-    allowed_qualities, preferred_qualities = common.Quality.splitQuality(show.quality)
+    allowed_qualities, preferred_qualities = show.current_qualities
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
     logger.log(u"Seeing if we need anything from " + show.name, logger.DEBUG)
@@ -395,16 +399,9 @@ def wantedEpisodes(show, fromDate):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        cur_status, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if cur_status not in {common.WANTED, common.DOWNLOADED, common.SNATCHED, common.SNATCHED_PROPER}:
+        _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
+        if not Quality.should_search(result['status'], show):
             continue
-
-        if cur_status != common.WANTED:
-            if preferred_qualities:
-                if cur_quality in preferred_qualities:
-                    continue
-            elif cur_quality in allowed_qualities:
-                continue
 
         epObj = show.get_episode(result["season"], result["episode"])
         epObj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
@@ -831,7 +828,7 @@ def searchProviders(show, episodes, forced_search=False, down_cur_quality=False,
         wantedEpCount = 0
         for wantedEp in episodes:
             for result in finalResults:
-                if wantedEp in result.episodes and isFinalResult(result):
+                if wantedEp in result.episodes and is_final_result(result):
                     wantedEpCount += 1
 
         # make sure we search every provider for results unless we found everything we wanted

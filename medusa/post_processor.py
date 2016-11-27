@@ -1010,13 +1010,15 @@ class PostProcessor(object):
                 self._log(u'File exists and the new file has the same size, aborting post-processing')
                 return True
 
+            # TODO: Should we really check this?.
             if all([new_ep_quality <= old_ep_quality,
                     old_ep_quality != common.Quality.UNKNOWN,
                     existing_file_status != PostProcessor.DOESNT_EXIST]):
                 if self.is_proper and new_ep_quality == old_ep_quality:
-                    self._log(u'New file is a proper, marking it safe to replace')
+                    self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
+                    # TODO: Put this in a method.
                     _, preferred_qualities = common.Quality.splitQuality(int(show.quality))
                     if new_ep_quality not in preferred_qualities:
                         raise EpisodePostProcessingFailedException(
