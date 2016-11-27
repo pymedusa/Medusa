@@ -22,8 +22,10 @@ import re
 import traceback
 
 from dateutil import parser
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -164,9 +166,10 @@ class HDTorrentsProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[labels.index(u'Size')].get_text()
+                    torrent_size = cells[labels.index('Size')].get_text()
                     size = convert_size(torrent_size) or -1
-                    pubdate_raw = cells[labels.index(u'Added')].get_text() if cells[labels.index(u'Added')] else None
+
+                    pubdate_raw = cells[labels.index('Added')].get_text() if cells[labels.index('Added')] else None
                     pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
 
                     item = {
