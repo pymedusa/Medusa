@@ -47,7 +47,7 @@ class TorrentBytesProvider(TorrentProvider):
         self.url = 'https://www.torrentbytes.net'
         self.urls = {
             'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php')
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
@@ -82,7 +82,7 @@ class TorrentBytesProvider(TorrentProvider):
             'c33': 1,
             'c38': 1,
             'c32': 1,
-            'c37': 1
+            'c37': 1,
         }
 
         for mode in search_strings:
