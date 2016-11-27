@@ -159,9 +159,11 @@ class BacklogSearcher(object):
                 continue
 
             if cur_status != common.WANTED:
+                # If preferred and not best, keep redonwloading
                 if preferred_qualities:
-                    if cur_quality in preferred_qualities:
+                    if cur_quality == max(preferred_qualities):
                         continue
+                # If allowed only, any is good
                 elif cur_quality in allowed_qualities:
                     continue
 
