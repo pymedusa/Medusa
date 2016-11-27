@@ -47,7 +47,7 @@ class BTNProvider(TorrentProvider):
         self.api_key = None
 
         # URLs
-        self.url = 'https://broadcasthe.net/'
+        self.url = 'https://broadcasthe.net'
         self.urls = {
             'base_url': 'https://api.btnapps.net',
         }
@@ -95,7 +95,6 @@ class BTNProvider(TorrentProvider):
                            (search=search_params), logger.DEBUG)
 
             response = self._api_call(self.api_key, search_params)
-
             if not response or response.get('results') == '0':
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
@@ -119,7 +118,6 @@ class BTNProvider(TorrentProvider):
 
         for row in torrent_rows:
             title, download_url = self._process_title_and_url(row)
-
             if not all([title, download_url]):
                 continue
 
