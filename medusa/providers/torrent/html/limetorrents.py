@@ -121,7 +121,7 @@ class LimeTorrentsProvider(TorrentProvider):
             try:
                 torrent_table = torrent_table[0 if mode == 'RSS' else 1]
                 torrent_rows = torrent_table('tr')
-            else:
+            expect IndexError:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
                 
