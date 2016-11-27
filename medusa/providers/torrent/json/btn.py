@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+# along with Medusa. If not, see <https://www.gnu.org/licenses/>.
 """Provider code for BTN."""
 from __future__ import unicode_literals
 
@@ -27,12 +27,17 @@ from ..torrent_provider import TorrentProvider
 from .... import app, logger, scene_exceptions, tv_cache
 from ....common import cpu_presets
 from ....helper.common import episode_num
-from ....helper.exceptions import ex
 from ....helpers import sanitizeSceneName
 
 
 class BTNProvider(TorrentProvider):
-    """BTN Torrent provider."""
+    """BTN Torrent provider.
+
+    API docs:
+    https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
+    and
+    https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
+    """
 
     def __init__(self):
         """Initialize the class."""
@@ -42,9 +47,9 @@ class BTNProvider(TorrentProvider):
         self.api_key = None
 
         # URLs
-        self.url = 'http://broadcasthe.net/'
+        self.url = 'https://broadcasthe.net'
         self.urls = {
-            'base_url': 'http://api.btnapps.net',
+            'base_url': 'https://api.btnapps.net',
         }
 
         # Proper Strings
@@ -82,20 +87,17 @@ class BTNProvider(TorrentProvider):
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             if mode != 'RSS':
-                search_params = self._episode_search_params(ep_obj)
+                if mode == 'Season':
+                    search_params = self._season_search_params(ep_obj)
+                else:
+                    search_params = self._episode_search_params(ep_obj)
                 logger.log('Search string: {search}'.format
                            (search=search_params), logger.DEBUG)
 
-            if mode == 'Season':
-                search_params = self._season_search_params(ep_obj)
-
             response = self._api_call(self.api_key, search_params)
-            if not response:
+            if not response or response.get('results') == '0':
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
-
-            if not self._check_auth_from_data(response):
-                return results
 
             results += self.parse(response.get('torrents', {}), mode)
 
@@ -116,7 +118,6 @@ class BTNProvider(TorrentProvider):
 
         for row in torrent_rows:
             title, download_url = self._process_title_and_url(row)
-
             if not all([title, download_url]):
                 continue
 
@@ -157,48 +158,30 @@ class BTNProvider(TorrentProvider):
         return True
 
     @staticmethod
-    def _check_auth_from_data(parsed_json):
-
-        if 'api-error' in parsed_json:
-            logger.log('Incorrect authentication credentials: {0}'.format
-                       (parsed_json['api-error']), logger.DEBUG)
-            return False
-
-        return True
-
-    @staticmethod
     def _process_title_and_url(parsed_json):
+        """Create the title base on properties.
 
-        # The BTN API gives a lot of information in response,
-        # however this application is built mostly around Scene or
-        # release names, which is why we are using them here.
-
-        if 'ReleaseName' in parsed_json and parsed_json['ReleaseName']:
-            title = parsed_json['ReleaseName']
-
-        else:
+        Try to get the release name, if it doesn't exist make one up
+        from the properties obtained.
+        """
+        title = parsed_json.get('ReleaseName')
+        if not title:
             # If we don't have a release name we need to get creative
             title = ''
             if 'Series' in parsed_json:
                 title += parsed_json['Series']
             if 'GroupName' in parsed_json:
-                title += '.' + parsed_json['GroupName'] if title else parsed_json['GroupName']
+                title += '.' + parsed_json['GroupName']
             if 'Resolution' in parsed_json:
-                title += '.' + parsed_json['Resolution'] if title else parsed_json['Resolution']
+                title += '.' + parsed_json['Resolution']
             if 'Source' in parsed_json:
-                title += '.' + parsed_json['Source'] if title else parsed_json['Source']
+                title += '.' + parsed_json['Source']
             if 'Codec' in parsed_json:
-                title += '.' + parsed_json['Codec'] if title else parsed_json['Codec']
+                title += '.' + parsed_json['Codec']
             if title:
                 title = title.replace(' ', '.')
 
-        url = None
-        if 'DownloadURL' in parsed_json:
-            url = parsed_json['DownloadURL']
-            if url:
-                # Unescaped / is valid in JSON, but it can be escaped
-                url = url.replace('\\/', '/')
-
+        url = parsed_json.get('DownloadURL').replace('\\/', '/')
         return title, url
 
     def _season_search_params(self, ep_obj):
@@ -213,7 +196,7 @@ class BTNProvider(TorrentProvider):
         elif ep_obj.show.is_anime:
             current_params['name'] = '%d' % ep_obj.scene_absolute_number
         else:
-            current_params['name'] = 'Season ' + str(ep_obj.scene_season)
+            current_params['name'] = 'Season ' + str(ep_obj.season)
 
         # Search
         if ep_obj.show.indexer == 1:
@@ -240,7 +223,6 @@ class BTNProvider(TorrentProvider):
         # Episode
         if ep_obj.show.air_by_date or ep_obj.show.sports:
             date_str = str(ep_obj.airdate)
-
             # BTN uses dots in dates, we just search for the date since that
             # combined with the series identifier should result in just one episode
             search_params['name'] = date_str.replace('-', '.')
@@ -248,7 +230,7 @@ class BTNProvider(TorrentProvider):
             search_params['name'] = '%i' % int(ep_obj.scene_absolute_number)
         else:
             # Do a general name search for the episode, formatted like SXXEYY
-            search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.scene_season, ep_obj.scene_episode))
+            search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))
 
         # Search
         if ep_obj.show.indexer == 1:
@@ -265,7 +247,7 @@ class BTNProvider(TorrentProvider):
         return to_return
 
     def _api_call(self, apikey, params=None, results_per_page=300, offset=0):
-
+        """Call provider API."""
         server = jsonrpclib.Server(self.urls['base_url'])
         parsed_json = {}
 
@@ -274,14 +256,14 @@ class BTNProvider(TorrentProvider):
             time.sleep(cpu_presets[app.CPU_PRESET])
 
         except jsonrpclib.jsonrpc.ProtocolError as error:
-            if error.message == 'Call Limit Exceeded':
-                logger.log('You have exceeded the limit of 150 calls per hour,'
-                           ' per API key which is unique to your user account', logger.WARNING)
+            if error.message[1] == 'Invalid API Key':
+                logger.log('Incorrect authentication credentials.', logger.WARNING)
+            elif error.message[1] == 'Call Limit Exceeded':
+                logger.log('You have exceeded the limit of 150 calls per hour.', logger.WARNING)
             else:
                 logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
-                           (msg=error), logger.ERROR)
-            parsed_json = {'api-error': ex(error)}
-            return parsed_json
+                           (msg=error.message[1]), logger.ERROR)
+            return {}
 
         except socket.timeout:
             logger.log('Timeout while accessing provider', logger.WARNING)
@@ -292,11 +274,8 @@ class BTNProvider(TorrentProvider):
                        (msg=error[1]), logger.WARNING)
 
         except Exception as error:
-            errorstring = str(error)
-            if errorstring.startswith('<') and errorstring.endswith('>'):
-                errorstring = errorstring[1:-1]
             logger.log('Unknown error while accessing provider. Error: {msg}'.format
-                       (msg=errorstring), logger.WARNING)
+                       (msg=error), logger.ERROR)
 
         return parsed_json
 
