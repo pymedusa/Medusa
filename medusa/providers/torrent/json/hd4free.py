@@ -148,7 +148,8 @@ class HD4FreeProvider(TorrentProvider):
 
                 torrent_size = str(torrent_rows[row]['size']) + ' MB'
                 size = convert_size(torrent_size) or -1
-                pubdate_raw = torrent_rows[row]["added"]
+
+                pubdate_raw = torrent_rows[row]['added']
                 pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
 
                 item = {

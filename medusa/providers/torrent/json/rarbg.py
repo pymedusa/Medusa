@@ -186,7 +186,8 @@ class RarbgProvider(TorrentProvider):
 
                 torrent_size = row.pop('size', -1)
                 size = convert_size(torrent_size) or -1
-                pubdate = row.pop("pubdate")
+
+                pubdate = row.pop('pubdate')
                 pubdate = parser.parse(pubdate, fuzzy=True)
 
                 item = {
