@@ -24,7 +24,7 @@ import traceback
 from contextlib2 import suppress
 
 from requests.compat import urljoin
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
@@ -154,7 +154,7 @@ class LimeTorrentsProvider(TorrentProvider):
                     if not all([title, torrent_id, torrent_hash]):
                         continue
 
-                    with suppress(ConnectionError, Timeout):
+                    with suppress(RequestsConnectionError, Timeout):
                         # Suppress the timeout since we are not interested in actually getting the results
                         self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
                                                                                    'infohash': torrent_hash})
