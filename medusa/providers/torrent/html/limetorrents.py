@@ -118,11 +118,13 @@ class LimeTorrentsProvider(TorrentProvider):
                            'confirmed ' if self.confirmed else ''), logger.DEBUG)
                 return items
 
-            if torrent_table:
+            try:
                 torrent_table = torrent_table[0 if mode == 'RSS' else 1]
                 torrent_rows = torrent_table('tr')
             else:
+                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
+                
 
             # Skip the first row, since it isn't a valid result
             for row in torrent_rows[1:]:
