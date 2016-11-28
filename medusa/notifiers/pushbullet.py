@@ -126,6 +126,7 @@ class Notifier(object):
         except ValueError:
             logger.log('Pushbullet notification failed. Could not parse pushbullet response.', logger.WARNING)
             push_result['error'] = 'Pushbullet notification failed. Could not parse pushbullet response.'
+            return push_result
 
         failed = response.pop('error', {})
         if failed:
