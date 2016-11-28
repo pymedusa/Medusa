@@ -31,8 +31,6 @@ WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
 GITHUB_IO_URL = 'http://github.com/pymedusa/medusa.github.io/'
 EXTRA_SCRIPTS_URL = '{0}/wiki/Post-Processing#extra-scripts'.format(APPLICATION_URL)
 SUBTITLES_URL = '{0}/wiki/Subtitle%20Scripts'.format(APPLICATION_URL)
-# TODO: create an app in pushover
-PUSHOVER_URL = 'https://pushover.net/apps/clone/sickrage'
 RARBG_APPID = 'medusa'
 SECURE_TOKEN = 'medusa_user'
 
