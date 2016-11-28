@@ -485,7 +485,7 @@ class Quality(object):
     @staticmethod
     def sceneQualityFromName(name, quality):
         """
-        Get scene naming parameters from filename and quality.
+        Get Scene naming parameters from filename and quality.
 
         :param name: filename to check
         :type name: text_type
