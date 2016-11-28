@@ -264,6 +264,15 @@ class BTNProvider(TorrentProvider):
                 logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
                            (msg=error.message[1]), logger.ERROR)
             return {}
+        
+        except ValueError as error:
+            if error == 'No JSON object could be decoded':
+                parsed_json = {}
+            else:
+                logger.log('Unknown error while accessing provider. Error: {msg}'.format
+                       (msg=error), logger.ERROR)
+                parsed_json = {}
+            return parsed_json
 
         except socket.timeout:
             logger.log('Timeout while accessing provider', logger.WARNING)
