@@ -190,8 +190,8 @@ class Quality(object):
         FULLHDWEBDL: "1080p",
         HDBLURAY: "720p BluRay",
         FULLHDBLURAY: "1080p BluRay",
-        UHD_4K_TV: "2160p UHDTV",
-        UHD_8K_TV: "4320p UHDTV",
+        UHD_4K_TV: "2160p",
+        UHD_8K_TV: "4320p",
         UHD_4K_WEBDL: "2160p",
         UHD_8K_WEBDL: "4320p",
         UHD_4K_BLURAY: "2160p BluRay",
@@ -502,13 +502,17 @@ class Quality(object):
             codec = ' x264'
         elif codec and codec.group(0).endswith('5') or 'hevc' in name:
             codec = ' x265'
+        if codec and codec.group(0).startswith('h') and codec.group(0).endswith('4') or 'avc' in name:
+            codec = ' h264'
+        elif codec and codec.group(0).startswith('h') and codec.group(0).endswith('5') or 'hevc' in name:
+            codec = ' h265'
         elif 'xvid' in name:
             codec = ' XviD'
         elif 'divx' in name:
             codec = ' DivX'
 
         # If any HDTV type or SDTV
-        if quality in (1, 4, 8, 16):
+        if quality in (1, 4, 8, 16, 512, 4096):
             rel_type = ' HDTV'
             if 'ahdtv' in name:
                 rel_type = ' AHDTV'
@@ -518,16 +522,24 @@ class Quality(object):
                 rel_type = ' PDTV'
             elif 'satrip' in name:
                 rel_type = ' SATRip'
+            elif 'dsr' in name:
+                rel_type = ' DSR'
+            elif 'uhdtv' in name:
+                rel_type = ' UHDTV'
 
         # If SDDVD
         if quality == 2:
             rel_type = ' BDRip'
-            if re.search(r'dvd(-| |\.)?(rip|mux)', name):
+            if 'brrip' in name:
+                rel_type = ' BRRip'
+            elif re.search(r'dvd(-| |\.)?(rip|mux)', name):
                 rel_type = ' DVDRip'
 
         # If any WEB type
         if quality in (32, 64, 1024, 8192):
             rel_type = ' WEB'
+            if re.search(r'web(-| |\.)?(dl)', name):
+                rel_type = ' WEB-DL'
             if re.search(r'web(-| |\.)?(rip|mux)', name):
                 rel_type = ' WEBRip'
 
