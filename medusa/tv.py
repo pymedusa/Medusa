@@ -1763,8 +1763,7 @@ class TVShow(TVObject):
                 ('seasons', OrderedDict([]))
             ]))
             episodes = self.get_all_episodes()
-            result['seasons'] = OrderedDict((k, list(v)) for k, v in groupby([ep.to_json() for ep in episodes],
-                                                                             lambda item: item['season']))
+            result['seasons'] = [list(v) for k, v in groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
             result['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
