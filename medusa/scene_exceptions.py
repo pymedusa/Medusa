@@ -285,6 +285,11 @@ def _get_xem_exceptions():
 
     if should_refresh('xem'):
         for indexer in indexerApi().indexers:
+
+            # Not query XEM for unsupported indexers
+            if not indexerApi(indexer).config.get('xem_origin'):
+                continue
+
             logger.log('Checking for XEM scene exceptions updates for {0}'.format
                        (indexerApi(indexer).name))
 
