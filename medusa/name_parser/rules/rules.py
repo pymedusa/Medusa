@@ -30,7 +30,6 @@ import logging
 import re
 
 from guessit.rules.common.comparators import marker_sorted
-from guessit.rules.common.date import search_date
 from guessit.rules.common.formatters import cleanup
 from guessit.rules.properties import website
 from guessit.rules.properties.release_group import clean_groupname
