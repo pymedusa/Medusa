@@ -180,7 +180,7 @@ class Quality(object):
         NONE: "N/A",
         UNKNOWN: "Unknown",
         SDTV: "HDTV",
-        SDDVD: "",
+        SDDVD: "DVDRip",
         HDTV: "720p HDTV",
         RAWHDTV: "1080i HDTV",
         FULLHDTV: "1080p HDTV",
@@ -188,12 +188,12 @@ class Quality(object):
         FULLHDWEBDL: "1080p WEB",
         HDBLURAY: "720p BluRay",
         FULLHDBLURAY: "1080p BluRay",
-        UHD_4K_TV: "2160p UHD TV",
-        UHD_8K_TV: "8K UHD TV",
-        UHD_4K_WEBDL: "2160p UHD WEB",
-        UHD_8K_WEBDL: "8K UHD WEB",
-        UHD_4K_BLURAY: "2160p UHD BluRay",
-        UHD_8K_BLURAY: "8K UHD BluRay",
+        UHD_4K_TV: "2160p UHDTV",
+        UHD_8K_TV: "4320p UHDTV",
+        UHD_4K_WEBDL: "2160p WEB",
+        UHD_8K_WEBDL: "4320p WEB",
+        UHD_4K_BLURAY: "2160p BluRay",
+        UHD_8K_BLURAY: "4320p BluRay",
     })
 
     combinedQualityStrings = NumDict({
