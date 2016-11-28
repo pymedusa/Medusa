@@ -27,9 +27,12 @@ from collections import namedtuple
 from os import path
 
 from fake_useragent import UserAgent, settings as UA_SETTINGS
+
 import knowit
+
 from six import PY3
 from six.moves import reduce
+
 from .numdict import NumDict
 from .recompiled import tags
 
@@ -127,9 +130,8 @@ MULTI_EP_STRINGS = NumDict({
 
 
 class Quality(object):
-    """
-    Determine quality and set status codes
-    """
+    """Determine quality and set status codes."""
+
     NONE = 0  # 0
     SDTV = 1  # 1
     SDDVD = 1 << 1  # 2
@@ -238,7 +240,7 @@ class Quality(object):
     @staticmethod
     def _getStatusStrings(status):
         """
-        Returns string values associated with Status prefix
+        Return string values associated with Status prefix.
 
         :param status: Status prefix to resolve
         :return: Human readable status value
@@ -281,7 +283,8 @@ class Quality(object):
     @staticmethod
     def nameQuality(name, anime=False, extend=True):
         """
-        Return The quality from an episode File renamed by the application
+        Return The quality from an episode File renamed by the application.
+
         If no quality is achieved it will try scene_quality regex
 
         :param name: to parse
@@ -289,7 +292,6 @@ class Quality(object):
         :param extend: boolean to extend methods to try
         :return: Quality prefix
         """
-
         # Try Scene names first
         quality = Quality.scene_quality(name, anime)
         if quality != Quality.UNKNOWN:
@@ -391,6 +393,7 @@ class Quality(object):
     @staticmethod
     def _extend_quality(file_path):
         """
+        Try other methods to get the file quality.
 
         :param file_path: File path of episode to analyse
         :return: Quality prefix
@@ -482,10 +485,14 @@ class Quality(object):
     @staticmethod
     def sceneQualityFromName(name, quality):
         """
-        Get scene naming parameters from filename and quality
+        Get scene naming parameters from filename and quality.
+
         :param name: filename to check
+        :type name: text_type
         :param quality: int of quality to make sure we get the right release type
+        :type quality: int
         :return: release type and/or encoder type for scene quality naming
+        :rtype: text_type
         """
         rel_type = ''
         name = name.lower()
@@ -529,7 +536,7 @@ class Quality(object):
     @staticmethod
     def statusFromName(name, anime=False):
         """
-        Get a status object from filename
+        Get a status object from filename.
 
         :param name: Filename to check
         :param anime: boolean to enable anime parsing
@@ -591,6 +598,7 @@ class Quality(object):
     @staticmethod
     def from_guessit(guess):
         """
+        Return a Quality from a guessit dict.
 
         :param guess: guessit dict
         :type guess: dict
@@ -618,7 +626,7 @@ class Quality(object):
 
     @staticmethod
     def to_guessit(status):
-        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status)
+        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status).
 
         :param status: a quality composite status
         :type status: int
@@ -638,7 +646,7 @@ class Quality(object):
 
     @staticmethod
     def to_guessit_format(quality):
-        """Return a guessit format from a Quality
+        """Return a guessit format from a Quality.
 
         :param quality: the quality
         :type quality: int
@@ -652,7 +660,7 @@ class Quality(object):
 
     @staticmethod
     def to_guessit_screen_size(quality):
-        """Return a guessit screen_size from a Quality
+        """Return a guessit screen_size from a Quality.
 
         :param quality: the quality
         :type quality: int
@@ -717,16 +725,15 @@ qualityPresetStrings = NumDict({
 
 
 class StatusStrings(NumDict):
-    """
-    Dictionary containing strings for status codes
-    """
-    # todo: Make views return Qualities too
+    """Dictionary containing strings for status codes."""
 
-    qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.ARCHIVED + Quality.FAILED
+    # todo: Make views return Qualities too
+    qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + \
+        Quality.ARCHIVED + Quality.FAILED
 
     def __missing__(self, key):
         """
-        If the key is not found try to determine a status from Quality
+        If the key is not found try to determine a status from Quality.
 
         :param key: A numeric key or None
         :raise KeyError: if the key is invalid and can't be determined from Quality
@@ -766,7 +773,7 @@ statusStrings = StatusStrings({
 })
 
 
-class Overview(object):  # pylint: disable=too-few-public-methods
+class Overview(object):
     UNAIRED = UNAIRED  # 1
     SNATCHED = SNATCHED  # 2
     WANTED = WANTED  # 3
