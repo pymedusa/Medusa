@@ -36,8 +36,6 @@ exceptionLock = threading.Lock()
 
 xem_session = helpers.make_session()
 
-xem_supported_indexers = [INDEXER_TVDBV2]
-
 
 def should_refresh(ex_list):
     """
@@ -289,7 +287,7 @@ def _get_xem_exceptions():
         for indexer in indexerApi().indexers:
 
             # Not query XEM for unsupported indexers
-            if indexer not in xem_supported_indexers:
+            if not indexerApi(indexer).config.get('xem_origin'):
                 continue
 
             logger.log('Checking for XEM scene exceptions updates for {0}'.format
