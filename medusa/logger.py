@@ -32,6 +32,7 @@ from collections import OrderedDict
 from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
+import knowit
 from requests.compat import quote
 from six import itervalues, text_type
 import subliminal
@@ -67,7 +68,7 @@ def rebuild_censored_list():
     # set of censored items
     results = {value for value in itervalues(censored_items) if value}
     # set of censored items and urlencoded counterparts
-    results = results | {quote(item) for item in results}
+    results |= {quote(item) for item in results}
     # convert set items to unicode and typecast to list
     results = list({item.decode(default_encoding, 'replace')
                     if not isinstance(item, text_type) else item for item in results})
@@ -573,6 +574,7 @@ class Logger(object):
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
         self.loggers.extend(get_loggers(traktor))
+        self.loggers.extend(get_loggers(knowit))
 
         logging.addLevelName(DB, 'DB')  # add a new logging level DB
         logging.getLogger().addHandler(NullHandler())  # nullify root logger

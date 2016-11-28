@@ -203,9 +203,6 @@ class NameParser(object):
             logger.debug('Converted parsed result {original} into {result}', original=result.original_name,
                          result=result)
 
-        # CPU sleep
-        time.sleep(0.02)
-
         return result
 
     def parse(self, name, cache_result=True):
@@ -227,7 +224,11 @@ class NameParser(object):
         if cached:
             return cached
 
+        start_time = time.time()
         result = self._parse_string(name)
+        if result:
+            result.total_time = time.time() - start_time
+
         self.assert_supported(result)
 
         if cache_result:
@@ -321,6 +322,7 @@ class ParseResult(object):
         self.version = version
         self.proper_tags = proper_tags
         self.guess = guess
+        self.total_time = None
 
     def __eq__(self, other):
         """Equal implementation.
@@ -353,7 +355,8 @@ class ParseResult(object):
         obj = OrderedDict(self.guess, **dict(season=self.season_number,
                                              episode=self.episode_numbers,
                                              absolute_episode=self.ab_episode_numbers,
-                                             quality=common.Quality.qualityStrings[self.quality]))
+                                             quality=common.Quality.qualityStrings[self.quality],
+                                             total_time=self.total_time))
         return helpers.canonical_name(obj, fmt='{key}: {value}', separator=', ')
 
     def get_quality(self, guess, extend=False):

@@ -100,5 +100,7 @@ def test_guess(monkeypatch, show_list, release_name, expected):
     if 'mimetype' in actual:
         del actual['mimetype']
 
+    del actual['parsing_time']
+
     if not expected.get('disabled'):
         assert expected == actual
