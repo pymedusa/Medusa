@@ -339,9 +339,13 @@ class TVDBv2(BaseIndexer):
 
         >>> t = Tvdb(images = True)
         >>> t['scrubs']['_banners'].keys()
-        ['fanart', 'poster', 'series', 'season']
+        ['fanart', 'poster', 'series', 'season', 'seasonwide']
+        For a Poster
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://thetvdb.com/banners/posters/76156-2.jpg'
+        For a season poster or season banner (seasonwide)
+        >>> t['scrubs']['_banners']['seasonwide'][4]['680x1000']['35308']['_bannerpath']
+        u'http://thetvdb.com/banners/posters/76156-4-2.jpg'
         >>>
 
         Any key starting with an underscore has been processed (not the raw
@@ -382,27 +386,37 @@ class TVDBv2(BaseIndexer):
                                                                     accept_language=self.config['language'])
                 for image in images.data:
                     # Store the images for each resolution available
-                    if image.resolution not in _images[image_type]:
-                        _images[image_type][image.resolution] = {}
+                    # Always provide a resolution or 'original'.
+                    resolution = image.resolution or 'original'
+                    if resolution not in _images[image_type]:
+                        _images[image_type][resolution] = {}
 
-                    # _images[image_type][image.resolution][image.id] = image_dict
+                    # _images[image_type][resolution][image.id] = image_dict
                     image_attributes = self._object_to_dict(image, key_mapping)
+
                     bid = image_attributes.pop('id')
-                    _images[image_type][image.resolution][bid] = {}
+
+                    if image_type in ['season', 'seasonwide']:
+                        if int(image.sub_key) not in _images[image_type][resolution]:
+                            _images[image_type][resolution][int(image.sub_key)] = {}
+                        if bid not in _images[image_type][resolution][int(image.sub_key)]:
+                            _images[image_type][resolution][int(image.sub_key)][bid] = {}
+                        base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                    else:
+                        if bid not in _images[image_type][resolution]:
+                            _images[image_type][resolution][bid] = {}
+                        base_path = _images[image_type][resolution][bid]
 
                     for k, v in image_attributes.items():
                         if k is None or v is None:
                             continue
 
-                        # k, v = k.lower(), v.lower()
-                        _images[image_type][image.resolution][bid][k] = v
-
-                    for k, v in _images[image_type][image.resolution][bid].items():
                         if k.endswith('path'):
-                            new_key = '_%s' % k
+                            k = '_%s' % k
                             log().debug('Adding base url for image: %s', v)
-                            new_url = self.config['artwork_prefix'] % v
-                            _images[image_type][image.resolution][bid][new_key] = new_url
+                            v = self.config['artwork_prefix'] % v
+
+                        base_path[k] = v
 
             except Exception as e:
                 log().warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
