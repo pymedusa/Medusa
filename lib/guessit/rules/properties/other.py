@@ -28,7 +28,6 @@ def other():
     rebulk.regex('Sync-?Fix', 'Sync-?Fixed', value='SyncFix')
     rebulk.regex('Dual-?Audio', value='DualAudio')
     rebulk.regex('ws', 'wide-?screen', value='WideScreen')
-    rebulk.string('Netflix', 'NF', value='Netflix')
 
     rebulk.string('Real', 'Fix', 'Fixed', value='Proper', tags=['has-neighbor-before', 'has-neighbor-after'])
     rebulk.string('Proper', 'Repack', 'Rerip', value='Proper')

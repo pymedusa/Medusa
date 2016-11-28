@@ -549,10 +549,10 @@
   audio_codec: DolbyDigital
   episode: 2
   format: WEBRip
-  other: Netflix
   release_group: ABC
   screen_size: 4K
   season: 1
+  streaming_service: Netflix
   title: TEST
   type: episode
   video_codec: h264
@@ -572,10 +572,10 @@
   episode: 10
   episode_title: '24'
   format: WEBRip
-  other: Netflix
   release_group: ABC
   screen_size: 1080p
   season: 1
+  streaming_service: Netflix
   title: TEST
   type: episode
   video_codec: h264
@@ -586,10 +586,10 @@
   episode: 10
   episode_title: '24'
   format: WEBRip
-  other: Netflix
   release_group: ABC
   screen_size: 1080p
   season: 1
+  streaming_service: Netflix
   title: TEST
   type: episode
   video_codec: h264
@@ -600,10 +600,10 @@
   episode: 10
   episode_title: '24'
   format: WEBRip
-  other: Netflix
   release_group: ABC
   screen_size: 1080p
   season: 1
+  streaming_service: Netflix
   title: TEST
   type: episode
   video_codec: h264

@@ -2855,13 +2855,28 @@
   type: episode
 
 # FixMultipleFormats
-? - Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP.mkv
-  - /folder/Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP[something]/Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP.mkv
+? "/folder/Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP[something]/Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP.mkv"
 : title: Show Name
   season: 2
   episode: 1
   # episode title and part are not fixed. Not a big issue for us.
-  episode_title: eps2
+  part: 1
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: AC3
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: GROUP
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Show.Name.S02E01.eps2.0.unm4sk-pt1.tc.1080p.WEB-DL.DD5.1.H264-GROUP.mkv
+: title: Show Name
+  season: 2
+  episode: 1
+  # episode title and part are not fixed. Not a big issue for us.
+  episode_title: unm4sk
   part: 1
   screen_size: 1080p
   format: WEB-DL
@@ -3115,7 +3130,7 @@
 : title: Show Name
   season: 2
   episode: 1
-  episode_title: eps2
+  episode_title: title
   part: 1 # not a big issue
   screen_size: 1080p
   format: WEB-DL
@@ -3182,7 +3197,6 @@
 : title: Show Name
   season: 2
   episode: 6
-  episode_title: eps2
   screen_size: 1080p
   format: WEBRip
   streaming_service: Amazon Prime
@@ -3991,4 +4005,20 @@
   date: 2016-11-18
   format: PDTV
   video_codec: XviD
+  type: episode
+
+# Regression: guessit issue #359
+? /media/extssd/downloads/programs2/Show.Name.S01.720p.HDTV.DD5.1.x264-Group/show.name.0105.720p-group.mkv
+: title: Show Name
+  season: 1
+  screen_size: 720p
+  format: HDTV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  video_codec: h264
+  video_encoder: x264
+  release_group: Group
+  episode: 5
+  container: mkv
+  mimetype: video/x-matroska
   type: episode
