@@ -29,10 +29,6 @@
 ? +Wide Screen
 : other: WideScreen
 
-? +NF
-? +Netflix
-: other: Netflix
-
 # Fix and Real must be surround by others properties to be matched.
 ? DVD.Real.XViD
 ? DVD.fix.XViD

@@ -30,6 +30,25 @@ def episodes():
     rebulk.regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'])
 
+    def episodes_season_chain_breaker(matches):
+        """
+        Break chains if there's more than 100 offset between two neighbor values.
+        :param matches:
+        :type matches:
+        :return:
+        :rtype:
+        """
+        eps = matches.named('episode')
+        if len(eps) > 1 and abs(eps[-1].value - eps[-2].value) > 100:
+            return True
+
+        seasons = matches.named('season')
+        if len(seasons) > 1 and abs(seasons[-1].value - seasons[-2].value) > 100:
+            return True
+        return False
+
+    rebulk.chain_defaults(chain_breaker=episodes_season_chain_breaker)
+
     def season_episode_conflict_solver(match, other):
         """
         Conflict solver for episode/season patterns
@@ -59,7 +78,7 @@ def episodes():
     season_episode_seps.extend(['x', 'X', 'e', 'E'])
 
     season_words = ['season', 'saison', 'serie', 'seasons', 'saisons', 'series']
-    episode_words = ['episode', 'episodes', 'ep']
+    episode_words = ['episode', 'episodes', 'eps', 'ep']
     of_words = ['of', 'sur']
     all_words = ['All']
     season_markers = ["S"]
@@ -278,7 +297,7 @@ def episodes():
 
     rebulk.regex(r'Minisodes?', name='episode_format', value="Minisode")
 
-    # Harcoded movie to disable weak season/episodes
+    # Harcoded movie to disable weak season/eps
     rebulk.regex('OSS-?117',
                  abbreviations=[dash], name="hardcoded-movies", marker=True,
                  conflict_solver=lambda match, other: None)
@@ -409,8 +428,13 @@ class RemoveWeakIfSxxExx(Rule):
     consequence = RemoveMatch
 
     def when(self, matches, context):
-        if matches.tagged('SxxExx', lambda match: not match.private):
-            return matches.tagged('weak-movie')
+        to_remove = []
+        for filepart in matches.markers.named('path'):
+            if matches.range(filepart.start, filepart.end,
+                             predicate=lambda match: not match.private and 'SxxExx' in match.tags):
+                to_remove.extend(matches.range(
+                    filepart.start, filepart.end, predicate=lambda match: 'weak-movie' in match.tags))
+        return to_remove
 
 
 class RemoveWeakDuplicate(Rule):

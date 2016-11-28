@@ -21,6 +21,7 @@ from .properties.episode_title import episode_title
 from .properties.language import language
 from .properties.country import country
 from .properties.release_group import release_group
+from .properties.streaming_service import streaming_service
 from .properties.other import other
 from .properties.edition import edition
 from .properties.cds import cds
@@ -58,6 +59,7 @@ def rebulk_builder():
     rebulk.rebulk(language())
     rebulk.rebulk(country())
     rebulk.rebulk(release_group())
+    rebulk.rebulk(streaming_service())
     rebulk.rebulk(other())
     rebulk.rebulk(edition())
     rebulk.rebulk(cds())

@@ -119,51 +119,6 @@ def other():
     return rebulk
 
 
-def streaming_service():
-    """Streaming service property.
-
-    :return:
-    :rtype: Rebulk
-    """
-    rebulk = Rebulk().string_defaults(ignore_case=True)
-    rebulk.defaults(name='streaming_service', validator=seps_surround)
-
-    rebulk.string('AE', value='A&E')
-    rebulk.string('AMBC', value='ABC')
-    rebulk.string('AMZN', value='Amazon Prime')
-    rebulk.string('AS', value='Adult Swim')
-    rebulk.string('iP', value='BBC iPlayer')
-    rebulk.string('CBS', value='CBS')
-    rebulk.string('CC', value='Comedy Central',
-                  conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
-    rebulk.string('CR', value='Crunchy Roll')
-    rebulk.string('CW', value='The CW')
-    rebulk.string('DISC', value='Discovery')
-    rebulk.string('DSNY', value='Disney')
-    rebulk.string('EPIX', value='ePix')
-    rebulk.string('HBO', value='HBO Go')
-    rebulk.string('HIST', value='History')
-    rebulk.string('IFC', value='IFC')
-    rebulk.string('PBS', value='PBS')
-    rebulk.string('NATG', value='National Geographic')
-    rebulk.string('NBA', value='NBA TV')
-    rebulk.string('NBC', value='NBC')
-    rebulk.string('NFL', value='NFL')
-    rebulk.string('NICK', value='Nickelodeon')
-    rebulk.string('NF', value='Netflix',
-                  conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
-    rebulk.string('SESO', value='SeeSo')
-    rebulk.string('SPKE', value='Spike TV')
-    rebulk.string('SYFY', value='Syfy')
-    rebulk.string('TFOU', value='TFou')
-    rebulk.string('TVL', value='TV Land')
-    rebulk.string('UFC', value='UFC')
-
-    rebulk.rules(ValidateStreamingService)
-
-    return rebulk
-
-
 def size():
     """Size property.
 
@@ -281,38 +236,6 @@ class ValidateHardcodedSubs(Rule):
                 continue
 
             to_remove.append(hc)
-
-        return to_remove
-
-
-class ValidateStreamingService(Rule):
-    """Validate streaming service matches."""
-
-    priority = 32
-    consequence = RemoveMatch
-
-    def when(self, matches, context):
-        """Streaming service is always after screen_size and before format.
-
-        :param matches:
-        :type matches: rebulk.match.Matches
-        :param context:
-        :type context: dict
-        :return:
-        """
-        to_remove = []
-        for ss in matches.named('streaming_service'):
-            next_match = matches.next(ss, predicate=lambda match: match.name == 'format', index=0)
-            if next_match and not matches.holes(ss.end, next_match.start,
-                                                predicate=lambda match: match.value.strip(seps)):
-                continue
-
-            previous_match = matches.previous(ss, predicate=lambda match: match.name == 'screen_size', index=0)
-            if previous_match and not matches.holes(previous_match.end, ss.start,
-                                                    predicate=lambda match: match.value.strip(seps)):
-                continue
-
-            to_remove.append(ss)
 
         return to_remove
 
