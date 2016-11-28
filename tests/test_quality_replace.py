@@ -157,6 +157,22 @@ import pytest
         'allowed_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'preferred_qualities': [],
         'expected': False
+    },
+    {  # p19: Downloaded SDTV (not in quality system) and found 720p HDTV: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [],
+        'expected': True
+    },
+    {  # p20: Downloaded SDTV (not in quality system) and found 720p HDBLURAY: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [],
+        'expected': False
     }
 ])
 def test_should_replace(p):
