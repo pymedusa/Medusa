@@ -601,6 +601,46 @@ class Quality(object):
         return True
 
     @staticmethod
+    def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities):
+        """Return true if the old quality should be replaced with new quality.
+
+        If not preferred qualities, the any downloaded quality is final
+        if preferred quality, then new quality should be higher than existing one AND not be in preferred
+        If new quality is already in preferred then is already final quality.
+        """
+        if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
+            return False
+
+        if old_quality == Quality.UNKNOWN:
+            return False
+
+        if new_quality not in allowed_qualities + preferred_qualities:
+            # If new quality is not wanted, we shouldn't replace.
+            return False
+
+        if old_quality not in allowed_qualities + preferred_qualities:
+            # If old quality is no longer wanted quality and new quality is wanted, we should replace.
+            return True
+
+        if preferred_qualities:
+            # Don't replace because old quality is already best quality.
+            if old_quality in preferred_qualities:
+                return False
+
+            # Old quality is not final. Check if we should replace:
+
+            # Replace if better quality among allowed qualities
+            replace_allowed = new_quality > old_quality
+            # Replace if preferred quality
+            wanted_preferred_quality = new_quality in preferred_qualities
+
+            return replace_allowed or wanted_preferred_quality
+
+        else:
+            # Allowed quality should never be replaced
+            return False
+
+    @staticmethod
     def from_guessit(guess):
         """
 
