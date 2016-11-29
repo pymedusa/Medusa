@@ -135,3 +135,15 @@ class EpisodeNotVotedFor(BaseError):
 
 class CrewNotFound(BaseError):
     pass
+
+class NoFollowedNetworks(BaseError):
+    pass
+
+class NetworkNotFound(BaseError):
+    pass
+
+class WebChannelNotFound(BaseError):
+    pass
+
+class WebChannelNotFollowed(BaseError):
+    pass
