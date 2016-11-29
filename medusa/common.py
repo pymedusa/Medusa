@@ -499,13 +499,15 @@ class Quality(object):
         codec = re.search(r'[xh].?26[45]', name) or ''
 
         if codec and codec.group(0).endswith('4') or 'avc' in name:
-            codec = ' x264'
+            if codec and codec.group(0).startswith('h'):
+                codec = ' h264'
+            else:
+                codec = ' x264'
         elif codec and codec.group(0).endswith('5') or 'hevc' in name:
-            codec = ' x265'
-        if codec and codec.group(0).startswith('h') and codec.group(0).endswith('4') or 'avc' in name:
-            codec = ' h264'
-        elif codec and codec.group(0).startswith('h') and codec.group(0).endswith('5') or 'hevc' in name:
-            codec = ' h265'
+            if codec and codec.group(0).startswith('h'):
+                codec = ' h265'
+            else:
+                codec = ' x265'
         elif 'xvid' in name:
             codec = ' XviD'
         elif 'divx' in name:
@@ -530,7 +532,7 @@ class Quality(object):
         # If SDDVD
         if quality == 2:
             rel_type = ' BDRip'
-            if 'brrip' in name:
+            if re.search(r'br(-| |\.)?(rip|mux)', name):
                 rel_type = ' BRRip'
             elif re.search(r'dvd(-| |\.)?(rip|mux)', name):
                 rel_type = ' DVDRip'
@@ -538,7 +540,7 @@ class Quality(object):
         # If any WEB type
         if quality in (32, 64, 1024, 8192):
             rel_type = ' WEB'
-            if re.search(r'web(-| |\.)?(dl)', name):
+            if re.search(r'web(-| |\.)?dl', name):
                 rel_type = ' WEB-DL'
             if re.search(r'web(-| |\.)?(rip|mux)', name):
                 rel_type = ' WEBRip'
