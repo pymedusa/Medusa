@@ -22,8 +22,8 @@ import logging
 from collections import OrderedDict
 from time import time
 
-from pytvmaze import API
-from pytvmaze.exceptions import CastNotFound, EpisodeNotFound, ShowNotFound, UpdateNotFound
+from pytvmaze import TVMaze
+from pytvmaze.exceptions import CastNotFound, EpisodeNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowNotFound
@@ -61,7 +61,7 @@ class TVmaze(BaseIndexer):
                                          'hu': 19, 'ja': 25, 'he': 24, 'ko': 32, 'sv': 8, 'sl': 30}
 
         # Initiate the pytvmaze API
-        self.API = API(self.config['session'])
+        self.tvmaze_api = TVMaze(session=self.config['session'])
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 
@@ -118,9 +118,9 @@ class TVmaze(BaseIndexer):
                             return_dict['airs_time'] = value.get('time') or '0:00AM'
                             return_dict['airs_dayofweek'] = value.get('days')[0] if value.get('days') else None
                         if key == 'network':
-                            return_dict['network'] = value.get('name')
-                            return_dict['code'] = value.get('country', {'code': 'NA'})['code']
-                            return_dict['timezone'] = value.get('country', {'timezone': 'NA'})['timezone']
+                            return_dict['network'] = value.name
+                            return_dict['code'] = value.code
+                            return_dict['timezone'] = value.timezone
                         if key == 'image':
                             if value.get('medium'):
                                 return_dict['image_medium'] = value.get('medium')
@@ -173,7 +173,7 @@ class TVmaze(BaseIndexer):
         :return: A list of Show objects.
         """
         try:
-            results = self.API.show_search(show)
+            results = self.tvmaze_api.get_show_list(show)
         except ShowNotFound as e:
             raise IndexerShowNotFound(
                 'Show search failed in getting a result with reason: %s' % e
@@ -215,7 +215,7 @@ class TVmaze(BaseIndexer):
         results = None
         if tvmaze_id:
             log().debug('Getting all show data for %s', [tvmaze_id])
-            results = self.API.get_show(tvmaze_id)
+            results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
 
         if not results:
             return
@@ -234,7 +234,7 @@ class TVmaze(BaseIndexer):
         # Parse episode data
         log().debug('Getting all episodes of %s', [tvmaze_id])
         try:
-            results = self.API.episode_list(tvmaze_id, specials)
+            results = self.tvmaze_api.episode_list(tvmaze_id, specials=specials)
         except EpisodeNotFound:
             log().debug('Episode search did not return any results.')
             return False
@@ -341,7 +341,7 @@ class TVmaze(BaseIndexer):
         """
         log().debug('Getting actors for %s', [tvmaze_id])
         try:
-            actors = self.API.show_cast(tvmaze_id)
+            actors = self.tvmaze_api.show_cast(tvmaze_id)
         except CastNotFound:
             log().debug('Actors result returned zero')
             return
@@ -415,8 +415,8 @@ class TVmaze(BaseIndexer):
         """Retrieve all updates (show,season,episode) from TVMaze"""
         results = []
         try:
-            updates = self.API.show_updates()
-        except UpdateNotFound:
+            updates = self.tvmaze_api.show_updates()
+        except (ShowIndexError, UpdateNotFound):
             return False
 
         if getattr(updates, 'updates', None):
