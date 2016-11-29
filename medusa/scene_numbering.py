@@ -492,6 +492,8 @@ def xem_refresh(indexer_id, indexer, force=False):
         )
 
         try:
+            if not indexerApi(indexer).config.get('xem_origin'):
+                return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin=%s" % indexerApi(indexer).config['xem_origin']
             parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
