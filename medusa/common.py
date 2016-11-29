@@ -542,7 +542,7 @@ class Quality(object):
             rel_type = ' WEB'
             if re.search(r'web(-| |\.)?dl', name):
                 rel_type = ' WEB-DL'
-            if re.search(r'web(-| |\.)?(rip|mux)', name):
+            elif re.search(r'web(-| |\.)?(rip|mux)', name):
                 rel_type = ' WEBRip'
 
         return rel_type + codec
