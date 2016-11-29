@@ -35,7 +35,8 @@ from .... import (
     app, classes, db, helpers, image_cache, logger, network_timezones,
     process_tv, sbdatetime, subtitles, ui,
 )
-from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, \
+from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
+    UNAIRED, UNKNOWN, WANTED, \
     statusStrings
 from ....helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
@@ -44,6 +45,7 @@ from ....helper.common import (
 from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....helper.quality import get_quality_string
 from ....indexers.indexer_api import indexerApi
+from ....indexers.indexer_config import INDEXER_TVDBV2
 from ....indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
 from ....logger import filter_logline, read_loglines
 from ....media.banner import ShowBanner
@@ -180,7 +182,7 @@ class ApiHandler(RequestHandler):
 
                 logger.log(u"API :: " + cmd + ": cur_kwargs " + str(cur_kwargs), logger.DEBUG)
                 if not (cmd in ('show.getbanner', 'show.getfanart', 'show.getnetworklogo', 'show.getposter') and
-                        multi_commands):  # skip these cmd while chaining
+                            multi_commands):  # skip these cmd while chaining
                     try:
                         if cmd in function_mapper:
                             func = function_mapper.get(cmd)  # map function
@@ -251,7 +253,6 @@ class ApiHandler(RequestHandler):
 
 
 class ApiCall(ApiHandler):
-
     _help = {"desc": "This command is not documented. Please report this to the developers."}
 
     def __init__(self, args, kwargs):
@@ -397,7 +398,8 @@ class ApiCall(ApiHandler):
         elif arg_type == "ignore":
             pass
         else:
-            logger.log(u'API :: Invalid param type: "%s" can not be checked. Ignoring it.' % str(arg_type), logger.ERROR)
+            logger.log(u'API :: Invalid param type: "%s" can not be checked. Ignoring it.' % str(arg_type),
+                       logger.ERROR)
 
         if error:
             # this is a real ApiError !!
@@ -721,7 +723,8 @@ class CMD_Episode(ApiCall):
         # convert stuff to human form
         if try_int(episode['airdate'], 1) > 693595:  # 1900
             episode['airdate'] = sbdatetime.sbdatetime.sbfdate(sbdatetime.sbdatetime.convert_to_setting(
-                network_timezones.parse_date_time(int(episode['airdate']), show_obj.airs, show_obj.network)), d_preset=dateFormat)
+                network_timezones.parse_date_time(int(episode['airdate']), show_obj.airs, show_obj.network)),
+                d_preset=dateFormat)
         else:
             episode['airdate'] = 'Never'
 
@@ -863,13 +866,15 @@ class CMD_EpisodeSetStatus(ApiCall):
                     continue
 
                 if self.status == FAILED and not app.USE_FAILED_DOWNLOADS:
-                    ep_results.append(_ep_result(RESULT_FAILURE, ep_obj, "Refusing to change status to FAILED because failed download handling is disabled"))
+                    ep_results.append(_ep_result(RESULT_FAILURE, ep_obj,
+                                                 "Refusing to change status to FAILED because failed download handling is disabled"))
                     failure = True
                     continue
 
                 # allow the user to force setting the status for an already downloaded episode
                 if ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED and not self.force:
-                    ep_results.append(_ep_result(RESULT_FAILURE, ep_obj, "Refusing to change status because it is already marked as DOWNLOADED"))
+                    ep_results.append(_ep_result(RESULT_FAILURE, ep_obj,
+                                                 "Refusing to change status because it is already marked as DOWNLOADED"))
                     failure = True
                     continue
 
@@ -1029,6 +1034,7 @@ class CMD_History(ApiCall):
 
             :returns: an API result
             """
+
             def convert_date(history_date):
                 """
                 Convert date from a history date to datetime format
@@ -1192,7 +1198,8 @@ class CMD_Logs(ApiCall):
         min_level = logger.LOGGING_LEVELS[str(self.min_level).upper()]
         data = [line for line in read_loglines(formatter=text_type, max_lines=50,
                                                predicate=lambda l: filter_logline(l, min_level=min_level,
-                                                                                  thread_name=lambda name: name != 'TORNADO'))]
+                                                                                  thread_name=lambda
+                                                                                      name: name != 'TORNADO'))]
         return _responds(RESULT_SUCCESS, data)
 
 
@@ -1716,7 +1723,8 @@ class CMD_SetDefaults(ApiCall):
         # required
         # optional
         self.initial, args = self.check_params(args, kwargs, "initial", None, False, "list", list(quality_map))
-        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list", list(quality_map).remove('unknown'))
+        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list",
+                                               list(quality_map).remove('unknown'))
         self.future_show_paused, args = self.check_params(args, kwargs, "future_show_paused", None, False, "bool", [])
         self.flatten_folders, args = self.check_params(args, kwargs, "flatten_folders", None, False, "bool", [])
         self.status, args = self.check_params(args, kwargs, "status", None, False, "string",
@@ -1877,8 +1885,9 @@ class CMD_Show(ApiCall):
         show_dict["archive_firstmatch"] = 1
 
         show_dict["indexerid"] = show_obj.indexerid
-        show_dict["tvdbid"] = helpers.mapIndexersToShow(show_obj)[1]
-        show_dict["imdbid"] = show_obj.imdbid
+        show_dict["tvdbid"] = show_obj.indexerid if show_obj.indexer == INDEXER_TVDBV2 else \
+            show_obj.externals.get('tvdb_id', '')
+        show_dict["imdbid"] = show_obj.externals.get('imdb_id', '')
 
         show_dict["network"] = show_obj.network
         if not show_dict["network"]:
@@ -1919,7 +1928,8 @@ class CMD_ShowAddExisting(ApiCall):
         self.location, args = self.check_params(args, kwargs, "location", None, True, "string", [])
         # optional
         self.initial, args = self.check_params(args, kwargs, "initial", None, False, "list", list(quality_map))
-        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list", list(quality_map).remove('unknown'))
+        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list",
+                                               list(quality_map).remove('unknown'))
         self.flatten_folders, args = self.check_params(args, kwargs, "flatten_folders",
                                                        bool(app.FLATTEN_FOLDERS_DEFAULT), False, "bool", [])
         self.subtitles, args = self.check_params(args, kwargs, "subtitles", int(app.USE_SUBTITLES),
@@ -2004,7 +2014,8 @@ class CMD_ShowAddNew(ApiCall):
         # optional
         self.location, args = self.check_params(args, kwargs, "location", None, False, "string", [])
         self.initial, args = self.check_params(args, kwargs, "initial", None, False, "list", list(quality_map))
-        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list", list(quality_map).remove('unknown'))
+        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list",
+                                               list(quality_map).remove('unknown'))
         self.flatten_folders, args = self.check_params(args, kwargs, "flatten_folders",
                                                        bool(app.FLATTEN_FOLDERS_DEFAULT), False, "bool", [])
         self.status, args = self.check_params(args, kwargs, "status", None, False, "string",
@@ -2423,11 +2434,13 @@ class CMD_ShowSeasonList(ApiCall):
 
         main_db_con = db.DBConnection(row_type="dict")
         if self.sort == "asc":
-            sql_results = main_db_con.select("SELECT DISTINCT season FROM tv_episodes WHERE showid = ? ORDER BY season ASC",
-                                             [self.indexerid])
+            sql_results = main_db_con.select(
+                "SELECT DISTINCT season FROM tv_episodes WHERE showid = ? ORDER BY season ASC",
+                [self.indexerid])
         else:
-            sql_results = main_db_con.select("SELECT DISTINCT season FROM tv_episodes WHERE showid = ? ORDER BY season DESC",
-                                             [self.indexerid])
+            sql_results = main_db_con.select(
+                "SELECT DISTINCT season FROM tv_episodes WHERE showid = ? ORDER BY season DESC",
+                [self.indexerid])
         season_list = []  # a list with all season numbers
         for row in sql_results:
             season_list.append(int(row["season"]))
@@ -2530,7 +2543,8 @@ class CMD_ShowSetQuality(ApiCall):
         self.indexerid, args = self.check_params(args, kwargs, "indexerid", None, True, "int", [])
         # optional
         self.initial, args = self.check_params(args, kwargs, "initial", None, False, "list", list(quality_map))
-        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list", list(quality_map).remove('unknown'))
+        self.archive, args = self.check_params(args, kwargs, "archive", None, False, "list",
+                                               list(quality_map).remove('unknown'))
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
 
@@ -2721,7 +2735,7 @@ class CMD_Shows(ApiCall):
             if self.paused is not None and self.paused != curShow.paused:
                 continue
 
-            indexer_show = helpers.mapIndexersToShow(curShow)
+            # indexer_show = map_indexers_to_show(curShow)
 
             show_dict = {
                 "paused": (0, 1)[curShow.paused],
@@ -2731,7 +2745,8 @@ class CMD_Shows(ApiCall):
                 "sports": (0, 1)[curShow.sports],
                 "anime": (0, 1)[curShow.anime],
                 "indexerid": curShow.indexerid,
-                "tvdbid": indexer_show[1],
+                "tvdbid": curShow.indexerid if curShow.indexer == INDEXER_TVDBV2
+                else curShow.externals.get('tvdb_id', ''),
                 "network": curShow.network,
                 "show_name": curShow.name,
                 "status": curShow.status,

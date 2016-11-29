@@ -19,7 +19,7 @@
 from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
-from .. import helpers
+from ..helpers import make_session
 
 initConfig = {
     'valid_languages': [
@@ -52,7 +52,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': helpers.make_session(cache_etags=False),
+            'session': make_session(cache_etags=False),
         },
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
@@ -71,7 +71,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': helpers.make_session(cache_etags=False),
+            'session': make_session(cache_etags=False),
         },
         'trakt_id': 'tvdb_id',
         'xem_mapped_to': INDEXER_TVDBV2,
@@ -90,7 +90,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': helpers.make_session(cache_etags=False),
+            'session': make_session(cache_etags=False),
         },
         'trakt_id': 'tvdb_id',
         'icon': 'tmdb16.png',
