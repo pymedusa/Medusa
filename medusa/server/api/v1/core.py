@@ -182,7 +182,7 @@ class ApiHandler(RequestHandler):
 
                 logger.log(u"API :: " + cmd + ": cur_kwargs " + str(cur_kwargs), logger.DEBUG)
                 if not (cmd in ('show.getbanner', 'show.getfanart', 'show.getnetworklogo', 'show.getposter') and
-                            multi_commands):  # skip these cmd while chaining
+                        multi_commands):  # skip these cmd while chaining
                     try:
                         if cmd in function_mapper:
                             func = function_mapper.get(cmd)  # map function
@@ -1199,7 +1199,7 @@ class CMD_Logs(ApiCall):
         data = [line for line in read_loglines(formatter=text_type, max_lines=50,
                                                predicate=lambda l: filter_logline(l, min_level=min_level,
                                                                                   thread_name=lambda
-                                                                                      name: name != 'TORNADO'))]
+                                                                                  name: name != 'TORNADO'))]
         return _responds(RESULT_SUCCESS, data)
 
 
