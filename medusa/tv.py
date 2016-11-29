@@ -2592,6 +2592,7 @@ class TVEpisode(TVObject):
     def to_json(self, detailed=True):
         """Return the json representation."""
         indexer_name = indexerConfig[self.indexer]['identifier']
+        parsed_airdate = sbdatetime.convert_to_setting(network_timezones.parse_date_time(datetime.datetime.toordinal(self.airdate), self.show.airs, self.show.network)).isoformat('T')
         data = OrderedDict([
             ('identifier', self.identifier),
             ('id', OrderedDict([
@@ -2600,7 +2601,7 @@ class TVEpisode(TVObject):
             ('season', self.season),
             ('episode', self.episode),
             ('absoluteNumber', self.absolute_number),
-            ('airDate', self.airdate),
+            ('airDate', parsed_airdate),
             ('title', self.name),
             ('description', self.description),
             ('hasNfo', self.hasnfo),
