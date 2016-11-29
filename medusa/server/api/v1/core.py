@@ -2735,8 +2735,6 @@ class CMD_Shows(ApiCall):
             if self.paused is not None and self.paused != curShow.paused:
                 continue
 
-            # indexer_show = map_indexers_to_show(curShow)
-
             show_dict = {
                 "paused": (0, 1)[curShow.paused],
                 "quality": get_quality_string(curShow.quality),
