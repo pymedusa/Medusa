@@ -546,10 +546,10 @@ class Home(WebRoot):
     @staticmethod
     def testPushbullet(api=None):
         result = notifiers.pushbullet_notifier.test_notify(api)
-        if result:
+        if result.get('success'):
             return 'Pushbullet notification succeeded. Check your device to make sure it worked'
         else:
-            return 'Error sending Pushbullet notification'
+            return 'Error sending Pushbullet notification: {0}'.format(result.get('error'))
 
     @staticmethod
     def getPushbulletDevices(api=None):
