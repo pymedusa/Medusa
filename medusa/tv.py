@@ -2925,6 +2925,12 @@ class TVEpisode(TVObject):
         """
         ep_name = self.__ep_name()
 
+        try:
+            parse_result = NameParser(show=self.show, naming_pattern=True).parse(name=self.release_name)
+        except (InvalidNameException, InvalidShowException) as e:
+            logger.log(u'Unable to parse name: {error_msg}'.format(error_msg=ex(e)), logger.DEBUG)
+            parse_result = None
+
         def dot(name):
             return helpers.sanitizeSceneName(name)
 
@@ -2940,12 +2946,6 @@ class TVEpisode(TVObject):
             if name:
                 name = remove_extension(name)
             else:
-                return ''
-
-            try:
-                parse_result = NameParser(show=show, naming_pattern=True).parse(name)
-            except (InvalidNameException, InvalidShowException) as e:
-                logger.log(u'Unable to parse release_group: {error_msg}'.format(error_msg=ex(e)), logger.DEBUG)
                 return ''
 
             if not parse_result.release_group:
@@ -2987,7 +2987,7 @@ class TVEpisode(TVObject):
             relgrp = app.UNKNOWN_RELEASE_GROUP
 
         # try to get the release encoder to comply with scene naming standards
-        encoder = Quality.sceneQualityFromName(self.release_name.replace(rel_grp[relgrp], ''), ep_qual)
+        encoder = parse_result.video_codec if parse_result and parse_result.video_codec else ''
         if encoder:
             logger.log(u'Found codec for {show} {ep}'.format(show=show_name, ep=ep_name), logger.DEBUG)
 

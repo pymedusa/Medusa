@@ -496,22 +496,6 @@ class Quality(object):
         """
         rel_type = ''
         name = name.lower()
-        codec = re.search(r'[xh].?26[45]', name) or ''
-
-        if codec and codec.group(0).endswith('4') or 'avc' in name:
-            if codec and codec.group(0).startswith('h'):
-                codec = ' h264'
-            else:
-                codec = ' x264'
-        elif codec and codec.group(0).endswith('5') or 'hevc' in name:
-            if codec and codec.group(0).startswith('h'):
-                codec = ' h265'
-            else:
-                codec = ' x265'
-        elif 'xvid' in name:
-            codec = ' XviD'
-        elif 'divx' in name:
-            codec = ' DivX'
 
         # If any HDTV type or SDTV
         if quality in (1, 4, 8, 16, 512, 4096):
@@ -545,7 +529,7 @@ class Quality(object):
             elif re.search(r'web(-| |\.)?(rip|mux)', name):
                 rel_type = ' WEBRip'
 
-        return rel_type + codec
+        return rel_type
 
     @staticmethod
     def statusFromName(name, anime=False):
