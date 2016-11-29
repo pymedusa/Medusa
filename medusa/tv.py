@@ -1787,8 +1787,9 @@ class TVShow(TVObject):
         """Return genres akas dict."""
         akas = {}
         for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
-            val, key = x.split('::')
-            akas[key] = val
+            if '::' in x:
+                val, key = x.split('::')
+                akas[key] = val
         return akas
 
     def get_countries(self):
