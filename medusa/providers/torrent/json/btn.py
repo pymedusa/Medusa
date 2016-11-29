@@ -251,7 +251,7 @@ class BTNProvider(TorrentProvider):
         parsed_json = {}
 
         try:
-            server = jsonrpclib.Server(self.urls['base_url'])
+            server = jsonrpclib.Server(self.urls['base_url'])            
             parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
@@ -262,10 +262,13 @@ class BTNProvider(TorrentProvider):
             else:
                 logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
                            (msg=error.message[1]), logger.ERROR)
-
+        
         except (socket.error, socket.timeout, ValueError) as error:
             logger.log('Error while accessing provider. Error: {msg}'.format
                        (msg=error), logger.WARNING)
+        except Exception as error:
+            logger.log('Unknown error while accessing provider. Error: {msg}'.format
+                      (msg=error), logger.ERROR)
         return parsed_json
 
 
