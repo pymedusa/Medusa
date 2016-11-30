@@ -197,7 +197,7 @@ class TorrentDayProvider(TorrentProvider):
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not (response.content and response.status_code == 200):
+        if not response or not (response.content and response.status_code == 200):
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
