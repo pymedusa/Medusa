@@ -235,7 +235,7 @@ class TVmaze(BaseIndexer):
         log().debug('Getting all episodes of %s', [tvmaze_id])
         try:
             results = self.tvmaze_api.episode_list(tvmaze_id, specials=specials)
-        except EpisodeNotFound:
+        except IDNotFound:
             log().debug('Episode search did not return any results.')
             return False
 
