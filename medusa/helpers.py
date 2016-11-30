@@ -1198,7 +1198,9 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
 
             logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
                          (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
-            return None
+
+            if response_type and response_type != u'response':
+                return None
 
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
