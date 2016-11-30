@@ -16,6 +16,9 @@ class AssetHandler(BaseRequestHandler):
         if asset_group and query:
             if asset_group == 'show':
                 asset_type = self.get_argument('type', default='banner')
+                # @TODO: Replace this with real posterThumb as we only have poster ATM
+                if asset_type == 'posterThumb':
+                    asset_type = 'poster'
                 return self._serve_asset(path=os.path.join(app.CACHE_DIR, 'images/'), filename=query + '.' + asset_type)
             if asset_group == 'network':
                 return self._serve_asset(path=os.path.join(app.PROG_DIR, 'static/images/network/'), filename=query)

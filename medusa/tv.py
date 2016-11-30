@@ -1698,6 +1698,7 @@ class TVShow(TVObject):
     def to_json(self, detailed=True):
         """Return JSON representation."""
         indexer_name = indexerConfig[self.indexer]['identifier']
+        bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
         result = OrderedDict([
             ('id', OrderedDict([
                 (indexer_name, self.indexerid),
@@ -1708,63 +1709,61 @@ class TVShow(TVObject):
             ('network', self.network),  # e.g. CBS
             ('type', self.classification),  # e.g. Scripted
             ('status', self.status),  # e.g. Continuing
-        ])
-        if detailed:
-            cache = image_cache.ImageCache()
-            bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
-            result.update(OrderedDict([
-                ('airs', text_type(self.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()),
-                # e.g Thursday 8:00 PM
-                ('language', self.lang),
-                ('showType', 'sports' if self.is_sports else ('anime' if self.is_anime else 'series')),
-                ('akas', self.get_akas()),
-                ('year', OrderedDict([
-                    ('start', self.imdb_info.get('year') or self.startyear),
+            ('airs', text_type(self.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()),
+            # e.g Thursday 8:00 PM
+            ('language', self.lang),
+            ('showType', 'sports' if self.is_sports else ('anime' if self.is_anime else 'series')),
+            ('akas', self.get_akas()),
+            ('year', OrderedDict([
+                ('start', self.imdb_info.get('year') or self.startyear),
+            ])),
+            ('nextAirDate', self.get_next_airdate()),
+            ('runtime', self.imdb_info.get('runtimes') or self.runtime),
+            ('genres', self.get_genres()),
+            ('rating', OrderedDict([])),
+            ('classification', self.imdb_info.get('certificates')),
+            ('cache', OrderedDict([])),
+            ('countries', self.get_countries()),
+            ('config', OrderedDict([
+                ('location', self.raw_location),
+                ('qualities', OrderedDict([
+                    ('allowed', self.get_allowed_qualities()),
+                    ('preferred', self.get_preferred_qualities()),
                 ])),
-                ('nextAirDate', self.get_next_airdate()),
-                ('runtime', self.imdb_info.get('runtimes') or self.runtime),
-                ('genres', self.get_genres()),
-                ('rating', OrderedDict([])),
-                ('classification', self.imdb_info.get('certificates')),
-                ('cache', OrderedDict([])),
-                ('countries', self.get_countries()),
-                ('config', OrderedDict([
-                    ('location', self.raw_location),
-                    ('qualities', OrderedDict([
-                        ('allowed', self.get_allowed_qualities()),
-                        ('preferred', self.get_preferred_qualities()),
-                    ])),
-                    ('paused', bool(self.paused)),
-                    ('airByDate', bool(self.air_by_date)),
-                    ('subtitlesEnabled', bool(self.subtitles)),
-                    ('dvdOrder', bool(self.dvdorder)),
-                    ('flattenFolders', bool(self.flatten_folders)),
-                    ('scene', self.is_scene),
-                    ('defaultEpisodeStatus', statusStrings[self.default_ep_status]),
-                    ('aliases', self.exceptions or get_scene_exceptions(self.indexerid)),
-                    ('release', OrderedDict([
-                        ('blacklist', bw_list.blacklist),
-                        ('whitelist', bw_list.whitelist),
-                        ('ignoredWords', [v for v in (self.rls_ignore_words or '').split(',') if v]),
-                        ('requiredWords', [v for v in (self.rls_require_words or '').split(',') if v]),
-                    ])),
+                ('paused', bool(self.paused)),
+                ('airByDate', bool(self.air_by_date)),
+                ('subtitlesEnabled', bool(self.subtitles)),
+                ('dvdOrder', bool(self.dvdorder)),
+                ('flattenFolders', bool(self.flatten_folders)),
+                ('scene', self.is_scene),
+                ('defaultEpisodeStatus', statusStrings[self.default_ep_status]),
+                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid)),
+                ('release', OrderedDict([
+                    ('blacklist', bw_list.blacklist),
+                    ('whitelist', bw_list.whitelist),
+                    ('ignoredWords', [v for v in (self.rls_ignore_words or '').split(',') if v]),
+                    ('requiredWords', [v for v in (self.rls_require_words or '').split(',') if v]),
                 ])),
-                ('seasons', OrderedDict([])),
             ]))
+        ])
 
-            if 'rating' in self.imdb_info and 'votes' in self.imdb_info:
-                result['rating']['imdb'] = OrderedDict([
-                    ('stars', self.imdb_info.get('rating')),
-                    ('votes', self.imdb_info.get('votes')),
-                ])
-            if os.path.isfile(cache.poster_path(self.indexerid)):
-                result['cache']['poster'] = cache.poster_path(self.indexerid)
-            if os.path.isfile(cache.banner_path(self.indexerid)):
-                result['cache']['banner'] = cache.banner_path(self.indexerid)
+        cache = image_cache.ImageCache()
+        if 'rating' in self.imdb_info and 'votes' in self.imdb_info:
+            result['rating']['imdb'] = OrderedDict([
+                ('stars', self.imdb_info.get('rating')),
+                ('votes', self.imdb_info.get('votes')),
+            ])
+        if os.path.isfile(cache.poster_path(self.indexerid)):
+            result['cache']['poster'] = cache.poster_path(self.indexerid)
+        if os.path.isfile(cache.banner_path(self.indexerid)):
+            result['cache']['banner'] = cache.banner_path(self.indexerid)
 
+        if detailed:
+            result.update(OrderedDict([
+                ('seasons', OrderedDict([]))
+            ]))
             episodes = self.get_all_episodes()
-            result['seasons'] = OrderedDict((k, list(v)) for k, v in groupby([ep.to_json() for ep in episodes],
-                                                                             lambda item: item['season']))
+            result['seasons'] = [list(v) for _, v in groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
             result['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
@@ -1788,8 +1787,9 @@ class TVShow(TVObject):
         """Return genres akas dict."""
         akas = {}
         for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
-            val, key = x.split('::')
-            akas[key] = val
+            if '::' in x:
+                val, key = x.split('::')
+                akas[key] = val
         return akas
 
     def get_countries(self):
@@ -2588,6 +2588,13 @@ class TVEpisode(TVObject):
     def to_json(self, detailed=True):
         """Return the json representation."""
         indexer_name = indexerConfig[self.indexer]['identifier']
+        parsed_airdate = sbdatetime.convert_to_setting(
+            network_timezones.parse_date_time(
+                datetime.datetime.toordinal(self.airdate),
+                self.show.airs,
+                self.show.network
+            )
+        ).isoformat('T')
         data = OrderedDict([
             ('identifier', self.identifier),
             ('id', OrderedDict([
@@ -2596,7 +2603,7 @@ class TVEpisode(TVObject):
             ('season', self.season),
             ('episode', self.episode),
             ('absoluteNumber', self.absolute_number),
-            ('airDate', self.airdate),
+            ('airDate', parsed_airdate),
             ('title', self.name),
             ('description', self.description),
             ('hasNfo', self.hasnfo),
