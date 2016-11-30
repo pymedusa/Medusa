@@ -23,7 +23,7 @@ from collections import OrderedDict
 from time import time
 
 from pytvmaze import TVMaze
-from pytvmaze.exceptions import CastNotFound, EpisodeNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
+from pytvmaze.exceptions import CastNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowNotFound
