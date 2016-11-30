@@ -61,7 +61,6 @@ from .helper.common import episode_num, http_code_description, media_extensions,
 from .helper.exceptions import ex
 from .show.show import Show
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -1098,65 +1097,6 @@ def restoreConfigZip(archive, targetDir):
         logger.error(u'Zip extraction error: {error!r}', error=e)
         shutil.rmtree(targetDir)
         return False
-
-
-def mapIndexersToShow(show):
-    from . import classes, db
-    from .indexers.indexer_api import indexerApi
-    mapped = {}
-
-    # init mapped indexers object
-    for indexer in indexerApi().indexers:
-        mapped[indexer] = show.indexerid if int(indexer) == int(show.indexer) else 0
-
-    main_db_con = db.DBConnection()
-    sql_results = main_db_con.select(
-        "SELECT * FROM indexer_mapping WHERE indexer_id = ? AND indexer = ?",
-        [show.indexerid, show.indexer])
-
-    # for each mapped entry
-    for curResult in sql_results:
-        nlist = [i for i in curResult if i is not None]
-        # Check if its mapped with both tvdb and tvrage.
-        if len(nlist) >= 4:
-            logger.debug(u'Found indexer mapping in cache for show: {name}', name=show.name)
-            mapped[int(curResult['mindexer'])] = int(curResult['mindexer_id'])
-            break
-    else:
-        sql_l = []
-        for indexer in indexerApi().indexers:
-            if indexer == show.indexer:
-                mapped[indexer] = show.indexerid
-                continue
-
-            indexer_api_params = indexerApi(indexer).api_params.copy()
-            indexer_api_params['custom_ui'] = classes.ShowListUI
-            t = indexerApi(indexer).indexer(**indexer_api_params)
-
-            try:
-                mapped_show = t[show.name]
-            except Exception:
-                logger.debug(u"Unable to map " + indexerApi(show.indexer).name + "->" + indexerApi(
-                    indexer).name + " for show: " + show.name + ", skipping it")
-                continue
-
-            if mapped_show and len(mapped_show) == 1:
-                logger.debug(u"Mapping " + indexerApi(show.indexer).name + "->" + indexerApi(
-                    indexer).name + " for show: " + show.name)
-
-                mapped[indexer] = int(mapped_show[0]['id'])
-
-                logger.debug(u"Adding indexer mapping to DB for show: " + show.name)
-
-                sql_l.append([
-                    "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
-                    [show.indexerid, show.indexer, int(mapped_show[0]['id']), indexer]])
-
-        if sql_l:
-            main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
-
-    return mapped
 
 
 def touchFile(fname, atime=None):
