@@ -62,6 +62,7 @@ def config(monkeypatch, app_config):
         'useSubtitles': app.USE_SUBTITLES,
         'downloadUrl': app.DOWNLOAD_URL,
         'subtitlesMulti': app.SUBTITLES_MULTI,
+        'namingForceFolders': app.NAMING_FORCE_FOLDERS,
         'kodi': {
             'enabled': bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
         },
