@@ -921,7 +921,7 @@ def decrypt(data, encryption_version=0):
     return encrypt(data, encryption_version, _decrypt=True)
 
 
-def full_sanitizeSceneName(name):
+def full_sanitize_scene_name(name):
     return re.sub('[. -]', ' ', sanitizeSceneName(name)).lower().lstrip()
 
 
@@ -946,7 +946,7 @@ def get_show(name, tryIndexers=False):
         # try indexers
         if not show and tryIndexers:
             show = Show.find(
-                app.showList, searchIndexerForShowID(full_sanitizeSceneName(name), ui=classes.ShowListUI)[2])
+                app.showList, searchIndexerForShowID(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
 
         # try scene exceptions
         if not show:
