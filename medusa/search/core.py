@@ -425,6 +425,8 @@ def searchForNeededEpisodes():
             logger.log(u"Not checking for needed episodes of %s because the show is paused" % curShow.name, logger.DEBUG)
             continue
         episodes.extend(wantedEpisodes(curShow, fromDate))
+    wanted_ep = [ep.show.name + ' ' + episode_num(ep.season, ep.episode) for ep in episodes]
+    logger.log('Found {num_ep} wanted episodes: {wanted_ep}'.format(num_ep=len(episodes), wanted_ep=wanted_ep))
 
     if not episodes:
         # nothing wanted so early out, ie: avoid whatever abritrarily
