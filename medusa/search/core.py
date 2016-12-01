@@ -291,12 +291,8 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
 
         if not bestResult:
             bestResult = cur_result
-        # TODO: Put this in a method.
-        elif cur_result.quality in preferred_qualities and (bestResult.quality < cur_result.quality or
-                                                            bestResult.quality not in preferred_qualities):
-            bestResult = cur_result
-        elif cur_result.quality in allowed_qualities and bestResult.quality not in preferred_qualities and \
-                bestResult.quality < cur_result.quality:
+        elif Quality.should_replace(None, cur_result.quality, bestResult.quality,
+                                    allowed_qualities, preferred_qualities)[0]:
             bestResult = cur_result
         elif bestResult.quality == cur_result.quality:
             if any(ext in cur_result.name.lower() for ext in preferred_words):

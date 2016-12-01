@@ -1831,16 +1831,15 @@ class TVShow(TVObject):
         """
         # if the quality isn't one we want under any circumstances then just say no
         allowed_qualities, preferred_qualities = self.current_qualities
-        logger.log(u'{id}: Any,Best = [ {any} ] [ {best} ] Found = [ {found} ]'.format
-                   (id=self.indexerid, any=self.__qualities_to_string(allowed_qualities),
-                    best=self.__qualities_to_string(preferred_qualities),
+        logger.log(u'{id}: Allowed, Preferred = [ {allowed} ] [ {preferred} ] Found = [ {found} ]'.format
+                   (id=self.indexerid, allowed=self.__qualities_to_string(allowed_qualities),
+                    preferred=self.__qualities_to_string(preferred_qualities),
                     found=self.__qualities_to_string([quality])), logger.DEBUG)
 
-        if quality not in allowed_qualities + preferred_qualities or quality is UNKNOWN:
-            logger.log(
-                u"{id}: Don't want this quality, ignoring found result for {show} {ep} with quality {quality}".format
-                (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                 quality=Quality.qualityStrings[quality]), logger.DEBUG)
+        if not Quality.wanted_quality(quality, allowed_qualities, preferred_qualities):
+            logger.log(u"{id}: Ignoring found result for '{show}' {ep} with unwanted quality '{quality}'".format
+                       (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
+                        quality=Quality.qualityStrings[quality]), logger.DEBUG)
             return False
 
         main_db_con = db.DBConnection()
@@ -1855,66 +1854,31 @@ class TVShow(TVObject):
             b'  AND episode = ?', [self.indexerid, season, episode])
 
         if not sql_results or not len(sql_results):
-            logger.log(u'{id}: Unable to find a matching episode in database, '
-                       u'ignoring found result for {show} {ep} with quality {quality}'.format
+            logger.log(u'{id}: Unable to find a matching episode in database. '
+                       u"Ignoring found result for '{show}' {ep} with quality '{quality}'".format
                        (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
                         quality=Quality.qualityStrings[quality]), logger.DEBUG)
             return False
 
         ep_status = int(sql_results[0][b'status'])
         ep_status_text = statusStrings[ep_status]
-
-        # if we know we don't want it then just say no
-        if ep_status in Quality.ARCHIVED + [UNAIRED, SKIPPED, IGNORED] and not forced_search:
-            logger.log(u"{id}: Existing episode status is '{status}', "
-                       u'ignoring found result for {show} {ep} with quality {quality}'.format
-                       (id=self.indexerid, status=ep_status_text, show=self.name, ep=episode_num(season, episode),
-                        quality=Quality.qualityStrings[quality]), logger.DEBUG)
-            return False
-
         _, cur_quality = Quality.splitCompositeStatus(ep_status)
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
-        if ep_status in (WANTED, SKIPPED, UNKNOWN):
-            logger.log(u"{id}: Existing episode status is '{status}', "
-                       u'getting found result for {show} {ep} with quality {quality}'.format
+        if ep_status == WANTED:
+            logger.log(u"{id}: '{show}' {ep} status is 'WANTED'. Accepting result with quality '{new_quality}'".format
                        (id=self.indexerid, status=ep_status_text, show=self.name, ep=episode_num(season, episode),
-                        quality=Quality.qualityStrings[quality]), logger.DEBUG)
+                        new_quality=Quality.qualityStrings[quality]), logger.DEBUG)
             return True
-        elif forced_search:
-            if (download_current_quality and quality >= cur_quality) or (
-                    not download_current_quality and quality > cur_quality):
-                logger.log(u'{id}: Usually ignoring found result, but forced search allows the quality,'
-                           u' getting found result for {show} {ep} with quality {quality}'.format
-                           (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                            quality=Quality.qualityStrings[quality]), logger.DEBUG)
-                return True
 
-        # if we are re-downloading then we only want it if it's in our
-        # preferred_qualities list and better than what we have, or we only have
-        # one preferred_quality and we do not have that quality yet
-        # TODO: Put this in a method.
-        if ep_status in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER and \
-                quality in preferred_qualities and (quality > cur_quality or cur_quality not in preferred_qualities):
-            logger.log(u'{id}: Episode already exists with quality {existing_quality} but the found result'
-                       u' quality {new_quality} is wanted more, getting found result for {show} {ep}'.format
-                       (id=self.indexerid, existing_quality=Quality.qualityStrings[cur_quality],
-                        new_quality=Quality.qualityStrings[quality], show=self.name,
-                        ep=episode_num(season, episode)), logger.DEBUG)
-            return True
-        elif cur_quality == Quality.UNKNOWN and forced_search:
-            logger.log(u'{id}: Episode already exists but quality is Unknown, '
-                       u'getting found result for {show} {ep} with quality {quality}'.format
-                       (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                        quality=Quality.qualityStrings[quality]), logger.DEBUG)
-            return True
-        else:
-            logger.log(u'{id}: Episode already exists with quality {existing_quality} and the found result has '
-                       u'same/lower quality, ignoring found result for {show} {ep} with quality {new_quality}'.format
-                       (id=self.indexerid, existing_quality=Quality.qualityStrings[cur_quality], show=self.name,
-                        ep=episode_num(season, episode), new_quality=Quality.qualityStrings[quality]),
-                       logger.DEBUG)
-        return False
+        should_replace, msg = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
+                                                     preferred_qualities, download_current_quality, forced_search)
+        logger.log(u"{id}: '{show}' {ep} status is: '{status}'. {action} result with quality '{new_quality}'. "
+                   u"Reason: {msg}".format
+                   (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
+                    status=ep_status_text, action='Accepting' if should_replace else 'Ignoring',
+                    new_quality=Quality.qualityStrings[quality], msg=msg), logger.DEBUG)
+        return should_replace
 
     def get_overview(self, ep_status):
         """Get the Overview status from the Episode status.
