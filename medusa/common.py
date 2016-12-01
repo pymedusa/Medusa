@@ -623,7 +623,10 @@ class Quality(object):
                 return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
         if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
-            return False, 'New quality is not in any wanted quality lists. Ignoring new quality.'
+            if force:
+                return True, 'New quality is not in any wanted quality lists. Forcing new quality.'
+            else:
+                return False, 'New quality is not in any wanted quality lists. Ignoring new quality.'
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.

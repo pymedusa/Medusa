@@ -246,17 +246,37 @@ import pytest
         'force': False,
         'expected': False
     },
-    {  # p24: Downloaded SDTV and found SDTV. Not wanted anymore. Force search and download_current_quality: no
+    {  # p24: Downloaded SDTV and found SDTV. Not wanted anymore. Force search: yes
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.SDTV,
         'new_quality': Quality.SDTV,
         'allowed_qualities': [Quality.HDTV],
         'preferred_qualities': [],
-        'download_current_quality': True,
+        'download_current_quality': False,
         'force': True,
+        'expected': True
+    },
+    {  # p25: Downloaded SDTV and found SDTV. Not wanted anymore: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.SDTV,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
         'expected': False
     },
-    {  # p25: Archived SDTV and found HDTV. Force search yes: yes
+    {  # p26: Downloaded SDTV and found SDTV. Still wanted. Force search and download_current_quality: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.SDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [],
+        'download_current_quality': True,
+        'force': True,
+        'expected': True
+    },
+    {  # p27: Archived SDTV and found HDTV. Force search yes: yes
         'ep_status': ARCHIVED,
         'cur_quality': Quality.SDTV,
         'new_quality': Quality.HDTV,
@@ -266,7 +286,7 @@ import pytest
         'force': True,
         'expected': True
     },
-    {  # p26: SKIPPED and found HDTV. Force search yes: yes
+    {  # p28: SKIPPED and found HDTV. Force search yes: yes
         'ep_status': SKIPPED,
         'cur_quality': SKIPPED,
         'new_quality': Quality.HDTV,
@@ -276,7 +296,7 @@ import pytest
         'force': True,
         'expected': True
     },
-    {  # p27: SKIPPED and found HDTV. Force search no: no
+    {  # p29: SKIPPED and found HDTV. Force search no: no
         'ep_status': SKIPPED,
         'cur_quality': None,
         'new_quality': Quality.HDTV,
@@ -285,6 +305,16 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'expected': False
+    },
+    {  # p30: DOWNLOADED and found 1080p HDBLURAY (not in wanted qualities). Force search yes: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': True,
+        'expected': True
     }
 ])
 def test_should_replace(p):
