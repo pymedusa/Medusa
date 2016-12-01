@@ -328,31 +328,16 @@ def is_final_result(result):
     :param result: quality to check
     :return: True if the result is the highest quality in both the any/best quality lists else False
     """
-
-    logger.log(u"Checking if we should keep searching after we've found " + result.name, logger.DEBUG)
+    logger.log(u"Checking if we should keep searching others providers after we've found %s", result.name, logger.DEBUG)
 
     show_obj = result.episodes[0].show
-
     allowed_qualities, preferred_qualities = show_obj.current_qualities
 
-    # if there is a re-download that's higher than this then we definitely need to keep looking
-    if preferred_qualities and result.quality < max(preferred_qualities):
-        return False
-
     # if it does not match the shows black and white list its no good
-    elif show_obj.is_anime and show_obj.release_groups.is_valid(result):
+    if show_obj.is_anime and show_obj.release_groups.is_valid(result):
         return False
 
-    # if there's no re-download that's higher (above) and this is the highest initial download then we're good
-    elif allowed_qualities and result.quality in allowed_qualities:
-        return True
-
-    elif preferred_qualities and result.quality == max(preferred_qualities):
-        return True
-
-    # if we got here than it's either not on the lists, they're empty, or it's lower than the highest required
-    else:
-        return False
+    return Quality.is_final_quality(result.quality, allowed_qualities, preferred_qualities)
 
 
 def is_first_best_match(result):

@@ -676,6 +676,14 @@ class Quality(object):
         return new_quality in allowed_qualities + preferred_qualities
 
     @staticmethod
+    def is_final_quality(quality, allowed_qualities, preferred_qualities):
+        """Checks if quality is the most wanted quality"""
+        if preferred_qualities:
+            if quality == max(preferred_qualities):
+                return True
+        return quality in allowed_qualities
+
+    @staticmethod
     def from_guessit(guess):
         """
         Return a Quality from a guessit dict.
