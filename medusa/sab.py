@@ -88,7 +88,7 @@ def _checkSabResponse(jdata):
     """
     if 'error' in jdata:
         if jdata['error'] == 'API Key Incorrect':
-            logger.log("Sabnzbd's API key is incorrect, logger.WARNING)
+            logger.log("Sabnzbd's API key is incorrect", logger.WARNING)
         else:
             logger.log('Sabnzbd encountered an error: {0}'.format(jdata['error']), logger.ERROR)
         return False, jdata['error']
