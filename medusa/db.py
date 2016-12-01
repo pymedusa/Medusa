@@ -117,6 +117,7 @@ class DBConnection(object):
                'database or disk is full' in e.args[0]:
                 logger.log(u'DB error: {0!r}'.format(e), logger.WARNING)
             else:
+                logger.log(u"Query: '{0}'. Arguments: '{1}'".format(query, args))
                 logger.log(u'DB error: {0!r}'.format(e), logger.ERROR)
                 raise
         except Exception as e:
