@@ -1017,7 +1017,7 @@ class PostProcessor(object):
                 else:
                     allowed_qualities, preferred_qualities = show.current_qualities
                     if common.Quality.should_replace(old_ep_status, old_ep_quality, new_ep_quality,
-                                                     allowed_qualities, preferred_qualities):
+                                                     allowed_qualities, preferred_qualities)[0]:
                         raise EpisodePostProcessingFailedException(
                             u'File exists and new file quality is not in a preferred '
                             u'quality list, marking it unsafe to replace')

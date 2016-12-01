@@ -601,7 +601,8 @@ class Quality(object):
         return True
 
     @staticmethod
-    def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities):
+    def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
+                       download_current_quality=False, force=False):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, the any downloaded quality is final
@@ -609,36 +610,56 @@ class Quality(object):
         If new quality is already in preferred then is already final quality.
         """
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            return False
+            if force:
+                # Forcing quality for episodes with status ARCHIVED, IGNORED, SKIPPED, UNAIRED
+                return True, "Episode status not allowed but forcing new quality."
+            else:
+                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality.'
 
         if old_quality == Quality.UNKNOWN:
-            return False
+            if force:
+                return True, 'Existing quality is UNKNOWN. Forcing new quality'
+            else:
+                return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
-        if new_quality not in allowed_qualities + preferred_qualities:
-            # If new quality is not wanted, we shouldn't replace.
-            return False
+        if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
+            if force:
+                return True, 'New quality is not in any wanted quality lists. Forcing new quality.'
+            else:
+                return False, 'New quality is not in any wanted quality lists. Ignoring new quality.'
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.
-            return True
+            return True, 'Existing quality is no longer in any wanted quality lists. Accepting new quality'
+
+        if force and download_current_quality:
+            # If we already downloaded quality, just redownload it as long is still part of the wanted qualities
+            return new_quality == old_quality, 'Redownloading same quality'
 
         if preferred_qualities:
             # Don't replace because old quality is already best quality.
             if old_quality in preferred_qualities:
-                return False
+                return False, 'Existing quality is already a preferred quality. Ignoring new quality.'
 
             # Old quality is not final. Check if we should replace:
 
-            # Replace if better quality among allowed qualities
-            replace_allowed = new_quality > old_quality
             # Replace if preferred quality
-            wanted_preferred_quality = new_quality in preferred_qualities
+            if new_quality in preferred_qualities:
+                return True, 'New quality is preferred. Accepting new quality'
 
-            return replace_allowed or wanted_preferred_quality
+            if new_quality > old_quality:
+                return True, 'New quality is higher quality (but not preferred). Accepting new quality'
+
+            return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 
         else:
             # Allowed quality should never be replaced
-            return False
+            return False, 'Existing quality is already final. Ignoring new quality'
+
+    @staticmethod
+    def wanted_quality(new_quality, allowed_qualities, preferred_qualities):
+        """Check if new quality is wanted."""
+        return new_quality in allowed_qualities + preferred_qualities
 
     @staticmethod
     def from_guessit(guess):
