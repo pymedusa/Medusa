@@ -1893,7 +1893,9 @@ class TVShow(TVObject):
         ep_status = try_int(ep_status) or UNKNOWN
 
         if backlog_mode:
-            if Quality.should_search(ep_status, self):
+            if ep_status == WANTED:
+                return Overview.WANTED
+            elif Quality.should_search(ep_status, self):
                 return Overview.QUAL
             return Overview.GOOD
 
