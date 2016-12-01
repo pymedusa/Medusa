@@ -510,7 +510,7 @@ def searchProviders(show, episodes, forced_search=False, down_cur_quality=False,
     didSearch = False
 
     # build name cache for show
-    name_cache.buildNameCache(show)
+    name_cache.build_name_cache(show)
 
     original_thread_name = threading.currentThread().name
 

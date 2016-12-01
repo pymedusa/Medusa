@@ -21,10 +21,10 @@ import threading
 
 from six import iteritems
 from . import app, db, logger
-from .helpers import full_sanitizeSceneName
+from .helpers import full_sanitize_scene_name
 from .scene_exceptions import get_scene_exceptions, get_scene_seasons, retrieve_exceptions
 
-nameCache = {}
+name_cache = {}
 nameCacheLock = threading.Lock()
 
 
@@ -38,9 +38,9 @@ def addNameToCache(name, indexer_id=0):
     cache_db_con = db.DBConnection('cache.db')
 
     # standardize the name we're using to account for small differences in providers
-    name = full_sanitizeSceneName(name)
-    if name not in nameCache:
-        nameCache[name] = int(indexer_id)
+    name = full_sanitize_scene_name(name)
+    if name not in name_cache:
+        name_cache[name] = int(indexer_id)
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name) VALUES (?, ?)", [indexer_id, name])
 
 
@@ -51,51 +51,59 @@ def retrieveNameFromCache(name):
     :param name: The show name to look up.
     :return: the TVDB id that resulted from the cache lookup or None if the show wasn't found in the cache
     """
-    name = full_sanitizeSceneName(name)
-    if name in nameCache:
-        return int(nameCache[name])
+    name = full_sanitize_scene_name(name)
+    if name in name_cache:
+        return int(name_cache[name])
 
 
-def clearCache(indexerid=0):
+def clear_cache(indexerid=0):
     """
     Deletes all "unknown" entries from the cache (names with indexer_id of 0).
     """
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action("DELETE FROM scene_names WHERE indexer_id = ? OR indexer_id = ?", (indexerid, 0))
 
-    toRemove = [key for key, value in iteritems(nameCache) if value == 0 or value == indexerid]
+    toRemove = [key for key, value in iteritems(name_cache) if value == 0 or value == indexerid]
     for key in toRemove:
-        del nameCache[key]
+        del name_cache[key]
 
 
 def saveNameCacheToDb():
     """Commit cache to database file"""
     cache_db_con = db.DBConnection('cache.db')
 
-    for name, indexer_id in iteritems(nameCache):
+    for name, indexer_id in iteritems(name_cache):
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name) VALUES (?, ?)", [indexer_id, name])
 
 
-def buildNameCache(show=None):
+def build_name_cache(show=None):
     """Build internal name cache
 
     :param show: Specify show to build name cache for, if None, just do all shows
     """
+    def _cache_name(show):
+        """Builds the name cache for a single show"""
+        clear_cache(show.indexerid)
+        for season in [-1] + get_scene_seasons(show.indexerid):
+            for name in set(get_scene_exceptions(show.indexerid, season=season) + [show.name]):
+                name = full_sanitize_scene_name(name)
+                if name in name_cache:
+                    continue
+                name_cache[name] = int(show.indexerid)
+        logger.log(u'Internal name cache for {show.name} set to: [{names}]'.format(
+            show=show,
+            names=u', '.join([key for key, value
+                              in iteritems(name_cache)
+                              if value == show.indexerid])
+        ), logger.DEBUG)
+
     with nameCacheLock:
         retrieve_exceptions()
 
     if not show:
         # logger.log(u"Building internal name cache for all shows", logger.INFO)
         for show in app.showList:
-            buildNameCache(show)
+            _cache_name(show)
     else:
         # logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
-        clearCache(show.indexerid)
-        for curSeason in [-1] + get_scene_seasons(show.indexerid):
-            for name in set(get_scene_exceptions(show.indexerid, season=curSeason) + [show.name]):
-                name = full_sanitizeSceneName(name)
-                if name in nameCache:
-                    continue
-
-                nameCache[name] = int(show.indexerid)
-        logger.log(u"Internal name cache for " + show.name + " set to: [ " + u', '.join([key for key, value in iteritems(nameCache) if value == show.indexerid]) + " ]", logger.DEBUG)
+        _cache_name(show)
