@@ -1,6 +1,6 @@
 #!/usr/bin/python
-# coding=utf-8
 
+# TVMaze Free endpoints
 show_search = 'http://api.tvmaze.com/search/shows?q={0}'
 show_single_search = 'http://api.tvmaze.com/singlesearch/shows?q={0}'
 lookup_tvrage = 'http://api.tvmaze.com/lookup/shows?tvrage={0}'
@@ -18,7 +18,18 @@ people_search = 'http://api.tvmaze.com/search/people?q={0}'
 person_main_info = 'http://api.tvmaze.com/people/{0}'
 person_cast_credits = 'http://api.tvmaze.com/people/{0}/castcredits'
 person_crew_credits = 'http://api.tvmaze.com/people/{0}/crewcredits'
+show_crew = 'http://api.tvmaze.com/shows/{}/crew'
 show_updates = 'http://api.tvmaze.com/updates/shows'
 show_akas = 'http://api.tvmaze.com/shows/{0}/akas'
 show_seasons = 'http://api.tvmaze.com/shows/{0}/seasons'
 season_by_id = 'http://api.tvmaze.com/seasons/{0}'
+episode_by_id = 'http://api.tvmaze.com/episodes/{0}'
+
+# TVMaze Premium endpoints
+followed_shows = 'http://api.tvmaze.com/v1/user/follows/shows{0}'
+followed_people = 'http://api.tvmaze.com/v1/user/follows/people{0}'
+followed_networks = 'http://api.tvmaze.com/v1/user/follows/networks{0}'
+followed_web_channels = 'http://api.tvmaze.com/v1/user/follows/webchannels{0}'
+marked_episodes = 'http://api.tvmaze.com/v1/user/episodes{0}'
+voted_shows = 'http://api.tvmaze.com/v1/user/votes/shows{0}'
+voted_episodes = 'http://api.tvmaze.com/v1/user/votes/episodes{0}'
