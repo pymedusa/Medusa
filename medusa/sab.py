@@ -87,7 +87,10 @@ def _checkSabResponse(jdata):
     :return: a list of (Boolean, string) which is True if SAB is not reporting an error
     """
     if 'error' in jdata:
-        logger.log(jdata['error'], logger.ERROR)
+        if jdata['error'] == 'API Key Incorrect':
+            logger.log("Sabnzbd's API key is incorrect", logger.WARNING)
+        else:
+            logger.log('Sabnzbd encountered an error: {0}'.format(jdata['error']), logger.ERROR)
         return False, jdata['error']
     else:
         return True, jdata
