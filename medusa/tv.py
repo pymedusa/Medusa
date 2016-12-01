@@ -1880,15 +1880,22 @@ class TVShow(TVObject):
                     new_quality=Quality.qualityStrings[quality], msg=msg), logger.DEBUG)
         return should_replace
 
-    def get_overview(self, ep_status):
+    def get_overview(self, ep_status, backlog_mode=False):
         """Get the Overview status from the Episode status.
 
         :param ep_status: an Episode status
         :type ep_status: int
+        :param backlog_mode: if we should return overview for backlogOverview
+        :type backlog_mode: boolean
         :return: an Overview status
         :rtype: int
         """
         ep_status = try_int(ep_status) or UNKNOWN
+
+        if backlog_mode:
+            if Quality.should_search(ep_status, self):
+                return Overview.QUAL
+            return Overview.GOOD
 
         if ep_status == WANTED:
             return Overview.WANTED
