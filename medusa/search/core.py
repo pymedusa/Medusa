@@ -318,28 +318,6 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
     return bestResult
 
 
-def is_final_result(result):
-    """
-    Checks if the given result is good enough quality that we can stop searching for other ones.
-
-    This is used while looping through providers while searching for episode.
-    If we find the best result in that provider we stop searching in the other providers
-
-    :param result: quality to check
-    :return: True if the result is the highest quality in both the any/best quality lists else False
-    """
-    logger.log(u"Checking if we should keep searching others providers after we've found %s", result.name, logger.DEBUG)
-
-    show_obj = result.episodes[0].show
-    allowed_qualities, preferred_qualities = show_obj.current_qualities
-
-    # if it does not match the shows black and white list its no good
-    if show_obj.is_anime and show_obj.release_groups.is_valid(result):
-        return False
-
-    return Quality.is_final_quality(result.quality, allowed_qualities, preferred_qualities)
-
-
 def is_first_best_match(result):
     """
     Check if the given result is a best quality match and if we want to stop searching providers here.
@@ -803,17 +781,6 @@ def searchProviders(show, episodes, forced_search=False, down_cur_quality=False,
                             found = True
             if not found:
                 finalResults += [bestResult]
-
-        # check that we got all the episodes we wanted first before doing a match and snatch
-        wantedEpCount = 0
-        for wantedEp in episodes:
-            for result in finalResults:
-                if wantedEp in result.episodes and is_final_result(result):
-                    wantedEpCount += 1
-
-        # make sure we search every provider for results unless we found everything we wanted
-        if wantedEpCount == len(episodes):
-            break
 
     if not didSearch:
         logger.log(u"No NZB/Torrent providers found or enabled in the application config for backlog searches. "
