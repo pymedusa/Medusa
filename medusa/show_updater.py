@@ -19,7 +19,7 @@
 import logging
 import threading
 import time
-from app import showList, showQueueScheduler
+import app
 
 from six import text_type
 
@@ -48,14 +48,17 @@ class ShowUpdater(object):
         network_timezones.update_network_dict()
         logger.info(u'Started periodic show updates')
 
+        """FIXME: Apperently this import of showList references to a different object, then when it's imported
+        on a module level. Need to fix that. As it may cause more issues."""
+
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
-        self.last_update.initialize_indexer_update(showList)
+        self.last_update.initialize_indexer_update(app.showList)
 
         # Get a list of seasons that have reached their update timer
         expired_seasons = self.last_update.expired_seasons()
 
         # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
-        for show in showList:
+        for show in app.showList:
             indexer_api_params = indexerApi(show.indexer).api_params.copy()
             t = indexerApi(show.indexer).indexer(**indexer_api_params)
             if hasattr(t, 'get_last_updated_seasons'):
@@ -90,7 +93,7 @@ class ShowUpdater(object):
                 # Loop through the shows.
 
                 # Get the show object and check, to prevent issues further down the line.
-                show = Show.find_by_id(showList, indexer, show_id)
+                show = Show.find_by_id(app.showList, indexer, show_id)
 
                 if not show:
                     logger.warning(u'Could not get show object for indexer id: {show_id} '
@@ -128,7 +131,7 @@ class ShowUpdater(object):
             if not show.paused:
                 logger.info(u'Full update on show: {show}', show=show.name)
                 try:
-                    pi_list.append(showQueueScheduler.action.updateShow(show))
+                    pi_list.append(app.showQueueScheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
@@ -142,7 +145,7 @@ class ShowUpdater(object):
             if not show[1].paused:
                 logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
                 try:
-                    pi_list.append(showQueueScheduler.action.updateShow(show[1], season=show[2]))
+                    pi_list.append(app.showQueueScheduler.action.updateShow(show[1], season=show[2]))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
@@ -224,16 +227,23 @@ class ShowUpdate(db.DBConnection):
             if not [show for show in show_list if
                     show.indexer == row['indexer'] and
                     show.indexerid == row['indexer_id']]:
+
                 remove_row.append(row['indexer_update_id'])
                 remove_show.append(row['indexer_id'])
 
+        def get_rows_by_slice(seq, row_len):
+            """Simple pagination/slice method. Will transform [1,2,3,4] into [[1,2],[3,4]] when provided rowlen=2."""
+            for start in xrange(0, len(seq), row_len):
+                yield seq[start:start + row_len]
+
         if remove_row:
             remove_show = ','.join(text_type(s) for s in set(remove_show))
-            self.action(
-                b'DELETE FROM indexer_update '
-                b'WHERE indexer_update_id IN (%s)' % ','.join('?' * len(remove_row)),
-                remove_row
-            )
+            for paged_list in get_rows_by_slice(remove_row, 50):
+                self.action(
+                    b'DELETE FROM indexer_update '
+                    b'WHERE indexer_update_id IN (%s)' % ','.join('?' * len(paged_list)),
+                    paged_list
+                )
             logger.info(u'Removed following shows from season update cache: [{shows}]',
                         shows=remove_show)
 
