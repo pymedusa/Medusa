@@ -353,8 +353,8 @@ def is_first_best_match(result):
     show_obj = result.episodes[0].show
 
     _, preferred_qualities = show_obj.current_qualities
-
-    return result.quality in preferred_qualities if preferred_qualities else False
+    # Don't pass allowed because we only want to check if this quality is wanted preferred.
+    return Quality.wanted_quality(result.quality, [], preferred_qualities)
 
 
 def wantedEpisodes(show, fromDate):
