@@ -21,7 +21,7 @@ import traceback
 
 from imdb import _exceptions as imdb_exceptions
 from six import binary_type, text_type
-from traktor import TraktApi, TraktException
+from traktor import TraktException
 from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .black_and_white_list import BlackAndWhiteList
 from .common import WANTED
