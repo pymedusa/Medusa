@@ -113,7 +113,7 @@ class Tmdb(BaseIndexer):
                         continue
 
                     # Do some value sanitizing
-                    if isinstance(value, list):
+                    if isinstance(value, list) and key not in ['episode_run_time']:
                         if all(isinstance(x, (str, unicode, int)) for x in value):
                             value = list_separator.join(str(v) for v in value)
 
