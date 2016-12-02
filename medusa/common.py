@@ -617,13 +617,11 @@ class Quality(object):
         If not preferred qualities, the any downloaded quality is final
         if preferred quality, then new quality should be higher than existing one AND not be in preferred
         If new quality is already in preferred then is already final quality.
+        Force (forced search) bypass episode status only or unknown quality
         """
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            if force:
-                # Forcing quality for episodes with status ARCHIVED, IGNORED, SKIPPED, UNAIRED
-                return True, "Episode status not allowed but forcing new quality."
-            else:
-                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality.'
+            if not force:
+                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
 
         if old_quality == Quality.UNKNOWN:
             if force:
@@ -632,10 +630,7 @@ class Quality(object):
                 return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
         if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
-            if force:
-                return True, 'New quality is not in any wanted quality lists. Forcing new quality.'
-            else:
-                return False, 'New quality is not in any wanted quality lists. Ignoring new quality.'
+            return False, 'New quality is not in any wanted quality lists. Ignoring new quality'
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.
@@ -648,7 +643,7 @@ class Quality(object):
         if preferred_qualities:
             # Don't replace because old quality is already best quality.
             if old_quality in preferred_qualities:
-                return False, 'Existing quality is already a preferred quality. Ignoring new quality.'
+                return False, 'Existing quality is already a preferred quality. Ignoring new quality'
 
             # Old quality is not final. Check if we should replace:
 
@@ -663,7 +658,7 @@ class Quality(object):
 
         else:
             # Allowed quality should never be replaced
-            return False, 'Existing quality is already final. Ignoring new quality'
+            return False, 'Existing quality is already final (allowed only). Ignoring new quality'
 
     @staticmethod
     def wanted_quality(new_quality, allowed_qualities, preferred_qualities):
