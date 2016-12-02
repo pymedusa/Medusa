@@ -61,10 +61,7 @@ class GenericProvider(object):
             'http://torra.pro/torrent/{torrent_hash}.torrent',
             'http://torra.click/torrent/{torrent_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{torrent_hash}.torrent',
-            # 'http://thetorrent.org/torrent/{torrent_hash}.torrent',
-            # 'http://torcache.net/torrent/{torrent_hash}.torrent',
-            # 'http://btdig.com/torrent/{torrent_hash}.torrent',
-            # 'http://torrage.info/torrent/{torrent_hash}.torrent',
+            'http://torrasave.site/torrent/{torrent_hash}.torrent',
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
