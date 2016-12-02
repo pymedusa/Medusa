@@ -48,9 +48,6 @@ class ShowUpdater(object):
         network_timezones.update_network_dict()
         logger.info(u'Started periodic show updates')
 
-        """FIXME: Apperently this import of showList references to a different object, then when it's imported
-        on a module level. Need to fix that. As it may cause more issues."""
-
         # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
         self.last_update.initialize_indexer_update(app.showList)
 
