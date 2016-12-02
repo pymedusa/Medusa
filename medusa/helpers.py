@@ -776,7 +776,7 @@ def backupVersionedFile(old_file, version):
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.debug(u"Not creating backup, {file} doesn't exist", file=old_file)
+            logger.debug(u"Not creating backup, {old_file} doesn't exist", old_file=old_file)
             break
 
         try:
@@ -1275,7 +1275,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
         return False
     except EnvironmentError as e:
         remove_file_failed(filename)
-        logger.warning(u'Unable to save the file: {file}. Error: {error}'.format(file=filename, error=e))
+        logger.warning(u'Unable to save the file: {name}. Error: {error}'.format(name=filename, error=e))
         return False
     except Exception as e:
         remove_file_failed(filename)

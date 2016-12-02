@@ -121,8 +121,8 @@ class TorrentProvider(GenericProvider):
                 meta_info = bencode.bdecode(f.read())
             return 'info' in meta_info and meta_info['info']
         except BTFailure as e:
-            logger.log(u'Failed to validate torrent file: {file}. Error: {error}'.format
-                       (file=file_name, error=e), logger.DEBUG)
+            logger.log(u'Failed to validate torrent file: {name}. Error: {error}'.format
+                       (name=file_name, error=e), logger.DEBUG)
 
         remove_file_failed(file_name)
         logger.log(u'{result} is not a valid torrent file'.format(result=file_name), logger.WARNING)
