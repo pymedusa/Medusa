@@ -661,6 +661,16 @@ class Quality(object):
             return False, 'Existing quality is already final (allowed only). Ignoring new quality'
 
     @staticmethod
+    def is_higher_quality(current_quality, new_quality, allowed_qualities, preferred_qualities):
+        """Check is new quality is better than current quality based on allowed and preferred qualities."""
+        if new_quality in preferred_qualities:
+            return new_quality > current_quality
+        elif new_quality in allowed_qualities:
+            if current_quality in preferred_qualities:
+                return False
+            return new_quality > current_quality
+
+    @staticmethod
     def wanted_quality(new_quality, allowed_qualities, preferred_qualities):
         """Check if new quality is wanted."""
         return new_quality in allowed_qualities + preferred_qualities
