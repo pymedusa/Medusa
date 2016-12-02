@@ -66,7 +66,7 @@ class Tmdb(BaseIndexer):
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
             'dvd_episode_number': 'dvd_episodenumber',
-            'airs_day_of_week': 'airs_dayofweek',
+            'last_air_date': 'airs_dayofweek',
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'vote_average': 'contentrating',
@@ -125,14 +125,18 @@ class Tmdb(BaseIndexer):
                         value = value[0].get('name') if value else ''
 
                     if key == 'last_air_date':
-                        return_dict['airs_dayofweek'] = week_day(value)
+                        value = week_day(value)
+
+                    if key == 'episode_run_time':
+                        # Using the longest episode runtime if there are multiple.
+                        value = max(value) if isinstance(value, list) else ''
 
                     # Try to map the key
                     if key in key_mappings:
                         key = key_mappings[key]
 
-                    if isinstance(value, float):
-                        value = str(value)
+                    # Finally sanitize and set value.
+                    value = str(value) if isinstance(value, (float, int)) else value
 
                     # Set value to key
                     return_dict[key] = value
@@ -220,10 +224,13 @@ class Tmdb(BaseIndexer):
         if aired_season:
             aired_season = [aired_season] if not isinstance(aired_season, list) else aired_season
         else:
-            if tmdb_id not in self.shows or not len(self.shows[tmdb_id].data.get('seasons')):
+            if tmdb_id not in self.shows or not self.shows[tmdb_id].data.get('seasons'):
                 self.config['episodes_enabled'] = False  # Don't want to get episodes, as where already doing that.
                 self._get_show_data(tmdb_id)  # Get show data, with the list of seasons
-            aired_season = [season['season_number'] for season in self.shows[tmdb_id].data.get('seasons')]
+            aired_season = [season['season_number'] for season in self.shows[tmdb_id].data.get('seasons', [])]
+
+        if not aired_season:
+            raise IndexerShowIncomplete('This show does not have any seasons on TMDB.')
 
         # Parse episode data
         log().debug('Getting all episodes of %s', [tmdb_id])
