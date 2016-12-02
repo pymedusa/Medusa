@@ -44,14 +44,21 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
+
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
+
 import certifi
+
 import cfscrape
+
 from contextlib2 import closing, suppress
+
 import guessit
+
 import requests
 from requests.compat import urlparse
+
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
@@ -1244,8 +1251,8 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                                  hooks=hooks, proxies=proxies)) as resp:
 
             if not resp.ok:
-                logger.debug(u"Requested download url %s returned status code is %s: %s"
-                             % (url, resp.status_code, http_code_description(resp.status_code)))
+                logger.warning(u'Requested download URL {url} returned status code is {code}: {description}'.format
+                               (url=url, code=resp.status_code, description=http_code_description(resp.status_code)))
                 return False
 
             try:
@@ -1256,20 +1263,23 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                             fp.flush()
 
                 chmodAsParent(filename)
-            except Exception:
-                logger.warning(u'Problem setting permissions or writing file to: {0}'.format(filename))
+            except Exception as e:
+                remove_file_failed(filename)
+                logger.warning(u'Problem setting permissions or writing file to: {location}. Error: {error}'.format
+                               (location=filename, error=e))
+                return False
 
     except requests.exceptions.RequestException as e:
         remove_file_failed(filename)
-        logger.warning(u'Error requesting download url: {0}. Error: {1}'.format(url, ex(e)))
+        logger.warning(u'Error requesting download URL: {url}. Error: {error}'.format(url=url, error=e))
         return False
     except EnvironmentError as e:
         remove_file_failed(filename)
-        logger.warning(u'Unable to save the file: {0}'.format(ex(e)))
+        logger.warning(u'Unable to save the file: {file}. Error: {error}'.format(file=filename, error=e))
         return False
     except Exception as e:
         remove_file_failed(filename)
-        logger.error(u'Unknown exception while loading download URL: {0} : {1}'.format(url, ex(e)))
+        logger.error(u'Unknown exception while loading download URL: {url}. Error: {error}'.format(url=url, error=e))
         logger.debug(traceback.format_exc())
         return False
 
