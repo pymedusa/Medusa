@@ -125,7 +125,7 @@ class TorrentProvider(GenericProvider):
                        (name=file_name, error=e), logger.DEBUG)
 
         remove_file_failed(file_name)
-        logger.log(u'{result} is not a valid torrent file'.format(result=file_name), logger.WARNING)
+        logger.log(u'{result} is not a valid torrent file'.format(result=file_name), logger.DEBUG)
 
         return False
 
