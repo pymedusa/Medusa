@@ -1268,7 +1268,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                             fp.flush()
 
                 chmodAsParent(filename)
-            except Exception as e:
+            except OSError as e:
                 remove_file_failed(filename)
                 logger.warning(u'Problem setting permissions or writing file to: {location}. Error: {error}'.format
                                (location=filename, error=e))
@@ -1284,7 +1284,8 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
         return False
     except Exception as e:
         remove_file_failed(filename)
-        logger.error(u'Unknown exception while loading download URL: {url}. Error: {error}'.format(url=url, error=e))
+        logger.error(u'Unknown exception while downloading file {name} from URL: {url}. Error: {error}'.format
+                     (name=filename, url=url, error=e))
         logger.debug(traceback.format_exc())
         return False
 
