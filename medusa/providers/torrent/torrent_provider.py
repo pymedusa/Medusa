@@ -25,7 +25,6 @@ from ..generic_provider import GenericProvider
 from ... import app, logger
 from ...classes import TorrentSearchResult
 from ...helper.common import try_int
-from ...helper.exceptions import ex
 from ...helpers import remove_file_failed
 
 
