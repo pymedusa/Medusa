@@ -386,6 +386,8 @@ class QueueItemAdd(ShowQueueItem):
                 return
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
         except IndexerShowIncomplete as e:
+            logger.log(u"%s Error while loading information from indexer %s. "
+                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, ex(e)), logger.ERROR)
             ui.notifications.error(
                 "Unable to add show",
                 "Unable to look up the show in %s on %s using ID %s "
@@ -397,44 +399,12 @@ class QueueItemAdd(ShowQueueItem):
         except Exception as e:
             logger.log(u"%s Error while loading information from indexer %s. "
                        u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, ex(e)), logger.ERROR)
-            # logger.log(u"Show name with ID %s doesn't exist on %s anymore. If you are using trakt, it will be "
-            #            "removed from your TRAKT watchlist. If you are adding manually, try removing the nfo "
-            #            "and adding again" % (self.indexer_id, api.indexerApi(self.indexer).name), logger.WARNING)
-
             ui.notifications.error(
                 "Unable to add show",
                 "Unable to look up the show in %s on %s using ID %s, not using the NFO. "
                 "Delete .nfo and try adding manually again." %
                 (self.showDir, indexerApi(self.indexer).name, self.indexer_id)
             )
-
-            # FIXME: This shouldn't be here. I've commented it. If nobody can provide me with reasons to keep it.
-            # It should be removed completely.
-            # if app.USE_TRAKT:
-            #
-            #     trakt_id = indexerApi(self.indexer).config['trakt_id']
-            #     trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT)
-            #
-            #     title = self.showDir.split("/")[-1]
-            #     data = {
-            #         'shows': [
-            #             {
-            #                 'title': title,
-            #                 'ids': {}
-            #             }
-            #         ]
-            #     }
-            #     if trakt_id == 'tvdb_id':
-            #         data['shows'][0]['ids']['tvdb'] = self.indexer_id
-            #     # else:
-            #     #     data['shows'][0]['ids']['tvrage'] = self.indexer_id
-            #
-            #     try:
-            #         trakt_api.traktRequest("sync/watchlist/remove", data, method='POST')
-            #     except TraktException as e:
-            #         logger.log(u"Could not remove show '{0}' from watchlist. Error: {1}".format
-            #                    (title, e), logger.WARNING)
-
             self._finishEarly()
             return
 
