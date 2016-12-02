@@ -22,7 +22,10 @@ import threading
 
 from six import iteritems
 from .queue import BacklogQueueItem
+
 from .. import app, common, db, logger, scheduler, ui
+
+from ..helper.common import episode_num
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):
@@ -155,7 +158,8 @@ class BacklogSearcher(object):
         for sql_result in sql_results:
             if not common.Quality.should_search(sql_result['status'], show):
                 continue
-
+            logger.log(u"Found needed backlog episodes for: {show} {ep}".format
+                       (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"])), logger.INFO)
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 
             if ep_obj.season not in wanted:

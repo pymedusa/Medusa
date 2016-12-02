@@ -246,7 +246,7 @@ import pytest
         'force': False,
         'expected': False
     },
-    {  # p24: Downloaded SDTV and found SDTV. Not wanted anymore. Force search: yes
+    {  # p24: Downloaded SDTV and found SDTV. Not wanted anymore. Force search: no
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.SDTV,
         'new_quality': Quality.SDTV,
@@ -254,7 +254,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'expected': True
+        'expected': False
     },
     {  # p25: Downloaded SDTV and found SDTV. Not wanted anymore: no
         'ep_status': DOWNLOADED,
@@ -306,13 +306,33 @@ import pytest
         'force': False,
         'expected': False
     },
-    {  # p30: DOWNLOADED and found 1080p HDBLURAY (not in wanted qualities). Force search yes: yes
+    {  # p30: DOWNLOADED and found 1080p HDBLURAY (not in wanted qualities). Force search yes: false
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
         'allowed_qualities': [Quality.HDTV],
         'preferred_qualities': [],
         'download_current_quality': False,
+        'force': True,
+        'expected': False
+    },
+    {  # p31: ARCHIVED and found 1080p HDBLURAY (not in wanted qualities). Force search yes: false
+        'ep_status': ARCHIVED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': True,
+        'expected': False
+    },
+    {  # p32: ARCHIVED and found 1080p HDTV. Force search yes: true
+        'ep_status': ARCHIVED,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': True,
         'force': True,
         'expected': True
     }

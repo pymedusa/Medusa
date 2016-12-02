@@ -336,14 +336,9 @@ class Manage(Home, WebRoot):
         for cur_show in app.showList:
 
             ep_counts = {
-                Overview.SKIPPED: 0,
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
                 Overview.GOOD: 0,
-                Overview.UNAIRED: 0,
-                Overview.SNATCHED: 0,
-                Overview.SNATCHED_PROPER: 0,
-                Overview.SNATCHED_BEST: 0
             }
             ep_cats = {}
 
@@ -362,7 +357,7 @@ class Manage(Home, WebRoot):
             )
 
             for cur_result in sql_results:
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'])
+                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True)
                 if cur_ep_cat:
                     ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
                     ep_counts[cur_ep_cat] += 1
