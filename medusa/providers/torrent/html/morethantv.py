@@ -175,7 +175,7 @@ class MoreThanTVProvider(TorrentProvider):
 
                     # If it's a season search, query the torrent's detail page.
                     if mode == 'Season':
-                        title = self._parse_season(row, download_url, title) or title
+                        title = self._parse_season(row, download_url, title)
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
@@ -257,7 +257,7 @@ class MoreThanTVProvider(TorrentProvider):
 
             # Strip leading and trailing slash
             season_title = torrent_row.find('div', class_='filelist_path')
-            if not season_title:
+            if not season_title or not season_title.get_text():
                 logger.log("Could't parse season pack title for: %s", title, logger.DEBUG)
                 return title
             return season_title.get_text(strip=True).strip('/')
