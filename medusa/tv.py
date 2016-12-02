@@ -1292,7 +1292,7 @@ class TVShow(TVObject):
 
             # Make sure we only use one ID, and sanitize the imdb to include the tt.
             imdb_id = imdb_search.split(',')[0]
-            if not 'tt' in imdb_id:
+            if 'tt' not in imdb_id:
                 imdb_id = 'tt{imdb_id}'.format(imdb_id=imdb_id)
 
             logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
