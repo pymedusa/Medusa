@@ -1,7 +1,6 @@
 # coding=utf-8
 # This file is part of Medusa.
 #
-#
 # Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -19,12 +18,14 @@ import os
 
 import bencode
 from bencode.BTL import BTFailure
+
 from feedparser.util import FeedParserDict
+
 from ..generic_provider import GenericProvider
 from ... import app, logger
 from ...classes import TorrentSearchResult
 from ...helper.common import try_int
-from ...helper.exceptions import ex
+from ...helpers import remove_file_failed
 
 
 class TorrentProvider(GenericProvider):
@@ -120,9 +121,12 @@ class TorrentProvider(GenericProvider):
                 meta_info = bencode.bdecode(f.read())
             return 'info' in meta_info and meta_info['info']
         except BTFailure as e:
-            logger.log(u'Failed to validate torrent file: %s' % ex(e), logger.DEBUG)
+            logger.log(u'Failed to validate torrent file: {name}. Error: {error}'.format
+                       (name=file_name, error=e), logger.DEBUG)
 
-        logger.log(u'Result is not a valid torrent file', logger.DEBUG)
+        remove_file_failed(file_name)
+        logger.log(u'{result} is not a valid torrent file'.format(result=file_name), logger.WARNING)
+
         return False
 
     def seed_ratio(self):

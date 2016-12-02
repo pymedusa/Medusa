@@ -1,7 +1,6 @@
 # coding=utf-8
 # This file is part of Medusa.
 #
-#
 # Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -26,13 +25,14 @@ from os.path import join
 from random import shuffle
 
 from requests.utils import add_dict_to_cookiejar
+
 from .. import app, config, logger, ui
 from ..classes import Proper, SearchResult
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helpers import download_file, getURL, make_session, remove_file_failed
+from ..helpers import download_file, getURL, make_session
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..show.show import Show
@@ -61,10 +61,7 @@ class GenericProvider(object):
             'http://torra.pro/torrent/{torrent_hash}.torrent',
             'http://torra.click/torrent/{torrent_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{torrent_hash}.torrent',
-            # 'http://thetorrent.org/torrent/{torrent_hash}.torrent',
-            # 'http://torcache.net/torrent/{torrent_hash}.torrent',
-            # 'http://btdig.com/torrent/{torrent_hash}.torrent',
-            # 'http://torrage.info/torrent/{torrent_hash}.torrent',
+            'http://torrasave.site/torrent/{torrent_hash}.torrent',
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
@@ -92,8 +89,6 @@ class GenericProvider(object):
         self.max_recent_items = 5
         self.stop_at = 3
 
-        shuffle(self.bt_cache_urls)
-
     def download_result(self, result):
         """Download result from provider."""
         if not self.login():
@@ -110,7 +105,8 @@ class GenericProvider(object):
                     'Referer': '/'.join(url.split('/')[:3]) + '/'
                 })
 
-            logger.log('Downloading a result from %s at %s' % (self.name, url))
+            logger.log('Downloading {result} from {provider} at {url}'.format
+                       (result=result.name, provider=self.name, url=url))
 
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
@@ -119,15 +115,13 @@ class GenericProvider(object):
 
             if download_file(url, filename, session=self.session, headers=self.headers,
                              hooks={'response': self.get_url_hook}, verify=verify):
+
                 if self._verify_download(filename):
-                    logger.log('Saved result to %s' % filename, logger.INFO)
+                    logger.log('Saved {result} to {location}'.format(result=result.name, location=filename))
                     return True
 
-                logger.log('Could not download %s' % url, logger.WARNING)
-                remove_file_failed(filename)
-
         if urls:
-            logger.log('Failed to download any results', logger.WARNING)
+            logger.log('Failed to download any results for {result}'.format(result=result.name), logger.WARNING)
 
         return False
 
@@ -160,9 +154,8 @@ class GenericProvider(object):
 
         return results
 
-    def find_search_results(self, show, episodes, search_mode, forced_search=False,
-                            download_current_quality=False, manual_search=False,
-                            manual_search_type='episode'):
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
+                            manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
         self._check_auth()
         self.show = show
@@ -239,8 +232,8 @@ class GenericProvider(object):
                     if search_mode == 'sponly':
                         if parse_result.episode_numbers:
                             logger.log(
-                                'This is supposed to be a season pack search but the result %s is not a valid season pack, skipping it' % title,
-                                logger.DEBUG
+                                'This is supposed to be a season pack search but the result %s is not a valid '
+                                'season pack, skipping it' % title, logger.DEBUG
                             )
                             add_cache_entry = True
                         elif not [ep for ep in episodes if
@@ -259,8 +252,9 @@ class GenericProvider(object):
                                      (ep.episode, ep.scene_episode)[ep.show.is_scene] in
                                      parse_result.episode_numbers]]):
                             logger.log(
-                                'The result %s doesn\'t seem to match an episode that we are currently trying to snatch, skipping it' % title,
-                                logger.DEBUG)
+                                "The result %s doesn't seem to match an episode that we are currently trying to "
+                                "snatch, skipping it" % title, logger.DEBUG
+                            )
                             add_cache_entry = True
 
                     if not add_cache_entry:
@@ -271,8 +265,9 @@ class GenericProvider(object):
 
                     if not parse_result.is_air_by_date:
                         logger.log(
-                            'This is supposed to be a date search but the result %s didn\'t parse as one, skipping it' % title,
-                            logger.DEBUG)
+                            "This is supposed to be a date search but the result %s didn't parse as one, "
+                            "skipping it" % title, logger.DEBUG
+                        )
                         add_cache_entry = True
                     else:
                         air_date = parse_result.air_date.toordinal()
@@ -293,8 +288,9 @@ class GenericProvider(object):
                                 same_day_special = True
                         elif len(sql_results) != 1:
                             logger.log(
-                                'Tried to look up the date for the episode %s but the database didn\'t give proper results, skipping it' % title,
-                                logger.WARNING)
+                                "Tried to look up the date for the episode %s but the database didn't return proper "
+                                "results, skipping it" % title, logger.WARNING
+                            )
                             add_cache_entry = True
 
                     if not add_cache_entry and not same_day_special:
@@ -356,8 +352,8 @@ class GenericProvider(object):
                 logger.log('Single episode result.', logger.DEBUG)
             else:
                 episode_number = MULTI_EP_RESULT
-                logger.log('Separating multi-episode result to check for later - result contains episodes: %s' % str(
-                    parse_result.episode_numbers), logger.DEBUG)
+                logger.log('Separating multi-episode result to check for later - result contains episodes: {0}'.format
+                           (parse_result.episode_numbers), logger.DEBUG)
 
             if episode_number not in results:
                 results[episode_number] = [result]
@@ -575,6 +571,7 @@ class GenericProvider(object):
                     return urls, filename
 
                 urls = [x.format(torrent_hash=torrent_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                shuffle(urls)
             except Exception:
                 logger.log('Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)
                 return urls, filename
