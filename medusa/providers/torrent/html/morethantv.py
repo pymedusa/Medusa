@@ -175,7 +175,7 @@ class MoreThanTVProvider(TorrentProvider):
 
                     # If it's a season search, query the torrent's detail page.
                     if mode == 'Season':
-                        title = self._parse_season(row, download_url, title)
+                        title = self._parse_season(row, download_url, title) or title
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
