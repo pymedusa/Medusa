@@ -305,18 +305,20 @@ class GenericProviderTests(unittest.TestCase):
         # Test the login() check
         gp1 = GenericProvider('Test Provider 1')
         login_mock = MagicMock()
+        login_mock.name = 'result 1'
         login_mock.return_value = False
         with patch.object(gp1, 'login', login_mock):
-            self.assertFalse(gp1.download_result('result 1'))
+            self.assertFalse(gp1.download_result(login_mock))
             self.assertTrue(login_mock.called)
 
         # Test the _make_url call
         gp2 = GenericProvider('Test Provider 2')
         make_url_mock = MagicMock()
+        make_url_mock.name = 'result 2'
         make_url_mock.return_value = (urls, filename)
         df_mock.return_value = True
         with patch.object(gp2, '_make_url', make_url_mock):
-            resp = gp2.download_result('result 2')
+            resp = gp2.download_result(make_url_mock)
             self.assertTrue(resp)
             self.assertTrue('Referer' in gp2.headers)
             self.assertTrue(domain in gp2.headers['Referer'])
@@ -325,11 +327,12 @@ class GenericProviderTests(unittest.TestCase):
         # Test the remove_file_failed path
         gp3 = GenericProvider('Test Provider 3')
         make_url_mock = MagicMock()
+        make_url_mock.name = 'result 3'
         make_url_mock.return_value = (urls, filename)
         verify_download_mock = MagicMock()
         verify_download_mock.return_value = False
         df_mock.return_value = True
         with patch.object(gp3, '_make_url', make_url_mock):
             with patch.object(gp3, '_verify_download', verify_download_mock):
-                resp = gp3.download_result('result 3')
+                resp = gp3.download_result(make_url_mock)
                 self.assertFalse(resp)
