@@ -1283,28 +1283,28 @@ class TVShow(TVObject):
         try:
             if not self.imdbid:
                 # Somewhere title2imdbID started to return without 'tt'
-                imdb_search = imdb_api.title2imdbID(self.name, kind='tv series')
+                self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
 
-            if not imdb_search:
+            if not self.imdbid:
                 logger.log(u'{0}: Not loading show info from IMDb, '
                            u"because we don't know its ID".format(self.indexerid))
                 return
 
             # Make sure we only use one ID, and sanitize the imdb to include the tt.
-            imdb_id = imdb_search.split(',')[0]
-            if 'tt' not in imdb_id:
-                imdb_id = 'tt{imdb_id}'.format(imdb_id=imdb_id)
+            self.imdbid = self.imdbid.split(',')[0]
+            if 'tt' not in self.imdbid:
+                self.imdbid = 'tt{imdb_id}'.format(imdb_id=self.imdbid)
 
             logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
-                self.indexerid, imdb_id), logger.DEBUG)
+                self.indexerid, self.imdbid), logger.DEBUG)
 
             # Remove first two chars from ID
-            imdb_obj = imdb_api.get_movie(imdb_id[2:])
+            imdb_obj = imdb_api.get_movie(self.imdbid[2:])
 
             # IMDb returned something we don't want
             if not imdb_obj.get('year'):
                 logger.log(u'{0}: IMDb returned invalid info for {1}, skipping update.'.format(
-                    self.indexerid, imdb_id), logger.DEBUG)
+                    self.indexerid, self.imdbid), logger.DEBUG)
                 return
 
         except IMDbDataAccessError:
@@ -1318,7 +1318,7 @@ class TVShow(TVObject):
             return
 
         self.imdb_info = {
-            'imdb_id': imdb_id,
+            'imdb_id': self.imdbid,
             'title': imdb_obj.get('title', ''),
             'year': imdb_obj.get('year', ''),
             'akas': '|'.join(imdb_obj.get('akas', '')),
@@ -1330,7 +1330,6 @@ class TVShow(TVObject):
             'last_update': datetime.date.today().toordinal()
         }
 
-        self.imdbid = imdb_id
         self.externals['imdb_id'] = self.imdbid
 
         if imdb_obj.get('runtimes'):
