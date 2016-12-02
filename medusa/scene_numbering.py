@@ -539,7 +539,7 @@ def xem_refresh(indexer_id, indexer, force=False):
         except Exception as e:
             logger.log(
                 u"Exception while refreshing XEM data for show {0} on {1} : {2}".format(indexer_id, indexerApi(
-                    indexer).name, ex(e), logger.WARNING)
+                    indexer).name, ex(e)), logger.WARNING)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
 
