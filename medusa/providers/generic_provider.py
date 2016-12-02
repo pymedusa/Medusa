@@ -92,8 +92,6 @@ class GenericProvider(object):
         self.max_recent_items = 5
         self.stop_at = 3
 
-        shuffle(self.bt_cache_urls)
-
     def download_result(self, result):
         """Download result from provider."""
         if not self.login():
@@ -576,6 +574,7 @@ class GenericProvider(object):
                     return urls, filename
 
                 urls = [x.format(torrent_hash=torrent_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                shuffle(urls)
             except Exception:
                 logger.log('Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)
                 return urls, filename
