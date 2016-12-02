@@ -1282,15 +1282,18 @@ class TVShow(TVObject):
 
         try:
             if not self.imdbid:
-                self.imdbid = imdb_api.title2imdbID(self.name, kind='tv series')
+                # Somewhere title2imdbID started to return without 'tt'
+                imdb_search = imdb_api.title2imdbID(self.name, kind='tv series')
 
-            if not self.imdbid:
+            if not imdb_search:
                 logger.log(u'{0}: Not loading show info from IMDb, '
                            u"because we don't know its ID".format(self.indexerid))
                 return
 
-            # Make sure we only use one ID
-            imdb_id = self.imdbid.split(',')[0]
+            # Make sure we only use one ID, and sanitize the imdb to include the tt.
+            imdb_id = imdb_search.split(',')[0]
+            if not 'tt' in imdb_id:
+                imdb_id = 'tt{imdb_id}'.format(imdb_id=imdb_id)
 
             logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
                 self.indexerid, imdb_id), logger.DEBUG)
@@ -1326,6 +1329,9 @@ class TVShow(TVObject):
             'votes': imdb_obj.get('votes', ''),
             'last_update': datetime.date.today().toordinal()
         }
+
+        self.imdbid = imdb_id
+        self.externals['imdb_id'] = self.imdbid
 
         if imdb_obj.get('runtimes'):
             self.imdb_info['runtimes'] = re.search(r'\d+', imdb_obj['runtimes'][0]).group(0)
