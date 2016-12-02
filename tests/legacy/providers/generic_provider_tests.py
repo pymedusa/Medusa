@@ -294,8 +294,7 @@ class GenericProviderTests(unittest.TestCase):
         self.assertTrue(GenericProvider('Test Provider')._verify_download())
 
     @patch('medusa.providers.generic_provider.download_file')
-    @patch('medusa.providers.generic_provider.remove_file_failed')
-    def test_download_file(self, remove_file_mock, df_mock):
+    def test_download_file(self, df_mock):
         domain = 'domain'
         filename = 'TestFilename.nzb'
         urls = [
@@ -334,4 +333,3 @@ class GenericProviderTests(unittest.TestCase):
             with patch.object(gp3, '_verify_download', verify_download_mock):
                 resp = gp3.download_result('result 3')
                 self.assertFalse(resp)
-                self.assertTrue(remove_file_mock.called)
