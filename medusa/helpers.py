@@ -1251,8 +1251,8 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                                  hooks=hooks, proxies=proxies)) as resp:
 
             if not resp.ok:
-                logger.warning(u'Requested download URL {url} returned status code is {code}: {description}'.format
-                               (url=url, code=resp.status_code, description=http_code_description(resp.status_code)))
+                logger.debug(u'Requested download URL {url} returned status code is {code}: {description}'.format
+                             (url=url, code=resp.status_code, description=http_code_description(resp.status_code)))
                 return False
 
             try:
