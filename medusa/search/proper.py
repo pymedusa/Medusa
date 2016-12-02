@@ -382,7 +382,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):
-        ignore_list = {'website', 'mimetype'} | {'container'} if clear_extension else {}
+        ignore_list = {'website', 'mimetype', 'parsing_time'} | {'container'} if clear_extension else {}
         return helpers.canonical_name(name, ignore_list=ignore_list).lower()
 
     @staticmethod
