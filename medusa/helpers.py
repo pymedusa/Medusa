@@ -1255,11 +1255,6 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                              (url=url, code=resp.status_code, description=http_code_description(resp.status_code)))
                 return False
 
-            if not os.path.isfile(filename):
-                logger.debug(u"File {name} wasn't downloaded, this can have various reasons. Possibly it "
-                             u"doesn't exist or the URL is wrong".format(name=filename))
-                return False
-
             try:
                 with io.open(filename, 'wb') as fp:
                     for chunk in resp.iter_content(chunk_size=1024):
