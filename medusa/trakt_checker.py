@@ -422,7 +422,7 @@ class TraktChecker(object):
                     if new_show:
                         setEpisodeToWanted(new_show, 1, 1)
                     else:
-                        self.todoWanted.append(indexer_id, 1, 1)
+                        self.todoWanted.append(indexer_id)
 
     def fetch_trakt_episodes(self):
         """
