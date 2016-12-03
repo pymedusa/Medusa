@@ -87,6 +87,8 @@ def make_closure(f, handle_arg, handle_output):
 
 def initialize():
     """Replace original functions if the fs encoding is not utf-8."""
+    if hasattr(sys, '_called_from_test'):
+        return
     affected_functions = {
         certifi: ['where', 'old_where'],
         glob: ['glob'],
