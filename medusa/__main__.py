@@ -364,7 +364,7 @@ class Application(object):
             Application.launch_browser('https' if app.ENABLE_HTTPS else 'http', self.start_port, app.WEB_ROOT)
 
         # main loop
-        while True:
+        while app.started:
             time.sleep(1)
 
     def initialize(self, console_logging=True):
@@ -1969,7 +1969,7 @@ class Application(object):
 
         # Make sure the logger has stopped, just in case
         logging.shutdown()
-        os._exit(0)  # pylint: disable=protected-access
+        os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
 
 
 def main():
