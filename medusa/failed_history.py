@@ -22,7 +22,7 @@ import re
 from datetime import datetime, timedelta
 
 from . import db, logger
-from .common import FAILED, Quality, WANTED
+from .common import FAILED, Quality, WANTED, statusStrings
 from .helper.exceptions import EpisodeNotFoundException
 from .show.history import History
 
@@ -156,14 +156,15 @@ def revert_episode(ep_obj):
                    u'{show.episode}): {show.name}'.format(show=ep_obj))
         with ep_obj.lock:
             if ep_obj.episode in history_eps:
-                logger.log(u'Found in history')
                 ep_obj.status = history_eps[ep_obj.episode]['old_status']
+                logger.log(u'Episode have a previous status to revert. Setting it back to {0}'.format
+                           (statusStrings[ep_obj.status]), logger.DEBUG)
             else:
                 logger.log(u'Episode does not have a previous snatched status '
                            u'to revert. Setting it back to WANTED',
                            logger.DEBUG)
                 ep_obj.status = WANTED
-                ep_obj.save_to_db()
+            ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:
         logger.log(u'Unable to create episode, please set its status '
