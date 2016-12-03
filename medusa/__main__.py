@@ -1976,10 +1976,10 @@ class Application(object):
             # if run as daemon delete the pid file
             if self.run_as_daemon and self.create_pid:
                 self.remove_pid_file(self.pid_file)
-
+        finally:
             if event == event_queue.Events.SystemEvent.RESTART:
                 self.restart()
-        finally:
+
             # Make sure the logger has stopped, just in case
             logging.shutdown()
             os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
