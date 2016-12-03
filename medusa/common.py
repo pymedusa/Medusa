@@ -614,7 +614,7 @@ class Quality(object):
                        download_current_quality=False, force=False):
         """Return true if the old quality should be replaced with new quality.
 
-        If not preferred qualities, the any downloaded quality is final
+        If not preferred qualities, then any downloaded quality is final
         if preferred quality, then new quality should be higher than existing one AND not be in preferred
         If new quality is already in preferred then is already final quality.
         Force (forced search) bypass episode status only or unknown quality
