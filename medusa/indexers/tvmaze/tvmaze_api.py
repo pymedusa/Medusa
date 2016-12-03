@@ -113,7 +113,7 @@ class TVmaze(BaseIndexer):
                         continue
 
                     # These keys have more complex dictionaries, let's map these manually
-                    if key in ['schedule', 'network', 'image', 'externals']:
+                    if key in ['schedule', 'network', 'image', 'externals', 'rating']:
                         if key == 'schedule':
                             return_dict['airs_time'] = value.get('time') or '0:00AM'
                             return_dict['airs_dayofweek'] = value.get('days')[0] if value.get('days') else None
@@ -130,33 +130,31 @@ class TVmaze(BaseIndexer):
                             return_dict['tvrage_id'] = value.get('tvrage')
                             return_dict['tvdb_id'] = value.get('thetvdb')
                             return_dict['imdb_id'] = value.get('imdb')
-
+                        if key == 'rating':
+                            return_dict['contentrating'] = str(value.get('average'))\
+                                if isinstance(value, dict) else str(value)
                     else:
                         # Do some value sanitizing
                         if isinstance(value, list):
                             if all(isinstance(x, (str, unicode, int)) for x in value):
                                 value = list_separator.join(str(v) for v in value)
 
-                        # Process webChannel['name']
-                        if key == 'webChannel':
-                            value = value.get('name')
-
-                        # Process rating
-                        if key == 'rating':
-                            value = str(value.get('average')) if isinstance(value, dict) else str(value)
-
                         # Try to map the key
                         if key in key_mappings:
                             key = key_mappings[key]
 
                         # Set value to key
-                        return_dict[key] = value
+                        return_dict[key] = str(value) if isinstance(value, (float, int)) else value
 
                 # For episodes
                 if hasattr(item, 'season_number') and getattr(item, 'episode_number') is None:
-                    return_dict['episodenumber'] = index_special_episodes
+                    return_dict['episodenumber'] = str(index_special_episodes)
                     return_dict['seasonnumber'] = 0
                     index_special_episodes += 1
+
+                # Use webChannel if available
+                if getattr(item, 'webChannel', None):
+                    return_dict['network'] = getattr(item, 'webChannel')
 
             except Exception as e:
                 log().warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
