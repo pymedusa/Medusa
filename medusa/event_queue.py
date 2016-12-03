@@ -24,7 +24,8 @@ class Events(threading.Thread):
     def __init__(self, callback):
         super(Events, self).__init__()
         self.queue = Queue()
-        self.daemon = True
+        # http://stackoverflow.com/a/20598791
+        self.daemon = False
         self.callback = callback
         self.name = "EVENT-QUEUE"
         self.stop = threading.Event()
