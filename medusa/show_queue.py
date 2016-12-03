@@ -387,7 +387,7 @@ class QueueItemAdd(ShowQueueItem):
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
         except IndexerShowIncomplete as e:
             logger.log(u"%s Error while loading information from indexer %s. "
-                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, ex(e)), logger.ERROR)
+                       u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
             ui.notifications.error(
                 "Unable to add show",
                 "Unable to look up the show in %s on %s using ID %s "
