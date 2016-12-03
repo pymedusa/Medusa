@@ -29,7 +29,6 @@ import re
 import sys
 
 from collections import OrderedDict
-from inspect import getargspec
 from logging import NullHandler
 from logging.handlers import RotatingFileHandler
 import knowit
@@ -40,6 +39,7 @@ from tornado.log import access_log, app_log, gen_log
 import traktor
 
 from . import app
+from .init.logconfig import standard_logger
 
 # log levels
 CRITICAL = logging.CRITICAL
@@ -671,79 +671,6 @@ class Logger(object):
             sys.exit(1)
 
 
-class BraceMessage(object):
-    """Log Message wrapper that applies new string format style."""
-
-    def __init__(self, fmt, args, kwargs):
-        """Constructor.
-
-        :param fmt:
-        :type fmt: logging.Formatter
-        :param args:
-        :param kwargs:
-        """
-        self.fmt = fmt
-        self.args = args
-        self.kwargs = kwargs
-
-    def __str__(self):
-        """String representation.
-
-        :return:
-        :rtype: str
-        """
-        result = text_type(self.fmt)
-        return result.format(*self.args, **self.kwargs) if self.args or self.kwargs else result
-
-
-class StyleAdapter(logging.LoggerAdapter):
-    """Logger Adapter with new string format style."""
-
-    adapter_members = {attr: attr for attr in dir(logging.LoggerAdapter) if not callable(attr) and not attr.startswith('__')}
-    adapter_members.update({'warn': 'warning', 'fatal': 'critical'})
-    reserved_keywords = getargspec(logging.Logger._log).args[1:]
-
-    def __init__(self, target_logger, extra=None):
-        """Constructor.
-
-        :param target_logger:
-        :type target_logger: logging.Logger
-        :param extra:
-        :type extra: dict
-        """
-        super(StyleAdapter, self).__init__(target_logger, extra)
-
-    def __getattr__(self, name):
-        """Wrapper that delegates to the actual logger.
-
-        :param name:
-        :type name: str
-        :return:
-        """
-        if name not in self.adapter_members:
-            return getattr(self.logger, name)
-
-        return getattr(self, self.adapter_members[name])
-
-    def __setattr__(self, key, value):
-        """Wrapper that delegates to the actual logger.
-
-        :param key:
-        :type key: str
-        :param value:
-        """
-        self.__dict__[key] = value
-
-    def process(self, msg, kwargs):
-        """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
-
-        :param msg:
-        :param kwargs:
-        :return:
-        """
-        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
-
-
 class Wrapper(object):
     """Wrapper that delegates all calls to the actual Logger instance."""
 
@@ -776,15 +703,6 @@ def log(*args, **kwargs):
     _globals.instance.log(*args, **kwargs)
 
 
-def custom_get_logger(name=None):
-    """Custom logging.getLogger function.
-
-    :param name:
-    :return:
-    """
-    return StyleAdapter(standard_logger(name))
-
-
 def init_logging(console_logging):
     """Shortcut to init logging."""
     instance.init_logging(console_logging)
@@ -814,12 +732,6 @@ def backwards_compatibility():
                 os.rename(os.path.join(cwd, app.LOG_DIR, filename), new_file)
             continue
 
-
-# Keeps the standard logging.getLogger to be used by SylteAdapter
-standard_logger = logging.getLogger
-
-# Replaces logging.getLogger with our custom one
-logging.getLogger = custom_get_logger
 
 instance = Logger()
 _globals = sys.modules[__name__] = Wrapper(sys.modules[__name__])  # pylint: disable=invalid-name
