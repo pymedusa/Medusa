@@ -318,43 +318,6 @@ def pickBestResult(results, show):  # pylint: disable=too-many-branches
     return bestResult
 
 
-def is_final_result(result):
-    """
-    Checks if the given result is good enough quality that we can stop searching for other ones.
-
-    This is used while looping through providers while searching for episode.
-    If we find the best result in that provider we stop searching in the other providers
-
-    :param result: quality to check
-    :return: True if the result is the highest quality in both the any/best quality lists else False
-    """
-
-    logger.log(u"Checking if we should keep searching after we've found " + result.name, logger.DEBUG)
-
-    show_obj = result.episodes[0].show
-
-    allowed_qualities, preferred_qualities = show_obj.current_qualities
-
-    # if there is a re-download that's higher than this then we definitely need to keep looking
-    if preferred_qualities and result.quality < max(preferred_qualities):
-        return False
-
-    # if it does not match the shows black and white list its no good
-    elif show_obj.is_anime and show_obj.release_groups.is_valid(result):
-        return False
-
-    # if there's no re-download that's higher (above) and this is the highest initial download then we're good
-    elif allowed_qualities and result.quality in allowed_qualities:
-        return True
-
-    elif preferred_qualities and result.quality == max(preferred_qualities):
-        return True
-
-    # if we got here than it's either not on the lists, they're empty, or it's lower than the highest required
-    else:
-        return False
-
-
 def is_first_best_match(result):
     """
     Check if the given result is a best quality match and if we want to stop searching providers here.
@@ -368,8 +331,8 @@ def is_first_best_match(result):
     show_obj = result.episodes[0].show
 
     _, preferred_qualities = show_obj.current_qualities
-
-    return result.quality in preferred_qualities if preferred_qualities else False
+    # Don't pass allowed because we only want to check if this quality is wanted preferred.
+    return Quality.wanted_quality(result.quality, [], preferred_qualities)
 
 
 def wantedEpisodes(show, fromDate):
@@ -818,17 +781,6 @@ def searchProviders(show, episodes, forced_search=False, down_cur_quality=False,
                             found = True
             if not found:
                 finalResults += [bestResult]
-
-        # check that we got all the episodes we wanted first before doing a match and snatch
-        wantedEpCount = 0
-        for wantedEp in episodes:
-            for result in finalResults:
-                if wantedEp in result.episodes and is_final_result(result):
-                    wantedEpCount += 1
-
-        # make sure we search every provider for results unless we found everything we wanted
-        if wantedEpCount == len(episodes):
-            break
 
     if not didSearch:
         logger.log(u"No NZB/Torrent providers found or enabled in the application config for backlog searches. "
