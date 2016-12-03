@@ -138,8 +138,8 @@ class GenericProvider(object):
         for proper_candidate in proper_candidates:
             show_obj = Show.find(app.showList,
                                  int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
-
             if show_obj:
+                self.show = show_obj
                 episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
