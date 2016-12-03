@@ -1866,6 +1866,40 @@ class Application(object):
         os.dup2(stdout.fileno(), getattr(sys.stdout, 'device', sys.stdout).fileno())
         os.dup2(stderr.fileno(), getattr(sys.stderr, 'device', sys.stderr).fileno())
 
+    def stop_webserver(self):
+        """Stop web server."""
+        if not self.web_server:
+            return
+
+        try:
+            logger.info('Shutting down Tornado')
+            self.web_server.shutDown()
+            self.web_server.join(10)
+        except Exception as error:
+            exception_handler.handle(error)
+
+    @staticmethod
+    def restart():
+        """Restart application."""
+        install_type = app.versionCheckScheduler.action.install_type
+
+        popen_list = []
+
+        if install_type in ('git', 'source'):
+            popen_list = [sys.executable, app.MY_FULLNAME]
+        elif install_type == 'win':
+            logger.error('You are using a binary Windows build of Medusa. Please switch to using git.')
+
+        if popen_list and not app.NO_RESTART:
+            popen_list += app.MY_ARGS
+            if '--nolaunch' not in popen_list:
+                popen_list += ['--nolaunch']
+            logger.info('Restarting Medusa with {options}', options=popen_list)
+            # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
+            logging.shutdown()
+            print(popen_list)
+            subprocess.Popen(popen_list, cwd=os.getcwd())
+
     @staticmethod
     def remove_pid_file(pid_file):
         """Remove pid file.
@@ -1927,19 +1961,15 @@ class Application(object):
 
         :param event: Type of shutdown event, used to see if restart required
         """
-        if app.started:
+        try:
+            if not app.started:
+                return
+
             self.halt()  # stop all tasks
             self.save_all()  # save all shows to DB
 
             # shutdown web server
-            if self.web_server:
-                logger.info('Shutting down Tornado')
-                self.web_server.shutDown()
-
-                try:
-                    self.web_server.join(10)
-                except Exception as error:
-                    exception_handler.handle(error)
+            self.stop_webserver()
 
             self.clear_cache()  # Clean cache
 
@@ -1948,28 +1978,11 @@ class Application(object):
                 self.remove_pid_file(self.pid_file)
 
             if event == event_queue.Events.SystemEvent.RESTART:
-                install_type = app.versionCheckScheduler.action.install_type
-
-                popen_list = []
-
-                if install_type in ('git', 'source'):
-                    popen_list = [sys.executable, app.MY_FULLNAME]
-                elif install_type == 'win':
-                    logger.error('You are using a binary Windows build of Medusa. Please switch to using git.')
-
-                if popen_list and not app.NO_RESTART:
-                    popen_list += app.MY_ARGS
-                    if '--nolaunch' not in popen_list:
-                        popen_list += ['--nolaunch']
-                    logger.info('Restarting Medusa with {options}', options=popen_list)
-                    # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
-                    logging.shutdown()
-                    print(popen_list)
-                    subprocess.Popen(popen_list, cwd=os.getcwd())
-
-        # Make sure the logger has stopped, just in case
-        logging.shutdown()
-        os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
+                self.restart()
+        finally:
+            # Make sure the logger has stopped, just in case
+            logging.shutdown()
+            os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
 
 
 def main():
