@@ -49,7 +49,7 @@ class SearchQueue(generic_queue.GenericQueue):
     def is_in_queue(self, show, segment):
         for cur_item in self.queue:
             if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem,
-                                     ForcedSearchQueueItem, ManualSnatchQueueItem))\
+                                     ForcedSearchQueueItem, ManualSnatchQueueItem)) \
                     and cur_item.show == show and cur_item.segment == segment:
                 return True
         return False
