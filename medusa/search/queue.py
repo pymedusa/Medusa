@@ -48,7 +48,9 @@ class SearchQueue(generic_queue.GenericQueue):
 
     def is_in_queue(self, show, segment):
         for cur_item in self.queue:
-            if isinstance(cur_item, BacklogQueueItem) and cur_item.show == show and cur_item.segment == segment:
+            if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem,
+                                     ForcedSearchQueueItem, ManualSnatchQueueItem)) \
+                    and cur_item.show == show and cur_item.segment == segment:
                 return True
         return False
 
@@ -87,8 +89,9 @@ class SearchQueue(generic_queue.GenericQueue):
         if isinstance(item, DailySearchQueueItem):
             # daily searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
-            # backlog searches
+        elif isinstance(item, (BacklogQueueItem, FailedQueueItem,
+                               ManualSnatchQueueItem, ForcedSearchQueueItem)) \
+                and not self.is_in_queue(item.show, item.segment):
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
