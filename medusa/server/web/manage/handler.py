@@ -8,6 +8,7 @@ import os
 import re
 
 from tornroutes import route
+
 from ..core import PageTemplate, WebRoot
 from ..home import Home
 from .... import app, db, helpers, logger, post_processor, subtitles, ui
@@ -676,10 +677,9 @@ class Manage(Home, WebRoot):
                 <ul>
                   {list}
                 </ul>
-                """.format(
-                    title=title,
-                    list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
-                                    for cur_item in items]))
+                """.format(title=title,
+                           list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
+                                           for cur_item in items]))
 
         message = ''
         message += message_detail('Updates', updates)
@@ -739,16 +739,17 @@ class Manage(Home, WebRoot):
             sql_results = failed_db_con.select(
                 b'SELECT * '
                 b'FROM failed '
-                b'LIMIT ?', [limit]
+                b'LIMIT ?',
+                [limit]
             )
         else:
             sql_results = failed_db_con.select(
                 b'SELECT * '
                 b'FROM failed'
             )
+        sql_results = sql_results[::-1]
 
         to_remove = toRemove.split('|') if toRemove is not None else []
-
         for release in to_remove:
             failed_db_con.action(
                 b'DELETE FROM failed '
