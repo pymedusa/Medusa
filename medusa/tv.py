@@ -511,7 +511,7 @@ class TVShow(TVObject):
                 if last_airdate > time.time():
                     next_update = time.time() + 3600
                 else:
-                    next_update = int(time.time() + ((time.time() - last_airdate) / 200))
+                    next_update = int(time.time() + ((time.time() - last_airdate) / 100))
 
             cache_db = db.DBConnection('cache.db')
             cache_db.upsert('indexer_update',

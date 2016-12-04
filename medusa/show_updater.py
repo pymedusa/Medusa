@@ -61,14 +61,17 @@ class ShowUpdater(object):
             if hasattr(t, 'get_last_updated_seasons'):
                 # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
                 last_update = self.last_update.get_last_indexer_update(indexerApi(show.indexer).name)
-
-                # Get updated seasons
-                updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
-                for season in updated_seasons[show.indexerid]:
-                    season_updates.append((show.indexer, show, season))
+                if not last_update or last_update < time.time() - 604800 * update_max_weeks:
+                    # no entry in lastUpdate, or last update was too long ago, let's refresh the show for this indexer
+                    refresh_shows.append(show)
+                else:
+                    # Get updated seasons and add them to the season update list.
+                    updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                    for season in updated_seasons[show.indexerid]:
+                        season_updates.append((show.indexer, show, season))
 
         for indexer in expired_seasons:
-            # Set refresh to True, to force refreshing of the entire show. Making sure per-season
+            # Set refresh to True, to force refreshing of the entire show.
             refresh = False
 
             # Query the indexer for changed shows, since last update
@@ -97,7 +100,12 @@ class ShowUpdater(object):
                                    u'and indexer: {indexer}', show_id=show_id, indexer=indexer)
                     continue
 
-                # Check if this indexer/show combination is already scheduled for updating.
+                # Check if this indexer/show combination is already scheduled for updating through a show refresh.
+                # probably it was scheduled for refresh using the get_last_updated_seasons method.
+                if [_ for _ in refresh_shows if _.indexer == indexer and _.indexerid == show_id]:
+                    continue
+
+                # Check if this indexer/show combination is already scheduled for updating through a season expiration.
                 # probably it was scheduled for update using the get_last_updated_seasons method.
                 if show in [_[1] for _ in season_updates]:
                     continue
