@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
@@ -480,8 +479,7 @@ def xem_refresh(indexer_id, indexer, force=False):
 
     if refresh or force:
         logger.log(
-            u'Looking up XEM scene mapping for show %s on %s' % (indexer_id, indexerApi(indexer).name,),
-            logger.DEBUG)
+            u'Looking up XEM scene mapping for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
 
         # mark refreshed
         main_db_con.upsert(
@@ -495,17 +493,18 @@ def xem_refresh(indexer_id, indexer, force=False):
             if not indexerApi(indexer).config.get('xem_origin'):
                 return
             # XEM MAP URL
-            url = "http://thexem.de/map/havemap?origin=%s" % indexerApi(indexer).config['xem_origin']
+            url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
             parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
+                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.INFO)
                 return
 
             # XEM API URL
-            url = "http://thexem.de/map/all?id=%s&origin=%s&destination=scene" % (indexer_id, indexerApi(indexer).config['xem_origin'])
+            url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer).config['xem_origin'])
 
             parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
-                logger.log(u'No XEM data for show "%s on %s"' % (indexer_id, indexerApi(indexer).name,), logger.INFO)
+                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.INFO)
                 return
 
             cl = []
@@ -538,9 +537,8 @@ def xem_refresh(indexer_id, indexer, force=False):
                 main_db_con.mass_action(cl)
 
         except Exception as e:
-            logger.log(
-                u"Exception while refreshing XEM data for show " + str(indexer_id) + " on " + indexerApi(
-                    indexer).name + ": " + ex(e), logger.WARNING)
+            logger.log(u"Exception while refreshing XEM data for show ID {0} on {1}: {2}".format
+                       (indexer_id, indexerApi(indexer).name, ex(e)), logger.WARNING)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
 
@@ -572,7 +570,7 @@ def fix_xem_numbering(indexer_id, indexer):  # pylint:disable=too-many-locals, t
     update_scene_absolute_number = False
 
     logger.log(
-        u'Fixing any XEM scene mapping issues for show %s on %s' % (indexer_id, indexerApi(indexer).name,),
+        u'Fixing any XEM scene mapping issues for show ID %s on %s' % (indexer_id, indexerApi(indexer).name,),
         logger.DEBUG)
 
     cl = []
