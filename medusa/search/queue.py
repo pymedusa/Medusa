@@ -50,6 +50,14 @@ class SearchQueue(generic_queue.GenericQueue):
         for cur_item in self.queue:
             if isinstance(cur_item, BacklogQueueItem) and cur_item.show == show and cur_item.segment == segment:
                 return True
+            elif isinstance(cur_item, FailedQueueItem) and cur_item.show == show and cur_item.segment == segment:
+                return True
+            elif isinstance(cur_item, DailySearchQueueItem) and cur_item.show == show and cur_item.segment == segment:
+                return True
+            elif isinstance(cur_item, ManualSnatchQueueItem) and cur_item.show == show and cur_item.segment == segment:
+                return True
+            elif isinstance(cur_item, ForcedSearchQueueItem) and cur_item.show == show and cur_item.segment == segment:
+                return True
         return False
 
     def pause_backlog(self):
@@ -89,6 +97,15 @@ class SearchQueue(generic_queue.GenericQueue):
             generic_queue.GenericQueue.add_item(self, item)
         elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
             # backlog searches
+            generic_queue.GenericQueue.add_item(self, item)
+        elif isinstance(item, FailedQueueItem) and not self.is_in_queue(item.show, item.segment):
+            # failed searches
+            generic_queue.GenericQueue.add_item(self, item)
+        elif isinstance(item, ManualSnatchQueueItem) and not self.is_in_queue(item.show, item.segment):
+            # Manual searches
+            generic_queue.GenericQueue.add_item(self, item)
+        elif isinstance(item, ForcedSearchQueueItem) and not self.is_in_queue(item.show, item.segment):
+            # Forced searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)

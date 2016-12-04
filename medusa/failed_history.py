@@ -23,6 +23,7 @@ from datetime import datetime, timedelta
 
 from . import db, logger
 from .common import FAILED, Quality, WANTED, statusStrings
+from .helper.common import episode_num
 from .helper.exceptions import EpisodeNotFoundException
 from .show.history import History
 
@@ -54,7 +55,7 @@ def log_failed(release):
     )
 
     if not sql_results:
-        logger.log(u'Release not found in snatch history.', logger.WARNING)
+        logger.log(u'Release not found in snatch history: {0}'.format(release), logger.WARNING)
     elif len(sql_results) == 1:
         size = sql_results[0]['size']
         provider = sql_results[0]['provider']
@@ -152,8 +153,8 @@ def revert_episode(ep_obj):
     history_eps = {res['episode']: res for res in sql_results}
 
     try:
-        logger.log(u'Reverting episode ({show.season}, '
-                   u'{show.episode}): {show.name}'.format(show=ep_obj))
+        logger.log(u'Reverting episode status for {show} {ep}. Checking if we have previous status'.format
+                   (show=ep_obj.name, ep=episode_num(ep_obj.season, ep_obj.episode)))
         with ep_obj.lock:
             if ep_obj.episode in history_eps:
                 ep_obj.status = history_eps[ep_obj.episode]['old_status']
@@ -308,13 +309,12 @@ def find_release(ep_obj):
         )
 
         # Found a previously failed release
-        logger.log(u'Failed release found for season '
-                   u'(show.season): (release)'.format
-                   (show=ep_obj, release=result['release']),
-                   logger.DEBUG)
+        logger.log(u'Failed release found for {show} {ep}: {release}'.format
+                   (show=ep_obj.name, ep=episode_num(ep_obj.season, ep_obj.episode),
+                    release=result['release']), logger.DEBUG)
         return release, provider
 
     # Release was not found
-    logger.log(u'No releases found for season (ep.season) '
-               u'of (ep.show.indexerid)'.format(ep=ep_obj), logger.DEBUG)
+    logger.log(u'No releases found for {show} {ep}'.format
+               (show=ep_obj.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
     return release, provider
