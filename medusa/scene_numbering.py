@@ -537,9 +537,8 @@ def xem_refresh(indexer_id, indexer, force=False):
                 main_db_con.mass_action(cl)
 
         except Exception as e:
-            logger.log(
-                u"Exception while refreshing XEM data for show ID {0} on {1} : {2}".format(indexer_id, indexerApi(
-                    indexer).name, ex(e)), logger.WARNING)
+            logger.log(u"Exception while refreshing XEM data for show ID {0} on {1}: {2}".format
+                       (indexer_id, indexerApi(indexer).name, ex(e)), logger.WARNING)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
 
