@@ -614,7 +614,7 @@ class Quality(object):
                        download_current_quality=False, force=False):
         """Return true if the old quality should be replaced with new quality.
 
-        If not preferred qualities, the any downloaded quality is final
+        If not preferred qualities, then any downloaded quality is final
         if preferred quality, then new quality should be higher than existing one AND not be in preferred
         If new quality is already in preferred then is already final quality.
         Force (forced search) bypass episode status only or unknown quality
@@ -624,9 +624,7 @@ class Quality(object):
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
 
         if old_quality == Quality.UNKNOWN:
-            if force:
-                return True, 'Existing quality is UNKNOWN. Forcing new quality'
-            else:
+            if not force:
                 return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
         if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
@@ -651,8 +649,9 @@ class Quality(object):
             if new_quality in preferred_qualities:
                 return True, 'New quality is preferred. Accepting new quality'
 
-            if new_quality > old_quality:
-                return True, 'New quality is higher quality (but not preferred). Accepting new quality'
+            # Commented for now as Labrys requests
+            # if new_quality > old_quality:
+            #    return True, 'New quality is higher quality (but not preferred). Accepting new quality'
 
             return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 

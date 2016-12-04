@@ -66,7 +66,7 @@ import pytest
         'force': False,
         'expected': False
     },
-    {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: yes
+    {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: no
         'ep_status': SNATCHED_PROPER,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
@@ -74,7 +74,7 @@ import pytest
         'preferred_qualities': [Quality.HDWEBDL],
         'download_current_quality': False,
         'force': False,
-        'expected': True
+        'expected': False
     },
     {  # p7: Downloaded 720p HDTV and found 720p BluRay, 720p BluRay is not explicity allowed but it's preferred: yes
         'ep_status': DOWNLOADED,
