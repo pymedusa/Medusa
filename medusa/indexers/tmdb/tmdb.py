@@ -330,7 +330,7 @@ class Tmdb(BaseIndexer):
                             height = image_mapped['height']
                         else:
                             width = int(size[1:])
-                            height = int(round(width / image_mapped['aspect_ratio']))
+                            height = int(round(width / float(image_mapped['aspect_ratio'])))
                         resolution = '{0}x{1}'.format(width, height)
 
                         if resolution not in _images[image_type]:
@@ -479,6 +479,7 @@ class Tmdb(BaseIndexer):
         page = 1
         total_pages = 1
         while page <= total_pages:
+            # Requesting for the changes on a specific showid, will result in json with changes per season.
             updates = self.tmdb.TV(sid).changes(start_date=start_date, end_date=end_date)
             if updates and updates.get('changes'):
                 for item in [update['items'] for update in updates['changes'] if update['key'] == 'season']:
@@ -512,7 +513,7 @@ class Tmdb(BaseIndexer):
         :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
         """
         total_updates = []
-        dt_start = datetime.fromtimestamp(from_time)
+        dt_start = datetime.fromtimestamp(float(from_time))
         search_max_weeks = 2
 
         for week in range(search_max_weeks, weeks + search_max_weeks, search_max_weeks):
@@ -543,7 +544,7 @@ class Tmdb(BaseIndexer):
         :param weeks: number of weeks to get updates for.
         """
         show_season_updates = {}
-        dt_start = datetime.fromtimestamp(from_time)
+        dt_start = datetime.fromtimestamp(float(from_time))
         search_max_weeks = 2
 
         for show in show_list:
