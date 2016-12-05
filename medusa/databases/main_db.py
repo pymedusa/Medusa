@@ -30,7 +30,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 3
+CURRENT_MINOR_DB_VERSION = 4
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -546,3 +546,21 @@ class AddManualSearched(AddProperTags):
         self.inc_minor_version()
 
         logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddInfoHash(AddManualSearched):
+    """Adds column info_hash to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.4
+        """
+        return self.connection.version >= (44, 4)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        logger.log(u"Adding column info_hash in history")
+        if not self.hasColumn("history", "info_hash"):
+            self.addColumn("history", "info_hash", 'TEXT', None)
+        self.inc_minor_version()

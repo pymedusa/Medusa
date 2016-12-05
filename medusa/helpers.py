@@ -62,7 +62,7 @@ from requests.compat import urlparse
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
-from . import app
+from . import app, db
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
@@ -1693,3 +1693,26 @@ def get_broken_providers():
 
     logger.info('Broken providers found: {0}'.format(response))
     return ','.join(response)
+
+
+def is_already_processed_media(full_filename):
+    """Check if resource was already processed."""
+    if not is_media_file(str(full_filename)):
+        return False
+    main_db_con = db.DBConnection()
+    history_result = main_db_con.select('SELECT 1 FROM history '
+                                        "WHERE action LIKE '%04' "
+                                        'AND resource LIKE ?',
+                                        ['%' + full_filename])
+    if history_result:
+        return True
+
+
+def is_info_hash_in_history(info_hash):
+    """Check if torrent hash is in history."""
+    main_db_con = db.DBConnection()
+    history_result = main_db_con.select('SELECT 1 FROM history '
+                                        'WHERE info_hash=?',
+                                        [info_hash])
+    if history_result:
+        return True

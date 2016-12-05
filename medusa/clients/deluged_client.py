@@ -83,6 +83,16 @@ class DelugeDAPI(GenericClient):
 
         return remote_torrent or None
 
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self.drpc.remove_torrent_ratio(info_hash, True)
+
     def _set_torrent_label(self, result):
 
         label = app.TORRENT_LABEL.lower()

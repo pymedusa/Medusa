@@ -21,13 +21,19 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import os
 import re
 from base64 import b64encode
 
 from requests.compat import urljoin
+
 from .generic import GenericClient
 from .. import app
+from ..helpers import is_already_processed_media, is_info_hash_in_history
+
+
+logger = logging.getLogger(__name__)
 
 
 class TransmissionAPI(GenericClient):
@@ -186,5 +192,102 @@ class TransmissionAPI(GenericClient):
 
         return self.response.json()['result'] == 'success'
 
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        arguments = {
+            'ids': [info_hash],
+            'delete-local-data': 1,
+        }
+
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-remove',
+        })
+
+        self._request(method='post', data=post_data)
+
+        return self.response.json()['result'] == 'success'
+
+    def get_torrents_status(self):
+        """Get status of all snatches from Medusa.
+
+        0 = Torrent is stopped
+        1 = Queued to check files
+        2 = Checking files
+        3 = Queued to download
+        4 = Downloading
+        5 = Queued to seed
+        6 = Seeding
+
+        :return: list of releases Medusa sent to Transmission
+        """
+        logger.info('Checking Transmission torrent status.')
+
+        return_params = {
+            'fields': ['id', 'name', 'hashString', 'percentDone', 'status', 'eta', 'isStalled',
+                       'isFinished', 'downloadDir', 'uploadRatio', 'secondsSeeding', 'seedIdleLimit', 'files']
+        }
+
+        post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
+
+        if not self._request(method='post', data=post_data):
+            logger.debug('Could not connect to Transmission. Check logs')
+            return
+
+        try:
+            returned_data = json.loads(self.response.content)
+        except ValueError:
+            logger.warning('Unexpected data received from Transmission: {0}'.format(self.response.content))
+            return
+
+        if not returned_data['result'] == 'success':
+            logger.debug('Nothing in queue or error')
+            return []
+
+        found_torrents = False
+        for torrent in returned_data['arguments']['torrents']:
+
+            # Check if that hash was sent by Medusa
+            if not is_info_hash_in_history(str(torrent['hashString'])):
+                continue
+            found_torrents = True
+
+            to_remove = False
+            for i in torrent['files']:
+                if is_already_processed_media(i['name']):
+                    to_remove = True
+
+            # Don't need to check status if we are not going to remove it.
+            if not to_remove:
+                logger.info("Torrent wasn't post-processed yet. Skipping: {torrent_name}".format
+                            (torrent_name=torrent['name']))
+                continue
+
+            status = 'busy'
+            if torrent.get('isStalled') and not torrent['percentDone'] == 1:
+                status = 'failed'
+            elif torrent['status'] == 0:
+                if torrent['percentDone'] == 1 and torrent.get('isFinished'):
+                    status = 'completed'
+                else:
+                    status = 'stopped'
+
+            if status == 'completed':
+                logger.warning("Torrent completed and reached minimum ratio: [{ratio}]. Removing it: [{name}]".format
+                               (ratio=torrent['uploadRatio'], name=torrent['name']))
+                self.remove_torrent(torrent['hashString'])
+            else:
+                logger.info("Torrent didn't reached minimum ratio: [{ratio}]. "
+                            "Keeping it: [{name}]".format
+                             (ratio=torrent['uploadRatio'],name=torrent['name']))
+
+        if not found_torrents:
+            logger.info('No torrents found that were snatched by Medusa')
 
 api = TransmissionAPI

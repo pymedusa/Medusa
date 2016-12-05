@@ -166,5 +166,17 @@ class UTorrentAPI(GenericClient):
             'hash': result.hash,
         })
 
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        return self._request(params={
+            'action': 'removedatatorrent',
+            'hash': info_hash,
+        })
 
 api = UTorrentAPI

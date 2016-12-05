@@ -38,7 +38,7 @@ class ConfigSearch(Config):
                    nzbget_category_anime_backlog=None, nzbget_priority=None, nzbget_host=None,
                    nzbget_use_https=None, backlog_days=None, backlog_frequency=None, dailysearch_frequency=None,
                    nzb_method=None, torrent_method=None, usenet_retention=None, download_propers=None,
-                   check_propers_interval=None, allow_high_priority=None, sab_forced=None,
+                   check_propers_interval=None, allow_high_priority=None, sab_forced=None, remove_from_client=None,
                    randomize_providers=None, use_failed_downloads=None, delete_failed=None, propers_search_days=None,
                    torrent_dir=None, torrent_username=None, torrent_password=None, torrent_host=None,
                    torrent_label=None, torrent_label_anime=None, torrent_path=None, torrent_verify_cert=None,
@@ -85,6 +85,7 @@ class ConfigSearch(Config):
 
         config.change_DOWNLOAD_PROPERS(download_propers)
         app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
+        app.REMOVE_FROM_CLIENT = config.checkbox_to_value(remove_from_client)
         app.CHECK_PROPERS_INTERVAL = check_propers_interval
 
         app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)
