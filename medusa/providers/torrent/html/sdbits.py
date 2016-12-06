@@ -159,7 +159,7 @@ class SDBitsProvider(TorrentProvider):
                     size = convert_size(torrent_size, units=units) or -1
                     pubdate_raw = cells[4].get_text("_").split("_")
                     if len(pubdate_raw) == 2:
-                        pubdate_raw = parse(pubdate_raw[0]) + parse(pubdate_raw[1])         
+                        pubdate_raw = parse(pubdate_raw[0]) + parse(pubdate_raw[1])
                     else:
                         pubdate_raw = parse(pubdate_raw[0])
                     pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw)) if pubdate_raw else None
@@ -199,11 +199,10 @@ class SDBitsProvider(TorrentProvider):
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
-        return True
-
         if re.search('Username or password incorrect.', response.text):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
+        return True
 
 
 provider = SDBitsProvider()
