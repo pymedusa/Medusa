@@ -18,8 +18,8 @@
 """Provider code for SDBits."""
 from __future__ import unicode_literals
 
-import re
 import datetime
+import re
 import traceback
 from pytimeparse import parse
 from requests.compat import urljoin
@@ -97,7 +97,7 @@ class SDBitsProvider(TorrentProvider):
                     else:
                         search_params['search'] = search_string
                         logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
-                        
+
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
