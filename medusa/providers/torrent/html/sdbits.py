@@ -19,8 +19,8 @@
 from __future__ import unicode_literals
 
 import re
-import traceback
 import datetime
+import traceback
 from pytimeparse import parse
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -93,14 +93,11 @@ class SDBitsProvider(TorrentProvider):
                     imdb_id = self.show.externals.get(mappings[10])
                     if imdb_id:
                         search_params['imdb'] = imdb_id
-                        logger.log('Search string (imdb id): {imdb_id}'.format
-                               (imdb_id=imdb_id), logger.DEBUG)
+                        logger.log('Search string (imdb id): {imdb_id}'.format(imdb_id=imdb_id), logger.DEBUG)
                     else:
                         search_params['search'] = search_string
-                        logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
-
-
+                        logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
+                        
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
