@@ -22,7 +22,6 @@ import re
 import traceback
 import datetime
 from pytimeparse import parse
-from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
@@ -201,6 +200,10 @@ class SDBitsProvider(TorrentProvider):
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
         return True
+
+        if re.search('Username or password incorrect.', response.text):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            return False
 
 
 provider = SDBitsProvider()
