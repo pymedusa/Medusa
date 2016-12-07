@@ -26,10 +26,11 @@ from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import config, logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
+from ....show_name_helpers import allPossibleShowNames
 
 
 class AnimeTorrentsProvider(TorrentProvider):
@@ -234,6 +235,26 @@ class AnimeTorrentsProvider(TorrentProvider):
                                 ' check your config.'.format(self.name))
 
         return True
+
+    def _get_episode_search_strings(self, episode, add_string=''):
+        """Get episode search strings."""
+        if not episode:
+            return []
+
+        search_string = {
+            'Episode': []
+        }
+
+        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+            episode_string = show_name + '%'
+            episode_string += '%01d' % int(episode.scene_absolute_number)
+
+            if add_string:
+                episode_string += '%' + add_string
+
+            search_string['Episode'].append(episode_string.strip())
+
+        return [search_string]
 
 
 provider = AnimeTorrentsProvider()
