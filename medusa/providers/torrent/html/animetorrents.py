@@ -185,44 +185,30 @@ class AnimeTorrentsProvider(TorrentProvider):
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
         cookies = dict_from_cookiejar(self.session.cookies)
-        if all([any(cookies.values()),
-                cookies.get('XTZ_USERNAME'),
-                cookies.get('XTZ_PASSWORD'),
-                cookies.get('XTZUID')]):
+        if any(cookies.values()) and all([cookies.get('XTZ_USERNAME'), cookies.get('XTZ_PASSWORD'),
+                                          cookies.get('XTZUID')]):
             return True
 
         login_params = {
             'username': self.username,
             'password': self.password,
             'form': 'login',
+            'rememberme[]': 1,
         }
 
-        self.headers.update({
-            'Upgrade - Insecure - Requests': '1',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Encoding': 'gzip, deflate, sdch',
-            'Connection': 'keep-alive',
-            'Host': 'animetorrents.me',
-            'Cache-Control': 'max-age=0'
-            })
+        request = self.get_url(self.urls['login'], returns='response')
+        if not hasattr(request, 'cookies'):
+            return False
 
-        self.session.get(url=self.urls['login'], headers=self.headers)
-        response = self.session.post(url=self.urls['login'], data=login_params, headers=self.headers)
-
-        if not response:
+        response = self.get_url(self.urls['login'], post_data=login_params, cookies=request.cookies,
+                                returns='response')
+        if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        cookies = dict_from_cookiejar(self.session.cookies)
-        if not all([cookies.get('XTZ_USERNAME'),
-                    cookies.get('XTZ_PASSWORD'),
-                    cookies.get('XTZUID')]):
+        if re.search(' Login', response.text):
+            logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
-
-        # if re.search('Invalid username or password.', response.text):
-        #     logger.log('Invalid username or password. Check your settings', logger.WARNING)
-        #     return False
 
         return True
 
