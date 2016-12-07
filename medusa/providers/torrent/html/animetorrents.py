@@ -48,8 +48,12 @@ class AnimeTorrentsProvider(TorrentProvider):
         self.urls = {
             'base_url': self.url,
             'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, '/ajax/torrents_data.php')
+            'search': urljoin(self.url, 'torrents.php?'),
+            'search_ajax': urljoin(self.url, '/ajax/torrents_data.php')
         }
+
+        self.categories = {2: 'Anime Series',
+                           7: 'Anime Series HD'}
 
         # Proper Strings
 
@@ -70,14 +74,23 @@ class AnimeTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        # if not self.login():
-        #     return results
-        self.login()
+        if not self.login():
+            return results
 
         # Search Params
         search_params = {
             'search': '',
+            'SearchSubmit': '',
+            'page': 1,
+            'total': 1,
+            'searchin': 'filedisc',
+            'cat': ''
         }
+
+        headers_paged = dict(self.headers)  # Create copy
+        headers_paged.update({
+            'X-Requested-With': 'XMLHttpRequest'
+        })
 
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
@@ -89,21 +102,17 @@ class AnimeTorrentsProvider(TorrentProvider):
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
-                if not response or not response.text or 'Access Denied!' in response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    continue
+                self.headers = headers_paged
+                for cat in self.categories:
+                    search_params['cat'] = cat
+                    response = self.get_url(self.urls['search_ajax'], params=search_params, returns='response')
 
-                # Search result page contains some invalid html that prevents html parser from returning all data.
-                # We cut everything before the table that contains the data we are interested in thus eliminating
-                # the invalid html portions
-                try:
-                    index = response.text.index('<TABLE class="mainblockcontenttt"')
-                except ValueError:
-                    logger.log('Could not find table of torrents mainblockcontenttt', logger.DEBUG)
-                    continue
+                    if not response or not response.text or 'Access Denied!' in response.text:
+                        logger.log('No data returned from provider', logger.DEBUG)
+                        break
 
-                results += self.parse(response.text[index:], mode)
+                    # Get the rows with results
+                    results += self.parse(response.text, mode)
 
         return results
 
@@ -119,16 +128,15 @@ class AnimeTorrentsProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='mainblockcontenttt')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+            torrent_rows = html('tr')
 
-            if not torrent_rows or torrent_rows[2].find('td', class_='lista'):
+            if not torrent_rows or not len(torrent_rows) > 1:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
             # Cat., Active, Filename, Dl, Wl, Added, Size, Uploader, S, L, C
             labels = [label.a.get_text(strip=True) if label.a else label.get_text(strip=True) for label in
-                      torrent_rows[0]('td')]
+                      torrent_rows[0]('th')]
 
             # Skip column headers
             for row in torrent_rows[1:]:
@@ -137,16 +145,14 @@ class AnimeTorrentsProvider(TorrentProvider):
                     if len(cells) < len(labels):
                         continue
 
-                    title = cells[labels.index('Filename')].a
-                    title = title.get_text(strip=True) if title else None
-                    link = cells[labels.index('Dl')].a
-                    link = link.get('href') if link else None
-                    download_url = urljoin(self.url, link) if link else None
+                    torrent_name = cells[labels.index('Torrent name')].a
+                    title = torrent_name.get_text(strip=True) if torrent_name else None
+                    download_url = torrent_name.get('href') if torrent_name else None
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('S')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('L')].get_text(strip=True))
+                    slc = cells[labels.index('S')].get_text()
+                    seeders, leechers, _ = [int(value.strip()) for value in slc.split('/')] if slc else (0, 0, 0)
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -202,6 +208,7 @@ class AnimeTorrentsProvider(TorrentProvider):
 
         response = self.get_url(self.urls['login'], post_data=login_params, cookies=request.cookies,
                                 returns='response')
+
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
