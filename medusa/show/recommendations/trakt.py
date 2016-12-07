@@ -79,7 +79,7 @@ class TraktPopular(object):
         image = None
         try:
             image = self.tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
-        except Exception as e:
+        except Exception:
             use_default = self.default_img_src
             logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.DEBUG)
 
