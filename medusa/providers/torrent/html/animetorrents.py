@@ -52,6 +52,9 @@ class AnimeTorrentsProvider(TorrentProvider):
             'search_ajax': urljoin(self.url, '/ajax/torrents_data.php')
         }
 
+        # Miscellaneous Options
+        self.supports_absolute_numbering = True
+        self.anime_only = True
         self.categories = {2: 'Anime Series',
                            7: 'Anime Series HD'}
 
@@ -74,6 +77,10 @@ class AnimeTorrentsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+
+        if self.show and not self.show.is_anime:
+            return results
+
         if not self.login():
             return results
 
@@ -82,7 +89,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             'search': '',
             'SearchSubmit': '',
             'page': 1,
-            'total': 1,
+            'total': 2,  # Setting this to 2, will make sure we are getting a paged result.
             'searchin': 'filedisc',
             'cat': ''
         }
@@ -99,6 +106,7 @@ class AnimeTorrentsProvider(TorrentProvider):
 
                 if mode != 'RSS':
                     search_params['search'] = search_string
+                    search_params['total'] = 1  # Setting this to 1, makes sure we get 1 big result set.
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
