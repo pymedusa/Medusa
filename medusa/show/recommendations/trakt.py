@@ -79,7 +79,7 @@ class TraktPopular(object):
         image = None
         try:
             image = self.tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
-        except Exception:
+        except Exception as e:
             use_default = self.default_img_src
             logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.DEBUG)
 
@@ -100,6 +100,7 @@ class TraktPopular(object):
             if trakt_api.access_token_refreshed:
                 app.TRAKT_ACCESS_TOKEN = trakt_api.access_token
                 app.TRAKT_REFRESH_TOKEN = trakt_api.refresh_token
+                app.instance.save_config()
         except TokenExpiredException:
             app.TRAKT_ACCESS_TOKEN = ''
             raise
