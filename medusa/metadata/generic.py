@@ -814,8 +814,8 @@ class GenericMetadata(object):
             return result
 
         if ('season' not in indexer_show_obj['_banners'] or
-                    'original' not in indexer_show_obj['_banners']['season'] or
-                    season not in indexer_show_obj['_banners']['season']['original']):
+                'original' not in indexer_show_obj['_banners']['season'] or
+                season not in indexer_show_obj['_banners']['season']['original']):
             return result
 
         # Give us just the normal poster-style season graphics
@@ -873,8 +873,8 @@ class GenericMetadata(object):
             return result
 
         if ('seasonwide' not in indexer_show_obj['_banners'] or
-                    'original' not in indexer_show_obj['_banners']['season'] or
-                    season not in indexer_show_obj['_banners']['seasonwide']['original']):
+                'original' not in indexer_show_obj['_banners']['season'] or
+                season not in indexer_show_obj['_banners']['seasonwide']['original']):
             return result
 
         # Give us just the normal poster-style season graphics
