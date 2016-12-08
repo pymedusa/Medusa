@@ -137,8 +137,7 @@ class ShowUpdater(object):
                                 season_updates.append((indexer, show, season))
             except IndexerUnavailable:
                 logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                               u'connectivity issues. While trying to look for showupdates on show: {show}',
-                               indexer=indexerApi(show.indexer), show=show.name)
+                               u'connectivity issues', indexer_name=indexerApi(show.indexer).name)
                 continue
 
             # update the lastUpdate for this indexer
