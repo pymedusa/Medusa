@@ -124,7 +124,7 @@ import pytest
         'preferred_qualities': [Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'expected': True
+        'expected': False
     },
     {  # p12: Snatched 720p HDTV and found 720p BluRay: no
         'ep_status': SNATCHED,
@@ -204,7 +204,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'expected': True
+        'expected': False
     },
     {  # p20: Downloaded SDTV (not in quality system) and found 720p HDBLURAY: no
         'ep_status': DOWNLOADED,
@@ -224,7 +224,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'expected': True
+        'expected': False
     },
     {  # p22: Downloaded SDTV found SDTV and force search and download_current_quality: yes
         'ep_status': DOWNLOADED,
@@ -284,7 +284,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'expected': True
+        'expected': False
     },
     {  # p28: SKIPPED and found HDTV. Force search yes: yes
         'ep_status': SKIPPED,
@@ -294,7 +294,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'expected': True
+        'expected': False
     },
     {  # p29: SKIPPED and found HDTV. Force search no: no
         'ep_status': SKIPPED,
