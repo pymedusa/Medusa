@@ -20,6 +20,7 @@ import logging
 from collections import OrderedDict
 
 from requests.compat import urljoin
+from requests.packages.urllib3.exceptions import RequestError
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
@@ -521,12 +522,15 @@ class TVDBv2(BaseIndexer):
         updates = True
 
         count = 0
-        while updates and count < weeks:
-            updates = self.updates_api.updated_query_get(from_time).data
-            last_update_ts = max(x.last_updated for x in updates)
-            from_time = last_update_ts
-            total_updates += [int(_.id) for _ in updates]
-            count += 1
+        try:
+            while updates and count < weeks:
+                updates = self.updates_api.updated_query_get(from_time).data
+                last_update_ts = max(x.last_updated for x in updates)
+                from_time = last_update_ts
+                total_updates += [int(_.id) for _ in updates]
+                count += 1
+        except RequestError as e:
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
 
         if total_updates and filter_show_list:
             new_list = []
