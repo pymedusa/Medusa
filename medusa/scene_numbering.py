@@ -491,7 +491,7 @@ def xem_refresh(indexer_id, indexer, force=False):
 
         try:
             if not indexerApi(indexer).config.get('xem_origin'):
-                logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer).name), logger.INFO)
+                logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer).name), logger.DEBUG)
                 return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
