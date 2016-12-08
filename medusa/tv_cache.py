@@ -168,10 +168,6 @@ class TVCache(object):
         """Return publish date of the item."""
         return self.provider._get_pubdate(item)
 
-    def _get_torrent_hash(self, item):
-        """Return hash of the item."""
-        return self.provider._get_torrent_hash(item)
-
     def _get_rss_data(self):
         """Return rss data."""
         return {'entries': self.provider.search(self.search_params)} if self.search_params else None
@@ -241,7 +237,7 @@ class TVCache(object):
             cl = []
             for item in manual_data:
                 logger.log('Adding to cache item found in manual search: {0}'.format(item.name), logger.DEBUG)
-                ci = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate, item.hash)
+                ci = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate, torrent_hash=None)
                 if ci is not None:
                     cl.append(ci)
         except Exception as e:
@@ -279,7 +275,6 @@ class TVCache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
-        torrent_hash = self._get_torrent_hash(item)
 
         self._check_item_auth(title, url)
 
@@ -288,7 +283,7 @@ class TVCache(object):
             url = self._translate_link_url(url)
 
             # logger.log('Attempting to add item to cache: ' + title, logger.DEBUG)
-            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash=None)
 
         else:
             logger.log(

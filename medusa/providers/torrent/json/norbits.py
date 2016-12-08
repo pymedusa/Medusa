@@ -138,7 +138,6 @@ class NorbitsProvider(TorrentProvider):
                                    (title, seeders), logger.DEBUG)
                     continue
 
-                info_hash = row.pop('info_hash', '')
                 size = convert_size(row.pop('size', -1), -1)
 
                 item = {
@@ -148,7 +147,6 @@ class NorbitsProvider(TorrentProvider):
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': None,
-                    'torrent_hash': info_hash,
                 }
                 if mode != 'RSS':
                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

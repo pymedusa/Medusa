@@ -144,13 +144,12 @@ class GenericProvider(object):
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
                         pubdate = self._get_pubdate(item)
-                        torrent_hash = self._get_torrent_hash(item)
 
                         # This will be retrived from the parser
                         proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
-                                              torrent_hash, proper_tags))
+                                              proper_tags))
 
         return results
 
@@ -213,7 +212,6 @@ class GenericProvider(object):
             (seeders, leechers) = self._get_result_info(item)
             size = self._get_size(item)
             pubdate = self._get_pubdate(item)
-            torrent_hash = self._get_torrent_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -304,7 +302,7 @@ class GenericProvider(object):
                 logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
 
                 # Access to a protected member of a client class
-                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash=None)
 
                 if ci is not None:
                     cl.append(ci)
@@ -342,7 +340,6 @@ class GenericProvider(object):
             result.content = None
             result.size = self._get_size(item)
             result.pubdate = self._get_pubdate(item)
-            result.hash = self._get_torrent_hash(item)
 
             if not episode_object:
                 episode_number = SEASON_RESULT
@@ -516,13 +513,6 @@ class GenericProvider(object):
         """Return publish date of the item.
 
         If provider doesnt have _get_pubdate function this will be used
-        """
-        return None
-
-    def _get_torrent_hash(self, item):
-        """Return hash of the item.
-
-        If provider doesnt have _get_torrent_hash function this will be used
         """
         return None
 

@@ -210,7 +210,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, torrent_hash, proper_tags):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, proper_tags):
         self.name = name
         self.url = url
         self.date = date
@@ -223,7 +223,7 @@ class Proper(object):
         self.size = size
         self.pubdate = pubdate
         self.proper_tags = proper_tags
-        self.hash = torrent_hash
+        self.hash = None
         self.show = show
         self.indexer = None
         self.indexerid = -1
