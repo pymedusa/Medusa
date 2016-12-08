@@ -157,6 +157,7 @@ class SDBitsProvider(TorrentProvider):
                     torrent_size = cells[5].get_text(' ')
                     size = convert_size(torrent_size) or -1
 
+                    pubdate = None
                     pubdate_raw = cells[4].get_text('_').split('_')
                     if pubdate_raw:
                         if len(pubdate_raw) == 2:
@@ -164,8 +165,6 @@ class SDBitsProvider(TorrentProvider):
                         else:
                             pubdate_raw = parse(pubdate_raw[0])
                         pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
-                    else:
-                        pubdate = None
 
                     item = {
                         'title': title,
