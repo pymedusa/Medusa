@@ -4,6 +4,7 @@ from .html import (
     abnormal,
     alpharatio,
     animebytes,
+    animetorrents,
     bithdtv,
     bluetigers,
     cpasbien,
@@ -35,7 +36,6 @@ from .html import (
     tvchaosuk,
     xthor,
     zooqle,
-    animetorrents,
 )
 
 from .json import (
