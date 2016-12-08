@@ -53,7 +53,7 @@ class SDBitsProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['']
+        self.proper_strings = []
 
         # Miscellaneous Options
 
@@ -158,11 +158,14 @@ class SDBitsProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[4].get_text('_').split('_')
-                    if len(pubdate_raw) == 2:
-                        pubdate_raw = parse(pubdate_raw[0]) + parse(pubdate_raw[1])
+                    if pubdate_raw:
+                        if len(pubdate_raw) == 2:
+                            pubdate_raw = parse(pubdate_raw[0]) + parse(pubdate_raw[1])
+                        else:
+                            pubdate_raw = parse(pubdate_raw[0])
+                        pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
                     else:
-                        pubdate_raw = parse(pubdate_raw[0])
-                    pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw)) if pubdate_raw else None
+                        pubdate = None
 
                     item = {
                         'title': title,
