@@ -39,7 +39,7 @@ from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
 from . import app, db, helpers, history
 from .cache import cache, memory_cache
-from .common import cpu_presets
+from .common import Quality, cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
 from .helpers import isMediaFile, isRarFile
@@ -840,6 +840,9 @@ class SubtitlesFinder(object):
                 if not tv_episode.show.subtitles:
                     logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
                     run_post_process = True
+                    continue
+
+                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
                 # Should not consider existing subtitles from db if it's a replacement
