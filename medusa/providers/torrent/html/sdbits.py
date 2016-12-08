@@ -21,9 +21,12 @@ from __future__ import unicode_literals
 import datetime
 import re
 import traceback
+
 from pytimeparse import parse
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -43,7 +46,7 @@ class SDBitsProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'http://sdbits.org/'
+        self.url = 'http://sdbits.org'
         self.urls = {
             'login': urljoin(self.url, 'takeloginn3.php'),
             'search': urljoin(self.url, 'browse.php'),
@@ -84,6 +87,7 @@ class SDBitsProvider(TorrentProvider):
             'imdb': '',
             'search': '',
         }
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -93,7 +97,7 @@ class SDBitsProvider(TorrentProvider):
                     imdb_id = self.show.externals.get(mappings[10])
                     if imdb_id:
                         search_params['imdb'] = imdb_id
-                        logger.log('Search string (imdb id): {imdb_id}'.format(imdb_id=imdb_id), logger.DEBUG)
+                        logger.log('Search string (IMDb ID): {imdb_id}'.format(imdb_id=imdb_id), logger.DEBUG)
                     else:
                         search_params['search'] = search_string
                         logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
@@ -116,9 +120,6 @@ class SDBitsProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -135,13 +136,14 @@ class SDBitsProvider(TorrentProvider):
                 cells = row('td')
 
                 try:
-                    title = cells[2].findAll('a')[0].get_text()
-                    download = cells[2].findAll('a')[1]['href']
+                    torrent_info = cells[2].find_all('a')
+                    title = torrent_info[0].get_text()
+                    download = torrent_info[1]['href']
                     download_url = urljoin(self.url, download)
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[7].get_text(strip=True))
+                    seeders = try_int(cells[7].get_text(strip=True), 1)
                     leechers = try_int(cells[8].get_text(strip=True))
 
                     # Filter unseeded torrent
@@ -152,14 +154,16 @@ class SDBitsProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[5].get_text(" ")
-                    size = convert_size(torrent_size, units=units) or -1
-                    pubdate_raw = cells[4].get_text("_").split("_")
+                    torrent_size = cells[5].get_text(' ')
+                    size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = cells[4].get_text('_').split('_')
                     if len(pubdate_raw) == 2:
                         pubdate_raw = parse(pubdate_raw[0]) + parse(pubdate_raw[1])
                     else:
                         pubdate_raw = parse(pubdate_raw[0])
                     pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw)) if pubdate_raw else None
+
                     item = {
                         'title': title,
                         'link': download_url,
@@ -196,9 +200,11 @@ class SDBitsProvider(TorrentProvider):
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
+
         if re.search('Username or password incorrect.', response.text):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
+
         return True
 
 
