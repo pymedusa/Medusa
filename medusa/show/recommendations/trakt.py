@@ -119,8 +119,10 @@ class TraktPopular(object):
         removed_from_medusa = []
 
         # Create a trakt settings dict
-        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET, 'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN, 'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
+        trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
+                          'trakt_api_key': app.TRAKT_API_KEY,
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
         trakt_api = TraktApi(timeout=app.TRAKT_TIMEOUT, ssl_verify=app.SSL_VERIFY, **trakt_settings)
 
