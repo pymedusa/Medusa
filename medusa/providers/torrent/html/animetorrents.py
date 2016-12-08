@@ -26,9 +26,9 @@ from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
-from .... import config, logger, tv_cache
+from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
+from ....helper.common import convert_size
 from ....helper.exceptions import AuthException
 from ....show_name_helpers import allPossibleShowNames
 
