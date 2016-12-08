@@ -280,7 +280,7 @@ class TransmissionAPI(GenericClient):
                 logger.warning("Torrent completed and reached minimum ratio: [{ratio}] or "
                                "seed idle limit: [{seed_limit} min]. Removing it: [{name}]",
                                ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name'])
-                self.remove_torrent(torrent['hashString'])
+                #  self.remove_torrent(torrent['hashString'])
             else:
                 logger.info("Torrent didn't reached minimum ratio: [{ratio}]. "
                             "Keeping it: [{name}]",
