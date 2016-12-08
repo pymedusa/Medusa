@@ -911,10 +911,11 @@ class GenericMetadata(object):
             with io.open(metadata_path, 'rb') as xmlFileObj:
                 showXML = etree.ElementTree(file=xmlFileObj)
 
-            if showXML.findtext('title') is None or (
-                        showXML.findtext('tvdbid') is None and showXML.findtext('id') is None):
-                logger.log(u"Invalid info in tvshow.nfo (missing name or id): %s %s %s" % (
-                    showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id')))
+            if (showXML.findtext('title') is None or
+                    (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None)):
+                logger.log(u"Invalid info in tvshow.nfo (missing name or id): %s %s %s"
+                           % (showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id')),
+                           logger.DEBUG)
                 return empty_return
 
             name = showXML.findtext('title')
