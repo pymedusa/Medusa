@@ -120,8 +120,8 @@ class Torrentz2Provider(TorrentProvider):
                     title_raw = row.title.text
                     # Add "-" after codec and add missing "."
                     title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ', '.') if title_raw else ''
-                    torrent_hash = row.guid.text.rsplit('/', 1)[-1]
-                    download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
+                    info_hash = row.guid.text.rsplit('/', 1)[-1]
+                    download_url = "magnet:?xt=urn:btih:" + info_hash + "&dn=" + title + self._custom_trackers
                     if not all([title, download_url]):
                         continue
 

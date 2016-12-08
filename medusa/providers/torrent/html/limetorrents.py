@@ -150,14 +150,14 @@ class LimeTorrentsProvider(TorrentProvider):
                         title = alt_title.replace('-', ' ')
 
                     torrent_id = regex_result.group(2)
-                    torrent_hash = hash_regex.search(title_url).group(2)
-                    if not all([title, torrent_id, torrent_hash]):
+                    info_hash = hash_regex.search(title_url).group(2)
+                    if not all([title, torrent_id, info_hash]):
                         continue
 
                     with suppress(RequestsConnectionError, Timeout):
                         # Suppress the timeout since we are not interested in actually getting the results
                         self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
-                                                                                   'infohash': torrent_hash})
+                                                                                   'infohash': info_hash})
 
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''), 1)
@@ -172,7 +172,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     size = convert_size(cells[labels.index('Size')].get_text(strip=True)) or -1
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=torrent_hash, title=title, trackers=self._custom_trackers)
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     item = {
                         'title': title,

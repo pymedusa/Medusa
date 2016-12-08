@@ -179,7 +179,7 @@ class GenericClient(object):
         return True
 
     @staticmethod
-    def _get_torrent_hash(result):
+    def _get_info_hash(result):
 
         if result.url.startswith('magnet'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
@@ -227,7 +227,7 @@ class GenericClient(object):
             result.ratio = result.provider.seed_ratio()
 
             # lazy fix for now, I'm sure we already do this somewhere else too
-            result = self._get_torrent_hash(result)
+            result = self._get_info_hash(result)
 
             if not result.hash:
                 return False

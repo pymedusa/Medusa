@@ -131,9 +131,9 @@ class TorrentProjectProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    torrent_hash = download_url.split('/')[1]
+                    info_hash = download_url.split('/')[1]
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=torrent_hash, title=title, trackers=self._custom_trackers)
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     seeders = try_int(row.find('span', class_='bc seeders').find('span').get_text(), 1)
                     leechers = try_int(row.find('span', class_='bc leechers').find('span').get_text())
