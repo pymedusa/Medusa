@@ -1161,7 +1161,7 @@ def request_defaults(kwargs):
 
 
 def prepare_cf_req(session, request):
-    logger.debug(u'CloudFlare protection detected, trying to bypass it')
+    logger.debug(u'CloudFlare protection detected, trying to bypass it.')
 
     try:
         tokens, user_agent = cfscrape.get_tokens(request.url)
