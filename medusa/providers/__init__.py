@@ -26,7 +26,7 @@ from .nzb.newznab import NewznabProvider
 from .torrent import (
     abnormal, alpharatio, animebytes, bitcannon, bithdtv, bitsnoop, bluetigers, btn, cpasbien, danishbits,
     elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs,
-    iptorrents, limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, shazbat,
+    iptorrents, limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, sdbits, shazbat,
     speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
     torrentshack, torrentz2, transmitthenet, tvchaosuk, xthor, zooqle
 )
@@ -37,7 +37,7 @@ __all__ = [
     'womble', 'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents',
     'torrentday', 'hdbits', 'hounddawgs', 'iptorrents',
     'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'cpasbien',
-    'morethantv', 't411', 'tokyotoshokan', 'alpharatio',
+    'morethantv', 't411', 'tokyotoshokan', 'alpharatio', 'sdbits',
     'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'bluetigers',
     'xthor', 'abnormal', 'scenetime', 'transmitthenet', 'tvchaosuk',
     'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
