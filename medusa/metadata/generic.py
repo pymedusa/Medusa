@@ -814,8 +814,8 @@ class GenericMetadata(object):
             return result
 
         if ('season' not in indexer_show_obj['_banners'] or
-                'original' not in indexer_show_obj['_banners']['season'] or
-                season not in indexer_show_obj['_banners']['season']['original']):
+                    'original' not in indexer_show_obj['_banners']['season'] or
+                    season not in indexer_show_obj['_banners']['season']['original']):
             return result
 
         # Give us just the normal poster-style season graphics
@@ -873,8 +873,8 @@ class GenericMetadata(object):
             return result
 
         if ('seasonwide' not in indexer_show_obj['_banners'] or
-                'original' not in indexer_show_obj['_banners']['season'] or
-                season not in indexer_show_obj['_banners']['seasonwide']['original']):
+                    'original' not in indexer_show_obj['_banners']['season'] or
+                    season not in indexer_show_obj['_banners']['seasonwide']['original']):
             return result
 
         # Give us just the normal poster-style season graphics
@@ -912,9 +912,9 @@ class GenericMetadata(object):
                 showXML = etree.ElementTree(file=xmlFileObj)
 
             if showXML.findtext('title') is None or (
-                    showXML.findtext('tvdbid') is None and showXML.findtext('id') is None):
+                        showXML.findtext('tvdbid') is None and showXML.findtext('id') is None):
                 logger.log(u"Invalid info in tvshow.nfo (missing name or id): %s %s %s" % (
-                showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id')))
+                    showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id')))
                 return empty_return
 
             name = showXML.findtext('title')
