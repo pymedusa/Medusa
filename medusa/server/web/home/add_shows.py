@@ -348,7 +348,8 @@ class HomeAddShows(Home):
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
         show_name = get_showname_from_indexer(1, indexer_id)
         try:

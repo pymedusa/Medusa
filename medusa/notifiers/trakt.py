@@ -58,7 +58,8 @@ class Notifier(object):
         # Create a trakt settings dict
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
 
@@ -116,7 +117,8 @@ class Notifier(object):
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
 
@@ -242,7 +244,8 @@ class Notifier(object):
         try:
             trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                               'trakt_api_key': app.TRAKT_API_KEY,
-                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                              'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
             trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
             trakt_api.validate_account()
