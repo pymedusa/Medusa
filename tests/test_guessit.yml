@@ -4022,3 +4022,37 @@
   container: mkv
   mimetype: video/x-matroska
   type: episode
+
+? Show.Name.-.476-479.(2007).[HorribleSubs][WEBRip]..[HD.720p]
+: title: Show Name
+  absolute_episode: [476, 477, 478, 479]
+  episode: [476, 477, 478, 479]
+  year: 2007
+  release_group: HorribleSubs
+  format: WEBRip
+  other: HD
+  screen_size: 720p
+  type: episode
+
+? Show.Name.-.07.(2016).[RH].[English.Dubbed][WEBRip]..[HD.1080p]
+: title: Show Name
+  absolute_episode: 7
+  episode: 7
+  year: 2016
+  release_group: RH
+  language: en
+  format: WEBRip
+  other: HD
+  screen_size: 1080p
+  type: episode
+
+? Show!.Name.2.-.10.(2016).[HorribleSubs][WEBRip]..[HD.720p]
+: title: Show! Name 2
+  absolute_episode: 10
+  episode: 10
+  year: 2016
+  release_group: HorribleSubs
+  format: WEBRip
+  other: HD
+  screen_size: 720p
+  type: episode

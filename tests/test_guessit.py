@@ -38,6 +38,7 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=16, name='3 Show på (abc2)'),  # unicode characters, numbers and parenthesis
         create_tvshow(indexerid=16, name="Show '70s Name"),
         create_tvshow(indexerid=17, name='An Anime Show 100', anime=1),
+        create_tvshow(indexerid=17, name='Show! Name 2', anime=1),
         create_tvshow(indexerid=18, name='24'),  # expected titles shouldn't contain numbers
     ]
 

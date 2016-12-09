@@ -602,7 +602,7 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
 
     priority = POST_PROCESS
     consequence = [RemoveMatch, AppendMatch]
-    absolute_re = re.compile(r'([\W|_]*)(?P<absolute_episode_start>\d{3,4})\-(?P<absolute_episode_end>\d{3,4})\W*$')
+    absolute_re = re.compile(r'([\W|_]*)(?P<absolute_episode_start>\d{2,4})(?:-(?P<absolute_episode_end>\d{3,4}))?\W*$')
     properties = ('title', 'alternative_title', 'episode_title')
 
     def when(self, matches, context):
@@ -614,10 +614,6 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
         :type context: dict
         :return:
         """
-        episodes = matches.named('episode')
-        if not episodes:
-            return
-
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             # retrieve all problematic titles
@@ -626,6 +622,7 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
 
             to_remove = []
             to_append = []
+            episodes = matches.named('episode')
 
             for title in problematic_titles:
                 m = self.absolute_re.search(title.raw)
@@ -647,9 +644,12 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
                 # and add the absolute episode range
                 g = m.groupdict()
                 absolute_episode_start = int(g['absolute_episode_start'])
-                absolute_episode_end = int(g['absolute_episode_end'])
+                if not g['absolute_episode_end'] and title.name != 'alternative_title':
+                    continue
+
+                absolute_episode_end = int(g['absolute_episode_end'] or g['absolute_episode_start'])
                 for i in range(absolute_episode_start, absolute_episode_end + 1):
-                    episode = copy.copy(episodes[0])
+                    episode = copy.copy(title)
                     episode.name = 'absolute_episode'
                     episode.value = i
                     if i == absolute_episode_start:
@@ -661,7 +661,13 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
                     else:
                         episode.start = title.start + m.start('absolute_episode_end')
                         episode.end = title.start + m.end('absolute_episode_end')
+
                     to_append.append(episode)
+
+                    if not episodes:
+                        ep = copy.copy(episode)
+                        ep.name = 'episode'
+                        to_append.append(ep)
 
                 return to_remove, to_append
 
