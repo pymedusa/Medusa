@@ -322,6 +322,7 @@ class Tmdb(BaseIndexer):
                     _images[image_type] = {}
 
                 for image in images:
+                    bid += 1
                     image_mapped = self._map_results(image, key_mappings=key_mapping)
 
                     for size in self.tmdb_configuration.images.get(image_sizes[image_type]):
@@ -345,6 +346,12 @@ class Tmdb(BaseIndexer):
 
                             _images[image_type][resolution][bid][k] = v
 
+                        # As we can have multiple images with the same resolution, we are only going to store the
+                        # first.
+                        # TODO: Think of a structure, that makes it possible to add multiple images, for the same 'bid'.
+                        if '_bannerpath' in _images[image_type][resolution][bid]:
+                            continue
+
                         for k, v in _images[image_type][resolution][bid].items():
                             if k.endswith('path'):
                                 new_key = '_%s' % k
@@ -358,8 +365,32 @@ class Tmdb(BaseIndexer):
                 log().warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
                 return False
 
+        season_images = self._parse_season_images(sid)
+        if season_images:
+            _images.update(season_images)
+
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
+
+    def _parse_season_images(self, sid):
+        """Get all season posters for a tmdb show."""
+        # Let's fget the different type of images available for this series
+        season_posters = getattr(self[sid], 'seasons', None)
+        if not season_posters:
+            return
+
+        _images = {'season': {'original': {}}}
+        for season in season_posters:
+            # Store each season poster in the format
+            if not season['season_number'] in _images['season']['original']:
+                _images['season']['original'][season['season_number']] = {season['id']: {}}
+            _images['season']['original'][season['season_number']][season['id']]['bannerpath'] = season['poster_path']
+            _images['season']['original'][season['season_number']][season['id']]['_bannerpath'] = \
+                self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
+                                                     image_size='w780',
+                                                     file_path=season['poster_path'])
+
+        return _images
 
     def _parse_actors(self, sid):
         """Parse actors XML.
