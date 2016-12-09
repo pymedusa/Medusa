@@ -788,7 +788,7 @@ class PostProcessor(object):
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality '
+                    'SELECT quality, manual_searched '
                     'FROM history '
                     'WHERE showid = ? '
                     'AND season = ? '

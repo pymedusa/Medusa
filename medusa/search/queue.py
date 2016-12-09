@@ -412,7 +412,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
                                       search_result.seeders, search_result.leechers, search_result.provider.name))
                 else:
                     logger.log(u"Downloading {0} from {1}".format(search_result.name, search_result.provider.name))
-                self.success = snatchEpisode(search_result)
+                self.success = snatchEpisode(search_result, manual_searched=True)
             else:
                 logger.log(u"Unable to snatch release: {0}".format(search_result.name))
 

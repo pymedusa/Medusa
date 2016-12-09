@@ -30,7 +30,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 2
+CURRENT_MINOR_DB_VERSION = 3
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -502,6 +502,35 @@ class AddProperTags(TestIncreaseMajorVersion):
         if not self.hasColumn('history', 'proper_tags'):
             logger.log(u'Adding column proper_tags to history')
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
+
+        MainSanityCheck(self.connection).update_old_propers()
+        self.inc_minor_version()
+
+        logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddManualSearched(TestIncreaseMajorVersion):
+    """Adds columns manual_searched to history and tv_episodes table."""
+
+    def test(self):
+        """
+        Test if the version is < 44.3
+        """
+        return self.connection.version >= (44, 3)
+
+    def execute(self):
+        """
+        Updates the version until 44.3 and adds manual_searched columns
+        """
+        backupDatabase(self.connection.version)
+
+        if not self.hasColumn('history', 'manual_searched'):
+            logger.log(u'Adding column proper_tags to history')
+            self.addColumn('history', 'manual_searched', 'NUMERIC', 0)
+
+        if not self.hasColumn('tv_episodes', 'manual_searched'):
+            logger.log(u'Adding column manual_searched to tv_episodes')
+            self.addColumn('tv_episodes', 'manual_searched', 'NUMERIC', 0)
 
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()

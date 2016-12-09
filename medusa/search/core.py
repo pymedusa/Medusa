@@ -80,11 +80,12 @@ def _downloadResult(result):
     return newResult
 
 
-def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
+def snatchEpisode(result, manual_searched=False):
     """
     Internal logic necessary to actually "snatch" a result that has been found.
 
     :param result: SearchResult instance to be snatched.
+    :param manual_searched: if this snatched was done by user
     :return: boolean, True on success
     """
     if result is None:
@@ -147,7 +148,7 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
 
     ui.notifications.message('Episode snatched', result.name)
 
-    history.log_snatch(result)
+    history.log_snatch(result, manual_searched)
 
     # don't notify when we re-download an episode
     sql_l = []
@@ -181,6 +182,8 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
 
             # Release group is parsed in PP
             curEpObj.release_group = ''
+
+            curEpObj.manual_searched = manual_searched
 
             sql_l.append(curEpObj.get_sql())
 
@@ -351,14 +354,16 @@ def wantedEpisodes(show, fromDate):
     con = db.DBConnection()
 
     sql_results = con.select(
-        "SELECT status, season, episode FROM tv_episodes WHERE showid = ? AND season > 0 and airdate > ?",
+        "SELECT status, season, episode, manual_searched "
+        "FROM tv_episodes "
+        "WHERE showid = ? AND season > 0 and airdate > ?",
         [show.indexerid, fromDate.toordinal()]
     )
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
         _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if not Quality.should_search(result['status'], show):
+        if not Quality.should_search(result['status'], show, result["manual_searched"]):
             continue
 
         epObj = show.get_episode(result["season"], result["episode"])
