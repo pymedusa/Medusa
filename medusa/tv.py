@@ -1879,11 +1879,15 @@ class TVShow(TVObject):
 
         should_replace, msg = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
                                                      preferred_qualities, download_current_quality, forced_search)
+        if 'Consider change this episode status to ARCHIVED' in msg:
+            msg_level = logger.WARNING
+        else:
+            msg_level = logger.DEBUG
         logger.log(u"{id}: '{show}' {ep} status is: '{status}'. {action} result with quality '{new_quality}'. "
                    u"Reason: {msg}".format
                    (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
                     status=ep_status_text, action='Accepting' if should_replace else 'Ignoring',
-                    new_quality=Quality.qualityStrings[quality], msg=msg), logger.DEBUG)
+                    new_quality=Quality.qualityStrings[quality], msg=msg), msg_level)
         return should_replace
 
     def get_overview(self, ep_status, backlog_mode=False):

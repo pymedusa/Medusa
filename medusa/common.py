@@ -632,7 +632,9 @@ class Quality(object):
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.
-            return True, 'Existing quality is no longer in any wanted quality lists. Accepting new quality'
+            # return True, 'Existing quality is no longer in any wanted quality lists. Accepting new quality'
+            return False, 'Consider change this episode status to ARCHIVED if you want to keep this quality. ' \
+                          'Existing quality is no longer in any wanted quality lists. Soon this quality it be replaced'
 
         if force and download_current_quality:
             # If we already downloaded quality, just redownload it as long is still part of the wanted qualities
