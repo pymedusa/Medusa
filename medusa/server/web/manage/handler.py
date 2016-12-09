@@ -286,11 +286,11 @@ class Manage(Home, WebRoot):
 
                 tv_episode = TVEpisode.from_filepath(video_path)
 
-                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
-                    continue
-
                 if not tv_episode:
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
+                    continue
+
+                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
                 if not tv_episode.show.subtitles:
