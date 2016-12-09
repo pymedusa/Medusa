@@ -1,6 +1,5 @@
 # coding=utf-8
-# Author: medariox <dariox@gmx.com>,
-# based on Antoine Bertin's <diaoulael@gmail.com> work
+# Based on Antoine Bertin's <diaoulael@gmail.com> work
 # and originally written by Nyaran <nyayukko@gmail.com>
 #
 # This file is part of Medusa.
@@ -837,12 +836,12 @@ class SubtitlesFinder(object):
                     logger.debug(u'%s cannot be parsed to an episode', filename)
                     continue
 
+                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                    continue
+
                 if not tv_episode.show.subtitles:
                     logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
                     run_post_process = True
-                    continue
-
-                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
                 # Should not consider existing subtitles from db if it's a replacement
