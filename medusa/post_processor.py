@@ -328,7 +328,7 @@ class PostProcessor(object):
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
     def _combined_file_operation(self, file_path, new_path, new_base_name, associated_files=False,
-                                 action=None, subtitles=False):
+                                 action=None, subtitles=False, subtitle_action=None):
         """
         Perform a generic operation (move or copy) on a file.
 
@@ -377,6 +377,8 @@ class PostProcessor(object):
                     sub_lang = 'pt-BR'
                 new_extension = sub_lang + split_extension[1]
                 changed_extension = True
+                if app.POSTPONE_IF_NO_SUBS:
+                    action = subtitle_action or action
 
             # replace nfo with nfo-orig to avoid conflicts
             if extension == 'nfo' and app.NFO_RENAME:
@@ -472,8 +474,19 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
+        def _int_move(cur_file_path, new_file_path):
+
+            self._log(u'Moving file from {0} to {1} '.format(cur_file_path, new_file_path), logger.DEBUG)
+            try:
+                helpers.move_file(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
+            except (IOError, OSError) as e:
+                self._log(u'Unable to move file {0} to {1}: {2!r}'.format
+                          (cur_file_path, new_file_path, e), logger.ERROR)
+                raise
+
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
-                                      action=_int_hard_link, subtitles=subtitles)
+                                      action=_int_hard_link, subtitles=subtitles, subtitle_action=_int_move)
 
     def _move_and_symlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
         """
