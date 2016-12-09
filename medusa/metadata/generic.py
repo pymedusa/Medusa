@@ -36,6 +36,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as etree
 
+
 # todo: Implement Fanart.tv v3 API
 
 
@@ -82,6 +83,9 @@ class GenericMetadata(object):
         self.season_banners = season_banners
         self.season_all_poster = season_all_poster
         self.season_all_banner = season_all_banner
+
+        # Reuse indexer api, as it's crazy to hit the api with a full search, for every season search.
+        self.indexer_api = None
 
     def get_config(self):
         config_list = [self.show_metadata, self.episode_metadata, self.fanart, self.poster, self.banner,
@@ -328,7 +332,8 @@ class GenericMetadata(object):
     def create_season_banners(self, show_obj):
         if self.season_banners and show_obj:
             result = []
-            logger.log(u"Metadata provider " + self.name + " creating season banners for " + show_obj.name, logger.DEBUG)
+            logger.log(u"Metadata provider " + self.name + " creating season banners for " + show_obj.name,
+                       logger.DEBUG)
             for season in iterkeys(show_obj.episodes):  # @UnusedVariable
                 if not self._has_season_banner(show_obj, season):
                     result = result + [self.save_season_banners(show_obj, season)]
@@ -736,7 +741,8 @@ class GenericMetadata(object):
         except (IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name, logger.DEBUG)
+            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
+                       logger.DEBUG)
             return None
 
         if image_type not in ('fanart', 'poster', 'banner', 'poster_thumb', 'banner_thumb'):
@@ -780,46 +786,50 @@ class GenericMetadata(object):
         indexer_lang = show_obj.lang
 
         try:
-            # There's gotta be a better way of doing this but we don't wanna
-            # change the language value elsewhere
-            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
+            if not self.indexer_api:
+                # There's gotta be a better way of doing this but we don't wanna
+                # change the language value elsewhere
+                lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
 
-            lINDEXER_API_PARMS['banners'] = True
+                lINDEXER_API_PARMS['banners'] = True
 
-            if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                lINDEXER_API_PARMS['language'] = indexer_lang
+                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
+                    lINDEXER_API_PARMS['language'] = indexer_lang
 
-            if show_obj.dvdorder != 0:
-                lINDEXER_API_PARMS['dvdorder'] = True
+                if show_obj.dvdorder != 0:
+                    lINDEXER_API_PARMS['dvdorder'] = True
 
-            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
-            indexer_show_obj = t[show_obj.indexerid]
+                self.indexer_api = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+
+            indexer_show_obj = self.indexer_api[show_obj.indexerid]
         except (IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name, logger.DEBUG)
+            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
+                       logger.DEBUG)
             return result
 
         # if we have no season banners then just finish
         if not getattr(indexer_show_obj, '_banners', None):
             return result
 
-        if 'season' not in indexer_show_obj['_banners'] or 'season' not in indexer_show_obj['_banners']['season']:
+        if ('season' not in indexer_show_obj['_banners'] or
+                'original' not in indexer_show_obj['_banners']['season'] or
+                season not in indexer_show_obj['_banners']['season']['original']):
             return result
 
         # Give us just the normal poster-style season graphics
-        seasonsArtObj = indexer_show_obj['_banners']['season']['season']
+        season_art_obj = indexer_show_obj['_banners']['season']
 
         # Returns a nested dictionary of season art with the season
         # number as primary key. It's really overkill but gives the option
         # to present to user via ui to pick down the road.
 
-        result[season] = {}
-
         # find the correct season in the TVDB object and just copy the dict into our result dict
-        for seasonArtID in seasonsArtObj.keys():
-            if int(seasonsArtObj[seasonArtID]['season']) == season and seasonsArtObj[seasonArtID]['language'] == app.INDEXER_DEFAULT_LANGUAGE:
-                result[season][seasonArtID] = seasonsArtObj[seasonArtID]['_bannerpath']
+        for season_art_id in season_art_obj['original'][season].keys():
+            if season not in result:
+                result[season] = {}
+            result[season][season_art_id] = season_art_obj['original'][season][season_art_id]['_bannerpath']
 
         return result
 
@@ -837,44 +847,48 @@ class GenericMetadata(object):
         indexer_lang = show_obj.lang
 
         try:
-            # There's gotta be a better way of doing this but we don't wanna
-            # change the language value elsewhere
-            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
+            if not self.indexer_api:
+                # There's gotta be a better way of doing this but we don't wanna
+                # change the language value elsewhere
+                lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
 
-            lINDEXER_API_PARMS['banners'] = True
+                lINDEXER_API_PARMS['banners'] = True
 
-            if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                lINDEXER_API_PARMS['language'] = indexer_lang
+                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
+                    lINDEXER_API_PARMS['language'] = indexer_lang
 
-            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+                if show_obj.dvdorder != 0:
+                    lINDEXER_API_PARMS['dvdorder'] = True
+
+                t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+            else:
+                # Try to reuse the current indexerApi object.
+                t = self.indexer_api
             indexer_show_obj = t[show_obj.indexerid]
         except (IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name, logger.DEBUG)
+            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
+                       logger.DEBUG)
             return result
 
-        # if we have no season banners then just finish
-        if not getattr(indexer_show_obj, '_banners', None):
+        if ('seasonwide' not in indexer_show_obj['_banners'] or
+                'original' not in indexer_show_obj['_banners']['season'] or
+                season not in indexer_show_obj['_banners']['seasonwide']['original']):
             return result
 
-        # if we have no season banners then just finish
-        if 'season' not in indexer_show_obj['_banners'] or 'seasonwide' not in indexer_show_obj['_banners']['season']:
-            return result
-
-        # Give us just the normal season graphics
-        seasonsArtObj = indexer_show_obj['_banners']['season']['seasonwide']
+        # Give us just the normal poster-style season graphics
+        season_art_obj = indexer_show_obj['_banners']['seasonwide']
 
         # Returns a nested dictionary of season art with the season
         # number as primary key. It's really overkill but gives the option
         # to present to user via ui to pick down the road.
 
-        result[season] = {}
-
         # find the correct season in the TVDB object and just copy the dict into our result dict
-        for seasonArtID in seasonsArtObj.keys():
-            if int(seasonsArtObj[seasonArtID]['season']) == season and seasonsArtObj[seasonArtID]['language'] == app.INDEXER_DEFAULT_LANGUAGE:
-                result[season][seasonArtID] = seasonsArtObj[seasonArtID]['_bannerpath']
+        for season_art_id in season_art_obj['original'][season].keys():
+            if season not in result:
+                result[season] = {}
+            result[season][season_art_id] = season_art_obj['original'][season][season_art_id]['_bannerpath']
 
         return result
 
@@ -897,8 +911,11 @@ class GenericMetadata(object):
             with io.open(metadata_path, 'rb') as xmlFileObj:
                 showXML = etree.ElementTree(file=xmlFileObj)
 
-            if showXML.findtext('title') is None or (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None):
-                logger.log(u"Invalid info in tvshow.nfo (missing name or id): %s %s %s" % (showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id')))
+            if (showXML.findtext('title') is None or
+                    (showXML.findtext('tvdbid') is None and showXML.findtext('id') is None)):
+                logger.log(u"Invalid info in tvshow.nfo (missing name or id): %s %s %s"
+                           % (showXML.findtext('title'), showXML.findtext('tvdbid'), showXML.findtext('id')),
+                           logger.DEBUG)
                 return empty_return
 
             name = showXML.findtext('title')
@@ -926,7 +943,8 @@ class GenericMetadata(object):
                     elif 'themoviedb.org' in epg_url:
                         indexer = 4
                     elif 'tvrage' in epg_url:
-                        logger.log(u"Invalid Indexer ID (" + str(indexer_id) + "), not using metadata file because it has TVRage info", logger.WARNING)
+                        logger.log(u"Invalid Indexer ID (" + str(
+                            indexer_id) + "), not using metadata file because it has TVRage info", logger.WARNING)
                         return empty_return
 
         except Exception as e:

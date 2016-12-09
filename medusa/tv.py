@@ -999,6 +999,7 @@ class TVShow(TVObject):
             season_banners_result = cur_provider.create_season_banners(self) or season_banners_result
             season_all_poster_result = cur_provider.create_season_all_poster(self) or season_all_poster_result
             season_all_banner_result = cur_provider.create_season_all_banner(self) or season_all_banner_result
+            cur_provider.indexer_api = None  # Let's cleanup the stored indexerApi objects.
 
         return (fanart_result or poster_result or banner_result or season_posters_result or
                 season_banners_result or season_all_poster_result or season_all_banner_result)
