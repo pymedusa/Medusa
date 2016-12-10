@@ -1157,7 +1157,7 @@ class CMD_Backlog(ApiCall):
 
             for curResult in sql_results:
 
-                cur_ep_cat = curShow.get_overview(curResult["status"], manual_searched=curResult["manual_searched"])
+                cur_ep_cat = curShow.get_overview(curResult["status"], manually_searched=curResult["manually_searched"])
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
                     show_eps.append(curResult)
 

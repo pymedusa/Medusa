@@ -85,7 +85,7 @@ class PostProcessor(object):
 
         self.anidbEpisode = None
 
-        self.manual_searched = False
+        self.manually_searched = False
 
     def _log(self, message, level=logger.INFO):
         """
@@ -790,7 +790,7 @@ class PostProcessor(object):
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality, manual_searched '
+                    'SELECT quality, manually_searched '
                     'FROM history '
                     'WHERE showid = ? '
                     'AND season = ? '
@@ -804,8 +804,8 @@ class PostProcessor(object):
                 if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
-                    if history_result[0]['manual_searched']:
-                        self.manual_searched = True
+                    if history_result[0]['manually_searched']:
+                        self.manually_searched = True
                     download_result = main_db_con.select(
                         'SELECT resource '
                         'FROM history '
@@ -906,7 +906,7 @@ class PostProcessor(object):
         if self.in_history:
 
             # If manual searched, then by pass any quality checks
-            if self.manual_searched:
+            if self.manually_searched:
                 self._log(u"This episode was manually snatched. Marking it as priority", logger.DEBUG)
                 return True
 

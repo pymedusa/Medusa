@@ -182,7 +182,7 @@ def snatchEpisode(result):
             # Release group is parsed in PP
             curEpObj.release_group = ''
 
-            curEpObj.manual_searched = result.manual_searched
+            curEpObj.manually_searched = result.manually_searched
 
             sql_l.append(curEpObj.get_sql())
 
@@ -353,7 +353,7 @@ def wantedEpisodes(show, fromDate):
     con = db.DBConnection()
 
     sql_results = con.select(
-        "SELECT status, season, episode, manual_searched "
+        "SELECT status, season, episode, manually_searched "
         "FROM tv_episodes "
         "WHERE showid = ? AND season > 0 and airdate > ?",
         [show.indexerid, fromDate.toordinal()]
@@ -362,7 +362,7 @@ def wantedEpisodes(show, fromDate):
     # check through the list of statuses to see if we want any
     for result in sql_results:
         _, cur_quality = common.Quality.splitCompositeStatus(int(result['status'] or UNKNOWN))
-        if not Quality.should_search(result['status'], show, result['manual_searched']):
+        if not Quality.should_search(result['status'], show, result['manually_searched']):
             continue
 
         epObj = show.get_episode(result['season'], result['episode'])

@@ -510,7 +510,7 @@ class AddProperTags(TestIncreaseMajorVersion):
 
 
 class AddManualSearched(TestIncreaseMajorVersion):
-    """Adds columns manual_searched to history and tv_episodes table."""
+    """Adds columns manually_searched to history and tv_episodes table."""
 
     def test(self):
         """
@@ -520,17 +520,17 @@ class AddManualSearched(TestIncreaseMajorVersion):
 
     def execute(self):
         """
-        Updates the version until 44.3 and adds manual_searched columns
+        Updates the version until 44.3 and adds manually_searched columns
         """
         backupDatabase(self.connection.version)
 
-        if not self.hasColumn('history', 'manual_searched'):
+        if not self.hasColumn('history', 'manually_searched'):
             logger.log(u'Adding column proper_tags to history')
-            self.addColumn('history', 'manual_searched', 'NUMERIC', 0)
+            self.addColumn('history', 'manually_searched', 'NUMERIC', 0)
 
-        if not self.hasColumn('tv_episodes', 'manual_searched'):
-            logger.log(u'Adding column manual_searched to tv_episodes')
-            self.addColumn('tv_episodes', 'manual_searched', 'NUMERIC', 0)
+        if not self.hasColumn('tv_episodes', 'manually_searched'):
+            logger.log(u'Adding column manually_searched to tv_episodes')
+            self.addColumn('tv_episodes', 'manually_searched', 'NUMERIC', 0)
 
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()

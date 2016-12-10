@@ -14,7 +14,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p1: Downloaded 720p HDTV and found 720p BluRay, but episode status is invalid: no
@@ -25,7 +25,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p2: Downloaded 720p BluRay and found 720p HDTV, not a better quality: no
@@ -36,7 +36,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p3: Snatched 720p HDTV and found 720p BluRay: yes
@@ -47,7 +47,7 @@ import pytest
         'preferred_qualities': [Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p4: Snatched Proper 720p HDTV and found 720p BluRay, but 720p HDTV is preferred: no
@@ -58,7 +58,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p5: Snatched Proper 720p HDTV and found 720p BluRay, but 720p BluRay is not allowed or preferred: no
@@ -69,7 +69,7 @@ import pytest
         'preferred_qualities': [Quality.HDWEBDL],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p6: Snatched Proper 720p HDTV and found 720p BluRay, and 720p BluRay is not preferred but allowed: no
@@ -80,7 +80,7 @@ import pytest
         'preferred_qualities': [Quality.HDWEBDL],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p7: Downloaded 720p HDTV and found 720p BluRay, 720p BluRay is not explicity allowed but it's preferred: yes
@@ -91,7 +91,7 @@ import pytest
         'preferred_qualities': [Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p8: Downloaded 720p HDTV and found 720p BluRay, 720p BluRay is allowed and it's preferred: yes
@@ -102,7 +102,7 @@ import pytest
         'preferred_qualities': [Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p9: Downloaded 720p BluRay and found 720p HDTV, 720p HDTV is preferred: yes
@@ -113,7 +113,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p10: Downloaded 720p BluRay and found 720p HDTV, both are preferred but 720p BluRay is still better: no
@@ -124,7 +124,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p11: Downloaded 720p WEB-DL and found 720p HDTV, 720p WEB-DL is not allowed or preferred and 720p HDTV is allowed: yes
@@ -135,7 +135,7 @@ import pytest
         'preferred_qualities': [Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p12: Snatched 720p HDTV and found 720p BluRay: no
@@ -146,7 +146,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p13: Snatched 720p HDTV and found 720p BluRay: no
@@ -157,7 +157,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p14: Downloaded 720p BluRay and found 720p HDTV: no
@@ -168,7 +168,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p15: Snatched 720p BluRay and found 720p HDTV: no
@@ -179,7 +179,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p16: Archived 720p HDTV and found 720p HDBLURAY: no
@@ -190,7 +190,7 @@ import pytest
         'preferred_qualities': [Quality.HDTV, Quality.HDBLURAY],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p17: Archived 720p HDTV and found 720p HDBLURAY: no
@@ -201,7 +201,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p18: Downloaded Unknown found 720p HDBLURAY: no
@@ -212,7 +212,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p19: Downloaded SDTV (not in quality system) and found 720p HDTV: yes
@@ -223,7 +223,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p20: Downloaded SDTV (not in quality system) and found 720p HDBLURAY: no
@@ -234,7 +234,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p21: Downloaded Unknown found 720p HDBLURAY and force search: yes
@@ -245,7 +245,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p22: Downloaded SDTV found SDTV and force search and download_current_quality: yes
@@ -256,7 +256,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': True,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p23: Downloaded SDTV found SDTV and not force search and not download_current_quality: no
@@ -267,7 +267,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p24: Downloaded SDTV and found SDTV. Not wanted anymore. Force search: no
@@ -278,7 +278,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p25: Downloaded SDTV and found SDTV. Not wanted anymore: no
@@ -289,7 +289,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p26: Downloaded SDTV and found SDTV. Still wanted. Force search and download_current_quality: yes
@@ -300,7 +300,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': True,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p27: Archived SDTV and found HDTV. Force search yes: yes
@@ -311,7 +311,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p28: SKIPPED and found HDTV. Force search yes: yes
@@ -322,7 +322,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p29: SKIPPED and found HDTV. Force search no: no
@@ -333,7 +333,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p30: DOWNLOADED and found 1080p HDBLURAY (not in wanted qualities). Force search yes: false
@@ -344,7 +344,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p31: ARCHIVED and found 1080p HDBLURAY (not in wanted qualities). Force search yes: false
@@ -355,7 +355,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': False
     },
     {  # p32: ARCHIVED and found 1080p HDTV. Force search yes: true
@@ -366,7 +366,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': True,
         'force': True,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p33: DOWNLOADED and found 1080p HDTV. Manual searched yes: false
@@ -377,7 +377,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': True,
+        'manually_searched': True,
         'expected': False
     },
     {  # p34: DOWNLOADED and found 1080p HDTV. Manual searched no: true
@@ -388,7 +388,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': False,
-        'manual_searched': False,
+        'manually_searched': False,
         'expected': True
     },
     {  # p35: DOWNLOADED and found 1080p HDTV. Manual searched yes and force search yes: true
@@ -399,7 +399,7 @@ import pytest
         'preferred_qualities': [],
         'download_current_quality': False,
         'force': True,
-        'manual_searched': True,
+        'manually_searched': True,
         'expected': True
     }
 ])
@@ -413,11 +413,11 @@ def test_should_replace(p):
     expected = p['expected']
     download_current_quality = p['download_current_quality']
     force = p['force']
-    manual_searched = p['manual_searched']
+    manually_searched = p['manually_searched']
 
     # When
     replace, msg = Quality.should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities,
-                                          download_current_quality, force, manual_searched)
+                                          download_current_quality, force, manually_searched)
     actual = replace
 
     # Then

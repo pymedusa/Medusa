@@ -593,12 +593,12 @@ class Quality(object):
     }
 
     @staticmethod
-    def should_search(status, show_obj, manual_searched):
+    def should_search(status, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality."""
         cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or UNKNOWN)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
-        if manual_searched:
+        if manually_searched:
             return False
 
         if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
@@ -614,7 +614,7 @@ class Quality(object):
 
     @staticmethod
     def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
-                       download_current_quality=False, force=False, manual_searched=False):
+                       download_current_quality=False, force=False, manually_searched=False):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, then any downloaded quality is final
@@ -630,7 +630,7 @@ class Quality(object):
             if not force:
                 return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
-        if manual_searched:
+        if manually_searched:
             if not force:
                 # We only allow replace a manual searched episode if is a forced search
                 return False, 'Existing episode quality was manually snatched. Ignoring all new qualities'
