@@ -9,6 +9,8 @@ import copy
 import six
 
 from rebulk import Rebulk, Rule, CustomRule, POST_PROCESS, PRE_PROCESS, AppendMatch, RemoveMatch
+
+from guessit.rules.common import seps_no_groups
 from guessit.rules.common.words import iter_words
 from .common.formatters import cleanup
 from .common.comparators import marker_sorted
@@ -205,6 +207,26 @@ class Processors(CustomRule):
         pass
 
 
+class StripSeparators(CustomRule):
+    """
+    Strip separators from matches. Keep separators if they are from acronyms, like in ".S.H.I.E.L.D."
+    """
+    priority = POST_PROCESS
+
+    def when(self, matches, context):
+        return matches
+
+    def then(self, matches, when_response, context):  # pragma: no cover
+        for match in matches:
+            for _ in range(0, len(match.span)):
+                if match.raw[0] in seps_no_groups and (len(match.raw) < 3 or match.raw[2] not in seps_no_groups):
+                    match.raw_start += 1
+
+            for _ in reversed(range(0, len(match.span))):
+                if match.raw[-1] in seps_no_groups and (len(match.raw) < 3 or match.raw[-3] not in seps_no_groups):
+                    match.raw_end -= 1
+
+
 def processors():
     """
     Builder for rebulk object.
@@ -212,4 +234,4 @@ def processors():
     :rtype: Rebulk
     """
     return Rebulk().rules(EnlargeGroupMatches, EquivalentHoles, RemoveLessSpecificSeasonEpisode,
-                          RemoveAmbiguous, SeasonYear, Processors)
+                          RemoveAmbiguous, SeasonYear, Processors, StripSeparators)

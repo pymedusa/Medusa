@@ -2633,3 +2633,66 @@
   season: 8
   title: frasier
   type: episode
+
+? Show.Name.S03E15.480p.177mb.Proper.HDTV.x264
+: title: Show Name
+  season: 3
+  episode: 15
+  screen_size: 480p
+  size: 177MB
+  other: Proper
+  proper_count: 1
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Show.Name.S03E15.480p.4.8GB.Proper.HDTV.x264
+: title: Show Name
+  season: 3
+  episode: 15
+  screen_size: 480p
+  size: 4.8GB
+  other: Proper
+  proper_count: 1
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Show.Name.S03.1.1TB.Proper.HDTV.x264
+: title: Show Name
+  season: 3
+  size: 1.1TB
+  other: Proper
+  proper_count: 1
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Some.Show.S02E14.1080p.HDTV.X264-reenc.GROUP
+? Some.Show.S02E14.1080p.HDTV.X264-re-enc.GROUP
+? Some.Show.S02E14.1080p.HDTV.X264-re-encoded.GROUP
+? Some.Show.S02E14.1080p.HDTV.X264-reencoded.GROUP
+: title: Some Show
+  season: 2
+  episode: 14
+  screen_size: 1080p
+  format: HDTV
+  video_codec: h264
+  other: ReEncoded
+  release_group: GROUP
+  type: episode
+
+# DDP is DD+
+? Show.Name.2016.S01E01.2160p.AMZN.WEBRip.DDP5.1.x264-Group
+: title: Show Name
+  year: 2016
+  season: 1
+  episode: 1
+  screen_size: 4K
+  streaming_service: Amazon Prime
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: Group
+  type: episode
