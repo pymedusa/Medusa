@@ -81,6 +81,9 @@ class SearchResult(object):
         # proper_tags
         self.proper_tags = u''
 
+        # manually_searched
+        self.manually_searched = False
+
         # content
         self.content = None
 

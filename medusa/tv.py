@@ -1851,7 +1851,8 @@ class TVShow(TVObject):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(
             b'SELECT '
-            b'  status '
+            b'  status, '
+            b'  manually_searched '
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
@@ -1868,6 +1869,7 @@ class TVShow(TVObject):
 
         ep_status = int(sql_results[0][b'status'])
         ep_status_text = statusStrings[ep_status]
+        manually_searched = sql_results[0][b'manually_searched']
         _, cur_quality = Quality.splitCompositeStatus(ep_status)
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
@@ -1878,7 +1880,8 @@ class TVShow(TVObject):
             return True
 
         should_replace, msg = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
-                                                     preferred_qualities, download_current_quality, forced_search)
+                                                     preferred_qualities, download_current_quality,
+                                                     forced_search, manually_searched)
         logger.log(u"{id}: '{show}' {ep} status is: '{status}'. {action} result with quality '{new_quality}'. "
                    u"Reason: {msg}".format
                    (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
@@ -1886,7 +1889,7 @@ class TVShow(TVObject):
                     new_quality=Quality.qualityStrings[quality], msg=msg), logger.DEBUG)
         return should_replace
 
-    def get_overview(self, ep_status, backlog_mode=False):
+    def get_overview(self, ep_status, backlog_mode=False, manually_searched=False):
         """Get the Overview status from the Episode status.
 
         :param ep_status: an Episode status
@@ -1901,7 +1904,7 @@ class TVShow(TVObject):
         if backlog_mode:
             if ep_status == WANTED:
                 return Overview.WANTED
-            elif Quality.should_search(ep_status, self):
+            elif Quality.should_search(ep_status, self, manually_searched):
                 return Overview.QUAL
             return Overview.GOOD
 
@@ -1922,7 +1925,7 @@ class TVShow(TVObject):
         elif ep_status in Quality.SNATCHED_BEST:
             return Overview.SNATCHED_BEST
         elif ep_status in Quality.DOWNLOADED:
-            if Quality.should_search(ep_status, self):
+            if Quality.should_search(ep_status, self, manually_searched):
                 return Overview.QUAL
             else:
                 return Overview.GOOD
@@ -1986,6 +1989,7 @@ class TVEpisode(TVObject):
         self.scene_season = 0
         self.scene_episode = 0
         self.scene_absolute_number = 0
+        self.manually_searched = False
         self.related_episodes = []
         self.wanted_quality = []
         self.loaded = False
@@ -2720,14 +2724,15 @@ class TVEpisode(TVObject):
                         b'  episode = ?, '
                         b'  absolute_number = ?, '
                         b'  version = ?, '
-                        b'  release_group = ? '
+                        b'  release_group = ?, '
+                        b'  manually_searched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
                          self.show.indexerid, self.season, self.episode, self.absolute_number, self.version,
-                         self.release_group, ep_id]]
+                         self.release_group, self.manually_searched, ep_id]]
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
                     # alpha2 code, keep value from subliminal
@@ -2754,14 +2759,15 @@ class TVEpisode(TVObject):
                         b'  episode = ?, '
                         b'  absolute_number = ?, '
                         b'  version = ?, '
-                        b'  release_group = ? '
+                        b'  release_group = ?, '
+                        b'  manually_searched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
                          self.show.indexerid, self.season, self.episode, self.absolute_number, self.version,
-                         self.release_group, ep_id]]
+                         self.release_group, self.manually_searched, ep_id]]
             else:
                 # use a custom insert method to get the data into the DB.
                 return [

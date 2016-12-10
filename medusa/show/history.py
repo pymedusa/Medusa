@@ -57,7 +57,7 @@ class History(object):
         limit = max(try_int(limit), 0)
 
         common_sql = 'SELECT show_name, showid, season, episode, h.quality, ' \
-                     'action, provider, resource, date, h.proper_tags ' \
+                     'action, provider, resource, date, h.proper_tags, h.manually_searched ' \
                      'FROM history h, tv_shows s ' \
                      'WHERE h.showid = s.indexer_id '
         filter_sql = 'AND action in (' + ','.join(['?'] * len(actions)) + ') '
@@ -112,7 +112,7 @@ class History(object):
 
         return result or []
 
-    action_fields = ('action', 'provider', 'resource', 'date', 'proper_tags')
+    action_fields = ('action', 'provider', 'resource', 'date', 'proper_tags', 'manually_searched')
     # A specific action from history
     Action = namedtuple('Action', action_fields)
     Action.width = len(action_fields)
@@ -162,6 +162,7 @@ class History(object):
                 self.resource,
                 self.date,
                 self.proper_tags,
+                self.manually_searched,
             )
 
         def compacted(self):

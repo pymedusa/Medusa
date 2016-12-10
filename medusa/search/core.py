@@ -29,7 +29,7 @@ from .. import (
     app, clients, common, db, failed_history, helpers, history, logger,
     name_cache, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
 )
-from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
+from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNKNOWN
 from ..helper.common import enabled_providers, episode_num
 from ..helper.exceptions import AuthException, ex
 from ..providers import sorted_provider_list
@@ -80,7 +80,7 @@ def _downloadResult(result):
     return newResult
 
 
-def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statements
+def snatchEpisode(result):
     """
     Internal logic necessary to actually "snatch" a result that has been found.
 
@@ -181,6 +181,8 @@ def snatchEpisode(result):  # pylint: disable=too-many-branches, too-many-statem
 
             # Release group is parsed in PP
             curEpObj.release_group = ''
+
+            curEpObj.manually_searched = result.manually_searched
 
             sql_l.append(curEpObj.get_sql())
 
@@ -351,17 +353,19 @@ def wantedEpisodes(show, fromDate):
     con = db.DBConnection()
 
     sql_results = con.select(
-        "SELECT status, season, episode FROM tv_episodes WHERE showid = ? AND season > 0 and airdate > ?",
+        "SELECT status, season, episode, manually_searched "
+        "FROM tv_episodes "
+        "WHERE showid = ? AND season > 0 and airdate > ?",
         [show.indexerid, fromDate.toordinal()]
     )
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if not Quality.should_search(result['status'], show):
+        _, cur_quality = common.Quality.splitCompositeStatus(int(result['status'] or UNKNOWN))
+        if not Quality.should_search(result['status'], show, result['manually_searched']):
             continue
 
-        epObj = show.get_episode(result["season"], result["episode"])
+        epObj = show.get_episode(result['season'], result['episode'])
         epObj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(epObj)
 

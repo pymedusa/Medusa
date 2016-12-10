@@ -816,7 +816,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = show_obj.get_overview(cur_result[b'status'])
+            cur_ep_cat = show_obj.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
@@ -1745,9 +1745,12 @@ class Home(WebRoot):
 
                     if all([int(status) == WANTED,
                             ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Removing release_name for episode as you want to set a downloaded episode back to wanted, '
-                                   u'so obviously you want it replaced')
+                        logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
                         ep_obj.release_name = ''
+
+                    if ep_obj.manually_searched and int(status) == WANTED:
+                        logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
+                        ep_obj.manually_searched = False
 
                     ep_obj.status = int(status)
 

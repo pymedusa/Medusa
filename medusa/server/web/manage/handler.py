@@ -348,7 +348,7 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 """
-                SELECT status, season, episode, name, airdate
+                SELECT status, season, episode, name, airdate, manually_searched
                 FROM tv_episodes
                 WHERE tv_episodes.season IS NOT NULL AND
                       tv_episodes.showid IN (SELECT tv_shows.indexer_id
@@ -361,7 +361,8 @@ class Manage(Home, WebRoot):
             )
 
             for cur_result in sql_results:
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True)
+                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
+                                                   manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
                     ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
                     ep_counts[cur_ep_cat] += 1

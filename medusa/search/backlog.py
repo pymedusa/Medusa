@@ -150,13 +150,13 @@ class BacklogSearcher(object):
 
         con = db.DBConnection()
         sql_results = con.select(
-            "SELECT status, season, episode FROM tv_episodes WHERE airdate > ? AND showid = ?",
+            "SELECT status, season, episode, manually_searched FROM tv_episodes WHERE airdate > ? AND showid = ?",
             [fromDate.toordinal(), show.indexerid]
         )
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            if not common.Quality.should_search(sql_result['status'], show):
+            if not common.Quality.should_search(sql_result['status'], show, sql_result['manually_searched']):
                 continue
             logger.log(u"Found needed backlog episodes for: {show} {ep}".format
                        (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"])), logger.INFO)
