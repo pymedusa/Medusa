@@ -50,7 +50,7 @@ def _logHistoryItem(action, showid, season, episode, quality, resource,
         [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags, manual_searched])
 
 
-def log_snatch(searchResult, manual_searched):
+def log_snatch(searchResult):
     """
     Log history of snatch
 
@@ -64,6 +64,7 @@ def log_snatch(searchResult, manual_searched):
         quality = searchResult.quality
         version = searchResult.version
         proper_tags = '|'.join(searchResult.proper_tags)
+        manual_searched = searchResult.manual_searched
 
         providerClass = searchResult.provider
         if providerClass is not None:

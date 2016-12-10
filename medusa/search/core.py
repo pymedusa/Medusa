@@ -80,12 +80,11 @@ def _downloadResult(result):
     return newResult
 
 
-def snatchEpisode(result, manual_searched=False):
+def snatchEpisode(result):
     """
     Internal logic necessary to actually "snatch" a result that has been found.
 
     :param result: SearchResult instance to be snatched.
-    :param manual_searched: if this snatched was done by user
     :return: boolean, True on success
     """
     if result is None:
@@ -148,7 +147,7 @@ def snatchEpisode(result, manual_searched=False):
 
     ui.notifications.message('Episode snatched', result.name)
 
-    history.log_snatch(result, manual_searched)
+    history.log_snatch(result)
 
     # don't notify when we re-download an episode
     sql_l = []
@@ -183,7 +182,7 @@ def snatchEpisode(result, manual_searched=False):
             # Release group is parsed in PP
             curEpObj.release_group = ''
 
-            curEpObj.manual_searched = manual_searched
+            curEpObj.manual_searched = result.manual_searched
 
             sql_l.append(curEpObj.get_sql())
 
