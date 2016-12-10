@@ -1655,7 +1655,7 @@
   format: HDTV
   video_codec: h264
   video_encoder: x264
-  other: Re-Encoded
+  other: ReEncoded
   release_group: GROUP
   type: episode
 
