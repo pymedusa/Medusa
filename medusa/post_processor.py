@@ -85,6 +85,8 @@ class PostProcessor(object):
 
         self.anidbEpisode = None
 
+        self.manual_searched = False
+
     def _log(self, message, level=logger.INFO):
         """
         A wrapper for the internal logger which also keeps track of messages and saves them to a string for later.
@@ -802,6 +804,8 @@ class PostProcessor(object):
                 if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
+                    if history_result[0]['manual_searched']:
+                        self.manual_searched = True
                     download_result = main_db_con.select(
                         'SELECT resource '
                         'FROM history '
@@ -899,39 +903,27 @@ class PostProcessor(object):
         _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
 
         # if Medusa downloaded this on purpose we likely have a priority download
-        if self.in_history or ep_obj.status in common.Quality.SNATCHED + \
-                common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            # if the episode is still in a snatched status, then we can assume we want this
-            if self.in_history:
-                self._log(u"This episode was snatched last and isn't processed yet, processing now", logger.DEBUG)
+        if self.in_history:
+
+            # If manual searched, then by pass any quality checks
+            if self.manual_searched:
+                self._log(u"This episode was manually snatched. Marking it as priority", logger.DEBUG)
                 return True
 
-            # if it's in history, we only want it if the new quality is higher or
-            # if it's a proper of equal or higher quality
-            if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
+            # We only want it if the new quality is higher
+            # Assuming the new quality is a wanted quality
+            if new_ep_quality > old_ep_quality:
                 self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
                           logger.DEBUG)
                 return True
 
-            if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
+            # if it's a proper of equal or higher quality
+            if self.is_proper and new_ep_quality >= old_ep_quality:
                 self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
                           u"Marking it as priority", logger.DEBUG)
                 return True
 
-            return False
-
-        # if the user downloaded it manually and it's higher quality than the existing episode then it's priority
-        if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-            self._log(u"This was manually downloaded, but it appears to be better quality than what we have. "
-                      u"Marking it as priority", logger.DEBUG)
-            return True
-
-        # if the user downloaded it manually and it appears to be a PROPER/REPACK then it's priority
-        if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-            self._log(u"This was manually downloaded, but it appears to be a proper. Marking it as priority",
-                      logger.DEBUG)
-            return True
-
+        self._log(u"This episode is not in history. Not marking it as priority", logger.DEBUG)
         return False
 
     def flag_kodi_clean_library(self):
