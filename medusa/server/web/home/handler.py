@@ -1749,6 +1749,10 @@ class Home(WebRoot):
                                    u'so obviously you want it replaced')
                         ep_obj.release_name = ''
 
+                    if ep_obj.manual_searched and int(status) == WANTED:
+                        logger.log(u"Reseting 'manual searched' flag as episode was change to WANTED", logger.DEBUG)
+                        ep_obj.manual_searched = False
+
                     ep_obj.status = int(status)
 
                     # mass add to database
