@@ -912,13 +912,13 @@ class PostProcessor(object):
 
             # We only want it if the new quality is higher
             # Assuming the new quality is a wanted quality
-            if new_ep_quality > old_ep_quality:
+            if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
                 self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
                           logger.DEBUG)
                 return True
 
             # if it's a proper of equal or higher quality
-            if self.is_proper and new_ep_quality >= old_ep_quality:
+            if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
                 self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
                           u"Marking it as priority", logger.DEBUG)
                 return True

@@ -29,7 +29,7 @@ from .. import (
     app, clients, common, db, failed_history, helpers, history, logger,
     name_cache, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
 )
-from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER
+from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNKNOWN
 from ..helper.common import enabled_providers, episode_num
 from ..helper.exceptions import AuthException, ex
 from ..providers import sorted_provider_list
@@ -361,11 +361,11 @@ def wantedEpisodes(show, fromDate):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.splitCompositeStatus(int(result["status"] or -1))
-        if not Quality.should_search(result['status'], show, result["manual_searched"]):
+        _, cur_quality = common.Quality.splitCompositeStatus(int(result['status'] or UNKNOWN))
+        if not Quality.should_search(result['status'], show, result['manual_searched']):
             continue
 
-        epObj = show.get_episode(result["season"], result["episode"])
+        epObj = show.get_episode(result['season'], result['episode'])
         epObj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(epObj)
 

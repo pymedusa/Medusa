@@ -1745,12 +1745,11 @@ class Home(WebRoot):
 
                     if all([int(status) == WANTED,
                             ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Removing release_name for episode as you want to set a downloaded episode back to wanted, '
-                                   u'so obviously you want it replaced')
+                        logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
                         ep_obj.release_name = ''
 
                     if ep_obj.manual_searched and int(status) == WANTED:
-                        logger.log(u"Reseting 'manual searched' flag as episode was change to WANTED", logger.DEBUG)
+                        logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
                         ep_obj.manual_searched = False
 
                     ep_obj.status = int(status)
