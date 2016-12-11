@@ -26,7 +26,7 @@ from dateutil import parser
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger, scene_exceptions, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size
 from ....helper.exceptions import AuthException
@@ -245,9 +245,16 @@ class AnimeTorrentsProvider(TorrentProvider):
             'Episode': []
         }
 
+        season_scene_names = scene_exceptions.get_scene_exceptions(episode.show.indexerid, season=episode.scene_season)
+
         for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
             episode_string = show_name + '%'
-            episode_string += '%01d' % int(episode.scene_absolute_number)
+
+            if season_scene_names and show_name in season_scene_names:
+                episode_season = int(episode.episode)
+            else:
+                episode_season = int(episode.scene_absolute_number)
+            episode_string += str(episode_season)
 
             if add_string:
                 episode_string += '%' + add_string
