@@ -40,23 +40,17 @@ def format_():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='format')
+    rebulk.defaults(name='format', tags='video-codec-prefix')
 
     # More accurate formats
-    rebulk.regex('BD(?!\d)', 'BD-?Rip', 'BD-?Mux', 'BD-?Rip-?Mux',
-                 value='BDRip', validator=seps_surround,
+    rebulk.regex('BD-?Rip', 'BD(?=-?Mux)', value='BDRip',
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
-    rebulk.regex('BR-?Rip', 'BR-?Mux', 'BR-?Rip-?Mux',
-                 value='BRRip',
+    rebulk.regex('BD(?!\d)', value='BDRip', validator=seps_surround,
+                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+    rebulk.regex('BR-?Rip', 'BR(?=-?Mux)', value='BRRip',
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
     rebulk.regex('DVD-?Rip', value='DVDRip',
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
-
-    # https://github.com/guessit-io/guessit/issues/307
-    rebulk.regex('HDTV-?Mux', value='HDTV')
-    rebulk.regex('Blu-?ray-?Mux', value='BluRay')
-    rebulk.regex('DVD-?Mux', value='DVD')
-    rebulk.regex('WEB-?Mux', 'DL-?WEB-?Mux', 'WEB-?DL-?Mux', 'DL-?Mux', value='WEB-DL')
 
     rebulk.regex('DVD\d', value='DVD')
 

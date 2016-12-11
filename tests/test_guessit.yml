@@ -1759,6 +1759,7 @@
   episode: 15
   screen_size: 480p
   format: BDRip
+  video_codec: h264
   language: uk
   release_group: hurtom
   type: episode
@@ -2282,6 +2283,7 @@
   language: it
   audio_codec: AAC
   format: WEB-DL
+  other: Mux
   release_group: UBi
   type: episode
 
@@ -2306,6 +2308,7 @@
   video_codec: h264
   language: [it, en]
   format: WEB-DL
+  other: Mux
   audio_codec: AC3
   subtitle_language: [it, en]
   release_group: GiuseppeTnT Littlelinx
@@ -2320,6 +2323,7 @@
   language: it
   audio_codec: AAC
   format: HDTV
+  other: Mux
   release_group: NovaRip
   type: episode
 
@@ -2331,6 +2335,7 @@
   episode_title: Un Tuffo Nel Passato
   language: it
   format: HDTV
+  other: Mux
   video_codec: h264
   video_encoder: x264
   release_group: NovaRip
@@ -2348,6 +2353,7 @@
   audio_codec: MP3
   subtitle_language: [it, en]
   format: WEB-DL
+  other: Mux
   release_group: Pir8
   type: episode
 
@@ -2362,6 +2368,7 @@
   audio_codec: AAC
   subtitle_language: [it, en]
   format: WEB-DL
+  other: Mux
   release_group: sp_54321
   type: episode
 
@@ -2553,6 +2560,7 @@
   audio_codec: DTS
   audio_profile: HDMA
   audio_channels: '5.1'
+  video_codec: h264
   other: Remux
   screen_size: 1080p
   release_group: FraMeSToR
@@ -3503,13 +3511,20 @@
 
 # BDRip
 ? - Show.Name.BD.720p
-  - Show.Name.BDMux.720p
   - Show.Name.BDRip.720p
-  - Show.Name.BDRipMux.720p
   - Show.Name.BD.Rip.720p
   - Show.Name.BD-Rip.720p
 : title: Show Name
   format: BDRip
+  screen_size: 720p
+  type: episode
+
+# BDRip
+? - Show.Name.BDMux.720p
+  - Show.Name.BDRipMux.720p
+: title: Show Name
+  format: BDRip
+  other: Mux
   screen_size: 720p
   type: episode
 
@@ -3525,12 +3540,19 @@
 
 # BRRip
 ? - Show.Name.BRRip.720p
-  - Show.Name.BRMux.720p
-  - Show.Name.BRRipMux.720p
   - Show.Name.BR.Rip.720p
   - Show.Name.BR-Rip.720p
 : title: Show Name
   format: BRRip
+  screen_size: 720p
+  type: episode
+
+# BRRip
+? - Show.Name.BRMux.720p
+  - Show.Name.BRRipMux.720p
+: title: Show Name
+  format: BRRip
+  other: Mux
   screen_size: 720p
   type: episode
 
