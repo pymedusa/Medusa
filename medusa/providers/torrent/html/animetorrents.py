@@ -256,5 +256,15 @@ class AnimeTorrentsProvider(TorrentProvider):
 
         return [search_string]
 
+    def _get_season_search_strings(self, episode):
+        """Create season search string."""
+        search_string = {
+            'Season': []
+        }
+
+        for show_name in allPossibleShowNames(episode.show, season=episode.season):
+            search_string['Season'].append(show_name)
+
+        return [search_string]
 
 provider = AnimeTorrentsProvider()
