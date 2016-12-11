@@ -30,7 +30,7 @@ from requests.compat import urljoin
 
 from .generic import GenericClient
 from .. import app
-from ..helpers import is_already_processed_media, is_info_hash_in_history
+from ..helpers import is_already_processed_media, is_info_hash_in_history, is_info_hash_processed
 
 
 logger = logging.getLogger(__name__)
@@ -260,7 +260,7 @@ class TransmissionAPI(GenericClient):
 
             to_remove = False
             for i in torrent['files']:
-                if is_already_processed_media(i['name']):
+                if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
                     to_remove = True
 
             # Don't need to check status if we are not going to remove it.

@@ -1709,10 +1709,26 @@ def is_already_processed_media(full_filename):
 
 
 def is_info_hash_in_history(info_hash):
-    """Check if torrent hash is in history."""
+    """Check if info hash is in history."""
     main_db_con = db.DBConnection()
     history_result = main_db_con.select('SELECT 1 FROM history '
                                         'WHERE info_hash=?',
+                                        [info_hash])
+    if history_result:
+        return True
+
+
+def is_info_hash_processed(info_hash):
+    """Check if info hash was already processed (downloaded status)."""
+    main_db_con = db.DBConnection()
+    history_result = main_db_con.select('SELECT 1 FROM (SELECT showid, season, episode, quality '
+                                        'FROM history WHERE info_hash=?) s '
+                                        'JOIN history d ON '
+                                        'd.showid = s.showid AND '
+                                        'd.season = s.season AND '
+                                        'd.episode = s.episode AND '
+                                        'd.quality = s.quality '
+                                        'WHERE d.action LIKE "%04"',
                                         [info_hash])
     if history_result:
         return True
