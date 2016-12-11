@@ -932,7 +932,7 @@ def full_sanitize_scene_name(name):
     return re.sub('[. -]', ' ', sanitizeSceneName(name)).lower().lstrip()
 
 
-def get_show(name, tryIndexers=False):
+def get_show(name, tryIndexers=False, season_number=None):
     from . import classes, name_cache, scene_exceptions
     if not app.showList:
         return
@@ -957,7 +957,7 @@ def get_show(name, tryIndexers=False):
 
         # try scene exceptions
         if not show:
-            show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
+            show_id = scene_exceptions.get_scene_exception_by_name(name, season_number)[0]
             if show_id:
                 show = Show.find(app.showList, int(show_id))
 
