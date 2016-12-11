@@ -345,14 +345,6 @@ class Tmdb(BaseIndexer):
                                 continue
 
                             _images[image_type][resolution][bid][k] = v
-
-                        # As we can have multiple images with the same resolution, we are only going to store the
-                        # first.
-                        # TODO: Think of a structure, that makes it possible to add multiple images, for the same 'bid'.
-                        if '_bannerpath' in _images[image_type][resolution][bid]:
-                            continue
-
-                        for k, v in _images[image_type][resolution][bid].items():
                             if k.endswith('path'):
                                 new_key = '_%s' % k
                                 log().debug('Adding base url for image: %s', v)
