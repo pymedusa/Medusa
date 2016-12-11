@@ -2696,3 +2696,64 @@
   video_codec: h264
   release_group: Group
   type: episode
+
+? Show Name S02e19 [Mux - H264 - Ita Aac] DLMux by UBi
+: title: Show Name
+  season: 2
+  episode: 19
+  video_codec: h264
+  language: it
+  audio_codec: AAC
+  format: WEB-DL
+  other: Mux
+  release_group: UBi
+  type: episode
+
+? Show Name S01e10[Mux - 1080p - H264 - Ita Eng Ac3 - Sub Ita Eng]DLMux By GiuseppeTnT Littlelinx
+: title: Show Name
+  season: 1
+  episode: 10
+  screen_size: 1080p
+  video_codec: h264
+  language: [it, en]
+  format: WEB-DL
+  other: Mux
+  audio_codec: AC3
+  subtitle_language: [it, en]
+  release_group: GiuseppeTnT Littlelinx
+  type: episode
+
+? Show Name S04e07-08 [H264 - Ita Aac] HDTVMux by Group
+: title: Show Name
+  season: 4
+  episode: [7, 8]
+  video_codec: h264
+  language: it
+  audio_codec: AAC
+  format: HDTV
+  other: Mux
+  release_group: Group
+  type: episode
+
+? Show Name 3x18 Un Tuffo Nel Passato ITA HDTVMux x264 Group
+: title: Show Name
+  season: 3
+  episode: 18
+  episode_title: Un Tuffo Nel Passato
+  language: it
+  format: HDTV
+  other: Mux
+  video_codec: h264
+  release_group: Group
+  type: episode
+
+? Show.Name.S03.1080p.BlurayMUX.AVC.DTS-HD.MA
+: title: Show Name
+  season: 3
+  screen_size: 1080p
+  format: BluRay
+  other: Mux
+  video_codec: h264
+  audio_codec: DTS
+  audio_profile: HDMA
+  type: episode

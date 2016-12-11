@@ -10,11 +10,11 @@ import six
 
 from rebulk import Rebulk, Rule, CustomRule, POST_PROCESS, PRE_PROCESS, AppendMatch, RemoveMatch
 
-from guessit.rules.common import seps_no_groups
-from guessit.rules.common.words import iter_words
+from .common import seps_no_groups
 from .common.formatters import cleanup
 from .common.comparators import marker_sorted
 from .common.date import valid_year
+from .common.words import iter_words
 
 
 class EnlargeGroupMatches(CustomRule):

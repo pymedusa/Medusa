@@ -7,7 +7,7 @@ from rebulk.remodule import re
 
 from rebulk import Rebulk
 
-from guessit.rules.common import seps
+from ..common import seps
 from ..common.validators import seps_surround
 from ...reutils import build_or_pattern
 

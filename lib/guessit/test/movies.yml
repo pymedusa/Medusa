@@ -835,3 +835,13 @@
   type: movie
   video_codec: h264
   year: 2015
+
+? Name.BDMux.720p
+? Name.BDRipMux.720p
+? Name.BRMux.720p
+? Name.BRRipMux.720p
+: title: Name
+  format: BluRay
+  other: Mux
+  screen_size: 720p
+  type: movie

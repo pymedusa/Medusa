@@ -4,7 +4,7 @@
 
 from rebulk.match import Matches, Match
 
-from guessit.rules.processors import StripSeparators
+from ...rules.processors import StripSeparators
 
 
 def test_strip_separators():

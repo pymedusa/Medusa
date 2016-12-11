@@ -17,7 +17,7 @@ def format_():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name="format")
+    rebulk.defaults(name="format", tags='video-codec-prefix')
 
     rebulk.regex("VHS", "VHS-?Rip", value="VHS")
     rebulk.regex("CAM", "CAM-?Rip", "HD-?CAM", value="Cam")
@@ -34,7 +34,7 @@ def format_():
     rebulk.regex("HD-?TV", "TV-?RIP-?HD", "HD-?TV-?RIP", "HD-?RIP", value="HDTV")
     rebulk.regex("VOD", "VOD-?Rip", value="VOD")
     rebulk.regex("WEB-?Rip", "WEB-?DL-?Rip", "WEB-?Cap", value="WEBRip")
-    rebulk.regex("WEB-?DL", "WEB-?HD", "WEB", value="WEB-DL")
+    rebulk.regex("WEB-?DL", "WEB-?HD", "WEB", "DL-?WEB", "DL(?=-?Mux)", value="WEB-DL")
     rebulk.regex("HD-?DVD-?Rip", "HD-?DVD", value="HD-DVD")
     rebulk.regex("Blu-?ray(?:-?Rip)?", "B[DR]", "B[DR]-?Rip", "BD[59]", "BD25", "BD50", value="BluRay")
     rebulk.regex("AHDTV", value="AHDTV")
@@ -58,13 +58,12 @@ class ValidateFormat(Rule):
         for format_match in matches.named('format'):
             if not seps_before(format_match) and \
                     not matches.range(format_match.start - 1, format_match.start - 2,
-                                      lambda match: match.name == 'other' and match.value == 'Screener'):
+                                      lambda match: 'format-prefix' in match.tags):
                 ret.append(format_match)
                 continue
             if not seps_after(format_match) and \
                     not matches.range(format_match.end, format_match.end + 1,
-                                      lambda match: match.name == 'video_codec' or (
-                                          match.name == 'other' and match.value == 'Screener')):
+                                      lambda match: 'format-suffix' in match.tags):
                 ret.append(format_match)
                 continue
         return ret

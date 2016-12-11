@@ -16,7 +16,7 @@ import pytest
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
 
-from guessit.options import parse_options
+from ..options import parse_options
 from ..yamlutils import OrderedDictYAMLLoader
 from .. import guessit
 
