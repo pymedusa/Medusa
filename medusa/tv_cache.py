@@ -24,7 +24,7 @@ import time
 import traceback
 
 from six import text_type
-from . import app, db, logger, show_name_helpers
+from . import app, db, logger, scene_exceptions, show_name_helpers
 from .helper.common import episode_num
 from .helper.exceptions import AuthException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -381,9 +381,15 @@ class TVCache(object):
         if not parse_result or not parse_result.series_name:
             return None
 
-        # if we made it this far then lets add the parsed result to cache for usager later on
+        # if we made it this far then lets add the parsed result to cache for usage later on
         season = parse_result.season_number if parse_result.season_number is not None else 1
         episodes = parse_result.episode_numbers
+
+        # If the search was done using a season scene name, let's translate it to the indexer season first.
+        se_indexer_id, se_season = scene_exceptions.get_scene_exception_by_name(parse_result.series_name)
+
+        if se_indexer_id and se_season > -1 and se_indexer_id == parse_result.show.indexerid:
+            season = se_season
 
         if season is not None and episodes is not None:
             # store episodes as a seperated string
