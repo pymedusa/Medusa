@@ -492,7 +492,7 @@ class GenericProvider(object):
             if episode.show.air_by_date or episode.show.sports:
                 episode_string += str(episode.airdate).split('-')[0]
             elif episode.show.anime:
-                episode_string += '%d' % int(episode.scene_absolute_number)
+                episode_string += 'Season'
             else:
                 episode_string += 'S%02d' % int(episode.season)
 
