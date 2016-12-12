@@ -32,7 +32,7 @@ from ..metadata import generic
 
 class TIVOMetadata(generic.GenericMetadata):
     """
-    Metadata generation class for TIVO
+    Metadata generation class for TIVO.
 
     The following file structure is used:
 

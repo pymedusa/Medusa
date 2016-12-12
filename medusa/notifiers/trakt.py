@@ -27,9 +27,7 @@ from ..indexers.indexer_api import indexerApi
 
 
 class Notifier(object):
-    """
-    A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library.
-    """
+    """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
     def notify_snatch(self, ep_name, is_proper):
         pass

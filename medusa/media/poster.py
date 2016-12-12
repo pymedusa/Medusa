@@ -21,9 +21,7 @@ from ..image_cache import ImageCache
 
 
 class ShowPoster(GenericMedia):
-    """
-    Get the poster of a show
-    """
+    """Get the poster of a show."""
 
     def get_default_media_name(self):
         return 'poster.png'

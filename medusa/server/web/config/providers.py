@@ -20,9 +20,7 @@ from ....providers.generic_provider import GenericProvider
 
 @route('/config/providers(/?.*)')
 class ConfigProviders(Config):
-    """
-    Handler for Provider configuration
-    """
+    """Handler for Provider configuration."""
 
     def __init__(self, *args, **kwargs):
         super(ConfigProviders, self).__init__(*args, **kwargs)

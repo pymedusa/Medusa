@@ -9,7 +9,7 @@ from collections import MutableMapping
 
 class NumDict(MutableMapping):
     """
-    NumDict() -> new empty dictionary
+    NumDict() -> new empty dictionary.
 
     NumDict(mapping) -> new dictionary initialized from a mapping object's
         (key, value) pairs

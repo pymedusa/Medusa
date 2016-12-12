@@ -33,9 +33,7 @@ from .helper.exceptions import ex
 
 
 class CheckVersion(object):
-    """
-    Version check class meant to run as a thread object with the sr scheduler.
-    """
+    """Version check class meant to run as a thread object with the sr scheduler."""
 
     def __init__(self):
         self.updater = None

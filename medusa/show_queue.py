@@ -249,7 +249,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
 class ShowQueueItem(generic_queue.QueueItem):
     """
-    Represents an item in the queue waiting to be executed
+    Represents an item in the queue waiting to be executed.
 
     Can be either:
     - show being added (may or may not be associated with a show object)

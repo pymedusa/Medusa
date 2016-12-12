@@ -32,9 +32,7 @@ from ..show.show import Show
 
 
 class DailySearcher(object):  # pylint:disable=too-few-public-methods
-    """
-    Daily search thread
-    """
+    """Daily search class."""
 
     def __init__(self):
         self.lock = threading.Lock()
