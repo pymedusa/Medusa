@@ -549,7 +549,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.finish()
 
 
-def fifo(myList, item, maxSize=100):
-    if len(myList) >= maxSize:
+def fifo(myList, item, max_size=100):
+    if len(myList) >= max_size:
         myList.pop(0)
     myList.append(item)

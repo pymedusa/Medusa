@@ -33,8 +33,8 @@ from ....scene_numbering import (
     set_scene_numbering, xem_refresh
 )
 from ....search.manual import (
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collectEpisodesFromSearchThread,
-    getEpisode, get_provider_cache_results, update_finished_search_queue_item
+    SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collect_episodes_from_search_thread,
+    get_episode, get_provider_cache_results, update_finished_search_queue_item
 )
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
@@ -973,7 +973,7 @@ class Home(WebRoot):
 
         main_db_con = db.DBConnection('cache.db')
 
-        episodes_in_search = collectEpisodesFromSearchThread(show)
+        episodes_in_search = collect_episodes_from_search_thread(show)
 
         # Check if the requested ep is in a search thread
         searched_item = [search for search in episodes_in_search
@@ -1966,7 +1966,7 @@ class Home(WebRoot):
         down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
+        ep_obj = get_episode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({
                 'result': 'failure',
@@ -1997,7 +1997,7 @@ class Home(WebRoot):
     # Possible status: Downloaded, Snatched, etc...
     # Returns {'show': 279530, 'episodes' : ['episode' : 6, 'season' : 1, 'searchstatus' : 'queued', 'status' : 'running', 'quality': '4013']
     def getManualSearchStatus(self, show=None):
-        episodes = collectEpisodesFromSearchThread(show)
+        episodes = collect_episodes_from_search_thread(show)
 
         return json.dumps({
             'episodes': episodes,
@@ -2005,7 +2005,7 @@ class Home(WebRoot):
 
     def searchEpisodeSubtitles(self, show=None, season=None, episode=None, lang=None):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
+        ep_obj = get_episode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({
                 'result': 'failure',
@@ -2139,9 +2139,9 @@ class Home(WebRoot):
 
         # retrieve the episode object and fail if we can't get one
         if show_obj.is_anime:
-            ep_obj = getEpisode(show, absolute=forAbsolute)
+            ep_obj = get_episode(show, absolute=forAbsolute)
         else:
-            ep_obj = getEpisode(show, forSeason, forEpisode)
+            ep_obj = get_episode(show, forSeason, forEpisode)
 
         if isinstance(ep_obj, str):
             result.update({
@@ -2193,7 +2193,7 @@ class Home(WebRoot):
 
     def retryEpisode(self, show, season, episode, down_cur_quality=0):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
+        ep_obj = get_episode(show, season, episode)
         if isinstance(ep_obj, str):
             return json.dumps({
                 'result': 'failure',

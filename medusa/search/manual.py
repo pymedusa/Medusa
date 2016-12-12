@@ -37,7 +37,7 @@ SEARCH_STATUS_QUEUED = "queued"
 SEARCH_STATUS_SEARCHING = "searching"
 
 
-def getQualityClass(ep_obj):
+def get_quality_class(ep_obj):
     """
     Find the quality class for the episode
     """
@@ -51,7 +51,7 @@ def getQualityClass(ep_obj):
     return quality_class
 
 
-def getEpisode(show, season=None, episode=None, absolute=None):
+def get_episode(show, season=None, episode=None, absolute=None):
     """ Get a specific episode object based on show, season and episode number
 
     :param show: Season number
@@ -81,7 +81,7 @@ def getEpisode(show, season=None, episode=None, absolute=None):
     return ep_obj
 
 
-def getEpisodes(search_thread, searchstatus):
+def get_episodes(search_thread, searchstatus):
     """ Get all episodes located in a search thread with a specific status """
 
     results = []
@@ -106,7 +106,7 @@ def getEpisodes(search_thread, searchstatus):
             'season': ep.season,
             'searchstatus': searchstatus,
             'status': statusStrings[ep.status],
-            'quality': getQualityClass(ep),
+            'quality': get_quality_class(ep),
             'overview': Overview.overviewStrings[show_obj.get_overview(ep.status,
                                                                        manually_searched=ep.manually_searched)],
         })
@@ -139,7 +139,7 @@ def update_finished_search_queue_item(snatch_queue_item):
     return False
 
 
-def collectEpisodesFromSearchThread(show):
+def collect_episodes_from_search_thread(show):
     """
     Collects all episodes from from the forcedSearchQueueScheduler
     and looks for episodes that are in status queued or searching.
@@ -150,7 +150,7 @@ def collectEpisodesFromSearchThread(show):
     # Queued Searches
     searchstatus = SEARCH_STATUS_QUEUED
     for search_thread in app.forcedSearchQueueScheduler.action.get_all_ep_from_queue(show):
-        episodes += getEpisodes(search_thread, searchstatus)
+        episodes += get_episodes(search_thread, searchstatus)
 
     # Running Searches
     searchstatus = SEARCH_STATUS_SEARCHING
@@ -160,7 +160,7 @@ def collectEpisodesFromSearchThread(show):
         if search_thread.success:
             searchstatus = SEARCH_STATUS_FINISHED
 
-        episodes += getEpisodes(search_thread, searchstatus)
+        episodes += get_episodes(search_thread, searchstatus)
 
     # Finished Searches
     searchstatus = SEARCH_STATUS_FINISHED
@@ -170,11 +170,11 @@ def collectEpisodesFromSearchThread(show):
 
         if isinstance(search_thread, ForcedSearchQueueItem):
             if not [x for x in episodes if x['episodeindexid'] in [search.indexerid for search in search_thread.segment]]:
-                episodes += getEpisodes(search_thread, searchstatus)
+                episodes += get_episodes(search_thread, searchstatus)
         else:
             # These are only Failed Downloads/Retry search thread items.. lets loop through the segment/episodes
             if not [i for i, j in zip(search_thread.segment, episodes) if i.indexerid == j['episodeindexid']]:
-                episodes += getEpisodes(search_thread, searchstatus)
+                episodes += get_episodes(search_thread, searchstatus)
 
     return episodes
 
@@ -258,7 +258,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     # Always start a search when no items found in cache
     if not sql_total or int(perform_search):
         # retrieve the episode object and fail if we can't get one
-        ep_obj = getEpisode(show, season, episode)
+        ep_obj = get_episode(show, season, episode)
         if isinstance(ep_obj, str):
             # ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
             # format(show_obj.name, season, episode))

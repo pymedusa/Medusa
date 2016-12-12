@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Proper finder module."""
 from __future__ import unicode_literals
 
 import datetime
@@ -26,9 +26,11 @@ import re
 import threading
 import time
 import traceback
-from socket import timeout as SocketTimeout
+
+from socket import timeout as socket_timeout
 
 from requests import exceptions as requests_exceptions
+
 from .. import app, db, helpers, logger
 from ..common import Quality, cpu_presets
 from ..helper.common import enabled_providers
@@ -39,13 +41,16 @@ from ..show.history import History
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
+    """Proper finder class."""
+
     def __init__(self):
+        """Initialize the class."""
         self.amActive = False
         self.processed_propers = []
 
     def run(self, force=False):  # pylint: disable=unused-argument
         """
-        Start looking for new propers
+        Start looking for new propers.
 
         :param force: Start even if already running (currently not used, defaults to False)
         """
@@ -71,9 +76,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         propers = self._get_proper_results()
 
         if propers:
-            self._downloadPropers(propers)
+            self._download_propers(propers)
 
-        self._set_lastProperSearch(datetime.datetime.today().toordinal())
+        self._set_last_proper_search(datetime.datetime.today().toordinal())
 
         run_at = ''
         if None is app.properFinderScheduler.start_time:
@@ -93,9 +98,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         self.amActive = False
 
     def _get_proper_results(self):  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
-        """
-        Retrieve a list of recently aired episodes, and search for these episodes in the different providers.
-        """
+        """Retrieve a list of recently aired episodes, and search for these episodes in the different providers."""
         propers = {}
 
         # For each provider get the list of propers
@@ -138,7 +141,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 logger.log('Authentication error: {error}'.format
                            (error=ex(e)), logger.DEBUG)
                 continue
-            except SocketTimeout as e:
+            except socket_timeout as e:
                 logger.log('Socket time out while searching for propers in {provider}, skipping: {error}'.format
                            (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
@@ -317,13 +320,12 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         return final_propers
 
-    def _downloadPropers(self, proper_list):
+    def _download_propers(self, proper_list):
         """
-        Download proper (snatch it)
+        Download proper (snatch it).
 
         :param proper_list:
         """
-
         for cur_proper in proper_list:
 
             history_limit = datetime.datetime.today() - datetime.timedelta(days=30)
@@ -390,13 +392,12 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         return re.sub(r'[._\-]', ' ', name).lower()
 
     @staticmethod
-    def _set_lastProperSearch(when):
+    def _set_last_proper_search(when):
         """
-        Record last propersearch in DB
+        Record last propersearch in DB.
 
         :param when: When was the last proper search
         """
-
         logger.log('Setting the last Proper search in the DB to {0}'.format(when), logger.DEBUG)
 
         main_db_con = db.DBConnection()
@@ -409,11 +410,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             main_db_con.action(b'UPDATE info SET last_proper_search={0}'.format(when))
 
     @staticmethod
-    def _get_lastProperSearch():
-        """
-        Find last propersearch from DB
-        """
-
+    def _get_last_proper_search():
+        """Find last propersearch from DB."""
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(b'SELECT last_proper_search FROM info')
 

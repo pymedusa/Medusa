@@ -57,7 +57,7 @@ class BacklogSearcher(object):
         self.percentDone = 0
         self.currentSearchInfo = {'title': 'Initializing'}
 
-    def getProgressIndicator(self):
+    def get_progress_indicator(self):
         if self.amActive:
             return ui.ProgressIndicator(self.percentDone, self.currentSearchInfo)
         else:
@@ -67,7 +67,7 @@ class BacklogSearcher(object):
         logger.log(u"amWaiting: " + str(self.amWaiting) + ", amActive: " + str(self.amActive), logger.DEBUG)
         return (not self.amWaiting) and self.amActive
 
-    def searchBacklog(self, which_shows=None):
+    def search_backlog(self, which_shows=None):
 
         if self.amActive:
             logger.log(u"Backlog is still running, not starting it again", logger.DEBUG)
@@ -183,7 +183,7 @@ class BacklogSearcher(object):
 
     def run(self, force=False):
         try:
-            self.searchBacklog()
+            self.search_backlog()
         except:
             self.amActive = False
             raise

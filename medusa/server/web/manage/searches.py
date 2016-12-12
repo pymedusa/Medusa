@@ -15,7 +15,7 @@ class ManageSearches(Manage):
 
     def index(self):
         t = PageTemplate(rh=self, filename='manage_manageSearches.mako')
-        # t.backlogPI = api.backlogSearchScheduler.action.getProgressIndicator()
+        # t.backlogPI = api.backlogSearchScheduler.action.get_progress_indicator()
 
         return t.render(backlogPaused=app.searchQueueScheduler.action.is_backlog_paused(),
                         backlogRunning=app.searchQueueScheduler.action.is_backlog_in_progress(),

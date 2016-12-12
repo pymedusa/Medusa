@@ -530,7 +530,7 @@ class QueueItemAdd(ShowQueueItem):
         # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
-            app.backlogSearchScheduler.action.searchBacklog([self.show])
+            app.backlogSearchScheduler.action.search_backlog([self.show])
 
         self.show.write_metadata()
         self.show.update_metadata()

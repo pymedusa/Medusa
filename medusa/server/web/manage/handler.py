@@ -325,7 +325,7 @@ class Manage(Home, WebRoot):
         show_obj = Show.find(app.showList, int(indexer_id))
 
         if show_obj:
-            app.backlogSearchScheduler.action.searchBacklog([show_obj])
+            app.backlogSearchScheduler.action.search_backlog([show_obj])
 
         return self.redirect('/manage/backlogOverview/')
 
