@@ -251,9 +251,9 @@ class AnimeTorrentsProvider(TorrentProvider):
             episode_string = show_name + '%'
 
             if season_scene_names and show_name in season_scene_names:
-                episode_season = int(episode.episode)
+                episode_season = int(episode.scene_episode)
             else:
-                episode_season = int(episode.scene_absolute_number)
+                episode_season = int(episode.absolute_number)
             episode_string += str(episode_season)
 
             if add_string:
