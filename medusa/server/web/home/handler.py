@@ -1962,7 +1962,7 @@ class Home(WebRoot):
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def searchEpisode(self, show=None, season=None, episode=None, manual_search=None):
-        """Search a ForcedSearch single episode using providers which are backlog enabled"""
+        """Search a ForcedSearch single episode using providers which are backlog enabled."""
         down_cur_quality = 0
 
         # retrieve the episode object and fail if we can't get one

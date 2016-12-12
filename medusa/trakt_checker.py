@@ -124,7 +124,7 @@ class TraktChecker(object):
         return trakt_show if trakt_show else None
 
     def remove_show_trakt_library(self, show_obj):
-        """Remove Show from trakt collections"""
+        """Remove Show from trakt collections."""
         if self.find_show(show_obj.indexerid):
             trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
 
@@ -242,7 +242,7 @@ class TraktChecker(object):
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
 
     def add_episode_trakt_collection(self):
-        """Add all episodes from local library to Trakt collections. Enabled through app.TRAKT_SYNC_WATCHLIST setting"""
+        """Add all episodes from local library to Trakt collections. Enabled in app.TRAKT_SYNC_WATCHLIST setting."""
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()

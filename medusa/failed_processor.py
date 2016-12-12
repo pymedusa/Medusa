@@ -23,7 +23,7 @@ from .search.queue import FailedQueueItem
 
 
 class FailedProcessor(object):
-    """Take appropriate action when a download fails to complete"""
+    """Take appropriate action when a download fails to complete."""
 
     def __init__(self, dirName, nzbName):
         """
@@ -74,6 +74,6 @@ class FailedProcessor(object):
         return True
 
     def _log(self, message, level=logger.INFO):
-        """Log to regular logfile and save for return for PP script log"""
+        """Log to regular logfile and save for return for PP script log."""
         logger.log(message, level)
         self.log += message + "\n"

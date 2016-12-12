@@ -106,7 +106,7 @@ class SearchQueue(generic_queue.GenericQueue):
 class ForcedSearchQueue(generic_queue.GenericQueue):
     """Search Queueu used for Forced Search, Failed Search and """
     def __init__(self):
-        """Initialize ForcedSearch Queue"""
+        """Initialize ForcedSearch Queue."""
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SEARCHQUEUE"
 
@@ -160,7 +160,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return self.min_priority >= generic_queue.QueuePriorities.NORMAL
 
     def is_forced_search_in_progress(self):
-        """Tests of a forced search is currently running, it doesn't check what's in queue"""
+        """Tests of a forced search is currently running, it doesn't check what's in queue."""
         if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
             return True
         return False
@@ -177,7 +177,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return length
 
     def add_item(self, item):
-        """Add a new ForcedSearchQueueItem or FailedQueueItem to the ForcedSearchQueue"""
+        """Add a new ForcedSearchQueueItem or FailedQueueItem to the ForcedSearchQueue."""
         if isinstance(item, (ForcedSearchQueueItem, FailedQueueItem)) and not self.is_ep_in_queue(item.segment):
             # manual, snatch and failed searches
             generic_queue.GenericQueue.add_item(self, item)
@@ -188,7 +188,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 class SnatchQueue(generic_queue.GenericQueue):
     """Queue for queuing ManualSnatchQueueItem objects (snatch jobs)"""
     def __init__(self):
-        """Initialize the SnatchQueue object"""
+        """Initialize the SnatchQueue object."""
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SNATCHQUEUE"
 
