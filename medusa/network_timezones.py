@@ -43,7 +43,7 @@ def update_network_dict():
 
     logger.log(u'Started updating network timezones', logger.DEBUG)
     url = 'https://cdn.pymedusa.com/sb_network_timezones/network_timezones.txt'
-    response = helpers.getURL(url, session=helpers.make_session(), returns='response')
+    response = helpers.get_url(url, session=helpers.make_session(), returns='response')
     if not response or not response.text:
         logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
         load_network_dict()

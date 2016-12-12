@@ -75,7 +75,7 @@
                 </tfoot>
                 <tbody>
                 % for hItem in historyResults:
-                    <% composite = Quality.splitCompositeStatus(int(hItem.action)) %>
+                    <% composite = Quality.split_composite_status(int(hItem.action)) %>
                     <tr>
                         <td align="center">
                             <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.date), History.date_format), show_seconds=True) %>
@@ -156,7 +156,7 @@
                         </td>
                         <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
-                                <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
+                                <% composite = Quality.split_composite_status(int(cur_action.action)) %>
                                 % if composite.status == SNATCHED:
                                     <% provider = providers.get_provider_class(GenericProvider.make_id(cur_action.provider)) %>
                                     % if provider is not None:
@@ -178,7 +178,7 @@
                         </td>
                         <td align="center">
                             % for cur_action in sorted(hItem.actions):
-                                <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
+                                <% composite = Quality.split_composite_status(int(cur_action.action)) %>
                                 % if composite.status in [DOWNLOADED, ARCHIVED]:
                                     % if cur_action.provider != "-1":
                                         <span style="cursor: help;" title="${os.path.basename(cur_action.resource)}"><i>${cur_action.provider}</i></span>
@@ -191,7 +191,7 @@
                         % if app.USE_SUBTITLES:
                         <td align="center">
                             % for cur_action in sorted(hItem.actions):
-                                <% composite = Quality.splitCompositeStatus(int(cur_action.action)) %>
+                                <% composite = Quality.split_composite_status(int(cur_action.action)) %>
                                 % if composite.status == SUBTITLED:
                                     <img src="images/subtitles/${cur_action.provider}.png" width="16" height="16" style="vertical-align:middle;" alt="${cur_action.provider}" title="${cur_action.provider.capitalize()}: ${os.path.basename(cur_action.resource)}"/>
                                     <span style="vertical-align:middle;"> / </span>

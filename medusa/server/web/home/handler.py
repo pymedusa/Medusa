@@ -560,7 +560,7 @@ class Home(WebRoot):
             return 'Error sending Pushbullet notification'
 
     def status(self):
-        tv_dir_free = helpers.getDiskSpaceUsage(app.TV_DOWNLOAD_DIR)
+        tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
         root_dir = {}
         if app.ROOT_DIRS:
             backend_pieces = app.ROOT_DIRS.split('|')
@@ -570,7 +570,7 @@ class Home(WebRoot):
 
         if backend_dirs:
             for subject in backend_dirs:
-                root_dir[subject] = helpers.getDiskSpaceUsage(subject)
+                root_dir[subject] = helpers.get_disk_space_usage(subject)
 
         t = PageTemplate(rh=self, filename='status.mako')
         return t.render(title='Status', header='Status', topmenu='system',
@@ -1168,7 +1168,7 @@ class Home(WebRoot):
             )
             episode_history = [dict(row) for row in episode_status_result]
             for i in episode_history:
-                i['status'], i['quality'] = Quality.splitCompositeStatus(i['action'])
+                i['status'], i['quality'] = Quality.split_composite_status(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['status_name'] = statusStrings[i['status']]
@@ -1445,7 +1445,7 @@ class Home(WebRoot):
                         show_obj.release_groups.set_black_keywords([])
 
         with show_obj.lock:
-            new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
+            new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
             show_obj.quality = new_quality
 
             # reversed for now

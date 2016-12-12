@@ -263,7 +263,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
-            _, old_quality = Quality.splitCompositeStatus(int(sql_results[0][b'status']))
+            _, old_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
             if old_quality != best_result.quality:
                 logger.log('Ignoring proper because quality is different: {name}'.format(name=best_result.name))
                 self.processed_propers.append(cur_proper.name)

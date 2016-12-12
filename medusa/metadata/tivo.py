@@ -324,7 +324,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u'Writing episode nfo file to {path}'.format
                        (path=nfo_file_path), logger.DEBUG)
@@ -333,7 +333,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 # Calling encode directly, b/c often descriptions have wonky characters.
                 nfo_file.write(data.encode('utf-8'))
 
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
 
         except EnvironmentError as e:
             logger.log(u'Unable to write file to {path} - '

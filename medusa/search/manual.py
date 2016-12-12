@@ -42,7 +42,7 @@ def getQualityClass(ep_obj):
     Find the quality class for the episode
     """
 
-    _, ep_quality = Quality.splitCompositeStatus(ep_obj.status)
+    _, ep_quality = Quality.split_composite_status(ep_obj.status)
     if ep_quality in Quality.cssClassStrings:
         quality_class = Quality.cssClassStrings[ep_quality]
     else:
@@ -275,7 +275,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
     else:
         cached_results = [dict(row) for row in sql_total]
         for i in cached_results:
-            i['quality_name'] = Quality.splitQuality(int(i['quality']))
+            i['quality_name'] = Quality.split_quality(int(i['quality']))
             i['time'] = datetime.fromtimestamp(i['time']).strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET)
             i['release_group'] = i['release_group'] or 'None'
             i['provider_img_link'] = 'images/providers/' + i['provider_image'] or 'missing.png'

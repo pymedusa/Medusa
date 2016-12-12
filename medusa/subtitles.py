@@ -41,7 +41,7 @@ from .cache import cache, memory_cache
 from .common import Quality, cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
-from .helpers import isMediaFile, isRarFile
+from .helpers import is_media_file, is_rar_file
 from .show.show import Show
 
 
@@ -478,10 +478,10 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
                     subtitle.provider_name, subtitle.language.opensubtitles)
         subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-        helpers.chmodAsParent(subtitle_path)
-        helpers.fixSetGroupID(subtitle_path)
+        helpers.chmod_as_parent(subtitle_path)
+        helpers.fix_set_group_id(subtitle_path)
 
-        if app.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
+        if app.SUBTITLES_EXTRA_SCRIPTS and is_media_file(video_path):
             subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
             run_subs_extra_scripts(video_path=video_path, subtitle_path=subtitle_path,
                                    subtitle_language=subtitle.language, show_name=show_name, season=season,
@@ -747,8 +747,8 @@ def get_subtitles_dir(video_path):
         return _decode(app.SUBTITLES_DIR)
 
     new_subtitles_path = os.path.join(os.path.dirname(video_path), app.SUBTITLES_DIR)
-    if helpers.makeDir(new_subtitles_path):
-        helpers.chmodAsParent(new_subtitles_path)
+    if helpers.make_dir(new_subtitles_path):
+        helpers.chmod_as_parent(new_subtitles_path)
     else:
         logger.warning(u'Unable to create subtitles folder %s', new_subtitles_path)
 
@@ -826,7 +826,7 @@ class SubtitlesFinder(object):
                 # Delete unwanted subtitles before downloading new ones
                 delete_unwanted_subtitles(root, filename)
 
-                if not isMediaFile(filename):
+                if not is_media_file(filename):
                     continue
 
                 video_path = os.path.join(root, filename)
@@ -880,9 +880,9 @@ class SubtitlesFinder(object):
         """
         from . import process_tv
         for root, _, files in os.walk(dirpath, topdown=False):
-            rar_files = [rar_file for rar_file in files if isRarFile(rar_file)]
+            rar_files = [rar_file for rar_file in files if is_rar_file(rar_file)]
             if rar_files and app.UNPACK:
-                video_files = [video_file for video_file in files if isMediaFile(video_file)]
+                video_files = [video_file for video_file in files if is_media_file(video_file)]
                 if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
                     logger.debug(u'Found rar files in post-process folder: %s', rar_files)
                     result = process_tv.ProcessResult()

@@ -16,7 +16,7 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.getURL(app.CHANGES_URL, session=helpers.make_session(), returns='text')
+            changes = helpers.get_url(app.CHANGES_URL, session=helpers.make_session(), returns='text')
         except Exception:
             logger.log('Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md]({url})'.format(url=app.CHANGES_URL)

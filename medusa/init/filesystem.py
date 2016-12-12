@@ -99,7 +99,7 @@ def initialize():
         os.path: ['abspath', 'basename', 'dirname', 'exists', 'getctime', 'getmtime', 'getsize',
                   'isabs', 'isdir', 'isfile', 'islink', 'join', 'normcase', 'normpath', 'realpath', 'relpath',
                   'split', 'splitext'],
-        shutil: ['copyfile', 'copymode', 'move', 'rmtree'],
+        shutil: ['copyFile', 'copymode', 'move', 'rmtree'],
         tarfile: ['is_tarfile'],
     }
 

@@ -527,7 +527,7 @@ def _map_quality(show_obj):
     allowed_qualities = []
     preferred_qualities = []
 
-    i_quality_id, a_quality_id = Quality.splitQuality(int(show_obj))
+    i_quality_id, a_quality_id = Quality.split_quality(int(show_obj))
     if i_quality_id:
         for quality in i_quality_id:
             allowed_qualities.append(mapped_quality[quality])
@@ -728,7 +728,7 @@ class CMD_Episode(ApiCall):
         else:
             episode['airdate'] = 'Never'
 
-        status, quality = Quality.splitCompositeStatus(int(episode["status"]))
+        status, quality = Quality.split_composite_status(int(episode["status"]))
         episode["status"] = statusStrings[status]
         episode["quality"] = get_quality_string(quality)
         episode["file_size_human"] = pretty_file_size(episode["file_size"])
@@ -779,7 +779,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # return the correct json value
         if ep_queue_item.success:
-            _, quality = Quality.splitCompositeStatus(ep_obj.status)
+            _, quality = Quality.split_composite_status(ep_obj.status)
             # TODO: split quality and status?
             return _responds(RESULT_SUCCESS, {"quality": get_quality_string(quality)},
                              "Snatched (" + get_quality_string(quality) + ")")
@@ -1046,7 +1046,7 @@ class CMD_History(ApiCall):
                     History.date_format
                 ).strftime(dateTimeFormat)
 
-            composite = Quality.splitCompositeStatus(cur_item.action)
+            composite = Quality.split_composite_status(cur_item.action)
             if cur_type in (statusStrings[composite.status].lower(), None):
                 return {
                     'date': convert_date(cur_item.date),
@@ -1746,7 +1746,7 @@ class CMD_SetDefaults(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            app.QUALITY_DEFAULT = Quality.combineQualities(i_quality_id, a_quality_id)
+            app.QUALITY_DEFAULT = Quality.combine_qualities(i_quality_id, a_quality_id)
 
         if self.status:
             # convert the string status to a int
@@ -1974,7 +1974,7 @@ class CMD_ShowAddExisting(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            new_quality = Quality.combineQualities(i_quality_id, a_quality_id)
+            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
 
         app.showQueueScheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
@@ -2065,7 +2065,7 @@ class CMD_ShowAddNew(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            new_quality = Quality.combineQualities(i_quality_id, a_quality_id)
+            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
 
         # use default status as a fail-safe
         new_status = app.STATUS_DEFAULT
@@ -2123,13 +2123,13 @@ class CMD_ShowAddNew(ApiCall):
         if app.ADD_SHOWS_WO_DIR:
             logger.log(u"Skipping initial creation of " + show_path + " due to config.ini setting")
         else:
-            dir_exists = helpers.makeDir(show_path)
+            dir_exists = helpers.make_dir(show_path)
             if not dir_exists:
                 logger.log(u"API :: Unable to create the folder " + show_path + ", can't add the show", logger.ERROR)
                 return _responds(RESULT_FAILURE, {"path": show_path},
                                  "Unable to create the folder " + show_path + ", can't add the show")
             else:
-                helpers.chmodAsParent(show_path)
+                helpers.chmod_as_parent(show_path)
 
         app.showQueueScheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
@@ -2189,7 +2189,7 @@ class CMD_ShowDelete(ApiCall):
         },
         "optionalParameters": {
             "tvdbid": {"desc": "thetvdb.com unique ID of a show"},
-            "removefiles": {
+            "remove_files": {
                 "desc": "True to delete the files associated with the show, False otherwise. This can not be undone!"
             },
         }
@@ -2199,13 +2199,13 @@ class CMD_ShowDelete(ApiCall):
         # required
         self.indexerid, args = self.check_params(args, kwargs, "indexerid", None, True, "int", [])
         # optional
-        self.removefiles, args = self.check_params(args, kwargs, "removefiles", False, False, "bool", [])
+        self.remove_files, args = self.check_params(args, kwargs, "remove_files", False, False, "bool", [])
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
         """ Delete a show in Medusa """
-        error, show = Show.delete(self.indexerid, self.removefiles)
+        error, show = Show.delete(self.indexerid, self.remove_files)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2482,7 +2482,7 @@ class CMD_ShowSeasons(ApiCall):
                 [self.indexerid])
             seasons = {}
             for row in sql_results:
-                status, quality = Quality.splitCompositeStatus(int(row["status"]))
+                status, quality = Quality.split_composite_status(int(row["status"]))
                 row["status"] = statusStrings[status]
                 row["quality"] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
@@ -2509,7 +2509,7 @@ class CMD_ShowSeasons(ApiCall):
             for row in sql_results:
                 cur_episode = int(row["episode"])
                 del row["episode"]
-                status, quality = Quality.splitCompositeStatus(int(row["status"]))
+                status, quality = Quality.split_composite_status(int(row["status"]))
                 row["status"] = statusStrings[status]
                 row["quality"] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
@@ -2567,7 +2567,7 @@ class CMD_ShowSetQuality(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            new_quality = Quality.combineQualities(i_quality_id, a_quality_id)
+            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
         show_obj.quality = new_quality
 
         return _responds(RESULT_SUCCESS,
@@ -2608,7 +2608,7 @@ class CMD_ShowStats(ApiCall):
         # add all the downloaded qualities
         episode_qualities_counts_download = {"total": 0}
         for statusCode in Quality.DOWNLOADED + Quality.ARCHIVED:
-            status, quality = Quality.splitCompositeStatus(statusCode)
+            status, quality = Quality.split_composite_status(statusCode)
             if quality in [Quality.NONE]:
                 continue
             episode_qualities_counts_download[statusCode] = 0
@@ -2616,7 +2616,7 @@ class CMD_ShowStats(ApiCall):
         # add all snatched qualities
         episode_qualities_counts_snatch = {"total": 0}
         for statusCode in Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            status, quality = Quality.splitCompositeStatus(statusCode)
+            status, quality = Quality.split_composite_status(statusCode)
             if quality in [Quality.NONE]:
                 continue
             episode_qualities_counts_snatch[statusCode] = 0
@@ -2626,7 +2626,7 @@ class CMD_ShowStats(ApiCall):
                                          [self.indexerid])
         # the main loop that goes through all episodes
         for row in sql_results:
-            status, quality = Quality.splitCompositeStatus(int(row["status"]))
+            status, quality = Quality.split_composite_status(int(row["status"]))
 
             episode_status_counts_total["total"] += 1
 
@@ -2648,7 +2648,7 @@ class CMD_ShowStats(ApiCall):
             if statusCode == "total":
                 episodes_stats["downloaded"]["total"] = episode_qualities_counts_download[statusCode]
                 continue
-            status, quality = Quality.splitCompositeStatus(int(statusCode))
+            status, quality = Quality.split_composite_status(int(statusCode))
             status_string = Quality.qualityStrings[quality].lower().replace(" ", "_").replace("(", "").replace(")", "")
             episodes_stats["downloaded"][status_string] = episode_qualities_counts_download[statusCode]
 
@@ -2659,7 +2659,7 @@ class CMD_ShowStats(ApiCall):
             if statusCode == "total":
                 episodes_stats["snatched"]["total"] = episode_qualities_counts_snatch[statusCode]
                 continue
-            status, quality = Quality.splitCompositeStatus(int(statusCode))
+            status, quality = Quality.split_composite_status(int(statusCode))
             status_string = Quality.qualityStrings[quality].lower().replace(" ", "_").replace("(", "").replace(")", "")
             if Quality.qualityStrings[quality] in episodes_stats["snatched"]:
                 episodes_stats["snatched"][status_string] += episode_qualities_counts_snatch[statusCode]

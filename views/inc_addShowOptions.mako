@@ -8,7 +8,7 @@
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
                 <span class="component-desc">
-                    <% allowed_qualities, preferred_qualities = Quality.splitQuality(app.QUALITY_DEFAULT) %>
+                    <% allowed_qualities, preferred_qualities = Quality.split_quality(app.QUALITY_DEFAULT) %>
                     <%include file="/inc_qualityChooser.mako"/>
                 </span>
             </label>

@@ -7,8 +7,8 @@ if not show is UNDEFINED:
     __quality = int(show.quality)
 else:
     __quality = int(app.QUALITY_DEFAULT)
-allowed_qualities, preferred_qualities = Quality.splitQuality(__quality)
-overall_quality = Quality.combineQualities(allowed_qualities, preferred_qualities)
+allowed_qualities, preferred_qualities = Quality.split_quality(__quality)
+overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
 selected = None
 %>
 <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">

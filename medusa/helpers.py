@@ -77,7 +77,7 @@ except ImportError:
     from urllib2 import splittype
 
 
-def indentXML(elem, level=0):
+def indent_xml(elem, level=0):
     """Do our pretty printing and make Matt very happy."""
     i = "\n" + level * "  "
     if elem:
@@ -86,7 +86,7 @@ def indentXML(elem, level=0):
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
         for elem in elem:
-            indentXML(elem, level + 1)
+            indent_xml(elem, level + 1)
         if not elem.tail or not elem.tail.strip():
             elem.tail = i
     else:
@@ -94,7 +94,7 @@ def indentXML(elem, level=0):
             elem.tail = i
 
 
-def isMediaFile(filename):
+def is_media_file(filename):
     """Check if named file may contain media.
 
     :param filename: Filename to check
@@ -126,7 +126,7 @@ def isMediaFile(filename):
         return False
 
 
-def isRarFile(filename):
+def is_rar_file(filename):
     """Check if file is a RAR file, or part of a RAR set.
 
     :param filename: Filename to check
@@ -173,7 +173,7 @@ def remove_file_failed(failed_file):
         pass
 
 
-def makeDir(path):
+def make_dir(path):
     """Make a directory on the filesystem.
 
     :param path: directory to make
@@ -192,7 +192,7 @@ def makeDir(path):
     return True
 
 
-def searchIndexerForShowID(show_name, indexer=None, indexer_id=None, ui=None):
+def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None):
     """Contact indexer to check for information on shows by showid.
 
     :param show_name: Name of show
@@ -249,7 +249,7 @@ def searchIndexerForShowID(show_name, indexer=None, indexer_id=None, ui=None):
     return None, None, None
 
 
-def listMediaFiles(path):
+def list_media_files(path):
     """Get a list of files possibly containing media in a path.
 
     :param path: Path to check for files
@@ -266,15 +266,15 @@ def listMediaFiles(path):
 
         # if it's a folder do it recursively
         if os.path.isdir(full_cur_file) and not cur_file.startswith('.') and not cur_file == 'Extras':
-            files += listMediaFiles(full_cur_file)
+            files += list_media_files(full_cur_file)
 
-        elif isMediaFile(cur_file):
+        elif is_media_file(cur_file):
             files.append(full_cur_file)
 
     return files
 
 
-def copyFile(src_file, dest_file):
+def copy_file(src_file, dest_file):
     """Copy a file from source to destination.
 
     :param src_file: Path of source file
@@ -289,7 +289,7 @@ def copyFile(src_file, dest_file):
         SpecialFileError = Error
 
     try:
-        shutil.copyfile(src_file, dest_file)
+        shutil.copy_file(src_file, dest_file)
     except (SpecialFileError, Error) as error:
         logger.warning(u'{error}', error=error)
     except OSError as error:
@@ -304,7 +304,7 @@ def copyFile(src_file, dest_file):
             pass
 
 
-def moveFile(src_file, dest_file):
+def move_file(src_file, dest_file):
     """Move a file from source to destination.
 
     :param src_file: Path of source file
@@ -314,9 +314,9 @@ def moveFile(src_file, dest_file):
     """
     try:
         shutil.move(src_file, dest_file)
-        fixSetGroupID(dest_file)
+        fix_set_group_id(dest_file)
     except OSError:
-        copyFile(src_file, dest_file)
+        copy_file(src_file, dest_file)
         os.unlink(src_file)
 
 
@@ -337,7 +337,7 @@ def link(src, dst):
         os.link(src, dst)
 
 
-def hardlinkFile(src_file, dest_file):
+def hardlink_file(src_file, dest_file):
     """Create a hard-link (inside filesystem link) between source and destination.
 
     :param src_file: Source file
@@ -347,7 +347,7 @@ def hardlinkFile(src_file, dest_file):
     """
     try:
         link(src_file, dest_file)
-        fixSetGroupID(dest_file)
+        fix_set_group_id(dest_file)
     except OSError as e:
         if hasattr(e, 'errno') and e.errno == 17:  # File exists. Don't fallback to copy
             logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}',
@@ -355,7 +355,7 @@ def hardlinkFile(src_file, dest_file):
         else:
             logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}. Copying instead',
                            source=src_file, dest=dest_file, error=e)
-            copyFile(src_file, dest_file)
+            copy_file(src_file, dest_file)
 
 
 def symlink(src, dst):
@@ -374,7 +374,7 @@ def symlink(src, dst):
         os.symlink(src, dst)
 
 
-def moveAndSymlinkFile(src_file, dest_file):
+def move_and_symlink_file(src_file, dest_file):
     """Move a file from source to destination, then create a symlink back from destination from source.
 
     If this fails, copy the file from source to destination.
@@ -386,7 +386,7 @@ def moveAndSymlinkFile(src_file, dest_file):
     """
     try:
         shutil.move(src_file, dest_file)
-        fixSetGroupID(dest_file)
+        fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
     except OSError as e:
         if hasattr(e, 'errno') and e.errno == 17:  # File exists. Don't fallback to copy
@@ -395,7 +395,7 @@ def moveAndSymlinkFile(src_file, dest_file):
         else:
             logger.warning(u'Failed to create symlink of {source} at {dest}. Error: {error!r}. Copying instead',
                            source=src_file, dest=dest_file, error=e)
-            copyFile(src_file, dest_file)
+            copy_file(src_file, dest_file)
 
 
 def make_dirs(path):
@@ -433,7 +433,7 @@ def make_dirs(path):
                     logger.debug(u"Folder {path} didn't exist, creating it", path=sofar)
                     os.mkdir(sofar)
                     # use normpath to remove end separator, otherwise checks permissions against itself
-                    chmodAsParent(os.path.normpath(sofar))
+                    chmod_as_parent(os.path.normpath(sofar))
                     # do the library update for synoindex
                     from . import notifiers
                     notifiers.synoindex_notifier.addFolder(sofar)
@@ -531,7 +531,7 @@ def delete_empty_folders(check_empty_dir, keep_dir=None):
             break
 
 
-def fileBitFilter(mode):
+def file_bit_filter(mode):
     """Strip special filesystem bits from file.
 
     :param mode: mode to check and strip
@@ -544,7 +544,7 @@ def fileBitFilter(mode):
     return mode
 
 
-def chmodAsParent(child_path):
+def chmod_as_parent(child_path):
     """Retain permissions of parent for childs.
 
     (Does not work for Windows hosts)
@@ -572,7 +572,7 @@ def chmodAsParent(child_path):
     child_path_mode = stat.S_IMODE(child_path_stat[stat.ST_MODE])
 
     if os.path.isfile(child_path):
-        child_mode = fileBitFilter(parent_mode)
+        child_mode = file_bit_filter(parent_mode)
     else:
         child_mode = parent_mode
 
@@ -594,7 +594,7 @@ def chmodAsParent(child_path):
         logger.debug(u'Failed to set permission for {path} to {mode}', path=child_path, mode=child_mode)
 
 
-def fixSetGroupID(child_path):
+def fix_set_group_id(child_path):
     """Inherid SGID from parent.
 
     (does not work on Windows hosts)
@@ -696,7 +696,7 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
     return season, episodes
 
 
-def sanitizeSceneName(name, anime=False):
+def sanitize_scene_name(name, anime=False):
     """Take a show name and returns the "scenified" version of it.
 
     :param name: Show name to be sanitized.
@@ -760,7 +760,7 @@ def create_https_certificates(ssl_cert, ssl_key):
     return True
 
 
-def backupVersionedFile(old_file, version):
+def backup_versioned_file(old_file, version):
     """Back up an old version of a file.
 
     :param old_file: Original file, to take a backup from
@@ -799,7 +799,7 @@ def backupVersionedFile(old_file, version):
     return True
 
 
-def restoreVersionedFile(backup_file, version):
+def restore_versioned_file(backup_file, version):
     """Restore a file version to original state.
 
     For example sickbeard.db.v41 passed with version int(41), will translate back to sickbeard.db.
@@ -897,6 +897,7 @@ def anon_url(*url):
 #   2) Update the last encryption_version available in server/web/config/general.py
 #   3) Remember to maintain old encryption versions and key generators for retro-compatibility
 
+
 # Key Generators
 unique_key1 = hex(uuid.getnode() ** 2)  # Used in encryption v1
 
@@ -929,10 +930,10 @@ def decrypt(data, encryption_version=0):
 
 
 def full_sanitize_scene_name(name):
-    return re.sub('[. -]', ' ', sanitizeSceneName(name)).lower().lstrip()
+    return re.sub('[. -]', ' ', sanitize_scene_name(name)).lower().lstrip()
 
 
-def get_show(name, tryIndexers=False):
+def get_show(name, try_indexers=False):
     from . import classes, name_cache, scene_exceptions
     if not app.showList:
         return
@@ -951,9 +952,9 @@ def get_show(name, tryIndexers=False):
             show = Show.find(app.showList, int(cache))
 
         # try indexers
-        if not show and tryIndexers:
+        if not show and try_indexers:
             show = Show.find(
-                app.showList, searchIndexerForShowID(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
+                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
 
         # try scene exceptions
         if not show:
@@ -1004,7 +1005,7 @@ def real_path(path):
     return os.path.normpath(os.path.normpath(os.path.realpath(path)))
 
 
-def validateShow(show, season=None, episode=None):
+def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
     from .indexers.indexer_api import indexerApi
     from .indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
@@ -1060,17 +1061,17 @@ def set_up_anidb_connection():
     return app.ADBA_CONNECTION.authed()
 
 
-def backupConfigZip(fileList, archive, arcname=None):
+def backup_config_zip(file_list, archive, arcname=None):
     """Store the config file as a ZIP.
 
-    :param fileList: List of files to store
+    :param file_list: List of files to store
     :param archive: ZIP file name
     :param arcname: Archive path
     :return: True on success, False on failure
     """
     try:
         a = zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED, allowZip64=True)
-        for f in fileList:
+        for f in file_list:
             a.write(f, os.path.relpath(f, arcname))
         a.close()
         return True
@@ -1079,35 +1080,35 @@ def backupConfigZip(fileList, archive, arcname=None):
         return False
 
 
-def restoreConfigZip(archive, targetDir):
+def restore_config_zip(archive, target_dir):
     """Restore a Config ZIP file back in place.
 
     :param archive: ZIP filename
-    :param targetDir: Directory to restore to
+    :param target_dir: Directory to restore to
     :return: True on success, False on failure
     """
     try:
-        if not os.path.exists(targetDir):
-            os.mkdir(targetDir)
+        if not os.path.exists(target_dir):
+            os.mkdir(target_dir)
         else:
             def path_leaf(path):
                 head, tail = os.path.split(path)
                 return tail or os.path.basename(head)
-            bak_filename = '{0}-{1}'.format(path_leaf(targetDir), datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
-            shutil.move(targetDir, os.path.join(os.path.dirname(targetDir), bak_filename))
+            bak_filename = '{0}-{1}'.format(path_leaf(target_dir), datetime.datetime.now().strftime('%Y%m%d_%H%M%S'))
+            shutil.move(target_dir, os.path.join(os.path.dirname(target_dir), bak_filename))
 
         zip_file = zipfile.ZipFile(archive, 'r', allowZip64=True)
         for member in zip_file.namelist():
-            zip_file.extract(member, targetDir)
+            zip_file.extract(member, target_dir)
         zip_file.close()
         return True
     except Exception as e:
         logger.error(u'Zip extraction error: {error!r}', error=e)
-        shutil.rmtree(targetDir)
+        shutil.rmtree(target_dir)
         return False
 
 
-def touchFile(fname, atime=None):
+def touch_file(fname, atime=None):
     """Touch a file (change modification date).
 
     :param fname: Filename to touch
@@ -1180,7 +1181,7 @@ def prepare_cf_req(session, request):
         logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
 
 
-def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
+def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
     """Return data retrieved from the url provider."""
     response_type = kwargs.pop(u'returns', u'response')
     stream = kwargs.pop(u'stream', False)
@@ -1263,7 +1264,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                             fp.write(chunk)
                             fp.flush()
 
-                chmodAsParent(filename)
+                chmod_as_parent(filename)
             except OSError as e:
                 remove_file_failed(filename)
                 logger.warning(u'Problem setting permissions or writing file to: {location}. Error: {error}'.format
@@ -1330,7 +1331,7 @@ def get_size(start_path='.'):
     return total_size
 
 
-def generateApiKey():
+def generate_api_key():
     """Return a new randomized API_KEY."""
     logger.info(u"Generating New API key")
     secure_hash = hashlib.sha512(str(time.time()))
@@ -1343,7 +1344,7 @@ def remove_article(text=''):
     return re.sub(r'(?i)^(?:(?:A(?!\s+to)n?)|The)\s(\w)', r'\1', text)
 
 
-def generateCookieSecret():
+def generate_cookie_secret():
     """Generate a new cookie secret."""
     return base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
 
@@ -1367,7 +1368,7 @@ def verify_freespace(src, dest, oldfile=None):
         return True
 
     try:
-        diskfree = getDiskSpaceUsage(dest, None)
+        diskfree = get_disk_space_usage(dest, None)
         if not diskfree:
             logger.warning(u"Unable to determine the free space on your OS.")
             return True
@@ -1415,7 +1416,7 @@ def pretty_time_delta(seconds):
     return time_delta
 
 
-def isFileLocked(check_file, write_lock_check=False):
+def is_file_locked(check_file, write_lock_check=False):
     """Check if a file is locked.
 
     Performs three checks:
@@ -1452,7 +1453,7 @@ def isFileLocked(check_file, write_lock_check=False):
     return False
 
 
-def getDiskSpaceUsage(disk_path=None, pretty=True):
+def get_disk_space_usage(disk_path=None, pretty=True):
     """Return the free space in human readable bytes for a given path or False if no path given.
 
     :param disk_path: the filesystem path being checked
@@ -1471,13 +1472,13 @@ def getDiskSpaceUsage(disk_path=None, pretty=True):
         return False
 
 
-def getTVDBFromID(indexer_id, indexer):
+def get_tvdb_from_id(indexer_id, indexer):
 
     session = make_session()
     tvdb_id = ''
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
-        data = getURL(url, session=session, returns='content')
+        data = get_url(url, session=session, returns='content')
         if data is None:
             return tvdb_id
 
@@ -1491,7 +1492,7 @@ def getTVDBFromID(indexer_id, indexer):
 
     elif indexer == 'ZAP2IT':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
-        data = getURL(url, session=session, returns='content')
+        data = get_url(url, session=session, returns='content')
         if data is None:
             return tvdb_id
 
@@ -1504,7 +1505,7 @@ def getTVDBFromID(indexer_id, indexer):
 
     elif indexer == 'TVMAZE':
         url = "http://api.tvmaze.com/shows/%s" % indexer_id
-        data = getURL(url, session=session, returns='json')
+        data = get_url(url, session=session, returns='json')
         if data is None:
             return tvdb_id
         tvdb_id = data['externals']['thetvdb']
@@ -1513,7 +1514,7 @@ def getTVDBFromID(indexer_id, indexer):
     # If indexer is IMDB and we've still not returned a tvdb_id, let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
         url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
-        data = getURL(url, session=session, returns='json')
+        data = get_url(url, session=session, returns='json')
         if not data:
             return tvdb_id
         tvdb_id = data['externals'].get('thetvdb', '')
@@ -1678,7 +1679,7 @@ def get_broken_providers():
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = 'https://cdn.pymedusa.com/providers/broken_providers.json'
-    response = getURL(url, session=make_session(), returns='json')
+    response = get_url(url, session=make_session(), returns='json')
     if not response:
         logger.warning('Unable to update the list with broken providers. '
                        'This list is used to disable broken providers. '

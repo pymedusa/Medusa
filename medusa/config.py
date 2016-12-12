@@ -65,7 +65,7 @@ def change_HTTPS_CERT(https_cert):
         return True
 
     if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
-        if helpers.makeDir(os.path.dirname(os.path.abspath(https_cert))):
+        if helpers.make_dir(os.path.dirname(os.path.abspath(https_cert))):
             app.HTTPS_CERT = os.path.normpath(https_cert)
             logger.log(u"Changed https cert path to " + https_cert)
         else:
@@ -86,7 +86,7 @@ def change_HTTPS_KEY(https_key):
         return True
 
     if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
-        if helpers.makeDir(os.path.dirname(os.path.abspath(https_key))):
+        if helpers.make_dir(os.path.dirname(os.path.abspath(https_key))):
             app.HTTPS_KEY = os.path.normpath(https_key)
             logger.log(u"Changed https key path to " + https_key)
         else:
@@ -105,7 +105,7 @@ def change_LOG_DIR(log_dir):
     abs_log_dir = os.path.normpath(os.path.join(app.DATA_DIR, log_dir))
 
     if os.path.normpath(app.LOG_DIR) != abs_log_dir:
-        if not helpers.makeDir(abs_log_dir):
+        if not helpers.make_dir(abs_log_dir):
             return False
 
         app.ACTUAL_LOG_DIR = os.path.normpath(log_dir)
@@ -126,7 +126,7 @@ def change_NZB_DIR(nzb_dir):
         return True
 
     if os.path.normpath(app.NZB_DIR) != os.path.normpath(nzb_dir):
-        if helpers.makeDir(nzb_dir):
+        if helpers.make_dir(nzb_dir):
             app.NZB_DIR = os.path.normpath(nzb_dir)
             logger.log(u"Changed NZB folder to " + nzb_dir)
         else:
@@ -147,7 +147,7 @@ def change_TORRENT_DIR(torrent_dir):
         return True
 
     if os.path.normpath(app.TORRENT_DIR) != os.path.normpath(torrent_dir):
-        if helpers.makeDir(torrent_dir):
+        if helpers.make_dir(torrent_dir):
             app.TORRENT_DIR = os.path.normpath(torrent_dir)
             logger.log(u"Changed torrent folder to " + torrent_dir)
         else:
@@ -168,7 +168,7 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
         return True
 
     if os.path.normpath(app.TV_DOWNLOAD_DIR) != os.path.normpath(tv_download_dir):
-        if helpers.makeDir(tv_download_dir):
+        if helpers.make_dir(tv_download_dir):
             app.TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
             logger.log(u"Changed TV download folder to " + tv_download_dir)
         else:
@@ -699,7 +699,7 @@ class ConfigMigrator(object):
                 migration_name = ''
 
             logger.log(u"Backing up config before upgrade")
-            if not helpers.backupVersionedFile(app.CONFIG_FILE, self.config_version):
+            if not helpers.backup_versioned_file(app.CONFIG_FILE, self.config_version):
                 logger.log_error_and_exit(u"Config backup failed, abort upgrading config")
             else:
                 logger.log(u"Proceeding with upgrade")

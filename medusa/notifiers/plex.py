@@ -23,7 +23,7 @@ import re
 from six import iteritems
 from .. import app, common, logger
 from ..helper.exceptions import ex
-from ..helpers import getURL, make_session
+from ..helpers import get_url, make_session
 
 try:
     import xml.etree.cElementTree as etree
@@ -141,7 +141,7 @@ class Notifier(object):
 
             url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
-                xml_response = getURL(url, headers=self.headers, session=self.session, returns='text')
+                xml_response = get_url(url, headers=self.headers, session=self.session, returns='text')
                 if not xml_response:
                     logger.log(u'PLEX: Error while trying to contact Plex Media Server: {0}'.format
                                (cur_host), logger.WARNING)
@@ -200,7 +200,7 @@ class Notifier(object):
 
             url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
             try:
-                getURL(url, headers=self.headers, session=self.session, returns='text')
+                get_url(url, headers=self.headers, session=self.session, returns='text')
             except Exception as error:
                 logger.log(u'PLEX: Error updating library section for Plex Media Server: {0}'.format
                            (ex(error)), logger.WARNING)
@@ -230,11 +230,11 @@ class Notifier(object):
         }
 
         try:
-            response = getURL('https://plex.tv/users/sign_in.json',
-                              post_data=params,
-                              headers=self.headers,
-                              session=self.session,
-                              returns='json')
+            response = get_url('https://plex.tv/users/sign_in.json',
+                               post_data=params,
+                               headers=self.headers,
+                               session=self.session,
+                               returns='json')
 
             self.headers['X-Plex-Token'] = response['user']['authentication_token']
 

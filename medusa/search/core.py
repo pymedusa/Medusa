@@ -66,7 +66,7 @@ def _downloadResult(result):
             with open(fileName, 'w') as fileOut:
                 fileOut.write(result.extraInfo[0])
 
-            helpers.chmodAsParent(fileName)
+            helpers.chmod_as_parent(fileName)
 
         except EnvironmentError as e:
             logger.log(u"Error trying to save NZB to black hole: " + ex(e), logger.ERROR)
@@ -155,9 +155,9 @@ def snatchEpisode(result):
     for curEpObj in result.episodes:
         with curEpObj.lock:
             if is_first_best_match(result):
-                curEpObj.status = Quality.compositeStatus(SNATCHED_BEST, result.quality)
+                curEpObj.status = Quality.composite_status(SNATCHED_BEST, result.quality)
             else:
-                curEpObj.status = Quality.compositeStatus(endStatus, result.quality)
+                curEpObj.status = Quality.composite_status(endStatus, result.quality)
             # Reset all others fields to the "snatched" status
             # New snatch by default doesn't have nfo/tbn
             curEpObj.hasnfo = False
@@ -361,7 +361,7 @@ def wantedEpisodes(show, fromDate):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.splitCompositeStatus(int(result['status'] or UNKNOWN))
+        _, cur_quality = common.Quality.split_composite_status(int(result['status'] or UNKNOWN))
         if not Quality.should_search(result['status'], show, result['manually_searched']):
             continue
 

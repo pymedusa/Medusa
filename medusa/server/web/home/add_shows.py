@@ -167,7 +167,7 @@ class HomeAddShows(Home):
 
                         # default to TVDB if indexer was not detected
                         if show_name and not (indexer or indexer_id):
-                            (_, idxr, i) = helpers.searchIndexerForShowID(show_name, indexer, indexer_id)
+                            (_, idxr, i) = helpers.search_indexer_for_show_id(show_name, indexer, indexer_id)
 
                             # set indexer and indexer_id from found info
                             if not indexer and idxr:
@@ -386,7 +386,7 @@ class HomeAddShows(Home):
         Currently only TVDB and IMDB id's supported.
         """
         if indexer != 'TVDB':
-            tvdb_id = helpers.getTVDBFromID(indexer_id, indexer.upper())
+            tvdb_id = helpers.get_tvdb_from_id(indexer_id, indexer.upper())
             if not tvdb_id:
                 logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
@@ -438,7 +438,7 @@ class HomeAddShows(Home):
             if not isinstance(best_qualities, list):
                 best_qualities = [best_qualities]
 
-            quality = Quality.combineQualities([int(q) for q in any_qualities], [int(q) for q in best_qualities])
+            quality = Quality.combine_qualities([int(q) for q in any_qualities], [int(q) for q in best_qualities])
 
             location = root_dir
 
@@ -551,7 +551,7 @@ class HomeAddShows(Home):
             logger.log(u'Skipping initial creation of {path} due to config.ini setting'.format
                        (path=show_dir))
         else:
-            dir_exists = helpers.makeDir(show_dir)
+            dir_exists = helpers.make_dir(show_dir)
             if not dir_exists:
                 logger.log(u'Unable to create the folder {path}, can\'t add the show'.format
                            (path=show_dir), logger.ERROR)
@@ -560,7 +560,7 @@ class HomeAddShows(Home):
                 # Don't redirect to default page because user wants to see the new show
                 return self.redirect('/home/')
             else:
-                helpers.chmodAsParent(show_dir)
+                helpers.chmod_as_parent(show_dir)
 
         # prepare the inputs for passing along
         scene = config.checkbox_to_value(scene)
@@ -581,7 +581,7 @@ class HomeAddShows(Home):
             allowed_qualities = [allowed_qualities]
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
-        new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
+        new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
         app.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,

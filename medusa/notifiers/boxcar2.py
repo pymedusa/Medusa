@@ -53,7 +53,7 @@ class Notifier(object):
             'notification[icon_url]': app.LOGO_URL
         }
 
-        response = helpers.getURL(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
+        response = helpers.get_url(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
         if not response:
             logger.log('Boxcar2 notification failed.', logger.ERROR)
             return False

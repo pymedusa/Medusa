@@ -385,7 +385,7 @@ class Application(object):
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             # Need to be before any passwords
             app.ENCRYPTION_VERSION = check_setting_int(app.CFG, 'General', 'encryption_version', 0)
-            app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generateCookieSecret(), censor_log='low')
+            app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generate_cookie_secret(), censor_log='low')
 
             # git login info
             app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
@@ -403,7 +403,7 @@ class Application(object):
             app.LOG_NR = check_setting_int(app.CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (application.log.x)
             app.LOG_SIZE = min(100, check_setting_float(app.CFG, 'General', 'log_size', 10.0))  # Default to max 10MB per logfile
 
-            if not helpers.makeDir(app.LOG_DIR):
+            if not helpers.make_dir(app.LOG_DIR):
                 sys.stderr.write('Unable to create log folder {folder}'.format(folder=app.LOG_DIR))
                 sys.exit(7)
 
@@ -450,7 +450,7 @@ class Application(object):
             else:
                 app.CACHE_DIR = app.ACTUAL_CACHE_DIR
 
-            if not helpers.makeDir(app.CACHE_DIR):
+            if not helpers.make_dir(app.CACHE_DIR):
                 logger.error(u'Creating local cache dir failed, using system default')
                 app.CACHE_DIR = None
 
@@ -480,9 +480,9 @@ class Application(object):
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
-            app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generateCookieSecret(), censor_log='low')
+            app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generate_cookie_secret(), censor_log='low')
             if not app.WEB_COOKIE_SECRET:
-                app.WEB_COOKIE_SECRET = helpers.generateCookieSecret()
+                app.WEB_COOKIE_SECRET = helpers.generate_cookie_secret()
 
             app.WEB_USE_GZIP = bool(check_setting_int(app.CFG, 'General', 'web_use_gzip', 1))
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))

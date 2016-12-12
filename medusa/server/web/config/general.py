@@ -26,8 +26,8 @@ class ConfigGeneral(Config):
                         controller='config', action='index')
 
     @staticmethod
-    def generateApiKey():
-        return helpers.generateApiKey()
+    def generate_api_key():
+        return helpers.generate_api_key()
 
     @staticmethod
     def saveRootDirs(rootDirString=None):
@@ -40,7 +40,7 @@ class ConfigGeneral(Config):
         allowed_qualities = allowed_qualities.split(',') if allowed_qualities else []
         preferred_qualities = preferred_qualities.split(',') if preferred_qualities else []
 
-        new_quality = Quality.combineQualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
+        new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
         app.STATUS_DEFAULT = int(defaultStatus)
         app.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)

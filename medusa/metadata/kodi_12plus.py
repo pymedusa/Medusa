@@ -232,7 +232,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_thumb.text = actor['image'].strip()
 
         # Make it purdy
-        helpers.indentXML(tv_node)
+        helpers.indent_xml(tv_node)
 
         data = etree.ElementTree(tv_node)
 
@@ -387,7 +387,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                         cur_actor_thumb.text = actor['image'].strip()
 
         # Make it purdy
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
 
         data = etree.ElementTree(root_node)
 

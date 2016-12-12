@@ -72,7 +72,7 @@ def log_snatch(searchResult):
         else:
             provider = "unknown"
 
-        action = Quality.compositeStatus(SNATCHED, searchResult.quality)
+        action = Quality.composite_status(SNATCHED, searchResult.quality)
 
         resource = searchResult.name
 
@@ -120,8 +120,8 @@ def logSubtitle(showid, season, episode, status, subtitleResult):
     resource = subtitleResult.language.opensubtitles
     provider = subtitleResult.provider_name
 
-    status, quality = Quality.splitCompositeStatus(status)
-    action = Quality.compositeStatus(SUBTITLED, quality)
+    status, quality = Quality.split_composite_status(status)
+    action = Quality.composite_status(SUBTITLED, quality)
 
     _logHistoryItem(action, showid, season, episode, quality, resource, provider)
 
@@ -137,7 +137,7 @@ def log_failed(epObj, release, provider=None):
     showid = int(epObj.show.indexerid)
     season = int(epObj.season)
     epNum = int(epObj.episode)
-    _, quality = Quality.splitCompositeStatus(epObj.status)
-    action = Quality.compositeStatus(FAILED, quality)
+    _, quality = Quality.split_composite_status(epObj.status)
+    action = Quality.composite_status(FAILED, quality)
 
     _logHistoryItem(action, showid, season, epNum, quality, release, provider)

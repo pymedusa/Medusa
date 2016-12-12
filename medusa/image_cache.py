@@ -212,7 +212,7 @@ class ImageCache(object):
             os.makedirs(self._thumbnails_dir())
 
         logger.log('Copying from {origin} to {dest}'.format(origin=image_path, dest=dest_path))
-        helpers.copyFile(image_path, dest_path)
+        helpers.copy_file(image_path, dest_path)
 
         return True
 

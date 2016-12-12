@@ -67,7 +67,7 @@ MEDUSA.config.init = function() {
     });
 
     $('#generate_new_apikey').on('click', function() {
-        $.get('config/general/generateApiKey', function(data) {
+        $.get('config/general/generate_api_key', function(data) {
             if (data.error !== undefined) {
                 alert(data.error); // eslint-disable-line no-alert
                 return;

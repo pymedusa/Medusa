@@ -22,7 +22,7 @@ from ....helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
 )
-from ....helpers import isMediaFile
+from ....helpers import is_media_file
 from ....show.show import Show
 from ....tv import TVEpisode
 
@@ -277,7 +277,7 @@ class Manage(Home, WebRoot):
         app.RELEASES_IN_PP = []
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
             for filename in sorted(files):
-                if not isMediaFile(filename):
+                if not is_media_file(filename):
                     continue
 
                 video_path = os.path.join(root, filename)

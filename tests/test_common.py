@@ -201,7 +201,7 @@ class TestQuality(object):
     ])
     def test_to_guessit(self, p):
         # Given
-        quality = Quality.compositeStatus(DOWNLOADED, p['quality'])
+        quality = Quality.composite_status(DOWNLOADED, p['quality'])
         expected = p['expected']
 
         # When

@@ -372,11 +372,11 @@ class PostProcessor(object):
 
             if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
                 subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
-                dir_exists = helpers.makeDir(subs_new_path)
+                dir_exists = helpers.make_dir(subs_new_path)
                 if not dir_exists:
                     logger.log(u'Unable to create subtitles folder {0}'.format(subs_new_path), logger.ERROR)
                 else:
-                    helpers.chmodAsParent(subs_new_path)
+                    helpers.chmod_as_parent(subs_new_path)
                 new_file_path = os.path.join(subs_new_path, new_file_name)
             else:
                 new_file_path = os.path.join(new_path, new_file_name)
@@ -396,8 +396,8 @@ class PostProcessor(object):
 
             self._log(u'Moving file from {0} to {1} '.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
-                helpers.moveFile(cur_file_path, new_file_path)
-                helpers.chmodAsParent(new_file_path)
+                helpers.move_file(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
                 self._log(u'Unable to move file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
@@ -419,8 +419,8 @@ class PostProcessor(object):
 
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
-                helpers.copyFile(cur_file_path, new_file_path)
-                helpers.chmodAsParent(new_file_path)
+                helpers.copy_file(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
                 self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
@@ -442,8 +442,8 @@ class PostProcessor(object):
 
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
-                helpers.hardlinkFile(cur_file_path, new_file_path)
-                helpers.chmodAsParent(new_file_path)
+                helpers.hardlink_file(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
@@ -466,8 +466,8 @@ class PostProcessor(object):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
                       (cur_file_path, new_file_path), logger.DEBUG)
             try:
-                helpers.moveAndSymlinkFile(cur_file_path, new_file_path)
-                helpers.chmodAsParent(new_file_path)
+                helpers.move_and_symlink_file(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
@@ -736,7 +736,7 @@ class PostProcessor(object):
 
         # Try getting quality from the episode (snatched) status first
         if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
+            _, ep_quality = common.Quality.split_composite_status(ep_obj.status)
             if ep_quality != common.Quality.UNKNOWN:
                 self._log(u'The snatched status has a quality in it, using that: {0}'.format
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
@@ -751,7 +751,7 @@ class PostProcessor(object):
             if not cur_name:
                 continue
 
-            ep_quality = common.Quality.nameQuality(cur_name, ep_obj.show.is_anime, extend=False)
+            ep_quality = common.Quality.name_quality(cur_name, ep_obj.show.is_anime, extend=False)
             self._log(u"Looking up quality for '{0}', got {1}".format
                       (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             if ep_quality != common.Quality.UNKNOWN:
@@ -760,7 +760,7 @@ class PostProcessor(object):
                 return ep_quality
 
         # Try using other methods to get the file quality
-        ep_quality = common.Quality.nameQuality(self.file_path, ep_obj.show.is_anime)
+        ep_quality = common.Quality.name_quality(self.file_path, ep_obj.show.is_anime)
         self._log(u"Trying other methods to get quality for '{0}', got {1}".format
                   (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
         if ep_quality != common.Quality.UNKNOWN:
@@ -900,7 +900,7 @@ class PostProcessor(object):
         if self.is_priority:
             return True
 
-        _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
+        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 
         # if Medusa downloaded this on purpose we likely have a priority download
         if self.in_history:
@@ -969,7 +969,7 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding TVEpisode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
-        old_ep_status, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
+        old_ep_status, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 
         # get the quality of the episode we're processing
         if quality and common.Quality.qualityStrings[quality] != 'Unknown':
@@ -1044,7 +1044,7 @@ class PostProcessor(object):
                       u"an existing file if I find one")
 
         # try to find out if we have enough space to perform the copy or move action.
-        if not helpers.isFileLocked(self.file_path, False):
+        if not helpers.is_file_locked(self.file_path, False):
             if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.related_episodes):
                 self._log(u'Not enough space to continue post-processing, exiting', logger.WARNING)
                 return False
@@ -1063,14 +1063,14 @@ class PostProcessor(object):
 
             # set the status of the episodes
             # for curEp in [ep_obj] + ep_obj.related_episodes:
-            #    curEp.status = common.Quality.compositeStatus(common.SNATCHED, new_ep_quality)
+            #    curEp.status = common.Quality.composite_status(common.SNATCHED, new_ep_quality)
 
         # if the show directory doesn't exist then make it if allowed
         if not os.path.isdir(ep_obj.show._location) and app.CREATE_MISSING_SHOW_DIRS:
             self._log(u"Show directory doesn't exist, creating it", logger.DEBUG)
             try:
                 os.mkdir(ep_obj.show._location)  # pylint: disable=protected-access
-                helpers.chmodAsParent(ep_obj.show._location)  # pylint: disable=protected-access
+                helpers.chmod_as_parent(ep_obj.show._location)  # pylint: disable=protected-access
 
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.addFolder(ep_obj.show._location)  # pylint: disable=protected-access
@@ -1097,7 +1097,7 @@ class PostProcessor(object):
                 else:
                     cur_ep.release_name = u''
 
-                cur_ep.status = common.Quality.compositeStatus(common.DOWNLOADED, new_ep_quality)
+                cur_ep.status = common.Quality.composite_status(common.DOWNLOADED, new_ep_quality)
 
                 cur_ep.subtitles = u''
 
@@ -1156,12 +1156,12 @@ class PostProcessor(object):
         try:
             # move the episode and associated files to the show dir
             if self.process_method == 'copy':
-                if helpers.isFileLocked(self.file_path, False):
+                if helpers.is_file_locked(self.file_path, False):
                     raise EpisodePostProcessingFailedException('File is locked for reading')
                 self._copy(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                            app.USE_SUBTITLES and ep_obj.show.subtitles)
             elif self.process_method == 'move':
-                if helpers.isFileLocked(self.file_path, True):
+                if helpers.is_file_locked(self.file_path, True):
                     raise EpisodePostProcessingFailedException('File is locked for reading/writing')
                 self._move(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                            app.USE_SUBTITLES and ep_obj.show.subtitles)
@@ -1169,7 +1169,7 @@ class PostProcessor(object):
                 self._hardlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                                app.USE_SUBTITLES and ep_obj.show.subtitles)
             elif self.process_method == "symlink":
-                if helpers.isFileLocked(self.file_path, True):
+                if helpers.is_file_locked(self.file_path, True):
                     raise EpisodePostProcessingFailedException('File is locked for reading/writing')
                 self._moveAndSymlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                                      app.USE_SUBTITLES and ep_obj.show.subtitles)

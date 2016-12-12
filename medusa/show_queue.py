@@ -31,7 +31,7 @@ from .helper.exceptions import (
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
 from .helper.externals import check_existing_shows
-from .helpers import chmodAsParent, delete_empty_folders, get_showname_from_indexer, makeDir
+from .helpers import chmod_as_parent, delete_empty_folders, get_showname_from_indexer, make_dir
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
                                           IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
@@ -356,12 +356,12 @@ class QueueItemAdd(ShowQueueItem):
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
                 if show_name:
                     self.showDir = os.path.join(self.root_dir, sanitize_filename(show_name))
-                    dir_exists = makeDir(self.showDir)
+                    dir_exists = make_dir(self.showDir)
                     if not dir_exists:
                         logger.log(u"Unable to create the folder {0}, can't add the show".format(self.showDir))
                         return
 
-                    chmodAsParent(self.showDir)
+                    chmod_as_parent(self.showDir)
                 else:
                     logger.log(u"Unable to get a show {0}, can't add the show".format(self.showDir))
                     return

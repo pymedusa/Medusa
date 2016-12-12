@@ -99,9 +99,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_sd_dvd(self):
         cur_test = 'sd_dvd'
@@ -110,9 +110,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_hd_tv(self):
         cur_test = 'hd_tv'
@@ -121,9 +121,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_raw_hd_tv(self):
         cur_test = 'raw_hd_tv'
@@ -132,9 +132,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_full_hd_tv(self):
         cur_test = 'full_hd_tv'
@@ -143,9 +143,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_hd_web_dl(self):
         cur_test = 'hd_web_dl'
@@ -154,9 +154,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_full_hd_web_dl(self):
         cur_test = 'full_hd_web_dl'
@@ -165,9 +165,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_hd_bluray(self):
         cur_test = 'hd_bluray'
@@ -176,9 +176,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_full_hd_bluray(self):
         cur_test = 'full_hd_bluray'
@@ -187,9 +187,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_unknown(self):
         cur_test = 'unknown'
@@ -198,9 +198,9 @@ class QualityStringTests(unittest.TestCase):
         for name, tests in self.test_cases.items():
             for test in tests:
                 if name == cur_test:
-                    self.assertEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertEqual(cur_qual, common.Quality.name_quality(test))
                 else:
-                    self.assertNotEqual(cur_qual, common.Quality.nameQuality(test))
+                    self.assertNotEqual(cur_qual, common.Quality.name_quality(test))
 
     def test_anime(self):
         test_cases = {
@@ -227,11 +227,11 @@ class QualityStringTests(unittest.TestCase):
             for qual, tests in test_cases.items():
                 for name in tests:
                     if qual == cur_test:
-                        self.assertEqual(expected_qual, common.Quality.nameQuality(name, anime=True),
-                                         (qual, name, expected_qual, common.Quality.nameQuality(name, anime=True)))
+                        self.assertEqual(expected_qual, common.Quality.name_quality(name, anime=True),
+                                         (qual, name, expected_qual, common.Quality.name_quality(name, anime=True)))
                     else:
-                        self.assertNotEqual(expected_qual, common.Quality.nameQuality(name, anime=True),
-                                            (qual, name, expected_qual, common.Quality.nameQuality(name, anime=True)))
+                        self.assertNotEqual(expected_qual, common.Quality.name_quality(name, anime=True),
+                                            (qual, name, expected_qual, common.Quality.name_quality(name, anime=True)))
 
 
 class QualityTests(unittest.TestCase):
@@ -255,8 +255,8 @@ class QualityTests(unittest.TestCase):
         ]
         for test in tests:
             quality, test = test
-            self.assertEqual(quality, common.Quality.nameQuality(test),
-                             (quality, common.Quality.nameQuality(test), test))
+            self.assertEqual(quality, common.Quality.name_quality(test),
+                             (quality, common.Quality.name_quality(test), test))
 
 
 class StatusStringsTests(unittest.TestCase):

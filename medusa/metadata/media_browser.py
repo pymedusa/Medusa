@@ -390,7 +390,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
                     cur_actor_role = etree.SubElement(cur_actor, 'Role')
                     cur_actor_role.text = actor['role'].strip()
 
-        helpers.indentXML(tv_node)
+        helpers.indent_xml(tv_node)
 
         data = etree.ElementTree(tv_node)
 
@@ -576,7 +576,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
                 cur_person_type.text = person_type
 
         # Make it purdy
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
         data = etree.ElementTree(root_node)
 
         return data

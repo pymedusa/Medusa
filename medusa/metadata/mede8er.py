@@ -204,7 +204,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     cur_actor = etree.SubElement(cast, 'actor')
                     cur_actor.text = actor['name'].strip()
 
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
 
         data = etree.ElementTree(root_node)
 
@@ -351,7 +351,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                         overview.text = u'\r'.join([overview.text, ep_to_write.description])
 
         # Make it purdy
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
 
         data = etree.ElementTree(root_node)
 
@@ -385,7 +385,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u'Writing show nfo file to {path}'.format
                        (path=nfo_file_path), logger.DEBUG)
@@ -394,7 +394,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
             data.write(nfo_file, encoding='utf-8', xml_declaration=True)
             nfo_file.close()
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
         except IOError as e:
             logger.log(u'Unable to write file to {path} - '
                        u'are you sure the folder is writable? {exception}'.format
@@ -434,7 +434,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u'Writing episode nfo file to {path}'.format
                        (path=nfo_file_path), logger.DEBUG)
@@ -443,7 +443,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 # Calling encode directly, b/c often descriptions have wonky characters.
                 data.write(nfo_file, encoding='utf-8', xml_declaration=True)
 
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
 
         except IOError as e:
             logger.log(u'Unable to write file to {path} - '

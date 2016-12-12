@@ -203,15 +203,15 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         result.output += logHelper(u"PostProcessing Path: %s" % path, logger.INFO)
         result.output += logHelper(u"PostProcessing Dirs: %s" % str(dirs), logger.DEBUG)
 
-        videoFiles = [x for x in files if helpers.isMediaFile(x)]
-        rarFiles = [x for x in files if helpers.isRarFile(x)]
+        videoFiles = [x for x in files if helpers.is_media_file(x)]
+        rarFiles = [x for x in files if helpers.is_rar_file(x)]
         rarContent = ""
         if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
             # Unpack only if video file was not already extracted by 'postpone if no subs' feature
             rarContent = unRAR(path, rarFiles, force, result)
             files += rarContent
-            videoFiles += [x for x in rarContent if helpers.isMediaFile(x)]
-        videoInRar = [x for x in rarContent if helpers.isMediaFile(x)] if rarContent else ''
+            videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
+        videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
 
         result.output += logHelper(u"PostProcessing Files: %s" % files, logger.DEBUG)
         result.output += logHelper(u"PostProcessing VideoFiles: %s" % videoFiles, logger.DEBUG)
@@ -259,16 +259,16 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
             postpone = SyncFiles and app.POSTPONE_IF_SYNC_FILES
 
             if not postpone:
-                videoFiles = [x for x in fileList if helpers.isMediaFile(x)]
-                rarFiles = [x for x in fileList if helpers.isRarFile(x)]
+                videoFiles = [x for x in fileList if helpers.is_media_file(x)]
+                rarFiles = [x for x in fileList if helpers.is_rar_file(x)]
                 rarContent = ""
                 if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
                     # Unpack only if video file was not already extracted by 'postpone if no subs' feature
                     rarContent = unRAR(processPath, rarFiles, force, result)
                     fileList = set(fileList + rarContent)
-                    videoFiles += [x for x in rarContent if helpers.isMediaFile(x)]
+                    videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
 
-                videoInRar = [x for x in rarContent if helpers.isMediaFile(x)] if rarContent else ''
+                videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
                 notwantedFiles = [x for x in fileList if x not in videoFiles]
                 if notwantedFiles:
                     result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
@@ -386,7 +386,7 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):
         allDirs += processdir
         allFiles += fileList
 
-    videoFiles = [x for x in allFiles if helpers.isMediaFile(x)]
+    videoFiles = [x for x in allFiles if helpers.is_media_file(x)]
     allDirs.append(dirName)
 
     # check if the dir have at least one tv video file
@@ -406,7 +406,7 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):
 
     if app.UNPACK:
         # Search for packed release
-        packedFiles = [x for x in allFiles if helpers.isRarFile(x)]
+        packedFiles = [x for x in allFiles if helpers.is_rar_file(x)]
 
         for packed in packedFiles:
             try:

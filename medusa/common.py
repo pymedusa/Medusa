@@ -26,7 +26,7 @@ import uuid
 from collections import namedtuple
 from os import path
 
-from fake_useragent import UserAgent, settings as UA_SETTINGS
+from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
@@ -51,7 +51,7 @@ INSTANCE_ID = str(uuid.uuid1())
 USER_AGENT = u'Medusa/{version}({system}; {release}; {instance})'.format(
     version=u'0.0.1', system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
-UA_SETTINGS.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
+ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
 if SPOOF_USER_AGENT:
     USER_AGENT = UA_POOL.random
@@ -238,7 +238,7 @@ class Quality(object):
     })
 
     @staticmethod
-    def _getStatusStrings(status):
+    def _get_status_strings(status):
         """
         Return string values associated with Status prefix.
 
@@ -250,12 +250,12 @@ class Quality(object):
             if quality is not None:
                 stat = Quality.statusPrefixes[status]
                 qual = Quality.qualityStrings[quality]
-                comp = Quality.compositeStatus(status, quality)
+                comp = Quality.composite_status(status, quality)
                 to_return[comp] = '%s (%s)' % (stat, qual)
         return to_return
 
     @staticmethod
-    def combineQualities(allowed_qualities, preferred_qualities):
+    def combine_qualities(allowed_qualities, preferred_qualities):
         any_quality = 0
         best_quality = 0
         if allowed_qualities:
@@ -265,7 +265,7 @@ class Quality(object):
         return any_quality | (best_quality << 16)
 
     @staticmethod
-    def splitQuality(quality):
+    def split_quality(quality):
         if quality is None:
             quality = Quality.NONE
         allowed_qualities = []
@@ -281,7 +281,7 @@ class Quality(object):
         return sorted(allowed_qualities), sorted(preferred_qualities)
 
     @staticmethod
-    def nameQuality(name, anime=False, extend=True):
+    def name_quality(name, anime=False, extend=True):
         """
         Return The quality from an episode File renamed by the application.
 
@@ -398,7 +398,7 @@ class Quality(object):
         :param file_path: File path of episode to analyse
         :return: Quality prefix
         """
-        quality = Quality.qualityFromFileMeta(file_path)
+        quality = Quality.quality_from_file_meta(file_path)
         if quality != Quality.UNKNOWN:
             return quality
 
@@ -409,7 +409,7 @@ class Quality(object):
         return Quality.UNKNOWN
 
     @staticmethod
-    def qualityFromFileMeta(file_path):
+    def quality_from_file_meta(file_path):
         """
         Get quality file file metadata.
 
@@ -452,20 +452,20 @@ class Quality(object):
 
         return ret
 
-    CompositeStatus = namedtuple('CompositeStatus', ['status', 'quality'])
+    composite_status_quality = namedtuple('composite_status', ['status', 'quality'])
 
     @staticmethod
-    def compositeStatus(status, quality):
+    def composite_status(status, quality):
         if quality is None:
             quality = Quality.NONE
         return status + 100 * quality
 
     @staticmethod
-    def qualityDownloaded(status):
+    def quality_downloaded(status):
         return (status - DOWNLOADED) / 100
 
     @staticmethod
-    def splitCompositeStatus(status):
+    def split_composite_status(status):
         """
         Split a composite status code into a status and quality.
 
@@ -474,16 +474,16 @@ class Quality(object):
         """
         status = long(status)
         if status == UNKNOWN:
-            return Quality.CompositeStatus(UNKNOWN, Quality.UNKNOWN)
+            return Quality.composite_status_quality(UNKNOWN, Quality.UNKNOWN)
 
         for q in sorted(Quality.qualityStrings.keys(), reverse=True):
             if status > q * 100:
-                return Quality.CompositeStatus(status - q * 100, q)
+                return Quality.composite_status_quality(status - q * 100, q)
 
-        return Quality.CompositeStatus(status, Quality.NONE)
+        return Quality.composite_status_quality(status, Quality.NONE)
 
     @staticmethod
-    def sceneQualityFromName(name, quality):
+    def scene_quality_from_name(name, quality):
         """
         Get Scene naming parameters from filename and quality.
 
@@ -548,7 +548,7 @@ class Quality(object):
         return rel_type + codec
 
     @staticmethod
-    def statusFromName(name, anime=False):
+    def status_from_name(name, anime=False):
         """
         Get a status object from filename.
 
@@ -556,8 +556,8 @@ class Quality(object):
         :param anime: boolean to enable anime parsing
         :return: Composite status/quality object
         """
-        quality = Quality.nameQuality(name, anime)
-        return Quality.compositeStatus(DOWNLOADED, quality)
+        quality = Quality.name_quality(name, anime)
+        return Quality.composite_status(DOWNLOADED, quality)
 
     guessit_map = {
         '720p': {
@@ -595,7 +595,7 @@ class Quality(object):
     @staticmethod
     def should_search(status, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality."""
-        cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or UNKNOWN)
+        cur_status, cur_quality = Quality.split_composite_status(int(status) or UNKNOWN)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
         if manually_searched:
@@ -720,7 +720,7 @@ class Quality(object):
         :return: dict {'screen_size': <screen_size>, 'format': <format>}
         :rtype: dict (str, str)
         """
-        _, quality = Quality.splitCompositeStatus(status)
+        _, quality = Quality.split_composite_status(status)
         screen_size = Quality.to_guessit_screen_size(quality)
         fmt = Quality.to_guessit_format(quality)
         result = dict()
@@ -765,12 +765,13 @@ class Quality(object):
     SNATCHED_BEST = None
     ARCHIVED = None
 
-Quality.DOWNLOADED = [Quality.compositeStatus(DOWNLOADED, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED = [Quality.compositeStatus(SNATCHED, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED_BEST = [Quality.compositeStatus(SNATCHED_BEST, x) for x in Quality.qualityStrings if x is not None]
-Quality.SNATCHED_PROPER = [Quality.compositeStatus(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
-Quality.FAILED = [Quality.compositeStatus(FAILED, x) for x in Quality.qualityStrings if x is not None]
-Quality.ARCHIVED = [Quality.compositeStatus(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
+
+Quality.DOWNLOADED = [Quality.composite_status(DOWNLOADED, x) for x in Quality.qualityStrings if x is not None]
+Quality.SNATCHED = [Quality.composite_status(SNATCHED, x) for x in Quality.qualityStrings if x is not None]
+Quality.SNATCHED_BEST = [Quality.composite_status(SNATCHED_BEST, x) for x in Quality.qualityStrings if x is not None]
+Quality.SNATCHED_PROPER = [Quality.composite_status(SNATCHED_PROPER, x) for x in Quality.qualityStrings if x is not None]
+Quality.FAILED = [Quality.composite_status(FAILED, x) for x in Quality.qualityStrings if x is not None]
+Quality.ARCHIVED = [Quality.composite_status(ARCHIVED, x) for x in Quality.qualityStrings if x is not None]
 
 Quality.DOWNLOADED.sort()
 Quality.SNATCHED.sort()
@@ -779,18 +780,18 @@ Quality.SNATCHED_PROPER.sort()
 Quality.FAILED.sort()
 Quality.ARCHIVED.sort()
 
-HD720p = Quality.combineQualities([Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY], [])
-HD1080p = Quality.combineQualities([Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY], [])
-UHD_4K = Quality.combineQualities([Quality.UHD_4K_TV, Quality.UHD_4K_WEBDL, Quality.UHD_4K_BLURAY], [])
-UHD_8K = Quality.combineQualities([Quality.UHD_8K_TV, Quality.UHD_8K_WEBDL, Quality.UHD_8K_BLURAY], [])
+HD720p = Quality.combine_qualities([Quality.HDTV, Quality.HDWEBDL, Quality.HDBLURAY], [])
+HD1080p = Quality.combine_qualities([Quality.FULLHDTV, Quality.FULLHDWEBDL, Quality.FULLHDBLURAY], [])
+UHD_4K = Quality.combine_qualities([Quality.UHD_4K_TV, Quality.UHD_4K_WEBDL, Quality.UHD_4K_BLURAY], [])
+UHD_8K = Quality.combine_qualities([Quality.UHD_8K_TV, Quality.UHD_8K_WEBDL, Quality.UHD_8K_BLURAY], [])
 
-SD = Quality.combineQualities([Quality.SDTV, Quality.SDDVD], [])
-HD = Quality.combineQualities([HD720p, HD1080p], [])
-UHD = Quality.combineQualities([UHD_4K, UHD_8K], [])
-ANY = Quality.combineQualities([SD, HD, UHD], [])
+SD = Quality.combine_qualities([Quality.SDTV, Quality.SDDVD], [])
+HD = Quality.combine_qualities([HD720p, HD1080p], [])
+UHD = Quality.combine_qualities([UHD_4K, UHD_8K], [])
+ANY = Quality.combine_qualities([SD, HD, UHD], [])
 
 # legacy template, cant remove due to reference in main_db upgrade?
-BEST = Quality.combineQualities([Quality.SDTV, Quality.HDTV, Quality.HDWEBDL], [Quality.HDTV])
+BEST = Quality.combine_qualities([Quality.SDTV, Quality.HDTV, Quality.HDWEBDL], [Quality.HDTV])
 
 qualityPresets = (
     ANY,
@@ -828,7 +829,7 @@ class StatusStrings(NumDict):
         # convert key to number
         key = self.numeric(key)  # raises KeyError if it can't
         if key in self.qualities:  # if key isn't found check in qualities
-            current = Quality.splitCompositeStatus(key)
+            current = Quality.split_composite_status(key)
             return '{status} ({quality})'.format(
                 status=self[current.status],
                 quality=Quality.qualityStrings[current.quality]
@@ -842,6 +843,7 @@ class StatusStrings(NumDict):
             return key in self.data or key in self.qualities
         except KeyError:
             return False
+
 
 # Assign strings to statuses
 statusStrings = StatusStrings({
@@ -884,6 +886,7 @@ class Overview(object):
         SNATCHED_BEST: "snatched",
         SNATCHED_PROPER: "snatched"
     })
+
 
 countryList = {
     'Australia': 'AU',

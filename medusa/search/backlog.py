@@ -144,7 +144,7 @@ class BacklogSearcher(object):
             logger.log(u"Skipping backlog for %s because the show is paused" % show.name, logger.DEBUG)
             return wanted
 
-        allowed_qualities, preferred_qualities = common.Quality.splitQuality(show.quality)
+        allowed_qualities, preferred_qualities = common.Quality.split_quality(show.quality)
 
         logger.log(u"Seeing if we need anything from %s" % show.name, logger.DEBUG)
 

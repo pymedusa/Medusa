@@ -159,7 +159,7 @@ def get_scene_exception_by_name_multiple(show_name):
         cur_indexer_id = int(cur_exception[b'indexer_id'])
 
         if show_name.lower() in (cur_exception_name.lower(),
-                                 helpers.sanitizeSceneName(cur_exception_name).lower().replace('.', ' ')):
+                                 helpers.sanitize_scene_name(cur_exception_name).lower().replace('.', ' ')):
             logger.log('Scene exception lookup got indexer ID {0}, using that'.format
                        (cur_indexer_id), logger.DEBUG)
 
@@ -252,8 +252,8 @@ def _get_custom_exceptions():
                 location = indexerApi(indexer).config['scene_loc']
                 logger.log('Checking for scene exception updates from {0}'.format(location))
 
-                response = helpers.getURL(location, session=indexerApi(indexer).session,
-                                          timeout=60, returns='response')
+                response = helpers.get_url(location, session=indexerApi(indexer).session,
+                                           timeout=60, returns='response')
                 try:
                     jdata = response.json()
                 except (ValueError, AttributeError) as error:
@@ -299,7 +299,7 @@ def _get_xem_exceptions():
             xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'.format(
                 indexerApi(indexer).config['xem_origin'])
 
-            response = helpers.getURL(xem_url, session=xem_session, timeout=60, returns='response')
+            response = helpers.get_url(xem_url, session=xem_session, timeout=60, returns='response')
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

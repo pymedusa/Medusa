@@ -280,10 +280,10 @@ class GenericMetadata(object):
                     etree.SubElement(root, "id").text = str(show_obj.indexerid)
 
                 # Make it purdy
-                helpers.indentXML(root)
+                helpers.indent_xml(root)
 
                 showXML.write(nfo_file_path, encoding='UTF-8')
-                helpers.chmodAsParent(nfo_file_path)
+                helpers.chmod_as_parent(nfo_file_path)
 
                 return True
             except etree.ParseError as error:
@@ -365,12 +365,12 @@ class GenericMetadata(object):
         all_eps = [ep_obj] + ep_obj.related_episodes
 
         # validate show
-        if not helpers.validateShow(ep_obj.show):
+        if not helpers.validate_show(ep_obj.show):
             return None
 
         # try all included episodes in case some have thumbs and others don't
         for cur_ep in all_eps:
-            myEp = helpers.validateShow(cur_ep.show, cur_ep.season, cur_ep.episode)
+            myEp = helpers.validate_show(cur_ep.show, cur_ep.season, cur_ep.episode)
             if not myEp:
                 continue
 
@@ -407,14 +407,14 @@ class GenericMetadata(object):
             if not os.path.isdir(nfo_file_dir):
                 logger.log(u"Metadata dir didn't exist, creating it at " + nfo_file_dir, logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u"Writing show nfo file to " + nfo_file_path, logger.DEBUG)
 
             nfo_file = io.open(nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
         except IOError as e:
             exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
@@ -450,13 +450,13 @@ class GenericMetadata(object):
             if not os.path.isdir(nfo_file_dir):
                 logger.log(u"Metadata dir didn't exist, creating it at " + nfo_file_dir, logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u"Writing episode nfo file to " + nfo_file_path, logger.DEBUG)
             nfo_file = io.open(nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
         except IOError as e:
             exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
@@ -696,12 +696,12 @@ class GenericMetadata(object):
             if not os.path.isdir(image_dir):
                 logger.log(u"Metadata dir didn't exist, creating it at " + image_dir, logger.DEBUG)
                 os.makedirs(image_dir)
-                helpers.chmodAsParent(image_dir)
+                helpers.chmod_as_parent(image_dir)
 
             outFile = io.open(image_path, 'wb')
             outFile.write(image_data)
             outFile.close()
-            helpers.chmodAsParent(image_path)
+            helpers.chmod_as_parent(image_path)
         except IOError as e:
             exception_handler.handle(e, u'Unable to write image to {location}', location=image_path)
             return False
