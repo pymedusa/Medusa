@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Configure Subtitle searching
-"""
+"""Configure Subtitle searching."""
 
 from __future__ import unicode_literals
 

@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Configure Anime Look & Feel and AniDB authentication.
-"""
+"""Configure Anime Look & Feel and AniDB authentication."""
 
 from __future__ import unicode_literals
 

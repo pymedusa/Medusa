@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Configure Providers
-"""
+"""Configure Providers."""
 
 from __future__ import unicode_literals
 

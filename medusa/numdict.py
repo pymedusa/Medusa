@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-class NumDict - A dict with numeric keys
-"""
+"""class NumDict - A dict with numeric keys."""
 
 from collections import MutableMapping
 
