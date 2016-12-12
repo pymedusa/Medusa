@@ -333,218 +333,218 @@ class ConfigProviders(Config):
         provider_list.extend(disabled_list)
 
         # dynamically load provider settings
-        for curTorrentProvider in [prov for prov in providers.sorted_provider_list() if
-                                   prov.provider_type == GenericProvider.TORRENT]:
+        for cur_torrent_provider in [prov for prov in providers.sorted_provider_list() if
+                                     prov.provider_type == GenericProvider.TORRENT]:
 
-            if hasattr(curTorrentProvider, 'custom_url'):
+            if hasattr(cur_torrent_provider, 'custom_url'):
                 try:
-                    curTorrentProvider.custom_url = str(kwargs['{id}_custom_url'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.custom_url = str(kwargs['{id}_custom_url'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.custom_url = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.custom_url = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'minseed'):
+            if hasattr(cur_torrent_provider, 'minseed'):
                 try:
-                    curTorrentProvider.minseed = int(str(kwargs['{id}_minseed'.format(id=curTorrentProvider.get_id())]).strip())
+                    cur_torrent_provider.minseed = int(str(kwargs['{id}_minseed'.format(id=cur_torrent_provider.get_id())]).strip())
                 except (AttributeError, KeyError):
-                    curTorrentProvider.minseed = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.minseed = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'minleech'):
+            if hasattr(cur_torrent_provider, 'minleech'):
                 try:
-                    curTorrentProvider.minleech = int(str(kwargs['{id}_minleech'.format(id=curTorrentProvider.get_id())]).strip())
+                    cur_torrent_provider.minleech = int(str(kwargs['{id}_minleech'.format(id=cur_torrent_provider.get_id())]).strip())
                 except (AttributeError, KeyError):
-                    curTorrentProvider.minleech = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.minleech = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'ratio'):
+            if hasattr(cur_torrent_provider, 'ratio'):
                 try:
-                    ratio = float(str(kwargs['{id}_ratio'.format(id=curTorrentProvider.get_id())]).strip())
-                    curTorrentProvider.ratio = (ratio, -1)[ratio < 0]
+                    ratio = float(str(kwargs['{id}_ratio'.format(id=cur_torrent_provider.get_id())]).strip())
+                    cur_torrent_provider.ratio = (ratio, -1)[ratio < 0]
                 except (AttributeError, KeyError, ValueError):
-                    curTorrentProvider.ratio = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.ratio = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'digest'):
+            if hasattr(cur_torrent_provider, 'digest'):
                 try:
-                    curTorrentProvider.digest = str(kwargs['{id}_digest'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.digest = str(kwargs['{id}_digest'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.digest = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.digest = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'hash'):
+            if hasattr(cur_torrent_provider, 'hash'):
                 try:
-                    curTorrentProvider.hash = str(kwargs['{id}_hash'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.hash = str(kwargs['{id}_hash'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.hash = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.hash = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'api_key'):
+            if hasattr(cur_torrent_provider, 'api_key'):
                 try:
-                    curTorrentProvider.api_key = str(kwargs['{id}_api_key'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.api_key = str(kwargs['{id}_api_key'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.api_key = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.api_key = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'username'):
+            if hasattr(cur_torrent_provider, 'username'):
                 try:
-                    curTorrentProvider.username = str(kwargs['{id}_username'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.username = str(kwargs['{id}_username'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.username = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.username = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'password'):
+            if hasattr(cur_torrent_provider, 'password'):
                 try:
-                    curTorrentProvider.password = str(kwargs['{id}_password'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.password = str(kwargs['{id}_password'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.password = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.password = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'passkey'):
+            if hasattr(cur_torrent_provider, 'passkey'):
                 try:
-                    curTorrentProvider.passkey = str(kwargs['{id}_passkey'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.passkey = str(kwargs['{id}_passkey'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.passkey = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.passkey = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'pin'):
+            if hasattr(cur_torrent_provider, 'pin'):
                 try:
-                    curTorrentProvider.pin = str(kwargs['{id}_pin'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.pin = str(kwargs['{id}_pin'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.pin = None  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.pin = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'confirmed'):
+            if hasattr(cur_torrent_provider, 'confirmed'):
                 try:
-                    curTorrentProvider.confirmed = config.checkbox_to_value(
-                        kwargs['{id}_confirmed'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.confirmed = config.checkbox_to_value(
+                        kwargs['{id}_confirmed'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.confirmed = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.confirmed = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'ranked'):
+            if hasattr(cur_torrent_provider, 'ranked'):
                 try:
-                    curTorrentProvider.ranked = config.checkbox_to_value(
-                        kwargs['{id}_ranked'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.ranked = config.checkbox_to_value(
+                        kwargs['{id}_ranked'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.ranked = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.ranked = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'engrelease'):
+            if hasattr(cur_torrent_provider, 'engrelease'):
                 try:
-                    curTorrentProvider.engrelease = config.checkbox_to_value(
-                        kwargs['{id}_engrelease'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.engrelease = config.checkbox_to_value(
+                        kwargs['{id}_engrelease'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.engrelease = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.engrelease = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'onlyspasearch'):
+            if hasattr(cur_torrent_provider, 'onlyspasearch'):
                 try:
-                    curTorrentProvider.onlyspasearch = config.checkbox_to_value(
-                        kwargs['{id}_onlyspasearch'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.onlyspasearch = config.checkbox_to_value(
+                        kwargs['{id}_onlyspasearch'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.onlyspasearch = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.onlyspasearch = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'sorting'):
+            if hasattr(cur_torrent_provider, 'sorting'):
                 try:
-                    curTorrentProvider.sorting = str(kwargs['{id}_sorting'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.sorting = str(kwargs['{id}_sorting'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.sorting = 'seeders'  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.sorting = 'seeders'  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'freeleech'):
+            if hasattr(cur_torrent_provider, 'freeleech'):
                 try:
-                    curTorrentProvider.freeleech = config.checkbox_to_value(
-                        kwargs['{id}_freeleech'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.freeleech = config.checkbox_to_value(
+                        kwargs['{id}_freeleech'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.freeleech = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.freeleech = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'search_mode'):
+            if hasattr(cur_torrent_provider, 'search_mode'):
                 try:
-                    curTorrentProvider.search_mode = str(kwargs['{id}_search_mode'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.search_mode = str(kwargs['{id}_search_mode'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curTorrentProvider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'search_fallback'):
+            if hasattr(cur_torrent_provider, 'search_fallback'):
                 try:
-                    curTorrentProvider.search_fallback = config.checkbox_to_value(
-                        kwargs['{id}_search_fallback'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.search_fallback = config.checkbox_to_value(
+                        kwargs['{id}_search_fallback'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.search_fallback = 0  # these exceptions are catching unselected checkboxes
+                    cur_torrent_provider.search_fallback = 0  # these exceptions are catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'enable_daily'):
+            if hasattr(cur_torrent_provider, 'enable_daily'):
                 try:
-                    curTorrentProvider.enable_daily = config.checkbox_to_value(
-                        kwargs['{id}_enable_daily'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.enable_daily = config.checkbox_to_value(
+                        kwargs['{id}_enable_daily'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'enable_manualsearch'):
+            if hasattr(cur_torrent_provider, 'enable_manualsearch'):
                 try:
-                    curTorrentProvider.enable_manualsearch = config.checkbox_to_value(
-                        kwargs['{id}_enable_manualsearch'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs['{id}_enable_manualsearch'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'enable_backlog'):
+            if hasattr(cur_torrent_provider, 'enable_backlog'):
                 try:
-                    curTorrentProvider.enable_backlog = config.checkbox_to_value(
-                        kwargs['{id}_enable_backlog'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.enable_backlog = config.checkbox_to_value(
+                        kwargs['{id}_enable_backlog'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'cat'):
+            if hasattr(cur_torrent_provider, 'cat'):
                 try:
-                    curTorrentProvider.cat = int(str(kwargs['{id}_cat'.format(id=curTorrentProvider.get_id())]).strip())
+                    cur_torrent_provider.cat = int(str(kwargs['{id}_cat'.format(id=cur_torrent_provider.get_id())]).strip())
                 except (AttributeError, KeyError):
-                    curTorrentProvider.cat = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.cat = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curTorrentProvider, 'subtitle'):
+            if hasattr(cur_torrent_provider, 'subtitle'):
                 try:
-                    curTorrentProvider.subtitle = config.checkbox_to_value(
-                        kwargs['{id}_subtitle'.format(id=curTorrentProvider.get_id())])
+                    cur_torrent_provider.subtitle = config.checkbox_to_value(
+                        kwargs['{id}_subtitle'.format(id=cur_torrent_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curTorrentProvider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_torrent_provider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
 
-            if curTorrentProvider.enable_cookies:
+            if cur_torrent_provider.enable_cookies:
                 try:
-                    curTorrentProvider.cookies = str(kwargs['{id}_cookies'.format(id=curTorrentProvider.get_id())]).strip()
+                    cur_torrent_provider.cookies = str(kwargs['{id}_cookies'.format(id=cur_torrent_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
                     pass  # I don't want to configure a default value here, as it can also be configured intially as a custom rss torrent provider
 
-        for curNzbProvider in [prov for prov in providers.sorted_provider_list() if
-                               prov.provider_type == GenericProvider.NZB]:
+        for cur_nzb_provider in [prov for prov in providers.sorted_provider_list() if
+                                 prov.provider_type == GenericProvider.NZB]:
 
-            if hasattr(curNzbProvider, 'api_key'):
+            if hasattr(cur_nzb_provider, 'api_key'):
                 try:
-                    curNzbProvider.api_key = str(kwargs['{id}_api_key'.format(id=curNzbProvider.get_id())]).strip()
+                    cur_nzb_provider.api_key = str(kwargs['{id}_api_key'.format(id=cur_nzb_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curNzbProvider.api_key = None  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.api_key = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curNzbProvider, 'username'):
+            if hasattr(cur_nzb_provider, 'username'):
                 try:
-                    curNzbProvider.username = str(kwargs['{id}_username'.format(id=curNzbProvider.get_id())]).strip()
+                    cur_nzb_provider.username = str(kwargs['{id}_username'.format(id=cur_nzb_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curNzbProvider.username = None  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.username = None  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curNzbProvider, 'search_mode'):
+            if hasattr(cur_nzb_provider, 'search_mode'):
                 try:
-                    curNzbProvider.search_mode = str(kwargs['{id}_search_mode'.format(id=curNzbProvider.get_id())]).strip()
+                    cur_nzb_provider.search_mode = str(kwargs['{id}_search_mode'.format(id=cur_nzb_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
-                    curNzbProvider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.search_mode = 'eponly'  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curNzbProvider, 'search_fallback'):
+            if hasattr(cur_nzb_provider, 'search_fallback'):
                 try:
-                    curNzbProvider.search_fallback = config.checkbox_to_value(
-                        kwargs['{id}_search_fallback'.format(id=curNzbProvider.get_id())])
+                    cur_nzb_provider.search_fallback = config.checkbox_to_value(
+                        kwargs['{id}_search_fallback'.format(id=cur_nzb_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curNzbProvider.search_fallback = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.search_fallback = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curNzbProvider, 'enable_daily'):
+            if hasattr(cur_nzb_provider, 'enable_daily'):
                 try:
-                    curNzbProvider.enable_daily = config.checkbox_to_value(
-                        kwargs['{id}_enable_daily'.format(id=curNzbProvider.get_id())])
+                    cur_nzb_provider.enable_daily = config.checkbox_to_value(
+                        kwargs['{id}_enable_daily'.format(id=cur_nzb_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curNzbProvider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.enable_daily = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curNzbProvider, 'enable_manualsearch'):
+            if hasattr(cur_nzb_provider, 'enable_manualsearch'):
                 try:
-                    curNzbProvider.enable_manualsearch = config.checkbox_to_value(
-                        kwargs['{id}_enable_manualsearch'.format(id=curNzbProvider.get_id())])
+                    cur_nzb_provider.enable_manualsearch = config.checkbox_to_value(
+                        kwargs['{id}_enable_manualsearch'.format(id=cur_nzb_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curNzbProvider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.enable_manualsearch = 0  # these exceptions are actually catching unselected checkboxes
 
-            if hasattr(curNzbProvider, 'enable_backlog'):
+            if hasattr(cur_nzb_provider, 'enable_backlog'):
                 try:
-                    curNzbProvider.enable_backlog = config.checkbox_to_value(
-                        kwargs['{id}_enable_backlog'.format(id=curNzbProvider.get_id())])
+                    cur_nzb_provider.enable_backlog = config.checkbox_to_value(
+                        kwargs['{id}_enable_backlog'.format(id=cur_nzb_provider.get_id())])
                 except (AttributeError, KeyError):
-                    curNzbProvider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+                    cur_nzb_provider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
         app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
         app.PROVIDER_ORDER = provider_list

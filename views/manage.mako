@@ -69,34 +69,34 @@
     myShowList = app.showList
     myShowList.sort(lambda x, y: cmp(x.name, y.name))
 %>
-    % for curShow in myShowList:
+    % for cur_show in myShowList:
     <%
-        curEp = curShow.nextaired
-        disabled = app.showQueueScheduler.action.isBeingUpdated(curShow) or app.showQueueScheduler.action.isInUpdateQueue(curShow)
-        curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" id=\"update-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRefreshed(curShow) or app.showQueueScheduler.action.isInRefreshQueue(curShow)
-        curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" id=\"refresh-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRenamed(curShow) or app.showQueueScheduler.action.isInRenameQueue(curShow)
-        curRename = "<input type=\"checkbox\" class=\"renameCheck\" id=\"rename-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = not curShow.subtitles or app.showQueueScheduler.action.isBeingSubtitled(curShow) or app.showQueueScheduler.action.isInSubtitleQueue(curShow)
-        curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" id=\"subtitle-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRenamed(curShow) or app.showQueueScheduler.action.isInRenameQueue(curShow) or app.showQueueScheduler.action.isInRefreshQueue(curShow)
-        curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" id=\"delete-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRenamed(curShow) or app.showQueueScheduler.action.isInRenameQueue(curShow) or app.showQueueScheduler.action.isInRefreshQueue(curShow)
-        curRemove = "<input type=\"checkbox\" class=\"removeCheck\" id=\"remove-" + str(curShow.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+        cur_ep = cur_show.nextaired
+        disabled = app.showQueueScheduler.action.isBeingUpdated(cur_show) or app.showQueueScheduler.action.isInUpdateQueue(cur_show)
+        curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" id=\"update-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+        disabled = app.showQueueScheduler.action.isBeingRefreshed(cur_show) or app.showQueueScheduler.action.isInRefreshQueue(cur_show)
+        curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" id=\"refresh-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+        disabled = app.showQueueScheduler.action.isBeingRenamed(cur_show) or app.showQueueScheduler.action.isInRenameQueue(cur_show)
+        curRename = "<input type=\"checkbox\" class=\"renameCheck\" id=\"rename-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+        disabled = not cur_show.subtitles or app.showQueueScheduler.action.isBeingSubtitled(cur_show) or app.showQueueScheduler.action.isInSubtitleQueue(cur_show)
+        curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" id=\"subtitle-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+        disabled = app.showQueueScheduler.action.isBeingRenamed(cur_show) or app.showQueueScheduler.action.isInRenameQueue(cur_show) or app.showQueueScheduler.action.isInRefreshQueue(cur_show)
+        curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" id=\"delete-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
+        disabled = app.showQueueScheduler.action.isBeingRenamed(cur_show) or app.showQueueScheduler.action.isInRenameQueue(cur_show) or app.showQueueScheduler.action.isInRefreshQueue(cur_show)
+        curRemove = "<input type=\"checkbox\" class=\"removeCheck\" id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
     %>
     <tr>
-        <td align="center"><input type="checkbox" class="editCheck" id="edit-${curShow.indexerid}" /></td>
-        <td class="tvShow"><a href="home/displayShow?show=${curShow.indexerid}">${curShow.name}</a></td>
-        <td align="center">${renderQualityPill(curShow.quality, showTitle=True)}</td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(curShow.is_sports) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(curShow.is_scene) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(curShow.is_anime) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(curShow.flatten_folders) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(curShow.paused) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(curShow.subtitles) == 1]}" width="16" height="16" /></td>
-        <td align="center">${statusStrings[curShow.default_ep_status]}</td>
-        <td align="center">${curShow.status}</td>
+        <td align="center"><input type="checkbox" class="editCheck" id="edit-${cur_show.indexerid}" /></td>
+        <td class="tvShow"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
+        <td align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
+        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
+        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
+        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
+        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
+        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
+        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>
+        <td align="center">${statusStrings[cur_show.default_ep_status]}</td>
+        <td align="center">${cur_show.status}</td>
         <td align="center">${curUpdate}</td>
         <td align="center">${curRefresh}</td>
         <td align="center">${curRename}</td>

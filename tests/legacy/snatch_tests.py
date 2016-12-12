@@ -23,7 +23,7 @@ from __future__ import print_function
 import unittest
 
 from medusa import app, common, providers
-from medusa.search.core import searchProviders
+from medusa.search.core import search_providers
 from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
 
@@ -105,7 +105,7 @@ def generator(tvdb_id, show_name, cur_data, force_search):
             episode.status = common.WANTED
             episode.save_to_db()
 
-        best_result = searchProviders(show, episode.episode, force_search)
+        best_result = search_providers(show, episode.episode, force_search)
         if not best_result:
             assert cur_data["b"] == best_result
         # pylint: disable=no-member

@@ -9,9 +9,9 @@
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-% for curShowlist in showlists:
-    <% curListType = curShowlist[0] %>
-    <% myShowList = list(curShowlist[1]) %>
+% for cur_show_list in show_lists:
+    <% curListType = cur_show_list[0] %>
+    <% myShowList = list(cur_show_list[1]) %>
     % if curListType == "Anime":
         <h1 class="header">Anime List</h1>
     % endif
@@ -70,7 +70,7 @@
     % endif
     <tbody>
     <% myShowList.sort(lambda x, y: cmp(x.name, y.name)) %>
-    % for curShow in myShowList:
+    % for cur_show in myShowList:
     <%
         cur_airs_next = ''
         cur_airs_prev = ''
@@ -79,19 +79,19 @@
         cur_total = 0
         show_size = 0
         download_stat_tip = ''
-        if curShow.indexerid in show_stat:
-            cur_airs_next = show_stat[curShow.indexerid]['ep_airs_next']
-            cur_airs_prev = show_stat[curShow.indexerid]['ep_airs_prev']
-            cur_snatched = show_stat[curShow.indexerid]['ep_snatched']
+        if cur_show.indexerid in show_stat:
+            cur_airs_next = show_stat[cur_show.indexerid]['ep_airs_next']
+            cur_airs_prev = show_stat[cur_show.indexerid]['ep_airs_prev']
+            cur_snatched = show_stat[cur_show.indexerid]['ep_snatched']
             if not cur_snatched:
                 cur_snatched = 0
-            cur_downloaded = show_stat[curShow.indexerid]['ep_downloaded']
+            cur_downloaded = show_stat[cur_show.indexerid]['ep_downloaded']
             if not cur_downloaded:
                 cur_downloaded = 0
-            cur_total = show_stat[curShow.indexerid]['ep_total']
+            cur_total = show_stat[cur_show.indexerid]['ep_total']
             if not cur_total:
                 cur_total = 0
-            show_size = show_stat[curShow.indexerid]['show_size']
+            show_size = show_stat[cur_show.indexerid]['show_size']
         download_stat = str(cur_downloaded)
         download_stat_tip = "Downloaded: " + str(cur_downloaded)
         if cur_snatched:
@@ -109,7 +109,7 @@
     %>
         <tr>
         % if cur_airs_next:
-            <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, curShow.airs, curShow.network)) %>
+            <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
             % try:
                 <td align="center" class="nowrap">
                     <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
@@ -121,7 +121,7 @@
             <td align="center" class="nowrap"></td>
         % endif
         % if cur_airs_prev:
-            <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, curShow.airs, curShow.network)) %>
+            <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network)) %>
             % try:
                 <td align="center" class="nowrap">
                     <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
@@ -134,50 +134,50 @@
         % endif
             <td class="tvShow">
                 <div class="imgsmallposter small">
-                    <a href="home/displayShow?show=${curShow.indexerid}" title="${curShow.name}">
-                        <img src="showPoster/?show=${curShow.indexerid}&amp;which=poster_thumb" class="small" alt="${curShow.indexerid}"/>
+                    <a href="home/displayShow?show=${cur_show.indexerid}" title="${cur_show.name}">
+                        <img src="showPoster/?show=${cur_show.indexerid}&amp;which=poster_thumb" class="small" alt="${cur_show.indexerid}"/>
                     </a>
-                    <a href="home/displayShow?show=${curShow.indexerid}" style="vertical-align: middle;">${curShow.name}</a>
+                    <a href="home/displayShow?show=${cur_show.indexerid}" style="vertical-align: middle;">${cur_show.name}</a>
                 </div>
             </td>
             <td align="center">
-            % if curShow.network:
-                <span title="${curShow.network}" class="hidden-print"><img id="network" width="54" height="27" src="showPoster/?show=${curShow.indexerid}&amp;which=network" alt="${curShow.network}" title="${curShow.network}" /></span>
-                <span class="visible-print-inline">${curShow.network}</span>
+            % if cur_show.network:
+                <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="showPoster/?show=${cur_show.indexerid}&amp;which=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                <span class="visible-print-inline">${cur_show.network}</span>
             % else:
                 <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                 <span class="visible-print-inline">No Network</span>
             % endif
             </td>
             <td align="center">
-                % if curShow.imdbid:
-                    <a href="${anon_url('http://www.imdb.com/title/', curShow.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${curShow.imdbid}">
+                % if cur_show.imdbid:
+                    <a href="${anon_url('http://www.imdb.com/title/', cur_show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdbid}">
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                     </a>
                 % endif
-                <a href="${anon_url(indexerApi(curShow.indexer).config['show_url'], curShow.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(curShow.indexer).config['show_url']}${curShow.indexerid}">
-                    <img alt="${indexerApi(curShow.indexer).name}" height="16" width="16" src="images/${indexerApi(curShow.indexer).config['icon']}" />
+                <a href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
+                    <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                 </a>
             </td>
-            <td align="center">${renderQualityPill(curShow.quality, showTitle=True)}</td>
+            <td align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
             <td align="center">
                 ## This first span is used for sorting and is never displayed to user
                 <span style="display: none;">${download_stat}</span>
-                <div class="progressbar hidden-print" style="position:relative;" data-show-id="${curShow.indexerid}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
+                <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
                 <span class="visible-print-inline">${download_stat}</span>
             </td>
             <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
             <td align="center">
-                <% paused = int(curShow.paused) == 0 and curShow.status == 'Continuing' %>
+                <% paused = int(cur_show.paused) == 0 and cur_show.status == 'Continuing' %>
                 <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center">
             <%
-                display_status = curShow.status
+                display_status = cur_show.status
                 if None is not display_status:
-                    if re.search(r'(?i)(?:new|returning)\s*series', curShow.status):
+                    if re.search(r'(?i)(?:new|returning)\s*series', cur_show.status):
                         display_status = 'Continuing'
-                    elif re.search('(?i)(?:nded)', curShow.status):
+                    elif re.search('(?i)(?:nded)', cur_show.status):
                         display_status = 'Ended'
             %>
             ${display_status}

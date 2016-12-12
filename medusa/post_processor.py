@@ -1062,8 +1062,8 @@ class PostProcessor(object):
                 raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
 
             # set the status of the episodes
-            # for curEp in [ep_obj] + ep_obj.related_episodes:
-            #    curEp.status = common.Quality.composite_status(common.SNATCHED, new_ep_quality)
+            # for cur_ep in [ep_obj] + ep_obj.related_episodes:
+            #    cur_ep.status = common.Quality.composite_status(common.SNATCHED, new_ep_quality)
 
         # if the show directory doesn't exist then make it if allowed
         if not os.path.isdir(ep_obj.show._location) and app.CREATE_MISSING_SHOW_DIRS:

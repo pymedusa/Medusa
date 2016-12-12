@@ -23,9 +23,9 @@ import traceback
 
 from .. import app, common, failed_history, generic_queue, history, logger, providers, ui
 from ..search.core import (
-    searchForNeededEpisodes,
-    searchProviders,
-    snatchEpisode,
+    search_for_needed_episodes,
+    search_providers,
+    snatch_episode,
 )
 
 search_queue_lock = threading.Lock()
@@ -248,7 +248,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             logger.log(u"Beginning daily search for new episodes")
-            found_results = searchForNeededEpisodes()
+            found_results = search_for_needed_episodes()
 
             if not found_results:
                 logger.log(u"No needed episodes found")
@@ -260,7 +260,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                                    result.seeders, result.leechers, result.provider.name))
                     else:
                         logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                    self.success = snatchEpisode(result)
+                    self.success = snatch_episode(result)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
@@ -315,8 +315,8 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                        format(('forced', 'manual')[bool(self.manual_search)],
                               ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
 
-            search_result = searchProviders(self.show, self.segment, True, self.down_cur_quality,
-                                            self.manual_search, self.manual_search_type)
+            search_result = search_providers(self.show, self.segment, True, self.down_cur_quality,
+                                             self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
                 # just use the first result for now
@@ -326,7 +326,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                                       search_result[0].seeders, search_result[0].leechers, search_result[0].provider.name))
                 else:
                     logger.log(u"Downloading {0} from {1}".format(search_result[0].name, search_result[0].provider.name))
-                self.success = snatchEpisode(search_result[0])
+                self.success = snatch_episode(search_result[0])
 
                 # give the CPU a break
                 time.sleep(common.cpu_presets[app.CPU_PRESET])
@@ -413,7 +413,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
                                       search_result.seeders, search_result.leechers, search_result.provider.name))
                 else:
                     logger.log(u"Downloading {0} from {1}".format(search_result.name, search_result.provider.name))
-                self.success = snatchEpisode(search_result)
+                self.success = snatch_episode(search_result)
             else:
                 logger.log(u"Unable to snatch release: {0}".format(search_result.name))
 
@@ -454,7 +454,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                search_result = searchProviders(self.show, self.segment)
+                search_result = search_providers(self.show, self.segment)
 
                 if search_result:
                     for result in search_result:
@@ -465,7 +465,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
                                               result.seeders, result.leechers, result.provider.name))
                         else:
                             logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                        self.success = snatchEpisode(result)
+                        self.success = snatch_episode(result)
 
                         # give the CPU a break
                         time.sleep(common.cpu_presets[app.CPU_PRESET])
@@ -503,23 +503,23 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            for epObj in self.segment:
+            for ep_obj in self.segment:
 
-                logger.log(u"Marking episode as bad: [" + epObj.pretty_name() + "]")
+                logger.log(u"Marking episode as bad: [" + ep_obj.pretty_name() + "]")
 
-                failed_history.mark_failed(epObj)
+                failed_history.mark_failed(ep_obj)
 
-                (release, provider) = failed_history.find_release(epObj)
+                (release, provider) = failed_history.find_release(ep_obj)
                 if release:
                     failed_history.log_failed(release)
-                    history.log_failed(epObj, release, provider)
+                    history.log_failed(ep_obj, release, provider)
 
-                failed_history.revert_episode(epObj)
-                logger.log(u"Beginning failed download search for: [" + epObj.pretty_name() + "]")
+                failed_history.revert_episode(ep_obj)
+                logger.log(u"Beginning failed download search for: [" + ep_obj.pretty_name() + "]")
 
             # If it is wanted, self.down_cur_quality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = searchProviders(self.show, self.segment, True)
+            search_result = search_providers(self.show, self.segment, True)
 
             if search_result:
                 for result in search_result:
@@ -529,7 +529,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                                    result.seeders, result.leechers, result.provider.name))
                     else:
                         logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
-                    self.success = snatchEpisode(result)
+                    self.success = snatch_episode(result)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])

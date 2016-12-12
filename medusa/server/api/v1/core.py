@@ -1144,7 +1144,7 @@ class CMD_Backlog(ApiCall):
         shows = []
 
         main_db_con = db.DBConnection(row_type="dict")
-        for curShow in app.showList:
+        for cur_show in app.showList:
 
             show_eps = []
 
@@ -1153,19 +1153,19 @@ class CMD_Backlog(ApiCall):
                 "FROM tv_episodes "
                 "INNER JOIN tv_shows ON tv_episodes.showid = tv_shows.indexer_id "
                 "WHERE showid = ? and paused = 0 ORDER BY season DESC, episode DESC",
-                [curShow.indexerid])
+                [cur_show.indexerid])
 
-            for curResult in sql_results:
+            for cur_result in sql_results:
 
-                cur_ep_cat = curShow.get_overview(curResult["status"], manually_searched=curResult["manually_searched"])
+                cur_ep_cat = cur_show.get_overview(cur_result["status"], manually_searched=cur_result["manually_searched"])
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
-                    show_eps.append(curResult)
+                    show_eps.append(cur_result)
 
             if show_eps:
                 shows.append({
-                    "indexerid": curShow.indexerid,
-                    "show_name": curShow.name,
-                    "status": curShow.status,
+                    "indexerid": cur_show.indexerid,
+                    "show_name": cur_show.name,
+                    "status": cur_show.status,
                     "episodes": show_eps
                 })
 
@@ -1409,7 +1409,7 @@ class CMD_CheckScheduler(ApiCall):
 
         backlog_paused = app.searchQueueScheduler.action.is_backlog_paused()  # @UndefinedVariable
         backlog_running = app.searchQueueScheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlogSearchScheduler.nextRun().strftime(dateFormat).decode(app.SYS_ENCODING)
+        next_backlog = app.backlogSearchScheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
 
         data = {"backlog_is_paused": int(backlog_paused), "backlog_is_running": int(backlog_running),
                 "last_backlog": _ordinal_to_date_form(sql_results[0]["last_backlog"]),
@@ -2730,41 +2730,41 @@ class CMD_Shows(ApiCall):
     def run(self):
         """ Get all shows in Medusa """
         shows = {}
-        for curShow in app.showList:
+        for cur_show in app.showList:
             # If self.paused is None: show all, 0: show un-paused, 1: show paused
-            if self.paused is not None and self.paused != curShow.paused:
+            if self.paused is not None and self.paused != cur_show.paused:
                 continue
 
             show_dict = {
-                "paused": (0, 1)[curShow.paused],
-                "quality": get_quality_string(curShow.quality),
-                "language": curShow.lang,
-                "air_by_date": (0, 1)[curShow.air_by_date],
-                "sports": (0, 1)[curShow.sports],
-                "anime": (0, 1)[curShow.anime],
-                "indexerid": curShow.indexerid,
-                "tvdbid": curShow.indexerid if curShow.indexer == INDEXER_TVDBV2
-                else curShow.externals.get('tvdb_id', ''),
-                "network": curShow.network,
-                "show_name": curShow.name,
-                "status": curShow.status,
-                "subtitles": (0, 1)[curShow.subtitles],
+                "paused": (0, 1)[cur_show.paused],
+                "quality": get_quality_string(cur_show.quality),
+                "language": cur_show.lang,
+                "air_by_date": (0, 1)[cur_show.air_by_date],
+                "sports": (0, 1)[cur_show.sports],
+                "anime": (0, 1)[cur_show.anime],
+                "indexerid": cur_show.indexerid,
+                "tvdbid": cur_show.indexerid if cur_show.indexer == INDEXER_TVDBV2
+                else cur_show.externals.get('tvdb_id', ''),
+                "network": cur_show.network,
+                "show_name": cur_show.name,
+                "status": cur_show.status,
+                "subtitles": (0, 1)[cur_show.subtitles],
             }
 
-            if try_int(curShow.nextaired, 1) > 693595:  # 1900
+            if try_int(cur_show.nextaired, 1) > 693595:  # 1900
                 dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                    network_timezones.parse_date_time(curShow.nextaired, curShow.airs, show_dict['network']))
+                    network_timezones.parse_date_time(cur_show.nextaired, cur_show.airs, show_dict['network']))
                 show_dict['next_ep_airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
             else:
                 show_dict['next_ep_airdate'] = ''
 
-            show_dict["cache"] = CMD_ShowCache((), {"indexerid": curShow.indexerid}).run()["data"]
+            show_dict["cache"] = CMD_ShowCache((), {"indexerid": cur_show.indexerid}).run()["data"]
             if not show_dict["network"]:
                 show_dict["network"] = ""
             if self.sort == "name":
-                shows[curShow.name] = show_dict
+                shows[cur_show.name] = show_dict
             else:
-                shows[curShow.indexerid] = show_dict
+                shows[cur_show.indexerid] = show_dict
 
         return _responds(RESULT_SUCCESS, shows)
 

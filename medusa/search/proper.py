@@ -34,7 +34,7 @@ from ..common import Quality, cpu_presets
 from ..helper.common import enabled_providers
 from ..helper.exceptions import AuthException, ex
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from ..search.core import pickBestResult, snatchEpisode
+from ..search.core import pick_best_result, snatch_episode
 from ..show.history import History
 
 
@@ -237,7 +237,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.proper_tags = parse_result.proper_tags
 
             # filter release
-            best_result = pickBestResult(cur_proper, parse_result.show)
+            best_result = pick_best_result(cur_proper, parse_result.show)
             if not best_result:
                 logger.log('Rejected proper due to release filters: {name}'.format
                            (name=cur_proper.name))
@@ -377,7 +377,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 result.proper_tags = cur_proper.proper_tags
 
                 # snatch it
-                snatchEpisode(result)
+                snatch_episode(result)
                 time.sleep(cpu_presets[app.CPU_PRESET])
 
     @staticmethod

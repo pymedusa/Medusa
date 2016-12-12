@@ -65,12 +65,12 @@ class Home(WebRoot):
                     anime.append(show)
                 else:
                     shows.append(show)
-            showlists = [['Shows', shows], ['Anime', anime]]
+            show_lists = [['Shows', shows], ['Anime', anime]]
         else:
-            showlists = [['Shows', app.showList]]
+            show_lists = [['Shows', app.showList]]
 
         stats = self.show_statistics()
-        return t.render(title='Home', header='Show List', topmenu='home', showlists=showlists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
+        return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
 
     @staticmethod
     def show_statistics():
@@ -1737,15 +1737,15 @@ class Home(WebRoot):
         if eps:
 
             sql_l = []
-            for curEp in eps.split('|'):
+            for cur_ep in eps.split('|'):
 
-                if not curEp:
+                if not cur_ep:
                     logger.log(u'Current episode was empty when trying to set status', logger.DEBUG)
 
                 logger.log(u'Attempting to set status on episode {episode} to {status}'.format
-                           (episode=curEp, status=status), logger.DEBUG)
+                           (episode=cur_ep, status=status), logger.DEBUG)
 
-                ep_info = curEp.split('x')
+                ep_info = cur_ep.split('x')
 
                 if not all(ep_info):
                     logger.log(u'Something went wrong when trying to set status, season: {season}, episode: {episode}'.format
@@ -1768,7 +1768,7 @@ class Home(WebRoot):
                     # don't let them mess up UNAIRED episodes
                     if ep_obj.status == UNAIRED:
                         logger.log(u'Refusing to change status of {episode} because it is UNAIRED'.format
-                                   (episode=curEp), logger.WARNING)
+                                   (episode=cur_ep), logger.WARNING)
                         continue
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
@@ -1777,13 +1777,13 @@ class Home(WebRoot):
                             not os.path.isfile(ep_obj.location)]):
                         logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format
-                                   (episode=curEp), logger.WARNING)
+                                   (episode=cur_ep), logger.WARNING)
                         continue
 
                     if all([int(status) == FAILED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Refusing to change status of {episode} to FAILED '
-                                   u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=curEp), logger.WARNING)
+                                   u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=cur_ep), logger.WARNING)
                         continue
 
                     if all([int(status) == WANTED,
@@ -1928,9 +1928,9 @@ class Home(WebRoot):
             return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
         main_db_con = db.DBConnection()
-        for curEp in eps.split('|'):
+        for cur_ep in eps.split('|'):
 
-            ep_info = curEp.split('x')
+            ep_info = cur_ep.split('x')
 
             # this is probably the worst possible way to deal with double eps but I've kinda painted myself into a corner here with this stupid database
             ep_result = main_db_con.select(
@@ -1940,7 +1940,7 @@ class Home(WebRoot):
                 [show, ep_info[0], ep_info[1]])
             if not ep_result:
                 logger.log(u'Unable to find an episode for {episode}, skipping'.format
-                           (episode=curEp), logger.WARNING)
+                           (episode=cur_ep), logger.WARNING)
                 continue
             related_eps_result = main_db_con.select(
                 b'SELECT season, episode '

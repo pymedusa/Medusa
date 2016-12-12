@@ -92,7 +92,7 @@ def logDownload(episode, filename, new_ep_quality, release_group=None, version=-
     """
     showid = int(episode.show.indexerid)
     season = int(episode.season)
-    epNum = int(episode.episode)
+    ep_number = int(episode.episode)
 
     quality = new_ep_quality
 
@@ -104,10 +104,10 @@ def logDownload(episode, filename, new_ep_quality, release_group=None, version=-
 
     action = episode.status
 
-    _logHistoryItem(action, showid, season, epNum, quality, filename, provider, version)
+    _logHistoryItem(action, showid, season, ep_number, quality, filename, provider, version)
 
 
-def logSubtitle(showid, season, episode, status, subtitleResult):
+def logSubtitle(showid, season, episode, status, subtitle_result):
     """
     Log download of subtitle
 
@@ -115,10 +115,10 @@ def logSubtitle(showid, season, episode, status, subtitleResult):
     :param season: Show season
     :param episode: Show episode
     :param status: Status of download
-    :param subtitleResult: Result object
+    :param subtitle_result: Result object
     """
-    resource = subtitleResult.language.opensubtitles
-    provider = subtitleResult.provider_name
+    resource = subtitle_result.language.opensubtitles
+    provider = subtitle_result.provider_name
 
     status, quality = Quality.split_composite_status(status)
     action = Quality.composite_status(SUBTITLED, quality)
@@ -126,18 +126,18 @@ def logSubtitle(showid, season, episode, status, subtitleResult):
     _logHistoryItem(action, showid, season, episode, quality, resource, provider)
 
 
-def log_failed(epObj, release, provider=None):
+def log_failed(ep_obj, release, provider=None):
     """
     Log a failed download
 
-    :param epObj: Episode object
+    :param ep_obj: Episode object
     :param release: Release group
     :param provider: Provider used for snatch
     """
-    showid = int(epObj.show.indexerid)
-    season = int(epObj.season)
-    epNum = int(epObj.episode)
-    _, quality = Quality.split_composite_status(epObj.status)
+    showid = int(ep_obj.show.indexerid)
+    season = int(ep_obj.season)
+    ep_number = int(ep_obj.episode)
+    _, quality = Quality.split_composite_status(ep_obj.status)
     action = Quality.composite_status(FAILED, quality)
 
-    _logHistoryItem(action, showid, season, epNum, quality, release, provider)
+    _logHistoryItem(action, showid, season, ep_number, quality, release, provider)

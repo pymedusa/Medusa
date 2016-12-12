@@ -30,20 +30,20 @@ from ..helper.common import episode_num
 
 class BacklogSearchScheduler(scheduler.Scheduler):
     def forceSearch(self):
-        self.action._set_lastBacklog(1)
+        self.action._set_last_backlog(1)
         self.lastRun = datetime.datetime.fromordinal(1)
 
-    def nextRun(self):
-        if self.action._lastBacklog <= 1:
+    def next_run(self):
+        if self.action._last_backlog <= 1:
             return datetime.date.today()
         else:
-            return datetime.date.fromordinal(self.action._lastBacklog + self.action.cycleTime)
+            return datetime.date.fromordinal(self.action._last_backlog + self.action.cycleTime)
 
 
 class BacklogSearcher(object):
     def __init__(self):
 
-        self._lastBacklog = self._get_lastBacklog()
+        self._last_backlog = self._get_last_backlog()
         self.cycleTime = app.BACKLOG_FREQUENCY / 60 / 24
         self.lock = threading.Lock()
         self.amActive = False
@@ -85,41 +85,41 @@ class BacklogSearcher(object):
         else:
             show_list = app.showList
 
-        self._get_lastBacklog()
+        self._get_last_backlog()
 
         curDate = datetime.date.today().toordinal()
-        fromDate = datetime.date.fromordinal(1)
+        from_date = datetime.date.fromordinal(1)
 
-        if not which_shows and not ((curDate - self._lastBacklog) >= self.cycleTime):
+        if not which_shows and not ((curDate - self._last_backlog) >= self.cycleTime):
             logger.log(u"Running limited backlog on missed episodes " + str(app.BACKLOG_DAYS) + " day(s) and older only")
-            fromDate = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
+            from_date = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
 
         # go through non air-by-date shows and see if they need any episodes
-        for curShow in show_list:
+        for cur_show in show_list:
 
-            if curShow.paused:
+            if cur_show.paused:
                 continue
 
-            segments = self._get_segments(curShow, fromDate)
+            segments = self._get_segments(cur_show, from_date)
 
             for season, segment in iteritems(segments):
-                self.currentSearchInfo = {'title': curShow.name + " Season " + str(season)}
+                self.currentSearchInfo = {'title': cur_show.name + " Season " + str(season)}
 
-                backlog_queue_item = BacklogQueueItem(curShow, segment)
+                backlog_queue_item = BacklogQueueItem(cur_show, segment)
                 app.searchQueueScheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
-                logger.log(u"Nothing needs to be downloaded for %s, skipping" % curShow.name, logger.DEBUG)
+                logger.log(u"Nothing needs to be downloaded for %s, skipping" % cur_show.name, logger.DEBUG)
 
         # don't consider this an actual backlog search if we only did recent eps
         # or if we only did certain shows
-        if fromDate == datetime.date.fromordinal(1) and not which_shows:
-            self._set_lastBacklog(curDate)
+        if from_date == datetime.date.fromordinal(1) and not which_shows:
+            self._set_last_backlog(curDate)
 
         self.amActive = False
         self._resetPI()
 
-    def _get_lastBacklog(self):
+    def _get_last_backlog(self):
 
         logger.log(u"Retrieving the last check time from the DB", logger.DEBUG)
 
@@ -127,18 +127,18 @@ class BacklogSearcher(object):
         sql_results = main_db_con.select("SELECT last_backlog FROM info")
 
         if not sql_results:
-            lastBacklog = 1
+            last_backlog = 1
         elif sql_results[0]["last_backlog"] is None or sql_results[0]["last_backlog"] == "":
-            lastBacklog = 1
+            last_backlog = 1
         else:
-            lastBacklog = int(sql_results[0]["last_backlog"])
-            if lastBacklog > datetime.date.today().toordinal():
-                lastBacklog = 1
+            last_backlog = int(sql_results[0]["last_backlog"])
+            if last_backlog > datetime.date.today().toordinal():
+                last_backlog = 1
 
-        self._lastBacklog = lastBacklog
-        return self._lastBacklog
+        self._last_backlog = last_backlog
+        return self._last_backlog
 
-    def _get_segments(self, show, fromDate):
+    def _get_segments(self, show, from_date):
         wanted = {}
         if show.paused:
             logger.log(u"Skipping backlog for %s because the show is paused" % show.name, logger.DEBUG)
@@ -151,7 +151,7 @@ class BacklogSearcher(object):
         con = db.DBConnection()
         sql_results = con.select(
             "SELECT status, season, episode, manually_searched FROM tv_episodes WHERE airdate > ? AND showid = ?",
-            [fromDate.toordinal(), show.indexerid]
+            [from_date.toordinal(), show.indexerid]
         )
 
         # check through the list of statuses to see if we want any
@@ -169,7 +169,7 @@ class BacklogSearcher(object):
 
         return wanted
 
-    def _set_lastBacklog(self, when):
+    def _set_last_backlog(self, when):
 
         logger.log(u"Setting the last backlog in the DB to " + str(when), logger.DEBUG)
 
