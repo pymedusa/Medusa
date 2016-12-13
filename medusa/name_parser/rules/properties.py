@@ -88,6 +88,9 @@ def other():
     rebulk.regex(r'MULTi', value='Multi Language')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
+    rebulk.regex('F1', value='Formula One',
+                 conflict_solver=lambda match, other: other if other.name == 'film' else '__default__')
+
     # Discarded:
     rebulk.regex('DownRev', 'small-size', private=True)
 

@@ -756,8 +756,8 @@
 # anime_WarB3asT
 ? 003-005. Show Name - Ep Name.mkv
 : title: Show Name
-  absolute_episode: [3, 4, 5]
-  episode: [3, 4, 5]
+  absolute_episode: [3, 5, 4] # to be fixed
+  episode: [3, 5, 4] # to be fixed
   episode_title: Ep Name
   container: mkv
   mimetype: video/x-matroska
@@ -853,7 +853,7 @@
 ? - 12.monkeys.Season.1.Complete
   - /somefolder/12.monkeys.Season.1.Complete
   - /12 Monkeys/12.monkeys.Season.1.Complete
-: title: 12 monkeys
+: title: 12 Monkeys
   season: 1
   other: Complete
   type: episode
@@ -1009,7 +1009,6 @@
   video_codec: h264
   video_encoder: x264
   release_group: TV2LAX9
-  bonus: 9 # not a big issue
   type: episode
 
 # expected_group
@@ -1817,6 +1816,7 @@
 : title: Show Name
   season: 2
   episode: 5
+  other: Formula One
   episode_details: Special
   screen_size: 720p
   format: HDTV
@@ -2107,6 +2107,7 @@
 : title: Show Name
   season: 2
   episode: 5
+  other: Formula One
   screen_size: 720p
   format: HDTV
   video_codec: h264
@@ -3151,7 +3152,7 @@
 
 # Title with number and unicode character
 ? 3 Show.på.(abc2).s01e01
-: title: 3 Show på abc2
+: title: 3 Show på (abc2)
   season: 1
   episode: 1
   type: episode

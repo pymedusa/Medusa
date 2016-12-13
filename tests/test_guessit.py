@@ -33,7 +33,7 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=11, name='The 10 Anime Show', anime=1),
         create_tvshow(indexerid=12, name='The 100'),
         create_tvshow(indexerid=13, name='The 123 Show'),
-        create_tvshow(indexerid=14, name=r"The.Someone's.Show.**.2.**"),
+        create_tvshow(indexerid=14, name=r"The Someone's Show 2"),
         create_tvshow(indexerid=15, name='The Show (UK)'),
         create_tvshow(indexerid=16, name='3 Show på (abc2)'),  # unicode characters, numbers and parenthesis
         create_tvshow(indexerid=16, name="Show '70s Name"),
