@@ -56,7 +56,7 @@ class AnimeTorrentsProvider(TorrentProvider):
         self.anime_only = True
         self.categories = {
             2: 'Anime Series',
-            7: 'Anime Series HD'
+            7: 'Anime Series HD',
         }
 
         # Proper Strings
