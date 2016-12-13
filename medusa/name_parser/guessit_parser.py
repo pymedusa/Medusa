@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Guessit Name Parser."""
-from __future__ import unicode_literals
 
 import re
 from datetime import timedelta
@@ -15,32 +14,32 @@ from .. import app
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
 # release group exception list
-expected_groups = {
+expected_groups = [
     # https://github.com/guessit-io/guessit/issues/297
     # guessit blacklists parts of the name for the following groups
-    b'byEMP',
-    b'ELITETORRENT',
-    b'NovaRip',
-    b'PARTiCLE',
-    b'POURMOi',
-    b'RipPourBox',
-    b'RiPRG',
-    b'NBY',
+    'byEMP',
+    'ELITETORRENT',
+    'NovaRip',
+    'PARTiCLE',
+    'POURMOi',
+    'RipPourBox',
+    'RiPRG',
+    'NBY',
 
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294
-    b'4EVERHD',
-    b'F4ST3R',
-    b'F4ST',
-    b'TGNF4ST',
-    b'TV2LAX9',
+    '4EVERHD',
+    'F4ST3R',
+    'F4ST',
+    'TGNF4ST',
+    'TV2LAX9',
 
     # https://github.com/guessit-io/guessit/issues/352
-    b'S4L',
+    'S4L',
 
     # https://github.com/guessit-io/guessit/issues/356
-    b'DHD',
-}
+    'DHD',
+]
 
 allowed_languages = {
     'de',
