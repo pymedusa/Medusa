@@ -85,8 +85,8 @@ class Tmdb(BaseIndexer):
             'episode_run_time': 'runtime',
             'episode_number': 'episodenumber',
             'season_number': 'seasonnumber',
-            'still_path': 'poster',
             'vote_average': 'contentrating',
+            'still_path': 'filename'
         }
 
     @staticmethod
@@ -274,18 +274,17 @@ class Tmdb(BaseIndexer):
             seas_no = int(seasnum)
             ep_no = int(epno)
 
-            image_width = {'fanart': 'w1280', 'poster': 'w780'}
+            image_width = {'fanart': 'w1280', 'poster': 'w780', 'filename': 'w300'}
             for k, v in cur_ep.items():
                 k = k.lower()
 
                 if v is not None:
-                    if k in ['fanart', 'poster']:
+                    if k in ['filename', 'poster', 'fanart']:
                         # I'm using the default 'original' quality. But you could also check tmdb_configuration,
                         # for the available image sizes.
                         v = self.config['artwork_prefix'].format(base_url=self.tmdb_configuration.images['base_url'],
                                                                  image_size=image_width[k],
                                                                  file_path=v)
-
                 self._set_item(tmdb_id, seas_no, ep_no, k, v)
 
     def _parse_images(self, sid):

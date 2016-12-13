@@ -268,10 +268,8 @@ class TVmaze(BaseIndexer):
                 k = k.lower()
 
                 if v is not None:
-                    if k == 'filename':
-                        v = self.config['url_artworkPrefix'] % v
-                    else:
-                        v = self._clean_data(v)
+                    if k == 'image_original':
+                        self._set_item(tvmaze_id, seas_no, ep_no, 'filename', v)
                 self._set_item(tvmaze_id, seas_no, ep_no, k, v)
 
     def _parse_images(self, tvmaze_id):

@@ -1005,6 +1005,7 @@ def real_path(path):
 
 
 def validateShow(show, season=None, episode=None):
+    """Reindex show from originating indexer, and return indexer information for the passed episode."""
     from .indexers.indexer_api import indexerApi
     from .indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
     indexer_lang = show.lang
