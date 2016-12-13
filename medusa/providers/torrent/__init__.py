@@ -6,7 +6,6 @@ from .html import (
     animebytes,
     animetorrents,
     bithdtv,
-    bluetigers,
     cpasbien,
     danishbits,
     elitetorrent,
@@ -61,7 +60,7 @@ from .xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'bluetigers',
+    'abnormal', 'alpharatio', 'animebytes', 'bithdtv',
     'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent', 'freshontv',
     'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs',
     'iptorrents', 'limetorrents', 'morethantv', 'newpct', 'pretome',
