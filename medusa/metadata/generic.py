@@ -27,6 +27,7 @@ from .. import app, exception_handler, helpers, logger
 from ..helper.common import replace_extension
 from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
+from ..indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from ..indexers.indexer_exceptions import IndexerError
 from ..metadata import helpers as metadata_helpers
 from ..show_name_helpers import allPossibleShowNames
@@ -937,11 +938,11 @@ class GenericMetadata(object):
                 epg_url = showXML.findtext('episodeguide/url').lower()
                 if str(indexer_id) in epg_url:
                     if 'thetvdb.com' in epg_url:
-                        indexer = 1
+                        indexer = INDEXER_TVDBV2
                     elif 'tvmaze.com' in epg_url:
-                        indexer = 3
+                        indexer = INDEXER_TVMAZE
                     elif 'themoviedb.org' in epg_url:
-                        indexer = 4
+                        indexer = INDEXER_TMDB
                     elif 'tvrage' in epg_url:
                         logger.log(u"Invalid Indexer ID (" + str(
                             indexer_id) + "), not using metadata file because it has TVRage info", logger.WARNING)

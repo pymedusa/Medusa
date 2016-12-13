@@ -163,7 +163,7 @@ class ImageCache(object):
                        (image_path=image_path), logger.DEBUG)
             return
 
-        width, height = image_dimension
+        height, width = image_dimension
         img_ratio = float(width) / float(height)
 
         # most posters are around 0.68 width/height ratio (eg. 680/1000)
