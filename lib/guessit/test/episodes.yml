@@ -2757,3 +2757,38 @@
   audio_codec: DTS
   audio_profile: HDMA
   type: episode
+
+? Show.Name.-.07.(2016).[RH].[English.Dubbed][WEBRip]..[HD.1080p]
+: options: -t episode
+  episode: 7
+  format: WEBRip
+  language: en
+  other: HD
+  screen_size: 1080p
+  title: Show Name
+  type: episode
+  year: 2016
+
+? Show.Name.-.476-479.(2007).[HorribleSubs][WEBRip]..[HD.720p]
+: options: -t episode -E
+  episode:
+  - 476
+  - 477
+  - 478
+  - 479
+  format: WEBRip
+  other: HD
+  release_group: HorribleSubs
+  screen_size: 720p
+  title: Show Name
+  type: episode
+  year: 2007
+
+? /11.22.63/Season 1/11.22.63.106.hdtv-abc
+: options: -T 11.22.63
+  title: 11.22.63
+  season: 1
+  episode: 6
+  format: HDTV
+  release_group: abc
+  type: episode

@@ -113,6 +113,8 @@ def files_and_ids(predicate=None):
     ids = []
 
     for (dirpath, _, filenames) in os.walk(__location__):
+        if os.path.split(dirpath)[-1] == 'config':
+            continue
         if dirpath == __location__:
             dirpath_rel = ''
         else:
@@ -206,6 +208,7 @@ class TestYml(object):
             options = parse_options(options)
         if 'implicit' not in options:
             options['implicit'] = True
+        options['config'] = False
         try:
             result = guessit(string, options)
         except Exception as exc:
