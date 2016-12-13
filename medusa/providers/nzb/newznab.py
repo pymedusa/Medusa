@@ -193,7 +193,10 @@ class NewznabProvider(NZBProvider):
 
                             size = convert_size(item_size) or -1
                             pubdate_raw = item.pubdate.get_text(strip=True)
-                            pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                            try:
+                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                            except ValueError:
+                                pubdate = None
 
                             item = {
                                 'title': title,
