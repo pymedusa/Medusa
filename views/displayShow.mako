@@ -159,11 +159,11 @@
                 % endif
                 % endif
                 % if show.network and show.airs:
-                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
+                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(Empty/wrong info in the indexer)</b></font>"} on ${show.network}</td></tr>
                 % elif show.network:
                     <tr><td class="showLegend">Originally Airs: </td><td>${show.network}</td></tr>
                 % elif show.airs:
-                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
+                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(Empty/wrong info in the indexer)</b></font>"}</td></tr>
                 % endif
                     <tr><td class="showLegend">Show Status: </td><td>${show.status}</td></tr>
                     <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
