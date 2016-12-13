@@ -1,5 +1,4 @@
 # coding=utf-8
-# Author: CristianBB
 #
 # This file is part of Medusa.
 #
@@ -25,6 +24,7 @@ from dateutil import parser
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, scene_exceptions, tv_cache
 from ....bs4_parser import BS4Parser
@@ -47,26 +47,27 @@ class AnimeTorrentsProvider(TorrentProvider):
         # URLs
         self.url = 'http://animetorrents.me'
         self.urls = {
-            'base_url': self.url,
             'login': urljoin(self.url, 'login.php'),
-            'search': urljoin(self.url, 'torrents.php?'),
-            'search_ajax': urljoin(self.url, '/ajax/torrents_data.php')
+            'search_ajax': urljoin(self.url, 'ajax/torrents_data.php'),
         }
 
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.anime_only = True
-        self.categories = {2: 'Anime Series',
-                           7: 'Anime Series HD'}
+        self.categories = {
+            2: 'Anime Series',
+            7: 'Anime Series HD'
+        }
 
         # Proper Strings
+        self.proper_strings = []
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)  # Only poll AnimeTorrents every 20 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -92,7 +93,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             'page': 1,
             'total': 2,  # Setting this to 2, will make sure we are getting a paged result.
             'searchin': 'filedisc',
-            'cat': ''
+            'cat': '',
         }
 
         headers_paged = dict(self.headers)  # Create copy
@@ -150,7 +151,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             # Skip column headers
             for row in torrent_rows[1:]:
                 try:
-                    cells = row.findChildren('td')[:len(labels)]
+                    cells = row.find_all('td', recursive=False)[:len(labels)]
                     if len(cells) < len(labels):
                         continue
 
@@ -213,6 +214,7 @@ class AnimeTorrentsProvider(TorrentProvider):
 
         request = self.get_url(self.urls['login'], returns='response')
         if not hasattr(request, 'cookies'):
+            logger.log('Unable to retrieve the required cookies', logger.WARNING)
             return False
 
         response = self.get_url(self.urls['login'], post_data=login_params, cookies=request.cookies,
@@ -248,16 +250,16 @@ class AnimeTorrentsProvider(TorrentProvider):
         season_scene_names = scene_exceptions.get_scene_exceptions(episode.show.indexerid, season=episode.scene_season)
 
         for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            episode_string = show_name + '%'
+            episode_string = '{name}%'.format(name=show_name)
 
             if season_scene_names and show_name in season_scene_names:
                 episode_season = int(episode.scene_episode)
             else:
                 episode_season = int(episode.absolute_number)
-            episode_string += str(episode_season)
+            episode_string += '{episode}'.format(episode=episode_season)
 
             if add_string:
-                episode_string += '%' + add_string
+                episode_string += '%{string}'.format(string=add_string)
 
             search_string['Episode'].append(episode_string.strip())
 
@@ -273,5 +275,6 @@ class AnimeTorrentsProvider(TorrentProvider):
             search_string['Season'].append(show_name)
 
         return [search_string]
+
 
 provider = AnimeTorrentsProvider()
