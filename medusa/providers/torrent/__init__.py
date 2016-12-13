@@ -4,6 +4,7 @@ from .html import (
     abnormal,
     alpharatio,
     animebytes,
+    animetorrents,
     bithdtv,
     bluetigers,
     cpasbien,
@@ -69,5 +70,5 @@ __all__ = [
     'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon',
     'btn', 'hd4free', 'hdbits', 'norbits', 'rarbg', 't411',
     'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent',
-    'shazbat', 'bitsnoop', 'torrentz2'
+    'shazbat', 'bitsnoop', 'torrentz2', 'animetorrents'
 ]
