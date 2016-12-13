@@ -23,21 +23,29 @@ def get_apiv2_handlers(base):
     from .api.v2.auth import LoginHandler
     from .api.v2.asset import AssetHandler
     from .api.v2.base import NotFoundHandler
+    from .api.v2.cache import SceneExceptionHandler
 
     show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
-    ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
+    ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|' \
+            r'(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
     query = r'(?P<query>[\w]+)'
     query_extended = r'(?P<query>[\w \(\)%]+)'  # This also accepts the space char, () and %
     log_level = r'(?P<log_level>[a-zA-Z]+)'
     asset_group = r'(?P<asset_group>[a-zA-Z0-9]+)'
+    scene_name_id = r'(?P<show_indexer_id>[\d]+)/(?P<show_id>[\d]+)/(?P<season>[\d]+)'
 
     return [
-        (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id, query=query), ShowHandler),
+        (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id,
+                                                                          query=query),
+         ShowHandler),
         (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
         (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
         (r'{base}/auth/login(/?)'.format(base=base), LoginHandler),
-        (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group, query=query_extended), AssetHandler),
-        (r'{base}(/?.*)'.format(base=base), NotFoundHandler)
+        (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
+                                                                 query=query_extended),
+         AssetHandler),
+        (r'{base}/scene/{scene_name_id}?/?'.format(base=base, scene_name_id=scene_name_id), SceneExceptionHandler),
+        (r'{base}(/?.*)'.format(base=base), NotFoundHandler),
     ]
 
 
