@@ -4079,3 +4079,26 @@
   other: HD
   screen_size: 720p
   type: episode
+
+? Show.Name.S01.720p.WEBRip.DD5.1.x264-MiNiGRiP
+: title: Show Name
+  season: 1
+  screen_size: 720p
+  format: WEBRip
+  audio_codec: AC3
+  audio_channels: '5.1'
+  video_codec: h264
+  video_encoder: x264
+  release_group: MiNiGRiP
+  type: episode
+
+? Show.Name.(2016).S01E02.HDTV.SubtituladoEsp.SC
+: title: Show Name
+  alias: Show Name 2016
+  year: 2016
+  season: 1
+  episode: 2
+  format: HDTV
+  subtitle_language: es
+  release_group: SC
+  type: episode

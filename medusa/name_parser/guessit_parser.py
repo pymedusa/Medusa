@@ -25,6 +25,7 @@ expected_groups = [
     'RipPourBox',
     'RiPRG',
     'NBY',
+    'MiNiGRiP',
 
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294

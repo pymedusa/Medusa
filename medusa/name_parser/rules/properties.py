@@ -127,7 +127,7 @@ def subtitle_language():
     # special handling
     rebulk.regex(r'Legenda(?:s|do)?@PT-?BR', value=babelfish.Language('por', 'BR'))
     rebulk.regex(r'Legenda(?:s|do)?@PT(?!-?BR)', value=babelfish.Language('por'))
-    rebulk.regex('Subtitulado@ESP(?:a[nñ]ol)?@Spanish', 'Subtitulado@ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
+    rebulk.regex('Subtitulado@?ESP(?:a[nñ]ol)?@?Spanish', 'Subtitulado@?ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
                  conflict_solver=lambda match, other: other if other.name == 'language' else '__default__')
 
     # undefined language
