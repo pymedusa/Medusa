@@ -52,7 +52,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
     def clean_null_indexer_mappings(self):
         logger.log(u'Checking for null indexer mappings', logger.DEBUG)
-        query = "SELECT * from indexer_mapping where mindexer = ''"
+        query = "SELECT * from indexer_mapping where mindexer_id = ''"
 
         sql_results = self.connection.select(query)
         if sql_results:
