@@ -126,6 +126,10 @@ class BithdtvProvider(TorrentProvider):
             # Skip column headers
             for row in torrent_rows[1:]:
                 cells = row('td')
+                if len(cells) < 3:
+                    # We must have cells[2] because it containts the title
+                    continue
+
                 if self.freeleech and not row.get('bgcolor'):
                     continue
 
