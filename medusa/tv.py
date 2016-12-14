@@ -972,7 +972,7 @@ class TVShow(TVObject):
         sql_l = []
 
         for external in self.externals:
-            if external in reverse_mappings:
+            if external in reverse_mappings and self.externals[external]:
                 sql_l.append([b'INSERT OR IGNORE '
                               'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
                               'VALUES (?,?,?,?)',
@@ -1263,7 +1263,7 @@ class TVShow(TVObject):
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
         self.runtime = getattr(indexed_show, 'runtime', '')
-        self.externals = getattr(indexed_show, 'externals', {})
+        self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
         self.imdbid = getattr(indexed_show, 'imdb_id', '') or self.externals.get('imdb_id')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
