@@ -30,11 +30,14 @@ from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
+from .helper.externals import check_existing_shows
 from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
-                                          IndexerShowIncomplete, IndexerShowNotFoundInLanguage)
+                                          IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
+                                          IndexerShowNotFoundInLanguage)
 from .tv import TVShow
+
 
 
 class ShowQueueActions(object):
@@ -367,12 +370,13 @@ class QueueItemAdd(ShowQueueItem):
             # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that
             # has no proper english version of the show
             if getattr(s, 'seriesname', None) is None:
-                logger.log(u"Show in {} has no name on {}, probably searched with the wrong language.".format
+                logger.log(u"Show in {0} has no name on {1}, probably searched with the wrong language.".format
                            (self.showDir, indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error("Unable to add show", "Show in " + self.showDir + " has no name on " +
-                                       str(indexerApi(self.indexer).name) + ", probably the wrong language. "
-                                       "Delete .nfo and manually add the correct language.")
+                ui.notifications.error('Unable to add show Show',
+                                       'Show in {0} has no name on {1}, probably the wrong language. \
+                                       Delete .nfo and manually add the correct language.'
+                                       .format(self.showDir, indexerApi(self.indexer).name))
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
@@ -380,19 +384,34 @@ class QueueItemAdd(ShowQueueItem):
                 logger.log(u"Show " + str(s['seriesname']) + u" is on " + str(indexerApi(self.indexer).name) +
                            u" but contains no season/episode data.")
                 ui.notifications.error("Unable to add show",
-                                       "Show " + str(s['seriesname']) + " is on " + str(indexerApi(
-                                           self.indexer).name) + " but contains no season/episode data.")
+                                       "Show {0} is on {1} but contains no season/episode data.".
+                                       format(s['seriesname'], indexerApi(self.indexer).name))
+                self._finishEarly()
+
+                return
+
+            # Check if we can already find this show in our current showList.
+            try:
+                check_existing_shows(s, self.indexer)
+            except IndexerShowAllreadyInLibrary as e:
+                logger.log(u"Could not add the show %s, as it already is in your library"
+                           u"Error: %s" % (s['seriesname'], e.message), logger.WARNING)
+                ui.notifications.error(
+                    'Unable to add show',
+                    'reason: {0}' .format(e.message)
+                )
                 self._finishEarly()
                 return
+
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
         except IndexerShowIncomplete as e:
             logger.log(u"%s Error while loading information from indexer %s. "
                        u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s "
-                "Reason: %s" %
-                (self.showDir, indexerApi(self.indexer).name, self.indexer_id, e)
+                "Unable to look up the show in {0} on {1} using ID {2} "
+                "Reason: {3}"
+                .format(self.showDir, indexerApi(self.indexer).name, self.indexer_id, e)
             )
             self._finishEarly()
             return
@@ -401,9 +420,9 @@ class QueueItemAdd(ShowQueueItem):
                        u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, ex(e)), logger.ERROR)
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s, not using the NFO. "
-                "Delete .nfo and try adding manually again." %
-                (self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+                "Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
+                "Delete .nfo and try adding manually again.".
+                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
             )
             self._finishEarly()
             return
