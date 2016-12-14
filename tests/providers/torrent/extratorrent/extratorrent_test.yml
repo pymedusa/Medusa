@@ -1,0 +1,49 @@
+daily:
+  date: 2016-12-14
+  url: http://extratorrent.cc/view/today/TV.html
+  mode: RSS
+  data:
+    - seeders: 1
+      pubdate:
+      title: Carson.Daly.2016.12.13.Simone.Biles.HDTV.x264-CROOKS[ettv]
+      torrent_hash:
+      leechers: 0
+      link: http://extratorrent.cc/download/5354297/Carson.Daly.2016.12.13.Simone.Biles.HDTV.x264-CROOKS%5Bettv%5D.torrent
+      size: 198663208
+
+    - seeders: 1
+      pubdate:
+      title: Jimmy.Kimmel.2016.12.13.Rami.Malek.HDTV.x264-CROOKS[ettv]
+      torrent_hash:
+      leechers: 0
+      link: http://extratorrent.cc/download/5354250/Jimmy.Kimmel.2016.12.13.Rami.Malek.HDTV.x264-CROOKS%5Bettv%5D.torrent
+      size: 443254046
+
+    - seeders: 2
+      pubdate:
+      title: The.Weekly.With.Charlie.Pickering.2016.12.14.Yearly.Special.360p.LDTV.ABC.AU.WEBRIP.[MPup]
+      torrent_hash:
+      leechers: 5
+      link: http://extratorrent.cc/download/5354245/The.Weekly.With.Charlie.Pickering.2016.12.14.Yearly.Special.360p.LDTV.ABC.AU.WEBRIP.%5BMPup%5D.torrent
+      size: 242745344
+
+backlog:
+  date: 2016-12-14
+  url: http://extratorrent.cc/search/?y=0&new=1&search=Elementary+S05E07&x=0
+  mode: Episode
+  data:
+    - seeders: 49
+      pubdate:
+      title: Elementary S05E07 (1080p WEBRip x265 HEVC 10bit AAC 5.1 Qman) [UTR]
+      torrent_hash:
+      leechers: 14
+      link: http://extratorrent.cc/download/5309682/Elementary+S05E07+%281080p+WEBRip+x265+HEVC+10bit+AAC+5.1+Qman%29+%5BUTR%5D.torrent
+      size: 379081195
+
+    - seeders: 219
+      pubdate:
+      title: Elementary.S05E07.1080p.HDTV.x264[state]
+      torrent_hash:
+      leechers: 45
+      link: http://extratorrent.cc/download/5305486/Elementary.S05E07.1080p.HDTV.x264%5Bstate%5D.torrent
+      size: 455375585
