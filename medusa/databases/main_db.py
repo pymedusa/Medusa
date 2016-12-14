@@ -57,7 +57,7 @@ class MainSanityCheck(db.DBSanityCheck):
         sql_results = self.connection.select(query)
         if sql_results:
             logger.log(u"Found {0} null indexer mapping. Deleting...".format(len(sql_results)), logger.DEBUG)
-            self.connection.action("DELETE FROM indexer_mapping WHERE mindexer = ''")
+            self.connection.action("DELETE FROM indexer_mapping WHERE mindexer_id = ''")
 
     def update_old_propers(self):
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
