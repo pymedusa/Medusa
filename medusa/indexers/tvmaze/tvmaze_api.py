@@ -273,8 +273,7 @@ class TVmaze(BaseIndexer):
                 self._set_item(tvmaze_id, seas_no, ep_no, k, v)
 
     def _parse_images(self, tvmaze_id):
-        """Parses images XML, from
-        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
+        """Parse Show and Season posters.
 
         images are retrieved using t['show name]['_banners'], for example:
 
@@ -299,17 +298,40 @@ class TVmaze(BaseIndexer):
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
-        _images = {u'poster': {u'1014x1500': {u'1': {u'rating': '',
+        _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
                                                      u'language': u'en',
-                                                     u'ratingcount': '',
+                                                     u'ratingcount': 1,
                                                      u'bannerpath': image_original.split('/')[-1],
                                                      u'bannertype': u'poster',
                                                      u'bannertype2': u'210x195',
                                                      u'_bannerpath': image_original,
                                                      u'id': u'1035106'}}}}
 
+        season_images = self._parse_season_images(tvmaze_id)
+        if season_images:
+            _images.update(season_images)
+
         self._save_images(tvmaze_id, _images)
         self._set_show_data(tvmaze_id, '_banners', _images)
+
+    def _parse_season_images(self, tvmaze_id):
+        """Parse Show and Season posters."""
+        seasons = {}
+        if tvmaze_id:
+            log().debug('Getting all show data for %s', [tvmaze_id])
+            seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
+
+        _images = {'season': {'original': {}}}
+        # Get the season posters
+        for season in seasons.keys():
+            if not getattr(seasons[season], 'image', None):
+                continue
+            if season not in _images['season']['original']:
+                _images['season']['original'][season] = {seasons[season].id: {}}
+            _images['season']['original'][season][seasons[season].id]['_bannerpath'] = seasons[season].image['original']
+            _images['season']['original'][season][seasons[season].id]['rating'] = 1
+
+        return _images
 
     def _parse_actors(self, tvmaze_id):
         """Parsers actors XML, from
