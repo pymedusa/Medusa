@@ -200,7 +200,8 @@ class BTNProvider(TorrentProvider):
 
         # Search
         if ep_obj.show.indexer == 1:
-            current_params['tvdb'] = self._get_tvdb_id()
+            # Provider only supports tvdb. So we shouldn't fallback to externals
+            current_params['tvdb'] = self._get_tvdb_id(fallback_externals=False)
             search_params.append(current_params)
         else:
             name_exceptions = list(

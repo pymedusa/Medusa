@@ -96,7 +96,8 @@ class RarbgProvider(TorrentProvider):
             else:
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
-                search_params['search_tvdb'] = self._get_tvdb_id()
+                # Provider only supports tvdb. So we shouldn't fallback to externals
+                search_params['search_tvdb'] = self._get_tvdb_id(fallback_externals=False)
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':

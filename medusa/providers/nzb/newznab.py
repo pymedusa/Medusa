@@ -355,8 +355,9 @@ class NewznabProvider(NZBProvider):
             return {}
 
         for search_type in self.cap_tv_search.split(','):
-            if search_type == 'tvdbid' and self._get_tvdb_id():
-                return_mapping['tvdbid'] = self._get_tvdb_id()
+            tvdb_id = self._get_tvdb_id(fallback_externals=False)
+            if search_type == 'tvdbid' and tvdb_id:
+                return_mapping['tvdbid'] = tvdb_id
                 # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
                 if return_mapping['tvdbid']:
                     return return_mapping
