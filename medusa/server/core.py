@@ -32,7 +32,6 @@ def get_apiv2_handlers(base):
     query_extended = r'(?P<query>[\w \(\)%]+)'  # This also accepts the space char, () and %
     log_level = r'(?P<log_level>[a-zA-Z]+)'
     asset_group = r'(?P<asset_group>[a-zA-Z0-9]+)'
-    scene_name_id = r'(?P<show_indexer_id>[\d]+)/(?P<show_id>[\d]+)/(?P<season>[\d]+)'
 
     return [
         (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id,
@@ -44,7 +43,7 @@ def get_apiv2_handlers(base):
         (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
                                                                  query=query_extended),
          AssetHandler),
-        (r'{base}/scene/{scene_name_id}?/?'.format(base=base, scene_name_id=scene_name_id), SceneExceptionHandler),
+        (r'{base}/scene(?:/(?P<row_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
         (r'{base}(/?.*)'.format(base=base), NotFoundHandler),
     ]
 
