@@ -48,6 +48,16 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
+        self.clean_null_indexer_mappings()
+
+    def clean_null_indexer_mappings(self):
+        logger.log(u'Checking for null indexer mappings', logger.DEBUG)
+        query = "SELECT * from indexer_mapping where mindexer = ''"
+
+        sql_results = self.connection.select(query)
+        if sql_results:
+            logger.log(u"Found {0} null indexer mapping. Deleting...".format(len(sql_results)), logger.DEBUG)
+            self.connection.action("DELETE FROM indexer_mapping WHERE mindexer = ''")
 
     def update_old_propers(self):
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
