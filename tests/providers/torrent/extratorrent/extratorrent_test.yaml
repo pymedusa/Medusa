@@ -1,7 +1,6 @@
 daily:
-  date: 2016-12-14
-  url: http://extratorrent.cc/view/today/TV.html
   mode: RSS
+  search_strings: ['']
   data:
     - seeders: 1
       pubdate:
@@ -28,9 +27,8 @@ daily:
       size: 242745344
 
 backlog:
-  date: 2016-12-14
-  url: http://extratorrent.cc/search/?y=0&new=1&search=Elementary+S05E07&x=0
   mode: Episode
+  search_strings: ['Arrow S05E07']
   data:
     - seeders: 49
       pubdate:
