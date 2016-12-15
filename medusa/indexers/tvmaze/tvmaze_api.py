@@ -484,22 +484,30 @@ class TVmaze(BaseIndexer):
         externals = {}
 
         if kwargs.get('tvrage_id'):
-            tvmaze_show = self.tvmaze_api.get_show(tvrage_id=kwargs.get('tvrage_id'))
-            if tvmaze_show:
-                externals = tvmaze_show.externals
-                externals['tvmaze_id'] = tvmaze_show.id
-                return clean_externals_dict(externals)
+            try:
+                tvmaze_show = self.tvmaze_api.get_show(tvrage_id=kwargs.get('tvrage_id'))
+                if tvmaze_show:
+                    externals = tvmaze_show.externals
+                    externals['tvmaze_id'] = tvmaze_show.id
+                    return clean_externals_dict(externals)
+            except ShowNotFound:
+                externals = {}
         if kwargs.get('tvdb_id'):
-            tvmaze_show = self.tvmaze_api.get_show(tvdb_id=kwargs.get('tvdb_id'))
-            if tvmaze_show:
-                externals = tvmaze_show.externals
-                externals['tvmaze_id'] = tvmaze_show.id
-                return clean_externals_dict(externals)
+            try:
+                tvmaze_show = self.tvmaze_api.get_show(tvdb_id=kwargs.get('tvdb_id'))
+                if tvmaze_show:
+                    externals = tvmaze_show.externals
+                    externals['tvmaze_id'] = tvmaze_show.id
+                    return clean_externals_dict(externals)
+            except ShowNotFound:
+                externals = {}
         if kwargs.get('imdb_id'):
-            tvmaze_show = self.tvmaze_api.get_show(imdb_id=kwargs.get('imdb_id'))
-            if tvmaze_show:
-                externals = tvmaze_show.externals
-                externals['tvmaze_id'] = tvmaze_show.id
-                return clean_externals_dict(externals)
-
+            try:
+                tvmaze_show = self.tvmaze_api.get_show(imdb_id=kwargs.get('imdb_id'))
+                if tvmaze_show:
+                    externals = tvmaze_show.externals
+                    externals['tvmaze_id'] = tvmaze_show.id
+                    return clean_externals_dict(externals)
+            except ShowNotFound:
+                externals = {}
         return externals

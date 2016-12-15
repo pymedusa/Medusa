@@ -53,7 +53,7 @@ def get_trakt_externals(externals):
     trakt_mapping_rev = {v: k for k, v in trakt_mapping.items()}
 
     for external_key in externals:
-        if not trakt_mapping.get(external_key):
+        if not trakt_mapping.get(external_key) or not externals[external_key]:
             continue
 
         url = id_lookup.format(external_key=trakt_mapping[external_key], external_value=externals[external_key])
@@ -69,7 +69,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
     """Use as much as possible sources to map known id's."""
     if show:
         indexer = show.indexer
-        new_show_externals = show['externals']
+        new_show_externals = show.externals
     else:
         if not indexer or not indexed_show:
             raise Exception('Need a minimum of a show object or an indexer + indexer_api '
