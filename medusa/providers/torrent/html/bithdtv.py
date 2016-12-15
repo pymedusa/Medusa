@@ -151,7 +151,7 @@ class BithdtvProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[6].get_text(" ")
+                    torrent_size = cells[6].get_text(' ')
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {
