@@ -21,7 +21,7 @@ from __future__ import unicode_literals
 import datetime
 import traceback
 
-from traktor import TraktApi, TraktException
+from traktor import TokenExpiredException, TraktApi, TraktException
 from . import app, db, logger, ui
 from .common import Quality, SKIPPED, UNKNOWN, WANTED
 from .helper.common import episode_num
@@ -60,7 +60,8 @@ class TraktChecker(object):
     def __init__(self):
         trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
                           'trakt_api_secret': app.TRAKT_API_SECRET,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
         self.trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
         self.todoWanted = []
         self.show_watchlist = {}
@@ -94,13 +95,24 @@ class TraktChecker(object):
 
         self.amActive = False
 
+    def request(self, path):
+        """Fetch shows from trakt and store the refresh token when needed."""
+        try:
+            library_shows = self.trakt_api.request(path) or []
+            if self.trakt_api.access_token_refreshed:
+                app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
+                app.TRAKT_REFRESH_TOKEN = self.trakt_api.refresh_token
+                app.instance.save_config()
+        except TokenExpiredException:
+            app.TRAKT_ACCESS_TOKEN = ''
+            raise
+
+        return library_shows
+
     def find_show(self, indexerid):
 
         try:
-            trakt_library = self.trakt_api.request('sync/collection/shows') or []
-            if self.trakt_api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
-
+            trakt_library = self.request('sync/collection/shows') or []
             if not trakt_library:
                 logger.log('No shows found in your library, aborting library update', logger.DEBUG)
                 return
@@ -142,7 +154,7 @@ class TraktChecker(object):
                            format(show_obj.name, repr(e)), logger.WARNING)
 
             try:
-                self.trakt_api.request('sync/collection/remove', data, method='POST')
+                self.request('sync/collection/remove', data, method='POST')
             except TraktException as e:
                 logger.log('Could not connect to Trakt. Aborting removing show {0} from Trakt library. Error: {1}'.
                            format(show_obj.name, repr(e)), logger.WARNING)
@@ -177,7 +189,7 @@ class TraktChecker(object):
             logger.log('Adding {0} to Trakt library'.format(show_obj.name), logger.DEBUG)
 
             try:
-                self.trakt_api.request('sync/collection', data, method='POST')
+                self.request('sync/collection', data, method='POST')
             except TraktException as e:
                 logger.log('Could not connect to Trakt. Aborting adding show {0} to Trakt library. Error: {1}'.format(show_obj.name, repr(e)), logger.WARNING)
                 return
@@ -224,7 +236,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.trakt_api.request('sync/collection/remove', data, method='POST')
+                        self.request('sync/collection/remove', data, method='POST')
                         self._get_show_collection()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -256,7 +268,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.trakt_api.request('sync/collection', data, method='POST')
+                        self.request('sync/collection', data, method='POST')
                         self._get_show_collection()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -305,7 +317,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.trakt_api.request('sync/watchlist/remove', data, method='POST')
+                        self.request('sync/watchlist/remove', data, method='POST')
                         self._get_episode_watchlist()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -336,7 +348,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.trakt_api.request('sync/watchlist', data, method='POST')
+                        self.request('sync/watchlist', data, method='POST')
                         self._get_episode_watchlist()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -363,7 +375,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = {'shows': trakt_data}
-                        self.trakt_api.request('sync/watchlist', data, method='POST')
+                        self.request('sync/watchlist', data, method='POST')
                         self._get_show_watchlist()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -381,9 +393,7 @@ class TraktChecker(object):
                             continue
 
                         try:
-                            progress = self.trakt_api.request('shows/{0}/progress/watched'.format(show.imdbid)) or []
-                            if self.trakt_api.access_token_refreshed:
-                                app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
+                            progress = self.request('shows/{0}/progress/watched'.format(show.imdbid)) or []
                         except TraktException as e:
                             logger.log('Could not connect to Trakt. Aborting removing show {0} from Medusa. Error: {1}'.format(show.name, repr(e)), logger.WARNING)
                             continue
@@ -528,9 +538,7 @@ class TraktChecker(object):
         """
         try:
             self.show_watchlist = {'tvdb_id': {}, 'tvrage_id': {}}
-            trakt_show_watchlist = self.trakt_api.request('sync/watchlist/shows')
-            if self.trakt_api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
+            trakt_show_watchlist = self.request('sync/watchlist/shows')
 
             tvdb_id = 'tvdb'
             tvrage_id = 'tvrage'
@@ -560,9 +568,7 @@ class TraktChecker(object):
         """
         try:
             self.episode_watchlist = {'tvdb_id': {}, 'tvrage_id': {}}
-            trakt_episode_watchlist = self.trakt_api.request('sync/watchlist/episodes')
-            if self.trakt_api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
+            trakt_episode_watchlist = self.request('sync/watchlist/episodes')
 
             tvdb_id = 'tvdb'
             tvrage_id = 'tvrage'
@@ -610,9 +616,7 @@ class TraktChecker(object):
         try:
             self.collection_list = {'tvdb_id': {}, 'tvrage_id': {}}
             logger.log('Getting Show Collection', logger.DEBUG)
-            trakt_collection = self.trakt_api.request('sync/collection/shows')
-            if self.trakt_api.access_token_refreshed:
-                app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
+            trakt_collection = self.request('sync/collection/shows')
 
             tvdb_id = 'tvdb'
             tvrage_id = 'tvrage'
