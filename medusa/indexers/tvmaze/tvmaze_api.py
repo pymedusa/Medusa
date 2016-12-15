@@ -476,10 +476,12 @@ class TVmaze(BaseIndexer):
         """
         def clean_externals_dict(externals):
             """Only add external if it has a value."""
-            return {external_id: external_value
+            mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
+            return {mapping[external_id]: external_value
                     for external_id, external_value
                     in externals.items()
-                    if external_value}
+                    if external_value
+                    and mapping.get(external_id)}
 
         externals = {}
 

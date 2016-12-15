@@ -1274,7 +1274,10 @@ class TVShow(TVObject):
         # Enrich the externals, using reverse lookup.
         self.externals.update(get_externals(self))
 
-        self.imdbid = getattr(indexed_show, 'imdb_id', '') or self.externals.get('imdb_id')
+        if self.externals.get('imdb_id'):
+            self.imdbid = self.externals.get('imdb_id')
+        else:
+            self.imdbid = getattr(indexed_show, 'imdb_id', '')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
             self.airs = '{airs_day_of_week} {airs_time}'.format(airs_day_of_week=indexed_show['airs_dayofweek'],
