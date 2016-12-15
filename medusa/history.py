@@ -67,7 +67,7 @@ def log_snatch(searchResult):
         version = searchResult.version
         proper_tags = '|'.join(searchResult.proper_tags)
         manually_searched = searchResult.manually_searched
-        info_hash = searchResult.hash if searchResult.hash else None
+        info_hash = searchResult.hash.lower() if searchResult.hash else None
 
         providerClass = searchResult.provider
         if providerClass is not None:
