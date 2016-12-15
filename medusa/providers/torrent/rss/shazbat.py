@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.exceptions import AuthException

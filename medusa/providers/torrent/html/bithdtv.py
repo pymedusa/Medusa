@@ -22,6 +22,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -150,8 +151,7 @@ class BithdtvProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = '{size} {unit}'.format(size=cells[6].contents[0],
-                                                          unit=cells[6].contents[1].get_text())
+                    torrent_size = cells[6].get_text(' ')
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {

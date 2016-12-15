@@ -21,6 +21,7 @@ from __future__ import unicode_literals
 import traceback
 
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import app, logger, tv_cache
 from ....bs4_parser import BS4Parser

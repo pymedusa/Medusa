@@ -20,6 +20,7 @@ from __future__ import unicode_literals
 import json
 
 from requests.compat import urlencode, urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.exceptions import AuthException

@@ -22,7 +22,9 @@ import re
 import traceback
 
 from requests.compat import urljoin
+
 import validators
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser

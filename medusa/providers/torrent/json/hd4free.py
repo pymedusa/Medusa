@@ -21,7 +21,9 @@ from __future__ import unicode_literals
 import traceback
 
 from dateutil import parser
+
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.common import convert_size
@@ -179,5 +181,6 @@ class HD4FreeProvider(TorrentProvider):
         logger.log('Your authentication credentials for {provider} are missing, check your config.'.format
                    (provider=self.name), logger.WARNING)
         return False
+
 
 provider = HD4FreeProvider()
