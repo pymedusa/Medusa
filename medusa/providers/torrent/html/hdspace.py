@@ -139,8 +139,10 @@ class HDSpaceProvider(TorrentProvider):
                     continue
 
                 try:
-                    title = row.findAll('td', class_='lista', attrs={'align': 'center'})[4].find('a')['title'][10:] or \
-                        row.find('td', class_='lista', attrs={'align': 'left'}).find('a').get_text()
+                    comments_counter = row.findAll('td', class_='lista', attrs={'align': 'center'})[4].find('a')
+                    title = row.find('td', class_='lista', attrs={'align': 'left'}).find('a').get_text()
+                    if comments_counter:
+                        title = comments_counter['title'][10:]
                     dl_href = row.find('td', class_='lista', attrs={'width': '20',
                                        'style': 'text-align: center;'}).find('a').get('href')
                     download_url = urljoin(self.url, dl_href)
