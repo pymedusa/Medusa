@@ -394,8 +394,8 @@ class QueueItemAdd(ShowQueueItem):
             try:
                 check_existing_shows(s, self.indexer)
             except IndexerShowAllreadyInLibrary as e:
-                logger.log(u"Could not add the show %s, as it already is in your library"
-                           u"Error: %s" % (s['seriesname'], e.message), logger.WARNING)
+                logger.log(u"Could not add the show %s, as it already is in your library."
+                           u" Error: %s" % (s['seriesname'], e.message), logger.WARNING)
                 ui.notifications.error(
                     'Unable to add show',
                     'reason: {0}' .format(e.message)

@@ -21,7 +21,7 @@
 import logging
 from .. import app
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_config import mappings
+from ..indexers.indexer_config import indexerConfig
 from ..indexers.indexer_exceptions import IndexerShowAllreadyInLibrary
 
 
@@ -37,8 +37,20 @@ def check_existing_shows(indexer_object, indexer):
     """
 
     # For this show let's get all externals, and use them.
+    mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
     other_indexers = [mapped_indexer for mapped_indexer in mappings if mapped_indexer != indexer]
     new_show_externals = indexer_object['externals']
+
+    # We for example want to add through tmdb, but the show is already added through tvdb.
+    # If tmdb doesn't have a mapping to imdb, but tvmaze does, there is a small chance we can use that.
+    mapped_externals = {}
+
+    for indexer in other_indexers:
+        lINDEXER_API_PARMS = indexerApi(indexer).api_params.copy()
+        t = indexerApi(indexer).indexer(**lINDEXER_API_PARMS)
+        if hasattr(t, 'get_id_by_external'):
+            # Call the get_id_by_external and pass all the externals we have, except for the indexers own.
+            mapped_externals.update(t.get_id_by_external(**new_show_externals))
 
     # Iterate through all shows in library, and see if one of our externals matches it's indexer_id
     # Or one of it's externals.
