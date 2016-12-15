@@ -55,6 +55,7 @@ from .helper.exceptions import (
     MultipleShowObjectsException, MultipleShowsInDatabaseException, NoNFOException, ShowDirectoryNotFoundException,
     ShowNotFoundException, ex
 )
+from .helper.externals import get_externals
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, indexerConfig, mappings, reverse_mappings
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError,
@@ -1263,7 +1264,16 @@ class TVShow(TVObject):
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
         self.runtime = getattr(indexed_show, 'runtime', '')
+
+        # set the externals, using the result from the indexer.
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
+
+        # Add myself (indexer) as an external
+        self.externals[mappings[self.indexer]] = self.indexerid
+
+        # Enrich the externals, using reverse lookup.
+        self.externals.update(get_externals(self))
+
         self.imdbid = getattr(indexed_show, 'imdb_id', '') or self.externals.get('imdb_id')
 
         if getattr(indexed_show, 'airs_dayofweek', '') and getattr(indexed_show, 'airs_time', ''):
