@@ -59,7 +59,7 @@ def check_existing_shows(indexer_object, indexer):
         # Check if the new shows indexer id matches the external for the show in library
         if show.externals.get(mappings[indexer]) and indexer_object['id'] == show.externals.get(mappings[indexer]):
             raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
-                                               'Please remove the show, before you can add it through {2.'
+                                               'Please remove the show, before you can add it through {2}.'
                                                .format(show.name, indexerApi(show.indexer).name,
                                                        indexerApi(indexer).name))
 
