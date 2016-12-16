@@ -95,10 +95,10 @@ class TraktChecker(object):
 
         self.amActive = False
 
-    def request(self, path):
+    def _request(self, path, method='GET'):
         """Fetch shows from trakt and store the refresh token when needed."""
         try:
-            library_shows = self.trakt_api.request(path) or []
+            library_shows = self.trakt_api.request(path, method) or []
             if self.trakt_api.access_token_refreshed:
                 app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
                 app.TRAKT_REFRESH_TOKEN = self.trakt_api.refresh_token
@@ -112,7 +112,7 @@ class TraktChecker(object):
     def find_show(self, indexerid):
 
         try:
-            trakt_library = self.request('sync/collection/shows') or []
+            trakt_library = self._request('sync/collection/shows') or []
             if not trakt_library:
                 logger.log('No shows found in your library, aborting library update', logger.DEBUG)
                 return
@@ -154,7 +154,7 @@ class TraktChecker(object):
                            format(show_obj.name, repr(e)), logger.WARNING)
 
             try:
-                self.request('sync/collection/remove', data, method='POST')
+                self._request('sync/collection/remove', data, method='POST')
             except TraktException as e:
                 logger.log('Could not connect to Trakt. Aborting removing show {0} from Trakt library. Error: {1}'.
                            format(show_obj.name, repr(e)), logger.WARNING)
@@ -189,7 +189,7 @@ class TraktChecker(object):
             logger.log('Adding {0} to Trakt library'.format(show_obj.name), logger.DEBUG)
 
             try:
-                self.request('sync/collection', data, method='POST')
+                self._request('sync/collection', data, method='POST')
             except TraktException as e:
                 logger.log('Could not connect to Trakt. Aborting adding show {0} to Trakt library. Error: {1}'.format(show_obj.name, repr(e)), logger.WARNING)
                 return
@@ -236,7 +236,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.request('sync/collection/remove', data, method='POST')
+                        self._request('sync/collection/remove', data, method='POST')
                         self._get_show_collection()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -268,7 +268,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.request('sync/collection', data, method='POST')
+                        self._request('sync/collection', data, method='POST')
                         self._get_show_collection()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -317,7 +317,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.request('sync/watchlist/remove', data, method='POST')
+                        self._request('sync/watchlist/remove', data, method='POST')
                         self._get_episode_watchlist()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -348,7 +348,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = self.trakt_bulk_data_generate(trakt_data)
-                        self.request('sync/watchlist', data, method='POST')
+                        self._request('sync/watchlist', data, method='POST')
                         self._get_episode_watchlist()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -375,7 +375,7 @@ class TraktChecker(object):
                 if trakt_data:
                     try:
                         data = {'shows': trakt_data}
-                        self.request('sync/watchlist', data, method='POST')
+                        self._request('sync/watchlist', data, method='POST')
                         self._get_show_watchlist()
                     except TraktException as e:
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
@@ -393,7 +393,7 @@ class TraktChecker(object):
                             continue
 
                         try:
-                            progress = self.request('shows/{0}/progress/watched'.format(show.imdbid)) or []
+                            progress = self._request('shows/{0}/progress/watched'.format(show.imdbid)) or []
                         except TraktException as e:
                             logger.log('Could not connect to Trakt. Aborting removing show {0} from Medusa. Error: {1}'.format(show.name, repr(e)), logger.WARNING)
                             continue
@@ -538,7 +538,7 @@ class TraktChecker(object):
         """
         try:
             self.show_watchlist = {'tvdb_id': {}, 'tvrage_id': {}}
-            trakt_show_watchlist = self.request('sync/watchlist/shows')
+            trakt_show_watchlist = self._request('sync/watchlist/shows')
 
             tvdb_id = 'tvdb'
             tvrage_id = 'tvrage'
@@ -568,7 +568,7 @@ class TraktChecker(object):
         """
         try:
             self.episode_watchlist = {'tvdb_id': {}, 'tvrage_id': {}}
-            trakt_episode_watchlist = self.request('sync/watchlist/episodes')
+            trakt_episode_watchlist = self._request('sync/watchlist/episodes')
 
             tvdb_id = 'tvdb'
             tvrage_id = 'tvrage'
@@ -616,7 +616,7 @@ class TraktChecker(object):
         try:
             self.collection_list = {'tvdb_id': {}, 'tvrage_id': {}}
             logger.log('Getting Show Collection', logger.DEBUG)
-            trakt_collection = self.request('sync/collection/shows')
+            trakt_collection = self._request('sync/collection/shows')
 
             tvdb_id = 'tvdb'
             tvrage_id = 'tvrage'
