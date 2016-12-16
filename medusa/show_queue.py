@@ -39,7 +39,6 @@ from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError
 from .tv import TVShow
 
 
-
 class ShowQueueActions(object):
 
     def __init__(self):

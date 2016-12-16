@@ -34,7 +34,6 @@ def get_trakt_externals(externals):
 
     :param externals: Dictionary of key/value pairs with external id's.
     """
-
     def trakt_request(api, url):
         """Perform the request and handle possible token refresh."""
         try:
@@ -74,9 +73,12 @@ def get_trakt_externals(externals):
 def get_externals(show=None, indexer=None, indexed_show=None):
     """Use as much as possible sources to map known id's.
 
-    Provide the external id's you have in a dictionay, and use as much available resources as possible to retrieve
+    Provide the external id's you have in a dictionary, and use as much available resources as possible to retrieve
     external id's.
-    :param show: Op"""
+    :param show: TVShow object.
+    :param indexer: Indexer id. For example 1 for tvdb or 4 for tmdb.
+    :param indexed_show: The result of a fully indexed shows. For example after an t['12345']
+    """
     if show:
         indexer = show.indexer
         new_show_externals = show.externals
@@ -94,9 +96,9 @@ def get_externals(show=None, indexer=None, indexed_show=None):
     # If tmdb doesn't have a mapping to imdb, but tvmaze does, there is a small chance we can use that.
 
     for other_indexer in other_indexers:
-        lINDEXER_API_PARMS = indexerApi(other_indexer).api_params.copy()
+        lindexer_api_pararms = indexerApi(other_indexer).api_params.copy()
         try:
-            t = indexerApi(other_indexer).indexer(**lINDEXER_API_PARMS)
+            t = indexerApi(other_indexer).indexer(**lindexer_api_pararms)
         except IndexerUnavailable:
             continue
         if hasattr(t, 'get_id_by_external'):

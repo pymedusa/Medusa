@@ -487,8 +487,7 @@ class TVmaze(BaseIndexer):
                         return {mapping[external_id]: external_value
                                 for external_id, external_value
                                 in externals.items()
-                                if external_value
-                                and mapping.get(external_id)}
+                                if external_value and mapping.get(external_id)}
                 except ShowNotFound:
                     externals = {}
 

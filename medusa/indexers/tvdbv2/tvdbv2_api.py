@@ -20,7 +20,7 @@ import logging
 from collections import OrderedDict
 
 from requests.compat import urljoin
-from requests.packages.urllib3.exceptions import RequestError, MaxRetryError
+from requests.packages.urllib3.exceptions import MaxRetryError, RequestError
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
