@@ -39,7 +39,11 @@ class TorrentChecker(object):
             return
 
         self.amActive = True
-        client = clients.get_client_class(app.TORRENT_METHOD)()
-        client.get_torrents_status()
+
+        try:
+            client = clients.get_client_class(app.TORRENT_METHOD)()
+            client.get_torrents_status()
+        except Exception as e:
+            logger.debug('Failed to check torrent status. Error: {error}'.format(error=e))
 
         self.amActive = False
