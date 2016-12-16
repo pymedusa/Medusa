@@ -95,10 +95,10 @@ class TraktChecker(object):
 
         self.amActive = False
 
-    def _request(self, path, method='GET'):
+    def _request(self, path, data=None, method='GET'):
         """Fetch shows from trakt and store the refresh token when needed."""
         try:
-            library_shows = self.trakt_api.request(path, method) or []
+            library_shows = self.trakt_api.request(path, data, method=method) or []
             if self.trakt_api.access_token_refreshed:
                 app.TRAKT_ACCESS_TOKEN = self.trakt_api.access_token
                 app.TRAKT_REFRESH_TOKEN = self.trakt_api.refresh_token

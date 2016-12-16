@@ -43,7 +43,7 @@ def get_trakt_externals(externals):
                 app.TRAKT_ACCESS_TOKEN = api.access_token
                 app.TRAKT_REFRESH_TOKEN = api.refresh_token
                 app.instance.save_config()
-        except TokenExpiredException:
+        except (TokenExpiredException, TraktException):
             app.TRAKT_ACCESS_TOKEN = ''
             raise
         return result
