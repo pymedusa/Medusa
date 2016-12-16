@@ -62,6 +62,8 @@ def get_trakt_externals(externals):
             continue
 
         url = id_lookup.format(external_key=trakt_mapping[external_key], external_value=externals[external_key])
+        logger.debug(u"Looking for externals using Trakt and {indexer_name}'s {id}",
+                     indexer_name=trakt_mapping[external_key], id=externals[external_key])
         result = trakt_request(trakt_api, url)
         if result and len(result) and result[0].get('show') and result[0]['show'].get('ids'):
             ids = {trakt_mapping_rev[k]: v for k, v in result[0]['show'].get('ids').items()
@@ -102,6 +104,8 @@ def get_externals(show=None, indexer=None, indexed_show=None):
         except IndexerUnavailable:
             continue
         if hasattr(t, 'get_id_by_external'):
+            logger.debug(u"Trying other indexers {indexer_name} get_id_by_external.",
+                         indexer_name=indexerApi(other_indexer).name)
             # Call the get_id_by_external and pass all the externals we have, except for the indexers own.
             new_show_externals.update(t.get_id_by_external(**new_show_externals))
 
@@ -131,6 +135,8 @@ def check_existing_shows(indexed_show, indexer):
 
         # Check if the new shows indexer id matches the external for the show in library
         if show.externals.get(mappings[indexer]) and indexed_show['id'] == show.externals.get(mappings[indexer]):
+            logger.debug(u"The Show {show_name} was already added. Found it because the show's added id ({id}),"
+                         u" is already known it the db.", show_name=show.name, id=indexed_show['id'])
             raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
                                                'Please remove the show, before you can add it through {2}.'
                                                .format(show.name, indexerApi(show.indexer).name,
@@ -145,6 +151,10 @@ def check_existing_shows(indexed_show, indexer):
                 continue
 
             if new_show_externals.get(new_show_external_key) == show.externals.get(new_show_external_key):
+                logger.debug(u"The Show {show_name} was already added. Found it because one of show's externals "
+                             u'({external_id}) matches one of an existing shows external with value ({id}).',
+                             show_name=show.name, external_id=new_show_external_key,
+                             id=show.externals.get(new_show_external_key))
                 raise IndexerShowAllreadyInLibrary('The show {0} has already been added by the indexer {1}. '
                                                    'Please remove the show, before you can add it through {2}.'
                                                    .format(show.name, indexerApi(show.indexer).name,
