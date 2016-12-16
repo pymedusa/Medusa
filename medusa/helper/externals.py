@@ -23,14 +23,20 @@ from traktor import TokenExpiredException, TraktApi, TraktException
 from .. import app
 from ..indexers.indexer_api import indexerApi
 from ..indexers.indexer_config import indexerConfig
-from ..indexers.indexer_exceptions import IndexerShowAllreadyInLibrary
+from ..indexers.indexer_exceptions import IndexerShowAllreadyInLibrary, IndexerUnavailable
 
 
 logger = logging.getLogger(__name__)
 
 
 def get_trakt_externals(externals):
+    """Small trakt api wrapper, to request trakt externals using multiple external id's.
+
+    :param externals: Dictionary of key/value pairs with external id's.
+    """
+
     def trakt_request(api, url):
+        """Perform the request and handle possible token refresh."""
         try:
             result = api.request(url) or []
             if api.access_token_refreshed:
@@ -66,7 +72,11 @@ def get_trakt_externals(externals):
 
 
 def get_externals(show=None, indexer=None, indexed_show=None):
-    """Use as much as possible sources to map known id's."""
+    """Use as much as possible sources to map known id's.
+
+    Provide the external id's you have in a dictionay, and use as much available resources as possible to retrieve
+    external id's.
+    :param show: Op"""
     if show:
         indexer = show.indexer
         new_show_externals = show.externals
@@ -85,7 +95,10 @@ def get_externals(show=None, indexer=None, indexed_show=None):
 
     for other_indexer in other_indexers:
         lINDEXER_API_PARMS = indexerApi(other_indexer).api_params.copy()
-        t = indexerApi(other_indexer).indexer(**lINDEXER_API_PARMS)
+        try:
+            t = indexerApi(other_indexer).indexer(**lINDEXER_API_PARMS)
+        except IndexerUnavailable:
+            continue
         if hasattr(t, 'get_id_by_external'):
             # Call the get_id_by_external and pass all the externals we have, except for the indexers own.
             new_show_externals.update(t.get_id_by_external(**new_show_externals))
@@ -99,10 +112,11 @@ def get_externals(show=None, indexer=None, indexed_show=None):
 def check_existing_shows(indexed_show, indexer):
     """Check if the searched show already exists in the current library.
 
-    :param indexer_object:
-    :return:
+    :param indexed_show: (Indexer Show object) The indexed show from -for example- tvdb. It might already have some
+    externals like imdb_id which can be used to search at tmdb, tvmaze or trakt.
+    :param indexer: (int) The indexer id, which has been used to search the indexed_show with.
+    :return: Raises the exception IndexerShowAllreadyInLibrary() when the show is already in your library.
     """
-
     # For this show let's get all externals, and use them.
     mappings = {indexer: indexerConfig[indexer]['mapped_to'] for indexer in indexerConfig}
     other_indexers = [mapped_indexer for mapped_indexer in mappings if mapped_indexer != indexer]

@@ -469,47 +469,27 @@ class TVmaze(BaseIndexer):
     def get_id_by_external(self, **kwargs):
         """Search tvmaze for a show, using an external id.
 
+        Accepts as kwargs, so you'l need to add the externals as key/values.
         :param tvrage: The tvrage id.
         :param thetvdb: The tvdb id.
         :param imdb: An imdb id (inc. tt).
         :returns: A dict with externals, including the tvmaze id.
         """
-        def clean_externals_dict(externals):
-            """Only add external if it has a value."""
-            mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
-            return {mapping[external_id]: external_value
-                    for external_id, external_value
-                    in externals.items()
-                    if external_value
-                    and mapping.get(external_id)}
-
+        mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
         externals = {}
+        for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
+            if kwargs.get(external_id):
+                try:
+                    result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})
+                    if result:
+                        externals = result.externals
+                        externals[external_id] = result.id
+                        return {mapping[external_id]: external_value
+                                for external_id, external_value
+                                in externals.items()
+                                if external_value
+                                and mapping.get(external_id)}
+                except ShowNotFound:
+                    externals = {}
 
-        if kwargs.get('tvrage_id'):
-            try:
-                tvmaze_show = self.tvmaze_api.get_show(tvrage_id=kwargs.get('tvrage_id'))
-                if tvmaze_show:
-                    externals = tvmaze_show.externals
-                    externals['tvmaze_id'] = tvmaze_show.id
-                    return clean_externals_dict(externals)
-            except ShowNotFound:
-                externals = {}
-        if kwargs.get('tvdb_id'):
-            try:
-                tvmaze_show = self.tvmaze_api.get_show(tvdb_id=kwargs.get('tvdb_id'))
-                if tvmaze_show:
-                    externals = tvmaze_show.externals
-                    externals['tvmaze_id'] = tvmaze_show.id
-                    return clean_externals_dict(externals)
-            except ShowNotFound:
-                externals = {}
-        if kwargs.get('imdb_id'):
-            try:
-                tvmaze_show = self.tvmaze_api.get_show(imdb_id=kwargs.get('imdb_id'))
-                if tvmaze_show:
-                    externals = tvmaze_show.externals
-                    externals['tvmaze_id'] = tvmaze_show.id
-                    return clean_externals_dict(externals)
-            except ShowNotFound:
-                externals = {}
         return externals

@@ -587,39 +587,23 @@ class Tmdb(BaseIndexer):
     def get_id_by_external(self, **kwargs):
         """Search tvmaze for a show, using an external id.
 
-        :param tvrage: The tvrage id.
-        :param thetvdb: The tvdb id.
-        :param imdb: An imdb id (inc. tt).
+        Accepts as kwargs, so you'l need to add the externals as key/values.
+        :param tvrage_id: The tvrage id.
+        :param tvdb_id: The tvdb id.
+        :param imdb_id: An imdb id (inc. tt).
         :returns: A dict with externals, including the tvmaze id.
         """
-        def clean(externals):
-            """Only add external if it has a value."""
-            return {external_id: external_value
-                    for external_id, external_value
-                    in externals.items()
-                    if external_value and external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
-        externals = {}
+        for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
+            if kwargs.get(external_id):
+                result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})
+                if result.get('tv_results', None) and result['tv_results'][0]:
+                    # Get the external id's for the passed shows id.
+                    externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
+                    externals['tmdb_id'] = result['tv_results'][0]['id']
 
-        if kwargs.get('tvrage_id'):
-            result = self.tmdb.Find(kwargs.get('tvrage_id')).info(**{'external_source': 'tvrage_id'})
-            if result.get('tv_results', None) and result['tv_results'][0]:
-                # Get the external id's for the tmdb show.
-                externals = clean(self.tmdb.TV(result['tv_results'][0]['id']).external_ids())
-                externals['tmdb_id'] = result['tv_results'][0]['id']
-                return externals
-        if kwargs.get('tvdb_id'):
-            result = self.tmdb.Find(kwargs.get('tvdb_id')).info(**{'external_source': 'tvdb_id'})
-            if result.get('tv_results', None) and result['tv_results'][0]:
-                # Get the external id's for the tmdb show.
-                externals = clean(self.tmdb.TV(result['tv_results'][0]['id']).external_ids())
-                externals['tmdb_id'] = result['tv_results'][0]['id']
-                return externals
-        if kwargs.get('imdb_id'):
-            result = self.tmdb.Find(kwargs.get('imdb_id')).info(**{'external_source': 'imdb_id'})
-            if result.get('tv_results', None) and result['tv_results'][0]:
-                # Get the external id's for the tmdb show.
-                externals = clean(self.tmdb.TV(result['tv_results'][0]['id']).external_ids())
-                externals['tmdb_id'] = result['tv_results'][0]['id']
-                return externals
-
-        return externals
+                    externals = {external_id: external_value
+                                 for external_id, external_value
+                                 in externals.items()
+                                 if external_value and external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
+                    return externals
+        return {}

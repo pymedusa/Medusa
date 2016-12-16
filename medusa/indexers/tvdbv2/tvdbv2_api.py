@@ -20,7 +20,7 @@ import logging
 from collections import OrderedDict
 
 from requests.compat import urljoin
-from requests.packages.urllib3.exceptions import RequestError
+from requests.packages.urllib3.exceptions import RequestError, MaxRetryError
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
@@ -69,8 +69,11 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s' (%s)", e.reason, e.status)
+            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
             raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
+        except (MaxRetryError, RequestError) as e:
+            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
 
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
