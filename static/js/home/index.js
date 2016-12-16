@@ -99,19 +99,20 @@ MEDUSA.home.index = function() {
             1: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
             3: function(node) { return $(node).find('span').prop('title').toLowerCase(); }, // eslint-disable-line brace-style
             4: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-            5: function(node) { return $(node).find('span:first').text(); }, // eslint-disable-line brace-style
-            6: function(node) { return $(node).data('show-size'); }, // eslint-disable-line brace-style
-            7: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
+            5: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
+            6: function(node) { return $(node).find('span:first').text(); }, // eslint-disable-line brace-style
+            7: function(node) { return $(node).data('show-size'); }, // eslint-disable-line brace-style
+            8: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
         },
         widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
         headers: {
             0: {sorter: 'realISODate'},
             1: {sorter: 'realISODate'},
             2: {sorter: 'loadingNames'},
-            4: {sorter: 'quality'},
-            5: {sorter: 'eps'},
-            6: {sorter: 'digit'},
-            7: {filter: 'parsed'}
+            5: {sorter: 'quality'},
+            6: {sorter: 'eps'},
+            7: {sorter: 'digit'},
+            8: {filter: 'parsed'}
         },
         widgetOptions: {
             filter_columnFilters: true, // eslint-disable-line camelcase
