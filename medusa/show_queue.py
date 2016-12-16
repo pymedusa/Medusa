@@ -31,7 +31,7 @@ from .helper.exceptions import (
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
 from .helper.externals import check_existing_shows
-from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
+from .helpers import chmodAsParent, delete_empty_folders, get_showname_from_indexer, makeDir
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
                                           IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
@@ -400,6 +400,9 @@ class QueueItemAdd(ShowQueueItem):
                     'reason: {0}' .format(e.message)
                 )
                 self._finishEarly()
+
+                # Clean up leftover if the newly created directory is empty.
+                delete_empty_folders(self.showDir)
                 return
 
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
