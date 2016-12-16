@@ -137,6 +137,11 @@
                 <span title="${curShow.network}">${curShow.network}</span>
             </td>
             <td align="center">
+                % if curShow.imdbid:
+                    <a href="${anon_url('http://www.imdb.com/title/', curShow.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${curShow.imdbid}">
+                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                    </a>
+                % endif
                 <a href="${anon_url(indexerApi(curShow.indexer).config['show_url'], curShow.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(curShow.indexer).config['show_url']}${curShow.indexerid}">
                     <img alt="${indexerApi(curShow.indexer).name}" height="16" width="16" src="images/${indexerApi(curShow.indexer).config['icon']}" />
                 </a>
