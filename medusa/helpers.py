@@ -108,7 +108,7 @@ def isMediaFile(filename):
             return False
 
         # ignore RARBG release intro
-        if re.search(r'^RARBG\.\w+\.(mp4|avi|txt)$', filename, re.I):
+        if re.search(r'^RARBG(\.(com|to))?\.(txt|avi|mp4)$', filename, re.I):
             return False
 
         # ignore MAC OS's retarded "resource fork" files
