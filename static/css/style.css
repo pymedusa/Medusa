@@ -196,7 +196,7 @@ inc_top.mako
 }
 
 .upgrade-notification {
-    width: 600px;
+    /*width: 600px;*/
     text-align: center;
     margin-top: 20px;
     display: inline-block;
@@ -1037,7 +1037,7 @@ displayShow.mako
         display: block;
         margin: 0 auto;
     }
-    
+
     .tvshowImg {
         float: none;
     }
@@ -3260,7 +3260,7 @@ div.formpaginate .next {
     font-size: 12px;
     font-weight: normal;
     display: block;
-    width: 475px;
+    /*width: 475px;*/
     margin-left: 182px;
 }
 
