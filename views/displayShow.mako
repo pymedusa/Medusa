@@ -3,13 +3,12 @@
     import datetime
     import urllib
     import ntpath
-    import medusa as app
-    from medusa import subtitles, sbdatetime, network_timezones
-    import medusa.helpers
+    from medusa import app, helpers, subtitles, sbdatetime, network_timezones
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
+    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -139,8 +138,8 @@
 	                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
 	                </a>
 	% endif
-	                <a href="${anon_url(app.indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${app.indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
-	                    <img alt="${app.indexerApi(show.indexer).name}" height="16" width="16" src="images/${app.indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+	                <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+	                    <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
 	                </a>
 	% if xem_numbering or xem_absolute_numbering:
 	                <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
@@ -167,60 +166,61 @@
 	            <div id="summary" class="col-md-12">
 		            <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-8 col-md-8 col-sm-8 col-xs-12">
 		                <table class="summaryTable pull-left">
-		                <% anyQualities, bestQualities = Quality.splitQuality(int(show.quality)) %>
-		                    <tr><td class="showLegend">Quality: </td><td>
-		                % if show.quality in qualityPresets:
-		                    ${renderQualityPill(show.quality)}
-		                % else:
-		                % if anyQualities:
-		                    <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(anyQualities)])}${'<br>' if bestQualities else ''}
-		                % endif
-		                % if bestQualities:
-		                    <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(bestQualities)])}
-		                % endif
-		                % endif
-		                % if show.network and show.airs:
-		                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
-		                % elif show.network:
-		                    <tr><td class="showLegend">Originally Airs: </td><td>${show.network}</td></tr>
-		                % elif show.airs:
-		                    <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
-		                % endif
-		                    <tr><td class="showLegend">Show Status: </td><td>${show.status}</td></tr>
-		                    <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
-		                % if showLoc[1]:
-		                    <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
-		                % else:
-		                    <tr><td class="showLegend"><span style="color: rgb(255, 0, 0);">Location: </span></td><td><span style="color: rgb(255, 0, 0);">${showLoc[0]}</span> (Missing)</td></tr>
-		                % endif
-		                % if all_scene_exceptions:
-		                    <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
-		                % endif
-		                % if require_words:
-		                    <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${require_words}</span></td></tr>
-		                % endif
-		                % if ignore_words:
-		                    <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${ignore_words}</span></td></tr>
-		                % endif
-		                % if preferred_words:
-		                    <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${preferred_words}</span></td></tr>
-		                % endif
-		                % if undesired_words:
-		                    <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${undesired_words}</span></td></tr>
-		                % endif
-		                % if bwl and bwl.whitelist:
-		                    <tr>
-		                        <td class="showLegend">Wanted Group${"s" if len(bwl.whitelist) > 1 else ""}:</td>
-		                        <td>${', '.join(bwl.whitelist)}</td>
-		                    </tr>
-		                % endif
-		                % if bwl and bwl.blacklist:
-		                    <tr>
-		                        <td class="showLegend">Unwanted Group${"s" if len(bwl.blacklist) > 1 else ""}:</td>
-		                        <td>${', '.join(bwl.blacklist)}</td>
-		                    </tr>
-		                % endif
-		                <tr><td class="showLegend">Size:</td><td>${pretty_file_size(app.helpers.get_size(showLoc[0]))}</td></tr>
+                            <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
+                                <tr><td class="showLegend">Quality: </td><td>
+                            % if show.quality in qualityPresets:
+                                ${renderQualityPill(show.quality)}
+                            % else:
+                            % if allowed_qualities:
+                                <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                            % endif
+                            % if preferred_qualities:
+                                <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                            % endif
+                            % endif
+                            % if show.network and show.airs:
+                                <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
+                            % elif show.network:
+                                <tr><td class="showLegend">Originally Airs: </td><td>${show.network}</td></tr>
+                            % elif show.airs:
+                                <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"}</td></tr>
+                            % endif
+                                <tr><td class="showLegend">Show Status: </td><td>${show.status}</td></tr>
+                                <tr><td class="showLegend">Default EP Status: </td><td>${statusStrings[show.default_ep_status]}</td></tr>
+                            % if showLoc[1]:
+                                <tr><td class="showLegend">Location: </td><td>${showLoc[0]}</td></tr>
+                            % else:
+                                <tr><td class="showLegend"><span style="color: rgb(255, 0, 0);">Location: </span></td><td><span style="color: rgb(255, 0, 0);">${showLoc[0]}</span> (Missing)</td></tr>
+                            % endif
+                            % if all_scene_exceptions:
+                                <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
+                            % endif
+                            % if show.show_words().required_words:
+                                <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${show.show_words().required_words}</span></td></tr>
+                            % endif
+                            % if show.show_words().ignored_words:
+                                <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${show.show_words().ignored_words}</span></td></tr>
+                            % endif
+                            % if show.show_words().preferred_words:
+                                <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${show.show_words().preferred_words}</span></td></tr>
+                            % endif
+                            % if show.show_words().undesired_words:
+                                <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${show.show_words().undesired_words}</span></td></tr>
+                            % endif
+                            % if bwl and bwl.whitelist:
+                                <tr>
+                                    <td class="showLegend">Wanted Group${"s" if len(bwl.whitelist) > 1 else ""}:</td>
+                                    <td>${', '.join(bwl.whitelist)}</td>
+                                </tr>
+                            % endif
+                            % if bwl and bwl.blacklist:
+                                <tr>
+                                    <td class="showLegend">Unwanted Group${"s" if len(bwl.blacklist) > 1 else ""}:</td>
+                                    <td>${', '.join(bwl.blacklist)}</td>
+                                </tr>
+                            % endif
+                            <tr><td class="showLegend">Size:</td><td>${pretty_file_size(helpers.get_size(showLoc[0]))}</td></tr>
+                <!-- Option table right -->
 		                </table>
 		            </div>
 
