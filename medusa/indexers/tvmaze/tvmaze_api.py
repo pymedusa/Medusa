@@ -113,7 +113,7 @@ class TVmaze(BaseIndexer):
                         continue
 
                     # These keys have more complex dictionaries, let's map these manually
-                    if key in ['schedule', 'network', 'image', 'externals', 'rating', 'web_channel']:
+                    if key in ['schedule', 'network', 'image', 'externals', 'rating']:
                         if key == 'schedule':
                             return_dict['airs_time'] = value.get('time') or '0:00AM'
                             return_dict['airs_dayofweek'] = value.get('days')[0] if value.get('days') else None
@@ -133,9 +133,6 @@ class TVmaze(BaseIndexer):
                         if key == 'rating':
                             return_dict['contentrating'] = str(value.get('average'))\
                                 if isinstance(value, dict) else str(value)
-                        if key == 'web_channel' and 'network' not in return_dict:
-                            return_dict['network'] = str(value.name) if hasattr(value, 'name') and value.name else None
-
                     else:
                         # Do some value sanitizing
                         if isinstance(value, list):
@@ -154,6 +151,11 @@ class TVmaze(BaseIndexer):
                     return_dict['episodenumber'] = str(index_special_episodes)
                     return_dict['seasonnumber'] = 0
                     index_special_episodes += 1
+
+                # If there is a web_channel available, let's use that in stead of the network field.
+                network = getattr(item, 'web_channel', None)
+                if network and hasattr(network, 'name') and network.name:
+                    return_dict['network'] = network.name
 
             except Exception as e:
                 log().warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
