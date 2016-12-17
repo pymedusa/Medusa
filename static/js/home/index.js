@@ -202,6 +202,10 @@ MEDUSA.home.index = function() {
                 progress: function(itemElem) {
                     var progress = $(itemElem).attr('data-progress');
                     return (progress.length && parseInt(progress, 10)) || Number.NEGATIVE_INFINITY;
+                },
+                indexer: function(itemElem) {
+                    var indexer = $(itemElem).attr('data-indexer');
+                    return (indexer.length && parseInt(indexer, 10)) || Number.NEGATIVE_INFINITY;
                 }
             }
         });

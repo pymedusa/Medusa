@@ -77,7 +77,7 @@
             elif 'nded' in display_status:
                 data_date = '5000000100.0'
     %>
-        <div class="show-container" id="show${curShow.indexerid}" data-name="${curShow.name}" data-date="${data_date}" data-network="${curShow.network}" data-progress="${progressbar_percent}">
+        <div class="show-container" id="show${curShow.indexerid}" data-name="${curShow.name}" data-date="${data_date}" data-network="${curShow.network}" data-progress="${progressbar_percent}" data-indexer="${curShow.indexer}">
             <div class="aligner">
                 <div class="background-image">
                     <img src="images/poster-back-dark.png"/>
