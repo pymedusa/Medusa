@@ -152,9 +152,10 @@ class TVmaze(BaseIndexer):
                     return_dict['seasonnumber'] = 0
                     index_special_episodes += 1
 
-                # Use webChannel if available
-                if getattr(item, 'webChannel', None):
-                    return_dict['network'] = getattr(item, 'webChannel')
+                # If there is a web_channel available, let's use that in stead of the network field.
+                network = getattr(item, 'web_channel', None)
+                if network and getattr(network, 'name', None):
+                    return_dict['network'] = network.name
 
             except Exception as e:
                 log().warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
