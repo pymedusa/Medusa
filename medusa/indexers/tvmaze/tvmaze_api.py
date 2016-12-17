@@ -154,7 +154,7 @@ class TVmaze(BaseIndexer):
 
                 # If there is a web_channel available, let's use that in stead of the network field.
                 network = getattr(item, 'web_channel', None)
-                if network and hasattr(network, 'name') and network.name:
+                if network and getattr(network, 'name', None):
                     return_dict['network'] = network.name
 
             except Exception as e:
