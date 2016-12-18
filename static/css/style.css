@@ -6,6 +6,12 @@ strong.warning {
 inc_top.mako
 ========================================================================== */
 
+.header {
+    display: block;
+    clear: right;
+    margin-top: 15px;
+}
+
 .navbaricon {
     margin-top: -15px;
     margin-bottom: -15px;
@@ -179,25 +185,21 @@ inc_top.mako
 }
 
 #content {
-    width: 95%;
-    min-width: 875px;
-    padding: 15px;
     margin-left: auto;
     margin-right: auto;
     clear: both;
 }
 
 #SubMenu {
-    padding-right: 20px;
-    clear: both;
     font-size: 12px;
     float: right;
 }
 
 .upgrade-notification {
-    width: 600px;
+    /*width: 600px;*/
     text-align: center;
-    margin: 50px auto 0;
+    margin-top: 20px;
+    display: inline-block;
 }
 
 [class^="menu-icon-"],
@@ -207,7 +209,6 @@ inc_top.mako
     width: 16px;
     display: inline-block;
     position: relative;
-    top: 2px;
     float: left;
 }
 
@@ -514,8 +515,11 @@ home.mako
     background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
 }
 
-span.show-option {
-    white-space: nowrap;
+
+/* Show options */
+
+.show-option {
+	float: left;
     margin-left: 10px;
     line-height: 40px;
 }
@@ -982,15 +986,136 @@ displayShow.mako
     overflow-y: auto;
 }
 
-#posterCol {
+.show-poster-container {
     float: left;
     margin-right: 10px;
-    margin-bottom: 20px;
 }
 
-#showCol {
-    overflow: hidden;
-    margin-bottom: 20px;
+#show-specials-and-seasons {
+    margin-bottom: 15px;
+}
+
+.show-info-container {
+    overflow:hidden;
+}
+
+.tvshowImg {
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 5px;
+    height: 311px;
+    width: auto;
+    float: left;
+}
+@media (max-width: 767px) {
+    .pull-xs-left {
+        float: left;
+    }
+
+    .pull-xs-right {
+        float: right;
+    }
+
+    .no-padding-xs {
+        padding: 0;
+    }
+
+    .nocheck {
+        padding-left: 0 !important;
+    }
+
+    .tvshowImg {
+        margin-bottom: 10px;
+    }
+
+    .show-poster-container {
+        display: inline-block;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .show-poster-container img {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .tvshowImg {
+        float: none;
+    }
+
+    .col-md-12 > .horizontal-scroll {
+        margin: 0 -13px;
+    }
+
+    .select-show-group {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    .show-info-container {
+    display: block;
+    padding-top: 5px;
+    width: 100%;
+}
+
+
+}
+
+@media (min-width: 768px) {
+    .display-specials, .display-seasons {
+        top: -60px;
+    }
+
+    #show-specials-and-seasons {
+        bottom: 5px;
+        right: 15px;
+        position: absolute;
+    }
+
+    .tvshowImg {
+        max-height: 245px;
+    }
+
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .show-poster-container {
+        float: left;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .show-info-container {
+        display: block;
+        width: 100%;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .pull-md-left {
+        float: left;
+    }
+
+    .pull-md-right {
+        float: right;
+    }
+
+    .tvshowImg {
+        max-height: 269px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .pull-lg-left {
+        float: left;
+    }
+
+    .pull-lg-right {
+        float: right;
+    }
+
+    .tvshowImg {
+        max-height: 269px;
+    }
 }
 
 .navShow {
@@ -1022,7 +1147,6 @@ h1.title a {
 
 .displayspecials {
     position: relative;
-    top: -24px;
 }
 
 #showinfo {
@@ -1063,7 +1187,7 @@ span.imdbstars > * {
 ul.tags {
     list-style-type: none;
     position: relative;
-    top: -5px;
+    top: 4px;
     margin-left: -40px;
 }
 
@@ -1084,26 +1208,20 @@ ul.tags li a {
     color: rgb(255, 255, 255);
 }
 
-.tvshowImg {
-    border: 1px solid rgb(204, 204, 204);
-    border-radius: 5px;
-    height: 311px;
-    width: auto;
-    float: left;
-}
-
 #summary {
+    margin-top: 5px;
+    margin-bottom: 5px;
     padding: 10px;
-    background-color: rgb(239, 239, 239);
-    border: 1px solid rgb(223, 222, 222);
+    background-color: #EFEFEF;
+    border: 1px solid #DFDEDE;
     width: 100%;
-    height: 250px;
     overflow: auto;
     cursor: default;
+    opacity: 0.8;
+    min-height: 213px;
 }
 
 .summaryTable {
-    max-width: 70%;
     overflow: hidden;
 }
 
@@ -1454,6 +1572,11 @@ div.season-scene-exception {
 .showOptions {
     width: 180px;
     float: right;
+}
+
+select#select-show {
+    display: inline-block;
+    width: calc(100% - 40px);
 }
 
 /* =======================================================================
@@ -2243,8 +2366,9 @@ span.path {
 }
 
 .h2footer {
-    margin: -45px 0 8px;
+    /*margin: -45px 0 8px;*/
     line-height: 18px;
+    clear: both;
 }
 
 span.quality {
@@ -2469,11 +2593,6 @@ select,
     color: rgb(0, 0, 0);
 }
 
-.container-fluid {
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
 .navbar-brand {
     padding: 0;
 }
@@ -2608,6 +2727,17 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 .dropdown-menu > li > a {
     padding: 4px 36px 4px 20px;
+}
+
+.dropdown-menu-custom > li > a {
+	padding: 15px 36px 15px 5px;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: darkgrey;
+}
+
+.dropdown-menu-custom > li:last-child > a {
+    border-bottom-style: none;
 }
 
 .dropdown-menu {
@@ -3132,7 +3262,7 @@ div.formpaginate .next {
     font-size: 12px;
     font-weight: normal;
     display: block;
-    width: 475px;
+    /*width: 475px;*/
     margin-left: 182px;
 }
 
@@ -3708,3 +3838,81 @@ viewLog.mako
 .log-filter {
     margin-top: 20px;
 }
+
+/* ========================================================================
+css helper classes
+===========================================================================*/
+/* Some css helper classes */
+
+.top-5 {
+    margin-top: 5px;
+}
+
+.top-10 {
+    margin-top: 10px;
+}
+
+.top-15 {
+    margin-top: 15px;
+}
+
+.top-20 {
+    margin-top: 20px;
+}
+
+.top-25 {
+    margin-top: 25px;
+}
+
+.bottom-5 {
+    margin-bottom: 5px;
+}
+
+.bottom-10 {
+    margin-bottom: 10px;
+}
+
+.bottom-15 {
+    margin-bottom: 15px;
+}
+
+.bottom-20 {
+    margin-bottom: 20px;
+}
+
+.bottom-25 {
+    margin-bottom: 25px;
+}
+
+/* sub-menu */
+
+@media screen and (min-width: 0px) and (max-width: 768px) {
+  .full-width { display: none; }  /* show it on small screens */
+  .mobile { display: block;}
+  .mobile .ui-icon {display: inline-block;}
+  .dropdown-menu-custom > li > a {
+      padding: 15px 36px 15px 5px;
+      border-bottom-style: solid;
+      border-bottom-width: 1px;
+  }
+  .mobile > ul > li > a {
+      padding-top: 15px;
+      padding-bottom: 15px;
+      padding-left: 8px;
+  }
+  .mobile .img-align {
+      width: 25px;
+      float: left;
+  }
+}
+
+#sub-menu > a {
+	float: right;
+	margin-left: 4px;
+}
+
+@media screen and (min-width: 769px) {
+  .full-width {display: block; }  /* show it on small screens */
+  .mobile {display: none;}
+}
+

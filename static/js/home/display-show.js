@@ -24,13 +24,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     $('#prevShow').on('click', function() {
-        $('#pickShow option:selected').prev('option').prop('selected', true);
-        $('#pickShow').change();
+        $('#select-show option:selected').prev('option').prop('selected', true);
+        $('#select-show').change();
     });
 
     $('#nextShow').on('click', function() {
-        $('#pickShow option:selected').next('option').prop('selected', true);
-        $('#pickShow').change();
+        $('#select-show option:selected').next('option').prop('selected', true);
+        $('#select-show').change();
     });
 
     $('#changeStatus').on('click', function() {
@@ -108,7 +108,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // handle the show selection dropbox
-    $('#pickShow').on('change', function() {
+    $('#select-show').on('change', function() {
         var val = $(this).val();
         if (val === 0) {
             return;
