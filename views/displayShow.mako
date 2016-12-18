@@ -247,42 +247,50 @@
 	    </div> <!-- end of container -->
     </div> <!-- end of row -->
     <div class="clearfix"></div>
-    <div class="pull-left" >
-        Change selected episodes to:<br>
-        <select id="statusSelect" class="form-control form-control-inline input-sm">
-        <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-        % if not app.USE_FAILED_DOWNLOADS:
-        <% availableStatus.remove(FAILED) %>
-        % endif
-        % for curStatus in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-            % if curStatus not in [DOWNLOADED, ARCHIVED]:
-            <option value="${curStatus}">${statusStrings[curStatus]}</option>
+
+    <div class="row">
+        <div class="col-md-12 pull-right clearfix" id="checkboxControls">
+            <div class="pull-right">
+                <div style="padding-bottom: 5px;">
+                    <% total_snatched = epCounts[Overview.SNATCHED] + epCounts[Overview.SNATCHED_PROPER] + epCounts[Overview.SNATCHED_BEST] %>
+                    <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${epCounts[Overview.WANTED]}</b></span></label>
+                    <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${epCounts[Overview.QUAL]}</b></span></label>
+                    <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${epCounts[Overview.GOOD]}</b></span></label>
+                    <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${epCounts[Overview.SKIPPED]}</b></span></label>
+                    <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
+                </div>
+
+                <div class="pull-right" >
+                    <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
+                    <button class="btn btn-xs clearAll">Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12" >
+            Change selected episodes to:<br>
+            <select id="statusSelect" class="form-control form-control-inline input-sm">
+            <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
+            % if not app.USE_FAILED_DOWNLOADS:
+            <% availableStatus.remove(FAILED) %>
             % endif
-        % endfor
-        </select>
-        <input type="hidden" id="showID" value="${show.indexerid}" />
-        <input type="hidden" id="indexer" value="${show.indexer}" />
-        <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
-    </div>
-    <br>
-    <div class="pull-right clearfix" id="checkboxControls">
-        <div style="padding-bottom: 5px;">
-            <% total_snatched = epCounts[Overview.SNATCHED] + epCounts[Overview.SNATCHED_PROPER] + epCounts[Overview.SNATCHED_BEST] %>
-            <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${epCounts[Overview.WANTED]}</b></span></label>
-            <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${epCounts[Overview.QUAL]}</b></span></label>
-            <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${epCounts[Overview.GOOD]}</b></span></label>
-            <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${epCounts[Overview.SKIPPED]}</b></span></label>
-            <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
-        </div>
-        <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
-        <div class="pull-right" >
-            <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
-            <button class="btn btn-xs clearAll">Clear All</button>
+            % for curStatus in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
+                % if curStatus not in [DOWNLOADED, ARCHIVED]:
+                <option value="${curStatus}">${statusStrings[curStatus]}</option>
+                % endif
+            % endfor
+            </select>
+            <input type="hidden" id="showID" value="${show.indexerid}" />
+            <input type="hidden" id="indexer" value="${show.indexer}" />
+            <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
+
+            <div class="pull-right">
+                <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
+            </div>
         </div>
     </div>
-<br>
-<br>
-<br>
 
 <table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if app.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
     <% curSeason = -1 %>
