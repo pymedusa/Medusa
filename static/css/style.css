@@ -3884,7 +3884,7 @@ css helper classes
     margin-bottom: 25px;
 }
 
-/* Submenu */
+/* sub-menu */
 
 @media screen and (min-width: 0px) and (max-width: 768px) {
   .full-width { display: none; }  /* show it on small screens */
@@ -3906,7 +3906,7 @@ css helper classes
   }
 }
 
-#SubMenu > a {
+#sub-menu > a {
 	float: right;
 	margin-left: 4px;
 }

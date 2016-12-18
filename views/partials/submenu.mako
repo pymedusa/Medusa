@@ -1,6 +1,6 @@
 <!-- BEGIN SUBMENU -->
     <div id="sub-menu-container" class="row">
-	    <div id="SubMenu" class="hidden-print col-md-12">
+	    <div id="sub-menu" class="hidden-print col-md-12">
 	        <% first = True %>
 	        % for menuItem in submenu:
 	            % if 'requires' not in menuItem or menuItem['requires']:
@@ -23,11 +23,11 @@
 	        % endfor
 	    </div>
     </div> <!-- end of container -->
-<!-- END SUBMENU -->
+<!-- END sub-menu -->
 
-<!-- MOBILE SUBMENU -->
+<!-- MOBILE sub-menu -->
     <div class="btn-group">
-  
+
   <ul class="dropdown-menu">
     <li><a href="#">Action</a></li>
     <li><a href="#">Another action</a></li>
