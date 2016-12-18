@@ -17,10 +17,6 @@ EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 expected_groups = [
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294
-    '4EVERHD',
-    'F4ST3R',
-    'F4ST',
-    'TGNF4ST',
     'TV2LAX9',
 
     # https://github.com/guessit-io/guessit/issues/352
