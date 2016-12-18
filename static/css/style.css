@@ -1053,6 +1053,7 @@ displayShow.mako
 
     .show-info-container {
     display: block;
+    padding-top: 5px;
     width: 100%;
 }
 
@@ -1217,6 +1218,7 @@ ul.tags li a {
     overflow: auto;
     cursor: default;
     opacity: 0.8;
+    min-height: 213px;
 }
 
 .summaryTable {
