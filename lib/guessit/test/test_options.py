@@ -119,21 +119,22 @@ def test_load_config_file():
 
 
 def test_load_config():
-    config = load_config({'param1': 'test', 'config': [os.path.join(__location__, 'config', 'test.yml')]})
+    config = load_config({'no_embedded_config': True, 'param1': 'test',
+                          'config': [os.path.join(__location__, 'config', 'test.yml')]})
 
     assert config['param1'] == 'test'
 
     assert config['expected_title'] == ['The 100', 'OSS 117']
     assert config['yaml'] is True
 
-    config = load_config({'param1': 'test'})
+    config = load_config({'no_embedded_config': True, 'param1': 'test'})
 
     assert config['param1'] == 'test'
 
     assert 'expected_title' not in config
     assert 'yaml' not in config
 
-    config = load_config({'param1': 'test', 'config': ['false']})
+    config = load_config({'no_embedded_config': True, 'param1': 'test', 'config': ['false']})
 
     assert config['param1'] == 'test'
 

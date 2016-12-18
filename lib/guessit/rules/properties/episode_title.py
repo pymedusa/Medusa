@@ -5,10 +5,12 @@ Episode title
 """
 from collections import defaultdict
 
-from rebulk import Rebulk, Rule, AppendMatch, RenameMatch
+from rebulk import Rebulk, Rule, AppendMatch, RenameMatch, POST_PROCESS
+
 from ..common import seps, title_seps
-from ..properties.title import TitleFromPosition, TitleBaseRule
 from ..common.formatters import cleanup
+from ..properties.title import TitleFromPosition, TitleBaseRule
+from ..properties.type import TypeProcessor
 
 
 def episode_title():
@@ -21,7 +23,8 @@ def episode_title():
                             AlternativeTitleReplace,
                             TitleToEpisodeTitle,
                             Filepart3EpisodeTitle,
-                            Filepart2EpisodeTitle)
+                            Filepart2EpisodeTitle,
+                            RenameEpisodeTitleWhenMovieType)
     return rebulk
 
 
@@ -130,7 +133,29 @@ class AlternativeTitleReplace(Rule):
     def then(self, matches, when_response, context):
         matches.remove(when_response)
         when_response.name = 'episode_title'
+        when_response.tags.append('alternative-replaced')
         matches.append(when_response)
+
+
+class RenameEpisodeTitleWhenMovieType(Rule):
+    """
+    Rename episode_title by alternative_title when type is movie.
+    """
+    priority = POST_PROCESS
+
+    dependency = TypeProcessor
+    consequence = RenameMatch
+
+    def when(self, matches, context):
+        if matches.named('episode_title', lambda m: 'alternative-replaced' not in m.tags) \
+                and not matches.named('type', lambda m: m.value == 'episode'):
+            return matches.named('episode_title')
+
+    def then(self, matches, when_response, context):
+        for match in when_response:
+            matches.remove(match)
+            match.name = 'alternative_title'
+            matches.append(match)
 
 
 class Filepart3EpisodeTitle(Rule):

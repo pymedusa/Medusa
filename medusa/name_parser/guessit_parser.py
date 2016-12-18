@@ -15,18 +15,6 @@ EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
 # release group exception list
 expected_groups = [
-    # https://github.com/guessit-io/guessit/issues/297
-    # guessit blacklists parts of the name for the following groups
-    'byEMP',
-    'ELITETORRENT',
-    'NovaRip',
-    'PARTiCLE',
-    'POURMOi',
-    'RipPourBox',
-    'RiPRG',
-    'NBY',
-    'MiNiGRiP',
-
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294
     '4EVERHD',

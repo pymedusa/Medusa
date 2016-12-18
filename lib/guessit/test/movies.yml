@@ -823,12 +823,13 @@
   video_codec: h264
   year: 2015
 
-? Hyena.Road.2015.German.Ep.Title.1080p.DL.DTSHD.Bluray.x264-pmHD
+? Hyena.Road.2015.German.1080p.DL.DTSHD.Bluray.x264-pmHD
 : audio_codec: DTS
   audio_profile: HD
-  episode_title: German Ep Title
   format: BluRay
-  language: mul
+  language:
+  - de
+  - mul
   release_group: pmHD
   screen_size: 1080p
   title: Hyena Road
@@ -850,4 +851,8 @@
 : options: -T Second
   title: Secondary Education
   year: 2013
+  type: movie
+
+? Mad Max Beyond Thunderdome ()
+: title: Mad Max Beyond Thunderdome
   type: movie

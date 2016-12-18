@@ -5,6 +5,7 @@ Options
 """
 import json
 import os
+import pkgutil
 import shlex
 from argparse import ArgumentParser
 
@@ -21,12 +22,6 @@ def build_argument_parser():
     opts.add_argument(dest='filename', help='Filename or release name to guess', nargs='*')
 
     naming_opts = opts.add_argument_group("Naming")
-    naming_opts.add_argument('-c', '--config', dest='config', action='append', default=None,
-                             help='Filepath to the configuration file. Configuration contains the same options as '
-                                  'those command line options, but option names have "-" characters replaced with "_". '
-                                  'If not defined, guessit tries to read a configuration default configuration file at '
-                                  '~/.guessit/options.(json|yml|yaml) and ~/.config/guessit/options.(json|yml|yaml). '
-                                  'Set to "false" to disable default configuration file loading.')
     naming_opts.add_argument('-t', '--type', dest='type', default=None,
                              help='The suggested file type: movie, episode. If undefined, type will be guessed.')
     naming_opts.add_argument('-n', '--name-only', dest='name_only', action='store_true', default=None,
@@ -63,6 +58,17 @@ def build_argument_parser():
                              help='Display information for filename guesses as json output')
     output_opts.add_argument('-y', '--yaml', dest='yaml', action='store_true', default=None,
                              help='Display information for filename guesses as yaml output')
+
+    conf_opts = opts.add_argument_group("Configuration")
+    conf_opts.add_argument('-c', '--config', dest='config', action='append', default=None,
+                           help='Filepath to the configuration file. Configuration contains the same options as '
+                                'those command line options, but option names have "-" characters replaced with "_". '
+                                'If not defined, guessit tries to read a configuration default configuration file at '
+                                '~/.guessit/options.(json|yml|yaml) and ~/.config/guessit/options.(json|yml|yaml). '
+                                'Set to "false" to disable default configuration file loading.')
+    conf_opts.add_argument('--no-embedded-config', dest='no_embedded_config', action='store_true',
+                           default=None,
+                           help='Disable default configuration.')
 
     information_opts = opts.add_argument_group("Information")
     information_opts.add_argument('-p', '--properties', dest='properties', action='store_true', default=None,
@@ -111,33 +117,40 @@ def load_config(options):
     :return:
     :rtype:
     """
+    config_files_enabled = True
     custom_config_files = None
     if options.get('config') is not None:
         custom_config_files = options.get('config')
         if not custom_config_files \
                 or not custom_config_files[0] \
                 or custom_config_files[0].lower() in ['0', 'no', 'false', 'disabled']:
-            return options
-
-    home_directory = os.path.expanduser("~")
-    cwd = os.getcwd()
-    yaml_supported = False
-    try:
-        import yaml  # pylint: disable=unused-variable
-        yaml_supported = True
-    except ImportError:
-        pass
-    config_file_locations = get_config_file_locations(home_directory, cwd, yaml_supported)
-    config_files = [f for f in config_file_locations if os.path.exists(f)]
-
-    if custom_config_files:
-        config_files = config_files + custom_config_files
+            config_files_enabled = False
 
     configurations = []
-    for config_file in config_files:
-        config_file_options = load_config_file(config_file)
-        if config_file_options:
-            configurations.append(config_file_options)
+    if config_files_enabled:
+        home_directory = os.path.expanduser("~")
+        cwd = os.getcwd()
+        yaml_supported = False
+        try:
+            import yaml  # pylint: disable=unused-variable
+            yaml_supported = True
+        except ImportError:
+            pass
+        config_file_locations = get_config_file_locations(home_directory, cwd, yaml_supported)
+        config_files = [f for f in config_file_locations if os.path.exists(f)]
+
+        if custom_config_files:
+            config_files = config_files + custom_config_files
+
+        for config_file in config_files:
+            config_file_options = load_config_file(config_file)
+            if config_file_options:
+                configurations.append(config_file_options)
+
+    if not options.get('no_embedded_config'):
+        embedded_options_data = pkgutil.get_data('guessit', 'config/options.json').decode("utf-8")
+        embedded_options = json.loads(embedded_options_data)
+        configurations.append(embedded_options)
 
     if configurations:
         configurations.append(options)

@@ -2291,7 +2291,7 @@
   release_group: monkee
   type: episode
 
-# Streaming service: AMBC
+# Streaming service: HIST
 ? Show.Name.720p.HIST.WEBRip.AAC2.0.H.264-monkee
 : options: -t episode
   title: Show Name
@@ -2791,4 +2791,113 @@
   episode: 6
   format: HDTV
   release_group: abc
+  type: episode
+
+# Streaming service: DIY Network
+? Show.Name.S01.720p.DIY.WEBRip.AAC2.0.H.264-BTN
+: title: Show Name
+  season: 1
+  screen_size: 720p
+  streaming_service: DIY Network
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTN
+  type: episode
+
+# Streaming service: USA Network
+? Show.Name.S01E02.Exfil.1080p.USAN.WEBRip.AAC2.0.x264-AJP69
+: title: Show Name
+  season: 1
+  episode: 2
+  screen_size: 1080p
+  streaming_service: USA Network
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: AJP69
+  type: episode
+
+# Streaming service: TV3 Ireland
+? Show.Name.S01E08.576p.TV3.WEBRip.AAC2.0.x264-HARiKEN
+: title: Show Name
+  season: 1
+  episode: 8
+  screen_size: 576p
+  streaming_service: TV3 Ireland
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: HARiKEN
+  type: episode
+
+# Streaming service: TV4 Sweeden
+? Show.Name.S05.720p.TV4.WEBRip.AAC2.0.H.264-BTW
+: title: Show Name
+  season: 5
+  screen_size: 720p
+  streaming_service: TV4 Sweeden
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  type: episode
+
+# Streaming service: TLC
+? Show.Name.S02.720p.TLC.WEBRip.AAC2.0.x264-BTW
+: title: Show Name
+  season: 2
+  screen_size: 720p
+  streaming_service: TLC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  type: episode
+
+# Streaming service: Investigation Discovery
+? Show.Name.S01E01.720p.ID.WEBRip.AAC2.0.x264-BTW
+: title: Show Name
+  season: 1
+  episode: 1
+  screen_size: 720p
+  streaming_service: Investigation Discovery
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  type: episode
+
+# Streaming service: RTÉ One
+? Show.Name.S10E01.576p.RTE.WEBRip.AAC2.0.H.264-RTN
+: title: Show Name
+  season: 10
+  episode: 1
+  screen_size: 576p
+  streaming_service: RTÉ One
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: RTN
+  type: episode
+
+# Streaming service: AMC
+? Show.Name.S01E01.1080p.AMC.WEBRip.H.264.AAC2.0-CasStudio
+: title: Show Name
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  streaming_service: AMC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: CasStudio
   type: episode

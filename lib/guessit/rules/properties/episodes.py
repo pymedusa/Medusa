@@ -296,11 +296,6 @@ def episodes():
 
     rebulk.regex(r'Minisodes?', name='episode_format', value="Minisode")
 
-    # Harcoded movie to disable weak season/eps
-    rebulk.regex('OSS-?117',
-                 abbreviations=[dash], name="hardcoded-movies", marker=True,
-                 conflict_solver=lambda match, other: None)
-
     rebulk.rules(EpisodeNumberSeparatorRange(range_separators),
                  SeasonSeparatorRange(range_separators), RemoveWeakIfMovie, RemoveWeakIfSxxExx,
                  RemoveWeakDuplicate, EpisodeDetailValidator, RemoveDetachedEpisodeNumber, VersionValidator,
@@ -418,7 +413,7 @@ class RemoveWeakIfMovie(Rule):
         return context.get('type') != 'episode'
 
     def when(self, matches, context):
-        if matches.named('year') or matches.markers.named('hardcoded-movies'):
+        if matches.named('year'):
             return matches.tagged('weak-movie')
 
 

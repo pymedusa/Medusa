@@ -26,7 +26,7 @@ def title():
 
     expected_title = build_expected_function('expected_title')
 
-    rebulk.functional(expected_title, name='title', tags=['expected'],
+    rebulk.functional(expected_title, name='title', tags=['expected', 'title'],
                       validator=seps_surround,
                       formatter=formatters(cleanup, reorder_title),
                       conflict_solver=lambda match, other: other,

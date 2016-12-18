@@ -16,7 +16,7 @@ import pytest
 from rebulk.remodule import re
 from rebulk.utils import is_iterable
 
-from ..options import parse_options
+from ..options import parse_options, load_config
 from ..yamlutils import OrderedDictYAMLLoader
 from .. import guessit
 
@@ -175,8 +175,9 @@ class TestYml(object):
         entries.assert_ok()
 
     def check_data(self, filename, string, expected):
-        if six.PY2 and isinstance(string, six.text_type):
-            string = string.encode('utf-8')
+        if six.PY2:
+            if isinstance(string, six.text_type):
+                string = string.encode('utf-8')
             converts = []
             for k, v in expected.items():
                 if isinstance(v, six.text_type):
@@ -209,6 +210,7 @@ class TestYml(object):
         if 'implicit' not in options:
             options['implicit'] = True
         options['config'] = False
+        options = load_config(options)
         try:
             result = guessit(string, options)
         except Exception as exc:
