@@ -55,13 +55,13 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'http://itorrents.org/torrent/{torrent_hash}.torrent',
-            'https://torrentproject.se/torrent/{torrent_hash}.torrent',
-            'http://torrasave.top/torrent/{torrent_hash}.torrent',
-            'http://torra.pro/torrent/{torrent_hash}.torrent',
-            'http://torra.click/torrent/{torrent_hash}.torrent',
-            'http://reflektor.karmorra.info/torrent/{torrent_hash}.torrent',
-            'http://torrasave.site/torrent/{torrent_hash}.torrent',
+            'http://itorrents.org/torrent/{info_hash}.torrent',
+            'https://torrentproject.se/torrent/{info_hash}.torrent',
+            'http://torrasave.top/torrent/{info_hash}.torrent',
+            'http://torra.pro/torrent/{info_hash}.torrent',
+            'http://torra.click/torrent/{info_hash}.torrent',
+            'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
+            'http://torrasave.site/torrent/{info_hash}.torrent',
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
@@ -144,13 +144,12 @@ class GenericProvider(object):
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
                         pubdate = self._get_pubdate(item)
-                        torrent_hash = self._get_torrent_hash(item)
 
                         # This will be retrived from the parser
                         proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
-                                              torrent_hash, proper_tags))
+                                              proper_tags))
 
         return results
 
@@ -213,7 +212,6 @@ class GenericProvider(object):
             (seeders, leechers) = self._get_result_info(item)
             size = self._get_size(item)
             pubdate = self._get_pubdate(item)
-            torrent_hash = self._get_torrent_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -304,7 +302,7 @@ class GenericProvider(object):
                 logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
 
                 # Access to a protected member of a client class
-                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate)
 
                 if ci is not None:
                     cl.append(ci)
@@ -342,7 +340,6 @@ class GenericProvider(object):
             result.content = None
             result.size = self._get_size(item)
             result.pubdate = self._get_pubdate(item)
-            result.hash = self._get_torrent_hash(item)
 
             if not episode_object:
                 episode_number = SEASON_RESULT
@@ -519,13 +516,6 @@ class GenericProvider(object):
         """
         return None
 
-    def _get_torrent_hash(self, item):
-        """Return hash of the item.
-
-        If provider doesnt have _get_torrent_hash function this will be used
-        """
-        return None
-
     def _get_title_and_url(self, item):
         """Return title and url from result."""
         if not item:
@@ -556,21 +546,21 @@ class GenericProvider(object):
 
         if result.url.startswith('magnet'):
             try:
-                torrent_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
+                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
 
                 try:
                     torrent_name = re.findall('dn=([^&]+)', result.url)[0]
                 except Exception:
                     torrent_name = 'NO_DOWNLOAD_NAME'
 
-                if len(torrent_hash) == 32:
-                    torrent_hash = b16encode(b32decode(torrent_hash)).upper()
+                if len(info_hash) == 32:
+                    info_hash = b16encode(b32decode(info_hash)).upper()
 
-                if not torrent_hash:
+                if not info_hash:
                     logger.log('Unable to extract torrent hash from magnet: %s' % ex(result.url), logger.ERROR)
                     return urls, filename
 
-                urls = [x.format(torrent_hash=torrent_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
                 shuffle(urls)
             except Exception:
                 logger.log('Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)

@@ -146,18 +146,3 @@ class TorrentProvider(GenericProvider):
             pubdate = None
 
         return pubdate
-
-    def _get_torrent_hash(self, item):
-        """
-        Return torrent_hash of the item.
-
-        If provider doesnt have _get_torrent_hash function this will be used
-        """
-        if isinstance(item, dict):
-            torrent_hash = item.get('torrent_hash')
-        elif isinstance(item, (list, tuple)) and len(item) > 2:
-            torrent_hash = item[6]
-        else:
-            torrent_hash = None
-
-        return torrent_hash

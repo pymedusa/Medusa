@@ -85,10 +85,6 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasColumn(provider_id, 'pubdate'):
                 self.addColumn(provider_id, 'pubdate', 'NUMERIC', '')
 
-            # add hash column to table if missing
-            if not self.hasColumn(provider_id, 'hash'):
-                self.addColumn(provider_id, 'hash', 'NUMERIC', '')
-
             # add proper_tags column to table if missing
             if not self.hasColumn(provider_id, 'proper_tags'):
                 self.addColumn(provider_id, 'proper_tags', 'TEXT', '')
@@ -168,10 +164,6 @@ class TVCache(object):
         """Return publish date of the item."""
         return self.provider._get_pubdate(item)
 
-    def _get_torrent_hash(self, item):
-        """Return hash of the item."""
-        return self.provider._get_torrent_hash(item)
-
     def _get_rss_data(self):
         """Return rss data."""
         return {'entries': self.provider.search(self.search_params)} if self.search_params else None
@@ -241,7 +233,7 @@ class TVCache(object):
             cl = []
             for item in manual_data:
                 logger.log('Adding to cache item found in manual search: {0}'.format(item.name), logger.DEBUG)
-                ci = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate, item.hash)
+                ci = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate)
                 if ci is not None:
                     cl.append(ci)
         except Exception as e:
@@ -279,7 +271,6 @@ class TVCache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
-        torrent_hash = self._get_torrent_hash(item)
 
         self._check_item_auth(title, url)
 
@@ -288,7 +279,7 @@ class TVCache(object):
             url = self._translate_link_url(url)
 
             # logger.log('Attempting to add item to cache: ' + title, logger.DEBUG)
-            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate)
 
         else:
             logger.log(
@@ -370,7 +361,7 @@ class TVCache(object):
         #     return False
         return False
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, torrent_hash):
+    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate):
         """Add item into cache database."""
         try:
             parse_result = NameParser().parse(name)
@@ -409,10 +400,12 @@ class TVCache(object):
             logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
 
             return [
-                b'INSERT OR REPLACE INTO [{provider_id}] (name, season, episodes, indexerid, url, time, quality, release_group, version, seeders, '
-                b'leechers, size, pubdate, hash, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
+                b'INSERT OR REPLACE INTO [{provider_id}] '
+                b'(name, season, episodes, indexerid, url, time, quality, release_group, '
+                b'version, seeders, leechers, size, pubdate, proper_tags) '
+                b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
                 [name, season, episode_text, parse_result.show.indexerid, url, cur_timestamp, quality,
-                 release_group, version, seeders, leechers, size, pubdate, torrent_hash, proper_tags]]
+                 release_group, version, seeders, leechers, size, pubdate, proper_tags]]
 
     def search_cache(self, episode, forced_search=False, down_cur_quality=False):
         """Search cache for needed episodes."""
@@ -515,7 +508,6 @@ class TVCache(object):
             result.leechers = cur_result[b'leechers']
             result.size = cur_result[b'size']
             result.pubdate = cur_result[b'pubdate']
-            result.hash = cur_result[b'hash']
             result.proper_tags = cur_result[b'proper_tags']
             result.name = title
             result.quality = cur_quality

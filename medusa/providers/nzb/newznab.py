@@ -208,7 +208,6 @@ class NewznabProvider(NZBProvider):
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': pubdate,
-                                'torrent_hash': None,
                             }
                             if mode != 'RSS':
                                 if seeders == -1:

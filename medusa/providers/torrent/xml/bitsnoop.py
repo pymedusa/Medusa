@@ -135,7 +135,6 @@ class BitSnoopProvider(TorrentProvider):
 
                     torrent_size = row.find('size').text
                     size = convert_size(torrent_size) or -1
-                    torrent_hash = row.find('infohash').text
 
                     item = {
                         'title': title,
@@ -144,7 +143,6 @@ class BitSnoopProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
