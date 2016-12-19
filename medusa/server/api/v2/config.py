@@ -74,7 +74,7 @@ class ConfigHandler(BaseRequestHandler):
                     'enabled': bool(app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY)
                 },
                 'client': {
-                    'enabled': False # Replace this with plex client code
+                    'enabled': False  # Replace this with plex client code
                 }
             },
             'emby': {
