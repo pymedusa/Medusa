@@ -75,10 +75,8 @@ pre {
     </div> <!-- End form group -->
 </div> <!-- row -->
 <div class="row wide">
-    <div class="col-md-12 align-left">
-        <pre>
-        ${log_lines}
-        </pre>
+    <div class="col-md-12">
+        <pre>${log_lines}</pre>
     </div>
 </div>
 </%block>
