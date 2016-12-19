@@ -121,7 +121,8 @@ class ErrorLogs(WebRoot):
 
         return self.redirect('/errorlogs/viewlog/')
 
-    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day', **kwargs):
+    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day',
+                text_view=None, **kwargs):
         """View the log given the specified filters."""
         # @TODO: Replace index with this or merge it so ?search=true or ?query={queryString} enables this "view"
         min_level = int(min_level)
@@ -136,9 +137,12 @@ class ErrorLogs(WebRoot):
                                                                                   thread_name=thread_names.get(log_filter, log_filter),
                                                                                   search_query=log_search))]
 
-        return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
-                        min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
-                        controller='errorlogs', action='viewlogs')
+        if not text_view:
+            return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
+                            min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
+                            controller='errorlogs', action='viewlogs')
+        else:
+            return '<br/>'.join([html_escape(line) for line in data])
 
     def submit_errors(self):
         """Create an issue in medusa issue tracker."""

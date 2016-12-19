@@ -3855,6 +3855,24 @@ div#searchNotification {
 /* =======================================================================
 viewLog.mako
 ========================================================================== */
+div .notepad {
+    position: absolute;
+    right: 15px;
+    opacity: 0.1;
+    zoom: 1;
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    -webkit-transition: opacity 0.5s; /* Safari */
+    transition: opacity 0.5s;
+}
+
+div .notepad:hover {
+    opacity: 0.4;
+}
+
+div.notepad img {
+    width: 50px;
+}
 
 /* Pull left in mobile resolutions */
 @media (max-width: 767px) {
