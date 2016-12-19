@@ -14,31 +14,44 @@
 %>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
-<div class="h2footer pull-right"><b>Limit:</b>
-    <select name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
-        <option value="10" ${'selected="selected"' if limit == 10 else ''}>10</option>
-        <option value="25" ${'selected="selected"' if limit == 25 else ''}>25</option>
-        <option value="50" ${'selected="selected"' if limit == 50 else ''}>50</option>
-        <option value="100" ${'selected="selected"' if limit == 100 else ''}>100</option>
-        <option value="250" ${'selected="selected"' if limit == 250 else ''}>250</option>
-        <option value="500" ${'selected="selected"' if limit == 500 else ''}>500</option>
-        <option value="750" ${'selected="selected"' if limit == 750 else ''}>750</option>
-        <option value="1000" ${'selected="selected"' if limit == 1000 else ''}>1000</option>
-        <option value="0"   ${'selected="selected"' if limit == 0   else ''}>All</option>
-    </select>
-    <span> Layout:
-        <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
-            <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
-        </select>
-    </span>
+<div class="row">
+    <div class="col-md-12">
+        % if not header is UNDEFINED:
+            <h1 class="header">${header}</h1>
+        % else:
+            <h1 class="title">${title}</h1>
+        % endif
+    </div>
 </div>
-<br>
+<div class="row">
+    <div class="col-md-12">
+        <div class="layout-controls pull-right">
+            <div class="show-option">
+                <span>Limit:</span>
+                    <select name="history_limit" id="history_limit" class="form-control form-control-inline input-sm">
+                        <option value="10" ${'selected="selected"' if limit == 10 else ''}>10</option>
+                        <option value="25" ${'selected="selected"' if limit == 25 else ''}>25</option>
+                        <option value="50" ${'selected="selected"' if limit == 50 else ''}>50</option>
+                        <option value="100" ${'selected="selected"' if limit == 100 else ''}>100</option>
+                        <option value="250" ${'selected="selected"' if limit == 250 else ''}>250</option>
+                        <option value="500" ${'selected="selected"' if limit == 500 else ''}>500</option>
+                        <option value="750" ${'selected="selected"' if limit == 750 else ''}>750</option>
+                        <option value="1000" ${'selected="selected"' if limit == 1000 else ''}>1000</option>
+                        <option value="0"   ${'selected="selected"' if limit == 0   else ''}>All</option>
+                    </select>
+            </div>
+            <div class="show-option">
+                <span> Layout:
+                    <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                        <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+                        <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
+                    </select>
+                </span>
+            </div>
+        </div> <!-- layout controls -->
+    </div>
+</div> <!-- row -->
+
 % if app.HISTORY_LAYOUT == "detailed":
     <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
         <thead>
