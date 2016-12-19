@@ -23,7 +23,7 @@ pre {
         % endif
     </div>
 </div>
-<div class="row">
+<div class="row wide">
     <div class="col-md-12">
         <div class="logging-filter-controll pull-right">
             <!-- Select Loglevel -->
@@ -74,7 +74,7 @@ pre {
         </div>
     </div> <!-- End form group -->
 </div> <!-- row -->
-<div class="row">
+<div class="row wide">
     <div class="col-md-12 align-left">
         <pre>
         ${log_lines}

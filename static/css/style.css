@@ -1077,6 +1077,13 @@ displayShow.mako
 
 }
 
+@media (min-width: 992px) {
+    .row.wide {
+        margin-left: -12%;
+        margin-right: -12%;
+    }
+}
+
 @media (max-width: 991px) and (min-width: 768px) {
     .show-poster-container {
         float: left;
