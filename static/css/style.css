@@ -190,9 +190,14 @@ inc_top.mako
     clear: both;
 }
 
-#SubMenu {
+#sub-menu {
     font-size: 12px;
     float: right;
+}
+
+#sub-menu > a {
+	float: right;
+	margin-left: 4px;
 }
 
 .upgrade-notification {
@@ -1605,11 +1610,11 @@ schedule.mako
 ========================================================================== */
 
 .key {
-    margin-bottom: 20px;
+    line-height: 40px;
 }
 
 .listing-key {
-    padding: 5px;
+    padding: 2px 5px 2px 5px;
     font-size: 13px;
     font-weight: bold;
     border-radius: 5px;
@@ -1671,7 +1676,7 @@ h2.network {
     margin: auto;
     padding: 0;
     text-align: left;
-    width: 750px;
+    /*width: 750px;*/
     border-radius: 5px;
     background: rgb(255, 255, 255);
     cursor: default;
@@ -3925,11 +3930,6 @@ css helper classes
       width: 25px;
       float: left;
   }
-}
-
-#sub-menu > a {
-	float: right;
-	margin-left: 4px;
 }
 
 @media screen and (min-width: 769px) {

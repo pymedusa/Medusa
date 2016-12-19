@@ -14,54 +14,73 @@
 </%block>
 <%block name="css">
 <style type="text/css">
-#SubMenu {display:none;}
+#sub-menu {display:none;}
 #contentWrapper {padding-top:30px;}
 </style>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<h1 class="header">${header}</h1>
-<div class="h2footer pull-right">
-% if layout == 'list':
-    <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
-% else:
-    <span>Sort By:
-        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
-            <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
-            <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
-        </select>
-    </span>
-% endif
-    &nbsp;
-    <span>View Paused:
-        <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
-            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
-        </select>
-    </span>
-    &nbsp;
-    <span>Layout:
-        <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setScheduleLayout/?layout=poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
-            <option value="setScheduleLayout/?layout=calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
-            <option value="setScheduleLayout/?layout=banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
-            <option value="setScheduleLayout/?layout=list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
-        </select>
-    </span>
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="header">${header}</h1>
+    </div>
 </div>
-<div class="key pull-right">
-% if 'calendar' != layout:
-    <b>Key:</b>
-    <span class="listing-key listing-overdue">Missed</span>
-    <span class="listing-key listing-current">Today</span>
-    <span class="listing-key listing-default">Soon</span>
-    <span class="listing-key listing-toofar">Later</span>
-% endif
-    <a class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
-    <i class="icon-calendar icon-white"></i>Subscribe</a>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="key pull-left">
+        % if 'calendar' != layout:
+            <b>Key:</b>
+            <span class="listing-key listing-overdue">Missed</span>
+            <span class="listing-key listing-current">Today</span>
+            <span class="listing-key listing-default">Soon</span>
+            <span class="listing-key listing-toofar">Later</span>
+        % endif
+            <a class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+            <i class="icon-calendar icon-white"></i>Subscribe</a>
+        </div>
+
+        <div class="pull-right">
+                &nbsp;
+                <div class="show-option">
+                    <span>View Paused:
+                        <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
+                            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
+                        </select>
+                    </span>
+                </div>
+                &nbsp;
+                <div class="show-option">
+                    <span>Layout:
+                        <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                            <option value="setScheduleLayout/?layout=poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
+                            <option value="setScheduleLayout/?layout=calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
+                            <option value="setScheduleLayout/?layout=banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
+                            <option value="setScheduleLayout/?layout=list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
+                        </select>
+                    </span>
+                </div>
+                % if layout == 'list':
+                <div class="show-option">
+                    <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+                </div>
+                % else:
+                <div class="show-option">
+                    <span>Sort By:
+                        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                            <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
+                            <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
+                            <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
+                        </select>
+                    </span>
+                </div>
+                % endif
+        </div>
+    </div>
 </div>
-<br>
+
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
@@ -167,6 +186,7 @@
     today_header = False
     show_div = 'ep_listing listing-default'
 %>
+
 % if app.COMING_EPS_SORT == 'show':
     <br><br>
 % endif
@@ -186,7 +206,7 @@
         <% show_network = ('no network', cur_result['network'])[bool(cur_result['network'])] %>
         % if cur_segment != show_network:
             <div>
-               <br><h2 class="network">${show_network}</h2>
+                <h2 class="network">${show_network}</h2>
             <% cur_segment = cur_result['network'] %>
         % endif
         % if cur_ep_enddate < today:
@@ -203,24 +223,24 @@
     % elif app.COMING_EPS_SORT == 'date':
         % if cur_segment != cur_ep_airdate:
             % if cur_ep_enddate < today and cur_ep_airdate != today.date() and not missed_header:
-                <br><h2 class="day">Missed</h2>
+                <h2 class="day">Missed</h2>
                 <% missed_header = True %>
             % elif cur_ep_airdate >= next_week.date() and not too_late_header:
-                <br><h2 class="day">Later</h2>
+                <h2 class="day">Later</h2>
                 <% too_late_header = True %>
             % elif cur_ep_enddate >= today and cur_ep_airdate < next_week.date():
                 % if cur_ep_airdate == today.date():
-                    <br><h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
                     <% today_header = True %>
                 % else:
-                    <br><h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
+                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
                 % endif
             % endif
             <% cur_segment = cur_ep_airdate %>
         % endif
         % if cur_ep_airdate == today.date() and not today_header:
             <div>
-            <br><h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+            <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
             <% today_header = True %>
         % endif
         % if cur_ep_enddate < today:
@@ -311,8 +331,7 @@
 % if 'calendar' == layout:
 <% dates = [today.date() + datetime.timedelta(days = i) for i in range(7)] %>
 <% tbl_day = 0 %>
-<br>
-<br>
+
 <div class="calendarWrapper">
     % for day in dates:
     <% tbl_day += 1 %>
