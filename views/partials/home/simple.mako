@@ -142,7 +142,7 @@
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                     </a>
                 % endif
-                <a href="${anon_url(indexerApi(curShow.indexer).config['show_url'], curShow.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(curShow.indexer).config['show_url']}${curShow.indexerid}">
+                <a data-indexer-name="${indexerApi(curShow.indexer).name}" href="${anon_url(indexerApi(curShow.indexer).config['show_url'], curShow.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(curShow.indexer).config['show_url']}${curShow.indexerid}">
                     <img alt="${indexerApi(curShow.indexer).name}" height="16" width="16" src="images/${indexerApi(curShow.indexer).config['icon']}" />
                 </a>
             </td>
