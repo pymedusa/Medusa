@@ -22,6 +22,7 @@ class LoginHandler(BaseRequestHandler):
 
     def post(self, *args, **kwargs):
         """Submit login."""
+        self.set_header('X-Medusa-Server', app.APP_VERSION)
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
         submitted_username = ''
