@@ -1040,3 +1040,9 @@ new #confirmBox
 .modal-footer button.cancel:hover {
     background-color: rgb(161, 51, 49);
 }
+
+/* Christmas edition*/
+/* navbar styling */
+.navbar-default {
+    background-color: rgb(21, 82, 143)!important;
+}
