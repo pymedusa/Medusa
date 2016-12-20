@@ -3923,3 +3923,8 @@ css helper classes
   .mobile {display: none;}
 }
 
+/* Christmas edition!!!*/
+.navbar-default {
+    background-image: url('../images/medusa-christmas-banner.png')!important;
+    background-color: rgb(51, 51, 51);
+}

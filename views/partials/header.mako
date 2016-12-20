@@ -16,7 +16,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa-christmas.png" style="height: 50px;" class="img-responsive pull-left" /></a>
         </div>
     % if loggedIn:
         <div class="collapse navbar-collapse" id="main_nav">
