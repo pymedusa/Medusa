@@ -78,9 +78,11 @@
                 data_date = '5000000100.0'
     %>
         <div class="show-container" id="show${curShow.indexerid}" data-name="${curShow.name}" data-date="${data_date}" data-network="${curShow.network}" data-progress="${progressbar_percent}">
-            <div class="show-image">
-                <a href="home/displayShow?show=${curShow.indexerid}"><img alt="" class="show-image" src="showPoster/?show=${curShow.indexerid}&amp;which=poster_thumb" /></a>
-            </div>
+                <img class="background-image" src="images/poster-back-dark.png"/>
+                <div class="poster-overlay">
+                    <a href="home/displayShow?show=${curShow.indexerid}"><img alt="" class="show-image" src="showPoster/?show=${curShow.indexerid}&amp;which=poster_thumb" /></a>
+                </div>
+
             <div class="progressbar hidden-print" style="position:relative;" data-show-id="${curShow.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
             <div class="show-title">
                 ${curShow.name}

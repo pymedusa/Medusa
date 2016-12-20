@@ -554,8 +554,18 @@ home.mako
 }
 
 .show-image {
-    overflow: hidden;
     max-width: 100%;
+    overflow: hidden;
+}
+
+.background-image {
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.poster-overlay {
+    position: absolute;
+    top: 0px;
 }
 
 .show-container .ui-progressbar {
@@ -3922,4 +3932,3 @@ css helper classes
   .full-width {display: block; }  /* show it on small screens */
   .mobile {display: none;}
 }
-
