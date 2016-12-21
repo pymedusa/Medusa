@@ -548,14 +548,28 @@ home.mako
     box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
 }
 
+.aligner {
+  display: flex;
+  align-items: center;
+}
+
 .show-details {
     height: 32px;
     overflow: hidden;
 }
 
 .show-image {
-    overflow: hidden;
     max-width: 100%;
+    overflow: hidden;
+}
+
+.background-image img {
+    width: 100%;
+    overflow: hidden;
+}
+
+.poster-overlay {
+    position: absolute;
 }
 
 .show-container .ui-progressbar {
