@@ -11,7 +11,7 @@
 </%block>
 <%block name="content">
 <div class="row">
-    <div class="md-col-12">
+    <div class="col-md-12">
     % if not header is UNDEFINED:
         <h1 class="header">${header}</h1>
     % else:
@@ -66,11 +66,11 @@
         </div>
 
         <div class="show-option">
-        <span style="margin-left:12px">Sort Order:</span>
-        <select id="showsortdirection" class="form-control form-control-inline input-sm">
-            <option value="asc">Asc</option>
-            <option value="desc" selected="true" >Desc</option>
-        </select>
+            <span style="margin-left:12px">Sort Order:</span>
+            <select id="showsortdirection" class="form-control form-control-inline input-sm">
+                <option value="asc">Asc</option>
+                <option value="desc" selected="true" >Desc</option>
+            </select>
         </div>
     </div>
 </div> <!-- row -->

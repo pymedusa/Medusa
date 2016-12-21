@@ -14,7 +14,7 @@ pre {
 </style>
 </%block>
 <%block name="content">
-<div class="row">
+<div class="row wide">
     <div class="col-md-12">
         % if not header is UNDEFINED:
             <h1 class="header">${header}</h1>

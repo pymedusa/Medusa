@@ -12,7 +12,7 @@
 </%block>
 <%block name="content">
 <div class="row">
-    <div class="md-col-12">
+    <div class="col-md-12">
     % if not header is UNDEFINED:
         <h1 class="header">${header}</h1>
     % else:
@@ -39,7 +39,7 @@
                     <label class="clearfix" for="configure_show_options">
                         <ul>
                             <li><a id="trakt-tab-1" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-1">Manage Directories</a></li>
-        			        <li><a id="trakt-tab-2" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</a></li>
+                            <li><a id="trakt-tab-2" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</a></li>
                         </ul>
                         <div id="tabs-1" class="existingtabs">
                             <%include file="/inc_rootDirs.mako"/>

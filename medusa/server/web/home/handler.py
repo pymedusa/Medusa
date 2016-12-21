@@ -866,9 +866,9 @@ class Home(WebRoot):
 
         return t.render(
             submenu=submenu, showLoc=show_loc, show_message=show_message,
-            show=show_obj, sql_results=sql_results, seasonResults=season_results,
-            sortedShowLists=sorted_show_lists, bwl=bwl, epCounts=ep_counts,
-            epCats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
+            show=show_obj, sql_results=sql_results, season_results=season_results,
+            sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
+            ep_cats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
@@ -1205,8 +1205,50 @@ class Home(WebRoot):
                 else:
                     provider_result['status_highlight'] = ''
 
+        # TODO: Remove the catchall, make sure we only catch expected exceptions!
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
+
+        # There is some logic for this in the partials/showheader.mako page.
+        main_db_con = db.DBConnection()
+        season_results = main_db_con.select(
+            b'SELECT DISTINCT season '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND  season IS NOT NULL '
+            b'ORDER BY season DESC',
+            [show_obj.indexerid]
+        )
+
+        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
+
+        sql_results = main_db_con.select(
+            b'SELECT * '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND season >= ? '
+            b'ORDER BY season DESC, episode DESC',
+            [show_obj.indexerid, min_season]
+        )
+
+        ep_counts = {
+            Overview.SKIPPED: 0,
+            Overview.WANTED: 0,
+            Overview.QUAL: 0,
+            Overview.GOOD: 0,
+            Overview.UNAIRED: 0,
+            Overview.SNATCHED: 0,
+            Overview.SNATCHED_PROPER: 0,
+            Overview.SNATCHED_BEST: 0
+        }
+
+        ep_cats = {}
+
+        for cur_result in sql_results:
+            cur_ep_cat = show_obj.get_overview(cur_result[b'status'],
+                                               manually_searched=cur_result[b'manually_searched'])
+            if cur_ep_cat:
+                ep_cats['{season}x{episode}'.format(season=cur_result[b'season'],
+                                                    episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_counts[cur_ep_cat] += 1
 
         return t.render(
             submenu=submenu, showLoc=show_loc, show_message=show_message,
@@ -1218,7 +1260,8 @@ class Home(WebRoot):
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
             title=show_obj.name, controller='home', action='snatchSelection',
-            episode_history=episode_history
+            episode_history=episode_history, season_results=season_results, sql_results=sql_results,
+            ep_counts=ep_counts, ep_cats=ep_cats
         )
 
     @staticmethod
