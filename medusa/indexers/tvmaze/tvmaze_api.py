@@ -489,6 +489,7 @@ class TVmaze(BaseIndexer):
                                 in externals.items()
                                 if external_value and mapping.get(external_id)}
                 except ShowNotFound:
-                    externals = {}
-
+                    log().debug('Could not get tvmaze externals using external key %s and id %s',
+                                external_id, kwargs.get(external_id))
+                    continue
         return externals

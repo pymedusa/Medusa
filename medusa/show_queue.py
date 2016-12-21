@@ -372,7 +372,7 @@ class QueueItemAdd(ShowQueueItem):
                 logger.log(u"Show in {0} has no name on {1}, probably searched with the wrong language.".format
                            (self.showDir, indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error('Unable to add show Show',
+                ui.notifications.error('Unable to add show',
                                        'Show in {0} has no name on {1}, probably the wrong language. \
                                        Delete .nfo and manually add the correct language.'
                                        .format(self.showDir, indexerApi(self.indexer).name))

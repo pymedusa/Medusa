@@ -596,7 +596,7 @@ class Tmdb(BaseIndexer):
         for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
             if kwargs.get(external_id):
                 result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})
-                if result.get('tv_results', None) and result['tv_results'][0]:
+                if result.get('tv_results') and result['tv_results'][0]:
                     # Get the external id's for the passed shows id.
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
                     externals['tmdb_id'] = result['tv_results'][0]['id']
