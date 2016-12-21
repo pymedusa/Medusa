@@ -58,7 +58,7 @@ def get_trakt_externals(externals):
     trakt_mapping_rev = {v: k for k, v in trakt_mapping.items()}
 
     for external_key in externals:
-        if not trakt_mapping.get(external_key) or not externals.get(external_key):
+        if not trakt_mapping.get(external_key) or not externals[external_key]:
             continue
 
         url = id_lookup.format(external_key=trakt_mapping[external_key], external_value=externals[external_key])
