@@ -1805,7 +1805,7 @@ config*.mako
 
 #config-content {
     display: block;
-    width: 960px;
+    /*width: 960px;*/
     padding: 0 0 40px;
     margin: 0 auto;
     clear: both;
