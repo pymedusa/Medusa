@@ -42,7 +42,6 @@
         </div>
 
         <div class="pull-right">
-                &nbsp;
                 <div class="show-option">
                     <span>View Paused:
                         <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
@@ -51,7 +50,6 @@
                         </select>
                     </span>
                 </div>
-                &nbsp;
                 <div class="show-option">
                     <span>Layout:
                         <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
