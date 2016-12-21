@@ -15,7 +15,7 @@ pre {
 </%block>
 <%block name="content">
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12 wide">
         % if not header is UNDEFINED:
             <h1 class="header">${header}</h1>
         % else:

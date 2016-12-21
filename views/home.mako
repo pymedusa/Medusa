@@ -80,6 +80,7 @@
 
 <div class="row">
     <div class="col-md-12">
-       <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/></div>
+       <%include file="/partials/home/${app.HOME_LAYOUT}.mako"/>
     </div>
+</div>
 </%block>
