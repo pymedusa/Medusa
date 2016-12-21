@@ -103,68 +103,68 @@
     </div>
 % endif
     <row>
-	    <div id="container-display-show" class="col-md-12">
-	        <div class="show-poster-container">
-	            <a href="showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
-	            <img src="showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
-	            </a>
-	        </div>
-	        <div class="show-info-container">
-	            <div class="row">
-	               <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-	                   <img id="showBanner" class="pull-right" src="showPoster/?show=${show.indexerid}&amp;which=banner">
-	               </div>
-	               <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-	% if 'rating' in show.imdb_info:
-	    <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
-	    <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
-	% endif
-	% if not show.imdbid:
-	    <span>(${show.startyear}) - ${show.runtime} minutes - </span>
-	% else:
-	    % if 'country_codes' in show.imdb_info:
-	        % for country in show.imdb_info['country_codes'].split('|'):
-	                <img src="images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
-	        % endfor
-	    % endif
-	                <span>
-	    % if show.imdb_info.get('year'):
-	                    (${show.imdb_info['year']}) -
-	    % endif
-	                    ${show.imdb_info.get('runtimes') or show.runtime} minutes
-	                </span>
-	                <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
-	                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
-	                </a>
-	% endif
-	                <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
-	                    <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
-	                </a>
-	% if xem_numbering or xem_absolute_numbering:
-	                <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
-	                    <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
-	                </a>
-	% endif
-	                <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></a>
-	            </div>
-	            <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-	                <ul class="tags">
-	                    % if show.imdb_info.get('genres'):
-	                        % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
-	                            <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
-	                        % endfor
-	                    % elif show.genre:
-	                        % for genre in show.genre[1:-1].split('|'):
-	                            <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
-	                        % endfor
-	                    % endif
-	                </ul>
-	            </div>
+        <div id="container-display-show" class="col-md-12">
+            <div class="show-poster-container">
+                <a href="showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
+                <img src="showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
+                </a>
+            </div>
+            <div class="show-info-container">
+                <div class="row">
+                   <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
+                       <img id="showBanner" class="pull-right" src="showPoster/?show=${show.indexerid}&amp;which=banner">
+                   </div>
+                   <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+    % if 'rating' in show.imdb_info:
+        <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
+        <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
+    % endif
+    % if not show.imdbid:
+        <span>(${show.startyear}) - ${show.runtime} minutes - </span>
+    % else:
+        % if 'country_codes' in show.imdb_info:
+            % for country in show.imdb_info['country_codes'].split('|'):
+                    <img src="images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+            % endfor
+        % endif
+                    <span>
+        % if show.imdb_info.get('year'):
+                        (${show.imdb_info['year']}) -
+        % endif
+                        ${show.imdb_info.get('runtimes') or show.runtime} minutes
+                    </span>
+                    <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
+                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                    </a>
+    % endif
+                    <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+                        <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+                    </a>
+    % if xem_numbering or xem_absolute_numbering:
+                    <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
+                        <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                    </a>
+    % endif
+                    <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></a>
+                </div>
+                <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                    <ul class="tags">
+                        % if show.imdb_info.get('genres'):
+                            % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
+                                <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
+                            % endfor
+                        % elif show.genre:
+                            % for genre in show.genre[1:-1].split('|'):
+                                <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
+                            % endfor
+                        % endif
+                    </ul>
+                </div>
 
-	            <!-- Show Summary -->
-	            <div id="summary" class="col-md-12">
-		            <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-8 col-md-8 col-sm-8 col-xs-12">
-		                <table class="summaryTable pull-left">
+                <!-- Show Summary -->
+                <div id="summary" class="col-md-12">
+                    <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                        <table class="summaryTable pull-left">
                             <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
@@ -220,29 +220,29 @@
                             % endif
                             <tr><td class="showLegend">Size:</td><td>${pretty_file_size(helpers.get_size(showLoc[0]))}</td></tr>
                 <!-- Option table right -->
-		                </table>
-		            </div>
+                        </table>
+                    </div>
 
-		                <!-- Option table right -->
-		            <div id="show-status" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
-		                <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
-		                    <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
-		                    <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
-		                    % if app.USE_SUBTITLES:
-		                    <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
-		                    % endif
-		                    <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(not show.flatten_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
-		                    <tr><td class="showLegend">Paused: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
-		                    <tr><td class="showLegend">Air-by-Date: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
-		                    <tr><td class="showLegend">Sports: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
-		                    <tr><td class="showLegend">Anime: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_anime)]}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-		                    <tr><td class="showLegend">DVD Order: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.dvdorder)]}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
-		                    <tr><td class="showLegend">Scene Numbering: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.scene)]}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
-		                </table>
-		             </div> <!-- end of show-status -->
-		            </div> <!-- end of summary -->
+                        <!-- Option table right -->
+                    <div id="show-status" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
+                        <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
+                            <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
+                            <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>
+                            % if app.USE_SUBTITLES:
+                            <tr><td class="showLegend">Subtitles: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.subtitles)]}" alt="${("N", "Y")[bool(show.subtitles)]}" width="16" height="16" /></td></tr>
+                            % endif
+                            <tr><td class="showLegend">Season Folders: </td><td><img src="images/${("no16.png", "yes16.png")[bool(not show.flatten_folders or app.NAMING_FORCE_FOLDERS)]}" alt="${("N", "Y")[bool(not show.flatten_folders or app.NAMING_FORCE_FOLDERS)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Paused: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.paused)]}" alt="${("N", "Y")[bool(show.paused)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Air-by-Date: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Sports: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Anime: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_anime)]}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">DVD Order: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.dvdorder)]}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">Scene Numbering: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.scene)]}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
+                        </table>
+                     </div> <!-- end of show-status -->
+                    </div> <!-- end of summary -->
                 </div> <!-- end of row -->
-	        </div> <!-- row -->
+            </div> <!-- row -->
 
             <div class="row">
                 <div class="col-md-12 pull-right clearfix" id="checkboxControls">

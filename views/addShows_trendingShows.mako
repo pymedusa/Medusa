@@ -39,7 +39,7 @@
                     <label class="clearfix" for="configure_show_options">
                         <ul>
                             <li><a id="trakt-tab-1" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-1">Manage Directories</a></li>
-        			        <li><a id="trakt-tab-2" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</a></li>
+                            <li><a id="trakt-tab-2" href="${base_url + 'addShows/' + realpage + '/'}?traktList=${traktList}#tabs-2">Customize Options</a></li>
                         </ul>
                         <div id="tabs-1" class="existingtabs">
                             <%include file="/inc_rootDirs.mako"/>
