@@ -3936,3 +3936,9 @@ css helper classes
   .full-width {display: block; }  /* show it on small screens */
   .mobile {display: none;}
 }
+
+/* Christmas edition!!!*/
+.navbar-default {
+    background-image: url('../images/medusa-christmas-banner.png')!important;
+    background-color: rgb(51, 51, 51);
+}
