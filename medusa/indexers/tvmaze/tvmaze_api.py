@@ -466,3 +466,31 @@ class TVmaze(BaseIndexer):
             updates = new_list
 
         return updates
+
+    def get_id_by_external(self, **kwargs):
+        """Search tvmaze for a show, using an external id.
+
+        Accepts as kwargs, so you'l need to add the externals as key/values.
+        :param tvrage: The tvrage id.
+        :param thetvdb: The tvdb id.
+        :param imdb: An imdb id (inc. tt).
+        :returns: A dict with externals, including the tvmaze id.
+        """
+        mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
+        externals = {}
+        for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
+            if kwargs.get(external_id):
+                try:
+                    result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})
+                    if result:
+                        externals = result.externals
+                        externals[external_id] = result.id
+                        return {mapping[external_id]: external_value
+                                for external_id, external_value
+                                in externals.items()
+                                if external_value and mapping.get(external_id)}
+                except ShowNotFound:
+                    log().debug('Could not get tvmaze externals using external key %s and id %s',
+                                external_id, kwargs.get(external_id))
+                    continue
+        return externals
