@@ -558,6 +558,13 @@ home.mako
   align-items: center;
 }
 
+@-moz-document url-prefix() {
+    .aligner {
+        flex-flow: column-reverse;
+        align-items: inherit;
+    }
+}
+
 .show-details {
     height: 32px;
     overflow: hidden;
