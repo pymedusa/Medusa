@@ -43,7 +43,7 @@
                         class="form-control form-control-inline input-sm">
                             <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected" ' if app.POSTER_SORTDIR==1 else ''}>Ascending</option>
                             <option value="false" data-sort="setPosterSortDir/?direction=0"
-                                ${'selected="selected" ' if app.POSTER_SORTDIR==0else ''}>Descending</option>
+                                ${'selected="selected" ' if app.POSTER_SORTDIR==0 else ''}>Descending</option>
                     </select>
                     </div>
                     <div class="show-option pull-right">
