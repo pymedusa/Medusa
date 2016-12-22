@@ -558,19 +558,20 @@ home.mako
   align-items: center;
 }
 
-/*IE10/11 hack*/
-@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+/*FF hack*/
+@-moz-document url-prefix() {
     .aligner {
         flex-flow: column-reverse;
         align-items: inherit;
     }
 }
 
-/*FF hack*/
-@-moz-document url-prefix() {
-    .aligner {
-        flex-flow: column-reverse;
-        align-items: inherit;
+/*IE 11 hack*/
+@media all and (-ms-high-contrast:none) {
+    .poster-overlay {
+        left: 0px;
+        top: 0;
+        width: 100%;
     }
 }
 
