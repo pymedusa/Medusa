@@ -38,7 +38,7 @@ class History(WebRoot):
         ]
 
         return t.render(historyResults=history.detailed, compactResults=history.compact, limit=limit,
-                        submenu=submenu, title='History', header='History',
+                        submenu=submenu[::-1], title='History', header='History',
                         topmenu='history', controller='history', action='index')
 
     def clearHistory(self):
