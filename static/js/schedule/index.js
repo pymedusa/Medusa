@@ -14,7 +14,8 @@ MEDUSA.schedule.index = function() {
             textExtraction: {
                 0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
                 1: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                7: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
+                7: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
+                8: function(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); } // eslint-disable-line brace-style
             },
             headers: {
                 0: {sorter: 'realISODate'},
@@ -22,7 +23,7 @@ MEDUSA.schedule.index = function() {
                 2: {sorter: 'loadingNames'},
                 4: {sorter: 'loadingNames'},
                 7: {sorter: 'quality'},
-                8: {sorter: false},
+                8: {sorter: 'text'},
                 9: {sorter: false}
             },
             widgetOptions: {

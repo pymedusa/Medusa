@@ -3,6 +3,8 @@
     import calendar
     from medusa import sbdatetime
     from medusa import network_timezones
+    from medusa.indexers.indexer_api import indexerApi
+    from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     import re
 %>
@@ -20,6 +22,7 @@
             <th class="nowrap">Prev Ep</th>
             <th>Show</th>
             <th>Network</th>
+            <th>Indexer</th>
             <th>Quality</th>
             <th>Downloads</th>
             <th>Size</th>
@@ -30,6 +33,7 @@
     <tfoot class="hidden-print">
         <tr>
             <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
@@ -144,6 +148,16 @@
                 <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                 <span class="visible-print-inline">No Network</span>
             % endif
+            </td>
+            <td align="center">
+                % if curShow.imdbid:
+                    <a href="${anon_url('http://www.imdb.com/title/', curShow.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${curShow.imdbid}">
+                        <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                    </a>
+                % endif
+                <a href="${anon_url(indexerApi(curShow.indexer).config['show_url'], curShow.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(curShow.indexer).config['show_url']}${curShow.indexerid}">
+                    <img alt="${indexerApi(curShow.indexer).name}" height="16" width="16" src="images/${indexerApi(curShow.indexer).config['icon']}" />
+                </a>
             </td>
             <td align="center">${renderQualityPill(curShow.quality, showTitle=True)}</td>
             <td align="center">

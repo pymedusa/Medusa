@@ -354,7 +354,7 @@ class WebRoot(WebHandler):
     @staticmethod
     def setPosterSortBy(sort):
         # @TODO: Replace this with poster.sort.field={name, date, network, progress} PATCH /api/v2/config/layout
-        if sort not in ('name', 'date', 'network', 'progress'):
+        if sort not in ('name', 'date', 'network', 'progress', 'indexer'):
             sort = 'name'
 
         app.POSTER_SORTBY = sort

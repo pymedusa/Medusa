@@ -152,12 +152,13 @@
                 ${renderQualityPill(cur_result['quality'], showTitle=True)}
             </td>
             <td align="center" style="vertical-align: middle;">
-% if cur_result['imdb_id']:
+            % if cur_result['imdb_id']:
                 <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                 </a>
-% endif
-                <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
+            % endif
+                <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" data-indexer-name="${indexerApi(cur_indexer).name}"
+                    rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
                     <img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
