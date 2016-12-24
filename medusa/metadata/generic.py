@@ -873,6 +873,10 @@ class GenericMetadata(object):
                        logger.DEBUG)
             return result
 
+        # if we have no seasonwide banners then just finish
+        if not getattr(indexer_show_obj, '_banners', None):
+            return result
+
         if ('seasonwide' not in indexer_show_obj['_banners'] or
                 'original' not in indexer_show_obj['_banners']['season'] or
                 season not in indexer_show_obj['_banners']['seasonwide']['original']):
