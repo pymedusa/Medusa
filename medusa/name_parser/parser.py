@@ -412,7 +412,7 @@ class NameParserCache(object):
     """Name parser cache."""
 
     _previous_parsed = OrderedDict()
-    _cache_size = 100
+    _cache_size = 1000
 
     def add(self, name, parse_result):
         """Add the result to the parser cache.
