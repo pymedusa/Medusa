@@ -1115,8 +1115,8 @@ displayShow.mako
 
 @media (min-width: 992px) {
     .row.wide {
-        margin-left: -12%;
-        margin-right: -12%;
+        margin-left: -11%;
+        margin-right: -11%;
     }
 }
 
