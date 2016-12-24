@@ -289,7 +289,7 @@ def copy_file(src_file, dest_file):
         SpecialFileError = Error
 
     try:
-        shutil.copy_file(src_file, dest_file)
+        shutil.copyfile(src_file, dest_file)
     except (SpecialFileError, Error) as error:
         logger.warning(u'{error}', error=error)
     except OSError as error:
