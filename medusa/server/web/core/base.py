@@ -450,7 +450,7 @@ class WebRoot(WebHandler):
             layout = app.COMING_EPS_LAYOUT
 
         t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu, next_week=next_week1, today=today, results=results, layout=layout,
+        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=layout,
                         title='Schedule', header='Schedule', topmenu='schedule',
                         controller='schedule', action='index')
 

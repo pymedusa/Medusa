@@ -83,63 +83,67 @@
 
 <div class="row">
     <div id="container-display-show" class="col-md-12">
+
         <div class="show-poster-container">
             <a href="showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
-            <img src="showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
+                <img src="showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
             </a>
         </div>
+
         <div class="show-info-container">
             <div class="row">
-               <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                   <img id="showBanner" class="pull-right" src="showPoster/?show=${show.indexerid}&amp;which=banner">
-               </div>
-               <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                % if 'rating' in show.imdb_info:
-                    <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
-                    <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
-                % endif
-                % if not show.imdbid:
-                    <span>(${show.startyear}) - ${show.runtime} minutes - </span>
-                % else:
-                    % if 'country_codes' in show.imdb_info:
-                        % for country in show.imdb_info['country_codes'].split('|'):
-                                <img src="images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
-                        % endfor
-                    % endif
-                                <span>
-                    % if show.imdb_info.get('year'):
-                                    (${show.imdb_info['year']}) -
-                    % endif
-                                    ${show.imdb_info.get('runtimes') or show.runtime} minutes
-                                </span>
-                                <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
-                                    <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
-                                </a>
-                % endif
-                <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
-                    <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
-                </a>
-                % if xem_numbering or xem_absolute_numbering:
-                    <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
-                        <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
-                    </a>
-                % endif
-                    <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></a>
+                <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
+                    <img id="showBanner" class="pull-right" src="showPoster/?show=${show.indexerid}&amp;which=banner">
                 </div>
-                <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
-                    <ul class="tags">
-                        % if show.imdb_info.get('genres'):
-                            % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
-                                <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
-                            % endfor
-                        % elif show.genre:
-                            % for genre in show.genre[1:-1].split('|'):
-                                <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
-                            % endfor
-                        % endif
-                    </ul>
-                </div>
+                <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                 % if 'rating' in show.imdb_info:
+                     <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
+                     <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
+                 % endif
+                 % if not show.imdbid:
+                     <span>(${show.startyear}) - ${show.runtime} minutes - </span>
+                 % else:
+                     % if 'country_codes' in show.imdb_info:
+                         % for country in show.imdb_info['country_codes'].split('|'):
+                                 <img src="images/blank.png" class="country-flag flag-${country}" width="16" height="11" style="margin-left: 3px; vertical-align:middle;" />
+                         % endfor
+                     % endif
+                                 <span>
+                     % if show.imdb_info.get('year'):
+                                     (${show.imdb_info['year']}) -
+                     % endif
+                                     ${show.imdb_info.get('runtimes') or show.runtime} minutes
+                                 </span>
+                                 <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
+                                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
+                                 </a>
+                 % endif
+                 <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
+                     <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
+                 </a>
+                 % if xem_numbering or xem_absolute_numbering:
+                     <a href="${anon_url('http://thexem.de/search?q=', show.name)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://thexem.de/search?q-${show.name}">
+                         <img alt="[xem]" height="16" width="16" src="images/xem.png" style="margin-top: -1px; vertical-align:middle;"/>
+                     </a>
+                 % endif
+                     <a href="${anon_url('https://fanart.tv/series/', show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="https://fanart.tv/series/${show.name}"><img alt="[fanart.tv]" height="16" width="16" src="images/fanart.tv.png" class="fanart"/></a>
+                 </div>
+                 <div id="tags" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
+                     <ul class="tags">
+                         % if show.imdb_info.get('genres'):
+                             % for imdbgenre in show.imdb_info['genres'].replace('Sci-Fi','Science-Fiction').split('|'):
+                                 <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
+                             % endfor
+                         % elif show.genre:
+                             % for genre in show.genre[1:-1].split('|'):
+                                 <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
+                             % endfor
+                         % endif
+                     </ul>
+                 </div>
+            </div>
 
+            <div class="row">
                 <!-- Show Summary -->
                 <div id="summary" class="col-md-12">
                     <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-8 col-md-8 col-sm-8 col-xs-12">
@@ -221,25 +225,28 @@
                 </div> <!-- end of summary -->
             </div> <!-- end of row -->
         </div> <!-- show-info-container -->
-
-        <div class="row">
-            <div class="col-md-12 pull-right clearfix" id="checkboxControls">
-                <div class="key pull-right">
-                    <div style="padding-bottom: 5px;">
-                        <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
-                        <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${ep_counts[Overview.WANTED]}</b></span></label>
-                        <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${ep_counts[Overview.QUAL]}</b></span></label>
-                        <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
-                        <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
-                        <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
-                    </div>
-
-                    <div class="pull-right" >
-                        <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
-                        <button class="btn btn-xs clearAll">Clear All</button>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- row -->
     </div> <!-- end of col -->
 </div>
+
+<!-- Checkbox filter controls -->
+<div class="row">
+    <div class="col-md-12 pull-right clearfix" id="checkboxControls">
+        <div class="key pull-right">
+            <div class="row">
+                <div class="col-md-12">
+                    <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
+                    <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${ep_counts[Overview.WANTED]}</b></span></label>
+                    <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${ep_counts[Overview.QUAL]}</b></span></label>
+                    <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
+                    <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
+                    <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
+                </div>
+            </div>
+
+            <div class="pull-right" >
+                <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
+                <button class="btn btn-xs clearAll">Clear All</button>
+            </div>
+        </div>
+    </div>
+</div> <!-- row -->

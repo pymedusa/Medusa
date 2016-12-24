@@ -865,7 +865,7 @@ class Home(WebRoot):
         })
 
         return t.render(
-            submenu=submenu, showLoc=show_loc, show_message=show_message,
+            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=show_obj, sql_results=sql_results, season_results=season_results,
             sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
             ep_cats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
@@ -1251,7 +1251,7 @@ class Home(WebRoot):
                 ep_counts[cur_ep_cat] += 1
 
         return t.render(
-            submenu=submenu, showLoc=show_loc, show_message=show_message,
+            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=show_obj, provider_results=provider_results, episode=episode,
             sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
             all_scene_exceptions=show_obj.exceptions,
@@ -1903,7 +1903,7 @@ class Home(WebRoot):
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
-        return t.render(submenu=submenu, ep_obj_list=ep_obj_rename_list,
+        return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
                         show=show_obj, title='Preview Rename',
                         header='Preview Rename',
                         controller='home', action='previewRename')

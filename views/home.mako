@@ -26,8 +26,15 @@
                 % endif
                 % if app.HOME_LAYOUT == 'poster':
                     <div class="show-option pull-right">
-                        Poster Size:
-                        <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider"></div>
+                        <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                    </div>
+                    <div class="show-option pull-right"> Direction:
+                        <select id="postersortdirection"
+                            class="form-control form-control-inline input-sm">
+                                <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected" ' if app.POSTER_SORTDIR==1 else ''}>Ascending</option>
+                                <option value="false" data-sort="setPosterSortDir/?direction=0"
+                                    ${'selected="selected" ' if app.POSTER_SORTDIR==0 else ''}>Descending</option>
+                        </select>
                     </div>
                     <div class="show-option pull-right"> Sort By:
                       <select id="postersort"
@@ -38,17 +45,12 @@
                             <option value="progress" data-sort="setPosterSortBy/?sort=progress" ${'selected="selected"' if app.POSTER_SORTBY=='progress' else ''}>Progress</option>
                       </select>
                     </div>
-                    <div class="show-option pull-right"> Direction:
-                    <select id="postersortdirection"
-                        class="form-control form-control-inline input-sm">
-                            <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected" ' if app.POSTER_SORTDIR==1 else ''}>Ascending</option>
-                            <option value="false" data-sort="setPosterSortDir/?direction=0"
-                                ${'selected="selected" ' if app.POSTER_SORTDIR==0 else ''}>Descending</option>
-                    </select>
-                    </div>
                     <div class="show-option pull-right">
-                        <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
+                        Poster Size:
+                        <div style="width: 100px; display: inline-block; margin-left: 7px;" id="posterSizeSlider"></div>
                     </div>
+
+
                 % endif
                     </div>
             </div>

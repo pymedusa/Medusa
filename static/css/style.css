@@ -558,6 +558,23 @@ home.mako
   align-items: center;
 }
 
+/*FF hack*/
+@-moz-document url-prefix() {
+    .aligner {
+        flex-flow: column-reverse;
+        align-items: inherit;
+    }
+}
+
+/*IE 11 hack*/
+@media all and (-ms-high-contrast:none) {
+    .poster-overlay {
+        left: 0px;
+        top: 0;
+        width: 100%;
+    }
+}
+
 .show-details {
     height: 32px;
     overflow: hidden;
@@ -3940,5 +3957,10 @@ css helper classes
 /* Christmas edition!!!*/
 .navbar-default {
     background-image: url('../images/medusa-christmas-banner.png')!important;
-    background-color: rgb(51, 51, 51);
+    background-color: rgb(51, 51, 51)!important;
+}
+
+/* @FIXME: These fixed width are going to be removed with the all configuration pages are bootstrapped.*/
+.ui-tabs-panel {
+    min-width: 980px;
 }
