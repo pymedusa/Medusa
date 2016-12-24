@@ -26,6 +26,27 @@ pre {
 <div class="row wide">
     <div class="col-md-12">
         <div class="logging-filter-controll pull-right">
+            <div class="show-option pull-right">
+                <!-- Select period -->
+                <span>Period:
+                    <select name="log_period" id="log_period" class="form-control form-control-inline input-sm">
+                        <option value="all" ${'selected="selected"' if log_period == 'all' else ''}>All</option>
+                        <option value="one_day" ${'selected="selected"' if log_period == 'one_day' else ''}>Last 24h</option>
+                        <option value="three_days" ${'selected="selected"' if log_period == 'three_days' else ''}>Last 3 days</option>
+                        <option value="one_week" ${'selected="selected"' if log_period == 'one_week' else ''}>Last 7 days</option>
+                    </select>
+                </span>
+            </div>
+            <div class="show-option pull-right">
+                <!-- Filter log -->
+                <span>Filter log by:
+                    <select name="log_filter" id="log_filter" class="form-control form-control-inline input-sm">
+                    % for log_name_filter in sorted(log_name_filters):
+                        <option value="${log_name_filter}" ${'selected="selected"' if log_filter == log_name_filter else ''}>${log_name_filters[log_name_filter]}</option>
+                    % endfor
+                    </select>
+                </span>
+            </div>
             <!-- Select Loglevel -->
             <div class="show-option pull-right">
                 <span>Logging level:
@@ -44,27 +65,7 @@ pre {
                     </select>
                 </span>
             </div>
-            <div class="show-option pull-right">
-                <!-- Filter log -->
-                <span>Filter log by:
-                    <select name="log_filter" id="log_filter" class="form-control form-control-inline input-sm">
-                    % for log_name_filter in sorted(log_name_filters):
-                        <option value="${log_name_filter}" ${'selected="selected"' if log_filter == log_name_filter else ''}>${log_name_filters[log_name_filter]}</option>
-                    % endfor
-                    </select>
-                </span>
-            </div>
-            <div class="show-option pull-right">
-                <!-- Select period -->
-                <span>Period:
-                    <select name="log_period" id="log_period" class="form-control form-control-inline input-sm">
-                        <option value="all" ${'selected="selected"' if log_period == 'all' else ''}>All</option>
-                        <option value="one_day" ${'selected="selected"' if log_period == 'one_day' else ''}>Last 24h</option>
-                        <option value="three_days" ${'selected="selected"' if log_period == 'three_days' else ''}>Last 3 days</option>
-                        <option value="one_week" ${'selected="selected"' if log_period == 'one_week' else ''}>Last 7 days</option>
-                    </select>
-                </span>
-            </div>
+
             <div class="show-option pull-right">
                 <!-- Search Log -->
                 <span>Search log by:
