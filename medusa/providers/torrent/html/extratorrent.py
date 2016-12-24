@@ -73,16 +73,13 @@ class ExtraTorrentProvider(TorrentProvider):
             self.url = self.custom_url
 
         self.urls = {
-            'search': urljoin(self.url, 'search/'),
-            'rss': urljoin(self.url, 'view/today/TV.html'),
+            'rss': urljoin(self.url, 'rss.xml'),
         }
 
         # Search Params
         search_params = {
-            'search': '',
-            'new': 1,
-            'x': 0,
-            'y': 0,
+            'type': 'today',
+            'cid': 8,  # Category: TV
         }
 
         for mode in search_strings:
@@ -91,15 +88,12 @@ class ExtraTorrentProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
+                    search_params['type'] = 'search'
                     search_params['search'] = search_string
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_url = self.urls['search']
-                else:
-                    search_params = None
-                    search_url = self.urls['rss']
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.get_url(self.urls['rss'], params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -118,44 +112,22 @@ class ExtraTorrentProvider(TorrentProvider):
         """
         items = []
 
-        with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='tl')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+        with BS4Parser(data, 'html.parser') as xml:
 
-            # Continue only if at least one release is found
-            if len(torrent_rows) < 3 or (torrent_rows == 3 and torrent_rows[2].get_text() == 'No torrents'):
+            elements = xml.find_all('item')
+            if not elements:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
-            # RSS search has one less column
-            decrease = 1
-
-            # Avoid parsing of 'related torrents'
-            if mode != 'RSS':
-                h2s = html.find_all('h2')
-                if len(h2s) > 2 and h2s[1].get_text() == 'Related torrents':
-                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                    return items
-
-                # Don't decrease column
-                decrease = 0
-
-            # Skip column headers
-            for result in torrent_rows[2:]:
+            for element in elements:
                 try:
-                    cells = result('td')
-
-                    torrent_info = cells[0].find('a')
-                    if not torrent_info:
+                    title = element.title.get_text()
+                    download_url = element.enclosure.get('url')
+                    if not all([title, download_url]):
                         continue
 
-                    # Removes 'Download ' in the beginning and ' torrent' in the end
-                    title = torrent_info.get('title')[9:-8]
-                    download_url = urljoin(self.url, torrent_info.get('href').replace
-                                           ('torrent_download', 'download'))
-
-                    seeders = try_int(cells[5 - decrease].get_text(), 1)
-                    leechers = try_int(cells[6 - decrease].get_text())
+                    seeders = try_int(element.seeders.get_text())
+                    leechers = try_int(element.leechers.get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -165,8 +137,9 @@ class ExtraTorrentProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[4 - decrease].get_text().replace('\xa0', ' ')
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(element.size.get_text()) or -1
+
+                    pubdate = element.pubdate.get_text()
 
                     item = {
                         'title': title,
@@ -174,8 +147,9 @@ class ExtraTorrentProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
+
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                    (title, seeders, leechers), logger.DEBUG)
