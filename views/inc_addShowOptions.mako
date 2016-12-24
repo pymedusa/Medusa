@@ -29,8 +29,8 @@
                 <span class="component-title">Status for previously aired episodes</span>
                 <span class="component-desc">
                     <select name="defaultStatus" id="statusSelect" class="form-control form-control-inline input-sm">
-                    % for curStatus in [SKIPPED, WANTED, IGNORED]:
-                        <option value="${curStatus}" ${'selected="selected"' if app.STATUS_DEFAULT == curStatus else ''}>${statusStrings[curStatus]}</option>
+                    % for cur_status in [SKIPPED, WANTED, IGNORED]:
+                        <option value="${cur_status}" ${'selected="selected"' if app.STATUS_DEFAULT == cur_status else ''}>${statusStrings[cur_status]}</option>
                     % endfor
                     </select>
                 </span>
@@ -41,8 +41,8 @@
                 <span class="component-title">Status for all future episodes</span>
                 <span class="component-desc">
                     <select name="defaultStatusAfter" id="statusSelectAfter" class="form-control form-control-inline input-sm">
-                    % for curStatus in [SKIPPED, WANTED, IGNORED]:
-                        <option value="${curStatus}" ${'selected="selected"' if app.STATUS_DEFAULT_AFTER == curStatus else ''}>${statusStrings[curStatus]}</option>
+                    % for cur_status in [SKIPPED, WANTED, IGNORED]:
+                        <option value="${cur_status}" ${'selected="selected"' if app.STATUS_DEFAULT_AFTER == cur_status else ''}>${statusStrings[cur_status]}</option>
                     % endfor
                     </select>
                 </span>

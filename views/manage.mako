@@ -66,10 +66,10 @@
     </tfoot>
     <tbody>
 <%
-    myShowList = app.showList
-    myShowList.sort(lambda x, y: cmp(x.name, y.name))
+    my_show_list = app.showList
+    my_show_list.sort(lambda x, y: cmp(x.name, y.name))
 %>
-    % for cur_show in myShowList:
+    % for cur_show in my_show_list:
     <%
         cur_ep = cur_show.nextaired
         disabled = app.showQueueScheduler.action.isBeingUpdated(cur_show) or app.showQueueScheduler.action.isInUpdateQueue(cur_show)

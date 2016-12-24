@@ -498,8 +498,8 @@ $('#config-components').tabs();
                                 <span class="component-title">Sorting results by</span>
                                 <span class="component-desc">
                                     <select name="${cur_torrent_provider.get_id()}_sorting" id="${cur_torrent_provider.get_id()}_sorting" class="form-control input-sm">
-                                    % for curAction in ('last', 'seeders', 'leechers'):
-                                    <option value="${curAction}" ${'selected="selected"' if curAction == cur_torrent_provider.sorting else ''}>${curAction}</option>
+                                    % for cur_action in ('last', 'seeders', 'leechers'):
+                                    <option value="${cur_action}" ${'selected="selected"' if cur_action == cur_torrent_provider.sorting else ''}>${cur_action}</option>
                                     % endfor
                                     </select>
                                 </span>

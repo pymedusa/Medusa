@@ -1625,10 +1625,10 @@ class CMD_SearchIndexers(ApiCall):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     continue
 
-                for curSeries in api_data:
-                    results.append({indexer_ids[_indexer]: int(curSeries['id']),
-                                    "name": curSeries['seriesname'],
-                                    "first_aired": curSeries['firstaired'],
+                for cur_series in api_data:
+                    results.append({indexer_ids[_indexer]: int(cur_series['id']),
+                                    "name": cur_series['seriesname'],
+                                    "first_aired": cur_series['firstaired'],
                                     "indexer": int(_indexer)})
 
             return _responds(RESULT_SUCCESS, {"results": results, "langid": lang_id})

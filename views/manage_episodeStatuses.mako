@@ -17,9 +17,9 @@
 % endif
 <form action="manage/episodeStatuses" method="get">
 Manage episodes with status <select name="whichStatus" class="form-control form-control-inline input-sm">
-% for curStatus in [common.SKIPPED, common.SNATCHED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
-    %if curStatus not in [common.ARCHIVED, common.DOWNLOADED]:
-        <option value="${curStatus}">${common.statusStrings[curStatus]}</option>
+% for cur_status in [common.SKIPPED, common.SNATCHED, common.WANTED, common.IGNORED] + common.Quality.DOWNLOADED + common.Quality.ARCHIVED:
+    %if cur_status not in [common.ARCHIVED, common.DOWNLOADED]:
+        <option value="${cur_status}">${common.statusStrings[cur_status]}</option>
     %endif
 % endfor
 </select>
@@ -48,8 +48,8 @@ Set checked shows/episodes to <select name="newStatus" class="form-control form-
     if int(whichStatus) in [common.SNATCHED, common.SNATCHED_PROPER, common.SNATCHED_BEST] + common.Quality.ARCHIVED + common.Quality.DOWNLOADED and app.USE_FAILED_DOWNLOADS:
         statusList.append(common.FAILED)
 %>
-% for curStatus in statusList:
-<option value="${curStatus}">${common.statusStrings[curStatus]}</option>
+% for cur_status in statusList:
+<option value="${cur_status}">${common.statusStrings[cur_status]}</option>
 % endfor
 </select>
 <input class="btn btn-inline" type="submit" value="Go" />

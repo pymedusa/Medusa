@@ -11,7 +11,7 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 % for cur_show_list in show_lists:
     <% curListType = cur_show_list[0] %>
-    <% myShowList = list(cur_show_list[1]) %>
+    <% my_show_list = list(cur_show_list[1]) %>
     % if curListType == "Anime":
         <h1 class="header">Anime List</h1>
     % endif
@@ -46,18 +46,18 @@
     </tfoot>
     % if app.showQueueScheduler.action.loadingShowList:
         <tbody class="tablesorter-infoOnly">
-        % for curLoadingShow in app.showQueueScheduler.action.loadingShowList:
-            <% if curLoadingShow.show is not None and curLoadingShow.show in app.showList:
+        % for cur_loading_show in app.showQueueScheduler.action.loadingShowList:
+            <% if cur_loading_show.show is not None and cur_loading_show.show in app.showList:
                 continue
             %>
             <tr>
                 <td align="center">(loading)</td>
                 <td></td>
                 <td>
-                % if curLoadingShow.show is None:
-                <span title="">Loading... (${curLoadingShow.show_name})</span>
+                % if cur_loading_show.show is None:
+                <span title="">Loading... (${cur_loading_show.show_name})</span>
                 % else:
-                <a href="displayShow?show=${curLoadingShow.show.indexerid}">${curLoadingShow.show.name}</a>
+                <a href="displayShow?show=${cur_loading_show.show.indexerid}">${cur_loading_show.show.name}</a>
                 % endif
                 </td>
                 <td></td>
@@ -69,8 +69,8 @@
         </tbody>
     % endif
     <tbody>
-    <% myShowList.sort(lambda x, y: cmp(x.name, y.name)) %>
-    % for cur_show in myShowList:
+    <% my_show_list.sort(lambda x, y: cmp(x.name, y.name)) %>
+    % for cur_show in my_show_list:
     <%
         cur_airs_next = ''
         cur_airs_prev = ''
