@@ -27,6 +27,12 @@ pre {
     <div class="col-md-12">
         <div class="logging-filter-controll pull-right">
             <div class="show-option pull-right">
+                <!-- Search Log -->
+                <span>Search log by:
+                    <input type="text" name="log_search" placeholder="clear to reset" id="log_search" value="${('', log_search)[bool(log_search)]}" class="form-control form-control-inline input-sm"/>
+                </span>
+            </div>
+            <div class="show-option pull-right">
                 <!-- Select period -->
                 <span>Period:
                     <select name="log_period" id="log_period" class="form-control form-control-inline input-sm">
@@ -63,13 +69,6 @@ pre {
                         <option value="${LOGGING_LEVELS[level]}" ${('', 'selected="selected"')[min_level == LOGGING_LEVELS[level]]}>${level.title()}</option>
                     % endfor
                     </select>
-                </span>
-            </div>
-
-            <div class="show-option pull-right">
-                <!-- Search Log -->
-                <span>Search log by:
-                    <input type="text" name="log_search" placeholder="clear to reset" id="log_search" value="${('', log_search)[bool(log_search)]}" class="form-control form-control-inline input-sm"/>
                 </span>
             </div>
         </div>
