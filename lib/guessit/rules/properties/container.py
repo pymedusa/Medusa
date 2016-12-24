@@ -6,6 +6,8 @@ container property
 from rebulk.remodule import re
 
 from rebulk import Rebulk
+
+from ..common import seps
 from ..common.validators import seps_surround
 from ...reutils import build_or_pattern
 
@@ -18,7 +20,7 @@ def container():
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(name='container',
-                    formatter=lambda value: value[1:],
+                    formatter=lambda value: value.strip(seps),
                     tags=['extension'],
                     conflict_solver=lambda match, other: other
                     if other.name in ['format', 'video_codec'] or

@@ -6,12 +6,12 @@ release_group property
 import copy
 
 from rebulk import Rebulk, Rule, AppendMatch
-from rebulk.remodule import re
 
-from ..common import seps, dash
+from ..common import seps
+from ..common.expected import build_expected_function
 from ..common.comparators import marker_sorted
 from ..common.formatters import cleanup
-from ..common.validators import int_coercable
+from ..common.validators import int_coercable, seps_surround
 from ..properties.title import TitleFromPosition
 
 
@@ -21,7 +21,16 @@ def release_group():
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    return Rebulk().rules(SceneReleaseGroup, AnimeReleaseGroup, ExpectedReleaseGroup)
+    rebulk = Rebulk()
+
+    expected_group = build_expected_function('expected_group')
+
+    rebulk.functional(expected_group, name='release_group', tags=['expected'],
+                      validator=seps_surround,
+                      conflict_solver=lambda match, other: other,
+                      disabled=lambda context: not context.get('expected_group'))
+
+    return rebulk.rules(SceneReleaseGroup, AnimeReleaseGroup)
 
 
 forbidden_groupnames = ['rip', 'by', 'for', 'par', 'pour', 'bonus']
@@ -33,8 +42,8 @@ groupname_seps = ''.join([c for c in seps if c not in groupname_ignore_seps])
 def clean_groupname(string):
     """
     Removes and strip separators from input_string
-    :param input_string:
-    :type input_string:
+    :param string:
+    :type string:
     :return:
     :rtype:
     """
@@ -43,10 +52,10 @@ def clean_groupname(string):
             and not any(i in string.strip(groupname_ignore_seps) for i in groupname_ignore_seps):
         string = string.strip(groupname_ignore_seps)
     for forbidden in forbidden_groupnames:
-        if string.lower().startswith(forbidden):
+        if string.lower().startswith(forbidden) and string[len(forbidden):len(forbidden)+1] in seps:
             string = string[len(forbidden):]
             string = string.strip(groupname_seps)
-        if string.lower().endswith(forbidden):
+        if string.lower().endswith(forbidden) and string[-len(forbidden)-1:-len(forbidden)] in seps:
             string = string[:len(forbidden)]
             string = string.strip(groupname_seps)
     return string
@@ -59,39 +68,13 @@ _scene_previous_names = ['video_codec', 'format', 'video_api', 'audio_codec', 'a
 _scene_previous_tags = ['release-group-prefix']
 
 
-class ExpectedReleaseGroup(Rule):
-    """
-    Add release_group match from expected_group option
-    """
-    consequence = AppendMatch
-
-    properties = {'release_group': [None]}
-
-    def enabled(self, context):
-        return context.get('expected_group')
-
-    def when(self, matches, context):
-        expected_rebulk = Rebulk().defaults(name='release_group')
-
-        for expected_group in context.get('expected_group'):
-            if expected_group.startswith('re:'):
-                expected_group = expected_group[3:]
-                expected_group = expected_group.replace(' ', '-')
-                expected_rebulk.regex(expected_group, abbreviations=[dash], flags=re.IGNORECASE)
-            else:
-                expected_rebulk.string(expected_group, ignore_case=True)
-
-        matches = expected_rebulk.matches(matches.input_string, context)
-        return matches
-
-
 class SceneReleaseGroup(Rule):
     """
     Add release_group match in existing matches (scene format).
 
     Something.XViD-ReleaseGroup.mkv
     """
-    dependency = [TitleFromPosition, ExpectedReleaseGroup]
+    dependency = [TitleFromPosition]
     consequence = AppendMatch
 
     properties = {'release_group': [None]}
@@ -191,9 +174,10 @@ class AnimeReleaseGroup(Rule):
 
             # pylint:disable=bad-continuation
             empty_group_marker = matches.markers \
-                .range(filepart.start, filepart.end, lambda marker: marker.name == 'group'
-                                                                    and not matches.range(marker.start, marker.end)
-                                                                    and not int_coercable(marker.value.strip(seps)),
+                .range(filepart.start, filepart.end, lambda marker: (marker.name == 'group'
+                                                                     and not matches.range(marker.start, marker.end)
+                                                                     and marker.value.strip(seps)
+                                                                     and not int_coercable(marker.value.strip(seps))),
                        0)
 
             if empty_group_marker:

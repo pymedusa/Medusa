@@ -2291,7 +2291,7 @@
   release_group: monkee
   type: episode
 
-# Streaming service: AMBC
+# Streaming service: HIST
 ? Show.Name.720p.HIST.WEBRip.AAC2.0.H.264-monkee
 : options: -t episode
   title: Show Name
@@ -2632,4 +2632,272 @@
   episode_title: '768660'
   season: 8
   title: frasier
+  type: episode
+
+? Show.Name.S03E15.480p.177mb.Proper.HDTV.x264
+: title: Show Name
+  season: 3
+  episode: 15
+  screen_size: 480p
+  size: 177MB
+  other: Proper
+  proper_count: 1
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Show.Name.S03E15.480p.4.8GB.Proper.HDTV.x264
+: title: Show Name
+  season: 3
+  episode: 15
+  screen_size: 480p
+  size: 4.8GB
+  other: Proper
+  proper_count: 1
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Show.Name.S03.1.1TB.Proper.HDTV.x264
+: title: Show Name
+  season: 3
+  size: 1.1TB
+  other: Proper
+  proper_count: 1
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Some.Show.S02E14.1080p.HDTV.X264-reenc.GROUP
+? Some.Show.S02E14.1080p.HDTV.X264-re-enc.GROUP
+? Some.Show.S02E14.1080p.HDTV.X264-re-encoded.GROUP
+? Some.Show.S02E14.1080p.HDTV.X264-reencoded.GROUP
+: title: Some Show
+  season: 2
+  episode: 14
+  screen_size: 1080p
+  format: HDTV
+  video_codec: h264
+  other: ReEncoded
+  release_group: GROUP
+  type: episode
+
+# DDP is DD+
+? Show.Name.2016.S01E01.2160p.AMZN.WEBRip.DDP5.1.x264-Group
+: title: Show Name
+  year: 2016
+  season: 1
+  episode: 1
+  screen_size: 4K
+  streaming_service: Amazon Prime
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: Group
+  type: episode
+
+? Show Name S02e19 [Mux - H264 - Ita Aac] DLMux by UBi
+: title: Show Name
+  season: 2
+  episode: 19
+  video_codec: h264
+  language: it
+  audio_codec: AAC
+  format: WEB-DL
+  other: Mux
+  release_group: UBi
+  type: episode
+
+? Show Name S01e10[Mux - 1080p - H264 - Ita Eng Ac3 - Sub Ita Eng]DLMux By GiuseppeTnT Littlelinx
+: title: Show Name
+  season: 1
+  episode: 10
+  screen_size: 1080p
+  video_codec: h264
+  language: [it, en]
+  format: WEB-DL
+  other: Mux
+  audio_codec: AC3
+  subtitle_language: [it, en]
+  release_group: GiuseppeTnT Littlelinx
+  type: episode
+
+? Show Name S04e07-08 [H264 - Ita Aac] HDTVMux by Group
+: title: Show Name
+  season: 4
+  episode: [7, 8]
+  video_codec: h264
+  language: it
+  audio_codec: AAC
+  format: HDTV
+  other: Mux
+  release_group: Group
+  type: episode
+
+? Show Name 3x18 Un Tuffo Nel Passato ITA HDTVMux x264 Group
+: title: Show Name
+  season: 3
+  episode: 18
+  episode_title: Un Tuffo Nel Passato
+  language: it
+  format: HDTV
+  other: Mux
+  video_codec: h264
+  release_group: Group
+  type: episode
+
+? Show.Name.S03.1080p.BlurayMUX.AVC.DTS-HD.MA
+: title: Show Name
+  season: 3
+  screen_size: 1080p
+  format: BluRay
+  other: Mux
+  video_codec: h264
+  audio_codec: DTS
+  audio_profile: HDMA
+  type: episode
+
+? Show.Name.-.07.(2016).[RH].[English.Dubbed][WEBRip]..[HD.1080p]
+: options: -t episode
+  episode: 7
+  format: WEBRip
+  language: en
+  other: HD
+  screen_size: 1080p
+  title: Show Name
+  type: episode
+  year: 2016
+
+? Show.Name.-.476-479.(2007).[HorribleSubs][WEBRip]..[HD.720p]
+: options: -t episode -E
+  episode:
+  - 476
+  - 477
+  - 478
+  - 479
+  format: WEBRip
+  other: HD
+  release_group: HorribleSubs
+  screen_size: 720p
+  title: Show Name
+  type: episode
+  year: 2007
+
+? /11.22.63/Season 1/11.22.63.106.hdtv-abc
+: options: -T 11.22.63
+  title: 11.22.63
+  season: 1
+  episode: 6
+  format: HDTV
+  release_group: abc
+  type: episode
+
+# Streaming service: DIY Network
+? Show.Name.S01.720p.DIY.WEBRip.AAC2.0.H.264-BTN
+: title: Show Name
+  season: 1
+  screen_size: 720p
+  streaming_service: DIY Network
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTN
+  type: episode
+
+# Streaming service: USA Network
+? Show.Name.S01E02.Exfil.1080p.USAN.WEBRip.AAC2.0.x264-AJP69
+: title: Show Name
+  season: 1
+  episode: 2
+  screen_size: 1080p
+  streaming_service: USA Network
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: AJP69
+  type: episode
+
+# Streaming service: TV3 Ireland
+? Show.Name.S01E08.576p.TV3.WEBRip.AAC2.0.x264-HARiKEN
+: title: Show Name
+  season: 1
+  episode: 8
+  screen_size: 576p
+  streaming_service: TV3 Ireland
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: HARiKEN
+  type: episode
+
+# Streaming service: TV4 Sweeden
+? Show.Name.S05.720p.TV4.WEBRip.AAC2.0.H.264-BTW
+: title: Show Name
+  season: 5
+  screen_size: 720p
+  streaming_service: TV4 Sweeden
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  type: episode
+
+# Streaming service: TLC
+? Show.Name.S02.720p.TLC.WEBRip.AAC2.0.x264-BTW
+: title: Show Name
+  season: 2
+  screen_size: 720p
+  streaming_service: TLC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  type: episode
+
+# Streaming service: Investigation Discovery
+? Show.Name.S01E01.720p.ID.WEBRip.AAC2.0.x264-BTW
+: title: Show Name
+  season: 1
+  episode: 1
+  screen_size: 720p
+  streaming_service: Investigation Discovery
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  type: episode
+
+# Streaming service: RTÉ One
+? Show.Name.S10E01.576p.RTE.WEBRip.AAC2.0.H.264-RTN
+: title: Show Name
+  season: 10
+  episode: 1
+  screen_size: 576p
+  streaming_service: RTÉ One
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: RTN
+  type: episode
+
+# Streaming service: AMC
+? Show.Name.S01E01.1080p.AMC.WEBRip.H.264.AAC2.0-CasStudio
+: title: Show Name
+  season: 1
+  episode: 1
+  screen_size: 1080p
+  streaming_service: AMC
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: CasStudio
   type: episode

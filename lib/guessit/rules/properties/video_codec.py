@@ -7,9 +7,8 @@ from rebulk.remodule import re
 
 from rebulk import Rebulk, Rule, RemoveMatch
 
-from guessit.rules.common.validators import seps_after, seps_before
 from ..common import dash
-from ..common.validators import seps_surround
+from ..common.validators import seps_after, seps_before, seps_surround
 
 
 def video_codec():
@@ -19,13 +18,13 @@ def video_codec():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
-    rebulk.defaults(name="video_codec")
+    rebulk.defaults(name="video_codec", tags='format-suffix')
 
     rebulk.regex(r"Rv\d{2}", value="Real")
     rebulk.regex("Mpeg2", value="Mpeg2")
     rebulk.regex("DVDivX", "DivX", value="DivX")
     rebulk.regex("XviD", value="XviD")
-    rebulk.regex("[hx]-?264(?:-?AVC(HD)?)?", "MPEG-?4(?:-?AVC(HD)?)", "AVCHD", value="h264")
+    rebulk.regex("[hx]-?264(?:-?AVC(HD)?)?", "MPEG-?4(?:-?AVC(HD)?)", "AVC(?:HD)?", value="h264")
     rebulk.regex("[hx]-?265(?:-?HEVC)?", "HEVC", value="h265")
 
     # http://blog.mediacoderhq.com/h264-profiles-and-levels/
@@ -60,7 +59,7 @@ class ValidateVideoCodec(Rule):
         ret = []
         for codec in matches.named('video_codec'):
             if not seps_before(codec) and \
-                    not matches.at_index(codec.start - 1, lambda match: match.name == 'format'):
+                    not matches.at_index(codec.start - 1, lambda match: 'video-codec-prefix' in match.tags):
                 ret.append(codec)
                 continue
             if not seps_after(codec):

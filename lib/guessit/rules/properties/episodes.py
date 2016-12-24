@@ -57,19 +57,17 @@ def episodes():
         :param other:
         :return:
         """
-        if match.name in ['season', 'episode'] and other.name in ['screen_size', 'video_codec',
-                                                                  'audio_codec', 'audio_channels',
-                                                                  'container', 'date']:
+        if match.name == 'episode' and other.name in \
+                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date', 'year']:
             return match
-        elif match.name in ['season', 'episode'] and other.name in ['season', 'episode'] \
+        if match.name == 'season' and other.name in \
+                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date']:
+            return match
+        if match.name in ['season', 'episode'] and other.name in ['season', 'episode'] \
                 and match.initiator != other.initiator:
-            if 'weak-episode' in match.tags:
+            if 'weak-episode' in match.tags or 'x' in match.initiator.raw.lower():
                 return match
-            if 'weak-episode' in other.tags:
-                return other
-            if 'x' in match.initiator.raw.lower():
-                return match
-            if 'x' in other.initiator.raw.lower():
+            if 'weak-episode' in other.tags or 'x' in other.initiator.raw.lower():
                 return other
         return '__default__'
 
@@ -195,6 +193,10 @@ def episodes():
             return True
         return seps_surround(match)
 
+    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'], validate_all=True,
+                    validator={'__parent__': seps_surround}, children=True, private_parent=True,
+                    conflict_solver=season_episode_conflict_solver)
+
     rebulk.chain(abbreviations=[alt_dash],
                  formatter={'season': parse_numeral, 'count': parse_numeral},
                  validator={'__parent__': compose(seps_surround, ordering_validator),
@@ -226,9 +228,6 @@ def episodes():
                  abbreviations=[dash],
                  validator=None,
                  formatter={'season': int, 'other': lambda match: 'Complete'})
-
-    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'], validate_all=True,
-                    validator={'__parent__': seps_surround}, children=True, private_parent=True)
 
     # 12, 13
     rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
@@ -296,11 +295,6 @@ def episodes():
                  abbreviations=[dash], children=True, private_parent=True, formatter=int)
 
     rebulk.regex(r'Minisodes?', name='episode_format', value="Minisode")
-
-    # Harcoded movie to disable weak season/eps
-    rebulk.regex('OSS-?117',
-                 abbreviations=[dash], name="hardcoded-movies", marker=True,
-                 conflict_solver=lambda match, other: None)
 
     rebulk.rules(EpisodeNumberSeparatorRange(range_separators),
                  SeasonSeparatorRange(range_separators), RemoveWeakIfMovie, RemoveWeakIfSxxExx,
@@ -415,8 +409,11 @@ class RemoveWeakIfMovie(Rule):
     priority = 64
     consequence = RemoveMatch
 
+    def enabled(self, context):
+        return context.get('type') != 'episode'
+
     def when(self, matches, context):
-        if matches.named('year') or matches.markers.named('hardcoded-movies'):
+        if matches.named('year'):
             return matches.tagged('weak-movie')
 
 

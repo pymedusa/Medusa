@@ -3,11 +3,11 @@
 """
 film property
 """
-from guessit.rules.common.validators import seps_surround
 from rebulk import Rebulk, AppendMatch, Rule
 from rebulk.remodule import re
 
 from ..common.formatters import cleanup
+from ..common.validators import seps_surround
 
 
 def film():

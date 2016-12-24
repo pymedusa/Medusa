@@ -5,7 +5,7 @@ Words utils
 """
 from collections import namedtuple
 
-from guessit.rules.common import seps
+from . import seps
 
 _Word = namedtuple('_Word', ['span', 'value'])
 
