@@ -192,8 +192,8 @@ class GenericClient(object):
                 info = torrent_bdecode['info']
                 result.hash = sha1(bencode(info)).hexdigest()
             except (BTFailure, KeyError):
-                logger.log('Unable to bdecode torrent. Invalid torrent', logger.WARNING)
-                logger.log('Deleting cached result if exists: {result}'.format(result=result.name), logger.DEBUG)
+                logger.log('Unable to bdecode torrent. Invalid torrent: {0}. Deleting cached result if exists'.format
+                           (result.name), logger.WARNING)
                 cache_db_con = db.DBConnection('cache.db')
                 cache_db_con.action(
                     b'DELETE FROM [{provider}] '
