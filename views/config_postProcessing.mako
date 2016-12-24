@@ -1102,4 +1102,5 @@
     </div>
     <div class="clearfix"></div>
 </div><!-- #content960 //-->
+</div>
 </%block>
