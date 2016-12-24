@@ -25,6 +25,7 @@ import time
 from collections import OrderedDict
 
 import guessit
+
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 from ..helper.common import episode_num
 from ..indexers.indexer_api import indexerApi
@@ -410,7 +411,7 @@ class ParseResult(object):
 class NameParserCache(object):
     """Name parser cache."""
 
-    _previous_parsed = {}
+    _previous_parsed = OrderedDict()
     _cache_size = 100
 
     def add(self, name, parse_result):
