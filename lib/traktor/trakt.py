@@ -46,7 +46,7 @@ class TraktApi(object):
         self.auth_url = trakt_settings.get('trakt_auth_url', 'https://trakt.tv/')  # oauth url
         self.api_url = trakt_settings.get('trakt_api_url', 'https://api.trakt.tv/')  # api url
         self.access_token = trakt_settings.get('trakt_access_token', '')
-        self.refresh_token = None
+        self.refresh_token = trakt_settings.get('trakt_refresh_token', '')
         self.access_token_refreshed = False
         self.headers = headers
         self.trakt_settings = trakt_settings

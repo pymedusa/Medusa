@@ -1,10 +1,11 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
     import re
+    from medusa import app
     from medusa.helpers import anon_url
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
+    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -887,7 +888,7 @@
                     </div><!-- /libnotify component-group //-->
                         <div class="component-group-desc">
                             <span class="icon-notifiers-pushover" title="Pushover"></span>
-                            <h3><a href="${anon_url('${app.PUSHOVER_URL}')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
+                            <h3><a href="${anon_url('https://pushover.net/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;">Pushover</a></h3>
                             <p>Pushover makes it easy to send real-time notifications to your Android and iOS devices.</p>
                         </div>
                     <div class="component-group">
@@ -947,7 +948,7 @@
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
-                                        <span class="component-desc"><a href="${anon_url('${app.PUSHOVER_URL}')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><b>Click here</b></a> to create a Pushover API key</span>
+                                        <span class="component-desc"><a href="${anon_url('https://pushover.net/apps/build/')}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><b>Click here</b></a> to create a Pushover API key</span>
                                     </label>
                                 </div>
                                 <div class="field-pair">
@@ -1563,8 +1564,8 @@
                                         <span class="component-title">Default indexer</span>
                                         <span class="component-desc">
                                             <select id="trakt_default_indexer" name="trakt_default_indexer" class="form-control input-sm">
-                                                % for indexer in app.indexerApi().indexers:
-                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${app.indexerApi().indexers[indexer]}</option>
+                                                % for indexer in indexerApi().indexers:
+                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexerApi().indexers[indexer]}</option>
                                                 % endfor
                                             </select>
                                         </span>

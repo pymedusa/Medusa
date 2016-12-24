@@ -10,6 +10,9 @@ MEDUSA.addShows.trendingShows = function() {
     $('#traktlistselection').on('change', function(e) {
         var traktList = e.target.value;
         window.history.replaceState({}, document.title, 'addShows/trendingShows/?traktList=' + traktList);
+        // Update the jquery tab hrefs, when switching trakt list.
+        $('#trakt-tab-1').attr('href', document.location.href.split('=')[0] + '=' + e.target.value);
+        $('#trakt-tab-2').attr('href', document.location.href.split('=')[0] + '=' + e.target.value);
         $('#trendingShows').loadRemoteShows(
             'addShows/getTrendingShows/?traktList=' + traktList,
             'Loading trending shows...',

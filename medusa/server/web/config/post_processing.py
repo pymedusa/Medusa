@@ -8,15 +8,11 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as app
 from tornroutes import route
 from unrar2 import RarFile
 from .handler import Config
 from ..core import PageTemplate
-from .... import (
-    config, logger,
-    naming, ui,
-)
+from .... import app, config, logger, naming, ui
 from ....helper.exceptions import ex
 
 
@@ -150,7 +146,7 @@ class ConfigPostProcessing(Config):
             results.append(
                 'You tried saving an invalid sports naming config, not saving your sports settings')
 
-        app.save_config()
+        app.instance.save_config()
 
         if results:
             for x in results:

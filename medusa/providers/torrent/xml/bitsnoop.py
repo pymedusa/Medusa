@@ -15,32 +15,31 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Bitsnoop."""
 from __future__ import unicode_literals
 
 import traceback
 
-import medusa as app
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import app, logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """BitSnoop Torrent provider"""
+class BitSnoopProvider(TorrentProvider):
+    """BitSnoop Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'BitSnoop')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('BitSnoop')
 
         # Credentials
         self.public = True
 
         # URLs
-        self.url = 'http://bitsnoop.com'
+        self.url = 'https://bitsnoop.com'
         self.urls = {
             'base': self.url,
             'rss': urljoin(self.url, '/new_video.html?fmt=rss'),
@@ -59,9 +58,9 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Cache
         self.cache = tv_cache.TVCache(self, search_params={'RSS': ['rss']})
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-branches,too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -100,7 +99,6 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -137,7 +135,6 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
 
                     torrent_size = row.find('size').text
                     size = convert_size(torrent_size) or -1
-                    torrent_hash = row.find('infohash').text
 
                     item = {
                         'title': title,
@@ -146,7 +143,6 @@ class BitSnoopProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -20,10 +20,8 @@
 from __future__ import unicode_literals
 
 import re
-
-import medusa as app
 from requests.compat import urljoin
-from .. import common, helpers, logger
+from .. import app, common, helpers, logger
 
 
 class Notifier(object):
@@ -43,8 +41,13 @@ class Notifier(object):
 
     def get_devices(self, pushbullet_api):
         logger.log('Testing Pushbullet authentication and retrieving the device list.', logger.DEBUG)
-        headers = {'Access-Token': pushbullet_api}
-        return helpers.getURL(urljoin(self.url, 'devices'), session=self.session, headers=headers, returns='text') or {}
+        headers = {'Access-Token': pushbullet_api,
+                   'Content-Type': 'application/json'}
+        try:
+            r = self.session.get(urljoin(self.url, 'devices'), headers=headers)
+            return r.text
+        except ValueError:
+            return {}
 
     def notify_snatch(self, ep_name, is_proper):
         if app.PUSHBULLET_NOTIFY_ONSNATCH:
@@ -91,6 +94,7 @@ class Notifier(object):
 
     def _sendPushbullet(  # pylint: disable=too-many-arguments
             self, pushbullet_api=None, pushbullet_device=None, event=None, message=None, link=None, force=False):
+        push_result = {'success': False, 'error': ''}
 
         if not (app.USE_PUSHBULLET or force):
             return False
@@ -112,16 +116,24 @@ class Notifier(object):
         if link:
             post_data['url'] = link
 
-        headers = {'Access-Token': pushbullet_api}
+        headers = {'Access-Token': pushbullet_api,
+                   'Content-Type': 'application/json'}
 
-        response = helpers.getURL(urljoin(self.url, 'pushes'), session=self.session, post_data=post_data, headers=headers, returns='json') or {}
-        if not response:
-            return False
+        r = self.session.post(urljoin(self.url, 'pushes'), json=post_data, headers=headers)
+
+        try:
+            response = r.json()
+        except ValueError:
+            logger.log('Pushbullet notification failed. Could not parse pushbullet response.', logger.WARNING)
+            push_result['error'] = 'Pushbullet notification failed. Could not parse pushbullet response.'
+            return push_result
 
         failed = response.pop('error', {})
         if failed:
-            logger.log('Pushbullet notification failed: {}'.format(failed.pop('message')), logger.WARNING)
+            logger.log('Pushbullet notification failed: {0}'.format(failed.get('message')), logger.WARNING)
+            push_result['error'] = 'Pushbullet notification failed: {0}'.format(failed.get('message'))
         else:
             logger.log('Pushbullet notification sent.', logger.DEBUG)
+            push_result['success'] = True
 
-        return False if failed else True
+        return push_result

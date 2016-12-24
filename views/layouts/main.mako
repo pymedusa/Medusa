@@ -1,5 +1,5 @@
 <%!
-    import medusa as app
+    from medusa import app
 %>
 <!DOCTYPE html>
 <html>
@@ -48,21 +48,21 @@
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
-        <div v-cloak id="vue-wrap">
+        <div v-cloak id="vue-wrap" class="container-fluid">
             <%include file="/partials/header.mako"/>
             % if submenu:
             <%include file="/partials/submenu.mako"/>
             % endif
             <%include file="/partials/alerts.mako"/>
-            <div id="contentWrapper">
-                <div id="content">
-                    <%block name="content" />
-                </div><!-- /content -->
-            </div><!-- /contentWrapper -->
+               <div id="content-row" class="row">
+                    <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
+                        <%block name="content" />
+                    </div>
+               </div><!-- /content -->
             <%include file="/partials/footer.mako" />
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
-		<script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>		
+        <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>

@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for FreshOnTV."""
 from __future__ import unicode_literals
 
 import re
@@ -24,20 +24,21 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+
 from six import text_type
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """FreshOnTV Torrent provider"""
+class FreshOnTVProvider(TorrentProvider):
+    """FreshOnTV Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'FreshOnTV')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('FreshOnTV')
 
         # Credentials
         self.username = None
@@ -69,9 +70,9 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -158,7 +159,6 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -206,7 +206,6 @@ class FreshOnTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

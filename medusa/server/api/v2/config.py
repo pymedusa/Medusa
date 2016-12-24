@@ -4,10 +4,9 @@
 import platform
 import sys
 
-import medusa as app
-
 from six import text_type
 from .base import BaseRequestHandler
+from .... import app, db
 
 
 class ConfigHandler(BaseRequestHandler):
@@ -51,7 +50,7 @@ class ConfigHandler(BaseRequestHandler):
             'localUser': app.OS_USER or 'Unknown',
             'programDir': app.PROG_DIR,
             'configFile': app.CONFIG_FILE,
-            'dbFilename': app.db.dbFilename(),
+            'dbFilename': db.dbFilename(),
             'cacheDir': app.CACHE_DIR,
             'logDir': app.LOG_DIR,
             'appArgs': app.MY_ARGS,
@@ -61,14 +60,22 @@ class ConfigHandler(BaseRequestHandler):
             'sourceUrl': app.APPLICATION_URL,
             'displayAllSeasons': app.DISPLAY_ALL_SEASONS,
             'displayShowSpecials': app.DISPLAY_SHOW_SPECIALS,
-            'useSubtitles': app.USE_SUBTITLES,
             'downloadUrl': app.DOWNLOAD_URL,
             'subtitlesMulti': app.SUBTITLES_MULTI,
+            'namingForceFolders': app.NAMING_FORCE_FOLDERS,
+            'subtitles': {
+                'enabled': bool(app.USE_SUBTITLES)
+            },
             'kodi': {
                 'enabled': bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
             },
             'plex': {
-                'enabled': bool(app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY)
+                'server': {
+                    'enabled': bool(app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY)
+                },
+                'client': {
+                    'enabled': False  # Replace this with plex client code
+                }
             },
             'emby': {
                 'enabled': bool(app.USE_EMBY)

@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Pretome."""
 from __future__ import unicode_literals
 
 import re
@@ -23,6 +23,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -33,8 +34,8 @@ class PretomeProvider(TorrentProvider):
     """Pretome Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'Pretome')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Pretome')
 
         # Credentials
         self.username = None
@@ -149,7 +150,6 @@ class PretomeProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

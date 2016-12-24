@@ -15,26 +15,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Bithdtv."""
 from __future__ import unicode_literals
 
 import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """BIT-HDTV Torrent provider"""
+class BithdtvProvider(TorrentProvider):
+    """BIT-HDTV Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'BITHDTV')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('BITHDTV')
 
         # Credentials
         self.username = None
@@ -61,9 +61,9 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -127,6 +127,10 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
             # Skip column headers
             for row in torrent_rows[1:]:
                 cells = row('td')
+                if len(cells) < 3:
+                    # We must have cells[2] because it containts the title
+                    continue
+
                 if self.freeleech and not row.get('bgcolor'):
                     continue
 
@@ -147,8 +151,7 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = '{size} {unit}'.format(size=cells[6].contents[0],
-                                                          unit=cells[6].contents[1].get_text())
+                    torrent_size = cells[6].get_text(' ')
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {
@@ -158,7 +161,6 @@ class BithdtvProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

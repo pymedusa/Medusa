@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Nyaa."""
 from __future__ import unicode_literals
 
 import re
@@ -26,12 +26,12 @@ from .... import logger, tv_cache
 from ....helper.common import convert_size, try_int
 
 
-class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class NyaaProvider(TorrentProvider):
+    """Nyaa Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'NyaaTorrents')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('NyaaTorrents')
 
         # Credentials
         self.public = True
@@ -55,9 +55,9 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -88,7 +88,7 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                         logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                     search_params['term'] = search_string
-                data = self.cache.getRSSFeed(self.url, params=search_params)
+                data = self.cache.get_rss_feed(self.url, params=search_params)
                 if not data:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -110,7 +110,6 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
 
         :return: A list of items found
         """
-
         items = []
 
         for result in data['entries']:
@@ -152,7 +151,6 @@ class NyaaProvider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': None,
-                    'torrent_hash': None,
                 }
                 if mode != 'RSS':
                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

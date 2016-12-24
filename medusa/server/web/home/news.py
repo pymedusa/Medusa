@@ -3,11 +3,10 @@
 from __future__ import unicode_literals
 
 import markdown2
-import medusa as app
 from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
-from .... import logger
+from .... import app, logger
 
 
 @route('/news(/?.*)')
@@ -24,7 +23,7 @@ class HomeNews(Home):
 
         app.NEWS_LAST_READ = app.NEWS_LATEST
         app.NEWS_UNREAD = 0
-        app.save_config()
+        app.instance.save_config()
 
         t = PageTemplate(rh=self, filename='markdown.mako')
         data = markdown2.markdown(news if news else 'The was a problem connecting to GitHub, please refresh and try again', extras=['header-ids'])

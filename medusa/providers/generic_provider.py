@@ -1,7 +1,6 @@
 # coding=utf-8
 # This file is part of Medusa.
 #
-#
 # Medusa is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -14,7 +13,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Generic Provider."""
 from __future__ import unicode_literals
 
 import re
@@ -25,15 +24,16 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-import medusa as app
 from requests.utils import add_dict_to_cookiejar
-from .. import logger, ui
+
+from .. import app, config, logger, ui
 from ..classes import Proper, SearchResult
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helpers import download_file, getURL, make_session, remove_file_failed
+from ..helpers import download_file, getURL, make_session
+from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..show.show import Show
 from ..show_name_helpers import allPossibleShowNames
@@ -43,25 +43,25 @@ from ..tv_cache import TVCache
 recent_results = {}
 
 
-class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
+class GenericProvider(object):
+    """Generic provider."""
+
     NZB = 'nzb'
     TORRENT = 'torrent'
 
     def __init__(self, name):
+        """Initialize the class."""
         self.name = name
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'http://itorrents.org/torrent/{torrent_hash}.torrent',
-            'https://torrentproject.se/torrent/{torrent_hash}.torrent',
-            'http://torrasave.top/torrent/{torrent_hash}.torrent',
-            'http://torra.pro/torrent/{torrent_hash}.torrent',
-            'http://torra.click/torrent/{torrent_hash}.torrent',
-            'http://reflektor.karmorra.info/torrent/{torrent_hash}.torrent',
-            # 'http://thetorrent.org/torrent/{torrent_hash}.torrent',
-            # 'http://torcache.net/torrent/{torrent_hash}.torrent',
-            # 'http://btdig.com/torrent/{torrent_hash}.torrent',
-            # 'http://torrage.info/torrent/{torrent_hash}.torrent',
+            'http://itorrents.org/torrent/{info_hash}.torrent',
+            'https://torrentproject.se/torrent/{info_hash}.torrent',
+            'http://torrasave.top/torrent/{info_hash}.torrent',
+            'http://torra.pro/torrent/{info_hash}.torrent',
+            'http://torra.click/torrent/{info_hash}.torrent',
+            'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
+            'http://torrasave.site/torrent/{info_hash}.torrent',
         ]
         self.cache = TVCache(self)
         self.enable_backlog = False
@@ -89,9 +89,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         self.max_recent_items = 5
         self.stop_at = 3
 
-        shuffle(self.bt_cache_urls)
-
     def download_result(self, result):
+        """Download result from provider."""
         if not self.login():
             return False
 
@@ -106,7 +105,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     'Referer': '/'.join(url.split('/')[:3]) + '/'
                 })
 
-            logger.log('Downloading a result from %s at %s' % (self.name, url))
+            logger.log('Downloading {result} from {provider} at {url}'.format
+                       (result=result.name, provider=self.name, url=url))
 
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
@@ -115,26 +115,25 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             if download_file(url, filename, session=self.session, headers=self.headers,
                              hooks={'response': self.get_url_hook}, verify=verify):
+
                 if self._verify_download(filename):
-                    logger.log('Saved result to %s' % filename, logger.INFO)
+                    logger.log('Saved {result} to {location}'.format(result=result.name, location=filename))
                     return True
 
-                logger.log('Could not download %s' % url, logger.WARNING)
-                remove_file_failed(filename)
-
         if urls:
-            logger.log('Failed to download any results', logger.WARNING)
+            logger.log('Failed to download any results for {result}'.format(result=result.name), logger.WARNING)
 
         return False
 
     def find_propers(self, proper_candidates):
+        """Find propers in providers."""
         results = []
 
         for proper_candidate in proper_candidates:
             show_obj = Show.find(app.showList,
                                  int(proper_candidate[b'showid'])) if proper_candidate[b'showid'] else None
-
             if show_obj:
+                self.show = show_obj
                 episode_obj = show_obj.get_episode(proper_candidate[b'season'], proper_candidate[b'episode'])
 
                 for term in self.proper_strings:
@@ -145,19 +144,18 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
                         pubdate = self._get_pubdate(item)
-                        torrent_hash = self._get_torrent_hash(item)
 
                         # This will be retrived from the parser
                         proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
-                                              torrent_hash, proper_tags))
+                                              proper_tags))
 
         return results
 
-    def find_search_results(self, show, episodes, search_mode, forced_search=False,
-                            download_current_quality=False, manual_search=False,
-                            manual_search_type='episode'):  # pylint: disable=too-many-branches,too-many-arguments,too-many-locals,too-many-statements
+    def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
+                            manual_search=False, manual_search_type='episode'):
+        """Search episodes based on param."""
         self._check_auth()
         self.show = show
 
@@ -166,8 +164,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         for episode in episodes:
             if not manual_search:
-                cache_result = self.cache.searchCache(episode, forced_search=forced_search,
-                                                      downCurQuality=download_current_quality)
+                cache_result = self.cache.search_cache(episode, forced_search=forced_search,
+                                                       down_cur_quality=download_current_quality)
                 if cache_result:
                     if episode.episode not in results:
                         results[episode.episode] = cache_result
@@ -214,7 +212,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             (seeders, leechers) = self._get_result_info(item)
             size = self._get_size(item)
             pubdate = self._get_pubdate(item)
-            torrent_hash = self._get_torrent_hash(item)
 
             try:
                 parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
@@ -233,8 +230,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                     if search_mode == 'sponly':
                         if parse_result.episode_numbers:
                             logger.log(
-                                'This is supposed to be a season pack search but the result %s is not a valid season pack, skipping it' % title,
-                                logger.DEBUG
+                                'This is supposed to be a season pack search but the result %s is not a valid '
+                                'season pack, skipping it' % title, logger.DEBUG
                             )
                             add_cache_entry = True
                         elif not [ep for ep in episodes if
@@ -253,8 +250,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                                      (ep.episode, ep.scene_episode)[ep.show.is_scene] in
                                      parse_result.episode_numbers]]):
                             logger.log(
-                                'The result %s doesn\'t seem to match an episode that we are currently trying to snatch, skipping it' % title,
-                                logger.DEBUG)
+                                "The result %s doesn't seem to match an episode that we are currently trying to "
+                                "snatch, skipping it" % title, logger.DEBUG
+                            )
                             add_cache_entry = True
 
                     if not add_cache_entry:
@@ -265,8 +263,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
                     if not parse_result.is_air_by_date:
                         logger.log(
-                            'This is supposed to be a date search but the result %s didn\'t parse as one, skipping it' % title,
-                            logger.DEBUG)
+                            "This is supposed to be a date search but the result %s didn't parse as one, "
+                            "skipping it" % title, logger.DEBUG
+                        )
                         add_cache_entry = True
                     else:
                         air_date = parse_result.air_date.toordinal()
@@ -287,8 +286,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                                 same_day_special = True
                         elif len(sql_results) != 1:
                             logger.log(
-                                'Tried to look up the date for the episode %s but the database didn\'t give proper results, skipping it' % title,
-                                logger.WARNING)
+                                "Tried to look up the date for the episode %s but the database didn't return proper "
+                                "results, skipping it" % title, logger.WARNING
+                            )
                             add_cache_entry = True
 
                     if not add_cache_entry and not same_day_special:
@@ -300,9 +300,9 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
             if add_cache_entry:
                 logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
-                # pylint: disable=protected-access
+
                 # Access to a protected member of a client class
-                ci = self.cache._addCacheEntry(title, url, seeders, leechers, size, pubdate, torrent_hash)
+                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate)
 
                 if ci is not None:
                     cl.append(ci)
@@ -340,7 +340,6 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             result.content = None
             result.size = self._get_size(item)
             result.pubdate = self._get_pubdate(item)
-            result.hash = self._get_torrent_hash(item)
 
             if not episode_object:
                 episode_number = SEASON_RESULT
@@ -350,8 +349,8 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 logger.log('Single episode result.', logger.DEBUG)
             else:
                 episode_number = MULTI_EP_RESULT
-                logger.log('Separating multi-episode result to check for later - result contains episodes: %s' % str(
-                    parse_result.episode_numbers), logger.DEBUG)
+                logger.log('Separating multi-episode result to check for later - result contains episodes: {0}'.format
+                           (parse_result.episode_numbers), logger.DEBUG)
 
             if episode_number not in results:
                 results[episode_number] = [result]
@@ -359,7 +358,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
                 results[episode_number].append(result)
 
         if cl:
-            # pylint: disable=protected-access
+
             # Access to a protected member of a client class
             db = self.cache._get_db()
             db.mass_action(cl)
@@ -367,15 +366,18 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         return results
 
     def get_id(self):
+        """Get ID of the provider."""
         return GenericProvider.make_id(self.name)
 
     def get_quality(self, item, anime=False):
+        """Get scene quality of the result."""
         (title, _) = self._get_title_and_url(item)
         quality = Quality.scene_quality(title, anime)
 
         return quality
 
     def get_result(self, episodes):
+        """Get result."""
         result = self._get_result(episodes)
         result.provider = self
 
@@ -383,51 +385,64 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def get_url_hook(response, **kwargs):
+        """Get URL hook."""
         logger.log('{} URL: {} [Status: {}]'.format
                    (response.request.method, response.request.url, response.status_code), logger.DEBUG)
 
         if response.request.method == 'POST':
             logger.log('With post data: {}'.format(response.request.body), logger.DEBUG)
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):  # pylint: disable=too-many-arguments,
+    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
+        """Load the given URL."""
         kwargs['hooks'] = {'response': self.get_url_hook}
         return getURL(url, post_data, params, self.headers, timeout, self.session, **kwargs)
 
     def image_name(self):
+        """Return provider image name."""
         return self.get_id() + '.png'
 
-    def is_active(self):  # pylint: disable=no-self-use
+    def is_active(self):
+        """Check if provider is active."""
         return False
 
     def is_enabled(self):
+        """Check if provider is enabled."""
         return bool(self.enabled)
 
     @staticmethod
     def make_id(name):
+        """Make ID of the provider."""
         if not name:
             return ''
 
         return re.sub(r'[^\w\d_]', '_', str(name).strip().lower())
 
     def search_rss(self, episodes):
-        return self.cache.findNeededEpisodes(episodes)
+        """Find cached needed episodes."""
+        return self.cache.find_needed_episodes(episodes)
 
-    def seed_ratio(self):  # pylint: disable=no-self-use
+    def seed_ratio(self):
+        """Return ratio."""
         return ''
 
-    def _check_auth(self):  # pylint: disable=no-self-use
+    def _check_auth(self):
+        """Check if we are autenticated."""
         return True
 
-    def login(self):  # pylint: disable=no-self-use
+    def login(self):
+        """Login to provider."""
         return True
 
-    def search(self, search_params, age=0, ep_obj=None):  # pylint: disable=unused-argument,no-self-use
+    def search(self, search_params, age=0, ep_obj=None):
+        """Search the provider."""
         return []
 
-    def _get_result(self, episodes):  # pylint: disable=no-self-use
+    def _get_result(self, episodes):
+        """Get result."""
         return SearchResult(episodes)
 
     def _get_episode_search_strings(self, episode, add_string=''):
+        """Get episode search strings."""
         if not episode:
             return []
 
@@ -447,7 +462,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             elif episode.show.anime:
                 episode_string += '%02d' % int(episode.scene_absolute_number)
             else:
-                episode_string += app.config.naming_ep_type[2] % {
+                episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
                     'episodenumber': episode.scene_episode,
                 }
@@ -458,6 +473,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             search_string['Episode'].append(episode_string.strip())
 
         return [search_string]
+
+    def _get_tvdb_id(self):
+        """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
+        return self.show.indexerid if self.show.indexer == INDEXER_TVDBV2 else self.show.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):
         search_string = {
@@ -470,7 +489,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
             if episode.show.air_by_date or episode.show.sports:
                 episode_string += str(episode.airdate).split('-')[0]
             elif episode.show.anime:
-                episode_string += '%d' % int(episode.scene_absolute_number)
+                episode_string += 'Season'
             else:
                 episode_string += 'S%02d' % int(episode.season)
 
@@ -478,30 +497,27 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return [search_string]
 
-    def _get_size(self, item):  # pylint: disable=unused-argument,no-self-use
+    def _get_size(self, item):
+        """Return default size."""
         return -1
 
-    def _get_storage_dir(self):  # pylint: disable=no-self-use
+    def _get_storage_dir(self):
+        """Return storage dir."""
         return ''
 
-    def _get_result_info(self, item):  # pylint: disable=no-self-use
+    def _get_result_info(self, item):
+        """Return default seeders and leechers."""
         return -1, -1
 
-    def _get_pubdate(self, item):  # pylint: disable=unused-argument,no-self-use
-        """
-        Return publish date of the item. If provider doesnt
-        have _get_pubdate function this will be used
+    def _get_pubdate(self, item):
+        """Return publish date of the item.
+
+        If provider doesnt have _get_pubdate function this will be used
         """
         return None
 
-    def _get_torrent_hash(self, item):  # pylint: disable=unused-argument,no-self-use
-        """
-        Return hash of the item. If provider doesnt
-        have _get_torrent_hash function this will be used
-        """
-        return None
-
-    def _get_title_and_url(self, item):  # pylint: disable=no-self-use
+    def _get_title_and_url(self, item):
+        """Return title and url from result."""
         if not item:
             return '', ''
 
@@ -521,6 +537,7 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
         return title, url
 
     def _make_url(self, result):
+        """Return url if result is a magnet link."""
         if not result:
             return '', ''
 
@@ -529,21 +546,22 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         if result.url.startswith('magnet'):
             try:
-                torrent_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
+                info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
 
                 try:
                     torrent_name = re.findall('dn=([^&]+)', result.url)[0]
                 except Exception:
                     torrent_name = 'NO_DOWNLOAD_NAME'
 
-                if len(torrent_hash) == 32:
-                    torrent_hash = b16encode(b32decode(torrent_hash)).upper()
+                if len(info_hash) == 32:
+                    info_hash = b16encode(b32decode(info_hash)).upper()
 
-                if not torrent_hash:
+                if not info_hash:
                     logger.log('Unable to extract torrent hash from magnet: %s' % ex(result.url), logger.ERROR)
                     return urls, filename
 
-                urls = [x.format(torrent_hash=torrent_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
+                shuffle(urls)
             except Exception:
                 logger.log('Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)
                 return urls, filename
@@ -554,15 +572,17 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
         return urls, filename
 
-    def _verify_download(self, file_name=None):  # pylint: disable=unused-argument,no-self-use
+    def _verify_download(self, file_name=None):
         return True
 
     @property
     def recent_results(self):
+        """Return recent RSS results from provier."""
         return recent_results.get(self.get_id(), [])
 
     @recent_results.setter
     def recent_results(self, items):
+        """Set recent results from provider."""
         if not recent_results.get(self.get_id()):
             recent_results.update({self.get_id(): []})
         if items:
@@ -575,10 +595,10 @@ class GenericProvider(object):  # pylint: disable=too-many-instance-attributes
 
     def add_cookies_from_ui(self):
         """
-        Adds the cookies configured from UI to the providers requests session
+        Add the cookies configured from UI to the providers requests session.
+
         :return: A dict with the the keys result as bool and message as string
         """
-
         # This is the generic attribute used to manually add cookies for provider authentication
         if self.enable_cookies:
             if self.cookies:

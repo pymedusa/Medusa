@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa import helpers
     from medusa.show_queue import ShowQueueActions
     from medusa.helper.common import dateTimeFormat

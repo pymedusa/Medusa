@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Abnormal."""
 from __future__ import unicode_literals
 
 import re
@@ -23,18 +23,19 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """ABNormal Torrent provider"""
-    def __init__(self):
+class ABNormalProvider(TorrentProvider):
+    """ABNormal Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'ABNormal')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('ABNormal')
 
         # Credentials
         self.username = None
@@ -59,9 +60,9 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -169,7 +170,6 @@ class ABNormalProvider(TorrentProvider):  # pylint: disable=too-many-instance-at
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

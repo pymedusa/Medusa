@@ -33,10 +33,13 @@ def format_():
 
     rebulk.regex("HD-?TV", "TV-?RIP-?HD", "HD-?TV-?RIP", "HD-?RIP", value="HDTV")
     rebulk.regex("VOD", "VOD-?Rip", value="VOD")
-    rebulk.regex("WEB-?Rip", value="WEBRip")
+    rebulk.regex("WEB-?Rip", "WEB-?DL-?Rip", "WEB-?Cap", value="WEBRip")
     rebulk.regex("WEB-?DL", "WEB-?HD", "WEB", value="WEB-DL")
     rebulk.regex("HD-?DVD-?Rip", "HD-?DVD", value="HD-DVD")
     rebulk.regex("Blu-?ray(?:-?Rip)?", "B[DR]", "B[DR]-?Rip", "BD[59]", "BD25", "BD50", value="BluRay")
+    rebulk.regex("AHDTV", value="AHDTV")
+    rebulk.regex("HDTC", value="HDTC")
+    rebulk.regex("DSR", "DSR?-?Rip", "SAT-?Rip", "DTH", "DTH-?Rip", value="SATRip")
 
     rebulk.rules(ValidateFormat)
 

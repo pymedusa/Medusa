@@ -28,10 +28,10 @@ import logging
 import os
 import re
 
-import medusa as app
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 from .generic import GenericClient
+from .. import app
 from ..helpers import handle_requests_exception
 
 logger = logging.getLogger(__name__)
@@ -189,8 +189,7 @@ class DownloadStationAPI(GenericClient):
             jdata = self.response.json()
             version_string = jdata.get('data', {}).get('version_string')
             if not version_string:
-                logger.log('Could not get the version string from DSM: {response}'.format
-                           (response=jdata))
+                logger.warning('Could not get the version string from DSM: {response}', response=jdata)
                 return False
 
             if version_string.startswith('DSM 6'):

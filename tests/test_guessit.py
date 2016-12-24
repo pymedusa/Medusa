@@ -7,6 +7,7 @@ import os
 
 import guessit
 import medusa.name_parser.guessit_parser as sut
+from medusa import app
 import pytest
 from six import binary_type, text_type
 import yaml
@@ -37,6 +38,7 @@ def show_list(create_tvshow):
         create_tvshow(indexerid=16, name='3 Show på (abc2)'),  # unicode characters, numbers and parenthesis
         create_tvshow(indexerid=16, name="Show '70s Name"),
         create_tvshow(indexerid=17, name='An Anime Show 100', anime=1),
+        create_tvshow(indexerid=17, name='Show! Name 2', anime=1),
         create_tvshow(indexerid=18, name='24'),  # expected titles shouldn't contain numbers
     ]
 
@@ -82,7 +84,7 @@ def test_pre_configured_guessit():
 @pytest.mark.parametrize('release_name,expected', _parameters())
 def test_guess(monkeypatch, show_list, release_name, expected):
     # Given
-    monkeypatch.setattr('medusa.showList', show_list)
+    monkeypatch.setattr(app, 'showList', show_list)
     options = expected.pop('options', {})
 
     # When
@@ -98,6 +100,8 @@ def test_guess(monkeypatch, show_list, release_name, expected):
         del expected['mimetype']
     if 'mimetype' in actual:
         del actual['mimetype']
+
+    del actual['parsing_time']
 
     if not expected.get('disabled'):
         assert expected == actual

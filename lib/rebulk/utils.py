@@ -8,7 +8,7 @@ from collections import MutableSet
 from types import GeneratorType
 
 
-def find_all(string, sub, start=None, end=None, ignore_case=False):
+def find_all(string, sub, start=None, end=None, ignore_case=False, **kwargs):
     """
     Return all indices in string s where substring sub is
     found, such that sub is contained in the slice s[start:end].
@@ -41,6 +41,7 @@ def find_all(string, sub, start=None, end=None, ignore_case=False):
     :return: all indices in the input string
     :rtype: __generator[str]
     """
+    #pylint: disable=unused-argument
     if ignore_case:
         sub = sub.lower()
         string = string.lower()
@@ -65,10 +66,8 @@ def get_first_defined(data, keys, default_value=None):
     :rtype:
     """
     for key in keys:
-        try:
+        if key in data:
             return data[key]
-        except KeyError:
-            pass
     return default_value
 
 

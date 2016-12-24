@@ -1,7 +1,7 @@
 <%!
     import datetime
     import re
-    import medusa as app
+    from medusa import app, logger
     from medusa.helper.common import pretty_file_size
     from medusa.show.show import Show
     from time import time
@@ -16,7 +16,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa-christmas.png" style="height: 50px;" class="img-responsive pull-left" /></a>
         </div>
     % if loggedIn:
         <div class="collapse navbar-collapse" id="main_nav">
@@ -109,7 +109,7 @@
                             <li><a href="errorlogs/"><i class="menu-icon-error"></i>&nbsp;View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
                         %endif
                         %if numWarnings:
-                            <li><a href="errorlogs/?level=${app.logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
+                            <li><a href="errorlogs/?level=${logger.WARNING}"><i class="menu-icon-viewlog-errors"></i>&nbsp;View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
                         %endif
                         <li><a href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i>&nbsp;View Log</a></li>
                         <li role="separator" class="divider"></li>

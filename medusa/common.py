@@ -27,12 +27,14 @@ from collections import namedtuple
 from os import path
 
 from fake_useragent import UserAgent, settings as UA_SETTINGS
+
 import knowit
+
 from six import PY3
 from six.moves import reduce
+
 from .numdict import NumDict
 from .recompiled import tags
-from .tagger.episode import EpisodeTags
 
 
 if PY3:
@@ -46,7 +48,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-USER_AGENT = u'Medusa-Rage/{version}({system}; {release}; {instance})'.format(
+USER_AGENT = u'Medusa/{version}({system}; {release}; {instance})'.format(
     version=u'0.0.1', system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 UA_SETTINGS.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
@@ -128,9 +130,8 @@ MULTI_EP_STRINGS = NumDict({
 
 
 class Quality(object):
-    """
-    Determine quality and set status codes
-    """
+    """Determine quality and set status codes."""
+
     NONE = 0  # 0
     SDTV = 1  # 1
     SDDVD = 1 << 1  # 2
@@ -180,21 +181,21 @@ class Quality(object):
         None: "None",
         NONE: "N/A",
         UNKNOWN: "Unknown",
-        SDTV: "HDTV",
+        SDTV: "",
         SDDVD: "",
-        HDTV: "720p HDTV",
-        RAWHDTV: "1080i HDTV",
-        FULLHDTV: "1080p HDTV",
-        HDWEBDL: "720p WEB-DL",
-        FULLHDWEBDL: "1080p WEB-DL",
+        HDTV: "720p",
+        RAWHDTV: "1080i",
+        FULLHDTV: "1080p",
+        HDWEBDL: "720p",
+        FULLHDWEBDL: "1080p",
         HDBLURAY: "720p BluRay",
         FULLHDBLURAY: "1080p BluRay",
-        UHD_4K_TV: "4K UHD TV",
-        UHD_8K_TV: "8K UHD TV",
-        UHD_4K_WEBDL: "4K UHD WEB-DL",
-        UHD_8K_WEBDL: "8K UHD WEB-DL",
-        UHD_4K_BLURAY: "4K UHD BluRay",
-        UHD_8K_BLURAY: "8K UHD BluRay",
+        UHD_4K_TV: "2160p",
+        UHD_8K_TV: "4320p",
+        UHD_4K_WEBDL: "2160p",
+        UHD_8K_WEBDL: "4320p",
+        UHD_4K_BLURAY: "2160p BluRay",
+        UHD_8K_BLURAY: "4320p BluRay",
     })
 
     combinedQualityStrings = NumDict({
@@ -239,7 +240,7 @@ class Quality(object):
     @staticmethod
     def _getStatusStrings(status):
         """
-        Returns string values associated with Status prefix
+        Return string values associated with Status prefix.
 
         :param status: Status prefix to resolve
         :return: Human readable status value
@@ -282,7 +283,8 @@ class Quality(object):
     @staticmethod
     def nameQuality(name, anime=False, extend=True):
         """
-        Return The quality from an episode File renamed by the application
+        Return The quality from an episode File renamed by the application.
+
         If no quality is achieved it will try scene_quality regex
 
         :param name: to parse
@@ -290,7 +292,6 @@ class Quality(object):
         :param extend: boolean to extend methods to try
         :return: Quality prefix
         """
-
         # Try Scene names first
         quality = Quality.scene_quality(name, anime)
         if quality != Quality.UNKNOWN:
@@ -311,7 +312,7 @@ class Quality(object):
         :param anime: Boolean to indicate if the show we're resolving is Anime
         :return: Quality
         """
-
+        from .tagger.episode import EpisodeTags
         if not name:
             return Quality.UNKNOWN
         else:
@@ -392,6 +393,7 @@ class Quality(object):
     @staticmethod
     def _extend_quality(file_path):
         """
+        Try other methods to get the file quality.
 
         :param file_path: File path of episode to analyse
         :return: Quality prefix
@@ -481,68 +483,74 @@ class Quality(object):
         return Quality.CompositeStatus(status, Quality.NONE)
 
     @staticmethod
-    def sceneQualityFromName(name, quality):  # pylint: disable=too-many-branches
+    def sceneQualityFromName(name, quality):
         """
-        Get Scene naming parameters from filename and quality
+        Get Scene naming parameters from filename and quality.
 
-        :param name: Filename to check
-        :param quality: int of quality to make sure we get the right rip type
-        :return: encoder type for Scene quality naming
+        :param name: filename to check
+        :type name: text_type
+        :param quality: int of quality to make sure we get the right release type
+        :type quality: int
+        :return: release type and/or encoder type for scene quality naming
+        :rtype: text_type
         """
-        codec_list = ['xvid', 'divx']
-        x264_list = ['x264', 'x 264', 'x.264']
-        h264_list = ['h264', 'h 264', 'h.264', 'avc']
-        x265_list = ['x265', 'x 265', 'x.265']
-        h265_list = ['h265', 'h 265', 'h.265', 'hevc']
-        codec_list += x264_list + h264_list + x265_list + h265_list
+        rel_type = ''
+        name = name.lower()
+        codec = re.search(r'[xh].?26[45]', name) or ''
 
-        found_codecs = {}
-        found_codec = None
+        if codec and codec.group(0).endswith('4') or 'avc' in name:
+            if codec and codec.group(0).startswith('h'):
+                codec = ' h264'
+            else:
+                codec = ' x264'
+        elif codec and codec.group(0).endswith('5') or 'hevc' in name:
+            if codec and codec.group(0).startswith('h'):
+                codec = ' h265'
+            else:
+                codec = ' x265'
+        elif 'xvid' in name:
+            codec = ' XviD'
+        elif 'divx' in name:
+            codec = ' DivX'
 
-        for codec in codec_list:
-            if codec in name.lower():
-                found_codecs[name.lower().rfind(codec)] = codec
+        # If any HDTV type or SDTV
+        if quality in (1, 4, 8, 16, 512, 4096):
+            rel_type = ' HDTV'
+            if 'ahdtv' in name:
+                rel_type = ' AHDTV'
+            elif 'hr.pdtv' in name:
+                rel_type = ' HR.PDTV'
+            elif 'pdtv' in name:
+                rel_type = ' PDTV'
+            elif 'satrip' in name:
+                rel_type = ' SATRip'
+            elif 'dsr' in name:
+                rel_type = ' DSR'
+            elif 'uhdtv' in name:
+                rel_type = ' UHDTV'
 
-        if found_codecs:
-            sorted_codecs = sorted(found_codecs, reverse=True)
-            found_codec = found_codecs[list(sorted_codecs)[0]]
-
-        # 2 corresponds to SDDVD quality
+        # If SDDVD
         if quality == 2:
-            if re.search(r"b(r|d|rd)?(-| |\.)?(rip|mux)", name.lower()):
-                rip_type = " BDRip"
-            elif re.search(r"(dvd)(-| |\.)?(rip|mux)?", name.lower()):
-                rip_type = " DVDRip"
-            else:
-                rip_type = ""
+            rel_type = ' BDRip'
+            if re.search(r'br(-| |\.)?(rip|mux)', name):
+                rel_type = ' BRRip'
+            elif re.search(r'dvd(-| |\.)?(rip|mux)', name):
+                rel_type = ' DVDRip'
 
-        if found_codec:
-            if codec_list[0] in found_codec:
-                found_codec = 'XviD'
-            elif codec_list[1] in found_codec:
-                found_codec = 'DivX'
-            elif found_codec in x264_list:
-                found_codec = x264_list[0]
-            elif found_codec in h264_list:
-                found_codec = h264_list[0]
-            elif found_codec in x265_list:
-                found_codec = x265_list[0]
-            elif found_codec in h265_list:
-                found_codec = h265_list[0]
+        # If any WEB type
+        if quality in (32, 64, 1024, 8192):
+            rel_type = ' WEB'
+            if re.search(r'web(-| |\.)?dl', name):
+                rel_type = ' WEB-DL'
+            elif re.search(r'web(-| |\.)?(rip|mux)', name):
+                rel_type = ' WEBRip'
 
-            if quality == 2:
-                return rip_type + " " + found_codec
-            else:
-                return " " + found_codec
-        elif quality == 2:
-            return rip_type
-        else:
-            return ""
+        return rel_type + codec
 
     @staticmethod
     def statusFromName(name, anime=False):
         """
-        Get a status object from filename
+        Get a status object from filename.
 
         :param name: Filename to check
         :param anime: boolean to enable anime parsing
@@ -585,8 +593,99 @@ class Quality(object):
     }
 
     @staticmethod
+    def should_search(status, show_obj, manually_searched):
+        """Return true if that episodes should be search for a better quality."""
+        cur_status, cur_quality = Quality.splitCompositeStatus(int(status) or UNKNOWN)
+        allowed_qualities, preferred_qualities = show_obj.current_qualities
+
+        if manually_searched:
+            return False
+
+        if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
+            return False
+
+        if cur_status != WANTED:
+            if preferred_qualities:
+                if cur_quality in preferred_qualities:
+                    return False
+            elif cur_quality in allowed_qualities:
+                return False
+        return True
+
+    @staticmethod
+    def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
+                       download_current_quality=False, force=False, manually_searched=False):
+        """Return true if the old quality should be replaced with new quality.
+
+        If not preferred qualities, then any downloaded quality is final
+        if preferred quality, then new quality should be higher than existing one AND not be in preferred
+        If new quality is already in preferred then is already final quality.
+        Force (forced search) bypass episode status only or unknown quality
+        """
+        if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
+            if not force:
+                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
+
+        if old_quality == Quality.UNKNOWN:
+            if not force:
+                return False, 'Existing quality is UNKNOWN. Ignoring new quality'
+
+        if manually_searched:
+            if not force:
+                # We only allow replace a manual searched episode if is a forced search
+                return False, 'Existing episode quality was manually snatched. Ignoring all new qualities'
+
+        if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
+            return False, 'New quality is not in any wanted quality lists. Ignoring new quality'
+
+        if old_quality not in allowed_qualities + preferred_qualities:
+            # If old quality is no longer wanted quality and new quality is wanted, we should replace.
+            return True, 'Existing quality is no longer in any wanted quality lists. Accepting new quality'
+
+        if force and download_current_quality:
+            # If we already downloaded quality, just redownload it as long is still part of the wanted qualities
+            return new_quality == old_quality, 'Redownloading same quality'
+
+        if preferred_qualities:
+            # Don't replace because old quality is already best quality.
+            if old_quality in preferred_qualities:
+                return False, 'Existing quality is already a preferred quality. Ignoring new quality'
+
+            # Old quality is not final. Check if we should replace:
+
+            # Replace if preferred quality
+            if new_quality in preferred_qualities:
+                return True, 'New quality is preferred. Accepting new quality'
+
+            # Commented for now as Labrys requests
+            # if new_quality > old_quality:
+            #    return True, 'New quality is higher quality (but not preferred). Accepting new quality'
+
+            return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
+
+        else:
+            # Allowed quality should never be replaced
+            return False, 'Existing quality is already final (allowed only). Ignoring new quality'
+
+    @staticmethod
+    def is_higher_quality(current_quality, new_quality, allowed_qualities, preferred_qualities):
+        """Check is new quality is better than current quality based on allowed and preferred qualities."""
+        if new_quality in preferred_qualities:
+            return new_quality > current_quality
+        elif new_quality in allowed_qualities:
+            if current_quality in preferred_qualities:
+                return False
+            return new_quality > current_quality
+
+    @staticmethod
+    def wanted_quality(new_quality, allowed_qualities, preferred_qualities):
+        """Check if new quality is wanted."""
+        return new_quality in allowed_qualities + preferred_qualities
+
+    @staticmethod
     def from_guessit(guess):
         """
+        Return a Quality from a guessit dict.
 
         :param guess: guessit dict
         :type guess: dict
@@ -614,7 +713,7 @@ class Quality(object):
 
     @staticmethod
     def to_guessit(status):
-        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status)
+        """Return a guessit dict containing 'screen_size and format' from a Quality (composite status).
 
         :param status: a quality composite status
         :type status: int
@@ -634,7 +733,7 @@ class Quality(object):
 
     @staticmethod
     def to_guessit_format(quality):
-        """Return a guessit format from a Quality
+        """Return a guessit format from a Quality.
 
         :param quality: the quality
         :type quality: int
@@ -648,7 +747,7 @@ class Quality(object):
 
     @staticmethod
     def to_guessit_screen_size(quality):
-        """Return a guessit screen_size from a Quality
+        """Return a guessit screen_size from a Quality.
 
         :param quality: the quality
         :type quality: int
@@ -713,16 +812,15 @@ qualityPresetStrings = NumDict({
 
 
 class StatusStrings(NumDict):
-    """
-    Dictionary containing strings for status codes
-    """
-    # todo: Make views return Qualities too
+    """Dictionary containing strings for status codes."""
 
-    qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.ARCHIVED + Quality.FAILED
+    # todo: Make views return Qualities too
+    qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + \
+        Quality.ARCHIVED + Quality.FAILED
 
     def __missing__(self, key):
         """
-        If the key is not found try to determine a status from Quality
+        If the key is not found try to determine a status from Quality.
 
         :param key: A numeric key or None
         :raise KeyError: if the key is invalid and can't be determined from Quality
@@ -762,7 +860,7 @@ statusStrings = StatusStrings({
 })
 
 
-class Overview(object):  # pylint: disable=too-few-public-methods
+class Overview(object):
     UNAIRED = UNAIRED  # 1
     SNATCHED = SNATCHED  # 2
     WANTED = WANTED  # 3

@@ -7,7 +7,7 @@ $(document).ready(function() {
 
         $('#customQuality').hide();
 
-        $('#anyQualities option').each(function() {
+        $('#allowed_qualities option').each(function() {
             var result = preset & $(this).val();
             if (result > 0) {
                 $(this).prop('selected', true);
@@ -16,7 +16,7 @@ $(document).ready(function() {
             }
         });
 
-        $('#bestQualities option').each(function() {
+        $('#preferred_qualities option').each(function() {
             var result = preset & ($(this).val() << 16);
             if (result > 0) {
                 $(this).prop('selected', true);

@@ -22,13 +22,12 @@ import json
 import socket
 import time
 
-import medusa as app
 from requests.compat import quote, unquote, unquote_plus, urlencode
 from six import text_type
 from six.moves.http_client import BadStatusLine
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
-from .. import common, logger
+from .. import app, common, logger
 from ..helper.encoding import ss
 from ..helper.exceptions import ex
 

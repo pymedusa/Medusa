@@ -9,13 +9,10 @@ from __future__ import unicode_literals
 import json
 import os
 
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import (
-    config, logger, ui,
-)
+from .... import app, config, logger, providers, ui
 from ....helper.common import try_int
 from ....providers import NewznabProvider, TorrentRssProvider
 from ....providers.generic_provider import GenericProvider
@@ -318,7 +315,7 @@ class ConfigProviders(Config):
             cur_provider, cur_enabled = cur_providerStr.split(':')
             cur_enabled = try_int(cur_enabled)
 
-            cur_prov_obj = [x for x in app.providers.sorted_provider_list() if
+            cur_prov_obj = [x for x in providers.sorted_provider_list() if
                             x.get_id() == cur_provider and hasattr(x, 'enabled')]
             if cur_prov_obj:
                 cur_prov_obj[0].enabled = bool(cur_enabled)
@@ -336,7 +333,7 @@ class ConfigProviders(Config):
         provider_list.extend(disabled_list)
 
         # dynamically load provider settings
-        for curTorrentProvider in [prov for prov in app.providers.sorted_provider_list() if
+        for curTorrentProvider in [prov for prov in providers.sorted_provider_list() if
                                    prov.provider_type == GenericProvider.TORRENT]:
 
             if hasattr(curTorrentProvider, 'custom_url'):
@@ -500,7 +497,7 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     pass  # I don't want to configure a default value here, as it can also be configured intially as a custom rss torrent provider
 
-        for curNzbProvider in [prov for prov in app.providers.sorted_provider_list() if
+        for curNzbProvider in [prov for prov in providers.sorted_provider_list() if
                                prov.provider_type == GenericProvider.NZB]:
 
             if hasattr(curNzbProvider, 'api_key'):
@@ -552,7 +549,7 @@ class ConfigProviders(Config):
         app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
         app.PROVIDER_ORDER = provider_list
 
-        app.save_config()
+        app.instance.save_config()
 
         if results:
             for x in results:

@@ -11,8 +11,7 @@ from datetime import datetime, timedelta
 
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
-import medusa as app
-from . import db
+from . import app, db
 from .classes import ErrorViewer
 from .github_client import authenticate, get_github_repo
 

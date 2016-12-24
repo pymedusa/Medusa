@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 """Guessit customization."""
 from guessit.api import default_api
-from ...name_parser.rules.properties import (blacklist, container, format_, language, other,
-                                             screen_size, size, subtitle_language)
+from ...name_parser.rules.properties import (
+    audio_codec, blacklist, container, format_, language, other,
+    screen_size, size, subtitle_language
+)
 from ...name_parser.rules.rules import rules
 
 
+default_api.rebulk.rebulk(audio_codec())
 default_api.rebulk.rebulk(blacklist())
 default_api.rebulk.rebulk(format_())
 default_api.rebulk.rebulk(screen_size())

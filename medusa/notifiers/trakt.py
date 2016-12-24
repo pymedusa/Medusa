@@ -20,10 +20,10 @@
 
 from __future__ import unicode_literals
 
-import medusa as app
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
-from .. import logger
+from .. import app, logger
 from ..helper.exceptions import ex
+from ..indexers.indexer_api import indexerApi
 
 
 class Notifier(object):
@@ -54,11 +54,12 @@ class Notifier(object):
         ep_obj: The TVEpisode object to add to trakt
         """
 
-        trakt_id = app.indexerApi(ep_obj.show.indexer).config['trakt_id']
+        trakt_id = indexerApi(ep_obj.show.indexer).config['trakt_id']
         # Create a trakt settings dict
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
 
@@ -116,7 +117,8 @@ class Notifier(object):
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
-                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                          'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                          'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
 
@@ -126,7 +128,7 @@ class Notifier(object):
             try:
                 # URL parameters
                 if show_obj is not None:
-                    trakt_id = app.indexerApi(show_obj.indexer).config['trakt_id']
+                    trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
                     data = {
                         'shows': [
                             {
@@ -193,7 +195,7 @@ class Notifier(object):
 
         showList = []
         for indexer, indexerid, title, year in data:
-            trakt_id = app.indexerApi(indexer).config['trakt_id']
+            trakt_id = indexerApi(indexer).config['trakt_id']
             show = {'title': title, 'year': year, 'ids': {}}
             if trakt_id == 'tvdb_id':
                 show['ids']['tvdb'] = indexerid
@@ -242,7 +244,8 @@ class Notifier(object):
         try:
             trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                               'trakt_api_key': app.TRAKT_API_KEY,
-                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN}
+                              'trakt_access_token': app.TRAKT_ACCESS_TOKEN,
+                              'trakt_refresh_token': app.TRAKT_REFRESH_TOKEN}
 
             trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
             trakt_api.validate_account()

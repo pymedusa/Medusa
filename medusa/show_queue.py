@@ -20,10 +20,9 @@ import os
 import traceback
 
 from imdb import _exceptions as imdb_exceptions
-import medusa as app
 from six import binary_type, text_type
-from traktor import TraktApi, TraktException
-from . import generic_queue, logger, name_cache, notifiers, scene_numbering, ui
+from traktor import TraktException
+from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .black_and_white_list import BlackAndWhiteList
 from .common import WANTED
 from .helper.common import episode_num, sanitize_filename
@@ -31,7 +30,12 @@ from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
-from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
+from .helper.externals import check_existing_shows
+from .helpers import chmodAsParent, delete_empty_folders, get_showname_from_indexer, makeDir
+from .indexers.indexer_api import indexerApi
+from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
+                                          IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
+                                          IndexerShowNotFoundInLanguage)
 from .tv import TVShow
 
 
@@ -337,13 +341,13 @@ class QueueItemAdd(ShowQueueItem):
 
         # make sure the Indexer IDs are valid
         try:
-            lINDEXER_API_PARMS = app.indexerApi(self.indexer).api_params.copy()
+            lINDEXER_API_PARMS = indexerApi(self.indexer).api_params.copy()
             if self.lang:
                 lINDEXER_API_PARMS['language'] = self.lang
 
-            logger.log(u"" + str(app.indexerApi(self.indexer).name) + ": " + repr(lINDEXER_API_PARMS))
+            logger.log(u"" + str(indexerApi(self.indexer).name) + ": " + repr(lINDEXER_API_PARMS))
 
-            t = app.indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
+            t = indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
             s = t[self.indexer_id]
 
             # Let's try to create the show Dir if it's not provided. This way we force the show dir
@@ -365,62 +369,63 @@ class QueueItemAdd(ShowQueueItem):
             # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that
             # has no proper english version of the show
             if getattr(s, 'seriesname', None) is None:
-                logger.log(u"Show in {} has no name on {}, probably searched with the wrong language.".format
-                           (self.showDir, app.indexerApi(self.indexer).name), logger.ERROR)
+                logger.log(u"Show in {0} has no name on {1}, probably searched with the wrong language.".format
+                           (self.showDir, indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error("Unable to add show", "Show in " + self.showDir + " has no name on " +
-                                       str(app.indexerApi(self.indexer).name) + ", probably the wrong language. "
-                                       "Delete .nfo and manually add the correct language.")
+                ui.notifications.error('Unable to add show',
+                                       'Show in {0} has no name on {1}, probably the wrong language. \
+                                       Delete .nfo and manually add the correct language.'
+                                       .format(self.showDir, indexerApi(self.indexer).name))
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
             if not s:
-                logger.log(u"Show " + str(s['seriesname']) + u" is on " + str(app.indexerApi(self.indexer).name) +
+                logger.log(u"Show " + str(s['seriesname']) + u" is on " + str(indexerApi(self.indexer).name) +
                            u" but contains no season/episode data.")
                 ui.notifications.error("Unable to add show",
-                                       "Show " + str(s['seriesname']) + " is on " + str(app.indexerApi(
-                                           self.indexer).name) + " but contains no season/episode data.")
+                                       "Show {0} is on {1} but contains no season/episode data.".
+                                       format(s['seriesname'], indexerApi(self.indexer).name))
                 self._finishEarly()
-                return
-        except Exception as e:
-            logger.log(u"%s Error while loading information from indexer %s. "
-                       u"Error: %r" % (self.indexer_id, app.indexerApi(self.indexer).name, ex(e)), logger.ERROR)
-            # logger.log(u"Show name with ID %s doesn't exist on %s anymore. If you are using trakt, it will be "
-            #            "removed from your TRAKT watchlist. If you are adding manually, try removing the nfo "
-            #            "and adding again" % (self.indexer_id, api.indexerApi(self.indexer).name), logger.WARNING)
 
+                return
+
+            # Check if we can already find this show in our current showList.
+            try:
+                check_existing_shows(s, self.indexer)
+            except IndexerShowAllreadyInLibrary as e:
+                logger.log(u"Could not add the show %s, as it already is in your library."
+                           u" Error: %s" % (s['seriesname'], e.message), logger.WARNING)
+                ui.notifications.error(
+                    'Unable to add show',
+                    'reason: {0}' .format(e.message)
+                )
+                self._finishEarly()
+
+                # Clean up leftover if the newly created directory is empty.
+                delete_empty_folders(self.showDir)
+                return
+
+        # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
+        except IndexerShowIncomplete as e:
+            logger.log(u"%s Error while loading information from indexer %s. "
+                       u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s, not using the NFO. "
-                "Delete .nfo and try adding manually again." %
-                (self.showDir, app.indexerApi(self.indexer).name, self.indexer_id)
+                "Unable to look up the show in {0} on {1} using ID {2} "
+                "Reason: {3}"
+                .format(self.showDir, indexerApi(self.indexer).name, self.indexer_id, e)
             )
-
-            if app.USE_TRAKT:
-
-                trakt_id = app.indexerApi(self.indexer).config['trakt_id']
-                trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT)
-
-                title = self.showDir.split("/")[-1]
-                data = {
-                    'shows': [
-                        {
-                            'title': title,
-                            'ids': {}
-                        }
-                    ]
-                }
-                if trakt_id == 'tvdb_id':
-                    data['shows'][0]['ids']['tvdb'] = self.indexer_id
-                else:
-                    data['shows'][0]['ids']['tvrage'] = self.indexer_id
-
-                try:
-                    trakt_api.traktRequest("sync/watchlist/remove", data, method='POST')
-                except TraktException as e:
-                    logger.log(u"Could not remove show '{0}' from watchlist. Error: {1}".format
-                               (title, e), logger.WARNING)
-
+            self._finishEarly()
+            return
+        except Exception as e:
+            logger.log(u"%s Error while loading information from indexer %s. "
+                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, ex(e)), logger.ERROR)
+            ui.notifications.error(
+                "Unable to add show",
+                "Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
+                "Delete .nfo and try adding manually again.".
+                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+            )
             self._finishEarly()
             return
 
@@ -459,17 +464,17 @@ class QueueItemAdd(ShowQueueItem):
             # if self.show.classification and "sports" in self.show.classification.lower():
             #     self.show.sports = 1
 
-        except app.IndexerException as e:
+        except IndexerException as e:
             logger.log(
-                u"Unable to add show due to an error with " + app.indexerApi(self.indexer).name + ": " + ex(e),
+                u"Unable to add show due to an error with " + indexerApi(self.indexer).name + ": " + ex(e),
                 logger.ERROR)
             if self.show:
                 ui.notifications.error(
-                    "Unable to add " + str(self.show.name) + " due to an error with " + app.indexerApi(
+                    "Unable to add " + str(self.show.name) + " due to an error with " + indexerApi(
                         self.indexer).name + "")
             else:
                 ui.notifications.error(
-                    "Unable to add show due to an error with " + app.indexerApi(self.indexer).name + "")
+                    "Unable to add show due to an error with " + indexerApi(self.indexer).name + "")
             self._finishEarly()
             return
 
@@ -505,15 +510,15 @@ class QueueItemAdd(ShowQueueItem):
         app.showList.append(self.show)
 
         try:
-            self.show.load_episodes_from_indexer()
+            self.show.load_episodes_from_indexer(tvapi=t)
         except Exception as e:
             logger.log(
-                u"Error with " + app.indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
+                u"Error with " + indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
                 logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
         # update internal name cache
-        name_cache.buildNameCache(self.show)
+        name_cache.build_name_cache(self.show)
 
         try:
             self.show.load_episodes_from_dir()
@@ -585,9 +590,9 @@ class QueueItemRefresh(ShowQueueItem):
 
         try:
             self.show.refresh_dir()
-            self.show.write_metadata()
             if self.force:
                 self.show.update_metadata()
+            self.show.write_metadata()
             self.show.populate_cache()
 
             # Load XEM data to DB for show
@@ -672,29 +677,29 @@ class QueueItemUpdate(ShowQueueItem):
                    show=self.show.name), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
-                   (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
+                   (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
             self.show.load_from_indexer()
-        except app.IndexerError as e:
+        except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
-        except app.IndexerAttributeNotFound as e:
+        except IndexerAttributeNotFound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
-        except app.IndexerShowNotFoundInLanguage as e:
+        except IndexerShowNotFoundInLanguage as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (language=e.language, id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
+                       (language=e.language, id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             ui.notifications.error('Error changing language show!',
                                    'Unable to change language for show {show_name} on {indexer} to language: {language}'.
                                    format(show_name=self.show.name,
-                                          indexer=app.indexerApi(self.show.indexer).name,
+                                          indexer=indexerApi(self.show.indexer).name,
                                           language=e.language))
             return
 
@@ -723,16 +728,16 @@ class QueueItemUpdate(ShowQueueItem):
         # get episode list from the indexer
         try:
             episodes_from_indexer = self.show.load_episodes_from_indexer()
-        except app.IndexerException as e:
+        except IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name, error_msg=ex(e)),
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name, error_msg=ex(e)),
                        logger.WARNING)
             episodes_from_indexer = None
 
         if episodes_from_indexer is None:
-            logger.log(u'{id}: No data returned from {indexer}. Unable to update this show'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
+            logger.log(u'{id}: No data returned from {indexer} during full show update. Unable to update this show'.format
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                        logger.WARNING)
         else:
             # for each ep we found on the Indexer delete it from the DB list
@@ -796,18 +801,18 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     ), logger.DEBUG)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
-                   (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
+                   (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
             self.show.load_from_indexer()
-        except app.IndexerError as e:
+        except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
-        except app.IndexerAttributeNotFound as e:
+        except IndexerAttributeNotFound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name,
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
                         error_msg=ex(e)), logger.WARNING)
             return
 
@@ -836,16 +841,16 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         # get episode list from the indexer
         try:
             episodes_from_indexer = self.show.load_episodes_from_indexer(self.seasons)
-        except app.IndexerException as e:
+        except IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name, error_msg=ex(e)),
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name, error_msg=ex(e)),
                        logger.WARNING)
             episodes_from_indexer = None
 
         if episodes_from_indexer is None:
-            logger.log(u'{id}: No data returned from {indexer}. Unable to update this show'.format
-                       (id=self.show.indexerid, indexer=app.indexerApi(self.show.indexer).name),
+            logger.log(u'{id}: No data returned from {indexer} during season show update. Unable to update this show'.format
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                        logger.WARNING)
         else:
             # for each ep we found on the Indexer delete it from the DB list

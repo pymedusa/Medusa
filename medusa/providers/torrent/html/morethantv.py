@@ -22,6 +22,8 @@ import re
 import time
 import traceback
 
+from dateutil import parser
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
@@ -34,12 +36,12 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class MoreThanTVProvider(TorrentProvider):
     """MoreThanTV Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'MoreThanTV')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('MoreThanTV')
 
         # Credentials
         self.username = None
@@ -66,7 +68,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
@@ -178,6 +180,8 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
+                    pubdate_raw = cells[labels.index('Time')].find('span')['title']
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -185,8 +189,7 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
-                        'torrent_hash': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -235,27 +238,27 @@ class MoreThanTVProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         details_url = row.find('span').find_next(title='View torrent').get('href')
         torrent_id = parse_qs(download_url).get('id')
         if not all([details_url, torrent_id]):
-            logger.log("Could't parse season pack details page for title: %s", title, logger.DEBUG)
+            logger.log("Could't parse season pack details page for title: {0}".format(title), logger.DEBUG)
             return title
 
         # Take a break before querying the provider again
         time.sleep(0.5)
         response = self.get_url(urljoin(self.url, details_url), returns='response')
         if not response or not response.text:
-            logger.log("Could't open season pack details page for title: %s", title, logger.DEBUG)
+            logger.log("Could't open season pack details page for title: {0}".format(title), logger.DEBUG)
             return title
 
         with BS4Parser(response.text, 'html5lib') as html:
             torrent_table = html.find('table', class_='torrent_table')
             torrent_row = torrent_table.find('tr', id='torrent_{0}'.format(torrent_id[0]))
             if not torrent_row:
-                logger.log("Could't find season pack details for title: %s", title, logger.DEBUG)
+                logger.log("Could't find season pack details for title: {0}".format(title), logger.DEBUG)
                 return title
 
             # Strip leading and trailing slash
             season_title = torrent_row.find('div', class_='filelist_path')
-            if not season_title:
-                logger.log("Could't parse season pack title for: %s", title, logger.DEBUG)
+            if not season_title or not season_title.get_text():
+                logger.log("Could't parse season pack title for: {0}".format(title), logger.DEBUG)
                 return title
             return season_title.get_text(strip=True).strip('/')
 

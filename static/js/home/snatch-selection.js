@@ -82,6 +82,12 @@ MEDUSA.home.snatchSelection = function() {
         var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
         var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
+        var urlParams =  show + '&season=' + season + '&episode=' + episode;
+
+        if (manualSearchType == 'season') {
+            urlParams += '&manual_search_type=' + manualSearchType
+        }
+
         if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
             setTimeout(function() {
                 checkCacheUpdates(true);
@@ -90,7 +96,7 @@ MEDUSA.home.snatchSelection = function() {
 
         self.refreshResults = function() {
             $('#wrapper').loadContainer(
-                    'home/snatchSelection?show=' + show + '&season=' + season + '&episode=' + episode + '&manual_search_type=' + manualSearchType + '&perform_search=0',
+                    'home/snatchSelection?show=' + urlParams,
                     'Loading new search results...',
                     'Time out, refresh page to try again',
                     toggleHistoryTable // This is a callback function
@@ -98,7 +104,7 @@ MEDUSA.home.snatchSelection = function() {
         };
 
         $.ajax({
-            url: 'home/manualSearchCheckCache?show=' + show + '&season=' + season + '&episode=' + episode + '&manual_search_type=' + manualSearchType,
+            url: 'home/manualSearchCheckCache?show=' + urlParams,
             type: 'GET',
             data: data,
             contentType: 'application/json',

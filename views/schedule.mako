@@ -1,7 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa.helpers import anon_url
+    from medusa.indexers.indexer_api import indexerApi
     from medusa import sbdatetime
     import datetime
     import time
@@ -13,54 +14,71 @@
 </%block>
 <%block name="css">
 <style type="text/css">
-#SubMenu {display:none;}
+#sub-menu {display:none;}
 #contentWrapper {padding-top:30px;}
 </style>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<h1 class="header">${header}</h1>
-<div class="h2footer pull-right">
-% if layout == 'list':
-    <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
-% else:
-    <span>Sort By:
-        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
-            <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
-            <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
-        </select>
-    </span>
-% endif
-    &nbsp;
-    <span>View Paused:
-        <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
-            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
-        </select>
-    </span>
-    &nbsp;
-    <span>Layout:
-        <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-            <option value="setScheduleLayout/?layout=poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
-            <option value="setScheduleLayout/?layout=calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
-            <option value="setScheduleLayout/?layout=banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
-            <option value="setScheduleLayout/?layout=list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
-        </select>
-    </span>
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="header">${header}</h1>
+    </div>
 </div>
-<div class="key pull-right">
-% if 'calendar' != layout:
-    <b>Key:</b>
-    <span class="listing-key listing-overdue">Missed</span>
-    <span class="listing-key listing-current">Today</span>
-    <span class="listing-key listing-default">Soon</span>
-    <span class="listing-key listing-toofar">Later</span>
-% endif
-    <a class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
-    <i class="icon-calendar icon-white"></i>Subscribe</a>
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="key pull-left">
+        % if 'calendar' != layout:
+            <b>Key:</b>
+            <span class="listing-key listing-overdue">Missed</span>
+            <span class="listing-key listing-current">Today</span>
+            <span class="listing-key listing-default">Soon</span>
+            <span class="listing-key listing-toofar">Later</span>
+        % endif
+            <a class="btn btn-inline forceBacklog" href="webcal://${sbHost}:${sbHttpPort}/calendar">
+            <i class="icon-calendar icon-white"></i>Subscribe</a>
+        </div>
+
+        <div class="pull-right">
+                <div class="show-option">
+                    <span>View Paused:
+                        <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
+                            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
+                        </select>
+                    </span>
+                </div>
+                <div class="show-option">
+                    <span>Layout:
+                        <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                            <option value="setScheduleLayout/?layout=poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
+                            <option value="setScheduleLayout/?layout=calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
+                            <option value="setScheduleLayout/?layout=banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
+                            <option value="setScheduleLayout/?layout=list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
+                        </select>
+                    </span>
+                </div>
+                % if layout == 'list':
+                <div class="show-option">
+                    <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+                </div>
+                % else:
+                <div class="show-option">
+                    <span>Sort By:
+                        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                            <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
+                            <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
+                            <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
+                        </select>
+                    </span>
+                </div>
+                % endif
+        </div>
+    </div>
 </div>
-<br>
+
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
@@ -84,7 +102,7 @@
 <%
     cur_indexer = int(cur_result['indexer'])
     run_time = cur_result['runtime']
-    if int(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
+    if bool(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
         continue
     cur_ep_airdate = cur_result['localtime'].date()
     if run_time:
@@ -109,7 +127,7 @@
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
             <td class="tvShow" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
-% if int(cur_result['paused']):
+% if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
             </td>
@@ -134,13 +152,14 @@
                 ${renderQualityPill(cur_result['quality'], showTitle=True)}
             </td>
             <td align="center" style="vertical-align: middle;">
-% if cur_result['imdb_id']:
+            % if cur_result['imdb_id']:
                 <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                 </a>
-% endif
-                <a href="${anon_url(app.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${app.indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
-                    <img alt="${app.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${app.indexerApi(cur_indexer).config['icon']}" />
+            % endif
+                <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" data-indexer-name="${indexerApi(cur_indexer).name}"
+                    rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}${cur_result['showid']}">
+                    <img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
             <td align="center">
@@ -166,13 +185,14 @@
     today_header = False
     show_div = 'ep_listing listing-default'
 %>
+
 % if app.COMING_EPS_SORT == 'show':
     <br><br>
 % endif
 % for cur_result in results:
 <%
     cur_indexer = int(cur_result['indexer'])
-    if int(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
+    if bool(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
         continue
     run_time = cur_result['runtime']
     cur_ep_airdate = cur_result['localtime'].date()
@@ -185,7 +205,7 @@
         <% show_network = ('no network', cur_result['network'])[bool(cur_result['network'])] %>
         % if cur_segment != show_network:
             <div>
-               <br><h2 class="network">${show_network}</h2>
+                <h2 class="network">${show_network}</h2>
             <% cur_segment = cur_result['network'] %>
         % endif
         % if cur_ep_enddate < today:
@@ -202,24 +222,24 @@
     % elif app.COMING_EPS_SORT == 'date':
         % if cur_segment != cur_ep_airdate:
             % if cur_ep_enddate < today and cur_ep_airdate != today.date() and not missed_header:
-                <br><h2 class="day">Missed</h2>
+                <h2 class="day">Missed</h2>
                 <% missed_header = True %>
             % elif cur_ep_airdate >= next_week.date() and not too_late_header:
-                <br><h2 class="day">Later</h2>
+                <h2 class="day">Later</h2>
                 <% too_late_header = True %>
             % elif cur_ep_enddate >= today and cur_ep_airdate < next_week.date():
                 % if cur_ep_airdate == today.date():
-                    <br><h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
                     <% today_header = True %>
                 % else:
-                    <br><h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
+                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
                 % endif
             % endif
             <% cur_segment = cur_ep_airdate %>
         % endif
         % if cur_ep_airdate == today.date() and not today_header:
             <div>
-            <br><h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+            <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
             <% today_header = True %>
         % endif
         % if cur_ep_enddate < today:
@@ -263,7 +283,7 @@
                 <div class="clearfix">
                     <span class="tvshowTitle">
                         <a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}
-                            ${('', '<span class="pause">[paused]</span>')[int(cur_result['paused'])]}
+                            ${('', '<span class="pause">[paused]</span>')[bool(cur_result['paused'])]}
                         </a>
                     </span>
                     <span class="tvshowTitleIcons">
@@ -272,7 +292,7 @@
                             <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                         </a>
 % endif
-                        <a href="${anon_url(app.indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${app.indexerApi(cur_indexer).config['show_url']}"><img alt="${app.indexerApi(cur_indexer).name}" height="16" width="16" src="images/${app.indexerApi(cur_indexer).config['icon']}" /></a>
+                        <a href="${anon_url(indexerApi(cur_indexer).config['show_url'], cur_result['showid'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_indexer).config['show_url']}"><img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" /></a>
                         <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
                         <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                     </span>
@@ -310,8 +330,7 @@
 % if 'calendar' == layout:
 <% dates = [today.date() + datetime.timedelta(days = i) for i in range(7)] %>
 <% tbl_day = 0 %>
-<br>
-<br>
+
 <div class="calendarWrapper">
     % for day in dates:
     <% tbl_day += 1 %>
@@ -320,7 +339,7 @@
         <tbody>
         <% day_has_show = False %>
         % for cur_result in results:
-            % if int(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
+            % if bool(cur_result['paused']) and not app.COMING_EPS_DISPLAY_PAUSED:
                 <% continue %>
             % endif
             <% cur_indexer = int(cur_result['indexer']) %>

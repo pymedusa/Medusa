@@ -32,8 +32,8 @@ def video_codec():
     # http://fr.wikipedia.org/wiki/H.264
     rebulk.defaults(name="video_profile", validator=seps_surround)
 
-    rebulk.regex('10.?bit', 'Hi10P', value='10bit')
-    rebulk.regex('8.?bit', value='8bit')
+    rebulk.regex('10.?bits?', 'Hi10P', value='10bit')
+    rebulk.regex('8.?bits?', value='8bit')
 
     rebulk.string('BP', value='BP', tags='video_profile.rule')
     rebulk.string('XP', 'EP', value='XP', tags='video_profile.rule')

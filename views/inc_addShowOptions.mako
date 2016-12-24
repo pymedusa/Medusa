@@ -1,5 +1,5 @@
 <%
-    import medusa as app
+    from medusa import app
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
     from medusa import subtitles
@@ -8,7 +8,7 @@
             <label for="customQuality" class="clearfix">
                 <span class="component-title">Preferred Quality</span>
                 <span class="component-desc">
-                    <% anyQualities, bestQualities = Quality.splitQuality(app.QUALITY_DEFAULT) %>
+                    <% allowed_qualities, preferred_qualities = Quality.splitQuality(app.QUALITY_DEFAULT) %>
                     <%include file="/inc_qualityChooser.mako"/>
                 </span>
             </label>

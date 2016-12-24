@@ -1,11 +1,11 @@
 # coding=utf-8
-
+"""Initialize all providers."""
 from .html import (
     abnormal,
     alpharatio,
     animebytes,
+    animetorrents,
     bithdtv,
-    bluetigers,
     cpasbien,
     danishbits,
     elitetorrent,
@@ -22,6 +22,7 @@ from .html import (
     pretome,
     scc,
     scenetime,
+    sdbits,
     speedcd,
     thepiratebay,
     tntvillage,
@@ -59,14 +60,14 @@ from .xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'bluetigers',
+    'abnormal', 'alpharatio', 'animebytes', 'bithdtv',
     'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent', 'freshontv',
     'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs',
     'iptorrents', 'limetorrents', 'morethantv', 'newpct', 'pretome',
-    'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage',
+    'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage',
     'tokyotoshokan', 'torrentbytes', 'torrentleech', 'torrentshack',
     'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon',
     'btn', 'hd4free', 'hdbits', 'norbits', 'rarbg', 't411',
     'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent',
-    'shazbat', 'bitsnoop', 'torrentz2'
+    'shazbat', 'bitsnoop', 'torrentz2', 'animetorrents'
 ]

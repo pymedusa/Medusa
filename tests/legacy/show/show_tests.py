@@ -20,7 +20,7 @@ from __future__ import print_function
 
 import unittest
 
-import medusa as app
+from medusa import app
 from medusa.common import Quality
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.show.show import Show

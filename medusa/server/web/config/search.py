@@ -8,13 +8,10 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import (
-    config, logger, ui,
-)
+from .... import app, config, logger, ui
 from ....helper.common import try_int
 
 
@@ -130,7 +127,7 @@ class ConfigSearch(Config):
         app.TORRENT_RPCURL = torrent_rpcurl
         app.TORRENT_AUTH_TYPE = torrent_auth_type
 
-        app.save_config()
+        app.instance.save_config()
 
         if results:
             for x in results:

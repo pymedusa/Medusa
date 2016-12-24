@@ -8,13 +8,10 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import (
-    config, logger, subtitles, ui,
-)
+from .... import app, config, logger, subtitles, ui
 
 
 @route('/config/subtitles(/?.*)')
@@ -82,7 +79,7 @@ class ConfigSubtitles(Config):
         app.OPENSUBTITLES_USER = opensubtitles_user or ''
         app.OPENSUBTITLES_PASS = opensubtitles_pass or ''
 
-        app.save_config()
+        app.instance.save_config()
         # Reset provider pool so next time we use the newest settings
         subtitles.get_provider_pool.invalidate()
 

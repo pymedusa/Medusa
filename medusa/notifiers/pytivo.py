@@ -19,11 +19,10 @@
 
 import os
 
-import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request, urlopen
-from .. import logger
+from .. import app, logger
 from ..helper.exceptions import ex
 
 

@@ -22,7 +22,7 @@ import unittest
 
 import certifi
 import medusa.providers as providers
-from medusa import ex
+from medusa.helper.exceptions import ex
 import requests
 
 

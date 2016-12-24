@@ -1,5 +1,5 @@
 # coding=utf-8
-# Author: raver2046 <raver2046@gmail.com>
+# Author: duramato
 #
 # This file is part of Medusa.
 #
@@ -15,41 +15,45 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for SDBits."""
 from __future__ import unicode_literals
 
+import datetime
 import re
 import traceback
 
+from pytimeparse import parse
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
+from ....helper.common import convert_size, try_int
+from ....indexers.indexer_config import mappings
 
 
-class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """BlueTigers Torrent provider"""
+class SDBitsProvider(TorrentProvider):
+    """SDBits Torrent provider."""
+
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'BLUETIGERS')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('SDBits')
 
         # Credentials
         self.username = None
         self.password = None
-        self.token = None
 
         # URLs
-        self.url = 'https://www.bluetigers.ca/'
+        self.url = 'http://sdbits.org'
         self.urls = {
-            'base_url': self.url,
-            'search': urljoin(self.url, 'torrents-search.php'),
-            'login': urljoin(self.url, 'account-login.php'),
-            'download': urljoin(self.url, 'torrents-details.php?id=%s&hit=1'),
+            'login': urljoin(self.url, 'takeloginn3.php'),
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
+        self.proper_strings = []
 
         # Miscellaneous Options
 
@@ -58,11 +62,11 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BLUETIGERS every 10 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -75,14 +79,13 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         # Search Params
         search_params = {
-            'c9': 1,
-            'c10': 1,
-            'c16': 1,
-            'c17': 1,
-            'c18': 1,
-            'c19': 1,
-            'c130': 1,
-            'c131': 1,
+            'incldead': 0,
+            'descriptions': 0,
+            'from': '',
+            'imdbgt': 0,
+            'imdblt': 10,
+            'imdb': '',
+            'search': '',
         }
 
         for mode in search_strings:
@@ -91,10 +94,14 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    imdb_id = self.show.externals.get(mappings[10])
+                    if imdb_id:
+                        search_params['imdb'] = imdb_id
+                        logger.log('Search string (IMDb ID): {imdb_id}'.format(imdb_id=imdb_id), logger.DEBUG)
+                    else:
+                        search_params['search'] = search_string
+                        logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
 
-                search_params['search'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
@@ -113,28 +120,31 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html('a', href=re.compile('torrents-details'))
+            torrent_table = html.find('table', id='torrent-list')
+            torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if not torrent_rows:
+            if len(torrent_rows) < 2:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
-            for row in torrent_rows:
+            # Skip column headers
+            for row in torrent_rows[1:]:
+                cells = row('td')
+
                 try:
-                    title = row.text
-                    download_url = self.urls['base_url'] + row['href']
-                    download_url = download_url.replace('torrents-details', 'download')
+                    torrent_info = cells[2].find_all('a')
+                    title = torrent_info[0].get_text()
+                    download = torrent_info[1]['href']
+                    download_url = urljoin(self.url, download)
                     if not all([title, download_url]):
                         continue
 
-                    # FIXME
-                    seeders = 1
-                    leechers = 0
+                    seeders = try_int(cells[7].get_text(strip=True), 1)
+                    leechers = try_int(cells[8].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -144,8 +154,17 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    # FIXME
-                    size = -1
+                    torrent_size = cells[5].get_text(' ')
+                    size = convert_size(torrent_size) or -1
+
+                    pubdate = None
+                    pubdate_raw = cells[4].get_text('_').split('_')
+                    if pubdate_raw:
+                        if len(pubdate_raw) == 2:
+                            pubdate_raw = parse(pubdate_raw[0]) + parse(pubdate_raw[1])
+                        else:
+                            pubdate_raw = parse(pubdate_raw[0])
+                        pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
 
                     item = {
                         'title': title,
@@ -153,8 +172,7 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
-                        'torrent_hash': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -173,25 +191,22 @@ class BlueTigersProvider(TorrentProvider):  # pylint: disable=too-many-instance-
             return True
 
         login_params = {
-            'username': self.username,
+            'uname': self.username,
             'password': self.password,
-            'take_login': '1'
+            'Log in!': 'submit',
+            'returnto': '/',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
         if not response or not response.text:
-            check_login = self.get_url(self.urls['base_url'], returns='response')
-            if not re.search('account-logout.php', check_login.text):
-                logger.log('Unable to connect to provider', logger.WARNING)
-                return False
-            else:
-                return True
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
 
-        if re.search('account-login.php', response.text):
+        if re.search('Username or password incorrect.', response.text):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
         return True
 
 
-provider = BlueTigersProvider()
+provider = SDBitsProvider()

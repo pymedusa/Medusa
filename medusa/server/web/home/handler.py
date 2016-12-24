@@ -6,21 +6,25 @@ import ast
 import json
 import os
 import time
-from datetime import date
+from datetime import date, datetime
 
 import adba
-import medusa as app
 from requests.compat import quote_plus, unquote_plus
 from six import iteritems
 from tornroutes import route
 from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
 from ..core import PageTemplate, WebRoot
-from .... import clients, config, db, helpers, logger, notifiers, nzbget, sab, show_name_helpers, subtitles, ui
+from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import FAILED, IGNORED, Overview, Quality, SKIPPED, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....failed_history import prepare_failed_name
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from ....indexers.indexer_api import indexerApi
 from ....indexers.indexer_config import INDEXER_TVDBV2
+from ....indexers.indexer_exceptions import IndexerShowNotFoundInLanguage
+from ....providers.generic_provider import GenericProvider
+from ....sbdatetime import sbdatetime
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
 from ....scene_numbering import (
     get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
@@ -35,6 +39,7 @@ from ....search.manual import (
 from ....search.queue import (
     BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
 )
+from ....show.history import History
 from ....show.show import Show
 from ....system.restart import Restart
 from ....system.shutdown import Shutdown
@@ -541,10 +546,10 @@ class Home(WebRoot):
     @staticmethod
     def testPushbullet(api=None):
         result = notifiers.pushbullet_notifier.test_notify(api)
-        if result:
+        if result.get('success'):
             return 'Pushbullet notification succeeded. Check your device to make sure it worked'
         else:
-            return 'Error sending Pushbullet notification'
+            return 'Error sending Pushbullet notification: {0}'.format(result.get('error'))
 
     @staticmethod
     def getPushbulletDevices(api=None):
@@ -811,7 +816,7 @@ class Home(WebRoot):
         ep_cats = {}
 
         for cur_result in sql_results:
-            cur_ep_cat = show_obj.get_overview(cur_result[b'status'])
+            cur_ep_cat = show_obj.get_overview(cur_result[b'status'], manually_searched=cur_result[b'manually_searched'])
             if cur_ep_cat:
                 ep_cats['{season}x{episode}'.format(season=cur_result[b'season'], episode=cur_result[b'episode'])] = cur_ep_cat
                 ep_counts[cur_ep_cat] += 1
@@ -859,24 +864,16 @@ class Home(WebRoot):
             'name': show_obj.name,
         })
 
-        show_words = show_name_helpers.show_words(show_obj)
-
         return t.render(
-            submenu=submenu, showLoc=show_loc, show_message=show_message,
-            show=show_obj, sql_results=sql_results, seasonResults=season_results,
-            sortedShowLists=sorted_show_lists, bwl=bwl, epCounts=ep_counts,
-            epCats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
+            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
+            show=show_obj, sql_results=sql_results, season_results=season_results,
+            sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
+            ep_cats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
             xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
-            title=show_obj.name,
-            controller='home',
-            action='displayShow',
-            preferred_words=show_words.preferred_words,
-            undesired_words=show_words.undesired_words,
-            ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words
+            title=show_obj.name, controller='home', action='displayShow',
         )
 
     def pickManualSearch(self, provider=None, rowid=None, manual_search_type='episode'):
@@ -955,7 +952,7 @@ class Home(WebRoot):
             'result': 'failure',
         })
 
-    def manualSearchCheckCache(self, show, season, episode, manual_search_type, **last_prov_updates):
+    def manualSearchCheckCache(self, show, season, episode, manual_search_type='episode', **last_prov_updates):
         """ Periodic check if the searchthread is still running for the selected show/season/ep
         and if there are new results in the cache.db
         """
@@ -1169,16 +1166,92 @@ class Home(WebRoot):
                 b'ORDER BY date DESC',
                 [indexer_id, season, episode]
             )
-            if episode_status_result:
-                for item in episode_status_result:
-                    episode_history.append(dict(item))
+            episode_history = [dict(row) for row in episode_status_result]
+            for i in episode_history:
+                i['status'], i['quality'] = Quality.splitCompositeStatus(i['action'])
+                i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
+                i['resource_file'] = os.path.basename(i['resource'])
+                i['status_name'] = statusStrings[i['status']]
+                if i['status'] == DOWNLOADED:
+                    i['status_color_style'] = 'downloaded'
+                elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+                    i['status_color_style'] = 'snatched'
+                elif i['status'] == FAILED:
+                    i['status_color_style'] = 'failed'
+                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                if provider is not None:
+                    i['provider_name'] = provider.name
+                    i['provider_img_link'] = 'images/providers/' + provider.image_name()
+                else:
+                    i['provider_name'] = i['provider'] if i['provider'] != '-1' else 'Unknown'
+                    i['provider_img_link'] = ''
+
+            # Compare manual search results with history and set status
+            for provider_result in provider_results['found_items']:
+                failed_statuses = [FAILED, ]
+                snatched_statuses = [SNATCHED, SNATCHED_PROPER, SNATCHED_BEST]
+                if any([item for item in episode_history
+                        if all([prepare_failed_name(provider_result['name']) in item['resource'],
+                                item['provider'] in (provider_result['provider'], provider_result['release_group'],),
+                                item['status'] in failed_statuses])
+                        ]):
+                    provider_result['status_highlight'] = 'failed'
+                elif any([item for item in episode_history
+                          if all([provider_result['name'] in item['resource'],
+                                  item['provider'] in (provider_result['provider'],),
+                                  item['status'] in snatched_statuses])
+                          ]):
+                    provider_result['status_highlight'] = 'snatched'
+                else:
+                    provider_result['status_highlight'] = ''
+
+        # TODO: Remove the catchall, make sure we only catch expected exceptions!
         except Exception as msg:
             logger.log("Couldn't read latest episode status. Error: {error}".format(error=msg))
 
-        show_words = show_name_helpers.show_words(show_obj)
+        # There is some logic for this in the partials/showheader.mako page.
+        main_db_con = db.DBConnection()
+        season_results = main_db_con.select(
+            b'SELECT DISTINCT season '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND  season IS NOT NULL '
+            b'ORDER BY season DESC',
+            [show_obj.indexerid]
+        )
+
+        min_season = 0 if app.DISPLAY_SHOW_SPECIALS else 1
+
+        sql_results = main_db_con.select(
+            b'SELECT * '
+            b'FROM tv_episodes '
+            b'WHERE showid = ? AND season >= ? '
+            b'ORDER BY season DESC, episode DESC',
+            [show_obj.indexerid, min_season]
+        )
+
+        ep_counts = {
+            Overview.SKIPPED: 0,
+            Overview.WANTED: 0,
+            Overview.QUAL: 0,
+            Overview.GOOD: 0,
+            Overview.UNAIRED: 0,
+            Overview.SNATCHED: 0,
+            Overview.SNATCHED_PROPER: 0,
+            Overview.SNATCHED_BEST: 0
+        }
+
+        ep_cats = {}
+
+        for cur_result in sql_results:
+            cur_ep_cat = show_obj.get_overview(cur_result[b'status'],
+                                               manually_searched=cur_result[b'manually_searched'])
+            if cur_ep_cat:
+                ep_cats['{season}x{episode}'.format(season=cur_result[b'season'],
+                                                    episode=cur_result[b'episode'])] = cur_ep_cat
+                ep_counts[cur_ep_cat] += 1
 
         return t.render(
-            submenu=submenu, showLoc=show_loc, show_message=show_message,
+            submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=show_obj, provider_results=provider_results, episode=episode,
             sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
             all_scene_exceptions=show_obj.exceptions,
@@ -1186,14 +1259,9 @@ class Home(WebRoot):
             xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
-            title=show_obj.name,
-            controller='home',
-            action='snatchSelection',
-            preferred_words=show_words.preferred_words,
-            undesired_words=show_words.undesired_words,
-            ignore_words=show_words.ignore_words,
-            require_words=show_words.require_words,
-            episode_history=episode_history
+            title=show_obj.name, controller='home', action='snatchSelection',
+            episode_history=episode_history, season_results=season_results, sql_results=sql_results,
+            ep_counts=ep_counts, ep_cats=ep_cats
         )
 
     @staticmethod
@@ -1233,28 +1301,26 @@ class Home(WebRoot):
 
         :returns: True (show found in language) False (show not found in language)
         """
-        indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
+        indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
         indexer_api_params['language'] = language
         indexer_api_params['episodes'] = False
-        t = app.indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+        t = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
         try:
             t[show_obj.indexerid]
-        except app.IndexerShowNotFoundInLanguage:
+        except IndexerShowNotFoundInLanguage:
             return False
         return True
 
-    def editShow(self, show=None, location=None, anyQualities=None, bestQualities=None,
+    def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvdorder=None, indexerLang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
         # @TODO: Replace with PATCH /api/v2/show/{id}
-        anyQualities = anyQualities or []
-        bestQualities = bestQualities or []
+        allowed_qualities = allowed_qualities or []
+        preferred_qualities = preferred_qualities or []
         exceptions_list = exceptions_list or []
-        allowed_qualities = anyQualities
-        preferred_qualities = bestQualities
 
         anidb_failed = False
         errors = []
@@ -1318,16 +1384,16 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
-        if indexerLang and indexerLang in app.indexerApi(show_obj.indexer).indexer().config['valid_languages']:
+        if indexerLang and indexerLang in indexerApi(show_obj.indexer).indexer().config['valid_languages']:
             if self.check_show_for_language(show_obj, indexerLang):
                 indexer_lang = indexerLang
             else:
                 errors.append(u"Could not change language to '{language} for show {show_id} on indexer {indexer_name}'".
                               format(language=indexerLang, show_id=show_obj.indexerid,
-                                     indexer_name=app.indexerApi(show_obj.indexer).name))
+                                     indexer_name=indexerApi(show_obj.indexer).name))
                 logger.log(u"Could not change language to '{language}' for show {show_id} on indexer {indexer_name}".
                            format(language=indexerLang, show_id=show_obj.indexerid,
-                                  indexer_name=app.indexerApi(show_obj.indexer).name), logger.WARNING)
+                                  indexer_name=indexerApi(show_obj.indexer).name), logger.WARNING)
                 indexer_lang = show_obj.lang
         else:
             indexer_lang = show_obj.lang
@@ -1471,7 +1537,7 @@ class Home(WebRoot):
     def erase_cache(self, show_obj):
         try:
             main_db_con = db.DBConnection('cache.db')
-            for cur_provider in app.providers.sorted_provider_list():
+            for cur_provider in providers.sorted_provider_list():
                 # Let's check if this provider table already exists
                 table_exists = main_db_con.select(
                     b'SELECT name '
@@ -1722,9 +1788,12 @@ class Home(WebRoot):
 
                     if all([int(status) == WANTED,
                             ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
-                        logger.log(u'Removing release_name for episode as you want to set a downloaded episode back to wanted, '
-                                   u'so obviously you want it replaced')
+                        logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
                         ep_obj.release_name = ''
+
+                    if ep_obj.manually_searched and int(status) == WANTED:
+                        logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
+                        ep_obj.manually_searched = False
 
                     ep_obj.status = int(status)
 
@@ -1834,7 +1903,7 @@ class Home(WebRoot):
             'icon': 'ui-icon ui-icon-pencil'
         }]
 
-        return t.render(submenu=submenu, ep_obj_list=ep_obj_rename_list,
+        return t.render(submenu=submenu[::-1], ep_obj_list=ep_obj_rename_list,
                         show=show_obj, title='Preview Rename',
                         header='Preview Rename',
                         controller='home', action='previewRename')

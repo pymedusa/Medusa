@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Speed.cd."""
 from __future__ import unicode_literals
 
 import re
@@ -23,19 +23,19 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """SpeedCD Torrent provider"""
+class SpeedCDProvider(TorrentProvider):
+    """SpeedCD Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'Speedcd')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Speedcd')
 
         # Credentials
         self.username = None
@@ -61,9 +61,9 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -119,16 +119,6 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
         # Units
         units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
-        def process_column_header(td):
-            result = ''
-            if td.a and td.a.img:
-                result = td.a.img.get('alt', td.a.get_text(strip=True))
-            if td.img and not result:
-                result = td.img.get('alt', '')
-            if not result:
-                result = td.get_text(strip=True)
-            return result
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -141,23 +131,19 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
-            labels = [process_column_header(label) for label in torrent_rows[0]('th')]
-
             # Skip column headers
             for row in torrent_rows[1:]:
                 cells = row('td')
-                if len(cells) < len(labels):
-                    continue
 
                 try:
-                    title = cells[labels.index('Title')].find('a', class_='torrent').get_text()
+                    title = cells[1].find('a', class_='torrent').get_text()
                     download_url = urljoin(self.url,
-                                           cells[labels.index('Download')].find(title='Download').parent['href'])
+                                           cells[2].find(title='Download').parent['href'])
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
+                    seeders = try_int(cells[5].get_text(strip=True))
+                    leechers = try_int(cells[6].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -167,7 +153,7 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[labels.index('Size')].get_text()
+                    torrent_size = cells[4].get_text()
                     torrent_size = torrent_size[:-2] + ' ' + torrent_size[-2:]
                     size = convert_size(torrent_size, units=units) or -1
 
@@ -178,7 +164,6 @@ class SpeedCDProvider(TorrentProvider):  # pylint: disable=too-many-instance-att
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

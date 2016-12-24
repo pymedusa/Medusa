@@ -19,11 +19,10 @@
 
 import json
 
-import medusa as app
 from requests.compat import urlencode
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
-from .. import logger
+from .. import app, logger
 from ..helper.exceptions import ex
 
 

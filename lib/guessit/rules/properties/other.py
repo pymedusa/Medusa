@@ -5,14 +5,14 @@ other property
 """
 import copy
 
+from rebulk import Rebulk, Rule, RemoveMatch, POST_PROCESS, AppendMatch
 from rebulk.remodule import re
 
-from rebulk import Rebulk, Rule, RemoveMatch, POST_PROCESS, AppendMatch
 from ..common import dash
 from ..common import seps
 from ..common.validators import seps_surround, compose
-from ...rules.common.formatters import raw_cleanup
 from ...reutils import build_or_pattern
+from ...rules.common.formatters import raw_cleanup
 
 
 def other():
@@ -28,7 +28,6 @@ def other():
     rebulk.regex('Sync-?Fix', 'Sync-?Fixed', value='SyncFix')
     rebulk.regex('Dual-?Audio', value='DualAudio')
     rebulk.regex('ws', 'wide-?screen', value='WideScreen')
-    rebulk.string('Netflix', 'NF', value='Netflix')
 
     rebulk.string('Real', 'Fix', 'Fixed', value='Proper', tags=['has-neighbor-before', 'has-neighbor-after'])
     rebulk.string('Proper', 'Repack', 'Rerip', value='Proper')
@@ -60,11 +59,13 @@ def other():
                  validator={'__parent__': compose(seps_surround, validate_complete)})
     rebulk.string('R5', 'RC', value='R5')
     rebulk.regex('Pre-?Air', value='Preair')
+    rebulk.regex('(?:PS-?)?Vita', value='PS Vita')
 
     for value in (
             'Screener', 'Remux', 'Remastered', '3D', 'HD', 'mHD', 'HDLight', 'HQ', 'DDC', 'HR', 'PAL', 'SECAM', 'NTSC',
             'CC', 'LD', 'MD', 'XXX'):
         rebulk.string(value, value=value)
+    rebulk.string('LDTV', value='LD')
 
     for value in ('Limited', 'Complete', 'Classic', 'Unrated', 'LiNE', 'Bonus', 'Trailer', 'FINAL', 'Retail', 'Uncut',
                   'Extended', 'Extended Cut'):

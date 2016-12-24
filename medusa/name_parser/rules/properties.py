@@ -7,6 +7,7 @@ import babelfish
 from guessit.reutils import build_or_pattern
 from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
+from guessit.rules.properties.audio_codec import Ac3Rule, AudioValidatorRule, HqConflictRule
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
@@ -43,7 +44,6 @@ def format_():
     rebulk.defaults(name='format')
 
     # More accurate formats
-    rebulk.regex('AHDTV', value='AHDTV')
     rebulk.regex('BD(?!\d)', 'BD-?Rip', 'BD-?Mux', 'BD-?Rip-?Mux',
                  value='BDRip', validator=seps_surround,
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
@@ -59,11 +59,20 @@ def format_():
     rebulk.regex('DVD-?Mux', value='DVD')
     rebulk.regex('WEB-?Mux', 'DL-?WEB-?Mux', 'WEB-?DL-?Mux', 'DL-?Mux', value='WEB-DL')
 
-    # https://github.com/guessit-io/guessit/issues/315
-    rebulk.regex('WEB-?DL-?Rip', 'WEB-?Cap', value='WEBRip')
-    rebulk.regex('DSR', 'DS-?Rip', 'SAT-?Rip', 'DTH-?Rip', value='SATRip')
-    rebulk.regex('LDTV', value='TV')
     rebulk.regex('DVD\d', value='DVD')
+
+    return rebulk
+
+
+def audio_codec():
+    """Audio codec property.
+
+    :return:
+    :rtype: Rebulk
+    """
+    rebulk = Rebulk().regex_defaults(name='audio_codec', flags=re.IGNORECASE)
+    rebulk.regex(r'DDP', value='AC3')
+    rebulk.rules(Ac3Rule, AudioValidatorRule, HqConflictRule)
 
     return rebulk
 
@@ -98,8 +107,8 @@ def other():
     rebulk.regex('DIRFIX', value='DirFix')
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
-    rebulk.regex(r'HBO', value='HBO')
     rebulk.regex(r'UNCENSORED', value='Uncensored')
+    rebulk.regex(r'MULTi', value='Multi Language')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
     # Discarded:
@@ -118,7 +127,7 @@ def size():
     :rtype: Rebulk
     """
     def format_size(value):
-        return re.sub(r'(?<=\d)[\.](?=[^\d])', '', value.upper())
+        return re.sub(r'(?<=\d)[.](?=[^\d])', '', value.upper())
 
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='size', validator=seps_surround)

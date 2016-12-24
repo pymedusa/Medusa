@@ -5,9 +5,11 @@ from __future__ import unicode_literals
 
 import re
 from datetime import timedelta
+from time import time
 
 from guessit.rules.common.date import valid_year
 from .rules import default_api
+from .. import app
 from ..cache import memory_cache
 
 
@@ -83,15 +85,17 @@ def guessit(name, options=None):
     :return: the guessed properties
     :rtype: dict
     """
-    from .. import showList
+    start_time = time()
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=get_expected_titles(showList),
+                              expected_title=get_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
-    return default_api.guessit(name, options=final_options)
+    result = default_api.guessit(name, options=final_options)
+    result['parsing_time'] = time() - start_time
+    return result
 
 
 def _key_generator(namespace, fn):

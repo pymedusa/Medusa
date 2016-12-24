@@ -19,11 +19,9 @@
 import fnmatch
 import os
 import re
-from collections import namedtuple
 
-import medusa as app
 from six import string_types
-from . import common, logger
+from . import app, common, logger
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .scene_exceptions import get_scene_exceptions
 
@@ -176,31 +174,3 @@ def determineReleaseName(dir_name=None, nzb_name=None):
         return folder
 
     return None
-
-
-def show_words(showObj):
-    """
-    Returns all related words to show: preferred, undesired, ignore, require.
-    """
-
-    ShowWords = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignore_words', 'require_words'])
-
-    preferred_words = ",".join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''
-    undesired_words = ",".join(app.UNDESIRED_WORDS.split(',')) if app.UNDESIRED_WORDS.split(',') else ''
-
-    global_ignore = app.IGNORE_WORDS.split(',') if app.IGNORE_WORDS else []
-    global_require = app.REQUIRE_WORDS.split(',') if app.REQUIRE_WORDS else []
-    show_ignore = showObj.rls_ignore_words.split(',') if showObj.rls_ignore_words else []
-    show_require = showObj.rls_require_words.split(',') if showObj.rls_require_words else []
-
-    # If word is in global ignore and also in show require, then remove it from global ignore
-    # Join new global ignore with show ignore
-    final_ignore = show_ignore + [i for i in global_ignore if i.lower() not in [r.lower() for r in show_require]]
-    # If word is in global require and also in show ignore, then remove it from global require
-    # Join new global required with show require
-    final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
-
-    ignore_words = ",".join(final_ignore)
-    require_words = ",".join(final_require)
-
-    return ShowWords(preferred_words, undesired_words, ignore_words, require_words)

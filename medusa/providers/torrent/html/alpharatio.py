@@ -15,26 +15,30 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for AlphaRatio."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
+from dateutil import parser
+
 from requests.compat import urljoin
+
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """AlphaRatio Torrent provider"""
-    def __init__(self):
+class AlphaRatioProvider(TorrentProvider):
+    """AlphaRatio Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'AlphaRatio')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('AlphaRatio')
 
         # Credentials
         self.username = None
@@ -59,9 +63,9 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -161,6 +165,8 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
+                    pubdate_raw = cells[labels.index('Time')].find('span')['title']
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -168,8 +174,7 @@ class AlphaRatioProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
-                        'torrent_hash': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -7,14 +7,11 @@ import json
 import os
 import re
 
-import medusa as app
 from tornroutes import route
+
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import (
-    db, helpers, logger, post_processor,
-    subtitles, ui
-)
+from .... import app, db, helpers, logger, post_processor, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -293,6 +290,9 @@ class Manage(Home, WebRoot):
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
                     continue
 
+                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                    continue
+
                 if not tv_episode.show.subtitles:
                     continue
 
@@ -340,20 +340,15 @@ class Manage(Home, WebRoot):
         for cur_show in app.showList:
 
             ep_counts = {
-                Overview.SKIPPED: 0,
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
                 Overview.GOOD: 0,
-                Overview.UNAIRED: 0,
-                Overview.SNATCHED: 0,
-                Overview.SNATCHED_PROPER: 0,
-                Overview.SNATCHED_BEST: 0
             }
             ep_cats = {}
 
             sql_results = main_db_con.select(
                 """
-                SELECT status, season, episode, name, airdate
+                SELECT status, season, episode, name, airdate, manually_searched
                 FROM tv_episodes
                 WHERE tv_episodes.season IS NOT NULL AND
                       tv_episodes.showid IN (SELECT tv_shows.indexer_id
@@ -366,7 +361,8 @@ class Manage(Home, WebRoot):
             )
 
             for cur_result in sql_results:
-                cur_ep_cat = cur_show.get_overview(cur_result[b'status'])
+                cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
+                                                   manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
                     ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
                     ep_counts[cur_ep_cat] += 1
@@ -507,12 +503,10 @@ class Manage(Home, WebRoot):
 
     def massEditSubmit(self, paused=None, default_ep_status=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
-                       subtitles=None, air_by_date=None, anyQualities=None, bestQualities=None, toEdit=None, *args,
+                       subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
-        anyQualities = anyQualities or []
-        bestQualities = bestQualities or []
-        allowed_qualities = anyQualities
-        preferred_qualities = bestQualities
+        allowed_qualities = allowed_qualities or []
+        preferred_qualities = preferred_qualities or []
 
         dir_map = {}
         for cur_arg in kwargs:
@@ -588,7 +582,7 @@ class Manage(Home, WebRoot):
             new_subtitles = 'on' if new_subtitles else 'off'
 
             if quality_preset == 'keep':
-                allowed_qualities, preferred_qualities = Quality.splitQuality(show_obj.quality)
+                allowed_qualities, preferred_qualities = show_obj.current_qualities
             elif try_int(quality_preset, None):
                 preferred_qualities = []
 
@@ -687,10 +681,9 @@ class Manage(Home, WebRoot):
                 <ul>
                   {list}
                 </ul>
-                """.format(
-                    title=title,
-                    list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
-                                    for cur_item in items]))
+                """.format(title=title,
+                           list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
+                                           for cur_item in items]))
 
         message = ''
         message += message_detail('Updates', updates)
@@ -750,16 +743,17 @@ class Manage(Home, WebRoot):
             sql_results = failed_db_con.select(
                 b'SELECT * '
                 b'FROM failed '
-                b'LIMIT ?', [limit]
+                b'LIMIT ?',
+                [limit]
             )
         else:
             sql_results = failed_db_con.select(
                 b'SELECT * '
                 b'FROM failed'
             )
+        sql_results = sql_results[::-1]
 
         to_remove = toRemove.split('|') if toRemove is not None else []
-
         for release in to_remove:
             failed_db_con.action(
                 b'DELETE FROM failed '

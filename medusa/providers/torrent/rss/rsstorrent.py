@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for RSS Torrents."""
 from __future__ import unicode_literals
 
 import io
@@ -23,20 +23,20 @@ import os
 import re
 
 from bencode import bdecode
-import medusa as app
+
 from ..torrent_provider import TorrentProvider
-from .... import helpers, logger, tv_cache
+from .... import app, helpers, logger, tv_cache
 from ....helper.exceptions import ex
 
 
-class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class TorrentRssProvider(TorrentProvider):
+    """Torrent RSS provider."""
 
-    def __init__(self, name, url, cookies='',  # pylint: disable=too-many-arguments
+    def __init__(self, name, url, cookies='',
                  title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
-
-        # Provider Init
-        TorrentProvider.__init__(self, name)
+        """Initialize the class."""
+        super(self.__class__, self).__init__(name)
 
         # Credentials
 
@@ -62,7 +62,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         self.cache = TorrentRssCache(self, min_time=15)
 
     def _get_title_and_url(self, item):
-
+        """Get title and url from result."""
         title = item.get(self.title_tag, '').replace(' ', '.')
 
         attempt_list = [
@@ -83,7 +83,8 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return title, url
 
-    def config_string(self):  # pylint: disable=too-many-arguments
+    def config_string(self):
+        """Return default RSS torrent provider config setting."""
         return '{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(
             self.name or '',
             self.url or '',
@@ -99,6 +100,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     @staticmethod
     def get_providers_list(data):
+        """Get RSS torrent provider list."""
         providers_list = [x for x in (TorrentRssProvider._make_provider(x) for x in data.split('!!!')) if x]
         seen_values = set()
         providers_set = []
@@ -113,12 +115,14 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         return [x for x in providers_set if x]
 
     def image_name(self):
+        """Return RSS torrent image."""
         if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
 
     @staticmethod
     def _make_provider(config):
+        """Create new RSS provider."""
         if not config:
             return None
 
@@ -155,15 +159,13 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         return new_provider
 
-    def validate_rss(self):  # pylint: disable=too-many-return-statements
-
+    def validate_rss(self):
+        """Validate if RSS."""
         try:
             add_cookie = self.add_cookies_from_ui()
             if not add_cookie.get('result'):
                 return add_cookie
 
-            # pylint: disable=protected-access
-            # Access to a protected member of a client class
             data = self.cache._getRSSData()['entries']
             if not data:
                 return {'result': False,
@@ -198,6 +200,7 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
     @staticmethod
     def dump_html(data):
+        """Dump html data."""
         dump_name = os.path.join(app.CACHE_DIR, 'custom_torrent.html')
 
         try:
@@ -214,6 +217,9 @@ class TorrentRssProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
 
 class TorrentRssCache(tv_cache.TVCache):
-    def _getRSSData(self):
+    """RSS torrent cache class."""
+
+    def _get_rss_data(self):
+        """Get RSS data."""
         self.provider.add_cookies_from_ui()
-        return self.getRSSFeed(self.provider.url)
+        return self.get_rss_feed(self.provider.url)

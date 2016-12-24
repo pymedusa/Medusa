@@ -15,13 +15,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for EliteTorrent."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -29,12 +30,11 @@ from ....helper.common import try_int
 
 
 class EliteTorrentProvider(TorrentProvider):
-    """EliteTorrent Torrent provider"""
+    """EliteTorrent Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'EliteTorrent')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('EliteTorrent')
 
         # Credentials
 
@@ -57,9 +57,9 @@ class EliteTorrentProvider(TorrentProvider):
         # Cache
         self.cache = tv_cache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -114,9 +114,7 @@ class EliteTorrentProvider(TorrentProvider):
 
         :return: A list of items found
         """
-
         items = []
-
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('table', class_='fichas-listado')
             torrent_rows = torrent_table('tr') if torrent_table else []
@@ -154,7 +152,6 @@ class EliteTorrentProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -14,6 +14,8 @@ def initialize():
     _check_python_version()
     _configure_syspath()
     _monkey_patch_fs_functions()
+    _monkey_patch_logging_functions()
+    _early_basic_logging()
     _register_utf8_codec()
     _ssl_configuration()
     _configure_mimetypes()
@@ -42,6 +44,16 @@ def _register_utf8_codec():
 def _monkey_patch_fs_functions():
     from . import filesystem
     filesystem.initialize()
+
+
+def _monkey_patch_logging_functions():
+    from . import logconfig
+    logconfig.initialize()
+
+
+def _early_basic_logging():
+    import logging
+    logging.basicConfig()
 
 
 def _ssl_configuration():

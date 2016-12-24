@@ -8,13 +8,10 @@ from __future__ import unicode_literals
 
 import os
 
-import medusa as app
 from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
-from .... import (
-    config, logger, ui,
-)
+from .... import app, config, logger, ui
 
 
 @route('/config/anime(/?.*)')
@@ -50,7 +47,7 @@ class ConfigAnime(Config):
         app.ANIDB_USE_MYLIST = config.checkbox_to_value(anidb_use_mylist)
         app.ANIME_SPLIT_HOME = config.checkbox_to_value(split_home)
 
-        app.save_config()
+        app.instance.save_config()
 
         if results:
             for x in results:

@@ -21,8 +21,7 @@ import threading
 import time
 import traceback
 
-import medusa as app
-from .. import common, failed_history, generic_queue, history, logger, providers, ui
+from .. import app, common, failed_history, generic_queue, history, logger, providers, ui
 from ..search.core import (
     searchForNeededEpisodes,
     searchProviders,
@@ -45,10 +44,13 @@ class SearchQueue(generic_queue.GenericQueue):
     def __init__(self):
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SEARCHQUEUE"
+        self.force = False
 
     def is_in_queue(self, show, segment):
         for cur_item in self.queue:
-            if isinstance(cur_item, BacklogQueueItem) and cur_item.show == show and cur_item.segment == segment:
+            if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem,
+                                     ForcedSearchQueueItem, ManualSnatchQueueItem)) \
+                    and cur_item.show == show and cur_item.segment == segment:
                 return True
         return False
 
@@ -87,8 +89,9 @@ class SearchQueue(generic_queue.GenericQueue):
         if isinstance(item, DailySearchQueueItem):
             # daily searches
             generic_queue.GenericQueue.add_item(self, item)
-        elif isinstance(item, BacklogQueueItem) and not self.is_in_queue(item.show, item.segment):
-            # backlog searches
+        elif isinstance(item, (BacklogQueueItem, FailedQueueItem,
+                               ManualSnatchQueueItem, ForcedSearchQueueItem)) \
+                and not self.is_in_queue(item.show, item.segment):
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
@@ -273,11 +276,11 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ForcedSearchQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False, manual_search=False, manual_search_type='episode'):
+    def __init__(self, show, segment, down_cur_quality=False, manual_search=False, manual_search_type='episode'):
         """A Queueitem used to queue Forced Searches and Manual Searches
         @param show: A show object
         @param segment: A list of episode objects. Needs to be passed as list!
-        @param downCurQuality: Not sure what it's used for. Maybe legacy.
+        @param down_cur_quality: Not sure what it's used for. Maybe legacy.
         @param manual_search: Passed as True (bool) when the search should be performed without automatially snatching a result
         @param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
 
@@ -296,7 +299,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
-        self.downCurQuality = downCurQuality
+        self.down_cur_quality = down_cur_quality
         self.manual_search = manual_search
         self.manual_search_type = manual_search_type
 
@@ -312,7 +315,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                        format(('forced', 'manual')[bool(self.manual_search)],
                               ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
 
-            search_result = searchProviders(self.show, self.segment, True, self.downCurQuality,
+            search_result = searchProviders(self.show, self.segment, True, self.down_cur_quality,
                                             self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
@@ -398,6 +401,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         search_result.release_group = self.cached_result['release_group']
         search_result.version = int(self.cached_result['version'])
         search_result.proper_tags = self.cached_result['proper_tags'].split('|') if self.cached_result['proper_tags'] else u''
+        search_result.manually_searched = True
 
         try:
             logger.log(u"Beginning to manual snatch release: {0}".format(search_result.name))
@@ -450,7 +454,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         if not self.show.paused:
             try:
                 logger.log(u"Beginning backlog search for: [" + self.show.name + "]")
-                search_result = searchProviders(self.show, self.segment, False, False)
+                search_result = searchProviders(self.show, self.segment)
 
                 if search_result:
                     for result in search_result:
@@ -479,7 +483,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
 
 class FailedQueueItem(generic_queue.QueueItem):
-    def __init__(self, show, segment, downCurQuality=False):
+    def __init__(self, show, segment, down_cur_quality=False):
         generic_queue.QueueItem.__init__(self, u'Retry', FAILED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'RETRY-' + str(show.indexerid)
@@ -489,7 +493,7 @@ class FailedQueueItem(generic_queue.QueueItem):
 
         self.show = show
         self.segment = segment
-        self.downCurQuality = downCurQuality
+        self.down_cur_quality = down_cur_quality
 
     def run(self):
         """
@@ -503,19 +507,19 @@ class FailedQueueItem(generic_queue.QueueItem):
 
                 logger.log(u"Marking episode as bad: [" + epObj.pretty_name() + "]")
 
-                failed_history.markFailed(epObj)
+                failed_history.mark_failed(epObj)
 
-                (release, provider) = failed_history.findRelease(epObj)
+                (release, provider) = failed_history.find_release(epObj)
                 if release:
-                    failed_history.logFailed(release)
-                    history.logFailed(epObj, release, provider)
+                    failed_history.log_failed(release)
+                    history.log_failed(epObj, release, provider)
 
-                failed_history.revertEpisode(epObj)
+                failed_history.revert_episode(epObj)
                 logger.log(u"Beginning failed download search for: [" + epObj.pretty_name() + "]")
 
-            # If it is wanted, self.downCurQuality doesnt matter
+            # If it is wanted, self.down_cur_quality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
-            search_result = searchProviders(self.show, self.segment, True, False, False)
+            search_result = searchProviders(self.show, self.segment, True)
 
             if search_result:
                 for result in search_result:

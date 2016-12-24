@@ -1,10 +1,8 @@
 # coding=utf-8
 """Request handler for shows."""
-
-import medusa as app
-
 from .base import BaseRequestHandler
-from ....indexers import indexer_config
+from .... import app
+from ....indexers.indexer_config import indexerConfig, reverse_mappings
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
 
@@ -29,6 +27,11 @@ class EpisodeIdentifier(object):
 class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
+    def set_default_headers(self):
+        """Set default CORS headers."""
+        super(ShowHandler, self).set_default_headers()
+        self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+
     def get(self, show_indexer, show_id, season, episode, absolute_episode, air_date, query):
         """Query show information.
 
@@ -42,7 +45,8 @@ class ShowHandler(BaseRequestHandler):
         :param query:
         """
         # @TODO: This should be completely replaced with show_id
-        show_indexer = indexer_config.mapping[show_indexer] if show_indexer else None
+        indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
+        show_indexer = indexer_cfg['id'] if indexer_cfg else None
         indexerid = self._parse(show_id)
         season = self._parse(season)
         episode = self._parse(episode)
@@ -63,7 +67,7 @@ class ShowHandler(BaseRequestHandler):
 
             return self._handle_detailed_show(tv_show, query)
 
-        data = [s.to_json(detailed=False) for s in app.showList if self._match(s, arg_paused)]
+        data = [s.to_json(detailed=self.get_argument('detailed', default=False)) for s in app.showList if self._match(s, arg_paused)]
         return self._paginate(data, 'title')
 
     @staticmethod

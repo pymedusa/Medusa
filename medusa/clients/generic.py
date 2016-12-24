@@ -11,10 +11,9 @@ from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-import medusa as app
 import requests
 from six.moves.http_cookiejar import CookieJar
-from .. import db, helpers, logger
+from .. import app, db, helpers, logger
 from ..helper.common import http_code_description
 
 
@@ -180,7 +179,7 @@ class GenericClient(object):
         return True
 
     @staticmethod
-    def _get_torrent_hash(result):
+    def _get_info_hash(result):
 
         if result.url.startswith('magnet'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
@@ -193,8 +192,8 @@ class GenericClient(object):
                 info = torrent_bdecode['info']
                 result.hash = sha1(bencode(info)).hexdigest()
             except (BTFailure, KeyError):
-                logger.log('Unable to bdecode torrent. Invalid torrent', logger.WARNING)
-                logger.log('Deleting cached result if exists: {result}'.format(result=result.name), logger.DEBUG)
+                logger.log('Unable to bdecode torrent. Invalid torrent: {0}. Deleting cached result if exists'.format
+                           (result.name), logger.WARNING)
                 cache_db_con = db.DBConnection('cache.db')
                 cache_db_con.action(
                     b'DELETE FROM [{provider}] '
@@ -228,7 +227,7 @@ class GenericClient(object):
             result.ratio = result.provider.seed_ratio()
 
             # lazy fix for now, I'm sure we already do this somewhere else too
-            result = self._get_torrent_hash(result)
+            result = self._get_info_hash(result)
 
             if not result.hash:
                 return False

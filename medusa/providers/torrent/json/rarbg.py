@@ -15,27 +15,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for RARBG."""
 from __future__ import unicode_literals
 
 import datetime
 import time
 import traceback
 
-import medusa as app
+from dateutil import parser
+
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import app, logger, tv_cache
 from ....helper.common import convert_size, try_int
-from ....indexers.indexer_config import INDEXER_TVDBV2
 
 
-class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class RarbgProvider(TorrentProvider):
     """RARBG Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'Rarbg')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Rarbg')
 
         # Credentials
         self.public = True
@@ -89,13 +88,6 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             'mode': 'list',
         }
 
-        if ep_obj is not None:
-            ep_indexerid = ep_obj.show.indexerid
-            ep_indexer = ep_obj.show.indexer
-        else:
-            ep_indexerid = None
-            ep_indexer = None
-
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -105,7 +97,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
             else:
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
-                search_params['search_tvdb'] = ep_indexerid if ep_indexer == INDEXER_TVDBV2 and ep_indexerid else None
+                search_params['search_tvdb'] = self._get_tvdb_id()
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
@@ -196,14 +188,16 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
                 torrent_size = row.pop('size', -1)
                 size = convert_size(torrent_size) or -1
 
+                pubdate = row.pop('pubdate')
+                pubdate = parser.parse(pubdate, fuzzy=True)
+
                 item = {
                     'title': title,
                     'link': download_url,
                     'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
-                    'pubdate': None,
-                    'torrent_hash': None,
+                    'pubdate': pubdate,
                 }
                 if mode != 'RSS':
                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -217,6 +211,7 @@ class RarbgProvider(TorrentProvider):  # pylint: disable=too-many-instance-attri
         return items
 
     def login(self):
+        """Login method used for logging in before doing search and torrent downloads."""
         if self.token and self.token_expires and datetime.datetime.now() < self.token_expires:
             return True
 

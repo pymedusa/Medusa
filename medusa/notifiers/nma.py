@@ -1,8 +1,7 @@
 # coding=utf-8
 
-import medusa as app
 from pynma import pynma
-from .. import common, logger
+from .. import app, common, logger
 
 
 class Notifier(object):

@@ -1,6 +1,6 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
-    import medusa as app
+    from medusa import app
     from medusa import common
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings, statusStrings
@@ -12,7 +12,7 @@
         initial_quality = int(quality_value)
     else:
         initial_quality = common.SD
-    anyQualities, bestQualities = common.Quality.splitQuality(initial_quality)
+    allowed_qualities, preferred_qualities = common.Quality.splitQuality(initial_quality)
 %>
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/mass-edit.js?${sbPID}"></script>
@@ -79,7 +79,7 @@
                                             initial_quality = int(quality_value)
                                         else:
                                             initial_quality = common.SD
-                                        anyQualities, bestQualities = common.Quality.splitQuality(initial_quality)
+                                        allowed_qualities, preferred_qualities = common.Quality.splitQuality(initial_quality)
                                     %>
                                     <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
                                         <option value="keep">&lt; Keep &gt;</option>
@@ -93,18 +93,18 @@
                                         <div style="padding-right: 40px; text-align: left; float: left;">
                                             <h5>Allowed</h5>
                                             <% anyQualityList = filter(lambda x: x > common.Quality.NONE, common.Quality.qualityStrings) %>
-                                            <select id="anyQualities" name="anyQualities" multiple="multiple" size="${len(anyQualityList)}" class="form-control form-control-inline input-sm">
+                                            <select id="allowed_qualities" name="allowed_qualities" multiple="multiple" size="${len(anyQualityList)}" class="form-control form-control-inline input-sm">
                                                 % for curQuality in sorted(anyQualityList):
-                                                <option value="${curQuality}" ${'selected="selected"' if curQuality in anyQualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
+                                                <option value="${curQuality}" ${'selected="selected"' if curQuality in allowed_qualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
                                                 % endfor
                                             </select>
                                         </div>
                                         <div style="text-align: left; float: left;">
                                             <h5>Preferred</h5>
                                             <% bestQualityList = filter(lambda x: x >= common.Quality.SDTV, common.Quality.qualityStrings) %>
-                                            <select id="bestQualities" name="bestQualities" multiple="multiple" size="${len(bestQualityList)}" class="form-control form-control-inline input-sm">
+                                            <select id="preferred_qualities" name="preferred_qualities" multiple="multiple" size="${len(bestQualityList)}" class="form-control form-control-inline input-sm">
                                                 % for curQuality in sorted(bestQualityList):
-                                                <option value="${curQuality}" ${'selected="selected"' if curQuality in bestQualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
+                                                <option value="${curQuality}" ${'selected="selected"' if curQuality in preferred_qualities else ''}>${common.Quality.qualityStrings[curQuality]}</option>
                                                 % endfor
                                             </select>
                                         </div>

@@ -27,14 +27,10 @@ import shutil
 import unittest
 
 from configobj import ConfigObj
-import medusa as app
-from medusa import db, providers
+from medusa import app, config, db, logger, providers, tv_cache
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.providers.nzb.newznab import NewznabProvider
 from medusa.tv import TVEpisode
-import shutil_custom
-
-shutil.copyfile = shutil_custom.copyfile_custom
 
 # =================
 #  test globals
@@ -95,24 +91,20 @@ app.DATA_DIR = TEST_DIR
 app.CONFIG_FILE = os.path.join(app.DATA_DIR, "config.ini")
 app.CFG = ConfigObj(app.CONFIG_FILE)
 
-app.BRANCH = app.config.check_setting_str(app.CFG, 'General', 'branch', '')
-app.CUR_COMMIT_HASH = app.config.check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
-app.GIT_USERNAME = app.config.check_setting_str(app.CFG, 'General', 'git_username', '')
-app.GIT_PASSWORD = app.config.check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
+app.BRANCH = config.check_setting_str(app.CFG, 'General', 'branch', '')
+app.CUR_COMMIT_HASH = config.check_setting_str(app.CFG, 'General', 'cur_commit_hash', '')
+app.GIT_USERNAME = config.check_setting_str(app.CFG, 'General', 'git_username', '')
+app.GIT_PASSWORD = config.check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
 
 app.LOG_DIR = os.path.join(TEST_DIR, 'Logs')
-app.logger.log_file = os.path.join(app.LOG_DIR, 'test_application.log')
+logger.log_file = os.path.join(app.LOG_DIR, 'test_application.log')
 create_test_log_folder()
 
 app.CACHE_DIR = os.path.join(TEST_DIR, 'cache')
 create_test_cache_folder()
 
 # pylint: disable=no-member
-app.logger.init_logging(False)
-
-# this overrides the app save_config which gets called during a db upgrade
-# this might be considered a hack
-main_db.app.save_config = lambda: True
+logger.init_logging(False)
 
 
 def _fake_specify_ep(self, season, episode):
@@ -191,8 +183,8 @@ class TestCacheDBConnection(TestDBConnection, object):
                 raise
 
 # this will override the normal db connection
-app.db.DBConnection = TestDBConnection
-app.tv_cache.CacheDBConnection = TestCacheDBConnection
+db.DBConnection = TestDBConnection
+tv_cache.CacheDBConnection = TestCacheDBConnection
 
 
 # =================

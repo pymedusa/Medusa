@@ -44,45 +44,37 @@ import zipfile
 from itertools import cycle, izip
 
 import adba
+
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
+
 import certifi
+
 import cfscrape
+
 from contextlib2 import closing, suppress
+
 import guessit
-import medusa as app
+
 import requests
 from requests.compat import urlparse
-import shutil_custom
+
 from six import binary_type, string_types, text_type
 from six.moves import http_client
-from . import classes, db
+
+from . import app
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
 from .show.show import Show
 
-
 logger = logging.getLogger(__name__)
 
-
-try:
-    import urllib
-    urllib._urlopener = classes.ApplicationURLopener()
-except ImportError:
-    logger.debug(u'Unable to import _urlopener, not using user_agent for urllib')
 
 try:
     from urllib.parse import splittype
 except ImportError:
     from urllib2 import splittype
-
-shutil.copyfile = shutil_custom.copyfile_custom
-
-
-def fixGlob(path):
-    path = re.sub(r'\[', '[[]', path)
-    return re.sub(r'(?<!\[)\]', '[]]', path)
 
 
 def indentXML(elem, level=0):
@@ -116,7 +108,7 @@ def isMediaFile(filename):
             return False
 
         # ignore RARBG release intro
-        if re.search(r'^RARBG\.\w+\.(mp4|avi|txt)$', filename, re.I):
+        if re.search(r'^RARBG(\.(com|to))?\.(txt|avi|mp4)$', filename, re.I):
             return False
 
         # ignore MAC OS's retarded "resource fork" files
@@ -145,6 +137,28 @@ def isRarFile(filename):
     archive_regex = r'(?P<file>^(?P<base>(?:(?!\.part\d+\.rar$).)*)\.(?:(?:part0*1\.)?rar)$)'
 
     return bool(re.search(archive_regex, filename))
+
+
+def is_subtitle(file_path):
+    """Return whether the file is a subtitle or not.
+
+    :param file_path: path to the file
+    :type file_path: text_type
+    :return: True if it is a subtitle, else False
+    :rtype: bool
+    """
+    return get_extension(file_path) in subtitle_extensions
+
+
+def get_extension(file_path):
+    """Return the file extension without leading dot.
+
+    :param file_path: path to the file
+    :type file_path: text_type
+    :return: extension or empty string
+    :rtype: text_type
+    """
+    return os.path.splitext(file_path)[1][1:]
 
 
 def remove_file_failed(failed_file):
@@ -190,12 +204,13 @@ def searchIndexerForShowID(show_name, indexer=None, indexer_id=None, ui=None):
     :param ui: Custom UI for indexer use
     :return:
     """
+    from .indexers.indexer_api import indexerApi
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
-    for i in app.indexerApi().indexers if not indexer else int(indexer or []):
+    for i in indexerApi().indexers if not indexer else int(indexer or []):
         # Query Indexers for each search term and build the list of results
-        indexer_api = app.indexerApi(i)
+        indexer_api = indexerApi(i)
         indexer_api_params = indexer_api.api_params.copy()
         if ui is not None:
             indexer_api_params['custom_ui'] = ui
@@ -437,10 +452,11 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     :param  cur_path: The absolute path to the file you want to move/rename
     :type cur_path: str
     :param new_path: The absolute path to the destination for the file WITHOUT THE EXTENSION
-    :type new_path: sr
+    :type new_path: str
     :param old_path_length: The length of media file path (old name) WITHOUT THE EXTENSION
     :type old_path_length: int
     """
+    from . import subtitles
     if old_path_length == 0 or old_path_length > len(cur_path):
         # approach from the right
         cur_file_name, cur_file_ext = os.path.splitext(cur_path)
@@ -454,16 +470,19 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
         sublang = os.path.splitext(cur_file_name)[1][1:]
 
         # Check if the language extracted from filename is a valid language
-        if sublang in app.subtitles.subtitle_code_filter():
+        if sublang in subtitles.subtitle_code_filter():
             cur_file_ext = '.' + sublang + cur_file_ext
 
     # put the extension on the incoming file
     new_path += cur_file_ext
 
+    # Only rename if something has changed in the new name
+    if cur_path == new_path:
+        return True
+
     make_dirs(os.path.dirname(new_path))
 
     # move the file
-    # TODO: Check if new != old before calling shutil.move
     try:
         logger.info(u"Renaming file from '{old}' to '{new}'", old=cur_path, new=new_path)
         shutil.move(cur_path, new_path)
@@ -640,6 +659,7 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
+    from . import db
     absolute_number = None
 
     if season and episode:
@@ -756,7 +776,7 @@ def backupVersionedFile(old_file, version):
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.debug(u"Not creating backup, {file} doesn't exist", file=old_file)
+            logger.debug(u"Not creating backup, {old_file} doesn't exist", old_file=old_file)
             break
 
         try:
@@ -908,12 +928,12 @@ def decrypt(data, encryption_version=0):
     return encrypt(data, encryption_version, _decrypt=True)
 
 
-def full_sanitizeSceneName(name):
+def full_sanitize_scene_name(name):
     return re.sub('[. -]', ' ', sanitizeSceneName(name)).lower().lstrip()
 
 
 def get_show(name, tryIndexers=False):
-    from . import name_cache, scene_exceptions
+    from . import classes, name_cache, scene_exceptions
     if not app.showList:
         return
 
@@ -933,7 +953,7 @@ def get_show(name, tryIndexers=False):
         # try indexers
         if not show and tryIndexers:
             show = Show.find(
-                app.showList, searchIndexerForShowID(full_sanitizeSceneName(name), ui=classes.ShowListUI)[2])
+                app.showList, searchIndexerForShowID(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
 
         # try scene exceptions
         if not show:
@@ -985,10 +1005,13 @@ def real_path(path):
 
 
 def validateShow(show, season=None, episode=None):
+    """Reindex show from originating indexer, and return indexer information for the passed episode."""
+    from .indexers.indexer_api import indexerApi
+    from .indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
     indexer_lang = show.lang
 
     try:
-        indexer_api_params = app.indexerApi(show.indexer).api_params.copy()
+        indexer_api_params = indexerApi(show.indexer).api_params.copy()
 
         if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
             indexer_api_params['language'] = indexer_lang
@@ -996,12 +1019,12 @@ def validateShow(show, season=None, episode=None):
         if show.dvdorder != 0:
             indexer_api_params['dvdorder'] = True
 
-        t = app.indexerApi(show.indexer).indexer(**indexer_api_params)
+        t = indexerApi(show.indexer).indexer(**indexer_api_params)
         if season is None and episode is None:
             return t
 
         return t[show.indexerid][season][episode]
-    except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
+    except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
         pass
 
 
@@ -1084,63 +1107,6 @@ def restoreConfigZip(archive, targetDir):
         return False
 
 
-def mapIndexersToShow(show):
-    mapped = {}
-
-    # init mapped indexers object
-    for indexer in app.indexerApi().indexers:
-        mapped[indexer] = show.indexerid if int(indexer) == int(show.indexer) else 0
-
-    main_db_con = db.DBConnection()
-    sql_results = main_db_con.select(
-        "SELECT * FROM indexer_mapping WHERE indexer_id = ? AND indexer = ?",
-        [show.indexerid, show.indexer])
-
-    # for each mapped entry
-    for curResult in sql_results:
-        nlist = [i for i in curResult if i is not None]
-        # Check if its mapped with both tvdb and tvrage.
-        if len(nlist) >= 4:
-            logger.debug(u'Found indexer mapping in cache for show: {name}', name=show.name)
-            mapped[int(curResult['mindexer'])] = int(curResult['mindexer_id'])
-            break
-    else:
-        sql_l = []
-        for indexer in app.indexerApi().indexers:
-            if indexer == show.indexer:
-                mapped[indexer] = show.indexerid
-                continue
-
-            indexer_api_params = app.indexerApi(indexer).api_params.copy()
-            indexer_api_params['custom_ui'] = classes.ShowListUI
-            t = app.indexerApi(indexer).indexer(**indexer_api_params)
-
-            try:
-                mapped_show = t[show.name]
-            except Exception:
-                logger.debug(u"Unable to map " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
-                    indexer).name + " for show: " + show.name + ", skipping it")
-                continue
-
-            if mapped_show and len(mapped_show) == 1:
-                logger.debug(u"Mapping " + app.indexerApi(show.indexer).name + "->" + app.indexerApi(
-                    indexer).name + " for show: " + show.name)
-
-                mapped[indexer] = int(mapped_show[0]['id'])
-
-                logger.debug(u"Adding indexer mapping to DB for show: " + show.name)
-
-                sql_l.append([
-                    "INSERT OR IGNORE INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) VALUES (?,?,?,?)",
-                    [show.indexerid, show.indexer, int(mapped_show[0]['id']), indexer]])
-
-        if sql_l:
-            main_db_con = db.DBConnection()
-            main_db_con.mass_action(sql_l)
-
-    return mapped
-
-
 def touchFile(fname, atime=None):
     """Touch a file (change modification date).
 
@@ -1208,6 +1174,7 @@ def prepare_cf_req(session, request):
             request.headers.update({u'User-Agent': user_agent})
         else:
             request.headers = {u'User-Agent': user_agent}
+        logger.debug(u'CloudFlare protection successfully bypassed.')
         return session.prepare_request(request)
     except (ValueError, AttributeError) as error:
         logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
@@ -1239,7 +1206,9 @@ def getURL(url, post_data=None, params=None, headers=None, timeout=30, session=N
 
             logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
                          (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
-            return None
+
+            if response_type and response_type != u'response':
+                return None
 
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
@@ -1283,8 +1252,8 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                                  hooks=hooks, proxies=proxies)) as resp:
 
             if not resp.ok:
-                logger.debug(u"Requested download url %s returned status code is %s: %s"
-                             % (url, resp.status_code, http_code_description(resp.status_code)))
+                logger.debug(u'Requested download URL {url} returned status code is {code}: {description}'.format
+                             (url=url, code=resp.status_code, description=http_code_description(resp.status_code)))
                 return False
 
             try:
@@ -1295,20 +1264,24 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                             fp.flush()
 
                 chmodAsParent(filename)
-            except Exception:
-                logger.warning(u'Problem setting permissions or writing file to: {0}'.format(filename))
+            except OSError as e:
+                remove_file_failed(filename)
+                logger.warning(u'Problem setting permissions or writing file to: {location}. Error: {error}'.format
+                               (location=filename, error=e))
+                return False
 
     except requests.exceptions.RequestException as e:
         remove_file_failed(filename)
-        logger.warning(u'Error requesting download url: {0}. Error: {1}'.format(url, ex(e)))
+        logger.warning(u'Error requesting download URL: {url}. Error: {error}'.format(url=url, error=e))
         return False
     except EnvironmentError as e:
         remove_file_failed(filename)
-        logger.warning(u'Unable to save the file: {0}'.format(ex(e)))
+        logger.warning(u'Unable to save the file: {name}. Error: {error}'.format(name=filename, error=e))
         return False
     except Exception as e:
         remove_file_failed(filename)
-        logger.error(u'Unknown exception while loading download URL: {0} : {1}'.format(url, ex(e)))
+        logger.error(u'Unknown exception while downloading file {name} from URL: {url}. Error: {error}'.format
+                     (name=filename, url=url, error=e))
         logger.debug(traceback.format_exc())
         return False
 
@@ -1550,13 +1523,14 @@ def getTVDBFromID(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    indexer_api_params = app.indexerApi(indexer).api_params.copy()
+    from .indexers.indexer_api import indexerApi
+    indexer_api_params = indexerApi(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang
 
-    logger.info(u"" + str(app.indexerApi(indexer).name) + ": " + repr(indexer_api_params))
+    logger.info(u"" + str(indexerApi(indexer).name) + ": " + repr(indexer_api_params))
 
-    t = app.indexerApi(indexer).indexer(**indexer_api_params)
+    t = indexerApi(indexer).indexer(**indexer_api_params)
     s = t[int(indexer_id)]
 
     if hasattr(s, 'data'):

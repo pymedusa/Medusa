@@ -18,7 +18,7 @@
 
 from datetime import date, timedelta
 
-import medusa as app
+from .. import app
 from ..common import IGNORED, Quality, UNAIRED, WANTED
 from ..db import DBConnection
 from ..helper.common import dateFormat, timeFormat

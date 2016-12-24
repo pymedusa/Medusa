@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TorrentProject."""
 from __future__ import unicode_literals
 
 import traceback
@@ -33,8 +33,8 @@ class TorrentProjectProvider(TorrentProvider):
     """TorrentProject Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'TorrentProject')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('TorrentProject')
 
         # Credentials
         self.public = True
@@ -131,9 +131,9 @@ class TorrentProjectProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    torrent_hash = download_url.split('/')[1]
+                    info_hash = download_url.split('/')[1]
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=torrent_hash, title=title, trackers=self._custom_trackers)
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     seeders = try_int(row.find('span', class_='bc seeders').find('span').get_text(), 1)
                     leechers = try_int(row.find('span', class_='bc leechers').find('span').get_text())
@@ -156,7 +156,6 @@ class TorrentProjectProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

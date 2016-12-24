@@ -14,13 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TVChaosUK."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -28,13 +29,12 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """TVChaosUK Torrent provider"""
+class TVChaosUKProvider(TorrentProvider):
+    """TVChaosUK Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'TvChaosUK')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('TvChaosUK')
 
         # Credentials
         self.username = None
@@ -46,6 +46,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             'login': urljoin(self.url, 'takelogin.php'),
             'index': urljoin(self.url, 'index.php'),
             'search': urljoin(self.url, 'browse.php'),
+            'query': urljoin(self.url, 'scripts/autocomplete/query.php'),
         }
 
         # Proper Strings
@@ -60,9 +61,9 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -90,7 +91,7 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                 if mode == 'Season':
                     search_string = re.sub(r'(.*)S0?', r'\1Series ', search_string)
 
-                if mode != 'RSS':
+                elif mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
@@ -135,6 +136,10 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
             # Skip column headers
             for row in torrent_rows[1:]:
                 try:
+                    # Skip highlighted torrents
+                    if mode == 'RSS' and row.get('class') == ['highlight']:
+                        continue
+
                     if self.freeleech and not row.find('img', alt=re.compile('Free Torrent')):
                         continue
 
@@ -144,6 +149,9 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                     download_url = download_url.parent['href'] if download_url else None
                     if not all([title, download_url]):
                         continue
+
+                    if title.endswith('...'):
+                        title = self.get_full_title(title)
 
                     seeders = try_int(row.find(title='Seeders').get_text(strip=True))
                     leechers = try_int(row.find(title='Leechers').get_text(strip=True))
@@ -180,7 +188,6 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -223,6 +230,18 @@ class TVChaosUKProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
         raise AuthException('Your authentication credentials for {0} are missing,'
                             ' check your config.'.format(self.name))
+
+    def get_full_title(self, title):
+        """Get full title of release as provider add a "..." in the end of title in the html."""
+        # Strip trailing 3 dots
+        title = title[:-3]
+        search_params = {'input': title}
+        result = self.get_url(self.urls['query'], params=search_params, returns='response')
+        with BS4Parser(result.text, 'html5lib') as html:
+            titles = html('results')
+            for item in titles:
+                title = item.text
+        return title
 
 
 provider = TVChaosUKProvider()

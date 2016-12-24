@@ -1,85 +1,149 @@
-# coding=utf-8
-
-
-from requests.compat import is_py3
-from requests import RequestException
-
+import sys
 
 class BaseError(Exception):
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
-        return self.value if is_py3 else unicode(self.value).encode('utf-8')
+        if sys.version_info > (3,):
+            return self.value
+        else:
+            return unicode(self.value).encode('utf-8')
 
 
-class GeneralError(BaseError):
-    """General pytvmaze error"""
+class ShowNotFound(BaseError):
+    pass
+
+
+class IDNotFound(BaseError):
+    pass
+
+
+class ScheduleNotFound(BaseError):
+    pass
+
+
+class EpisodeNotFound(BaseError):
+    pass
+
+
+class NoEpisodesForAirdate(BaseError):
+    pass
+
+
+class CastNotFound(BaseError):
+    pass
 
 
 class ShowIndexError(BaseError):
-    """Show Index Error"""
+    pass
 
 
-class MissingParameters(GeneralError, TypeError):
-    """Missing parameters"""
+class PersonNotFound(BaseError):
+    pass
 
 
-class TVMazeConnectionError(GeneralError, RequestException):
-    """Connection error while accessing TVMaze"""
+class CreditsNotFound(BaseError):
+    pass
 
 
-class BadRequest(TVMazeConnectionError):
-    """Bad request"""
+class UpdateNotFound(BaseError):
+    pass
 
 
-class IllegalAirDate(GeneralError, ValueError):
-    """Invalid air date"""
+class AKASNotFound(BaseError):
+    pass
 
 
-class ItemNotFoundError(GeneralError, KeyError):
-    """Expected item not found"""
+class SeasonNotFound(BaseError):
+    pass
 
 
-class ShowNotFound(ItemNotFoundError):
-    """Show not found"""
+class GeneralError(BaseError):
+    pass
 
 
-class IDNotFound(ItemNotFoundError):
-    """ID not found"""
+class MissingParameters(BaseError):
+    pass
 
 
-class ScheduleNotFound(ItemNotFoundError):
-    """Schedule not found"""
+class SeasonNotFound(BaseError):
+    pass
 
 
-class EpisodeNotFound(ItemNotFoundError):
-    """Episode not found"""
+class IllegalAirDate(BaseError):
+    pass
 
 
-class NoEpisodesForAirdate(EpisodeNotFound):
-    """No episode found for date"""
+class ConnectionError(BaseError):
+    pass
 
 
-class CastNotFound(ItemNotFoundError):
-    """Cast not found"""
+class BadRequest(BaseError):
+    pass
 
 
-class PersonNotFound(ItemNotFoundError):
-    """Person not found"""
+class NoFollowedShows(BaseError):
+    pass
 
 
-class CreditsNotFound(ItemNotFoundError):
-    """Credits not found"""
+class ShowNotFollowed(BaseError):
+    pass
 
 
-class UpdateNotFound(ItemNotFoundError):
-    """Update not found"""
+class NoFollowedPeople(BaseError):
+    pass
 
 
-class AKASNotFound(ItemNotFoundError):
-    """AKAs not found"""
+class PersonNotFollowed(BaseError):
+    pass
 
 
-class SeasonNotFound(ItemNotFoundError):
-    """Season not found"""
+class NoMarkedEpisodes(BaseError):
+    pass
+
+
+class EpisodeNotMarked(BaseError):
+    pass
+
+class InvalidMarkedEpisodeType(BaseError):
+    pass
+
+class InvalidEmbedValue(BaseError):
+    pass
+
+class NetworkNotFollowed(BaseError):
+    pass
+
+class NoFollowedWebChannels(BaseError):
+    pass
+
+class NoVotedShows(BaseError):
+    pass
+
+class ShowNotVotedFor(BaseError):
+    pass
+
+class InvalidVoteValue(BaseError):
+    pass
+
+class NoVotedEpisodes(BaseError):
+    pass
+
+class EpisodeNotVotedFor(BaseError):
+    pass
+
+class CrewNotFound(BaseError):
+    pass
+
+class NoFollowedNetworks(BaseError):
+    pass
+
+class NetworkNotFound(BaseError):
+    pass
+
+class WebChannelNotFound(BaseError):
+    pass
+
+class WebChannelNotFollowed(BaseError):
+    pass

@@ -5,8 +5,7 @@ import re
 from datetime import date
 
 from bs4 import BeautifulSoup
-import medusa as app
-from . import helpers
+from . import app, helpers
 
 
 class ImdbPopular(object):

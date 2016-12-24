@@ -15,27 +15,29 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for TorrentBytes."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
+from dateutil import parser
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """TorrentBytes Torrent provider"""
+class TorrentBytesProvider(TorrentProvider):
+    """TorrentBytes Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'TorrentBytes')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('TorrentBytes')
 
         # Credentials
         self.username = None
@@ -45,7 +47,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         self.url = 'https://www.torrentbytes.net'
         self.urls = {
             'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php')
+            'search': urljoin(self.url, 'browse.php'),
         }
 
         # Proper Strings
@@ -61,9 +63,9 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -80,7 +82,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
             'c33': 1,
             'c38': 1,
             'c32': 1,
-            'c37': 1
+            'c37': 1,
         }
 
         for mode in search_strings:
@@ -111,7 +113,6 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -141,14 +142,17 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                     if not all([title, download_url]):
                         continue
 
-                    # Free leech torrents are marked with green [F L] in the title (i.e. <font color=green>[F&nbsp;L]</font>)
+                    # Free leech torrents are marked with green [F L] in the title
+                    # (i.e. <font color=green>[F&nbsp;L]</font>)
                     freeleech = cells[labels.index('Name')].find('font', color='green')
                     if freeleech:
-                        title = title[:-5]  # Remove trailing "[F L]"
-                        if self.freeleech and freeleech.get_text(strip=True) != '[F\xa0L]':
+                        # \xa0 is a non-breaking space in Latin1 (ISO 8859-1)
+                        freeleech_tag = '[F\xa0L]'
+                        title = title.replace(freeleech_tag, '')
+                        if self.freeleech and freeleech.get_text(strip=True) != freeleech_tag:
                             continue
 
-                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True))
+                    seeders = try_int(cells[labels.index('Seeders')].get_text(strip=True), 1)
                     leechers = try_int(cells[labels.index('Leechers')].get_text(strip=True))
 
                     # Filter unseeded torrent
@@ -159,8 +163,11 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[labels.index('Size')].get_text(strip=True)
+                    torrent_size = cells[labels.index('Size')].get_text(' ', strip=True)
                     size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = cells[labels.index('Added')].get_text(' ', strip=True)
+                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
                         'title': title,
@@ -168,8 +175,7 @@ class TorrentBytesProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
-                        'torrent_hash': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -20,9 +20,9 @@
 
 from __future__ import unicode_literals
 
-import medusa as app
 from requests.auth import HTTPDigestAuth
 from .generic import GenericClient
+from .. import app
 
 
 class QBittorrentAPI(GenericClient):

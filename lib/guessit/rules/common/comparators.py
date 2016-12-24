@@ -39,6 +39,7 @@ def marker_comparator(matches, markers):
     :return:
     :rtype:
     """
+
     def comparator(marker1, marker2):
         """
         The actual comparator function.

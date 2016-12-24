@@ -2,14 +2,13 @@
 <%!
     import datetime
     import locale
-    import medusa as app
+    from medusa import app, config, metadata
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, privacy_levels
     from medusa.sbdatetime import sbdatetime, date_presets, time_presets
-    from medusa import config
-    from medusa import metadata
     from medusa.metadata.generic import GenericMetadata
     from medusa.helpers import anon_url
+    from medusa.indexers.indexer_api import indexerApi
     gh_branch = app.GIT_REMOTE_BRANCHES or app.versionCheckScheduler.action.list_remote_branches()
 %>
 <%block name="content">
@@ -44,7 +43,7 @@
                                 <label for="indexerDefaultLang">
                                     <span class="component-title">Default Indexer Language</span>
                                     <span class="component-desc">
-                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language=${app.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(app.indexerApi().config['valid_languages'])}"></select>
+                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language=${app.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
                                         <span>for adding shows and metadata providers</span>
                                     </span>
                                 </label>
@@ -129,8 +128,8 @@
                                     <span class="component-desc">
                                         <select id="indexer_default" name="indexer_default" class="form-control input-sm">
                                             <option value="0" ${'selected="selected"' if indexer == 0 else ''}>All Indexers</option>
-                                            % for indexer in app.indexerApi().indexers:
-                                            <option value="${indexer}" ${'selected="selected"' if app.INDEXER_DEFAULT == indexer else ''}>${app.indexerApi().indexers[indexer]}</option>
+                                            % for indexer in indexerApi().indexers:
+                                            <option value="${indexer}" ${'selected="selected"' if app.INDEXER_DEFAULT == indexer else ''}>${indexerApi().indexers[indexer]}</option>
                                             % endfor
                                         </select>
                                         <span>as the default selection when adding new shows</span>

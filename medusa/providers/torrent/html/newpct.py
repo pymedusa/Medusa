@@ -16,13 +16,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Newpct."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import helpers, logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -30,12 +31,11 @@ from ....helper.common import convert_size
 
 
 class NewpctProvider(TorrentProvider):
-    """Newpct Torrent provider"""
+    """Newpct Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'Newpct')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Newpct')
 
         # Credentials
 
@@ -55,9 +55,9 @@ class NewpctProvider(TorrentProvider):
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -114,7 +114,6 @@ class NewpctProvider(TorrentProvider):
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -153,7 +152,6 @@ class NewpctProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -194,10 +192,11 @@ class NewpctProvider(TorrentProvider):
 
         return title.strip()
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):  # pylint: disable=too-many-arguments
+    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """
-        returns='content' when trying access to torrent info (For calling torrent client). Previously we must parse
-        the URL to get torrent file
+        Previously we must parse the URL to get torrent file.
+
+        returns='content' when trying access to torrent info (For calling torrent client).
         """
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':
@@ -211,10 +210,7 @@ class NewpctProvider(TorrentProvider):
                                                    timeout=timeout, **kwargs)
 
     def download_result(self, result):
-        """
-        Save the result to disk.
-        """
-
+        """Save the result to disk."""
         # check for auth
         if not self.login():
             return False

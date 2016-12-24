@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Newznab provider."""
 from __future__ import unicode_literals
 
 import os
@@ -24,30 +24,32 @@ import re
 import time
 import traceback
 
-import medusa as app
+from dateutil import parser
+
 from requests.compat import urljoin
+
 import validators
+
 from .nzb_provider import NZBProvider
-from ... import logger, tv_cache
+from ... import app, logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
 from ...helper.encoding import ss
+from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
 
-class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attributes, too-many-arguments
+class NewznabProvider(NZBProvider):
     """
-    Generic provider for built in and custom providers who expose a newznab
-    compatible api.
+    Generic provider for built in and custom providers who expose a newznab compatible api.
+
     Tested with: newznab, nzedb, spotweb, torznab
     """
 
-    # pylint: disable=too-many-arguments
-
     def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
-
-        NZBProvider.__init__(self, name)
+        """Initialize the class."""
+        super(self.__class__, self).__init__(name)
 
         self.url = url
         self.key = key
@@ -64,6 +66,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
         self.cat_ids = cat_ids if cat_ids else '5030,5040'
 
+        self.torznab = False
+
         self.default = False
 
         self.caps = False
@@ -78,7 +82,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
-        Searches indexer using the params in search_strings, either for latest releases, or a string/id search
+        Searche indexer using the params in search_strings, either for latest releases, or a string/id search.
+
         Returns: list of results in dict form
         """
         results = []
@@ -94,7 +99,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         for mode in search_strings:
             self.torznab = False
             search_params = {
-                't': 'tvsearch' if 'tvdbid' in str(self.cap_tv_search) and not self.force_query else 'search',
+                't': 'search',
                 'limit': 100,
                 'offset': 0,
                 'cat': self.cat_ids.strip(', ') or '5030,5040',
@@ -105,8 +110,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                 search_params['apikey'] = self.key
 
             if mode != 'RSS':
+                match_indexer = self._match_indexer()
+                search_params['t'] = 'tvsearch' if match_indexer and not self.force_query else 'search'
+
                 if search_params['t'] == 'tvsearch':
-                    search_params['tvdbid'] = ep_obj.show.indexerid
+                    search_params.update(match_indexer)
 
                     if ep_obj.show.air_by_date or ep_obj.show.sports:
                         date_str = str(ep_obj.airdate)
@@ -125,12 +133,15 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
-
                     # If its a PROPER search, need to change param to 'search' so it searches using 'q' param
                     if any(proper_string in search_string for proper_string in self.proper_strings):
                         search_params['t'] = 'search'
+
+                    logger.log('Search show using {search}'.format
+                               (search='search string: {search_string}'.format(search_string=search_string if
+                                search_params['t'] != 'tvsearch' else
+                                'indexer_id: {indexer_id}'.format(indexer_id=match_indexer))),
+                               logger.DEBUG)
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
@@ -184,6 +195,11 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 continue
 
                             size = convert_size(item_size) or -1
+                            pubdate_raw = item.pubdate.get_text(strip=True)
+                            try:
+                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                            except ValueError:
+                                pubdate = None
 
                             item = {
                                 'title': title,
@@ -191,8 +207,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                                 'size': size,
                                 'seeders': seeders,
                                 'leechers': leechers,
-                                'pubdate': None,
-                                'torrent_hash': None,
+                                'pubdate': pubdate,
                             }
                             if mode != 'RSS':
                                 if seeders == -1:
@@ -223,7 +238,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     def _check_auth(self):
         """
-        Checks that user has set their api key if it is needed
+        Check that user has set their api key if it is needed.
+
         Returns: True/False
         """
         if self.needs_auth and not self.key:
@@ -234,7 +250,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     def _check_auth_from_data(self, data):
         """
-        Checks that the returned data is valid
+        Check that the returned data is valid.
+
         Returns: _check_auth if valid otherwise False if there is an error
         """
         if data('categories') + data('item'):
@@ -253,15 +270,14 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     def _get_size(self, item):
         """
-        Gets size info from a result item
+        Get size info from a result item.
+
         Returns int size or -1
         """
         return try_int(item.get('size', -1), -1)
 
     def config_string(self):
-        """
-        Generates a '|' delimited string of instance attributes, for saving to config.ini
-        """
+        """Generate a '|' delimited string of instance attributes, for saving to config.ini."""
         return '|'.join([
             self.name, self.url, self.key, self.cat_ids, str(int(self.enabled)),
             self.search_mode, str(int(self.search_fallback)),
@@ -270,6 +286,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     @staticmethod
     def get_providers_list(data):
+        """Return list of nzb providers."""
         default_list = [
             provider for provider in
             (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
@@ -315,12 +332,51 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     def image_name(self):
         """
-        Checks if we have an image for this provider already.
+        Check if we have an image for this provider already.
+
         Returns found image or the default newznab image
         """
         if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'newznab.png'
+
+    def _match_indexer(self):
+        """Use the indexers id and externals, and return the most optimal indexer with value.
+
+        For newznab providers we prefer to use tvdb for searches, but if this is not available for shows that have
+        been indexed using an alternative indexer, we could also try other indexers id's that are available
+        and supported by this newznab provider.
+        """
+        # The following mapping should map the newznab capabilities to our indexers or externals in indexer_config.
+        map_caps = {INDEXER_TMDB: 'tmdbid', INDEXER_TVDBV2: 'tvdbid', INDEXER_TVMAZE: 'tvmazeid'}
+
+        return_mapping = {}
+
+        if not self.cap_tv_search or self.cap_tv_search == 'True':
+            # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
+            return {}
+
+        for search_type in self.cap_tv_search.split(','):
+            if search_type == 'tvdbid' and self._get_tvdb_id():
+                return_mapping['tvdbid'] = self._get_tvdb_id()
+                # If we got a tvdb we're satisfied, we don't need to look for other capabilities.
+                if return_mapping['tvdbid']:
+                    return return_mapping
+            else:
+                # Move to the configured capability / indexer mappings. To see if we can get a match.
+                for map_indexer in map_caps:
+                    if map_caps[map_indexer] == search_type:
+                        if self.show.indexer == map_indexer:
+                            # We have a direct match on the indexer used, no need to try the externals.
+                            return_mapping[map_caps[map_indexer]] = self.show.indexerid
+                            return return_mapping
+                        elif self.show.externals.get(mappings[map_indexer]):
+                            # No direct match, let's see if one of the externals provides a valid search_type.
+                            mapped_external_indexer = self.show.externals.get(mappings[map_indexer])
+                            if mapped_external_indexer:
+                                return_mapping[map_caps[map_indexer]] = mapped_external_indexer
+
+        return return_mapping
 
     @staticmethod
     def _make_provider(config):
@@ -354,6 +410,7 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
         return new_provider
 
     def set_caps(self, data):
+        """Set caps."""
         if not data:
             return
 
@@ -371,7 +428,8 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
 
     def get_newznab_categories(self, just_caps=False):
         """
-        Uses the newznab provider url and apikey to get the capabilities.
+        Use the newznab provider url and apikey to get the capabilities.
+
         Makes use of the default newznab caps param. e.a. http://yournewznab/api?t=caps&apikey=skdfiw7823sdkdsfjsfk
         Returns a tuple with (succes or not, array with dicts [{'id': '5070', 'name': 'Anime'},
         {'id': '5080', 'name': 'Documentary'}, {'id': '5020', 'name': 'Foreign'}...etc}], error message)
@@ -417,4 +475,5 @@ class NewznabProvider(NZBProvider):  # pylint: disable=too-many-instance-attribu
                'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
                'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
                'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
-               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0'
+               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0!!!' + \
+               'Omgwtfnzbs|https://api.omgwtfnzbs.me||5030,5040,5060,5070|0|eponly|0|0|0|0'

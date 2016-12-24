@@ -21,11 +21,12 @@ import datetime
 import io
 import os
 
-import medusa as app
 from six import string_types
-from .. import helpers, logger
+from .. import app, helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
 from ..helper.exceptions import ShowNotFoundException, ex
+from ..indexers.indexer_api import indexerApi
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
 from ..metadata import media_browser
 
 try:
@@ -102,7 +103,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         show_id = show_obj.indexerid
 
         indexer_lang = show_obj.lang
-        l_indexer_api_params = app.indexerApi(show_obj.indexer).api_params.copy()
+        l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
 
         l_indexer_api_params['actors'] = True
 
@@ -112,7 +113,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         if show_obj.dvdorder != 0:
             l_indexer_api_params['dvdorder'] = True
 
-        t = app.indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+        t = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
 
         root_node = etree.Element('details')
         tv_node = etree.SubElement(root_node, 'movie')
@@ -122,21 +123,21 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         try:
             my_show = t[int(show_id)]
-        except app.IndexerShowNotFound:
+        except IndexerShowNotFound:
             logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name,
+                       (indexer=indexerApi(show_obj.indexer).name,
                         id=show_id), logger.ERROR)
             raise
 
-        except app.IndexerError:
+        except IndexerError:
             logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name), logger.ERROR)
+                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
             raise
 
         # check for title and id
         if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
             logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=app.indexerApi(show_obj.indexer).name,
+                       (indexer=indexerApi(show_obj.indexer).name,
                         id=show_id), logger.ERROR)
             return False
 
@@ -223,7 +224,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         # There's gotta be a better way of doing this but we don't wanna
         # change the language value elsewhere
-        l_indexer_api_params = app.indexerApi(ep_obj.show.indexer).api_params.copy()
+        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
 
         if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
             l_indexer_api_params[b'language'] = indexer_lang
@@ -232,13 +233,13 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             l_indexer_api_params[b'dvdorder'] = True
 
         try:
-            t = app.indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
+            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
             my_show = t[ep_obj.show.indexerid]
-        except app.IndexerShowNotFound as e:
+        except IndexerShowNotFound as e:
             raise ShowNotFoundException(e.message)
-        except app.IndexerError:
+        except IndexerError:
             logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=app.indexerApi(ep_obj.show.indexer).name), logger.WARNING)
+                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
             return
 
         root_node = etree.Element('details')
@@ -253,11 +254,11 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
-            except (app.IndexerEpisodeNotFound, app.IndexerSeasonNotFound):
+            except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 logger.log(u'Unable to find episode {ep_num} on {indexer}... '
                            u'has it been removed? Should I delete from db?'.format
                            (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=app.indexerApi(ep_obj.show.indexer).name))
+                            indexer=indexerApi(ep_obj.show.indexer).name))
                 return None
 
             if ep_to_write == ep_obj:

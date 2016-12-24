@@ -2,7 +2,7 @@
 <%!
     from medusa import subtitles
     import datetime
-    import medusa as app
+    from medusa import app
     from medusa import common
 %>
 <%block name="content">

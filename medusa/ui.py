@@ -18,7 +18,7 @@
 
 import datetime
 
-import medusa as app
+from . import app
 
 MESSAGE = 'notice'
 ERROR = 'error'

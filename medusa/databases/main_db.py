@@ -21,7 +21,6 @@ import datetime
 import os.path
 import warnings
 
-import medusa as app
 from six import iteritems
 from .. import common, db, helpers, logger, subtitles
 from ..helper.common import dateTimeFormat, episode_num
@@ -31,7 +30,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 2
+CURRENT_MINOR_DB_VERSION = 3
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -49,6 +48,16 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
+        self.clean_null_indexer_mappings()
+
+    def clean_null_indexer_mappings(self):
+        logger.log(u'Checking for null indexer mappings', logger.DEBUG)
+        query = "SELECT * from indexer_mapping where mindexer_id = ''"
+
+        sql_results = self.connection.select(query)
+        if sql_results:
+            logger.log(u"Found {0} null indexer mapping. Deleting...".format(len(sql_results)), logger.DEBUG)
+            self.connection.action("DELETE FROM indexer_mapping WHERE mindexer_id = ''")
 
     def update_old_propers(self):
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
@@ -503,6 +512,35 @@ class AddProperTags(TestIncreaseMajorVersion):
         if not self.hasColumn('history', 'proper_tags'):
             logger.log(u'Adding column proper_tags to history')
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
+
+        MainSanityCheck(self.connection).update_old_propers()
+        self.inc_minor_version()
+
+        logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddManualSearched(AddProperTags):
+    """Adds columns manually_searched to history and tv_episodes table."""
+
+    def test(self):
+        """
+        Test if the version is < 44.3
+        """
+        return self.connection.version >= (44, 3)
+
+    def execute(self):
+        """
+        Updates the version until 44.3 and adds manually_searched columns
+        """
+        backupDatabase(self.connection.version)
+
+        if not self.hasColumn('history', 'manually_searched'):
+            logger.log(u'Adding column manually_searched to history')
+            self.addColumn('history', 'manually_searched', 'NUMERIC', 0)
+
+        if not self.hasColumn('tv_episodes', 'manually_searched'):
+            logger.log(u'Adding column manually_searched to tv_episodes')
+            self.addColumn('tv_episodes', 'manually_searched', 'NUMERIC', 0)
 
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()

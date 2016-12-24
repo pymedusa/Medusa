@@ -22,11 +22,10 @@ from __future__ import print_function
 
 import unittest
 
-import medusa as app
-import medusa.common as common
+from medusa import common, providers
 from medusa.providers.generic_provider import GenericProvider
 from medusa.tv import TVEpisode, TVShow
-from . import test_lib as test
+import test_lib as test
 
 TESTS = {
     "Game of Thrones": {
@@ -52,13 +51,13 @@ def generator(cur_data, cur_name, cur_provider):
     :param cur_provider:
     :return:
     """
-    def do_test():
+    def do_test(self):
         """Test to perform."""
         show = TVShow(1, int(cur_data["tvdbid"]))
         show.name = cur_name
         show.quality = common.ANY | common.Quality.UNKNOWN | common.Quality.RAWHDTV
-        show.save_to_db()
-        app.showList.append(show)
+        # show.save_to_db()
+        # app.showList.append(show)
 
         for ep_number in cur_data["e"]:
             episode = TVEpisode(show, cur_data["s"], ep_number)
@@ -68,7 +67,7 @@ def generator(cur_data, cur_name, cur_provider):
             episode.scene_season = cur_data["s"]
             episode.scene_episode = ep_number
 
-            episode.save_to_db()
+            # episode.save_to_db()
 
             cur_provider.show = show
             season_strings = cur_provider._get_season_search_strings(episode)  # pylint: disable=protected-access
@@ -140,7 +139,7 @@ if __name__ == '__main__':
         for name, data in TESTS.items():
             filename = name.replace(' ', '_')
 
-            for provider in app.providers.sorted_provider_list():
+            for provider in providers.sorted_provider_list():
                 if provider.provider_type == GenericProvider.TORRENT:
                     if forceSearch:
                         test_name = 'test_manual_%s_%s_%s' % (filename, data["tvdbid"], provider.name)

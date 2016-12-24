@@ -15,21 +15,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Shazbat."""
 from __future__ import unicode_literals
 
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....helper.exceptions import AuthException
 
 
 class ShazbatProvider(TorrentProvider):
-    """Shazbat Torrent provider"""
-    def __init__(self):
+    """Shazbat Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'Shazbat.tv')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Shazbat.tv')
 
         # Credentials
         self.passkey = None
@@ -70,7 +71,10 @@ class ShazbatProvider(TorrentProvider):
 
 
 class ShazbatCache(tv_cache.TVCache):
-    def _getRSSData(self):
+    """Provider cache class."""
+
+    def _get_rss_data(self):
+        """Get RSS data."""
         params = {
             'passkey': self.provider.passkey,
             'fname': 'true',
@@ -78,10 +82,11 @@ class ShazbatCache(tv_cache.TVCache):
             'duration': '2 hours'
         }
 
-        return self.getRSSFeed(self.provider.urls['rss_recent'], params=params)
+        return self.get_rss_feed(self.provider.urls['rss_recent'], params=params)
 
-    def _checkAuth(self, data):
-        return self.provider._check_auth_from_data(data)  # pylint: disable=protected-access
+    def _check_auth(self, data):
+        """Check if we are autenticated."""
+        return self.provider._check_auth_from_data(data)
 
 
 provider = ShazbatProvider()

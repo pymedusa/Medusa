@@ -22,20 +22,22 @@ import time
 import traceback
 
 from operator import itemgetter
+
 from requests.auth import AuthBase
 from requests.compat import urljoin
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....common import USER_AGENT
 from ....helper.common import convert_size, try_int
 
 
-class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class T411Provider(TorrentProvider):
     """T411 Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, "T411")
+        """Initialize the class."""
+        super(self.__class__, self).__init__("T411")
 
         # Credentials
         self.username = None
@@ -44,9 +46,8 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         self.tokenLastUpdate = None
 
         # URLs
-        self.url = 'https://api.t411.ch'
+        self.url = 'https://api.t411.li'
         self.urls = {
-            'base_url': 'http://www.t411.ch/',
             'search': urljoin(self.url, 'torrents/search/%s*?cid=%s&limit=100'),
             'rss': urljoin(self.url, 'torrents/top/today'),
             'login_page': urljoin(self.url, 'auth'),
@@ -67,7 +68,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
@@ -169,7 +170,6 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': None,
-                    'torrent_hash': None,
                 }
                 if mode != 'RSS':
                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -209,7 +209,7 @@ class T411Provider(TorrentProvider):  # pylint: disable=too-many-instance-attrib
             return False
 
 
-class T411Auth(AuthBase):  # pylint: disable=too-few-public-methods
+class T411Auth(AuthBase):
     """Attach HTTP Authentication to the given Request object."""
 
     def __init__(self, token):

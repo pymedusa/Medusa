@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Extratorrent."""
 from __future__ import unicode_literals
 
 import traceback
@@ -29,12 +29,12 @@ from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class ExtraTorrentProvider(TorrentProvider):
     """ExtraTorrent Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'ExtraTorrent')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('ExtraTorrent')
 
         # Credentials
         self.public = True
@@ -55,7 +55,7 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
         # Cache
         self.cache = tv_cache.TVCache(self, min_time=30)  # Only poll ExtraTorrent every 30 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 
@@ -175,7 +175,6 @@ class ExtraTorrentProvider(TorrentProvider):  # pylint: disable=too-many-instanc
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

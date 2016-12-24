@@ -15,26 +15,28 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for HoundDawgs."""
 from __future__ import unicode_literals
 
 import re
 import traceback
 
 from requests.compat import urljoin
+
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
 
-class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
-    """HoundDawgs Torrent provider"""
-    def __init__(self):
+class HoundDawgsProvider(TorrentProvider):
+    """HoundDawgs Torrent provider."""
 
-        # Provider Init
-        TorrentProvider.__init__(self, 'HoundDawgs')
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__('HoundDawgs')
 
         # Credentials
         self.username = None
@@ -61,9 +63,9 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -107,14 +109,10 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-
-                str_table_start = "<table class='torrent_table"
-                start_table_index = response.text.find(str_table_start)
-                data = response.text[start_table_index:]
-                if not data:
+                if not response.text:
                     continue
 
-                results += self.parse(data, mode)
+                results += self.parse(response.text, mode)
 
         return results
 
@@ -127,7 +125,6 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -186,7 +183,6 @@ class HoundDawgsProvider(TorrentProvider):  # pylint: disable=too-many-instance-
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

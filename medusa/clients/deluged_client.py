@@ -11,9 +11,9 @@ from __future__ import unicode_literals
 import logging
 from base64 import b64encode
 
-import medusa as app
 from synchronousdeluge import DelugeClient
 from .generic import GenericClient
+from .. import app
 
 
 logger = logging.getLogger(__name__)
@@ -164,15 +164,15 @@ class DelugeRPC(object):
         else:
             return True
 
-    def add_torrent_magnet(self, torrent, options, torrent_hash):
+    def add_torrent_magnet(self, torrent, options, info_hash):
         """Add Torrent magnet and return torrent id/hash.
 
         :param torrent:
         :type torrent: str
         :param options:
         :type options: dict
-        :param torrent_hash:
-        :type torrent_hash: str
+        :param info_hash:
+        :type info_hash: str
         :return:
         :rtype: str or bool
         """
@@ -180,7 +180,7 @@ class DelugeRPC(object):
             self.connect()
             torrent_id = self.client.core.add_torrent_magnet(torrent, options).get()
             if not torrent_id:
-                torrent_id = self._check_torrent(torrent_hash)
+                torrent_id = self._check_torrent(info_hash)
         except Exception:
             return False
         else:
@@ -189,7 +189,7 @@ class DelugeRPC(object):
             if self.client:
                 self.disconnect()
 
-    def add_torrent_file(self, filename, torrent, options, torrent_hash):
+    def add_torrent_file(self, filename, torrent, options, info_hash):
         """Add Torrent file and return torrent id/hash.
 
         :param filename:
@@ -198,8 +198,8 @@ class DelugeRPC(object):
         :type torrent: str
         :param options:
         :type options: dict
-        :param torrent_hash:
-        :type torrent_hash: str
+        :param info_hash:
+        :type info_hash: str
         :return:
         :rtype: str or bool
         """
@@ -207,7 +207,7 @@ class DelugeRPC(object):
             self.connect()
             torrent_id = self.client.core.add_torrent_file(filename, b64encode(torrent), options).get()
             if not torrent_id:
-                torrent_id = self._check_torrent(torrent_hash)
+                torrent_id = self._check_torrent(info_hash)
         except Exception:
             return False
         else:
@@ -326,11 +326,11 @@ class DelugeRPC(object):
         """Disconnect RPC client."""
         self.client.disconnect()
 
-    def _check_torrent(self, torrent_hash):
-        torrent_id = self.client.core.get_torrent_status(torrent_hash, {}).get()
+    def _check_torrent(self, info_hash):
+        torrent_id = self.client.core.get_torrent_status(info_hash, {}).get()
         if torrent_id['hash']:
             logger.debug('DelugeD: Torrent already exists in Deluge')
-            return torrent_hash
+            return info_hash
         return False
 
 api = DelugeDAPI

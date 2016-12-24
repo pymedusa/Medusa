@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for GFTracker."""
 from __future__ import unicode_literals
 
 import re
@@ -24,6 +24,7 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
@@ -31,12 +32,12 @@ from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
 
 
-class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class GFTrackerProvider(TorrentProvider):
+    """GFTracker Torrent provider."""
 
     def __init__(self):
-
-        # Provider Init
-        TorrentProvider.__init__(self, 'GFTracker')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('GFTracker')
 
         # Credentials
         self.username = None
@@ -61,9 +62,9 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals, too-many-branches
+    def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search a provider and parse the results
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -92,7 +93,13 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
 
             for search_string in search_strings[mode]:
 
-                if mode != 'RSS':
+                if mode == 'Season':
+                    search_params.update({
+                        'view': 1,  # Browse/Gems a.k.a. Season packs
+                        'c42': 1,  # TV/Gems
+                    })
+
+                elif mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
@@ -176,7 +183,6 @@ class GFTrackerProvider(TorrentProvider):  # pylint: disable=too-many-instance-a
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

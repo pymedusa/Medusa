@@ -22,8 +22,7 @@ from __future__ import print_function
 
 import unittest
 
-import medusa as app
-import medusa.common as common
+from medusa import app, common, providers
 from medusa.search.core import searchProviders
 from medusa.tv import TVEpisode, TVShow
 from . import test_lib as test
@@ -75,7 +74,7 @@ class SearchTest(test.AppTestDBCase):
         :param something:
         :return:
         """
-        for provider in app.providers.sortedProviderList():
+        for provider in providers.sortedProviderList():
             provider.get_url = self._fake_get_url
 
         super(SearchTest, self).__init__(something)

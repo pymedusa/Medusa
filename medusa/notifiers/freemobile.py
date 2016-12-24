@@ -19,10 +19,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import medusa as app
 from requests.compat import quote
 from six.moves.urllib.request import Request, urlopen
-from .. import logger
+from .. import app, logger
 from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
     NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
 

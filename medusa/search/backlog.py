@@ -20,10 +20,12 @@
 import datetime
 import threading
 
-import medusa as app
 from six import iteritems
 from .queue import BacklogQueueItem
-from .. import common, db, logger, scheduler, ui
+
+from .. import app, common, db, logger, scheduler, ui
+
+from ..helper.common import episode_num
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):
@@ -47,6 +49,7 @@ class BacklogSearcher(object):
         self.amActive = False
         self.amPaused = False
         self.amWaiting = False
+        self.currentSearchInfo = {}
 
         self._resetPI()
 
@@ -147,24 +150,16 @@ class BacklogSearcher(object):
 
         con = db.DBConnection()
         sql_results = con.select(
-            "SELECT status, season, episode FROM tv_episodes WHERE airdate > ? AND showid = ?",
+            "SELECT status, season, episode, manually_searched FROM tv_episodes WHERE airdate > ? AND showid = ?",
             [fromDate.toordinal(), show.indexerid]
         )
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            cur_status, cur_quality = common.Quality.splitCompositeStatus(int(sql_result["status"] or -1))
-
-            if cur_status not in {common.WANTED, common.DOWNLOADED, common.SNATCHED, common.SNATCHED_PROPER}:
+            if not common.Quality.should_search(sql_result['status'], show, sql_result['manually_searched']):
                 continue
-
-            if cur_status != common.WANTED:
-                if preferred_qualities:
-                    if cur_quality in preferred_qualities:
-                        continue
-                elif cur_quality in allowed_qualities:
-                    continue
-
+            logger.log(u"Found needed backlog episodes for: {show} {ep}".format
+                       (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"])), logger.INFO)
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 
             if ep_obj.season not in wanted:
@@ -184,7 +179,7 @@ class BacklogSearcher(object):
         if not sql_results:
             main_db_con.action("INSERT INTO info (last_backlog, last_indexer) VALUES (?,?)", [str(when), 0])
         else:
-            main_db_con.action("UPDATE info SET last_backlog=" + str(when))
+            main_db_con.action("UPDATE info SET last_backlog={0}".format(when))
 
     def run(self, force=False):
         try:

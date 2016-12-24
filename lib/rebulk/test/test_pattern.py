@@ -97,6 +97,18 @@ class TestStringPattern(object):
         assert matches[0].name == "test"
         assert matches[0].value == "AB"
 
+    def test_post_processor(self):
+        def post_processor(matches, pattern):
+            assert len(matches) == 1
+            assert isinstance(pattern, StringPattern)
+
+            return []
+
+        pattern = StringPattern("Abyssinian", name="test", value="AB", post_processor=post_processor)
+        matches = list(pattern.matches(self.input_string))
+
+        assert len(matches) == 0
+
 
 class TestRePattern(object):
     """

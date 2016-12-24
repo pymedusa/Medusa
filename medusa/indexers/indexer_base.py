@@ -24,12 +24,19 @@ import os
 import re
 import tempfile
 import time
+
 import warnings
 import requests
 from six import iteritems
+from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerSeasonNotFound,
+                                 IndexerSeasonUpdatesNotSupported, IndexerShowNotFound)
 
-from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound,
-                                 IndexerSeasonNotFound, IndexerSeasonUpdatesNotSupported)
+from .indexer_ui import BaseUI, ConsoleUI
+
+
+def log():
+    """Log init."""
+    return logging.getLogger('indexer_base')
 
 
 class BaseIndexer(object):
@@ -144,16 +151,36 @@ class BaseIndexer(object):
         return None
 
     def _get_series(self, series):
-        """Search thetvdb.com for the series name.
+        """Search themoviedb.org for the series name.
 
         If a custom_ui UI is configured, it uses this to select the correct
         series. If not, and interactive == True, ConsoleUI is used, if not
         BaseUI is used to select the first result.
 
         :param series: the query for the series name
-        :return: A list of series mapped to a UI (for example: a BaseUi or custom_ui).
+        :return: A list of series mapped to a UI (for example: a BaseUi or CustomUI).
         """
-        return None
+        all_series = self.search(series)
+        if not all_series:
+            log().debug('Series result returned zero')
+            IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
+
+        if not isinstance(all_series, list):
+            all_series = [all_series]
+
+        if self.config['custom_ui'] is not None:
+            log().debug('Using custom UI %s', [repr(self.config['custom_ui'])])
+            custom_ui = self.config['custom_ui']
+            ui = custom_ui(config=self.config)
+        else:
+            if not self.config['interactive']:
+                log().debug('Auto-selecting first search result using BaseUI')
+                ui = BaseUI(config=self.config)
+            else:
+                log().debug('Interactively selecting show using ConsoleUI')
+                ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
+
+        return ui.select_series(all_series)
 
     def _set_show_data(self, sid, key, value):
         """Set self.shows[sid] to a new Show instance, or sets the data."""
@@ -213,8 +240,10 @@ class BaseIndexer(object):
             # get series data / add the base_url to the image urls
             if image_type in ['banner', 'fanart', 'poster']:
                 # For each image type, where going to save one image based on the highest rating
+                if not len(images[image_type]):
+                    continue
                 merged_image_list = [y[1] for y in [next(iteritems(v)) for _, v in iteritems(images[image_type])]]
-                highest_rated = sorted(merged_image_list, key=lambda k: k['rating'], reverse=True)[0]
+                highest_rated = sorted(merged_image_list, key=lambda k: float(k['rating']), reverse=True)[0]
                 self._set_show_data(sid, image_type, highest_rated['_bannerpath'])
 
     def __getitem__(self, key):
@@ -236,9 +265,18 @@ class BaseIndexer(object):
                 self._set_show_data(show['id'], k, v)
         return selected_series
 
-    def get_last_updated_series(self, from_time, weeks=1):
-        """Retrieve a list with updated shows."""
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
+        """Retrieve a list with updated shows
+
+        :param from_time: epoch timestamp, with the start date/time
+        :param weeks: number of weeks to get updates for.
+        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
+        """
         raise IndexerSeasonUpdatesNotSupported("Method get_last_updated_series not implemented by this indexer")
+
+    def get_episodes_for_season(self, show_id, *args, **kwargs):
+        self._get_episodes(show_id, *args, **kwargs)
+        return self.shows[show_id]
 
 
 class ShowContainer(dict):

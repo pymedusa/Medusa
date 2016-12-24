@@ -17,7 +17,6 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import fnmatch
-import glob
 import os
 import re
 import stat
@@ -25,18 +24,15 @@ import subprocess
 
 import adba
 
-from babelfish import language_converters
-
-import medusa as app
-
 from six import text_type
 
-from . import common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, remove_extension, replace_extension, subtitle_extensions
+from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
+from .helper.common import episode_num, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
-from .helpers import verify_freespace
+from .helpers import is_subtitle, verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .subtitles import from_code, from_ietf_code
 
 
 class PostProcessor(object):
@@ -88,6 +84,8 @@ class PostProcessor(object):
         self.version = None
 
         self.anidbEpisode = None
+
+        self.manually_searched = False
 
     def _log(self, message, level=logger.INFO):
         """
@@ -153,11 +151,43 @@ class PostProcessor(object):
                       (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
-    def list_associated_files(self, file_path, base_name_only=False,
-                              subtitles_only=False, subfolders=False):
+    @staticmethod
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=True):
         """
-        For a given file path searches for files with the same name but
-        different extension and returns their absolute paths.
+        Search for files in a given path.
+
+        :param path: path to file or folder (NOTE: folder paths must end with slashes)
+        :type path: text_type
+        :param pattern: pattern used to match the files
+        :type pattern: text_type
+        :param subfolders: search for files in subfolders
+        :type subfolders: bool
+        :param base_name_only: only match files with the same file name
+        :type base_name_only: bool
+        :param sort: return files sorted by size
+        :type sort: bool
+        :return: list with found files or empty list
+        :rtype: list
+        """
+        directory = os.path.dirname(path)
+        if base_name_only and os.path.isfile(path):
+            pattern = os.path.basename(path).rpartition('.')[0] + pattern
+
+        found_files = []
+        for root, _, filenames in os.walk(directory):
+            for filename in fnmatch.filter(filenames, pattern):
+                found_files.append(os.path.join(root, filename))
+            if not subfolders:
+                break
+
+        if sort:
+            found_files = sorted(found_files, key=os.path.getsize, reverse=True)
+
+        return found_files
+
+    def list_associated_files(self, file_path, base_name_only=False, subtitles_only=False, subfolders=False):
+        """
+        For a given file path search for files in the same directory and return their absolute paths.
 
         :param file_path: The file to check for associated files
         :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
@@ -165,85 +195,39 @@ class PostProcessor(object):
         :param subfolders: check subfolders while listing files
         :return: A list containing all files which are associated to the given file
         """
-        def recursive_glob(treeroot, pattern):
-            results = []
-            for base, _, files in os.walk(treeroot):
-                goodfiles = fnmatch.filter(files, pattern)
-                results.extend(os.path.join(base, f) for f in goodfiles)
-            return results
+        # file path to the video file that is being processed (without extension)
+        processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
 
-        if not file_path:
-            return []
+        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
 
-        # don't confuse glob with chars we didn't mean to use
-        globbable_file_path = helpers.fixGlob(file_path)
+        # loop through all the files in the folder, and check if they are the same name
+        # even when the cases don't match
+        filelist = []
+        for found_file in file_list:
+
+            file_name = os.path.basename(found_file).lower()
+
+            if file_name.startswith(processed_file_name):
+
+                # only add subtitles with valid languages to the list
+                if is_subtitle(found_file):
+                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
+                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+                    if not language:
+                        continue
+
+                filelist.append(found_file)
 
         file_path_list = []
-
         extensions_to_delete = []
-
-        if subfolders:
-            base_name = os.path.basename(globbable_file_path).rpartition('.')[0]
-        else:
-            base_name = globbable_file_path.rpartition('.')[0]
-
-        if not base_name_only:
-            base_name += '.'
-
-        # don't strip it all and use cwd by accident
-        if not base_name:
-            return []
-
-        # subfolders are only checked in show folder, so names will always be exactly alike
-        if subfolders:
-            # just create the list of all files starting with the basename
-            filelist = recursive_glob(os.path.dirname(globbable_file_path), base_name + '*')
-        # this is called when PP, so we need to do the filename check case-insensitive
-        else:
-            filelist = []
-
-            # get a list of all the files in the folder
-            checklist = glob.glob(os.path.join(os.path.dirname(globbable_file_path), '*'))
-
-            # supported subtitle languages codes
-            language_extensions = tuple('.' + c for c in language_converters['opensubtitles'].codes)
-
-            # loop through all the files in the folder, and check if they are the same name
-            # even when the cases don't match
-            for filefound in checklist:
-
-                file_name = filefound.rpartition('.')[0]
-                file_extension = filefound.rpartition('.')[2]
-                is_subtitle = None
-
-                if file_extension in subtitle_extensions:
-                    is_subtitle = True
-
-                if not base_name_only:
-                    new_file_name = file_name + '.'
-                    sub_file_name = file_name.rpartition('.')[0] + '.'
-                else:
-                    new_file_name = file_name
-                    sub_file_name = file_name.rpartition('.')[0]
-
-                if is_subtitle and sub_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
-                    extension_len = len(filefound.rsplit('.', 2)[1])
-                    if file_name.lower().endswith(language_extensions) and (extension_len in [2, 3]):
-                        filelist.append(filefound)
-                    elif file_name.lower().endswith('pt-br') and extension_len == 5:
-                        filelist.append(filefound)
-                # if there's no difference in the filename add it to the filelist
-                elif new_file_name.lower() == base_name.lower().replace('[[]', '[').replace('[]]', ']'):
-                    filelist.append(filefound)
-
         for associated_file_path in filelist:
             # Exclude the video file we are post-processing
             if associated_file_path == file_path:
                 continue
 
-            # Exlude non-subtitle files with the 'only subtitles' option (not implemented yet)
-            # if subtitles_only and not associated_file_path[-3:] in subtitle_extensions:
-            #     continue
+            # Exlude non-subtitle files with the 'only subtitles' option
+            if subtitles_only and not is_subtitle(associated_file_path):
+                continue
 
             # Exclude .rar files from associated list
             if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
@@ -356,37 +340,37 @@ class PostProcessor(object):
         for cur_file_path in file_list:
             # remember if the extension changed
             changed_extension = None
-
             # file extension without leading dot (for example: de.srt)
-            cur_extension = cur_file_path[old_base_name_length + 1:]
+            extension = cur_file_path[old_base_name_length + 1:]
+            # initally set current extension as new extension
+            new_extension = extension
 
-            split_extension = os.path.splitext(cur_extension)
-            # check if file has a subtitle language
-            if split_extension[1][1:] in subtitle_extensions:
-                cur_lang = split_extension[0]
-                if cur_lang:
-                    cur_lang = cur_lang.lower()
-                    if cur_lang == 'pt-br':
-                        cur_lang = 'pt-BR'
-                    cur_extension = cur_lang + split_extension[1]
-                    changed_extension = True
-
-            # replace .nfo with .nfo-orig to avoid conflicts
-            if cur_extension == 'nfo' and app.NFO_RENAME:
-                cur_extension = 'nfo-orig'
+            # split the extension in two parts. E.g.: ('de', '.srt')
+            split_extension = os.path.splitext(extension)
+            # check if it's a subtitle and also has a subtitle language
+            if is_subtitle(cur_file_path) and all(split_extension):
+                sub_lang = split_extension[0].lower()
+                if sub_lang == 'pt-br':
+                    sub_lang = 'pt-BR'
+                new_extension = sub_lang + split_extension[1]
                 changed_extension = True
 
-            # rename file with new new base name
+            # replace nfo with nfo-orig to avoid conflicts
+            if extension == 'nfo' and app.NFO_RENAME:
+                new_extension = 'nfo-orig'
+                changed_extension = True
+
+            # rename file with new base name
             if new_base_name:
-                new_file_name = new_base_name + '.' + cur_extension
+                new_file_name = new_base_name + '.' + new_extension
             else:
                 # current file name including extension
                 new_file_name = os.path.basename(cur_file_path)
                 # if we're not renaming we still need to change the extension sometimes
                 if changed_extension:
-                    new_file_name = replace_extension(new_file_name, cur_extension)
+                    new_file_name = new_file_name.replace(extension, new_extension)
 
-            if app.SUBTITLES_DIR and cur_extension[-3:] in subtitle_extensions:
+            if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
                 subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
                 dir_exists = helpers.makeDir(subs_new_path)
                 if not dir_exists:
@@ -806,7 +790,7 @@ class PostProcessor(object):
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality '
+                    'SELECT quality, manually_searched '
                     'FROM history '
                     'WHERE showid = ? '
                     'AND season = ? '
@@ -820,6 +804,8 @@ class PostProcessor(object):
                 if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
+                    if history_result[0]['manually_searched']:
+                        self.manually_searched = True
                     download_result = main_db_con.select(
                         'SELECT resource '
                         'FROM history '
@@ -917,39 +903,27 @@ class PostProcessor(object):
         _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
 
         # if Medusa downloaded this on purpose we likely have a priority download
-        if self.in_history or ep_obj.status in common.Quality.SNATCHED + \
-                common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            # if the episode is still in a snatched status, then we can assume we want this
-            if self.in_history:
-                self._log(u"This episode was snatched last and isn't processed yet, processing now", logger.DEBUG)
+        if self.in_history:
+
+            # If manual searched, then by pass any quality checks
+            if self.manually_searched:
+                self._log(u"This episode was manually snatched. Marking it as priority", logger.DEBUG)
                 return True
 
-            # if it's in history, we only want it if the new quality is higher or
-            # if it's a proper of equal or higher quality
+            # We only want it if the new quality is higher
+            # Assuming the new quality is a wanted quality
             if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
                 self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
                           logger.DEBUG)
                 return True
 
+            # if it's a proper of equal or higher quality
             if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
                 self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
                           u"Marking it as priority", logger.DEBUG)
                 return True
 
-            return False
-
-        # if the user downloaded it manually and it's higher quality than the existing episode then it's priority
-        if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-            self._log(u"This was manually downloaded, but it appears to be better quality than what we have. "
-                      u"Marking it as priority", logger.DEBUG)
-            return True
-
-        # if the user downloaded it manually and it appears to be a PROPER/REPACK then it's priority
-        if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-            self._log(u"This was manually downloaded, but it appears to be a proper. Marking it as priority",
-                      logger.DEBUG)
-            return True
-
+        self._log(u"This episode is not in history. Not marking it as priority", logger.DEBUG)
         return False
 
     def flag_kodi_clean_library(self):
@@ -971,7 +945,8 @@ class PostProcessor(object):
             return False
 
         if not os.path.exists(self.file_path):
-            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format(self.file_path))
+            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format
+                                                       (self.file_path))
 
         for ignore_file in self.IGNORED_FILESTRINGS:
             if ignore_file in self.file_path:
@@ -994,7 +969,7 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding TVEpisode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
-        _, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
+        old_ep_status, old_ep_quality = common.Quality.splitCompositeStatus(ep_obj.status)
 
         # get the quality of the episode we're processing
         if quality and common.Quality.qualityStrings[quality] != 'Unknown':
@@ -1027,20 +1002,20 @@ class PostProcessor(object):
                 self._log(u'File exists and the new file has the same size, aborting post-processing')
                 return True
 
-            if all([new_ep_quality <= old_ep_quality,
-                    old_ep_quality != common.Quality.UNKNOWN,
-                    existing_file_status != PostProcessor.DOESNT_EXIST]):
+            if existing_file_status != PostProcessor.DOESNT_EXIST:
                 if self.is_proper and new_ep_quality == old_ep_quality:
-                    self._log(u'New file is a proper, marking it safe to replace')
+                    self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    _, preferred_qualities = common.Quality.splitQuality(int(show.quality))
-                    if new_ep_quality not in preferred_qualities:
-                        raise EpisodePostProcessingFailedException(u'File exists and new file quality is not in a preferred quality list, '
-                                                                   u'marking it unsafe to replace')
+                    allowed_qualities, preferred_qualities = show.current_qualities
+                    should_replace, replace_msg = common.Quality.should_replace(old_ep_status, old_ep_quality,
+                                                                                new_ep_quality, allowed_qualities,
+                                                                                preferred_qualities)
+                    if not should_replace:
+                        raise EpisodePostProcessingFailedException(
+                            u'File exists. Marking it unsafe to replace. Reason: {0}'.format(replace_msg))
                     else:
-                        self._log(u'File exists and new file quality is in a preferred quality list, '
-                                  u'marking it safe to replace')
+                        self._log(u'File exists. Marking it safe to replace. Reason: {0}'.format(replace_msg))
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
@@ -1144,7 +1119,7 @@ class PostProcessor(object):
         # Just want to keep this consistent for failed handling right now
         release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
         if release_name is not None:
-            failed_history.logSuccess(release_name)
+            failed_history.log_success(release_name)
         else:
             self._log(u"Couldn't determine release name, aborting", logger.WARNING)
 
@@ -1199,7 +1174,8 @@ class PostProcessor(object):
                 self._moveAndSymlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                                      app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
-                logger.log(u'Unknown process method: {0}'.format(self.process_method), logger.ERROR)
+                logger.log(u' "{0}" is an unknown file processing method. '
+                           u'Please correct your app\'s usage of the api.'.format(self.process_method), logger.WARNING)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
         except (OSError, IOError):
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
@@ -1210,7 +1186,7 @@ class PostProcessor(object):
                 with cur_ep.lock:
                     cur_ep.location = os.path.join(dest_path, new_file_name)
                     cur_ep.refresh_subtitles()
-                    cur_ep.download_subtitles(force=True)
+                    cur_ep.download_subtitles()
 
         # now that processing has finished, we can put the info in the DB.
         # If we do it earlier, then when processing fails, it won't try again.

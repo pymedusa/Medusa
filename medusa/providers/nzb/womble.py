@@ -15,20 +15,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Womble provider."""
 from __future__ import unicode_literals
 
 from requests.compat import urljoin
+
 from .nzb_provider import NZBProvider
 from ... import logger, tv_cache
 
 
 class WombleProvider(NZBProvider):
-    """Womble Newznab provider"""
-    def __init__(self):
+    """Womble Newznab provider."""
 
-        # Provider Init
-        NZBProvider.__init__(self, "Womble's Index")
+    def __init__(self):
+        """Initialize the class."""
+        super(self.__class__, self).__init__("Womble's Index")
 
         # Credentials
         self.public = True
@@ -49,13 +50,15 @@ class WombleProvider(NZBProvider):
 
 
 class WombleCache(tv_cache.TVCache):
-    def updateCache(self):
+    """Provider cache class."""
 
-        if not self.shouldUpdate():
+    def update_cache(self):
+        """Update provider cache."""
+        if not self.should_update():
             return
 
-        self._clearCache()
-        self.setLastUpdate()
+        self._clear_cache()
+        self.set_last_update()
 
         cl = []
         search_params_list = [
@@ -66,13 +69,13 @@ class WombleCache(tv_cache.TVCache):
         ]
         for search_params in search_params_list:
             search_params.update({'fr': 'false'})
-            data = self.getRSSFeed(self.provider.urls['rss'], params=search_params)['entries']
+            data = self.get_rss_feed(self.provider.urls['rss'], params=search_params)['entries']
             if not data:
                 logger.log('No data returned from provider', logger.DEBUG)
                 continue
 
             for item in data:
-                ci = self._parseItem(item)
+                ci = self._parse_item(item)
                 if ci:
                     cl.append(ci)
 
@@ -80,7 +83,7 @@ class WombleCache(tv_cache.TVCache):
             cache_db_con = self._get_db()
             cache_db_con.mass_action(cl)
 
-    def _checkAuth(self, data):
+    def _check_auth(self, data):
         return data if data['feed'] and data['feed']['title'] != 'Invalid Link' else None
 
 

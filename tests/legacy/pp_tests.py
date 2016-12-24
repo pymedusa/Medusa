@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import unittest
 
-import medusa as app
+from medusa import app
 from medusa.name_cache import addNameToCache
 from medusa.post_processor import PostProcessor
 from medusa.tv import TVEpisode, TVShow

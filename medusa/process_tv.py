@@ -20,12 +20,11 @@ import os
 import shutil
 import stat
 
-import medusa as app
 import shutil_custom
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-from . import db, failed_processor, helpers, logger, notifiers, post_processor
+from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from .helper.common import is_sync_file, is_torrent_or_nzb_file, subtitle_extensions
 from .helper.encoding import ss
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
@@ -479,7 +478,7 @@ def unRAR(path, rarFiles, force, result):
                 failure = (ex(e), u'Unpacking failed for an unknown reason')
 
             if failure is not None:
-                result.output += logHelper(u'Failed Unrar archive {}: {}'.format(archive, failure[0]), logger.ERROR)
+                result.output += logHelper(u'Failed Unrar archive {}: {}'.format(archive, failure[0]), logger.WARNING)
                 result.missedfiles.append(u'{} : Unpacking failed: {}'.format(archive, failure[1]))
                 result.result = False
                 continue

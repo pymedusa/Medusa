@@ -29,10 +29,9 @@ from __future__ import unicode_literals
 
 import logging
 
-import medusa as app
 from rtorrent import RTorrent
 from .generic import GenericClient
-from .. import ex
+from .. import app
 
 
 logger = logging.getLogger(__name__)
@@ -99,7 +98,7 @@ class RTorrentAPI(GenericClient):
             # Start torrent
             torrent.start()
         except Exception as error:
-            logger.warning('Error while sending torrent: {error}', error=ex(error))
+            logger.warning('Error while sending torrent: {error!r}', error=error)
             return False
         else:
             return True
@@ -130,7 +129,7 @@ class RTorrentAPI(GenericClient):
             # Start torrent
             torrent.start()
         except Exception as msg:
-            logger.warning('Error while sending torrent: {error}', error=ex(msg))
+            logger.warning('Error while sending torrent: {error!r}', error=msg)
             return False
         else:
             return True

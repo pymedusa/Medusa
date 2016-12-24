@@ -25,7 +25,8 @@ from .helper.encoding import ss
 from .show.history import History
 
 
-def _logHistoryItem(action, showid, season, episode, quality, resource, provider, version=-1, proper_tags=''):
+def _logHistoryItem(action, showid, season, episode, quality, resource,
+                    provider, version=-1, proper_tags='', manually_searched=False):
     """
     Insert a history item in DB
 
@@ -43,11 +44,13 @@ def _logHistoryItem(action, showid, season, episode, quality, resource, provider
 
     main_db_con = db.DBConnection()
     main_db_con.action(
-        "INSERT INTO history (action, date, showid, season, episode, quality, resource, provider, version, proper_tags) VALUES (?,?,?,?,?,?,?,?,?,?)",
-        [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags])
+        "INSERT INTO history "
+        "(action, date, showid, season, episode, quality, resource, provider, version, proper_tags, manually_searched) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+        [action, logDate, showid, season, episode, quality, resource, provider, version, proper_tags, manually_searched])
 
 
-def logSnatch(searchResult):
+def log_snatch(searchResult):
     """
     Log history of snatch
 
@@ -61,6 +64,7 @@ def logSnatch(searchResult):
         quality = searchResult.quality
         version = searchResult.version
         proper_tags = '|'.join(searchResult.proper_tags)
+        manually_searched = searchResult.manually_searched
 
         providerClass = searchResult.provider
         if providerClass is not None:
@@ -72,7 +76,8 @@ def logSnatch(searchResult):
 
         resource = searchResult.name
 
-        _logHistoryItem(action, showid, season, episode, quality, resource, provider, version, proper_tags)
+        _logHistoryItem(action, showid, season, episode, quality, resource,
+                        provider, version, proper_tags, manually_searched)
 
 
 def logDownload(episode, filename, new_ep_quality, release_group=None, version=-1):
@@ -121,7 +126,7 @@ def logSubtitle(showid, season, episode, status, subtitleResult):
     _logHistoryItem(action, showid, season, episode, quality, resource, provider)
 
 
-def logFailed(epObj, release, provider=None):
+def log_failed(epObj, release, provider=None):
     """
     Log a failed download
 

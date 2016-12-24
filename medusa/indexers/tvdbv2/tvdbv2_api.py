@@ -20,14 +20,15 @@ import logging
 from collections import OrderedDict
 
 from requests.compat import urljoin
+from requests.packages.urllib3.exceptions import MaxRetryError, RequestError
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
 
-from .tvdbv2_ui import BaseUI, ConsoleUI
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
                                   IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from ..indexer_ui import BaseUI, ConsoleUI
 
 
 def log():
@@ -68,8 +69,11 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s' (%s)", e.reason, e.status)
+            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
             raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
+        except (MaxRetryError, RequestError) as e:
+            log().warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
 
         self.search_api = SearchApi(auth_client)
         self.series_api = SeriesApi(auth_client)
@@ -92,6 +96,7 @@ class TVDBv2(BaseIndexer):
             'last_updated': 'lastupdated',
             'network_id': 'networkid',
             'rating': 'contentrating',
+            'imdbId': 'imdb_id'
         }
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
@@ -238,14 +243,23 @@ class TVDBv2(BaseIndexer):
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
-        except ApiException:
+        except ApiException as e:
             log().debug('Error trying to index the episodes')
             raise IndexerShowIncomplete(
-                'Show search returned incomplete results (cannot find complete show on TheTVDB)')
+                'Show episode search exception, '
+                'could not get any episodes. Did a {search_type} search. Exception: {ex}'.
+                format(search_type='full' if not aired_season else
+                       'season {season}'.format(season=aired_season), ex=e)
+            )
 
         if not results:
             log().debug('Series results incomplete')
-            raise IndexerShowIncomplete('Show search returned incomplete results (cannot find complete show on TheTVDB)')
+            raise IndexerShowIncomplete(
+                'Show episode search returned incomplete results, '
+                'could not get any episodes. Did a {search_type} search.'.
+                format(search_type='full' if not aired_season else
+                       'season {season}'.format(season=aired_season))
+            )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
         episode_data = OrderedDict({'episode': mapped_episodes})
@@ -328,9 +342,13 @@ class TVDBv2(BaseIndexer):
 
         >>> t = Tvdb(images = True)
         >>> t['scrubs']['_banners'].keys()
-        ['fanart', 'poster', 'series', 'season']
+        ['fanart', 'poster', 'series', 'season', 'seasonwide']
+        For a Poster
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://thetvdb.com/banners/posters/76156-2.jpg'
+        For a season poster or season banner (seasonwide)
+        >>> t['scrubs']['_banners']['seasonwide'][4]['680x1000']['35308']['_bannerpath']
+        u'http://thetvdb.com/banners/posters/76156-4-2.jpg'
         >>>
 
         Any key starting with an underscore has been processed (not the raw
@@ -371,27 +389,37 @@ class TVDBv2(BaseIndexer):
                                                                     accept_language=self.config['language'])
                 for image in images.data:
                     # Store the images for each resolution available
-                    if image.resolution not in _images[image_type]:
-                        _images[image_type][image.resolution] = {}
+                    # Always provide a resolution or 'original'.
+                    resolution = image.resolution or 'original'
+                    if resolution not in _images[image_type]:
+                        _images[image_type][resolution] = {}
 
-                    # _images[image_type][image.resolution][image.id] = image_dict
+                    # _images[image_type][resolution][image.id] = image_dict
                     image_attributes = self._object_to_dict(image, key_mapping)
+
                     bid = image_attributes.pop('id')
-                    _images[image_type][image.resolution][bid] = {}
+
+                    if image_type in ['season', 'seasonwide']:
+                        if int(image.sub_key) not in _images[image_type][resolution]:
+                            _images[image_type][resolution][int(image.sub_key)] = {}
+                        if bid not in _images[image_type][resolution][int(image.sub_key)]:
+                            _images[image_type][resolution][int(image.sub_key)][bid] = {}
+                        base_path = _images[image_type][resolution][int(image.sub_key)][bid]
+                    else:
+                        if bid not in _images[image_type][resolution]:
+                            _images[image_type][resolution][bid] = {}
+                        base_path = _images[image_type][resolution][bid]
 
                     for k, v in image_attributes.items():
                         if k is None or v is None:
                             continue
 
-                        # k, v = k.lower(), v.lower()
-                        _images[image_type][image.resolution][bid][k] = v
-
-                    for k, v in _images[image_type][image.resolution][bid].items():
                         if k.endswith('path'):
-                            new_key = '_%s' % k
+                            k = '_%s' % k
                             log().debug('Adding base url for image: %s', v)
-                            new_url = self.config['artwork_prefix'] % v
-                            _images[image_type][image.resolution][bid][new_key] = new_url
+                            v = self.config['artwork_prefix'] % v
+
+                        base_path[k] = v
 
             except Exception as e:
                 log().warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
@@ -481,6 +509,9 @@ class TVDBv2(BaseIndexer):
                     v = self.config['artwork_prefix'] % v
             self._set_show_data(sid, k, v)
 
+        # Create the externals structure
+        self._set_show_data(sid, 'externals', {'imdb_id': str(getattr(self[sid], 'imdb_id', ''))})
+
         # get episode data
         if self.config['episodes_enabled']:
             self._get_episodes(sid, specials=False, aired_season=None)
@@ -496,26 +527,33 @@ class TVDBv2(BaseIndexer):
         return True
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    def get_last_updated_series(self, from_time, weeks=1):
+    def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
-        @param from_time: epoch timestamp, with the start date/time
-        @param weeks: default last update week check
+        :param from_time: epoch timestamp, with the start date/time
+        :param weeks: number of weeks to get updates for.
+        :param filter_show_list: Optional list of show objects, to use for filtering the returned list.
+        :returns: A list of show_id's.
         """
         total_updates = []
         updates = True
 
         count = 0
-        while updates and count < weeks:
-            updates = self.updates_api.updated_query_get(from_time).data
-            last_update_ts = max(x.last_updated for x in updates)
-            from_time = last_update_ts
-            total_updates += updates
-            count += 1
+        try:
+            while updates and count < weeks:
+                updates = self.updates_api.updated_query_get(from_time).data
+                last_update_ts = max(x.last_updated for x in updates)
+                from_time = last_update_ts
+                total_updates += [int(_.id) for _ in updates]
+                count += 1
+        except RequestError as e:
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
+
+        if total_updates and filter_show_list:
+            new_list = []
+            for show in filter_show_list:
+                if show.indexerid in total_updates:
+                    new_list.append(show.indexerid)
+            total_updates = new_list
 
         return total_updates
-
-    def get_episodes_for_season(self, show_id, *args, **kwargs):
-        """Return all episodes of given season."""
-        self._get_episodes(show_id, *args, **kwargs)
-        return self.shows[show_id]

@@ -40,12 +40,12 @@ COMPLETE = 5
 OTHER = 6
 
 
-class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attributes
+class AnimeBytes(TorrentProvider):
     """AnimeBytes Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'AnimeBytes')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('AnimeBytes')
 
         # Credentials
         self.username = None
@@ -262,7 +262,6 @@ class AnimeBytes(TorrentProvider):  # pylint: disable=too-many-instance-attribut
                                     'seeders': seeders,
                                     'leechers': leechers,
                                     'pubdate': None,
-                                    'torrent_hash': None
                                 }
                                 if mode != 'RSS':
                                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -21,11 +21,10 @@ import datetime
 import os.path
 import re
 
-import medusa as app
 from requests.compat import urlsplit
 from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
-from . import db, helpers, logger, naming
+from . import app, common, db, helpers, logger, naming
 from .helper.common import try_int
 
 # Address poor support for scgi over unix domain sockets
@@ -215,7 +214,7 @@ def change_BACKLOG_FREQUENCY(freq):
     """
     app.BACKLOG_FREQUENCY = try_int(freq, app.DEFAULT_BACKLOG_FREQUENCY)
 
-    app.MIN_BACKLOG_FREQUENCY = app.get_backlog_cycle_time()
+    app.MIN_BACKLOG_FREQUENCY = app.instance.get_backlog_cycle_time()
     if app.BACKLOG_FREQUENCY < app.MIN_BACKLOG_FREQUENCY:
         app.BACKLOG_FREQUENCY = app.MIN_BACKLOG_FREQUENCY
 
@@ -565,13 +564,13 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 ################################################################################
 # Check_setting_str                                                            #
 ################################################################################
-def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False):
+def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
     # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
-        censor_level = app.common.privacy_levels['stupid']
+        censor_level = common.privacy_levels['stupid']
     else:
-        censor_level = app.common.privacy_levels[censor_log]
-    privacy_level = app.common.privacy_levels[app.PRIVACY_LEVEL]
+        censor_level = common.privacy_levels[censor_log]
+    privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
     if bool(item_name.find('password') + 1):
         encryption_version = app.ENCRYPTION_VERSION
     else:
@@ -596,6 +595,9 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 
     if not silent:
         logger.log(item_name + " -> " + my_val, logger.DEBUG)
+
+    if valid_values and my_val not in valid_values:
+        return def_val
 
     return my_val
 
@@ -710,7 +712,7 @@ class ConfigMigrator(object):
             # save new config after migration
             app.CONFIG_VERSION = self.config_version
             logger.log(u"Saving config file to disk")
-            app.save_config()
+            app.instance.save_config()
 
     # Migration v1: Custom naming
     def _migrate_v1(self):

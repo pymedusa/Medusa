@@ -35,8 +35,8 @@ class IPTorrentsProvider(TorrentProvider):
     """IPTorrents Torrent provider."""
 
     def __init__(self):
-        """Provider Init."""
-        TorrentProvider.__init__(self, 'IPTorrents')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('IPTorrents')
 
         # Credentials
         self.username = None
@@ -153,7 +153,6 @@ class IPTorrentsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

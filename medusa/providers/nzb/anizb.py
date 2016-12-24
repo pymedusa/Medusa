@@ -15,25 +15,25 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Provider code for Anizb provider."""
 from __future__ import unicode_literals
 
 import traceback
 
 from requests.compat import urljoin
+
 from .nzb_provider import NZBProvider
 from ... import logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...helper.common import try_int
 
 
-class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
+class Anizb(NZBProvider):
     """Nzb Provider using the open api of anizb.org for daily (rss) and backlog/forced searches."""
 
     def __init__(self):
-
-        # Provider Init
-        NZBProvider.__init__(self, 'Anizb')
+        """Initialize the class."""
+        super(self.__class__, self).__init__('Anizb')
 
         # Credentials
         self.public = True
@@ -56,8 +56,8 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
         # Cache
         self.cache = tv_cache.TVCache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint: disable=too-many-locals
-        """Start searching for anime using the provided search_strings. Used for backlog and daily"""
+    def search(self, search_strings, age=0, ep_obj=None):
+        """Start searching for anime using the provided search_strings. Used for backlog and daily."""
         results = []
         if self.show and not self.show.is_anime:
             return results
@@ -115,7 +115,7 @@ class Anizb(NZBProvider):  # pylint: disable=too-many-instance-attributes
             return results
 
     def _get_size(self, item):
-        """Override the default _get_size to prevent it from extracting using it the default tags"""
+        """Override the default _get_size to prevent it from extracting using the default tags."""
         return try_int(item.get('size'))
 
 
