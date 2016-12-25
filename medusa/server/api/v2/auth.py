@@ -23,6 +23,11 @@ class LoginHandler(BaseRequestHandler):
     def post(self, *args, **kwargs):
         """Submit login."""
         self.set_header('X-Medusa-Server', app.APP_VERSION)
+
+        roles = ['user', 'admin']
+        if app.DEVELOPER:
+            roles.append('developer')
+
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
         submitted_username = ''
@@ -49,10 +54,12 @@ class LoginHandler(BaseRequestHandler):
             else:
                 logger.log('User logged into the Medusa API', logger.INFO)
                 self.api_finish(data={
-                    'apiKey': app.API_KEY
+                    'idToken': app.API_KEY,
+                    'roles': roles
                 })
         else:
             logger.log('User logged into the Medusa API', logger.INFO)
             self.api_finish(data={
-                'apiKey': app.API_KEY
+                'idToken': app.API_KEY,
+                'roles': roles
             })
