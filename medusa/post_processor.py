@@ -277,7 +277,7 @@ class PostProcessor(object):
 
         # figure out which files we want to delete
         if associated_files:
-            file_list = file_list + self.list_associated_files(file_path, base_name_only=True, subfolders=True)
+            file_list += self.list_associated_files(file_path, base_name_only=True, subfolders=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not deleting anything'.format
@@ -324,9 +324,9 @@ class PostProcessor(object):
 
         file_list = [file_path]
         if associated_files:
-            file_list = file_list + self.list_associated_files(file_path)
+            file_list += self.list_associated_files(file_path)
         elif subtitles:
-            file_list = file_list + self.list_associated_files(file_path, subtitles_only=True)
+            file_list += self.list_associated_files(file_path, subtitles_only=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not moving anything'.format
