@@ -79,7 +79,6 @@
                                             initial_quality = int(quality_value)
                                         else:
                                             initial_quality = common.SD
-                                        allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
                                     %>
                                     <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
                                         <option value="keep">&lt; Keep &gt;</option>
