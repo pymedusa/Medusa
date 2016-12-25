@@ -125,7 +125,7 @@ class ExtraTorrentProvider(TorrentProvider):
                     download_url = element.magneturi.get_text()
                     if not all([title, download_url]):
                         continue
-                    
+
                     download_url += self._custom_trackers
 
                     seeders = try_int(element.seeders.get_text())
