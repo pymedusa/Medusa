@@ -53,7 +53,7 @@ class ExtraTorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=20)  # Only poll ExtraTorrent every 20 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -126,6 +126,7 @@ class ExtraTorrentProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
+                    # Add custom trackers to magnet link
                     download_url += self._custom_trackers
 
                     seeders = try_int(element.seeders.get_text())
