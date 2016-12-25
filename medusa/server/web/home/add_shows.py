@@ -466,9 +466,9 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        app.showQueueScheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
-                                              indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
-                                              int(default_status_after), root_dir=location)
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality,
+                                                flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
+                                                whitelist, int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
 
@@ -584,9 +584,9 @@ class HomeAddShows(Home):
         new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
-        app.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                              flatten_folders, indexer_lang, subtitles, anime,
-                                              scene, None, blacklist, whitelist, int(defaultStatusAfter))
+        app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
+                                                flatten_folders, indexer_lang, subtitles, anime,
+                                                scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
         return finishAddShow()
@@ -655,7 +655,7 @@ class HomeAddShows(Home):
 
             if indexer is not None and indexer_id is not None:
                 # add the show
-                app.showQueueScheduler.action.addShow(
+                app.show_queue_scheduler.action.addShow(
                     indexer, indexer_id, show_dir,
                     default_status=app.STATUS_DEFAULT,
                     quality=app.QUALITY_DEFAULT,

@@ -72,17 +72,17 @@
     % for cur_show in my_show_list:
     <%
         cur_ep = cur_show.nextaired
-        disabled = app.showQueueScheduler.action.isBeingUpdated(cur_show) or app.showQueueScheduler.action.isInUpdateQueue(cur_show)
+        disabled = app.show_queue_scheduler.action.isBeingUpdated(cur_show) or app.show_queue_scheduler.action.isInUpdateQueue(cur_show)
         curUpdate = "<input type=\"checkbox\" class=\"updateCheck\" id=\"update-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRefreshed(cur_show) or app.showQueueScheduler.action.isInRefreshQueue(cur_show)
+        disabled = app.show_queue_scheduler.action.isBeingRefreshed(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
         curRefresh = "<input type=\"checkbox\" class=\"refreshCheck\" id=\"refresh-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRenamed(cur_show) or app.showQueueScheduler.action.isInRenameQueue(cur_show)
+        disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show)
         curRename = "<input type=\"checkbox\" class=\"renameCheck\" id=\"rename-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = not cur_show.subtitles or app.showQueueScheduler.action.isBeingSubtitled(cur_show) or app.showQueueScheduler.action.isInSubtitleQueue(cur_show)
+        disabled = not cur_show.subtitles or app.show_queue_scheduler.action.isBeingSubtitled(cur_show) or app.show_queue_scheduler.action.isInSubtitleQueue(cur_show)
         curSubtitle = "<input type=\"checkbox\" class=\"subtitleCheck\" id=\"subtitle-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRenamed(cur_show) or app.showQueueScheduler.action.isInRenameQueue(cur_show) or app.showQueueScheduler.action.isInRefreshQueue(cur_show)
+        disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
         curDelete = "<input type=\"checkbox\" class=\"confirm deleteCheck\" id=\"delete-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
-        disabled = app.showQueueScheduler.action.isBeingRenamed(cur_show) or app.showQueueScheduler.action.isInRenameQueue(cur_show) or app.showQueueScheduler.action.isInRefreshQueue(cur_show)
+        disabled = app.show_queue_scheduler.action.isBeingRenamed(cur_show) or app.show_queue_scheduler.action.isInRenameQueue(cur_show) or app.show_queue_scheduler.action.isInRefreshQueue(cur_show)
         curRemove = "<input type=\"checkbox\" class=\"removeCheck\" id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
     %>
     <tr>

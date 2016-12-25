@@ -141,7 +141,7 @@ def update_finished_search_queue_item(snatch_queue_item):
 
 def collect_episodes_from_search_thread(show):
     """
-    Collects all episodes from from the forcedSearchQueueScheduler
+    Collects all episodes from from the forced_search_queue_scheduler
     and looks for episodes that are in status queued or searching.
     If episodes are found in FORCED_SEARCH_HISTORY, these are set to status finished.
     """
@@ -149,13 +149,13 @@ def collect_episodes_from_search_thread(show):
 
     # Queued Searches
     searchstatus = SEARCH_STATUS_QUEUED
-    for search_thread in app.forcedSearchQueueScheduler.action.get_all_ep_from_queue(show):
+    for search_thread in app.forced_search_queue_scheduler.action.get_all_ep_from_queue(show):
         episodes += get_episodes(search_thread, searchstatus)
 
     # Running Searches
     searchstatus = SEARCH_STATUS_SEARCHING
-    if app.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
-        search_thread = app.forcedSearchQueueScheduler.action.currentItem
+    if app.forced_search_queue_scheduler.action.is_forced_search_in_progress():
+        search_thread = app.forced_search_queue_scheduler.action.currentItem
 
         if search_thread.success:
             searchstatus = SEARCH_STATUS_FINISHED
@@ -268,7 +268,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
-        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
+        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[app.CPU_PRESET])

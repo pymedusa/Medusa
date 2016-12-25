@@ -771,7 +771,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
-        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
+        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
         while ep_queue_item.success is None:  # @UndefinedVariable
@@ -893,7 +893,7 @@ class CMD_EpisodeSetStatus(ApiCall):
         if start_backlog:
             for season, segment in iteritems(segments):
                 cur_backlog_queue_item = BacklogQueueItem(show_obj, segment)
-                app.searchQueueScheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
+                app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
 
                 logger.log(u"API :: Starting backlog for " + show_obj.name + " season " + str(
                     season) + " because some episodes were set to WANTED")
@@ -1407,9 +1407,9 @@ class CMD_CheckScheduler(ApiCall):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select("SELECT last_backlog FROM info")
 
-        backlog_paused = app.searchQueueScheduler.action.is_backlog_paused()  # @UndefinedVariable
-        backlog_running = app.searchQueueScheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlogSearchScheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
+        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()  # @UndefinedVariable
+        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()  # @UndefinedVariable
+        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
 
         data = {"backlog_is_paused": int(backlog_paused), "backlog_is_running": int(backlog_running),
                 "last_backlog": _ordinal_to_date_form(sql_results[0]["last_backlog"]),
@@ -1537,10 +1537,10 @@ class CMD_PauseBacklog(ApiCall):
     def run(self):
         """ Pause or un-pause the backlog search """
         if self.pause:
-            app.searchQueueScheduler.action.pause_backlog()  # @UndefinedVariable
+            app.search_queue_scheduler.action.pause_backlog()  # @UndefinedVariable
             return _responds(RESULT_SUCCESS, msg="Backlog paused")
         else:
-            app.searchQueueScheduler.action.unpause_backlog()  # @UndefinedVariable
+            app.search_queue_scheduler.action.unpause_backlog()  # @UndefinedVariable
             return _responds(RESULT_SUCCESS, msg="Backlog un-paused")
 
 
@@ -1976,7 +1976,7 @@ class CMD_ShowAddExisting(ApiCall):
         if i_quality_id or a_quality_id:
             new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
 
-        app.showQueueScheduler.action.addShow(
+        app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
             default_status=app.STATUS_DEFAULT, quality=new_quality,
             flatten_folders=int(self.flatten_folders), subtitles=self.subtitles,
@@ -2131,7 +2131,7 @@ class CMD_ShowAddNew(ApiCall):
             else:
                 helpers.chmod_as_parent(show_path)
 
-        app.showQueueScheduler.action.addShow(
+        app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
             quality=new_quality, flatten_folders=int(self.flatten_folders),
             lang=self.lang, subtitles=self.subtitles, anime=self.anime,
@@ -2703,7 +2703,7 @@ class CMD_ShowUpdate(ApiCall):
             return _responds(RESULT_FAILURE, msg="Show not found")
 
         try:
-            app.showQueueScheduler.action.updateShow(show_obj)
+            app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg=str(show_obj.name) + " has queued to be updated")
         except CantUpdateShowException as e:
             logger.log(u"API::Unable to update show: {0}".format(str(e)), logger.DEBUG)

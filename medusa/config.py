@@ -189,7 +189,7 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
         app.AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
 
-    app.autoPostProcessorScheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+    app.auto_post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
@@ -203,7 +203,7 @@ def change_DAILYSEARCH_FREQUENCY(freq):
     if app.DAILYSEARCH_FREQUENCY < app.MIN_DAILYSEARCH_FREQUENCY:
         app.DAILYSEARCH_FREQUENCY = app.MIN_DAILYSEARCH_FREQUENCY
 
-    app.dailySearchScheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
+    app.daily_search_scheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
 
 
 def change_BACKLOG_FREQUENCY(freq):
@@ -218,7 +218,7 @@ def change_BACKLOG_FREQUENCY(freq):
     if app.BACKLOG_FREQUENCY < app.MIN_BACKLOG_FREQUENCY:
         app.BACKLOG_FREQUENCY = app.MIN_BACKLOG_FREQUENCY
 
-    app.backlogSearchScheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
+    app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
 
 
 def change_UPDATE_FREQUENCY(freq):
@@ -232,7 +232,7 @@ def change_UPDATE_FREQUENCY(freq):
     if app.UPDATE_FREQUENCY < app.MIN_UPDATE_FREQUENCY:
         app.UPDATE_FREQUENCY = app.MIN_UPDATE_FREQUENCY
 
-    app.versionCheckScheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
+    app.version_check_scheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
 
 
 def change_SHOWUPDATE_HOUR(freq):
@@ -248,7 +248,7 @@ def change_SHOWUPDATE_HOUR(freq):
     elif app.SHOWUPDATE_HOUR < 0:
         app.SHOWUPDATE_HOUR = 0
 
-    app.showUpdateScheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
+    app.show_update_scheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
 
 
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
@@ -277,7 +277,7 @@ def change_VERSION_NOTIFY(version_notify):
         app.NEWEST_VERSION_STRING = None
 
     if oldSetting is False and version_notify is True:
-        app.versionCheckScheduler.forceRun()
+        app.version_check_scheduler.forceRun()
 
 
 def change_DOWNLOAD_PROPERS(download_propers):
@@ -294,15 +294,15 @@ def change_DOWNLOAD_PROPERS(download_propers):
 
     app.DOWNLOAD_PROPERS = download_propers
     if app.DOWNLOAD_PROPERS:
-        if not app.properFinderScheduler.enable:
+        if not app.proper_finder_scheduler.enable:
             logger.log(u"Starting PROPERFINDER thread", logger.INFO)
-            app.properFinderScheduler.silent = False
-            app.properFinderScheduler.enable = True
+            app.proper_finder_scheduler.silent = False
+            app.proper_finder_scheduler.enable = True
         else:
             logger.log(u"Unable to start PROPERFINDER thread. Already running", logger.INFO)
     else:
-        app.properFinderScheduler.enable = False
-        app.traktCheckerScheduler.silent = True
+        app.proper_finder_scheduler.enable = False
+        app.trakt_checker_scheduler.silent = True
         logger.log(u"Stopping PROPERFINDER thread", logger.INFO)
 
 
@@ -320,15 +320,15 @@ def change_USE_TRAKT(use_trakt):
 
     app.USE_TRAKT = use_trakt
     if app.USE_TRAKT:
-        if not app.traktCheckerScheduler.enable:
+        if not app.trakt_checker_scheduler.enable:
             logger.log(u"Starting TRAKTCHECKER thread", logger.INFO)
-            app.traktCheckerScheduler.silent = False
-            app.traktCheckerScheduler.enable = True
+            app.trakt_checker_scheduler.silent = False
+            app.trakt_checker_scheduler.enable = True
         else:
             logger.log(u"Unable to start TRAKTCHECKER thread. Already running", logger.INFO)
     else:
-        app.traktCheckerScheduler.enable = False
-        app.traktCheckerScheduler.silent = True
+        app.trakt_checker_scheduler.enable = False
+        app.trakt_checker_scheduler.silent = True
         logger.log(u"Stopping TRAKTCHECKER thread", logger.INFO)
 
 
@@ -346,15 +346,15 @@ def change_USE_SUBTITLES(use_subtitles):
 
     app.USE_SUBTITLES = use_subtitles
     if app.USE_SUBTITLES:
-        if not app.subtitlesFinderScheduler.enable:
+        if not app.subtitles_finder_scheduler.enable:
             logger.log(u"Starting SUBTITLESFINDER thread", logger.INFO)
-            app.subtitlesFinderScheduler.silent = False
-            app.subtitlesFinderScheduler.enable = True
+            app.subtitles_finder_scheduler.silent = False
+            app.subtitles_finder_scheduler.enable = True
         else:
             logger.log(u"Unable to start SUBTITLESFINDER thread. Already running", logger.INFO)
     else:
-        app.subtitlesFinderScheduler.enable = False
-        app.subtitlesFinderScheduler.silent = True
+        app.subtitles_finder_scheduler.enable = False
+        app.subtitles_finder_scheduler.silent = True
         logger.log(u"Stopping SUBTITLESFINDER thread", logger.INFO)
 
 
@@ -372,16 +372,16 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
 
     app.PROCESS_AUTOMATICALLY = process_automatically
     if app.PROCESS_AUTOMATICALLY:
-        if not app.autoPostProcessorScheduler.enable:
+        if not app.auto_post_processor_scheduler.enable:
             logger.log(u"Starting POSTPROCESSOR thread", logger.INFO)
-            app.autoPostProcessorScheduler.silent = False
-            app.autoPostProcessorScheduler.enable = True
+            app.auto_post_processor_scheduler.silent = False
+            app.auto_post_processor_scheduler.enable = True
         else:
             logger.log(u"Unable to start POSTPROCESSOR thread. Already running", logger.INFO)
     else:
         logger.log(u"Stopping POSTPROCESSOR thread", logger.INFO)
-        app.autoPostProcessorScheduler.enable = False
-        app.autoPostProcessorScheduler.silent = True
+        app.auto_post_processor_scheduler.enable = False
+        app.auto_post_processor_scheduler.silent = True
 
 
 def CheckSection(CFG, sec):

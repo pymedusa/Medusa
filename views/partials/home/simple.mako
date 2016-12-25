@@ -44,9 +44,9 @@
             <th>&nbsp;</th>
         </tr>
     </tfoot>
-    % if app.showQueueScheduler.action.loadingShowList:
+    % if app.show_queue_scheduler.action.loadingShowList:
         <tbody class="tablesorter-infoOnly">
-        % for cur_loading_show in app.showQueueScheduler.action.loadingShowList:
+        % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
             <% if cur_loading_show.show is not None and cur_loading_show.show in app.showList:
                 continue
             %>

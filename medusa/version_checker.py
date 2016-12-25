@@ -63,7 +63,7 @@ class CheckVersion(object):
                     logger.log(u'New update found, starting auto-updater ...')
                     ui.notifications.message('New update found, starting auto-updater')
                     if self.run_backup_if_safe():
-                        if app.versionCheckScheduler.action.update():
+                        if app.version_check_scheduler.action.update():
                             logger.log(u'Update was successful!')
                             ui.notifications.message('Update was successful')
                             app.events.put(app.events.SystemEvent.RESTART)
@@ -171,7 +171,7 @@ class CheckVersion(object):
                 return False
 
         def postprocessor_safe():
-            if not app.autoPostProcessorScheduler.action.amActive:
+            if not app.auto_post_processor_scheduler.action.amActive:
                 logger.log(u'We can proceed with the update. Post-Processor is not running', logger.DEBUG)
                 return True
             else:
@@ -179,7 +179,7 @@ class CheckVersion(object):
                 return False
 
         def showupdate_safe():
-            if not app.showUpdateScheduler.action.amActive:
+            if not app.show_update_scheduler.action.amActive:
                 logger.log(u'We can proceed with the update. Shows are not being updated', logger.DEBUG)
                 return True
             else:

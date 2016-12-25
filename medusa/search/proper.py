@@ -60,7 +60,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             logger.log('Find propers is still running, not starting it again', logger.DEBUG)
             return
 
-        if app.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+        if app.forced_search_queue_scheduler.action.is_forced_search_in_progress():
             logger.log("Manual search is running. Can't start Find propers", logger.WARNING)
             return
 
@@ -81,8 +81,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         self._set_last_proper_search(datetime.datetime.today().toordinal())
 
         run_at = ''
-        if None is app.properFinderScheduler.start_time:
-            run_in = app.properFinderScheduler.lastRun + app.properFinderScheduler.cycleTime - datetime.datetime.now()
+        if None is app.proper_finder_scheduler.start_time:
+            run_in = app.proper_finder_scheduler.lastRun + app.proper_finder_scheduler.cycleTime - datetime.datetime.now()
             hours, remainder = divmod(run_in.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             run_at = ', next check in approx. {0}'.format(

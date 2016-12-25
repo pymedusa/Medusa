@@ -69,18 +69,18 @@ NO_RESIZE = False
 events = None
 
 # schedulers
-dailySearchScheduler = None
-backlogSearchScheduler = None
-showUpdateScheduler = None
-versionCheckScheduler = None
-showQueueScheduler = None
-searchQueueScheduler = None
-forcedSearchQueueScheduler = None
-manualSnatchScheduler = None
-properFinderScheduler = None
-autoPostProcessorScheduler = None
-subtitlesFinderScheduler = None
-traktCheckerScheduler = None
+daily_search_scheduler = None
+backlog_search_scheduler = None
+show_update_scheduler = None
+version_check_scheduler = None
+show_queue_scheduler = None
+search_queue_scheduler = None
+forced_search_queue_scheduler = None
+manual_snatch_scheduler = None
+proper_finder_scheduler = None
+auto_post_processor_scheduler = None
+subtitles_finder_scheduler = None
+trakt_checker_scheduler = None
 
 
 showList = []

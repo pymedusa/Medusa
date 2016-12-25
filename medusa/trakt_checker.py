@@ -50,7 +50,7 @@ def setEpisodeToWanted(show, s, e):
             ep_obj.save_to_db()
 
         cur_backlog_queue_item = BacklogQueueItem(show, [ep_obj])
-        app.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
+        app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log('Starting backlog search for {show} {ep} because some episodes were set to wanted'.format
                    (show=show.name, ep=episode_num(s, e)))
@@ -402,7 +402,7 @@ class TraktChecker(object):
                             continue
 
                         if progress.get('aired', True) == progress.get('completed', False):
-                            app.showQueueScheduler.action.removeShow(show, full=True)
+                            app.show_queue_scheduler.action.removeShow(show, full=True)
                             logger.log('Show {0} has been removed from Medusa'.format(show.name), logger.DEBUG)
 
     def fetch_trakt_shows(self):
@@ -489,12 +489,12 @@ class TraktChecker(object):
             if location:
                 logger.log('Adding show {0} with ID: {1}'.format(show_name, indexer_id))
 
-                app.showQueueScheduler.action.addShow(indexer, indexer_id, None,
-                                                      default_status=status,
-                                                      quality=int(app.QUALITY_DEFAULT),
-                                                      flatten_folders=int(app.FLATTEN_FOLDERS_DEFAULT),
-                                                      paused=app.TRAKT_START_PAUSED,
-                                                      default_status_after=status, root_dir=location)
+                app.show_queue_scheduler.action.addShow(indexer, indexer_id, None,
+                                                        default_status=status,
+                                                        quality=int(app.QUALITY_DEFAULT),
+                                                        flatten_folders=int(app.FLATTEN_FOLDERS_DEFAULT),
+                                                        paused=app.TRAKT_START_PAUSED,
+                                                        default_status_after=status, root_dir=location)
             else:
                 logger.log('There was an error creating the show, no root directory setting found', logger.WARNING)
                 return

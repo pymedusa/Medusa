@@ -78,7 +78,7 @@ class ShowHandler(BaseRequestHandler):
         data = tv_show.to_json()
         if query:
             if query == 'queue':
-                action, message = app.showQueueScheduler.action.get_queue_action(tv_show)
+                action, message = app.show_queue_scheduler.action.get_queue_action(tv_show)
                 data = {
                     'action': ShowQueueActions.names[action],
                     'message': message,

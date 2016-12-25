@@ -15,21 +15,21 @@ class ManageSearches(Manage):
 
     def index(self):
         t = PageTemplate(rh=self, filename='manage_manageSearches.mako')
-        # t.backlogPI = api.backlogSearchScheduler.action.get_progress_indicator()
+        # t.backlogPI = api.backlog_search_scheduler.action.get_progress_indicator()
 
-        return t.render(backlogPaused=app.searchQueueScheduler.action.is_backlog_paused(),
-                        backlogRunning=app.searchQueueScheduler.action.is_backlog_in_progress(),
-                        dailySearchStatus=app.dailySearchScheduler.action.amActive,
-                        findPropersStatus=app.properFinderScheduler.action.amActive,
-                        searchQueueLength=app.searchQueueScheduler.action.queue_length(),
-                        forcedSearchQueueLength=app.forcedSearchQueueScheduler.action.queue_length(),
-                        subtitlesFinderStatus=app.subtitlesFinderScheduler.action.amActive,
+        return t.render(backlogPaused=app.search_queue_scheduler.action.is_backlog_paused(),
+                        backlogRunning=app.search_queue_scheduler.action.is_backlog_in_progress(),
+                        dailySearchStatus=app.daily_search_scheduler.action.amActive,
+                        findPropersStatus=app.proper_finder_scheduler.action.amActive,
+                        searchQueueLength=app.search_queue_scheduler.action.queue_length(),
+                        forcedSearchQueueLength=app.forced_search_queue_scheduler.action.queue_length(),
+                        subtitlesFinderStatus=app.subtitles_finder_scheduler.action.amActive,
                         title='Manage Searches', header='Manage Searches', topmenu='manage',
                         controller='manage', action='manageSearches')
 
     def forceBacklog(self):
         # force it to run the next time it looks
-        result = app.backlogSearchScheduler.forceRun()
+        result = app.backlog_search_scheduler.forceRun()
         if result:
             logger.log('Backlog search forced')
             ui.notifications.message('Backlog search started')
@@ -39,7 +39,7 @@ class ManageSearches(Manage):
     def forceSearch(self):
 
         # force it to run the next time it looks
-        result = app.dailySearchScheduler.forceRun()
+        result = app.daily_search_scheduler.forceRun()
         if result:
             logger.log('Daily search forced')
             ui.notifications.message('Daily search started')
@@ -48,7 +48,7 @@ class ManageSearches(Manage):
 
     def forceFindPropers(self):
         # force it to run the next time it looks
-        result = app.properFinderScheduler.forceRun()
+        result = app.proper_finder_scheduler.forceRun()
         if result:
             logger.log('Find propers search forced')
             ui.notifications.message('Find propers search started')
@@ -57,7 +57,7 @@ class ManageSearches(Manage):
 
     def forceSubtitlesFinder(self):
         # force it to run the next time it looks
-        result = app.subtitlesFinderScheduler.forceRun()
+        result = app.subtitles_finder_scheduler.forceRun()
         if result:
             logger.log('Subtitle search forced')
             ui.notifications.message('Subtitle search started')
@@ -66,8 +66,8 @@ class ManageSearches(Manage):
 
     def pauseBacklog(self, paused=None):
         if paused == '1':
-            app.searchQueueScheduler.action.pause_backlog()
+            app.search_queue_scheduler.action.pause_backlog()
         else:
-            app.searchQueueScheduler.action.unpause_backlog()
+            app.search_queue_scheduler.action.unpause_backlog()
 
         return self.redirect('/manage/manageSearches/')

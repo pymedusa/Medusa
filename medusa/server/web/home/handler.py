@@ -442,7 +442,7 @@ class Home(WebRoot):
     @staticmethod
     def forceTraktSync():
         """Force a trakt sync, depending on the notification settings, library is synced with watchlist and/or collection."""
-        return json.dumps({'result': ('Could not start sync', 'Sync Started')[app.traktCheckerScheduler.forceRun()]})
+        return json.dumps({'result': ('Could not start sync', 'Sync Started')[app.trakt_checker_scheduler.forceRun()]})
 
     @staticmethod
     def loadShowNotifyLists():
@@ -599,8 +599,8 @@ class Home(WebRoot):
         if str(pid) != str(app.PID):
             return self.redirect('/home/')
 
-        app.versionCheckScheduler.action.check_for_new_version(force=True)
-        app.versionCheckScheduler.action.check_for_new_news(force=True)
+        app.version_check_scheduler.action.check_for_new_version(force=True)
+        app.version_check_scheduler.action.check_for_new_news(force=True)
 
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
@@ -641,7 +641,7 @@ class Home(WebRoot):
         return {
             'currentBranch': app.BRANCH,
             'resetBranches': app.GIT_RESET_BRANCHES,
-            'branches': [branch for branch in app.versionCheckScheduler.action.list_remote_branches() if branch not in app.GIT_RESET_BRANCHES]
+            'branches': [branch for branch in app.version_check_scheduler.action.list_remote_branches() if branch not in app.GIT_RESET_BRANCHES]
         }
 
     @staticmethod
@@ -732,29 +732,29 @@ class Home(WebRoot):
 
         show_message = ''
 
-        if app.showQueueScheduler.action.isBeingAdded(show_obj):
+        if app.show_queue_scheduler.action.isBeingAdded(show_obj):
             show_message = 'This show is in the process of being downloaded - the info below is incomplete.'
 
-        elif app.showQueueScheduler.action.isBeingUpdated(show_obj):
+        elif app.show_queue_scheduler.action.isBeingUpdated(show_obj):
             show_message = 'The information on this page is in the process of being updated.'
 
-        elif app.showQueueScheduler.action.isBeingRefreshed(show_obj):
+        elif app.show_queue_scheduler.action.isBeingRefreshed(show_obj):
             show_message = 'The episodes below are currently being refreshed from disk'
 
-        elif app.showQueueScheduler.action.isBeingSubtitled(show_obj):
+        elif app.show_queue_scheduler.action.isBeingSubtitled(show_obj):
             show_message = 'Currently downloading subtitles for this show'
 
-        elif app.showQueueScheduler.action.isInRefreshQueue(show_obj):
+        elif app.show_queue_scheduler.action.isInRefreshQueue(show_obj):
             show_message = 'This show is queued to be refreshed.'
 
-        elif app.showQueueScheduler.action.isInUpdateQueue(show_obj):
+        elif app.show_queue_scheduler.action.isInUpdateQueue(show_obj):
             show_message = 'This show is queued and awaiting an update.'
 
-        elif app.showQueueScheduler.action.isInSubtitleQueue(show_obj):
+        elif app.show_queue_scheduler.action.isInSubtitleQueue(show_obj):
             show_message = 'This show is queued and awaiting subtitles download.'
 
-        if not app.showQueueScheduler.action.isBeingAdded(show_obj):
-            if not app.showQueueScheduler.action.isBeingUpdated(show_obj):
+        if not app.show_queue_scheduler.action.isBeingAdded(show_obj):
+            if not app.show_queue_scheduler.action.isBeingUpdated(show_obj):
                 submenu.append({
                     'title': 'Resume' if show_obj.paused else 'Pause',
                     'path': 'home/togglePause?show={show}'.format(show=show_obj.indexerid),
@@ -795,7 +795,7 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
-                if app.USE_SUBTITLES and not app.showQueueScheduler.action.isBeingSubtitled(
+                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
                         show_obj) and show_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
@@ -936,7 +936,7 @@ class Home(WebRoot):
         snatch_queue_item = ManualSnatchQueueItem(show_obj, ep_objs, provider, cached_result)
 
         # Add the queue item to the queue
-        app.manualSnatchScheduler.action.add_item(snatch_queue_item)
+        app.manual_snatch_scheduler.action.add_item(snatch_queue_item)
 
         while snatch_queue_item.success is not False:
             if snatch_queue_item.started and snatch_queue_item.success:
@@ -1060,10 +1060,10 @@ class Home(WebRoot):
         except ShowDirectoryNotFoundException:
             show_loc = (show_obj._location, False)  # pylint: disable=protected-access
 
-        show_message = app.showQueueScheduler.action.getQueueActionMessage(show_obj)
+        show_message = app.show_queue_scheduler.action.getQueueActionMessage(show_obj)
 
-        if not app.showQueueScheduler.action.isBeingAdded(show_obj):
-            if not app.showQueueScheduler.action.isBeingUpdated(show_obj):
+        if not app.show_queue_scheduler.action.isBeingAdded(show_obj):
+            if not app.show_queue_scheduler.action.isBeingUpdated(show_obj):
                 submenu.append({
                     'title': 'Resume' if show_obj.paused else 'Pause',
                     'path': 'home/togglePause?show={show}'.format(show=show_obj.indexerid),
@@ -1104,7 +1104,7 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-tag',
                 })
 
-                if app.USE_SUBTITLES and not app.showQueueScheduler.action.isBeingSubtitled(
+                if app.USE_SUBTITLES and not app.show_queue_scheduler.action.isBeingSubtitled(
                         show_obj) and show_obj.subtitles:
                     submenu.append({
                         'title': 'Download Subtitles',
@@ -1452,7 +1452,7 @@ class Home(WebRoot):
             if bool(show_obj.flatten_folders) != bool(flatten_folders):
                 show_obj.flatten_folders = flatten_folders
                 try:
-                    app.showQueueScheduler.action.refreshShow(show_obj)
+                    app.show_queue_scheduler.action.refreshShow(show_obj)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh this show: {error}'.format(error=msg))
 
@@ -1484,7 +1484,7 @@ class Home(WebRoot):
                     try:
                         show_obj.location = location
                         try:
-                            app.showQueueScheduler.action.refreshShow(show_obj)
+                            app.show_queue_scheduler.action.refreshShow(show_obj)
                         except CantRefreshShowException as msg:
                             errors.append('Unable to refresh this show:{error}'.format(error=msg))
                             # grab updated info from TVDB
@@ -1501,7 +1501,7 @@ class Home(WebRoot):
         # force the update
         if do_update:
             try:
-                app.showQueueScheduler.action.updateShow(show_obj)
+                app.show_queue_scheduler.action.updateShow(show_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as msg:
                 errors.append('Unable to update show: {0}'.format(str(msg)))
@@ -1623,7 +1623,7 @@ class Home(WebRoot):
 
         # force the update
         try:
-            app.showQueueScheduler.action.updateShow(show_obj)
+            app.show_queue_scheduler.action.updateShow(show_obj)
         except CantUpdateShowException as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 
@@ -1642,7 +1642,7 @@ class Home(WebRoot):
             return self._genericMessage('Error', 'Unable to find the specified show')
 
         # search and download subtitles
-        app.showQueueScheduler.action.download_subtitles(show_obj)
+        app.show_queue_scheduler.action.download_subtitles(show_obj)
 
         time.sleep(cpu_presets[app.CPU_PRESET])
 
@@ -1826,7 +1826,7 @@ class Home(WebRoot):
 
             for season, segment in iteritems(segments):
                 cur_backlog_queue_item = BacklogQueueItem(show_obj, segment)
-                app.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
+                app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
                 logger.log(u'Sending backlog for {show} season {season} '
@@ -1848,7 +1848,7 @@ class Home(WebRoot):
 
             for season, segment in iteritems(segments):
                 cur_failed_queue_item = FailedQueueItem(show_obj, segment)
-                app.searchQueueScheduler.action.add_item(cur_failed_queue_item)
+                app.search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)
                 logger.log(u'Retrying Search for {show} season {season} '
@@ -1975,7 +1975,7 @@ class Home(WebRoot):
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
 
-        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
+        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
         time.sleep(cpu_presets[app.CPU_PRESET])
@@ -2201,7 +2201,7 @@ class Home(WebRoot):
 
         # make a queue item for it and put it on the queue
         ep_queue_item = FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
-        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)
+        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps(

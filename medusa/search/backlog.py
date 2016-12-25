@@ -73,7 +73,7 @@ class BacklogSearcher(object):
             logger.log(u"Backlog is still running, not starting it again", logger.DEBUG)
             return
 
-        if app.forcedSearchQueueScheduler.action.is_forced_search_in_progress():
+        if app.forced_search_queue_scheduler.action.is_forced_search_in_progress():
             logger.log(u"Manual search is running. Can't start Backlog Search", logger.WARNING)
             return
 
@@ -106,7 +106,7 @@ class BacklogSearcher(object):
                 self.currentSearchInfo = {'title': cur_show.name + " Season " + str(season)}
 
                 backlog_queue_item = BacklogQueueItem(cur_show, segment)
-                app.searchQueueScheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
+                app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
                 logger.log(u"Nothing needs to be downloaded for %s, skipping" % cur_show.name, logger.DEBUG)

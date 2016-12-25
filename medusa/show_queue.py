@@ -264,8 +264,8 @@ class ShowQueueItem(generic_queue.QueueItem):
         self.show = show
 
     def isInQueue(self):
-        return self in app.showQueueScheduler.action.queue + [
-            app.showQueueScheduler.action.currentItem]  # @UndefinedVariable
+        return self in app.show_queue_scheduler.action.queue + [
+            app.show_queue_scheduler.action.currentItem]  # @UndefinedVariable
 
     def _getName(self):
         return str(self.show.indexerid)
@@ -530,7 +530,7 @@ class QueueItemAdd(ShowQueueItem):
         # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
-            app.backlogSearchScheduler.action.search_backlog([self.show])
+            app.backlog_search_scheduler.action.search_backlog([self.show])
 
         self.show.write_metadata()
         self.show.update_metadata()
@@ -541,11 +541,11 @@ class QueueItemAdd(ShowQueueItem):
 
         if app.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
-            app.traktCheckerScheduler.action.manage_new_show(self.show)
+            app.trakt_checker_scheduler.action.manage_new_show(self.show)
 
             # add show to trakt.tv library
             if app.TRAKT_SYNC:
-                app.traktCheckerScheduler.action.add_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.add_show_trakt_library(self.show)
 
             if app.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
@@ -567,7 +567,7 @@ class QueueItemAdd(ShowQueueItem):
 
     def _finishEarly(self):
         if self.show is not None:
-            app.showQueueScheduler.action.removeShow(self.show)
+            app.show_queue_scheduler.action.removeShow(self.show)
 
         self.finish()
 
@@ -774,7 +774,7 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
         # Refresh show needs to be forced since current execution locks the queue
-        app.showQueueScheduler.action.refreshShow(self.show, True)
+        app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -895,7 +895,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
         # Refresh show needs to be forced since current execution locks the queue
-        app.showQueueScheduler.action.refreshShow(self.show, True)
+        app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -917,7 +917,7 @@ class QueueItemRemove(ShowQueueItem):
         # Episodes from the db to know which eps to remove.
         if app.USE_TRAKT:
             try:
-                app.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.remove_show_trakt_library(self.show)
             except TraktException as e:
                 logger.log(u'{id}: Unable to delete show {show} from Trakt. '
                            u'Please remove manually otherwise it will be added again. Error: {error_msg}'.format
