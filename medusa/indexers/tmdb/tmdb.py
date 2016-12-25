@@ -450,7 +450,7 @@ class Tmdb(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log().debug('Getting all series data for %s' % (sid))
+        log().debug('Getting all series data for %s' % sid)
 
         # Parse show information
         series_info = self._get_show_by_id(sid, request_language=get_show_in_language)

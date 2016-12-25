@@ -296,7 +296,7 @@ class TVShow(TVObject):
     def current_qualities(self):
         """Current qualities."""
         allowed_qualities, preferred_qualities = Quality.split_quality(int(self.quality))
-        return (allowed_qualities, preferred_qualities)
+        return allowed_qualities, preferred_qualities
 
     @property
     def using_preset_quality(self):
