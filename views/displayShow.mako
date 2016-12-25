@@ -304,15 +304,16 @@
                                         filename = filename.replace(rootDir, "")
                                 filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
                             %>
-                            <center><a href="${filename}">Download</a></center>
+                            <a href="${filename}">Download</a>
                         % endif
                     </td>
                     <td class="col-subtitles" align="center">
                     % for flag in (epResult["subtitles"] or '').split(','):
                         % if flag.strip() and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             % if flag != 'und':
-                                <a class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;lang=${flag}">
-                                <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                                <a class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
+                                    <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
+                                </a>
                             % else:
                                 <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
                             % endif

@@ -1097,10 +1097,10 @@
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
                     <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                </div><!--/config-components//-->
             </form>
-        </div>
-    </div>
+        </div><!--/config-content//-->
+    </div><!--/config//-->
     <div class="clearfix"></div>
 </div><!-- #content960 //-->
-</div>
 </%block>
