@@ -195,7 +195,8 @@ def snatch_episode(result):
                 if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                         result.leechers not in (-1, None)]):
                     notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
-                                            (notify_message, result.seeders, result.leechers, result.provider.name), is_proper)
+                                            (notify_message, result.seeders,
+                                             result.leechers, result.provider.name), is_proper)
                 else:
                     notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
             except Exception as e:
@@ -390,7 +391,8 @@ def search_for_needed_episodes():
 
     for cur_show in show_list:
         if cur_show.paused:
-            logger.log(u"Not checking for needed episodes of %s because the show is paused" % cur_show.name, logger.DEBUG)
+            logger.log(u"Not checking for needed episodes of %s because the show is paused" % cur_show.name,
+                       logger.DEBUG)
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
@@ -412,7 +414,6 @@ def search_for_needed_episodes():
     for cur_provider in providers:
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
                                                                            provider=cur_provider.name)
-        cur_found_results = {}
         try:
             cur_found_results = cur_provider.search_rss(episodes)
         except AuthException as e:
@@ -538,7 +539,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 logger.log(u"Connection timed out while searching %s. Error: %r" %
                            (cur_provider.name, ex(e)), logger.DEBUG)
                 break
-            except requests.exceptions.ContentDecodingError:
+            except requests.exceptions.ContentDecodingError as e:
                 logger.log(u"Content-Encoding was gzip, but content was not compressed while searching %s. "
                            u"Error: %r" % (cur_provider.name, ex(e)), logger.DEBUG)
                 break
