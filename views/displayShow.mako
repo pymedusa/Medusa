@@ -24,7 +24,7 @@
 <div class="clearfix"></div><!-- div.clearfix //-->
 
 <div class="row">
-    <div class="form-inline col-md-12">
+    <div class="form-inline col-lg-3 col-md-4 col-sm-6 col-xs-12">
         <label for="select-show">Change Show:</label>
         <div class="select-show-group">
             <div class="navShow"><img id="prevShow" src="images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>
