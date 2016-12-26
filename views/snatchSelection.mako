@@ -117,34 +117,24 @@
                     <tbody aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
-                            <td class="tvShow">
-                                <span class="break-word ${hItem['name_highlight']}">
-                                    ${hItem["name"]}
-                                </span>
+                            <td class="release-name-ellipses">
+                                <span class="break-word ${hItem['name_highlight']}">${hItem["name"]}</span>
                             </td>
-                            <td class="col-group">
-                                <span class="break-word ${hItem['rg_highlight']}">
-                                    ${hItem['release_group']}
-                                </span>
+                            <td class="col-group break-word">
+                                <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
                             </td>
                             <td class="col-provider">
-                                <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
-                                ${hItem["provider"]}
-                            </td>
+                                <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>${hItem["provider"]}</td>
                             <td align="center">${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
                                 <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"]}"/>
                             % endif
                             </td>
                             <td align="center">
-                                <span class="${hItem['seed_highlight']}">
-                                    ${hItem["seeders"]}
-                                </span>
+                                <span class="${hItem['seed_highlight']}">${hItem["seeders"]}</span>
                             </td>
                             <td align="center">
-                                <span class="${hItem['leech_highlight']}">
-                                    ${hItem["leechers"]}
-                                </span>
+                                <span class="${hItem['leech_highlight']}">${hItem["leechers"]}</span>
                             </td>
                             <td class="col-size">${hItem["pretty_size"]}</td>
                             <td align="center">${hItem["provider_type"]}</td>

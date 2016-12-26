@@ -1622,6 +1622,7 @@ select#select-show {
     width: calc(100% - 40px);
 }
 
+
 /* =======================================================================
 schedule.mako
 ========================================================================== */
@@ -2515,8 +2516,9 @@ span.true {
     color: rgb(102, 153, 102);
 }
 
-span.break-word {
+.break-word {
     word-break: break-all;
+    word-wrap: break-word;
 }
 
 span.required {
@@ -3850,6 +3852,13 @@ div#searchNotification {
 
 .summaryTable tr td {
     word-break: break-all;
+}
+
+.release-name-ellipses {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
 }
 
 /* =======================================================================
