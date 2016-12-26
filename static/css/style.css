@@ -3981,6 +3981,11 @@ css helper classes
   .mobile {display: none;}
 }
 
+/* navbar padding, to make room for in-page scrollbars */
+.navbar-right {
+    padding-right: 10px;
+}
+
 /* Christmas edition!!!*/
 .navbar-default {
     background-image: url('../images/medusa-christmas-banner.png')!important;
