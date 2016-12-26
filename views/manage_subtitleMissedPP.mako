@@ -52,7 +52,7 @@
         </tbody>
     </table>
 <%include file="subtitle_modal.mako"/>
-</br>
+<br>
 <form name="processForm" method="post" action="home/postprocess/processEpisode" style="float: right;">
 <table>
     <input type="hidden" id="proc_type" name="type" value="manual">

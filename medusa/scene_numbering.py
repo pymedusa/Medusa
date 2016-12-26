@@ -494,7 +494,7 @@ def xem_refresh(indexer_id, indexer, force=False):
                 return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
-            parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
+            parsedJSON = helpers.get_url(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.INFO)
                 return
@@ -502,7 +502,7 @@ def xem_refresh(indexer_id, indexer, force=False):
             # XEM API URL
             url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer).config['xem_origin'])
 
-            parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
+            parsedJSON = helpers.get_url(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.INFO)
                 return

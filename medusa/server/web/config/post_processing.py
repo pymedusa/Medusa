@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Configure Post Processing
-"""
+"""Configure Post Processing."""
 
 from __future__ import unicode_literals
 

@@ -12,7 +12,7 @@ from tornroutes import route
 from .api.v1.core import ApiHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import app, logger
-from ..helpers import create_https_certificates, generateApiKey
+from ..helpers import create_https_certificates, generate_api_key
 
 
 def get_apiv2_handlers(base):
@@ -74,7 +74,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # api root
         if not app.API_KEY:
-            app.API_KEY = generateApiKey()
+            app.API_KEY = generate_api_key()
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
         self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
 

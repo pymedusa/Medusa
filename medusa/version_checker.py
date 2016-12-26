@@ -33,9 +33,7 @@ from .helper.exceptions import ex
 
 
 class CheckVersion(object):
-    """
-    Version check class meant to run as a thread object with the sr scheduler.
-    """
+    """Version check class meant to run as a thread object with the sr scheduler."""
 
     def __init__(self):
         self.updater = None
@@ -65,7 +63,7 @@ class CheckVersion(object):
                     logger.log(u'New update found, starting auto-updater ...')
                     ui.notifications.message('New update found, starting auto-updater')
                     if self.run_backup_if_safe():
-                        if app.versionCheckScheduler.action.update():
+                        if app.version_check_scheduler.action.update():
                             logger.log(u'Update was successful!')
                             ui.notifications.message('Update was successful')
                             app.events.put(app.events.SystemEvent.RESTART)
@@ -145,7 +143,7 @@ class CheckVersion(object):
             for filename in files:
                 source.append(os.path.join(path, filename))
 
-        return helpers.backupConfigZip(source, target, app.DATA_DIR)
+        return helpers.backup_config_zip(source, target, app.DATA_DIR)
 
     def safe_to_update(self):
 
@@ -173,7 +171,7 @@ class CheckVersion(object):
                 return False
 
         def postprocessor_safe():
-            if not app.autoPostProcessorScheduler.action.amActive:
+            if not app.auto_post_processor_scheduler.action.amActive:
                 logger.log(u'We can proceed with the update. Post-Processor is not running', logger.DEBUG)
                 return True
             else:
@@ -181,7 +179,7 @@ class CheckVersion(object):
                 return False
 
         def showupdate_safe():
-            if not app.showUpdateScheduler.action.amActive:
+            if not app.show_update_scheduler.action.amActive:
                 logger.log(u'We can proceed with the update. Shows are not being updated', logger.DEBUG)
                 return True
             else:
@@ -213,7 +211,7 @@ class CheckVersion(object):
 
             check_url = 'http://cdn.rawgit.com/{org}/{repo}/{commit}/medusa/databases/main_db.py'.format(
                 org=app.GIT_ORG, repo=app.GIT_REPO, commit=cur_hash)
-            response = helpers.getURL(check_url, session=self.session, returns='response')
+            response = helpers.get_url(check_url, session=self.session, returns='response')
 
             # Get remote DB version
             match_max_db = re.search(r'MAX_DB_VERSION\s*=\s*(?P<version>\d{2,3})', response.text)
@@ -306,7 +304,7 @@ class CheckVersion(object):
         # Grab a copy of the news
         logger.log(u'check_for_new_news: Checking GitHub for latest news.', logger.DEBUG)
         try:
-            news = helpers.getURL(app.NEWS_URL, session=self.session, returns='text')
+            news = helpers.get_url(app.NEWS_URL, session=self.session, returns='text')
         except Exception:
             logger.log(u'check_for_new_news: Could not load news from repo.', logger.WARNING)
             news = ''

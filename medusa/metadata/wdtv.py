@@ -295,7 +295,7 @@ class WDTVMetadata(generic.GenericMetadata):
                 overview.text = ep_to_write.description
 
             # Make it purdy
-            helpers.indentXML(root_node)
+            helpers.indent_xml(root_node)
             data = etree.ElementTree(root_node)
 
         return data

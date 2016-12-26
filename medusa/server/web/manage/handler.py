@@ -22,7 +22,7 @@ from ....helper.exceptions import (
     CantRefreshShowException,
     CantUpdateShowException,
 )
-from ....helpers import isMediaFile
+from ....helpers import is_media_file
 from ....show.show import Show
 from ....tv import TVEpisode
 
@@ -277,7 +277,7 @@ class Manage(Home, WebRoot):
         app.RELEASES_IN_PP = []
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
             for filename in sorted(files):
-                if not isMediaFile(filename):
+                if not is_media_file(filename):
                     continue
 
                 video_path = os.path.join(root, filename)
@@ -325,7 +325,7 @@ class Manage(Home, WebRoot):
         show_obj = Show.find(app.showList, int(indexer_id))
 
         if show_obj:
-            app.backlogSearchScheduler.action.searchBacklog([show_obj])
+            app.backlog_search_scheduler.action.search_backlog([show_obj])
 
         return self.redirect('/manage/backlogOverview/')
 
@@ -639,30 +639,30 @@ class Manage(Home, WebRoot):
                 continue
 
             if cur_show_id in to_delete + to_remove:
-                app.showQueueScheduler.action.removeShow(show_obj, cur_show_id in to_delete)
+                app.show_queue_scheduler.action.removeShow(show_obj, cur_show_id in to_delete)
                 continue  # don't do anything else if it's being deleted or removed
 
             if cur_show_id in to_update:
                 try:
-                    app.showQueueScheduler.action.updateShow(show_obj)
+                    app.show_queue_scheduler.action.updateShow(show_obj)
                     updates.append(show_obj.name)
                 except CantUpdateShowException as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated
                 try:
-                    app.showQueueScheduler.action.refreshShow(show_obj)
+                    app.show_queue_scheduler.action.refreshShow(show_obj)
                     refreshes.append(show_obj.name)
                 except CantRefreshShowException as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
                                   (show=show_obj, error=msg))
 
             if cur_show_id in to_rename:
-                app.showQueueScheduler.action.renameShowEpisodes(show_obj)
+                app.show_queue_scheduler.action.renameShowEpisodes(show_obj)
                 renames.append(show_obj.name)
 
             if cur_show_id in to_subtitle:
-                app.showQueueScheduler.action.download_subtitles(show_obj)
+                app.show_queue_scheduler.action.download_subtitles(show_obj)
                 subtitles.append(show_obj.name)
 
         if errors:

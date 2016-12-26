@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Base handler for Config pages
-"""
+"""Base handler for Config pages."""
 
 from __future__ import unicode_literals
 

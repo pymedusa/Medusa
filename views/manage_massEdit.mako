@@ -12,7 +12,7 @@
         initial_quality = int(quality_value)
     else:
         initial_quality = common.SD
-    allowed_qualities, preferred_qualities = common.Quality.splitQuality(initial_quality)
+    allowed_qualities, preferred_qualities = common.Quality.split_quality(initial_quality)
 %>
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/mass-edit.js?${sbPID}"></script>
@@ -79,7 +79,6 @@
                                             initial_quality = int(quality_value)
                                         else:
                                             initial_quality = common.SD
-                                        allowed_qualities, preferred_qualities = common.Quality.splitQuality(initial_quality)
                                     %>
                                     <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
                                         <option value="keep">&lt; Keep &gt;</option>
@@ -144,8 +143,8 @@
                                 <span class="component-desc">
                                     <select id="edit_default_ep_status" name="default_ep_status" class="form-control form-control-inline input-sm">
                                         <option value="keep">&lt; Keep &gt;</option>
-                                        % for curStatus in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${curStatus}" ${'selected="selected"' if curStatus == default_ep_status_value else ''}>${statusStrings[curStatus]}</option>
+                                        % for cur_status in [WANTED, SKIPPED, IGNORED]:
+                                        <option value="${cur_status}" ${'selected="selected"' if cur_status == default_ep_status_value else ''}>${statusStrings[cur_status]}</option>
                                         % endfor
                                     </select><br>
                                     This will set the status for future episodes.

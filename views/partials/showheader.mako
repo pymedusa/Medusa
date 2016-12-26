@@ -148,7 +148,7 @@
                 <div id="summary" class="col-md-12">
                     <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-8 col-md-8 col-sm-8 col-xs-12">
                         <table class="summaryTable pull-left">
-                            <% allowed_qualities, preferred_qualities = Quality.splitQuality(int(show.quality)) %>
+                            <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
                                 ${renderQualityPill(show.quality)}

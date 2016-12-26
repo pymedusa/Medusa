@@ -69,7 +69,7 @@ def clear_cache(indexerid=0):
 
 
 def saveNameCacheToDb():
-    """Commit cache to database file"""
+    """Commit cache to database file."""
     cache_db_con = db.DBConnection('cache.db')
 
     for name, indexer_id in iteritems(name_cache):
@@ -82,7 +82,7 @@ def build_name_cache(show=None):
     :param show: Specify show to build name cache for, if None, just do all shows
     """
     def _cache_name(show):
-        """Builds the name cache for a single show"""
+        """Builds the name cache for a single show."""
         clear_cache(show.indexerid)
         for season in [-1] + get_scene_seasons(show.indexerid):
             for name in set(get_scene_exceptions(show.indexerid, season=season) + [show.name]):

@@ -369,7 +369,7 @@ class ParseResult(object):
         quality = common.Quality.from_guessit(guess)
         if quality != common.Quality.UNKNOWN:
             return quality
-        return common.Quality.nameQuality(self.original_name, self.is_anime, extend)
+        return common.Quality.name_quality(self.original_name, self.is_anime, extend)
 
     @property
     def is_air_by_date(self):

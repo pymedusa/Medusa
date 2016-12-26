@@ -433,7 +433,7 @@ class TVmaze(BaseIndexer):
         return True
 
     def _get_all_updates(self, tvmaze_id=None, start_date=None, end_date=None):
-        """Retrieve all updates (show,season,episode) from TVMaze"""
+        """Retrieve all updates (show,season,episode) from TVMaze."""
         results = []
         try:
             updates = self.tvmaze_api.show_updates()

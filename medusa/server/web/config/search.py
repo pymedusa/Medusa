@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Configure Searches
-"""
+"""Configure Searches."""
 
 from __future__ import unicode_literals
 

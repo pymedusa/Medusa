@@ -100,11 +100,11 @@ class MainSanityCheck(db.DBSanityCheck):
             logger.log(u"Found %i shows with bare archived status, attempting automatic conversion..." % len(sql_results), logger.WARNING)
 
         for archivedEp in sql_results:
-            fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, common.Quality.UNKNOWN)
+            fixedStatus = common.Quality.composite_status(common.ARCHIVED, common.Quality.UNKNOWN)
             existing = archivedEp['location'] and os.path.exists(archivedEp['location'])
             if existing:
-                quality = common.Quality.nameQuality(archivedEp['location'], archivedEp['anime'], extend=False)
-                fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, quality)
+                quality = common.Quality.name_quality(archivedEp['location'], archivedEp['anime'], extend=False)
+                fixedStatus = common.Quality.composite_status(common.ARCHIVED, quality)
 
             logger.log(u'Changing status from {old_status} to {new_status} for {id}: {ep} at {location} (File {result})'.format
                        (old_status=common.statusStrings[common.ARCHIVED], new_status=common.statusStrings[fixedStatus],
@@ -334,7 +334,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
 def backupDatabase(version):
     logger.log(u"Backing up database before upgrade")
-    if not helpers.backupVersionedFile(db.dbFilename(), version):
+    if not helpers.backup_versioned_file(db.dbFilename(), version):
         logger.log_error_and_exit(u"Database backup failed, abort upgrading database")
     else:
         logger.log(u"Proceeding with upgrade")

@@ -265,8 +265,8 @@
                                 <span class="component-desc">
                                     <select name="nzb_method" id="nzb_method" class="form-control input-sm">
 <% nzb_method_text = {'blackhole': "Black hole", 'sabnzbd': "SABnzbd", 'nzbget': "NZBget"} %>
-% for curAction in ('sabnzbd', 'blackhole', 'nzbget'):
-                                    <option value="${curAction}" ${'selected="selected"' if app.NZB_METHOD == curAction else ''}>${nzb_method_text[curAction]}</option>
+% for cur_action in ('sabnzbd', 'blackhole', 'nzbget'):
+                                    <option value="${cur_action}" ${'selected="selected"' if app.NZB_METHOD == cur_action else ''}>${nzb_method_text[cur_action]}</option>
 % endfor
                                     </select>
                                 </span>
@@ -492,8 +492,8 @@
                                     <span class="component-desc">
                                     <select name="torrent_method" id="torrent_method" class="form-control input-sm">
     <% torrent_method_text = {'blackhole': "Black hole", 'utorrent': "uTorrent", 'transmission': "Transmission", 'deluge': "Deluge (via WebUI)", 'deluged': "Deluge (via Daemon)", 'download_station': "Synology DS", 'rtorrent': "rTorrent", 'qbittorrent': "qbittorrent", 'mlnet': "MLDonkey"} %>
-    % for curAction in ('blackhole', 'utorrent', 'transmission', 'deluge', 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'):
-                                    <option value="${curAction}" ${'selected="selected"' if app.TORRENT_METHOD == curAction else ''}>${torrent_method_text[curAction]}</option>
+    % for cur_action in ('blackhole', 'utorrent', 'transmission', 'deluge', 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'):
+                                    <option value="${cur_action}" ${'selected="selected"' if app.TORRENT_METHOD == cur_action else ''}>${torrent_method_text[cur_action]}</option>
     % endfor
                                     </select>
                                     </span>

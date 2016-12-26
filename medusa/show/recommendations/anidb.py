@@ -43,7 +43,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
 
     def _create_recommended_show(self, show_obj):
-        """Create the RecommendedShow object from the returned showobj"""
+        """Create the RecommendedShow object from the returned showobj."""
         try:
             tvdb_id = self.anidb.aid_to_tvdb_id(show_obj.aid)
         except Exception:

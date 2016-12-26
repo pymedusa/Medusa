@@ -13,7 +13,7 @@ def data(create_tvshow, create_tvepisode):
     show_year = 2012
     tvshow = create_tvshow(indexerid=12, name='{0} ({1})'.format(show_name, show_year), imdbid='tt0000000')
     tvepisode = create_tvepisode(show=tvshow, indexer=34, season=3, episode=4, name='Episode Title',
-                                 file_size=1122334455, status=Quality.compositeStatus(DOWNLOADED, Quality.FULLHDBLURAY),
+                                 file_size=1122334455, status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
                                  release_group='SuperGroup')
     return {
         'tvshow': tvshow,

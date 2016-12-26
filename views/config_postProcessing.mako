@@ -64,8 +64,8 @@
                                     <span class="component-desc">
                                         <select name="process_method" id="process_method" class="form-control input-sm">
                                             <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                                            % for curAction in ('copy', 'move', 'hardlink', 'symlink'):
-                                            <option value="${curAction}" ${'selected="selected"' if app.PROCESS_METHOD == curAction else ''}>${process_method_text[curAction]}</option>
+                                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                                            <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                                             % endfor
                                         </select>
                                     </span>
@@ -1097,10 +1097,10 @@
                     <br>
                     <h6 class="pull-right"><b>All non-absolute folder locations are relative to <span class="path">${app.DATA_DIR}</span></b> </h6>
                     <input type="submit" class="btn pull-left config_submitter button" value="Save Changes" />
+                </div><!--/config-components//-->
             </form>
-        </div>
-    </div>
+        </div><!--/config-content//-->
+    </div><!--/config//-->
     <div class="clearfix"></div>
 </div><!-- #content960 //-->
-</div>
 </%block>

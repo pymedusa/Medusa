@@ -32,7 +32,7 @@ from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helpers import download_file, getURL, make_session
+from ..helpers import download_file, get_url, make_session
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..show.show import Show
@@ -395,7 +395,7 @@ class GenericProvider(object):
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return getURL(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
 
     def image_name(self):
         """Return provider image name."""

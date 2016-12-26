@@ -22,9 +22,7 @@ from .generic import GenericMedia
 
 
 class ShowNetworkLogo(GenericMedia):
-    """
-    Get the network logo of a show
-    """
+    """Get the network logo of a show."""
 
     def get_default_media_name(self):
         return join('network', 'nonetwork.png')

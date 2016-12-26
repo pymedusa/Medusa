@@ -13,16 +13,16 @@
 % endif
 <%
     schedulerList = {
-        'Daily Search': 'dailySearchScheduler',
-        'Backlog': 'backlogSearchScheduler',
-        'Show Update': 'showUpdateScheduler',
-        'Version Check': 'versionCheckScheduler',
-        'Show Queue': 'showQueueScheduler',
-        'Search Queue': 'searchQueueScheduler',
-        'Proper Finder': 'properFinderScheduler',
-        'Post Process': 'autoPostProcessorScheduler',
-        'Subtitles Finder': 'subtitlesFinderScheduler',
-        'Trakt Checker': 'traktCheckerScheduler',
+        'Daily Search': 'daily_search_scheduler',
+        'Backlog': 'backlog_search_scheduler',
+        'Show Update': 'show_update_scheduler',
+        'Version Check': 'version_check_scheduler',
+        'Show Queue': 'show_queue_scheduler',
+        'Search Queue': 'search_queue_scheduler',
+        'Proper Finder': 'proper_finder_scheduler',
+        'Post Process': 'auto_post_processor_scheduler',
+        'Subtitles Finder': 'subtitles_finder_scheduler',
+        'Trakt Checker': 'trakt_checker_scheduler',
     }
 %>
 <div id="config-content">
@@ -51,8 +51,8 @@
                % else:
                <td style="background-color:rgb(255, 0, 0);">${service.isAlive()}</td>
                % endif
-               % if scheduler == 'backlogSearchScheduler':
-                   <% searchQueue = getattr(app, 'searchQueueScheduler') %>
+               % if scheduler == 'backlog_search_scheduler':
+                   <% searchQueue = getattr(app, 'search_queue_scheduler') %>
                    <% BLSpaused = searchQueue.action.is_backlog_paused() %>
                    <% del searchQueue %>
                    % if BLSpaused:
@@ -63,8 +63,8 @@
                % else:
                <td>${service.enable}</td>
                % endif
-               % if scheduler == 'backlogSearchScheduler':
-                   <% searchQueue = getattr(app, 'searchQueueScheduler') %>
+               % if scheduler == 'backlog_search_scheduler':
+                   <% searchQueue = getattr(app, 'search_queue_scheduler') %>
                    <% BLSinProgress = searchQueue.action.is_backlog_in_progress() %>
                    <% del searchQueue %>
                    % if BLSinProgress:
@@ -118,39 +118,39 @@
             </tr>
         </thead>
         <tbody>
-            % if app.showQueueScheduler.action.currentItem is not None:
+            % if app.show_queue_scheduler.action.currentItem is not None:
                 <tr>
                     % try:
-                        <% showindexerid = app.showQueueScheduler.action.currentItem.show.indexerid %>
+                        <% showindexerid = app.show_queue_scheduler.action.currentItem.show.indexerid %>
                         <td>${showindexerid}</td>
                     % except Exception:
                         <td></td>
                     % endtry
                     % try:
-                        <% showname = app.showQueueScheduler.action.currentItem.show.name %>
+                        <% showname = app.show_queue_scheduler.action.currentItem.show.name %>
                         <td>${showname}</td>
                     % except Exception:
-                        % if app.showQueueScheduler.action.currentItem.action_id == ShowQueueActions.ADD:
-                            <td>${app.showQueueScheduler.action.currentItem.showDir}</td>
+                        % if app.show_queue_scheduler.action.currentItem.action_id == ShowQueueActions.ADD:
+                            <td>${app.show_queue_scheduler.action.currentItem.showDir}</td>
                         % else:
                             <td></td>
                         % endif
                     % endtry
-                    <td>${app.showQueueScheduler.action.currentItem.inProgress}</td>
-                    % if app.showQueueScheduler.action.currentItem.priority == 10:
+                    <td>${app.show_queue_scheduler.action.currentItem.inProgress}</td>
+                    % if app.show_queue_scheduler.action.currentItem.priority == 10:
                         <td>LOW</td>
-                    % elif app.showQueueScheduler.action.currentItem.priority == 20:
+                    % elif app.show_queue_scheduler.action.currentItem.priority == 20:
                         <td>NORMAL</td>
-                    % elif app.showQueueScheduler.action.currentItem.priority == 30:
+                    % elif app.show_queue_scheduler.action.currentItem.priority == 30:
                         <td>HIGH</td>
                     % else:
-                        <td>app.showQueueScheduler.action.currentItem.priority</td>
+                        <td>app.show_queue_scheduler.action.currentItem.priority</td>
                     % endif
-                    <td>${app.showQueueScheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
-                    <td>${ShowQueueActions.names[app.showQueueScheduler.action.currentItem.action_id]}</td>
+                    <td>${app.show_queue_scheduler.action.currentItem.added.strftime(dateTimeFormat)}</td>
+                    <td>${ShowQueueActions.names[app.show_queue_scheduler.action.currentItem.action_id]}</td>
                 </tr>
             % endif
-            % for item in app.showQueueScheduler.action.queue:
+            % for item in app.show_queue_scheduler.action.queue:
                 <tr>
                     % try:
                         <% showindexerid = item.show.indexerid %>

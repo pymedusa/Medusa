@@ -137,7 +137,7 @@ def allPossibleShowNames(show, season=-1):
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):
-    """Determine a release name from an nzb and/or folder name"""
+    """Determine a release name from an nzb and/or folder name."""
 
     if nzb_name is not None:
         logger.log(u"Using nzb_name for release name.")

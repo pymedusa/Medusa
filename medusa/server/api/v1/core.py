@@ -527,7 +527,7 @@ def _map_quality(show_obj):
     allowed_qualities = []
     preferred_qualities = []
 
-    i_quality_id, a_quality_id = Quality.splitQuality(int(show_obj))
+    i_quality_id, a_quality_id = Quality.split_quality(int(show_obj))
     if i_quality_id:
         for quality in i_quality_id:
             allowed_qualities.append(mapped_quality[quality])
@@ -728,7 +728,7 @@ class CMD_Episode(ApiCall):
         else:
             episode['airdate'] = 'Never'
 
-        status, quality = Quality.splitCompositeStatus(int(episode["status"]))
+        status, quality = Quality.split_composite_status(int(episode["status"]))
         episode["status"] = statusStrings[status]
         episode["quality"] = get_quality_string(quality)
         episode["file_size_human"] = pretty_file_size(episode["file_size"])
@@ -771,7 +771,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # make a queue item for it and put it on the queue
         ep_queue_item = ForcedSearchQueueItem(show_obj, [ep_obj])
-        app.forcedSearchQueueScheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
+        app.forced_search_queue_scheduler.action.add_item(ep_queue_item)  # @UndefinedVariable
 
         # wait until the queue item tells us whether it worked or not
         while ep_queue_item.success is None:  # @UndefinedVariable
@@ -779,7 +779,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # return the correct json value
         if ep_queue_item.success:
-            _, quality = Quality.splitCompositeStatus(ep_obj.status)
+            _, quality = Quality.split_composite_status(ep_obj.status)
             # TODO: split quality and status?
             return _responds(RESULT_SUCCESS, {"quality": get_quality_string(quality)},
                              "Snatched (" + get_quality_string(quality) + ")")
@@ -893,7 +893,7 @@ class CMD_EpisodeSetStatus(ApiCall):
         if start_backlog:
             for season, segment in iteritems(segments):
                 cur_backlog_queue_item = BacklogQueueItem(show_obj, segment)
-                app.searchQueueScheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
+                app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)  # @UndefinedVariable
 
                 logger.log(u"API :: Starting backlog for " + show_obj.name + " season " + str(
                     season) + " because some episodes were set to WANTED")
@@ -1046,7 +1046,7 @@ class CMD_History(ApiCall):
                     History.date_format
                 ).strftime(dateTimeFormat)
 
-            composite = Quality.splitCompositeStatus(cur_item.action)
+            composite = Quality.split_composite_status(cur_item.action)
             if cur_type in (statusStrings[composite.status].lower(), None):
                 return {
                     'date': convert_date(cur_item.date),
@@ -1144,7 +1144,7 @@ class CMD_Backlog(ApiCall):
         shows = []
 
         main_db_con = db.DBConnection(row_type="dict")
-        for curShow in app.showList:
+        for cur_show in app.showList:
 
             show_eps = []
 
@@ -1153,19 +1153,19 @@ class CMD_Backlog(ApiCall):
                 "FROM tv_episodes "
                 "INNER JOIN tv_shows ON tv_episodes.showid = tv_shows.indexer_id "
                 "WHERE showid = ? and paused = 0 ORDER BY season DESC, episode DESC",
-                [curShow.indexerid])
+                [cur_show.indexerid])
 
-            for curResult in sql_results:
+            for cur_result in sql_results:
 
-                cur_ep_cat = curShow.get_overview(curResult["status"], manually_searched=curResult["manually_searched"])
+                cur_ep_cat = cur_show.get_overview(cur_result["status"], manually_searched=cur_result["manually_searched"])
                 if cur_ep_cat and cur_ep_cat in (Overview.WANTED, Overview.QUAL):
-                    show_eps.append(curResult)
+                    show_eps.append(cur_result)
 
             if show_eps:
                 shows.append({
-                    "indexerid": curShow.indexerid,
-                    "show_name": curShow.name,
-                    "status": curShow.status,
+                    "indexerid": cur_show.indexerid,
+                    "show_name": cur_show.name,
+                    "status": cur_show.status,
                     "episodes": show_eps
                 })
 
@@ -1407,9 +1407,9 @@ class CMD_CheckScheduler(ApiCall):
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select("SELECT last_backlog FROM info")
 
-        backlog_paused = app.searchQueueScheduler.action.is_backlog_paused()  # @UndefinedVariable
-        backlog_running = app.searchQueueScheduler.action.is_backlog_in_progress()  # @UndefinedVariable
-        next_backlog = app.backlogSearchScheduler.nextRun().strftime(dateFormat).decode(app.SYS_ENCODING)
+        backlog_paused = app.search_queue_scheduler.action.is_backlog_paused()  # @UndefinedVariable
+        backlog_running = app.search_queue_scheduler.action.is_backlog_in_progress()  # @UndefinedVariable
+        next_backlog = app.backlog_search_scheduler.next_run().strftime(dateFormat).decode(app.SYS_ENCODING)
 
         data = {"backlog_is_paused": int(backlog_paused), "backlog_is_running": int(backlog_running),
                 "last_backlog": _ordinal_to_date_form(sql_results[0]["last_backlog"]),
@@ -1537,10 +1537,10 @@ class CMD_PauseBacklog(ApiCall):
     def run(self):
         """ Pause or un-pause the backlog search """
         if self.pause:
-            app.searchQueueScheduler.action.pause_backlog()  # @UndefinedVariable
+            app.search_queue_scheduler.action.pause_backlog()  # @UndefinedVariable
             return _responds(RESULT_SUCCESS, msg="Backlog paused")
         else:
-            app.searchQueueScheduler.action.unpause_backlog()  # @UndefinedVariable
+            app.search_queue_scheduler.action.unpause_backlog()  # @UndefinedVariable
             return _responds(RESULT_SUCCESS, msg="Backlog un-paused")
 
 
@@ -1625,10 +1625,10 @@ class CMD_SearchIndexers(ApiCall):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     continue
 
-                for curSeries in api_data:
-                    results.append({indexer_ids[_indexer]: int(curSeries['id']),
-                                    "name": curSeries['seriesname'],
-                                    "first_aired": curSeries['firstaired'],
+                for cur_series in api_data:
+                    results.append({indexer_ids[_indexer]: int(cur_series['id']),
+                                    "name": cur_series['seriesname'],
+                                    "first_aired": cur_series['firstaired'],
                                     "indexer": int(_indexer)})
 
             return _responds(RESULT_SUCCESS, {"results": results, "langid": lang_id})
@@ -1746,7 +1746,7 @@ class CMD_SetDefaults(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            app.QUALITY_DEFAULT = Quality.combineQualities(i_quality_id, a_quality_id)
+            app.QUALITY_DEFAULT = Quality.combine_qualities(i_quality_id, a_quality_id)
 
         if self.status:
             # convert the string status to a int
@@ -1974,9 +1974,9 @@ class CMD_ShowAddExisting(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            new_quality = Quality.combineQualities(i_quality_id, a_quality_id)
+            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
 
-        app.showQueueScheduler.action.addShow(
+        app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), self.location,
             default_status=app.STATUS_DEFAULT, quality=new_quality,
             flatten_folders=int(self.flatten_folders), subtitles=self.subtitles,
@@ -2065,7 +2065,7 @@ class CMD_ShowAddNew(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            new_quality = Quality.combineQualities(i_quality_id, a_quality_id)
+            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
 
         # use default status as a fail-safe
         new_status = app.STATUS_DEFAULT
@@ -2123,15 +2123,15 @@ class CMD_ShowAddNew(ApiCall):
         if app.ADD_SHOWS_WO_DIR:
             logger.log(u"Skipping initial creation of " + show_path + " due to config.ini setting")
         else:
-            dir_exists = helpers.makeDir(show_path)
+            dir_exists = helpers.make_dir(show_path)
             if not dir_exists:
                 logger.log(u"API :: Unable to create the folder " + show_path + ", can't add the show", logger.ERROR)
                 return _responds(RESULT_FAILURE, {"path": show_path},
                                  "Unable to create the folder " + show_path + ", can't add the show")
             else:
-                helpers.chmodAsParent(show_path)
+                helpers.chmod_as_parent(show_path)
 
-        app.showQueueScheduler.action.addShow(
+        app.show_queue_scheduler.action.addShow(
             int(indexer), int(self.indexerid), show_path, default_status=new_status,
             quality=new_quality, flatten_folders=int(self.flatten_folders),
             lang=self.lang, subtitles=self.subtitles, anime=self.anime,
@@ -2189,7 +2189,7 @@ class CMD_ShowDelete(ApiCall):
         },
         "optionalParameters": {
             "tvdbid": {"desc": "thetvdb.com unique ID of a show"},
-            "removefiles": {
+            "remove_files": {
                 "desc": "True to delete the files associated with the show, False otherwise. This can not be undone!"
             },
         }
@@ -2199,13 +2199,13 @@ class CMD_ShowDelete(ApiCall):
         # required
         self.indexerid, args = self.check_params(args, kwargs, "indexerid", None, True, "int", [])
         # optional
-        self.removefiles, args = self.check_params(args, kwargs, "removefiles", False, False, "bool", [])
+        self.remove_files, args = self.check_params(args, kwargs, "remove_files", False, False, "bool", [])
         # super, missing, help
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
         """ Delete a show in Medusa """
-        error, show = Show.delete(self.indexerid, self.removefiles)
+        error, show = Show.delete(self.indexerid, self.remove_files)
 
         if error:
             return _responds(RESULT_FAILURE, msg=error)
@@ -2482,7 +2482,7 @@ class CMD_ShowSeasons(ApiCall):
                 [self.indexerid])
             seasons = {}
             for row in sql_results:
-                status, quality = Quality.splitCompositeStatus(int(row["status"]))
+                status, quality = Quality.split_composite_status(int(row["status"]))
                 row["status"] = statusStrings[status]
                 row["quality"] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
@@ -2509,7 +2509,7 @@ class CMD_ShowSeasons(ApiCall):
             for row in sql_results:
                 cur_episode = int(row["episode"])
                 del row["episode"]
-                status, quality = Quality.splitCompositeStatus(int(row["status"]))
+                status, quality = Quality.split_composite_status(int(row["status"]))
                 row["status"] = statusStrings[status]
                 row["quality"] = get_quality_string(quality)
                 if try_int(row['airdate'], 1) > 693595:  # 1900
@@ -2567,7 +2567,7 @@ class CMD_ShowSetQuality(ApiCall):
                 a_quality_id.append(quality_map[quality])
 
         if i_quality_id or a_quality_id:
-            new_quality = Quality.combineQualities(i_quality_id, a_quality_id)
+            new_quality = Quality.combine_qualities(i_quality_id, a_quality_id)
         show_obj.quality = new_quality
 
         return _responds(RESULT_SUCCESS,
@@ -2608,7 +2608,7 @@ class CMD_ShowStats(ApiCall):
         # add all the downloaded qualities
         episode_qualities_counts_download = {"total": 0}
         for statusCode in Quality.DOWNLOADED + Quality.ARCHIVED:
-            status, quality = Quality.splitCompositeStatus(statusCode)
+            status, quality = Quality.split_composite_status(statusCode)
             if quality in [Quality.NONE]:
                 continue
             episode_qualities_counts_download[statusCode] = 0
@@ -2616,7 +2616,7 @@ class CMD_ShowStats(ApiCall):
         # add all snatched qualities
         episode_qualities_counts_snatch = {"total": 0}
         for statusCode in Quality.SNATCHED + Quality.SNATCHED_PROPER:
-            status, quality = Quality.splitCompositeStatus(statusCode)
+            status, quality = Quality.split_composite_status(statusCode)
             if quality in [Quality.NONE]:
                 continue
             episode_qualities_counts_snatch[statusCode] = 0
@@ -2626,7 +2626,7 @@ class CMD_ShowStats(ApiCall):
                                          [self.indexerid])
         # the main loop that goes through all episodes
         for row in sql_results:
-            status, quality = Quality.splitCompositeStatus(int(row["status"]))
+            status, quality = Quality.split_composite_status(int(row["status"]))
 
             episode_status_counts_total["total"] += 1
 
@@ -2648,7 +2648,7 @@ class CMD_ShowStats(ApiCall):
             if statusCode == "total":
                 episodes_stats["downloaded"]["total"] = episode_qualities_counts_download[statusCode]
                 continue
-            status, quality = Quality.splitCompositeStatus(int(statusCode))
+            status, quality = Quality.split_composite_status(int(statusCode))
             status_string = Quality.qualityStrings[quality].lower().replace(" ", "_").replace("(", "").replace(")", "")
             episodes_stats["downloaded"][status_string] = episode_qualities_counts_download[statusCode]
 
@@ -2659,7 +2659,7 @@ class CMD_ShowStats(ApiCall):
             if statusCode == "total":
                 episodes_stats["snatched"]["total"] = episode_qualities_counts_snatch[statusCode]
                 continue
-            status, quality = Quality.splitCompositeStatus(int(statusCode))
+            status, quality = Quality.split_composite_status(int(statusCode))
             status_string = Quality.qualityStrings[quality].lower().replace(" ", "_").replace("(", "").replace(")", "")
             if Quality.qualityStrings[quality] in episodes_stats["snatched"]:
                 episodes_stats["snatched"][status_string] += episode_qualities_counts_snatch[statusCode]
@@ -2703,7 +2703,7 @@ class CMD_ShowUpdate(ApiCall):
             return _responds(RESULT_FAILURE, msg="Show not found")
 
         try:
-            app.showQueueScheduler.action.updateShow(show_obj)
+            app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg=str(show_obj.name) + " has queued to be updated")
         except CantUpdateShowException as e:
             logger.log(u"API::Unable to update show: {0}".format(str(e)), logger.DEBUG)
@@ -2730,41 +2730,41 @@ class CMD_Shows(ApiCall):
     def run(self):
         """ Get all shows in Medusa """
         shows = {}
-        for curShow in app.showList:
+        for cur_show in app.showList:
             # If self.paused is None: show all, 0: show un-paused, 1: show paused
-            if self.paused is not None and self.paused != curShow.paused:
+            if self.paused is not None and self.paused != cur_show.paused:
                 continue
 
             show_dict = {
-                "paused": (0, 1)[curShow.paused],
-                "quality": get_quality_string(curShow.quality),
-                "language": curShow.lang,
-                "air_by_date": (0, 1)[curShow.air_by_date],
-                "sports": (0, 1)[curShow.sports],
-                "anime": (0, 1)[curShow.anime],
-                "indexerid": curShow.indexerid,
-                "tvdbid": curShow.indexerid if curShow.indexer == INDEXER_TVDBV2
-                else curShow.externals.get('tvdb_id', ''),
-                "network": curShow.network,
-                "show_name": curShow.name,
-                "status": curShow.status,
-                "subtitles": (0, 1)[curShow.subtitles],
+                "paused": (0, 1)[cur_show.paused],
+                "quality": get_quality_string(cur_show.quality),
+                "language": cur_show.lang,
+                "air_by_date": (0, 1)[cur_show.air_by_date],
+                "sports": (0, 1)[cur_show.sports],
+                "anime": (0, 1)[cur_show.anime],
+                "indexerid": cur_show.indexerid,
+                "tvdbid": cur_show.indexerid if cur_show.indexer == INDEXER_TVDBV2
+                else cur_show.externals.get('tvdb_id', ''),
+                "network": cur_show.network,
+                "show_name": cur_show.name,
+                "status": cur_show.status,
+                "subtitles": (0, 1)[cur_show.subtitles],
             }
 
-            if try_int(curShow.nextaired, 1) > 693595:  # 1900
+            if try_int(cur_show.nextaired, 1) > 693595:  # 1900
                 dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                    network_timezones.parse_date_time(curShow.nextaired, curShow.airs, show_dict['network']))
+                    network_timezones.parse_date_time(cur_show.nextaired, cur_show.airs, show_dict['network']))
                 show_dict['next_ep_airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
             else:
                 show_dict['next_ep_airdate'] = ''
 
-            show_dict["cache"] = CMD_ShowCache((), {"indexerid": curShow.indexerid}).run()["data"]
+            show_dict["cache"] = CMD_ShowCache((), {"indexerid": cur_show.indexerid}).run()["data"]
             if not show_dict["network"]:
                 show_dict["network"] = ""
             if self.sort == "name":
-                shows[curShow.name] = show_dict
+                shows[cur_show.name] = show_dict
             else:
-                shows[curShow.indexerid] = show_dict
+                shows[cur_show.indexerid] = show_dict
 
         return _responds(RESULT_SUCCESS, shows)
 

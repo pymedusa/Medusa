@@ -94,7 +94,7 @@ class Notifier(object):
             'Body': message or ''
         }
 
-        jdata = helpers.getURL(
+        jdata = helpers.get_url(
             'https://pushalot.com/api/sendmessage',
             post_data=post_data, session=self.session,
             returns='json'

@@ -51,7 +51,7 @@
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.splitQuality(int(show.quality)) %>
+                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
                                     <%include file="/inc_qualityChooser.mako"/>
                                 </span>
                             </label>
@@ -61,8 +61,8 @@
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
-                                        % for curStatus in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${curStatus}" ${'selected="selected"' if curStatus == show.default_ep_status else ''}>${statusStrings[curStatus]}</option>
+                                        % for cur_status in [WANTED, SKIPPED, IGNORED]:
+                                        <option value="${cur_status}" ${'selected="selected"' if cur_status == show.default_ep_status else ''}>${statusStrings[cur_status]}</option>
                                         % endfor
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>

@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Configure notifications
-"""
+"""Configure notifications."""
 
 from __future__ import unicode_literals
 
