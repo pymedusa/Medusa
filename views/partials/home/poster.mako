@@ -8,7 +8,7 @@
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
-% for cur_show_list in showlists:
+% for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
     % if cur_list_type == "Anime":
