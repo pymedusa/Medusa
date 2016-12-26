@@ -43,6 +43,7 @@
                             <option value="date" data-sort="setPosterSortBy/?sort=date"    ${'selected="selected" ' if app.POSTER_SORTBY=='date' else ''}>Next Episode</option>
                             <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected" ' if app.POSTER_SORTBY=='network' else ''}>Network</option>
                             <option value="progress" data-sort="setPosterSortBy/?sort=progress" ${'selected="selected"' if app.POSTER_SORTBY=='progress' else ''}>Progress</option>
+                            <option value="indexer" data-sort="setPosterSortBy/?sort=indexer" ${'selected="selected"' if app.POSTER_SORTBY=='indexer' else ''}>Indexer</option>
                       </select>
                     </div>
                     <div class="show-option pull-right">
