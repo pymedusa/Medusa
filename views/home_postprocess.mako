@@ -14,7 +14,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8 col-md-offset-2">
         <form name="processForm" method="post" action="home/postprocess/processEpisode" style="line-height: 40px;">
         <table>
             <input type="hidden" id="proc_type" name="type" value="manual">
