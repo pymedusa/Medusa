@@ -3982,8 +3982,8 @@ css helper classes
 }
 
 /* navbar padding, to make room for in-page scrollbars */
-.navbar-right {
-    padding-right: 10px;
+.padding-right-15 {
+    padding-right: 15px!important;
 }
 
 /* Christmas edition!!!*/

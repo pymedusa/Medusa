@@ -96,7 +96,7 @@
                     <div style="clear:both;"></div>
                 </li>
                 <li id="NAVsystem" class="navbar-split dropdown${' active' if topmenu == 'system' else ''}">
-                    <a href="home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
+                    <a href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
                     <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
