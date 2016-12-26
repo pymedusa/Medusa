@@ -18,12 +18,15 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import logging
 import re
 import traceback
+
 from fnmatch import fnmatch
 
 from six import PY3, text_type
+
 from .. import app
 
 logger = logging.getLogger(__name__)
@@ -357,3 +360,26 @@ def remove_strings(old_string, unwanted_strings):
     for item in unwanted_strings:
         old_string = old_string.replace(item, '')
     return old_string
+
+
+def pretty_date(d):
+    diff = datetime.datetime.now() - d
+    s = diff.seconds
+    if diff.days > 7 or diff.days < 0:
+        return d.strftime('%d %b %y')
+    elif diff.days == 1:
+        return '1 day ago'
+    elif diff.days > 1:
+        return '{} days ago'.format(diff.days)
+    elif s <= 1:
+        return 'just now'
+    elif s < 60:
+        return '{} seconds ago'.format(s)
+    elif s < 120:
+        return '1 minute ago'
+    elif s < 3600:
+        return '{} minutes ago'.format(s/60)
+    elif s < 7200:
+        return '1 hour ago'
+    else:
+        return '{} hours ago'.format(s/3600)
