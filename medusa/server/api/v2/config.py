@@ -5,7 +5,6 @@ import platform
 import sys
 from six import text_type
 import tornado
-import json
 
 from .base import BaseRequestHandler
 from .... import app, db
