@@ -36,14 +36,14 @@ def config(monkeypatch, app_config):
         'commitHash': app.CUR_COMMIT_HASH,
         'release': app.APP_VERSION,
         'sslVersion': app.OPENSSL_VERSION,
-        'pythonVersion': sys.version[:120],
+        'pythonVersion': python_version,
         'databaseVersion': {
             'major': app.MAJOR_DB_VERSION,
             'minor': app.MINOR_DB_VERSION
         },
         'os': platform.platform(),
-        'locale': '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE]),
-        'localUser': app.OS_USER or 'Unknown',
+        'locale': app_locale,
+        'localUser': os_user,
         'programDir': app.PROG_DIR,
         'configFile': app.CONFIG_FILE,
         'dbFilename': db.dbFilename(),
