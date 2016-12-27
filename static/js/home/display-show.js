@@ -407,4 +407,20 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     }, function(data) {
         setSeasonSceneException(data);
     });
+
+    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
+    $('.display-specials a').on('click', function(){
+        api.patch('config', {
+            layout: {
+                show: {
+                    specials: $(this).text() === 'Hide' ? false : true
+                }
+            }
+        }).then(function(response) {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(function(response){
+            log.error(response.data);
+        });
+    });
 };

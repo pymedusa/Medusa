@@ -127,8 +127,8 @@ class ConfigHandler(BaseRequestHandler):
                 'history': app.HISTORY_LAYOUT,
                 'home': app.HOME_LAYOUT,
                 'show': {
-                    'allSeasons': app.DISPLAY_ALL_SEASONS,
-                    'specials': app.DISPLAY_SHOW_SPECIALS
+                    'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
+                    'specials': bool(app.DISPLAY_SHOW_SPECIALS)
                 }
             }
         }
@@ -175,8 +175,6 @@ class ConfigHandler(BaseRequestHandler):
             # 'githubUrl': app.GITHUB_IO_URL,
             # 'wikiUrl': app.WIKI_URL,
             # 'sourceUrl': app.APPLICATION_URL,
-            # 'displayAllSeasons': app.DISPLAY_ALL_SEASONS,
-            # 'displayShowSpecials': app.DISPLAY_SHOW_SPECIALS,
             # 'downloadUrl': app.DOWNLOAD_URL,
             # 'subtitlesMulti': app.SUBTITLES_MULTI,
             # 'namingForceFolders': app.NAMING_FORCE_FOLDERS,
@@ -268,12 +266,13 @@ class ConfigHandler(BaseRequestHandler):
                 if 'show' in data['layout']:
                     done_data['layout'].setdefault('show', {})
                     if 'allSeasons' in data['layout']['show'] and str(data['layout']['show']['allSeasons']).lower() in ['true', 'false']:
-                        app.DISPLAY_ALL_SEASONS = data['layout']['show']['allSeasons']
-                        done_data['layout']['show'].setdefault('allSeasons', app.DISPLAY_ALL_SEASONS)
+                        app.DISPLAY_ALL_SEASONS = int(data['layout']['show']['allSeasons'])
+                        done_data['layout']['show'].setdefault('allSeasons', bool(app.DISPLAY_ALL_SEASONS))
                     if 'specials' in data['layout']['show'] and str(data['layout']['show']['specials']).lower() in ['true', 'false']:
-                        app.DISPLAY_SHOW_SPECIALS = data['layout']['show']['specials']
-                        done_data['layout']['show'].setdefault('specials', app.DISPLAY_SHOW_SPECIALS)
+                        app.DISPLAY_SHOW_SPECIALS = int(data['layout']['show']['specials'])
+                        done_data['layout']['show'].setdefault('specials', bool(app.DISPLAY_SHOW_SPECIALS))
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
-        print('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
+        if len(done_errors):
+            print('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
         self.api_finish(data=done_data)

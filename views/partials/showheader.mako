@@ -40,7 +40,7 @@
             <span class="h2footer display-specials">
                 % if season_special:
                 Display Specials:
-                    <a class="inner" href="home/toggleDisplayShowSpecials/?show=${show.indexerid}">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                    <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
                 % endif
             </span>
 
