@@ -19,7 +19,7 @@ def config(monkeypatch, app_config):
 
     return {
         'anonRedirect': app.ANON_REDIRECT,
-        'anonSplitHome': app.ANIME_SPLIT_HOME,
+        'animeSplitHome': app.ANIME_SPLIT_HOME,
         'comingEpsSort': app.COMING_EPS_SORT,
         'datePreset': app.DATE_PRESET,
         'fuzzyDating': app.FUZZY_DATING,

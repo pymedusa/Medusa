@@ -5,6 +5,7 @@ import platform
 import sys
 from six import text_type
 import tornado
+import json
 
 from .base import BaseRequestHandler
 from .... import app, db
@@ -26,7 +27,7 @@ class ConfigHandler(BaseRequestHandler):
         """
         config_data = {
             'anonRedirect': app.ANON_REDIRECT,
-            'anonSplitHome': app.ANIME_SPLIT_HOME,
+            'animeSplitHome': app.ANIME_SPLIT_HOME,
             'comingEpsSort': app.COMING_EPS_SORT,
             'datePreset': app.DATE_PRESET,
             'fuzzyDating': app.FUZZY_DATING,
@@ -43,7 +44,7 @@ class ConfigHandler(BaseRequestHandler):
             'commitHash': app.CUR_COMMIT_HASH,
             'release': app.APP_VERSION,
             'sslVersion': app.OPENSSL_VERSION,
-            'pythonVersion': sys.version[:120],
+            'pythonVersion': sys.version,
             'databaseVersion': {
                 'major': app.MAJOR_DB_VERSION,
                 'minor': app.MINOR_DB_VERSION
@@ -61,8 +62,6 @@ class ConfigHandler(BaseRequestHandler):
             'githubUrl': app.GITHUB_IO_URL,
             'wikiUrl': app.WIKI_URL,
             'sourceUrl': app.APPLICATION_URL,
-            'displayAllSeasons': app.DISPLAY_ALL_SEASONS,
-            'displayShowSpecials': app.DISPLAY_SHOW_SPECIALS,
             'downloadUrl': app.DOWNLOAD_URL,
             'subtitlesMulti': app.SUBTITLES_MULTI,
             'namingForceFolders': app.NAMING_FORCE_FOLDERS,
@@ -126,7 +125,11 @@ class ConfigHandler(BaseRequestHandler):
             'layout': {
                 'schedule': app.COMING_EPS_LAYOUT,
                 'history': app.HISTORY_LAYOUT,
-                'home': app.HOME_LAYOUT
+                'home': app.HOME_LAYOUT,
+                'show': {
+                    'allSeasons': app.DISPLAY_ALL_SEASONS,
+                    'specials': app.DISPLAY_SHOW_SPECIALS
+                }
             }
         }
 
@@ -139,9 +142,12 @@ class ConfigHandler(BaseRequestHandler):
         """Patch general configuration."""
         data = tornado.escape.json_decode(self.request.body)
         done_data = {}
+        done_errors = []
         for key in data.keys():
-            # 'anonRedirect': app.ANON_REDIRECT,
-            # 'anonSplitHome': app.ANIME_SPLIT_HOME,
+            if key == 'anonRedirect':
+                app.ANON_REDIRECT = data['anonRedirect']
+                done_data.setdefault('anonRedirect', app.ANON_REDIRECT)
+            # 'animeSplitHome': app.ANIME_SPLIT_HOME,
             # 'comingEpsSort': app.COMING_EPS_SORT,
             # 'datePreset': app.DATE_PRESET,
             # 'fuzzyDating': app.FUZZY_DATING,
@@ -154,18 +160,11 @@ class ConfigHandler(BaseRequestHandler):
             # 'trimZero': app.TRIM_ZERO,
             # 'fanartBackground': app.FANART_BACKGROUND,
             # 'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY,
-            # 'branch': app.BRANCH,
-            # 'commitHash': app.CUR_COMMIT_HASH,
-            # 'release': app.APP_VERSION,
-            # 'sslVersion': app.OPENSSL_VERSION,
-            # 'pythonVersion': sys.version[:120],
-            # 'databaseVersion': {
-            #     'major': app.MAJOR_DB_VERSION,
-            #     'minor': app.MINOR_DB_VERSION
-            # },
-            # 'os': platform.platform(),
-            # 'locale': '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE]),
-            # 'localUser': app.OS_USER or 'Unknown',
+            # 'branch': app.BRANCH, # @TODO: If branch change we should checkout new branch and if success return 200 otherwise return error
+            if key in ['commitHash', 'release', 'sslVersion', 'pythonVersion', 'databaseVersion', 'os', 'locale', 'localUser', ]:
+                # This is for fields that are static within the API
+                # For example you shouldn't be able to change the OS
+                done_errors.append(key)
             # 'programDir': app.PROG_DIR,
             # 'configFile': app.CONFIG_FILE,
             # 'dbFilename': db.dbFilename(),
@@ -196,34 +195,35 @@ class ConfigHandler(BaseRequestHandler):
             #     }
             # },
             if key == 'emby':
+                done_data.setdefault('emby', {})
                 if 'enabled' in data['emby'] and str(data['emby']['enabled']).lower() in ['true', 'false']:
-                    app.USE_EMBY = data['emby']['enabled']
-                    done_data.setdefault('emby', {})
-                    done_data['emby'].setdefault('enabled', app.USE_EMBY)
+                    # @TODO: All booleans should be saved as booleans
+                    app.USE_EMBY = int(data['emby']['enabled'])
+                    done_data['emby'].setdefault('enabled', bool(app.USE_EMBY))
             if key == 'torrents':
+                done_data.setdefault('torrents', {})
                 if 'enabled' in data['torrents'] and str(data['torrents']['enabled']).lower() in ['true', 'false']:
-                    app.USE_TORRENTS = data['torrents']['enabled']
-                    done_data.setdefault('torrents', {})
-                    done_data['torrents'].setdefault('enabled', app.USE_TORRENTS)
+                    # @TODO: All booleans should be saved as booleans
+                    app.USE_TORRENTS = int(data['torrents']['enabled'])
+                    done_data['torrents'].setdefault('enabled', bool(app.USE_TORRENTS))
                 if 'username' in data['torrents']:
                     app.TORRENT_USERNAME = str(data['torrents']['username'])
-                    done_data.setdefault('torrents', {})
                     done_data['torrents'].setdefault('username', app.TORRENT_USERNAME)
                 if 'password' in data['torrents']:
                     app.TORRENT_PASSWORD = str(data['torrents']['password'])
-                    done_data.setdefault('torrents', {})
                     done_data['torrents'].setdefault('password', app.TORRENT_PASSWORD)
                 if 'label' in data['torrents']:
                     app.TORRENT_LABEL = str(data['torrents']['label'])
-                    done_data.setdefault('torrents', {})
                     done_data['torrents'].setdefault('label', app.TORRENT_LABEL)
                 if 'labelAnime' in data['torrents']:
                     app.TORRENT_LABEL_ANIME = str(data['torrents']['labelAnime'])
-                    done_data.setdefault('torrents', {})
                     done_data['torrents'].setdefault('labelAnime', app.TORRENT_LABEL_ANIME)
                 if 'verifySSL' in data['torrents'] and str(data['torrents']['verifySSL']).lower() in ['true', 'false']:
-                    app.TORRENT_VERIFY_CERT = str(data['torrents']['verifySSL'])
-                    done_data.setdefault('torrents', {})
+                    # @TODO: All booleans should be saved as booleans
+                    app.TORRENT_VERIFY_CERT = int(data['torrents']['verifySSL'])
+                    done_data['torrents'].setdefault('verifySSL', bool(app.TORRENT_VERIFY_CERT))
+                if 'path' in data['torrents']:
+                    app.TORRENT_PATH = str(data['torrents']['path'])
                     done_data['torrents'].setdefault('verifySSL', app.TORRENT_VERIFY_CERT)
                 #     'path': app.TORRENT_PATH,
                 #     'seedTime': app.TORRENT_SEED_TIME,
@@ -244,6 +244,7 @@ class ConfigHandler(BaseRequestHandler):
                 # if 'rpcurl' in data['torrents']:
                 # if 'authType' in data['torrents']:
             if key == 'layout':
+                done_data.setdefault('layout', {})
                 if 'schedule' in data['layout']:
                     if data['layout']['schedule'] in ('poster', 'banner', 'list', 'calendar'):
                         if data['layout']['schedule'] == 'calendar':
@@ -251,22 +252,28 @@ class ConfigHandler(BaseRequestHandler):
                         app.COMING_EPS_LAYOUT = data['layout']['schedule']
                     else:
                         app.COMING_EPS_LAYOUT = 'banner'
-                    done_data.setdefault('layout', {})
                     done_data['layout'].setdefault('schedule', app.COMING_EPS_LAYOUT)
                 if 'history' in data['layout']:
                     if data['layout']['history'] in ('compact', 'detailed'):
                         app.HISTORY_LAYOUT = data['layout']['history']
                     else:
                         app.HISTORY_LAYOUT = 'detailed'
-                    done_data.setdefault('layout', {})
                     done_data['layout'].setdefault('history', app.HISTORY_LAYOUT)
                 if 'home' in data['layout']:
                     if data['layout']['home'] in ('poster', 'small', 'banner', 'simple', 'coverflow'):
                         app.HOME_LAYOUT = data['layout']['home']
                     else:
                         app.HOME_LAYOUT = 'poster'
-                    done_data.setdefault('layout', {})
                     done_data['layout'].setdefault('home', app.HOME_LAYOUT)
+                if 'show' in data['layout']:
+                    done_data['layout'].setdefault('show', {})
+                    if 'allSeasons' in data['layout']['show'] and str(data['layout']['show']['allSeasons']).lower() in ['true', 'false']:
+                        app.DISPLAY_ALL_SEASONS = data['layout']['show']['allSeasons']
+                        done_data['layout']['show'].setdefault('allSeasons', app.DISPLAY_ALL_SEASONS)
+                    if 'specials' in data['layout']['show'] and str(data['layout']['show']['specials']).lower() in ['true', 'false']:
+                        app.DISPLAY_SHOW_SPECIALS = data['layout']['show']['specials']
+                        done_data['layout']['show'].setdefault('specials', app.DISPLAY_SHOW_SPECIALS)
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
+        print('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
         self.api_finish(data=done_data)
