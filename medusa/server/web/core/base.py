@@ -147,11 +147,6 @@ class BaseHandler(RequestHandler):
 
         super(BaseHandler, self).__init__(*args, **kwargs)
 
-    # def set_default_headers(self):
-    #     self.set_header(
-    #         'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0'
-    #     )
-
     def write_error(self, status_code, **kwargs):
         """
         Base error Handler for 404's
@@ -332,11 +327,6 @@ class WebRoot(WebHandler):
         # @TODO: Replace this with poster.sort.dir={asc, desc} PATCH /api/v2/config/layout
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
-
-    def toggleDisplayShowSpecials(self, show):
-        app.DISPLAY_SHOW_SPECIALS = not app.DISPLAY_SHOW_SPECIALS
-
-        return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def toggleScheduleDisplayPaused(self):
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
