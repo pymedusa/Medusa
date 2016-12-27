@@ -355,7 +355,7 @@ class WebRoot(WebHandler):
 
         return self.redirect('/schedule/')
 
-    def schedule(self, layout=None):
+    def schedule(self):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
         next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
@@ -389,14 +389,8 @@ class WebRoot(WebHandler):
             },
         ]
 
-        # Allow local overriding of layout parameter
-        if layout and layout in ('poster', 'banner', 'list', 'calendar'):
-            layout = layout
-        else:
-            layout = app.COMING_EPS_LAYOUT
-
         t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=layout,
+        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=app.COMING_EPS_LAYOUT,
                         title='Schedule', header='Schedule', topmenu='schedule',
                         controller='schedule', action='index')
 
