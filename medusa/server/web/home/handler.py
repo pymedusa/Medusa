@@ -908,7 +908,8 @@ class Home(WebRoot):
                                          cached_result[b'quality'],
                                          cached_result[b'name'],
                                          cached_result[b'indexerid'],
-                                         provider]) and cached_result[b'season'] is not None:
+                                         cached_result[b'season'] is not None,
+                                         provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
         try:
             show = int(cached_result[b'indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
