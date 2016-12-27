@@ -368,12 +368,8 @@ class WebRoot(WebHandler):
         return self.redirect('/schedule/')
 
     def setScheduleSort(self, sort):
-        if sort not in ('date', 'network', 'show'):
+        if sort not in ('date', 'network', 'show') or app.COMING_EPS_LAYOUT == 'calendar':
             sort = 'date'
-
-        if app.COMING_EPS_LAYOUT == 'calendar':
-            sort \
-                = 'date'
 
         app.COMING_EPS_SORT = sort
 

@@ -3,9 +3,9 @@
 
 import platform
 import sys
+from six import text_type
 import tornado
 
-from six import text_type
 from .base import BaseRequestHandler
 from .... import app, db
 
@@ -136,6 +136,7 @@ class ConfigHandler(BaseRequestHandler):
         self.api_finish(data=config_data[query] if query else config_data)
 
     def patch(self, *args, **kwargs):
+        """Patch general configuration."""
         data = tornado.escape.json_decode(self.request.body)
         done_data = {}
         for key in data.keys():
