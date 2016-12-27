@@ -121,8 +121,8 @@ def config(monkeypatch, app_config):
             'history': app.HISTORY_LAYOUT,
             'home': app.HOME_LAYOUT,
             'show': {
-                'allSeasons': app.DISPLAY_ALL_SEASONS,
-                'specials': app.DISPLAY_SHOW_SPECIALS
+                'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
+                'specials': bool(app.DISPLAY_SHOW_SPECIALS)
             }
         }
     }
