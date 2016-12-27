@@ -25,10 +25,6 @@ from tornado.web import HTTPError, RequestHandler, authenticated
 from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
-from ....media.banner import ShowBanner
-from ....media.fan_art import ShowFanArt
-from ....media.network_logo import ShowNetworkLogo
-from ....media.poster import ShowPoster
 from ....show.coming_episodes import ComingEpisodes
 
 
