@@ -911,6 +911,7 @@ class Home(WebRoot):
                                          cached_result[b'season'] is not None,
                                          provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
+
         try:
             show = int(cached_result[b'indexerid'])  # fails if show id ends in a period SickRage/sickrage-issues#65
             show_obj = Show.find(app.showList, show)
