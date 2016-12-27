@@ -119,7 +119,11 @@ def config(monkeypatch, app_config):
         'layout': {
             'schedule': app.COMING_EPS_LAYOUT,
             'history': app.HISTORY_LAYOUT,
-            'home': app.HOME_LAYOUT
+            'home': app.HOME_LAYOUT,
+            'show': {
+                'allSeasons': app.DISPLAY_ALL_SEASONS,
+                'specials': app.DISPLAY_SHOW_SPECIALS
+            }
         }
     }
 
