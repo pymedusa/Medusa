@@ -25,7 +25,8 @@ def get_apiv2_handlers(base):
     from .api.v2.base import NotFoundHandler
 
     show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
-    ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
+    # This has to accept season of 1-4 as some seasons are years. For example Formula 1
+    ep_id = r'(?:(?:s(?P<season>\d{1,4})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
     query = r'(?P<query>[\w]+)'
     query_extended = r'(?P<query>[\w \(\)%]+)'  # This also accepts the space char, () and %
     log_level = r'(?P<log_level>[a-zA-Z]+)'
