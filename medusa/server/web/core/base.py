@@ -357,15 +357,6 @@ class WebRoot(WebHandler):
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
 
-    def setHistoryLayout(self, layout):
-        # @TODO: Replace this with history={compact, detailed} PATCH /api/v2/config/layout
-        if layout not in ('compact', 'detailed'):
-            layout = 'detailed'
-
-        app.HISTORY_LAYOUT = layout
-
-        return self.redirect('/history/')
-
     def toggleDisplayShowSpecials(self, show):
         app.DISPLAY_SHOW_SPECIALS = not app.DISPLAY_SHOW_SPECIALS
 

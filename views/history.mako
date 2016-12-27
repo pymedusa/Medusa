@@ -44,9 +44,9 @@
             </div>
             <div class="show-option">
                 <span> Layout:
-                    <select name="HistoryLayout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                        <option value="setHistoryLayout/?layout=compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
-                        <option value="setHistoryLayout/?layout=detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
+                    <select name="layout" class="form-control form-control-inline input-sm">
+                        <option value="compact"  ${'selected="selected"' if app.HISTORY_LAYOUT == 'compact' else ''}>Compact</option>
+                        <option value="detailed" ${'selected="selected"' if app.HISTORY_LAYOUT == 'detailed' else ''}>Detailed</option>
                     </select>
                 </span>
             </div>
