@@ -371,18 +371,6 @@ class WebRoot(WebHandler):
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
-    def setScheduleLayout(self, layout):
-        # @TODO: Replace this with schedule={poster, banner, list, calandar} PATCH /api/v2/config/layout
-        if layout not in ('poster', 'banner', 'list', 'calendar'):
-            layout = 'banner'
-
-        if layout == 'calendar':
-            app.COMING_EPS_SORT = 'date'
-
-        app.COMING_EPS_LAYOUT = layout
-
-        return self.redirect('/schedule/')
-
     def toggleScheduleDisplayPaused(self):
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
 

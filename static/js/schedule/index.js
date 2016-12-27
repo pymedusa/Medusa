@@ -60,4 +60,17 @@ MEDUSA.schedule.index = function() {
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
+
+    $('.show-option select[name="layout"]').on('change', function(){
+        api.patch('config', {
+            layout: {
+                schedule: $(this).val()
+            }
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function (error) {
+            log.info(error);
+        });
+    });
 };

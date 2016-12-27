@@ -75,18 +75,19 @@ class ConfigHandler(BaseRequestHandler):
             'plex': {
                 'server': {
                     'enabled': bool(app.USE_PLEX_SERVER),
-                    # PLEX_NOTIFY_ONSNATCH = False
-                    # PLEX_NOTIFY_ONDOWNLOAD = False
-                    # PLEX_NOTIFY_ONSUBTITLEDOWNLOAD = False
-                    # PLEX_UPDATE_LIBRARY = False
+                    'notify': {
+                        'snatch': bool(app.PLEX_NOTIFY_ONSNATCH),
+                        'download' bool(app.PLEX_NOTIFY_ONDOWNLOAD),
+                        'subtitleDownload': bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
+                    },
+                    'updateLibrary': bool(app.PLEX_UPDATE_LIBRARY),
                     'host': app.PLEX_SERVER_HOST,
                     'token': app.PLEX_SERVER_TOKEN,
                     'username': app.PLEX_SERVER_USERNAME,
                     'password': app.PLEX_SERVER_PASSWORD
-                    # PLEX_SERVER_HTTPS = None
                 },
                 'client': {
-                    'enabled': app.USE_PLEX_CLIENT,
+                    'enabled': bool(app.USE_PLEX_CLIENT),
                     'username': app.PLEX_CLIENT_USERNAME,
                     'password': app.PLEX_CLIENT_PASSWORD,
                     'host': app.PLEX_CLIENT_HOST
@@ -112,7 +113,7 @@ class ConfigHandler(BaseRequestHandler):
                 'authType': app.TORRENT_AUTH_TYPE
             },
             'nzb': {
-                'enabled': app.USE_NZBS,
+                'enabled': bool(app.USE_NZBS),
                 'username': app.NZBGET_USERNAME,
                 'password': app.NZBGET_PASSWORD,
                 # app.NZBGET_CATEGORY
@@ -265,4 +266,6 @@ class ConfigHandler(BaseRequestHandler):
                         app.HOME_LAYOUT = 'poster'
                     done_data.setdefault('layout', {})
                     done_data['layout'].setdefault('home', app.HOME_LAYOUT)
+        # Make sure to update the config file after everything is updated
+        app.instance.save_config()
         self.api_finish(data=done_data)
