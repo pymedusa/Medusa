@@ -908,7 +908,7 @@ class Home(WebRoot):
                                          cached_result[b'quality'],
                                          cached_result[b'name'],
                                          cached_result[b'indexerid'],
-                                         cached_result[b'season'],
+                                         cached_result[b'season'] is not None,
                                          provider]):
             return self._genericMessage('Error', "Cached result doesn't have all needed info to snatch episode")
 
