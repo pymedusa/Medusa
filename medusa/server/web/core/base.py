@@ -322,26 +322,6 @@ class WebRoot(WebHandler):
         return t.render(title='API Builder', header='API Builder', shows=shows, episodes=episodes, apikey=apikey,
                         commands=function_mapper)
 
-    def showPoster(self, show=None, which=None):
-        media = None
-        media_format = ('normal', 'thumb')[which in ('banner_thumb', 'poster_thumb', 'small')]
-
-        if which[0:6] == 'banner':
-            media = ShowBanner(show, media_format)
-        elif which[0:6] == 'fanart':
-            media = ShowFanArt(show, media_format)
-        elif which[0:6] == 'poster':
-            media = ShowPoster(show, media_format)
-        elif which[0:7] == 'network':
-            media = ShowNetworkLogo(show, media_format)
-
-        if media is not None:
-            self.set_header('Content-Type', media.get_media_type())
-
-            return media.get_media()
-
-        return None
-
     @staticmethod
     def setPosterSortBy(sort):
         # @TODO: Replace this with poster.sort.field={name, date, network, progress} PATCH /api/v2/config/layout

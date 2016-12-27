@@ -6,6 +6,10 @@ import os
 
 from .base import BaseRequestHandler
 from .... import app
+from ....media.banner import ShowBanner
+from ....media.fan_art import ShowFanArt
+from ....media.network_logo import ShowNetworkLogo
+from ....media.poster import ShowPoster
 
 
 class AssetHandler(BaseRequestHandler):
@@ -13,34 +17,26 @@ class AssetHandler(BaseRequestHandler):
 
     def get(self, asset_group=None, query=None, *args, **kwargs):
         """Get an asset."""
-        if asset_group and query:
-            if asset_group == 'show':
-                asset_type = self.get_argument('type', default='banner')
-                # @TODO: Replace this with real posterThumb as we only have poster ATM
-                if asset_type == 'posterThumb':
-                    asset_type = 'poster'
-                return self._serve_asset(path=os.path.join(app.CACHE_DIR, 'images/'), filename=query + '.' + asset_type)
-            if asset_group == 'network':
-                return self._serve_asset(path=os.path.join(app.PROG_DIR, 'static/images/network/'), filename=query)
+        # http://localhost:8081/api/v2/asset/show/295519?api_key=xxx&type=banner
+        asset_type = self.get_argument('type', default='banner')
+        if asset_group == 'show':
+            show_id = query
+            media = None
+            media_format = ('normal', 'thumb')[asset_type in ('bannerThumb', 'posterThumb', 'small')]
 
-    def _serve_asset(self, path=None, filename=None):
-        """Serve the asset from the provided path."""
-        if path and filename:
-            for infile in glob.glob(os.path.join(path, filename.lower() + '.*')):
-                path = infile
-            mime_type, _ = mimetypes.guess_type(path)
-            if mime_type:
-                self.set_status(200)
-                self.set_header('Content-type', mime_type)
-                try:
-                    with open(path, 'rb') as f:
-                        while 1:
-                            data = f.read(16384)
-                            if not data:
-                                break
-                            self.write(data)
-                    self.finish()
-                except IOError:
-                    self.api_finish(status=404, error='Asset or Asset Type Does Not Exist')
-            else:
-                self.api_finish(status=404, error='Asset or Asset Type Does Not Exist')
+            if asset_type[0:6] == 'banner':
+                media = ShowBanner(show_id, media_format)
+            elif asset_type[0:6] == 'fanart':
+                media = ShowFanArt(show_id, media_format)
+            elif asset_type[0:6] == 'poster':
+                media = ShowPoster(show_id, media_format)
+            elif asset_type[0:7] == 'network':
+                media = ShowNetworkLogo(show_id, media_format)
+
+            if media is not None:
+                self.set_header('Content-Type', media.get_media_type())
+                self.api_finish(stream=media.get_media())
+
+            return None
+        else:
+            self.api_finish(status=404, error='Asset or Asset Type Does Not Exist')

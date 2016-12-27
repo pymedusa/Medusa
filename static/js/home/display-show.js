@@ -1,6 +1,8 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     if (MEDUSA.config.fanartBackground) {
-        $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
+        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
+        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+        $.backstretch(path);
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 

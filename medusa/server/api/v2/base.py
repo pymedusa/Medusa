@@ -32,7 +32,7 @@ class BaseRequestHandler(RequestHandler):
         self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Api-Key')
         self.set_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
 
-    def api_finish(self, status=None, error=None, data=None, headers=None, **kwargs):
+    def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, **kwargs):
         """End the api request writing error or data to http response."""
         if headers is not None:
             for header in headers:
@@ -47,6 +47,9 @@ class BaseRequestHandler(RequestHandler):
             if data is not None:
                 self.set_header('Content-Type', 'application/json; charset=UTF-8')
                 self.finish(json.JSONEncoder(default=json_string_encoder).encode(data))
+            elif stream:
+                # This is mainly for assets
+                self.finish(stream)
             elif kwargs:
                 self.finish(kwargs)
 

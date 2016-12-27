@@ -271,7 +271,7 @@
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
                 <a href="home/displayShow?show=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
+                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" asset="show/${cur_result['showid']}?type=${(layout, 'posterThumb')[layout == 'poster']}"/>
                 </a>
             </th>
 % if 'banner' == layout:
@@ -357,7 +357,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" src="showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
+                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" asset="show/${cur_result['showid']}?type=posterThumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">

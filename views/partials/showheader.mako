@@ -83,17 +83,16 @@
 
 <div class="row">
     <div id="container-display-show" class="col-md-12">
-
         <div class="show-poster-container">
-            <a href="showPoster/?show=${show.indexerid}&amp;which=poster" rel="dialog" title="View Poster for ${show.name}">
-                <img src="showPoster/?show=${show.indexerid}&amp;which=poster_thumb" class="tvshowImg" alt=""/>
+            <a asset="show/${show.indexerid}?type=poster" rel="dialog" title="View Poster for ${show.name}">
+                <img asset="show/${show.indexerid}?type=posterThumb" class="tvshowImg" alt=""/>
             </a>
         </div>
 
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right" src="showPoster/?show=${show.indexerid}&amp;which=banner">
+                    <img id="showBanner" class="pull-right" asset="show/${show.indexerid}?type=banner">
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
