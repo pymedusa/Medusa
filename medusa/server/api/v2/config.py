@@ -77,7 +77,7 @@ class ConfigHandler(BaseRequestHandler):
                     'enabled': bool(app.USE_PLEX_SERVER),
                     'notify': {
                         'snatch': bool(app.PLEX_NOTIFY_ONSNATCH),
-                        'download' bool(app.PLEX_NOTIFY_ONDOWNLOAD),
+                        'download': bool(app.PLEX_NOTIFY_ONDOWNLOAD),
                         'subtitleDownload': bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
                     },
                     'updateLibrary': bool(app.PLEX_UPDATE_LIBRARY),
