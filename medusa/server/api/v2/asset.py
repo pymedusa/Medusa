@@ -1,11 +1,7 @@
 # coding=utf-8
 """Request handler for assets."""
-import glob
-import mimetypes
-import os
 
 from .base import BaseRequestHandler
-from .... import app
 from ....media.banner import ShowBanner
 from ....media.fan_art import ShowFanArt
 from ....media.network_logo import ShowNetworkLogo
