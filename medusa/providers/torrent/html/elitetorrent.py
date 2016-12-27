@@ -177,7 +177,8 @@ class EliteTorrentProvider(TorrentProvider):
         title = title.replace('(calidad regular)', 'DVDrip x264')
         title = title.replace('(calidad media)', 'DVDrip x264')
 
-        # Language, all results from this provider have spanish audio, we append it to title (to avoid downloading undesired torrents)
+        # Language, all results from this provider have spanish audio,
+        # We append it to title (to avoid downloading undesired torrents)
         title += ' SPANISH AUDIO'
         title += '-ELITETORRENT'
 

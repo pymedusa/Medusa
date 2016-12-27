@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""All providers type init."""
 import pkgutil
 from os import sys
 from random import shuffle
@@ -22,15 +23,13 @@ from random import shuffle
 from .nzb import (
     anizb, binsearch, womble,
 )
-from .nzb.newznab import NewznabProvider
 from .torrent import (
-    abnormal, alpharatio, animebytes, animetorrents, bitcannon, bithdtv, bitsnoop, btn, cpasbien,
-    danishbits, elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs,
-    iptorrents, limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, sdbits, shazbat,
+    abnormal, alpharatio, animebytes, animetorrents, bitcannon, bithdtv, bitsnoop, btn, cpasbien, danishbits,
+    elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs, iptorrents,
+    limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, sdbits, shazbat,
     speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
     torrentshack, torrentz2, transmitthenet, tvchaosuk, xthor, zooqle
 )
-from .torrent.rss.rsstorrent import TorrentRssProvider
 from .. import app
 
 __all__ = [
