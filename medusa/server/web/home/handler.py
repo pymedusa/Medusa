@@ -201,6 +201,7 @@ class Home(WebRoot):
 
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
+        # @TODO: Move this to the validation section of each PATCH/PUT method for nzb
         connected_status = nzbget.testNZB(host, username, password, use_https)
         if connected_status:
             return 'Success. Connected and authenticated'
@@ -209,6 +210,7 @@ class Home(WebRoot):
 
     @staticmethod
     def testTorrent(torrent_method=None, host=None, username=None, password=None):
+        # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
         client = clients.get_client_class(torrent_method)
