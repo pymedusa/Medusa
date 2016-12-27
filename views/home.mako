@@ -67,13 +67,11 @@
 
             <div class="show-option pull-right">
                 Layout: <select name="layout"
-                    class="form-control form-control-inline input-sm"
-                    onchange="location = this.options[this.selectedIndex].value;">
-                    <option value="setHomeLayout/?layout=poster"
-                    ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
-                    <option value="setHomeLayout/?layout=small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
-                    <option value="setHomeLayout/?layout=banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
-                    <option value="setHomeLayout/?layout=simple" ${'selected="selected"' if app.HOME_LAYOUT=='simple' else ''}>Simple</option>
+                    class="form-control form-control-inline input-sm">
+                    <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
+                    <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
+                    <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
+                    <option value="simple" ${'selected="selected"' if app.HOME_LAYOUT=='simple' else ''}>Simple</option>
                 </select>
             </div>
         </div>

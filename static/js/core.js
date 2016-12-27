@@ -2,7 +2,6 @@
 // @TODO Move these into common.ini when possible,
 //       currently we can't do that as browser.js and a few others need it before this is loaded
 var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
-var webRoot = $('base').attr('href');
 var apiRoot = $('body').attr('api-root');
 var apiKey = $('body').attr('api-key');
 
@@ -64,28 +63,17 @@ $.fn.extend({
     }
 });
 
-$.ajaxSetup({
-    beforeSend: function(xhr, options) {
-        if (/^https?:\/\/|^\/\//i.test(options.url) === false) {
-            options.url = webRoot + options.url;
-        }
-    }
-});
-
 if (!document.location.pathname.endsWith('/login/')) {
-    $.ajax({
-        url: apiRoot + 'config?api_key=' + apiKey,
-        type: 'GET',
-        dataType: 'json'
-    }).done(function(data) {
-        $.extend(MEDUSA.config, data);
+    api.get('config').then(function(response) {
+        log.setDefaultLevel('trace');
+        $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);
         }
-    }).fail(function() {
+    }).catch(function (error) {
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }

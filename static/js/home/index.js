@@ -304,4 +304,17 @@ MEDUSA.home.index = function() {
             $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });
+
+    $('.show-option select').on('change', function(){
+        api.patch('config', {
+            layout: {
+                home: $(this).val()
+            }
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function (error) {
+            log.info(error);
+        });
+    });
 };

@@ -342,15 +342,6 @@ class WebRoot(WebHandler):
 
         return None
 
-    def setHomeLayout(self, layout):
-        # @TODO: Replace this with home={poster, small, banner, simple, coverflow} PATCH /api/v2/config/layout
-        if layout not in ('poster', 'small', 'banner', 'simple', 'coverflow'):
-            layout = 'poster'
-
-        app.HOME_LAYOUT = layout
-        # Don't redirect to default page so user can see new layout
-        return self.redirect('/home/')
-
     @staticmethod
     def setPosterSortBy(sort):
         # @TODO: Replace this with poster.sort.field={name, date, network, progress} PATCH /api/v2/config/layout
