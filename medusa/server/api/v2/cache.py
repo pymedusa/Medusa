@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Request handler for shows."""
+"""Request handler for cache tables."""
 from tornado.escape import json_decode
 from .base import BaseRequestHandler
 from .... import db
@@ -138,6 +138,6 @@ class SceneExceptionHandler(BaseRequestHandler):
         if cache_db_con.connection.total_changes - last_changes > 0:
             return self.api_finish(status=204, data={'result': 'Deleted {0} row.'
                                    .format(cache_db_con.connection.total_changes - last_changes)})
-        return self.api_finish(status=400, error="Could not update.")
+        return self.api_finish(status=400, error="Failed to delete.")
 
         return self.api_finish()
