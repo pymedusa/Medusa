@@ -126,8 +126,16 @@ class ExtraTorrentProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    # Add custom trackers to magnet link
+                    # Add custom trackers to the magnet link
                     download_url += self._custom_trackers
+
+                    # Use the .torrent link extratorrent provides,
+                    # when the client is "blackhole" and only then.
+                    # This is to avoid relying on 3rd parties for .torrents.
+                    # We want to use magnets if connecting direct to client
+                    # so that proxies work.
+                    if app.TORRENT_METHOD == 'blackhole'
+                        download_url = element.enclosure.get('url')
 
                     seeders = try_int(element.seeders.get_text())
                     leechers = try_int(element.leechers.get_text())
