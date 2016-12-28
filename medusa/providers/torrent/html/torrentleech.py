@@ -42,7 +42,7 @@ class TorrentLeechProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://torrentleech.org'
+        self.url = 'https://classic.torrentleech.org/'
         self.urls = {
             'login': urljoin(self.url, 'user/account/login/'),
             'search': urljoin(self.url, 'torrents/browse'),
@@ -196,7 +196,7 @@ class TorrentLeechProvider(TorrentProvider):
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if any([re.search('Invalid Username/password', response.text),
+        if any([re.search('Error: Invalid Username/password combination!', response.text),
                 re.search('<title>Login :: TorrentLeech.org</title>', response.text), ]):
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
