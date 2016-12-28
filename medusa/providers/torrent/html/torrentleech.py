@@ -18,7 +18,6 @@
 """Provider code for TorrentLeech."""
 from __future__ import unicode_literals
 
-import re
 import traceback
 
 from requests.compat import urljoin
@@ -42,14 +41,14 @@ class TorrentLeechProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://torrentleech.org'
+        self.url = 'https://classic.torrentleech.org'
         self.urls = {
-            'login': urljoin(self.url, 'user/account/login/'),
+            'login': urljoin(self.url, 'user/account/login'),
             'search': urljoin(self.url, 'torrents/browse'),
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
 
@@ -114,9 +113,6 @@ class TorrentLeechProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         def process_column_header(td):
             result = ''
             if td.a:
@@ -158,7 +154,7 @@ class TorrentLeechProvider(TorrentProvider):
                         continue
 
                     torrent_size = row('td')[labels.index('Size')].get_text()
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,
@@ -181,7 +177,8 @@ class TorrentLeechProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        cookies = dict_from_cookiejar(self.session.cookies)
+        if any(cookies.values()) and cookies.get('member_id'):
             return True
 
         login_params = {
@@ -196,8 +193,7 @@ class TorrentLeechProvider(TorrentProvider):
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if any([re.search('Invalid Username/password', response.text),
-                re.search('<title>Login :: TorrentLeech.org</title>', response.text), ]):
+        if '<title>Login :: TorrentLeech.org</title>' in response.text:
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 
