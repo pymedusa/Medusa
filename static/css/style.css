@@ -581,7 +581,7 @@ home.mako
 }
 
 .show-image {
-    max-width: 100%;
+    max-width: 220px;
     overflow: hidden;
 }
 
@@ -1022,9 +1022,24 @@ displayShow.mako
     overflow-y: auto;
 }
 
+div#container-display-show {
+    display: table;
+}
+
 .show-poster-container {
-    float: left;
     margin-right: 10px;
+    margin-right: 10px;
+    display: table-cell;
+    vertical-align: centre;
+    width: 220px;
+    border-style: solid;
+    border-color: grey;
+    border-width: 1px;
+    vertical-align: middle;
+}
+
+.ver-spacer {
+    width: 15px;
 }
 
 #show-specials-and-seasons {
@@ -1033,6 +1048,7 @@ displayShow.mako
 
 .show-info-container {
     overflow:hidden;
+    display: table-cell;
 }
 
 .tvshowImg {
@@ -1125,6 +1141,7 @@ displayShow.mako
         float: left;
         display: inline-block;
         width: 100%;
+        border-style: none;
     }
 
     .show-info-container {
@@ -1253,7 +1270,6 @@ ul.tags li a {
 
 #summary {
     margin-top: 5px;
-    margin-bottom: 5px;
     padding: 10px;
     background-color: #EFEFEF;
     border: 1px solid #DFDEDE;
@@ -1261,7 +1277,7 @@ ul.tags li a {
     overflow: auto;
     cursor: default;
     opacity: 0.8;
-    min-height: 213px;
+    min-height: 278px;
 }
 
 .summaryTable {
@@ -1793,6 +1809,7 @@ h2.network {
 
 .calendarShow .poster {
     padding-bottom: 2px;
+    height: 212px;
 }
 
 .calendarShow .poster img {

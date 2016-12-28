@@ -84,10 +84,16 @@
 <div class="row">
     <div id="container-display-show" class="col-md-12">
         <div class="show-poster-container">
-            <a asset="show/${show.indexerid}?type=poster" rel="dialog" title="View Poster for ${show.name}">
-                <img asset="show/${show.indexerid}?type=posterThumb" class="tvshowImg" alt=""/>
-            </a>
+            <div class="row">
+                <div class="image-flex-container col-md-12">
+                    <a asset="show/${show.indexerid}?type=poster">
+                        <img alt="" class="show-image" asset="show/${show.indexerid}?type=posterThumb" />
+                    </a>
+                </div>
+            </div>
         </div>
+
+        <div class="ver-spacer"></div>
 
         <div class="show-info-container">
             <div class="row">
