@@ -735,9 +735,6 @@ class GenericMetadata(object):
                 if show_obj.dvdorder != 0:
                     indexer_api_params['dvdorder'] = True
 
-                # New feature, specify the image_type, which makes us do calls for only that image type.
-                indexer_api_params['image_type'] = image_type
-
                 self.indexer_api = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
 
             indexer_show_obj = self.indexer_api[show_obj.indexerid]
