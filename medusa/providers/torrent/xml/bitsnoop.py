@@ -114,7 +114,7 @@ class BitSnoopProvider(TorrentProvider):
                     # unless it is not torcache or we are not using blackhole
                     # because we want to use magnets if connecting direct to client
                     # so that proxies work.
-                    download_url = row.enclosure['url']
+                    download_url = row.enclosure.get('url')
                     if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
                         download_url = row.find('magneturi').next.replace('CDATA', '').strip('[]') + \
                             self._custom_trackers
