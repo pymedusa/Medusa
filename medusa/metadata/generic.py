@@ -28,7 +28,7 @@ from ..helper.common import replace_extension
 from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
 from ..indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from ..indexers.indexer_exceptions import IndexerError
+from ..indexers.indexer_exceptions import IndexerError, IndexerShowNotFound
 from ..metadata import helpers as metadata_helpers
 from ..show_name_helpers import allPossibleShowNames
 
@@ -722,23 +722,25 @@ class GenericMetadata(object):
         indexer_lang = show_obj.lang
 
         try:
-            # There's gotta be a better way of doing this but we don't wanna
-            # change the language value elsewhere
-            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
+            if not self.indexer_api:
+                # There's gotta be a better way of doing this but we don't wanna
+                # change the language value elsewhere
+                indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
 
-            lINDEXER_API_PARMS['banners'] = True
+                indexer_api_params['banners'] = True
 
-            if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                lINDEXER_API_PARMS['language'] = indexer_lang
+                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
+                    indexer_api_params['language'] = indexer_lang
 
-            if show_obj.dvdorder != 0:
-                lINDEXER_API_PARMS['dvdorder'] = True
+                if show_obj.dvdorder != 0:
+                    indexer_api_params['dvdorder'] = True
 
-            # New feature, specify the image_type, which makes us do calls for only that image type.
-            lINDEXER_API_PARMS['image_type'] = image_type
+                # New feature, specify the image_type, which makes us do calls for only that image type.
+                indexer_api_params['image_type'] = image_type
 
-            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
-            indexer_show_obj = t[show_obj.indexerid]
+                self.indexer_api = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+
+            indexer_show_obj = self.indexer_api[show_obj.indexerid]
         except (IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
@@ -790,17 +792,17 @@ class GenericMetadata(object):
             if not self.indexer_api:
                 # There's gotta be a better way of doing this but we don't wanna
                 # change the language value elsewhere
-                lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
+                l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
 
-                lINDEXER_API_PARMS['banners'] = True
+                l_indexer_api_params['banners'] = True
 
                 if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    lINDEXER_API_PARMS['language'] = indexer_lang
+                    l_indexer_api_params['language'] = indexer_lang
 
                 if show_obj.dvdorder != 0:
-                    lINDEXER_API_PARMS['dvdorder'] = True
+                    l_indexer_api_params['dvdorder'] = True
 
-                self.indexer_api = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
+                self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
 
             indexer_show_obj = self.indexer_api[show_obj.indexerid]
         except (IndexerError, IOError) as e:
@@ -851,21 +853,19 @@ class GenericMetadata(object):
             if not self.indexer_api:
                 # There's gotta be a better way of doing this but we don't wanna
                 # change the language value elsewhere
-                lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
+                l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
 
-                lINDEXER_API_PARMS['banners'] = True
+                l_indexer_api_params['banners'] = True
 
                 if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    lINDEXER_API_PARMS['language'] = indexer_lang
+                    l_indexer_api_params['language'] = indexer_lang
 
                 if show_obj.dvdorder != 0:
-                    lINDEXER_API_PARMS['dvdorder'] = True
+                    l_indexer_api_params['dvdorder'] = True
 
-                t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
-            else:
-                # Try to reuse the current indexerApi object.
-                t = self.indexer_api
-            indexer_show_obj = t[show_obj.indexerid]
+                self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+
+            indexer_show_obj = self.indexer_api[show_obj.indexerid]
         except (IndexerError, IOError) as e:
             logger.log(u"Unable to look up show on " + indexerApi(
                 show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
@@ -896,6 +896,54 @@ class GenericMetadata(object):
             result[season][season_art_id] = season_art_obj['original'][season][season_art_id]['_bannerpath']
 
         return result
+
+    def _get_show_data(self, show_obj):
+        """Retrieve show data from the indexer.
+
+        Try to reuse the indexer_api class instance attribute.
+
+        :param show_obj: A TVshow object.
+        :return: A re-indexed show object.
+        """
+
+        show_id = show_obj.indexerid
+
+        indexer_lang = show_obj.lang
+
+        try:
+            if not self.indexer_api:
+                l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
+
+                l_indexer_api_params['actors'] = True
+
+                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
+                    l_indexer_api_params['language'] = indexer_lang
+
+                if show_obj.dvdorder != 0:
+                    l_indexer_api_params['dvdorder'] = True
+
+                self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+
+                my_show = self.indexer_api[int(show_id)]
+        except IndexerShowNotFound:
+            logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
+                       (indexer=indexerApi(show_obj.indexer).name,
+                        id=show_id), logger.ERROR)
+            raise
+
+        except IndexerError:
+            logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
+                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
+            raise
+
+        # check for title and id
+        if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
+            logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
+                       (indexer=indexerApi(show_obj.indexer).name,
+                        id=show_id), logger.ERROR)
+            return False
+
+        return my_show
 
     def retrieveShowMetadata(self, folder):
         """

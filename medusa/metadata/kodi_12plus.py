@@ -107,42 +107,9 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         show_obj: a TVShow instance to create the NFO for
         """
 
-        show_id = show_obj.indexerid
-
-        indexer_lang = show_obj.lang
-        l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-        l_indexer_api_params['actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params['language'] = indexer_lang
-
-        if show_obj.dvdorder != 0:
-            l_indexer_api_params['dvdorder'] = True
-
-        t = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+        my_show = self._get_show_data(show_obj)
 
         tv_node = etree.Element('tvshow')
-
-        try:
-            my_show = t[int(show_id)]
-        except IndexerShowNotFound:
-            logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            raise
-
-        except IndexerError:
-            logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
-            raise
-
-        # check for title and id
-        if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
-            logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            return False
 
         title = etree.SubElement(tv_node, 'title')
         title.text = my_show['seriesname']
@@ -245,26 +212,10 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         show_obj: a TVEpisode instance to create the NFO for
         """
-
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        # There's gotta be a better way of doing this but we don't wanna
-        # change the language value elsewhere
-        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-        l_indexer_api_params[b'actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params[b'language'] = indexer_lang
-
-        if ep_obj.show.dvdorder != 0:
-            l_indexer_api_params[b'dvdorder'] = True
-
         try:
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
+            my_show = self._get_show_data(ep_obj.show)
         except IndexerShowNotFound as e:
             raise ShowNotFoundException(e.message)
         except IndexerError:

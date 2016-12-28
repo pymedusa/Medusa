@@ -182,21 +182,8 @@ class WDTVMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-        l_indexer_api_params[b'actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params[b'language'] = indexer_lang
-
-        if ep_obj.show.dvdorder != 0:
-            l_indexer_api_params[b'dvdorder'] = True
-
         try:
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
+            my_show = self._get_show_data(ep_obj.show)
         except IndexerShowNotFound as e:
             raise ShowNotFoundException(e.message)
         except IndexerError:
