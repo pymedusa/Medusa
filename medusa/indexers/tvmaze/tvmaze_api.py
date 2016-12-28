@@ -125,7 +125,7 @@ class TVmaze(BaseIndexer):
                             if value.get('medium'):
                                 return_dict['image_medium'] = value.get('medium')
                                 return_dict['image_original'] = value.get('original')
-                                return_dict['poster'] = value.get('original')
+                                return_dict['poster'] = value.get('medium')
                         if key == 'externals':
                             return_dict['tvrage_id'] = value.get('tvrage')
                             return_dict['tvdb_id'] = value.get('thetvdb')
