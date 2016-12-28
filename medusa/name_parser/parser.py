@@ -29,7 +29,7 @@ import guessit
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 from ..helper.common import episode_num
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerException
 
 
 logger = logging.getLogger(__name__)
@@ -118,6 +118,9 @@ class NameParser(object):
                     episode_numbers = []
                 except IndexerError as e:
                     logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    episode_numbers = []
+                except IndexerException as e:
+                    logger.warn('Indexer exception: {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
                     episode_numbers = []
 
             for episode_number in episode_numbers:
