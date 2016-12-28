@@ -20,11 +20,12 @@ import datetime
 import os
 import re
 
-from .. import app, helpers, logger
+from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num as ep_num, replace_extension
 from ..helper.exceptions import ShowNotFoundException
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
+from ..indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound,
+                                           IndexerShowNotFound)
 from ..metadata import generic
 
 try:
