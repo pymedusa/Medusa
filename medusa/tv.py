@@ -1250,6 +1250,7 @@ class TVShow(TVObject):
             if self.dvdorder != 0:
                 indexer_api_params['dvdorder'] = True
 
+            # TODO: Add exception handling.
             t = indexerApi(self.indexer).indexer(**indexer_api_params)
 
         indexed_show = t[self.indexerid]
