@@ -1032,6 +1032,7 @@ div#container-display-show {
     display: table-cell;
     vertical-align: centre;
     width: 220px;
+    max-height: 268px;
     border-style: solid;
     border-color: grey;
     border-width: 1px;
@@ -1083,6 +1084,7 @@ div#container-display-show {
         display: inline-block;
         width: 100%;
         margin: 0 auto;
+        border-style: none;
     }
 
     .show-poster-container img {
@@ -1274,10 +1276,10 @@ ul.tags li a {
     background-color: #EFEFEF;
     border: 1px solid #DFDEDE;
     width: 100%;
+    min-height: 268px;
     overflow: auto;
     cursor: default;
     opacity: 0.8;
-    min-height: 278px;
 }
 
 .summaryTable {
