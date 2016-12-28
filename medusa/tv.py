@@ -59,7 +59,7 @@ from .helper.externals import get_externals
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVRAGE, indexerConfig, mappings, reverse_mappings
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerError,
-                                          IndexerSeasonNotFound)
+                                          IndexerException, IndexerSeasonNotFound)
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .sbdatetime import sbdatetime
 from .scene_exceptions import get_scene_exceptions
@@ -874,27 +874,27 @@ class TVShow(TVObject):
         :return:
         :rtype: dict(int -> dict(int -> bool))
         """
-        if tvapi:
-            t = tvapi
-            show_obj = t[self.indexerid]
-        else:
-            indexer_api_params = indexerApi(self.indexer).api_params.copy()
+        try:
+            if tvapi:
+                t = tvapi
+                show_obj = t[self.indexerid]
+            else:
+                indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
-            indexer_api_params['cache'] = False
+                indexer_api_params['cache'] = False
 
-            if self.lang:
-                indexer_api_params['language'] = self.lang
+                if self.lang:
+                    indexer_api_params['language'] = self.lang
 
-            if self.dvdorder != 0:
-                indexer_api_params['dvdorder'] = True
+                if self.dvdorder != 0:
+                    indexer_api_params['dvdorder'] = True
 
-            try:
-                t = indexerApi(self.indexer).indexer(**indexer_api_params)
-                show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
-            except IndexerError:
-                logger.log(u'{id}: {indexer} timed out, unable to update episodes'.format
-                           (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.WARNING)
-                return None
+                    t = indexerApi(self.indexer).indexer(**indexer_api_params)
+                    show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
+        except IndexerException as e:
+            logger.log(u'{id}: {indexer} error, unable to update episodes. Message: {ex}'.format
+                       (id=self.indexerid, indexer=indexerApi(self.indexer).name, ex=e), logger.WARNING)
+            raise
 
         logger.log(u'{id}: Loading all episodes from {indexer}'.format
                    (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.DEBUG)
