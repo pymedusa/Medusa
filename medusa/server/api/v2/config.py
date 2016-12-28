@@ -4,7 +4,7 @@
 import platform
 import sys
 from six import text_type
-import tornado
+import json_decode from tornado.escape
 
 from .base import BaseRequestHandler
 from .... import app, db
@@ -139,7 +139,7 @@ class ConfigHandler(BaseRequestHandler):
 
     def patch(self, *args, **kwargs):
         """Patch general configuration."""
-        data = tornado.escape.json_decode(self.request.body)
+        data = json_decode(self.request.body)
         done_data = {}
         done_errors = []
         for key in data.keys():
