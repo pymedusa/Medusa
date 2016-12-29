@@ -1007,15 +1007,12 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    allowed_qualities, preferred_qualities = show.current_qualities
-                    should_replace, replace_msg = common.Quality.should_replace(old_ep_status, old_ep_quality,
-                                                                                new_ep_quality, allowed_qualities,
-                                                                                preferred_qualities)
-                    if not should_replace:
+                    _, preferred_qualities = show.current_qualities
+                    if new_ep_quality not in preferred_qualities:
                         raise EpisodePostProcessingFailedException(
-                            u'File exists. Marking it unsafe to replace. Reason: {0}'.format(replace_msg))
+                            u'File exists. Marking it unsafe to replace because this quality is not preferred')
                     else:
-                        self._log(u'File exists. Marking it safe to replace. Reason: {0}'.format(replace_msg))
+                        self._log(u'File exists. Marking it safe to replace because this quality is preferred')
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,

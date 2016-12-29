@@ -657,10 +657,6 @@ class Quality(object):
             if new_quality in preferred_qualities:
                 return True, 'New quality is preferred. Accepting new quality'
 
-            # Commented for now as Labrys requests
-            # if new_quality > old_quality:
-            #    return True, 'New quality is higher quality (but not preferred). Accepting new quality'
-
             return False, 'New quality is same/lower quality (and not preferred). Ignoring new quality'
 
         else:
