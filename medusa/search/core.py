@@ -191,7 +191,7 @@ def snatch_episode(result):
         if curEpObj.status not in Quality.DOWNLOADED:
             # TODO: Remove this broad catch when all notifiers handle exceptions
             try:
-                notify_message = curEpObj.formatted_file_name('%SN - %Sx%0E - %EN - %QN')
+                notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
                 if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                         result.leechers not in (-1, None)]):
                     notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
