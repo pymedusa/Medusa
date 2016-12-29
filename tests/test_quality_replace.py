@@ -1,6 +1,6 @@
 # coding=utf-8
 """Tests for medusa/test_quality_replace.py."""
-from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, WANTED
+from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 
 import pytest
 
@@ -401,6 +401,17 @@ import pytest
         'force': True,
         'manually_searched': True,
         'expected': True
+    },
+    {  # p36: SNATCHED BEST and found HDBLURAY: no
+        'ep_status': SNATCHED_BEST,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': False
     }
 ])
 def test_should_replace(p):
