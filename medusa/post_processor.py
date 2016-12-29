@@ -914,20 +914,21 @@ class PostProcessor(object):
             # Assuming the new quality is a wanted quality
             if new_ep_quality != common.Quality.UNKNOWN:
 
-                if new_ep_quality > old_ep_quality:
-                    self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
-                              logger.DEBUG)
-
-                # if it's a proper of equal or higher quality
-                elif self.is_proper and new_ep_quality >= old_ep_quality:
+                # If it's a proper of equal or higher quality
+                if self.is_proper and new_ep_quality >= old_ep_quality:
                     self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
                               u"Marking it as priority", logger.DEBUG)
 
-                # If is in history is because we snatched it. is_history checks the snatched status
+                elif new_ep_quality > old_ep_quality:
+                    self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
+                              logger.DEBUG)
+
+                # If it's in history it's because we snatched it. is_history checks the snatched status
                 else:
-                    self._log(u"Medusa snatched this episode and it is not processed yet. Marking it as priority",
+                    self._log(u"Medusa snatched this episode and wasn't processed yet. Marking it as priority",
                               logger.DEBUG)
                 return True
+
             else:
                 self._log(u"Medusa snatched this episode but file quality is UNKNOWN. "
                           u"Not marking it as priority", logger.DEBUG)
