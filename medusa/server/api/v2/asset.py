@@ -20,13 +20,13 @@ class AssetHandler(BaseRequestHandler):
             media = None
             media_format = ('normal', 'thumb')[asset_type in ('bannerThumb', 'posterThumb', 'small')]
 
-            if asset_type[0:6] == 'banner':
+            if asset_type.lower().startswith('banner'):
                 media = ShowBanner(show_id, media_format)
-            elif asset_type[0:6] == 'fanart':
+            elif asset_type.lower().startswith('fanart'):
                 media = ShowFanArt(show_id, media_format)
-            elif asset_type[0:6] == 'poster':
+            elif asset_type.lower().startswith('poster'):
                 media = ShowPoster(show_id, media_format)
-            elif asset_type[0:7] == 'network':
+            elif asset_type.lower().startswith('network'):
                 media = ShowNetworkLogo(show_id, media_format)
 
             if media is not None:
