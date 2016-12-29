@@ -24,7 +24,7 @@ from requests.compat import urljoin
 import validators
 
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import app, logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
