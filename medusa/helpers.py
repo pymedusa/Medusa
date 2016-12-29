@@ -66,6 +66,7 @@ from . import app
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
+from .indexers.indexer_exceptions import IndexerException
 from .show.show import Show
 
 logger = logging.getLogger(__name__)
@@ -1529,10 +1530,15 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
     if lang:
         indexer_api_params['language'] = lang
 
-    logger.info(u"" + str(indexerApi(indexer).name) + ": " + repr(indexer_api_params))
+    logger.info(u"{indexer_name}:{params!r}", indexer_name=indexerApi(indexer).name, params=indexer_api_params)
 
-    t = indexerApi(indexer).indexer(**indexer_api_params)
-    s = t[int(indexer_id)]
+    try:
+        t = indexerApi(indexer).indexer(**indexer_api_params)
+        s = t[int(indexer_id)]
+    except IndexerException as e:
+        logger.warning("Can't get showname for indexer {indexer_name} and indexer_id {indexer_id} in language {lang} "
+                       "with cause: {cause}",
+                       indexer_name=indexerApi(indexer).name, indexer_id=indexer_id, lang=lang, cause=e)
 
     if hasattr(s, 'data'):
         return s.data.get('seriesname')
