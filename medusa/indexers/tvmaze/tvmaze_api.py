@@ -125,7 +125,7 @@ class TVmaze(BaseIndexer):
                             if value.get('medium'):
                                 return_dict['image_medium'] = value.get('medium')
                                 return_dict['image_original'] = value.get('original')
-                                return_dict['poster'] = value.get('original')
+                                return_dict['poster'] = value.get('medium')
                         if key == 'externals':
                             return_dict['tvrage_id'] = value.get('tvrage')
                             return_dict['tvdb_id'] = value.get('thetvdb')
@@ -269,7 +269,7 @@ class TVmaze(BaseIndexer):
                 k = k.lower()
 
                 if v is not None:
-                    if k == 'image_original':
+                    if k == 'image_medium':
                         self._set_item(tvmaze_id, seas_no, ep_no, 'filename', v)
                 self._set_item(tvmaze_id, seas_no, ep_no, k, v)
 
@@ -293,7 +293,7 @@ class TVmaze(BaseIndexer):
         log().debug('Getting show banners for %s', [tvmaze_id])
 
         try:
-            image_original = self.shows[tvmaze_id]['image_original']
+            image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
             log().debug('Could not parse Poster for showid: %s', [tvmaze_id])
             return False
@@ -302,10 +302,10 @@ class TVmaze(BaseIndexer):
         _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
                                                      u'language': u'en',
                                                      u'ratingcount': 1,
-                                                     u'bannerpath': image_original.split('/')[-1],
+                                                     u'bannerpath': image_medium.split('/')[-1],
                                                      u'bannertype': u'poster',
                                                      u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_original,
+                                                     u'_bannerpath': image_medium,
                                                      u'id': u'1035106'}}}}
 
         season_images = self._parse_season_images(tvmaze_id)
