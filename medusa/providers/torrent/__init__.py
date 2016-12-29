@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Initialize all providers."""
+"""Initialize all torrent providers."""
 from .html import (
     abnormal,
     alpharatio,

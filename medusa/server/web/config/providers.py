@@ -12,8 +12,9 @@ from .handler import Config
 from ..core import PageTemplate
 from .... import app, config, logger, providers, ui
 from ....helper.common import try_int
-from ....providers import NewznabProvider, TorrentRssProvider
 from ....providers.generic_provider import GenericProvider
+from ....providers.nzb.newznab import NewznabProvider
+from ....providers.torrent.rss.rsstorrent import TorrentRssProvider
 
 
 @route('/config/providers(/?.*)')

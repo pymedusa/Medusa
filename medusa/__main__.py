@@ -76,8 +76,9 @@ from .config import (
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events
-from .providers import NewznabProvider, TorrentRssProvider
 from .providers.generic_provider import GenericProvider
+from .providers.nzb.newznab import NewznabProvider
+from .providers.torrent.rss.rsstorrent import TorrentRssProvider
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
