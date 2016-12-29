@@ -4,7 +4,7 @@
 import platform
 import sys
 from six import text_type
-import json_decode from tornado.escape
+from tornado.escape import json_decode
 
 from .base import BaseRequestHandler
 from .... import app, db
