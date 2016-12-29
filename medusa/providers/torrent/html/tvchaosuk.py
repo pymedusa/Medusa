@@ -50,6 +50,7 @@ class TVChaosUKProvider(TorrentProvider):
         }
 
         # Proper Strings
+        self.proper_strings = [' ']
 
         # Miscellaneous Options
         self.freeleech = None
