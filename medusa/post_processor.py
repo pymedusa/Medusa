@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Post processor module."""
 import fnmatch
 import os
 import re
@@ -114,10 +114,11 @@ class PostProcessor(object):
 
         return self.file_path
 
-    def _checkForExistingFile(self, existing_file):
+    def _check_for_existing_file(self, existing_file):
         """
-        Check if a file exists already and if it does whether it's bigger or smaller than
-        the file we are post processing.
+        Check if a file exists already.
+
+        If it does whether it's bigger or smaller than the file we are post processing.
 
         :param existing_file: The file to compare to
         :return:
@@ -452,7 +453,7 @@ class PostProcessor(object):
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
                                       action=_int_hard_link, subtitles=subtitles)
 
-    def _moveAndSymlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
+    def _move_and_symlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
         """
         Move file, symlink source location back to destination, and set proper permissions.
 
@@ -995,7 +996,7 @@ class PostProcessor(object):
         new_ep_version = version
 
         # check for an existing file
-        existing_file_status = self._checkForExistingFile(ep_obj.location)
+        existing_file_status = self._check_for_existing_file(ep_obj.location)
 
         if not priority_download:
             if existing_file_status == PostProcessor.EXISTS_SAME:
@@ -1168,8 +1169,8 @@ class PostProcessor(object):
             elif self.process_method == "symlink":
                 if helpers.is_file_locked(self.file_path, True):
                     raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._moveAndSymlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                                     app.USE_SUBTITLES and ep_obj.show.subtitles)
+                self._move_and_symlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
+                                       app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u' "{0}" is an unknown file processing method. '
                            u'Please correct your app\'s usage of the api.'.format(self.process_method), logger.WARNING)
