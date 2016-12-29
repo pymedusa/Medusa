@@ -622,8 +622,8 @@ class Quality(object):
         If new quality is already in preferred then is already final quality.
         Force (forced search) bypass episode status only or unknown quality
         """
-        if ep_status and ep_status not in (Quality.DOWNLOADED, Quality.SNATCHED, Quality.SNATCHED_PROPER,
-                                           Quality.SNATCHED_BEST):
+        qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+        if ep_status and ep_status not in qualities:
             if not force:
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER/BEST. Ignoring new quality'
 
