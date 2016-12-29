@@ -49,7 +49,7 @@ class SpeedCDProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
         self.freeleech = False
