@@ -58,7 +58,7 @@ class FreshOnTVProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = [' ']
 
         # Miscellaneous Options
         self.freeleech = False
