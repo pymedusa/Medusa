@@ -4,6 +4,7 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
+    from medusa.scene_numbering import get_xem_numbering_for_show
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -91,6 +92,9 @@
             <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
             <div class="show-title">
                 ${cur_show.name}
+                % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer):
+                    <img src="images/xem.png" width="16" height="16" />
+                % endif
             </div>
             <div class="show-date">
     % if cur_airs_next:
