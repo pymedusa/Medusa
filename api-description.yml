@@ -1,0 +1,341 @@
+swagger: '2.0'
+info:
+  title: Medusa API
+  description: DESCRIPTION
+  version: "1.0.0"
+host: localhost:8081
+schemes:
+  - http
+  - https
+securityDefinitions:
+  x-api-key:
+    type: apiKey
+    name: x-api-key
+    in: header
+basePath: /api/v2
+produces:
+  - application/json
+security:
+  - x-api-key: []
+paths:
+  /show:
+    get:
+      summary: "Returns all shows in Medusa that the user has access to."
+      description: |
+        The Show endpoint returns information about the Shows added to Medusa.
+      responses:
+        200:
+          description: "An array of shows"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Show'
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: '#/definitions/Error'
+  /config:
+    get:
+      summary: "Returns all config values for Medusa."
+      description: |
+        DESCRIPTION
+      responses:
+        200:
+          description: "An object containing all the config values."
+          schema:
+            type: object
+            properties:
+              wikiUrl:
+                type: string
+              themeName:
+                type: string
+              namingForceFolders:
+                type: boolean
+              databaseVersion:
+                type: object
+                properties:
+                  major:
+                    type: integer
+                  minor:
+                    type: integer
+              layout:
+                type: object
+                properties:
+                  show:
+                    type: object
+                    properties:
+                      specials:
+                        type: boolean
+                      allSeasons:
+                        type: boolean
+                  home:
+                    type: string
+                  history:
+                    type: string
+                  schedule:
+                    type: string
+              trimZero:
+                type: boolean
+              configFile:
+                type: string
+              animeSplitHome:
+                type: boolean
+              sortArticle:
+                type: boolean
+              sourceUrl:
+                type: string
+              fanartBackgroundOpacity:
+                type: integer
+              emby:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+              logDir:
+                type: string
+              posterSortby:
+                type: string
+              subtitles:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+              fuzzyDating:
+                type: boolean
+              timePreset:
+                type: string
+              kodi:
+                type: object
+                properties:
+                  enabled:
+                    type: boolean
+              dbFilename:
+                type: string
+              pythonVersion:
+                type: string
+              downloadUrl:
+                type: string
+              nzb:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  host:
+                    type: string
+                  password:
+                    type: string
+                  enabled:
+                    type: boolean
+                  priority:
+                    type: integer
+              release:
+                type: string
+              posterSortDir:
+                type: string
+              locale:
+                type: string
+              webRoot:
+                type: string
+              torrents:
+                type: object
+                properties:
+                  username:
+                    type: string
+                  seedTime:
+                    type: integer
+                  rpcurl:
+                    type: string
+                  authType:
+                    type: string
+                  paused:
+                    type: boolean
+                  host:
+                    type: string
+                  path:
+                    type: string
+                  password:
+                    type: string
+                  verifySSL:
+                    type: boolean
+                  highBandwidth:
+                    type: boolean
+                  enabled:
+                    type: boolean
+                  label:
+                    type: string
+                  labelAnime:
+                    type: string
+                  method:
+                    type: string
+                    enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
+  /auth/login: # This should be changed to /auth with post creating a token and delete removing it, to logout we DELETE /auth/{token}, to login we POST to /auth, to update the auth period we PATCH /auth/{token}
+    post:
+      security: []
+      summary: "Returns a JWT for the provided user. This is required for all other routes."
+      description: |
+        DESCRIPTION.
+      responses:
+        200:
+          description: "The JWT for the user."
+          schema:
+            type: object
+            properties:
+              idToken:
+                type: string
+              roles:
+                type: array
+                items:
+                  type: string
+        401:
+          description: "No credentials provided or invalid credentials."
+      parameters:
+        - name: auth 
+          in: body
+          description: auth object
+          required: true
+          schema:
+            $ref: '#/definitions/Auth'
+definitions:
+  Show:
+    type: object
+    properties:
+      id:
+        type: object
+        description: |
+          All of the ids mapped to a certain show, atleast one of these is required.
+        properties:
+          tvdb:
+            type: string
+            description: "This is the ID from thetvdb.com"
+          tvmaze:
+            type: string
+            description: "This is the ID from tvmaze.com"
+          imdb:
+            type: string
+            description: "This is the ID from imdb.com"
+      title:
+        type: string
+        description: |
+          This is the title of the show, this should be in the main
+          language the show was originally created in. If other
+          titles exist for other languages they will be part of the "akas" field.
+      indexer:
+        type: string
+      network:
+        type: string
+      type:
+        type: string
+      status:
+        type: string
+      airs:
+        type: string
+      language:
+        type: string
+      showType:
+        type: string
+      akas:
+        type: object
+      year:
+        type: object
+      airDates:
+        type: object
+        items:
+          type: string
+      runtime:
+        type: integer
+      genres:
+        type: array
+        items:
+          type: string
+      rating:
+        type: object
+        properties:
+          imdb:
+            type: object
+            properties:
+              stars:
+                type: string
+              votes:
+                type: integer
+      classification:
+        type: string
+      cache:
+        type: object
+      countries:
+        type: array
+        items:
+          type: string
+      config:
+        type: object
+        properties:
+          location:
+            type: string
+          qualities:
+            type: object
+            properties:
+              allowed:
+                type: array
+                items:
+                  type: string
+              prefered:
+                type: array
+                items:
+                  type: string
+          paused:
+            type: boolean
+          airByDate:
+            type: boolean
+          subtitlesEnabled:
+            type: boolean
+          dvdOrder:
+            type: boolean
+          flattenFolders:
+            type: boolean
+          scene:
+            type: boolean
+          defaultEpisodeStatus:
+            type: string
+          aliases:
+            type: array
+            items:
+              type: string
+          release:
+            type: object
+            properties:
+              blacklist:
+                type: array
+                items:
+                  type: string
+              whitelist:
+                type: array
+                items:
+                  type: string
+              ignoredWords:
+                type: array
+                items:
+                  type: string
+              requiredWords:
+                type: array
+                items:
+                  type: string
+  Auth:
+    description: Auth object
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+    required:
+      - username
+      - password
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      fields:
+        type: string
+
