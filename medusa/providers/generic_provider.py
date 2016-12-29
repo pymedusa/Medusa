@@ -69,7 +69,7 @@ class GenericProvider(object):
         self.enable_daily = False
         self.enabled = False
         self.headers = {'User-Agent': UA_POOL.random}
-        self.proper_strings = ['PROPER|REPACK|REAL']
+        self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
         self.provider_type = None
         self.public = False
         self.search_fallback = False
