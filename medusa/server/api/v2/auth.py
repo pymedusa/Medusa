@@ -3,17 +3,20 @@
 
 import base64
 import tornado
+import jwt
+import time
 
 from .base import BaseRequestHandler
 from .... import app, helpers, logger, notifiers
 
 
-class LoginHandler(BaseRequestHandler):
-    """Login request handler."""
+class AuthHandler(BaseRequestHandler):
+    """Auth request handler."""
 
     def set_default_headers(self):
         """Set default CORS headers."""
-        super(LoginHandler, self).set_default_headers()
+        super(AuthHandler, self).set_default_headers()
+        self.set_header('X-Medusa-Server', app.APP_VERSION)
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     def prepare(self):
@@ -21,12 +24,7 @@ class LoginHandler(BaseRequestHandler):
         pass
 
     def post(self, *args, **kwargs):
-        """Submit login."""
-        self.set_header('X-Medusa-Server', app.APP_VERSION)
-
-        roles = ['user', 'admin']
-        if app.DEVELOPER:
-            roles.append('developer')
+        """Request JWT."""
 
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
@@ -35,31 +33,40 @@ class LoginHandler(BaseRequestHandler):
 
         # If the user hasn't set a username and/or password just let them login
         if username.strip() != '' and password.strip() != '':
-            if self.request.headers.get('Authorization'):
-                auth_decoded = base64.decodestring(self.request.headers.get('Authorization')[6:])
-                submitted_username, submitted_password = auth_decoded.split(':', 2)
-            elif self.request.body:
+            if all(x in tornado.escape.json_decode(self.request.body) for x in ['username', 'password']):
                 data = tornado.escape.json_decode(self.request.body)
                 submitted_username = data['username']
                 submitted_password = data['password']
             else:
-                self.api_finish(status=401, error='No Credentials Provided')
-
-            if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
-                notifiers.notify_login(self.request.remote_ip)
+                self._failed_login(error='No Credentials Provided')
 
             if username != submitted_username or password != submitted_password:
-                logger.log('User attempted a failed login to the Medusa API from IP: {ip}'.format(ip=self.request.remote_ip), logger.WARNING)
-                self.api_finish(status=401, error='Invalid credentials')
+                self._failed_login(error='Invalid credentials')
             else:
-                logger.log('User logged into the Medusa API', logger.INFO)
-                self.api_finish(data={
-                    'idToken': app.API_KEY,
-                    'roles': roles
-                })
+                self._login()
         else:
-            logger.log('User logged into the Medusa API', logger.INFO)
-            self.api_finish(data={
-                'idToken': app.API_KEY,
-                'roles': roles
-            })
+            self._login()
+
+    def _login(self):
+        if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
+            notifiers.notify_login(self.request.remote_ip)
+
+        logger.log('{user} logged into the API v2'.format(user=app.WEB_USERNAME), logger.INFO)
+        time_now = int(time.time())
+        self.api_finish(data=jwt.encode({
+            'iss': 'Medusa ' + app.APP_VERSION,
+            'iat': time_now,
+            # @TODO: The jti should be saved so we can revoke tokens
+            'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
+            'exp': time_now + ((60 * 60) * 24),
+            'scopes': ['*'], # @TODO: This should be reaplce with scopes or roles/groups
+            'username': app.WEB_USERNAME,
+            'apiKey': app.API_KEY # TODO: This should be replaced with the JWT itself
+        }, 'secret', algorithm='HS256'))
+
+    def _failed_login(self, error=None):
+        self.api_finish(status=401, error=error)
+        logger.log('{user} attempted a failed login to the API v2 from IP: {ip}'.format(
+            user=app.WEB_USERNAME,
+            ip=self.request.remote_ip
+        ), logger.WARNING)

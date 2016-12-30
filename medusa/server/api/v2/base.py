@@ -3,6 +3,7 @@
 
 import json
 import operator
+import jwt
 
 from datetime import datetime
 from babelfish.language import Language
@@ -16,10 +17,21 @@ class BaseRequestHandler(RequestHandler):
     """A base class used for shared RequestHandler methods."""
 
     def prepare(self):
-        """Check if API key is provided and valid."""
+        """Check if JWT or API key is provided and valid."""
         if self.request.method != 'OPTIONS':
-            if app.API_KEY not in (self.get_argument('api_key', default=''), self.request.headers.get('X-Api-Key')):
-                self.api_finish(status=401, error='Invalid API key')
+            token = ''
+            api_key = ''
+            if self.request.headers.get('Authorization'):
+                try:
+                    token = jwt.decode(self.request.headers.get('Authorization').replace('Bearer ', ''), 'secret', algorithms=['HS256'])
+                except jwt.ExpiredSignatureError:
+                    self.api_finish(status=401, error='Token has expired.')
+            if self.get_argument('api_key', default='') and self.get_argument('api_key', default='') == app.API_KEY:
+                api_key = self.get_argument('api_key', default='')
+            if self.request.headers.get('X-Api-Key') and self.request.headers.get('X-Api-Key') == app.API_KEY:
+                api_key = self.request.headers.get('X-Api-Key')
+            if token == '' and api_key == '':
+                self.api_finish(status=401, error='Invalid token or API key.')
 
     def options(self, *args, **kwargs):
         """Options."""
