@@ -580,9 +580,15 @@ home.mako
     overflow: hidden;
 }
 
+/* Used by isotope scaling */
 .show-image {
-    max-width: 180px;
+    max-width: 100%;
     overflow: hidden;
+}
+
+/* Used by the displayShow and snatchSelection show header posters */
+#container-display-show img.show-image {
+    max-width: 180px;
 }
 
 .background-image img {
@@ -1032,8 +1038,8 @@ div#container-display-show {
     display: table-cell;
     vertical-align: middle;
     width: 180px;
-    max-height: 268px;
-    border: 1px solid rgb(61, 61, 61);
+
+    border: 1px solid rgba(220, 220, 220, 0.43);
     vertical-align: middle;
 }
 
@@ -1088,6 +1094,7 @@ div#container-display-show {
     .show-poster-container img {
         display: block;
         margin: 0 auto;
+        max-width: 280px!important;
     }
 
     .tvshowImg {
@@ -1147,6 +1154,10 @@ div#container-display-show {
     .show-info-container {
         display: block;
         width: 100%;
+    }
+
+    #container-display-show img.show-image {
+        max-width: 280px;
     }
 }
 

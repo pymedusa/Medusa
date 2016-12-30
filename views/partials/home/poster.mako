@@ -87,57 +87,61 @@
                     <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" asset="show/${cur_show.indexerid}?type=posterThumb"/></a>
                 </div>
             </div>
-            <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
-            <div class="show-title">
-                ${cur_show.name}
+            <div class="show-poster-footer row">
+                <div class="col-md-12">
+                    <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
+                    <div class="show-title">
+                        ${cur_show.name}
+                    </div>
+                    <div class="show-date">
+            % if cur_airs_next:
+                <% ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
+                <%
+                    try:
+                        out = str(sbdatetime.sbdatetime.sbfdate(ldatetime))
+                    except ValueError:
+                        out = 'Invalid date'
+                        pass
+                %>
+                    ${out}
+            % else:
+                <%
+                output_html = '?'
+                display_status = cur_show.status
+                if None is not display_status:
+                    if 'nded' not in display_status and 1 == int(cur_show.paused):
+                      output_html = 'Paused'
+                    elif display_status:
+                        output_html = display_status
+                %>
+                ${output_html}
+            % endif
+                    </div>
+                    <div class="show-details">
+                        <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                            <tr>
+                                <td class="show-table">
+                                    <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>
+                                </td>
+                                <td class="show-table">
+                                % if cur_show.network:
+                                    <span title="${cur_show.network}"><img class="show-network-image" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                                % else:
+                                    <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
+                                % endif
+                                </td>
+                                <td class="show-table">
+                                    ${renderQualityPill(cur_show.quality, showTitle=True, overrideClass="show-quality")}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div> <!-- col -->
+            </div> <!-- show-poster-footer -->
                 % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
                     <img src="images/xem.png" width="16" height="16" />
                 % endif
             </div>
-            <div class="show-date">
-    % if cur_airs_next:
-        <% ldatetime = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
-        <%
-            try:
-                out = str(sbdatetime.sbdatetime.sbfdate(ldatetime))
-            except ValueError:
-                out = 'Invalid date'
-                pass
-        %>
-            ${out}
-    % else:
-        <%
-        output_html = '?'
-        display_status = cur_show.status
-        if None is not display_status:
-            if 'nded' not in display_status and 1 == int(cur_show.paused):
-              output_html = 'Paused'
-            elif display_status:
-                output_html = display_status
-        %>
-        ${output_html}
-    % endif
-            </div>
-            <div class="show-details">
-                <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
-                    <tr>
-                        <td class="show-table">
-                            <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>
-                        </td>
-                        <td class="show-table">
-                            % if cur_show.network:
-                                <span title="${cur_show.network}"><img class="show-network-image" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
-                            % else:
-                                <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
-                            % endif
-                        </td>
-                        <td class="show-table">
-                            ${renderQualityPill(cur_show.quality, showTitle=True, overrideClass="show-quality")}
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        </div>
     % endfor
     </div>
 </div>
