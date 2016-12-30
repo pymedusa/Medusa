@@ -23,7 +23,7 @@ class BaseRequestHandler(RequestHandler):
             api_key = ''
             if self.request.headers.get('Authorization'):
                 try:
-                    token = jwt.decode(self.request.headers.get('Authorization').replace('Bearer ', ''), 'secret', algorithms=['HS256'])
+                    token = jwt.decode(self.request.headers.get('Authorization').replace('Bearer ', ''), app.ENCRYPTION_SECRET, algorithms=['HS256'])
                 except jwt.ExpiredSignatureError:
                     self.api_finish(status=401, error='Token has expired.')
             if self.get_argument('api_key', default='') and self.get_argument('api_key', default='') == app.API_KEY:

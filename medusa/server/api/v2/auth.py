@@ -64,7 +64,7 @@ class AuthHandler(BaseRequestHandler):
             'scopes': ['*'], # @TODO: This should be reaplce with scopes or roles/groups
             'username': app.WEB_USERNAME,
             'apiKey': app.API_KEY # TODO: This should be replaced with the JWT itself
-        }, 'secret', algorithm='HS256'))
+        }, app.ENCRYPTION_SECRET, algorithm='HS256'))
 
     def _failed_login(self, error=None):
         self.api_finish(status=401, error=error)
