@@ -1,12 +1,11 @@
 # coding=utf-8
 """Request handler for authentication."""
 
-import base64
-import tornado
-import jwt
-import time
 import random
 import string
+import time
+import jwt
+import tornado
 
 from .base import BaseRequestHandler
 from .... import app, helpers, logger, notifiers
@@ -27,12 +26,11 @@ class AuthHandler(BaseRequestHandler):
 
     def post(self, *args, **kwargs):
         """Request JWT."""
-
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
         submitted_username = ''
         submitted_password = ''
-        submitted_exp = 86400 # 1 day
+        submitted_exp = 86400  # 1 day
 
         # If the user hasn't set a username and/or password just let them login
         if username.strip() != '' and password.strip() != '':
@@ -48,11 +46,11 @@ class AuthHandler(BaseRequestHandler):
             if username != submitted_username or password != submitted_password:
                 self._failed_login(error='Invalid credentials')
             else:
-                self._login()
+                self._login(submitted_exp)
         else:
             self._login()
 
-    def _login(self):
+    def _login(self, exp=86400):
         self.set_header('Content-Type', 'application/jwt')
         if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
             notifiers.notify_login(self.request.remote_ip)
@@ -64,10 +62,10 @@ class AuthHandler(BaseRequestHandler):
             'iat': time_now,
             # @TODO: The jti should be saved so we can revoke tokens
             'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
-            'exp': time_now + ((60 * 60) * 24),
-            'scopes': ['*'], # @TODO: This should be reaplce with scopes or roles/groups
+            'exp': time_now + int(exp),
+            'scopes': ['*'],  # @TODO: This should be reaplce with scopes or roles/groups
             'username': app.WEB_USERNAME,
-            'apiKey': app.API_KEY # TODO: This should be replaced with the JWT itself
+            'apiKey': app.API_KEY  # TODO: This should be replaced with the JWT itself
         }, app.ENCRYPTION_SECRET, algorithm='HS256'))
 
     def _failed_login(self, error=None):
