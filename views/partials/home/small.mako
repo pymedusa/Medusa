@@ -6,6 +6,7 @@
     from medusa.indexers.indexer_api import indexerApi
     from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
+    from medusa.scene_numbering import get_xem_numbering_for_show
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -28,11 +29,13 @@
             <th>Size</th>
             <th>Active</th>
             <th>Status</th>
+            <th>XEM</th>
         </tr>
     </thead>
     <tfoot class="hidden-print">
         <tr>
             <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[curListType == 'Anime']}</a></th>
+            <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>&nbsp;</th>
@@ -181,6 +184,9 @@
                         display_status = 'Ended'
             %>
             ${display_status}
+            </td>
+            <td align="center">
+                <img src="images/${('no16.png', 'yes16.png')[bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer))]}" alt="${('No', 'Yes')[bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer))]}" width="16" height="16" />
             </td>
         </tr>
     % endfor

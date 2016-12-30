@@ -104,7 +104,8 @@ MEDUSA.home.index = function() {
                 5: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
                 6: function(node) { return $(node).find('span:first').text(); }, // eslint-disable-line brace-style
                 7: function(node) { return $(node).data('show-size'); }, // eslint-disable-line brace-style
-                8: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
+                8: function(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
+                10: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
             };
         })(),
         widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
@@ -116,7 +117,8 @@ MEDUSA.home.index = function() {
             5: {sorter: 'quality'},
             6: {sorter: 'eps'},
             7: {sorter: 'digit'},
-            8: {filter: 'parsed'}
+            8: {filter: 'parsed'},
+            10: {filter: 'parsed'}
         },
         widgetOptions: {
             filter_columnFilters: true, // eslint-disable-line camelcase
