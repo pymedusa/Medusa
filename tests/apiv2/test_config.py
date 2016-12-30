@@ -114,7 +114,7 @@ def config(monkeypatch, app_config):
             # app.NZBGET_CATEGORY_ANIME
             # app.NZBGET_CATEGORY_ANIME_BACKLOG
             'host': app.NZBGET_HOST,
-            'pririty': app.NZBGET_PRIORITY
+            'priority': app.NZBGET_PRIORITY
         },
         'layout': {
             'schedule': app.COMING_EPS_LAYOUT,
