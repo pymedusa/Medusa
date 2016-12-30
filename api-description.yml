@@ -11,12 +11,15 @@ securityDefinitions:
   x-api-key:
     type: apiKey
     name: x-api-key
+    in: query
+  Bearer:
+    type: apiKey
+    name: Authorization
     in: header
 basePath: /api/v2
 produces:
   - application/json
-security:
-  - x-api-key: []
+security: [ { x-api-key: [] }, { Bearer: []  } ]
 paths:
   /show:
     get:
@@ -168,7 +171,7 @@ paths:
                   method:
                     type: string
                     enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
-  /auth/login: # This should be changed to /auth with post creating a token and delete removing it, to logout we DELETE /auth/{token}, to login we POST to /auth, to update the auth period we PATCH /auth/{token}
+  /authenticate:
     post:
       security: []
       summary: "Returns a JWT for the provided user. This is required for all other routes."
@@ -178,14 +181,7 @@ paths:
         200:
           description: "The JWT for the user."
           schema:
-            type: object
-            properties:
-              idToken:
-                type: string
-              roles:
-                type: array
-                items:
-                  type: string
+            type: string
         401:
           description: "No credentials provided or invalid credentials."
       parameters:
@@ -325,6 +321,10 @@ definitions:
         type: string
       password:
         type: string
+      exp:
+        type: integer
+        minimum: 3600
+        maximum: 31536000
     required:
       - username
       - password
