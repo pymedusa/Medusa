@@ -854,10 +854,7 @@ class PostProcessor(object):
             logger.log(u'Proper: {0}'.format(self.is_proper), level)
 
             # If in_history is True it must be a priority download
-            if self.in_history or self.is_priority:
-                return True
-            else:
-                return False
+            return bool(self.in_history or self.is_priority)
 
     def _run_extra_scripts(self, ep_obj):
         """
