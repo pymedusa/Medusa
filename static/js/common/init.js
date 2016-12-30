@@ -146,16 +146,17 @@ MEDUSA.common.init = function() {
             'cursor': 'help', // eslint-disable-line quote-props
             'text-shadow': '0px 0px 0.5px #666'
         });
+
+        var my = $(this).data('qtip-my') || 'left center';
+        var at = $(this).data('qtip-at') || 'middle right';
+
         $(this).qtip({
             show: {
                 solo: true
             },
             position: {
-                my: 'left center',
-                adjust: {
-                    y: -10,
-                    x: 2
-                }
+                my: my,
+		        at: at,
             },
             style: {
                 tip: {

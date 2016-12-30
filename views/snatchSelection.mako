@@ -118,7 +118,7 @@
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses">
-                                <span title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
+                                <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
                             </td>
                             <td class="col-group break-word">
                                 <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
