@@ -209,6 +209,9 @@ MEDUSA.home.index = function() {
                 },
                 indexer: function(itemElem) {
                     var indexer = $(itemElem).attr('data-indexer');
+                    if (indexer === undefined) {
+                        return Number.NEGATIVE_INFINITY;
+                    }
                     return (indexer.length && parseInt(indexer, 10)) || Number.NEGATIVE_INFINITY;
                 }
             }
