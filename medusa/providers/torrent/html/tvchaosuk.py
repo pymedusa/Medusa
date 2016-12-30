@@ -50,6 +50,7 @@ class TVChaosUKProvider(TorrentProvider):
         }
 
         # Proper Strings
+        # Provider always returns propers and non-propers in a show search
         self.proper_strings = ['']
 
         # Miscellaneous Options
