@@ -911,21 +911,32 @@ class PostProcessor(object):
                 self._log(u"This episode was manually snatched. Marking it as priority", logger.DEBUG)
                 return True
 
-            # We only want it if the new quality is higher
             # Assuming the new quality is a wanted quality
-            if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
-                          logger.DEBUG)
+            if new_ep_quality != common.Quality.UNKNOWN:
+
+                # If it's a proper of equal or higher quality
+                if self.is_proper and new_ep_quality >= old_ep_quality:
+                    self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
+                              u"Marking it as priority", logger.DEBUG)
+
+                elif new_ep_quality > old_ep_quality:
+                    self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
+                              logger.DEBUG)
+
+                # If it's in history it's because we snatched it. is_history checks the snatched status
+                else:
+                    self._log(u"Medusa snatched this episode and wasn't processed yet. Marking it as priority",
+                              logger.DEBUG)
                 return True
 
-            # if it's a proper of equal or higher quality
-            if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
-                          u"Marking it as priority", logger.DEBUG)
-                return True
+            else:
+                self._log(u"Medusa snatched this episode but file quality is UNKNOWN. "
+                          u"Not marking it as priority", logger.DEBUG)
+                return False
 
-        self._log(u"This episode is not in history. Not marking it as priority", logger.DEBUG)
-        return False
+        else:
+            self._log(u"This episode is not in history. Not marking it as priority", logger.DEBUG)
+            return False
 
     def flag_kodi_clean_library(self):
         """Set flag to clean Kodi's library if Kodi is enabled."""
@@ -985,6 +996,8 @@ class PostProcessor(object):
 
         # check snatched history to see if we should set download as priority
         self._priority_from_history(show.indexerid, season, episodes, new_ep_quality)
+        if self.in_history:
+            self._log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
         priority_download = self._is_priority(ep_obj, new_ep_quality)
