@@ -32,6 +32,7 @@ class AuthHandler(BaseRequestHandler):
         password = app.WEB_PASSWORD
         submitted_username = ''
         submitted_password = ''
+        submitted_exp = 86400 # 1 day
 
         # If the user hasn't set a username and/or password just let them login
         if username.strip() != '' and password.strip() != '':
@@ -39,6 +40,8 @@ class AuthHandler(BaseRequestHandler):
                 data = tornado.escape.json_decode(self.request.body)
                 submitted_username = data['username']
                 submitted_password = data['password']
+                if 'exp' in data:
+                    submitted_exp = data['exp']
             else:
                 self._failed_login(error='No Credentials Provided')
 
@@ -50,6 +53,7 @@ class AuthHandler(BaseRequestHandler):
             self._login()
 
     def _login(self):
+        self.set_header('Content-Type', 'application/jwt')
         if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
             notifiers.notify_login(self.request.remote_ip)
 
