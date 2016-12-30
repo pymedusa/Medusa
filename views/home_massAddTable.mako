@@ -25,8 +25,6 @@
         indexer = 0
         if curDir['existing_info'][0]:
             indexer = curDir['existing_info'][2]
-        elif app.INDEXER_DEFAULT > 0:
-            indexer = app.INDEXER_DEFAULT
     %>
     <tr>
         <td class="col-checkbox"><input type="checkbox" id="${show_id}" data-indexer="${indexer}" data-indexer-id="${curDir['existing_info'][0]}"
