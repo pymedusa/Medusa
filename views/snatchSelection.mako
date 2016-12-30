@@ -118,13 +118,15 @@
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses">
-                                <span class="break-word ${hItem['name_highlight']}">${hItem["name"]}</span>
+                                <span title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
                             </td>
                             <td class="col-group break-word">
                                 <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
                             </td>
                             <td class="col-provider">
-                                <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>${hItem["provider"]}</td>
+                                <span title="${hItem["provider"]}" class="addQTip">
+                                    <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/></td>
+                                </span>
                             <td align="center">${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
                                 <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"]}"/>

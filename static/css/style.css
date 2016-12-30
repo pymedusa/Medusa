@@ -581,7 +581,7 @@ home.mako
 }
 
 .show-image {
-    max-width: 220px;
+    max-width: 180px;
     overflow: hidden;
 }
 
@@ -1030,12 +1030,10 @@ div#container-display-show {
     margin-right: 10px;
     margin-right: 10px;
     display: table-cell;
-    vertical-align: centre;
-    width: 220px;
+    vertical-align: middle;
+    width: 180px;
     max-height: 268px;
-    border-style: solid;
-    border-color: grey;
-    border-width: 1px;
+    border: 1px solid rgb(61, 61, 61);
     vertical-align: middle;
 }
 
@@ -1276,7 +1274,6 @@ ul.tags li a {
     background-color: #EFEFEF;
     border: 1px solid #DFDEDE;
     width: 100%;
-    min-height: 268px;
     overflow: auto;
     cursor: default;
     opacity: 0.8;
@@ -1554,7 +1551,6 @@ td.col-subtitles {
 
 th.col-status,
 td.col-status {
-    width: 230px;
     text-align: center;
 }
 
@@ -1574,19 +1570,16 @@ td.col-search {
 }
 
 td.col-date {
-    min-width: 104px;
     text-align: center;
     white-space: nowrap;
 }
 
 td.col-size {
-    min-width: 79px;
     text-align: center;
     white-space: nowrap;
 }
 
 td.col-provider {
-    min-width: 133px;
     text-align: center;
     white-space: nowrap;
 }
@@ -3877,7 +3870,7 @@ div#searchNotification {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 200px;
+    max-width: 250px;
 }
 
 /* =======================================================================
