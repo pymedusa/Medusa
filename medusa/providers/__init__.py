@@ -21,7 +21,7 @@ from os import sys
 from random import shuffle
 
 from .nzb import (
-    anizb, binsearch, womble,
+    anizb, binsearch,
 )
 from .torrent import (
     abnormal, alpharatio, animebytes, animetorrents, bitcannon, bithdtv, bitsnoop, btn, cpasbien, danishbits,
@@ -33,7 +33,7 @@ from .torrent import (
 from .. import app
 
 __all__ = [
-    'womble', 'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents',
+    'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents',
     'torrentday', 'hdbits', 'hounddawgs', 'iptorrents',
     'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'cpasbien',
     'morethantv', 't411', 'tokyotoshokan', 'alpharatio', 'sdbits',
