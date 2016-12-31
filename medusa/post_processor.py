@@ -27,7 +27,7 @@ import adba
 from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, is_higher_quality, remove_extension
+from .helper.common import episode_num, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
@@ -996,8 +996,8 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    allowed_qualities, preferred_qualities = show.current_qualities
-                    if not is_higher_quality(old_ep_quality, new_ep_quality, allowed_qualities, preferred_qualities):
+                    allowed, preferred = show.current_qualities
+                    if not common.Quality.is_higher_quality(old_ep_quality, new_ep_quality, allowed, preferred):
                         raise EpisodePostProcessingFailedException(
                             u'File exists. Marking it unsafe to replace because this quality is not desired')
                     else:
