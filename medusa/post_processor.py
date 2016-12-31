@@ -27,7 +27,7 @@ import adba
 from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, remove_extension
+from .helper.common import episode_num, is_higher_quality, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
@@ -839,7 +839,7 @@ class PostProcessor(object):
             """
             Determine if the episode is a priority download or not (if it is expected).
 
-            Episodes which are expected (snatched) or larger than the existing episode are priority, others are not.
+            Episodes which are expected (snatched) are priority, others are not.
 
             :param ep_obj: The TVEpisode object in question
             :param old_ep_quality: The old quality of the episode that is being processed
@@ -996,12 +996,12 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    _, preferred_qualities = show.current_qualities
-                    if new_ep_quality not in preferred_qualities:
+                    allowed_qualities, preferred_qualities = show.current_qualities
+                    if not is_higher_quality(old_ep_quality, new_ep_quality, allowed_qualities, preferred_qualities):
                         raise EpisodePostProcessingFailedException(
-                            u'File exists. Marking it unsafe to replace because this quality is not preferred')
+                            u'File exists. Marking it unsafe to replace because this quality is not desired')
                     else:
-                        self._log(u'File exists. Marking it safe to replace because this quality is preferred')
+                        self._log(u'File exists. Marking it safe to replace because this quality is desired')
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
