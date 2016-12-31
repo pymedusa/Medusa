@@ -520,6 +520,18 @@ home.mako
     background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
 }
 
+div.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 85%
+}
+
+div.xem {
+    position: absolute;
+    right: 1px;
+    top: 0;
+}
 
 /* Show options */
 
