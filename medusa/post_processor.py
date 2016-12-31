@@ -805,8 +805,11 @@ class PostProcessor(object):
                 if history_result and history_result[0]['quality'] == quality:
                     # Third: make sure the file we are post-processing hasn't been
                     # previously processed, as we wouldn't want it in that case
+
+                    # Check if the last snatch was a manual snatch
                     if history_result[0]['manually_searched']:
                         self.manually_searched = True
+
                     download_result = main_db_con.select(
                         'SELECT resource '
                         'FROM history '
@@ -825,11 +828,55 @@ class PostProcessor(object):
                         if self.file_name != download_name:
                             self.in_history = True
                             return
+
                     else:
                         # There aren't any other files processed before for this
                         # episode and quality, we can safely say we want this file
                         self.in_history = True
                         return
+
+    def _is_priority(self, ep_obj, old_ep_quality, new_ep_quality):
+            """
+            Determine if the episode is a priority download or not (if it is expected).
+
+            Episodes which are expected (snatched) are priority, others are not.
+
+            :param ep_obj: The TVEpisode object in question
+            :param old_ep_quality: The old quality of the episode that is being processed
+            :param new_ep_quality: The new quality of the episode that is being processed
+            :return: True if the episode is priority, False otherwise.
+            """
+            level = logger.DEBUG
+            logger.log(u'In history: {0}'.format(self.in_history), level)
+            logger.log(u'Manual snatch: {0}'.format(self.manually_searched), level)
+            logger.log(u'Existing quality: {0}'.format(old_ep_quality), level)
+            logger.log(u'New quality: {0}'.format(new_ep_quality), level)
+            logger.log(u'Proper: {0}'.format(self.is_proper), level)
+
+            # If in_history is True it must be a priority download
+            return bool(self.in_history or self.is_priority)
+
+    @staticmethod
+    def _should_process(current_quality, new_quality, allowed, preferred):
+        """
+        Determine if a quality should be processed according to the quality system.
+
+        :param current_quality: The current quality of the episode that is being processed
+        :param new_quality: The new quality of the episode that is being processed
+        :param allowed: Qualities that are allowed
+        :param preferred: Qualities that are preferred
+        :return: True if the quality should be processed, False or None otherwise.
+        """
+        if new_quality in preferred:
+            if current_quality in preferred:
+                return new_quality > current_quality
+            return True
+        elif new_quality in allowed:
+            if current_quality in preferred:
+                return False
+            elif current_quality not in allowed:
+                return True
+            return new_quality > current_quality
 
     def _run_extra_scripts(self, ep_obj):
         """
@@ -888,45 +935,6 @@ class PostProcessor(object):
             except Exception as e:
                 self._log(u'Unable to run extra_script: {0!r}'.format(e))
 
-    def _is_priority(self, ep_obj, new_ep_quality):
-        """
-        Determine if the episode is a priority download or not (if it is expected).
-
-        Episodes which are expected (snatched) or larger than the existing episode are priority, others are not.
-
-        :param ep_obj: The TVEpisode object in question
-        :param new_ep_quality: The quality of the episode that is being processed
-        :return: True if the episode is priority, False otherwise.
-        """
-        if self.is_priority:
-            return True
-
-        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
-
-        # if Medusa downloaded this on purpose we likely have a priority download
-        if self.in_history:
-
-            # If manual searched, then by pass any quality checks
-            if self.manually_searched:
-                self._log(u"This episode was manually snatched. Marking it as priority", logger.DEBUG)
-                return True
-
-            # We only want it if the new quality is higher
-            # Assuming the new quality is a wanted quality
-            if new_ep_quality > old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Medusa snatched this episode and it is a higher quality. Marking it as priority",
-                          logger.DEBUG)
-                return True
-
-            # if it's a proper of equal or higher quality
-            if self.is_proper and new_ep_quality >= old_ep_quality and new_ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Medusa snatched this episode and it is a proper of equal or higher quality. "
-                          u"Marking it as priority", logger.DEBUG)
-                return True
-
-        self._log(u"This episode is not in history. Not marking it as priority", logger.DEBUG)
-        return False
-
     def flag_kodi_clean_library(self):
         """Set flag to clean Kodi's library if Kodi is enabled."""
         if app.USE_KODI:
@@ -954,7 +962,7 @@ class PostProcessor(object):
                 self._log(u'File {0} is ignored type, skipping'.format(self.file_path))
                 return False
 
-        # reset per-file stuff
+        # reset in_history
         self.in_history = False
 
         # reset the anidb episode object
@@ -983,11 +991,13 @@ class PostProcessor(object):
         logger.log(u'Quality of the episode we are processing: {0}'.format
                    (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
-        # check snatched history to see if we should set download as priority
+        # check snatched history to see if we should set the download as priority
         self._priority_from_history(show.indexerid, season, episodes, new_ep_quality)
+        if self.in_history:
+            self._log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
-        priority_download = self._is_priority(ep_obj, new_ep_quality)
+        priority_download = self._is_priority(ep_obj, old_ep_quality, new_ep_quality)
         self._log(u'This episode is a priority download: {0}'.format(priority_download), logger.DEBUG)
 
         # get the version of the episode we're processing (default is -1)
@@ -1008,12 +1018,12 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    _, preferred_qualities = show.current_qualities
-                    if new_ep_quality not in preferred_qualities:
+                    allowed, preferred = show.current_qualities
+                    if not self._should_process(old_ep_quality, new_ep_quality, allowed, preferred):
                         raise EpisodePostProcessingFailedException(
-                            u'File exists. Marking it unsafe to replace because this quality is not preferred')
+                            u'File exists. Marking it unsafe to replace because this quality is not desired')
                     else:
-                        self._log(u'File exists. Marking it safe to replace because this quality is preferred')
+                        self._log(u'File exists. Marking it safe to replace because this quality is desired')
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
@@ -1063,18 +1073,18 @@ class PostProcessor(object):
             # for cur_ep in [ep_obj] + ep_obj.related_episodes:
             #    cur_ep.status = common.Quality.composite_status(common.SNATCHED, new_ep_quality)
 
-        # if the show directory doesn't exist then make it if allowed
+        # if the show directory doesn't exist then make it if desired
         if not os.path.isdir(ep_obj.show._location) and app.CREATE_MISSING_SHOW_DIRS:
             self._log(u"Show directory doesn't exist, creating it", logger.DEBUG)
             try:
-                os.mkdir(ep_obj.show._location)  # pylint: disable=protected-access
-                helpers.chmod_as_parent(ep_obj.show._location)  # pylint: disable=protected-access
+                os.mkdir(ep_obj.show._location)
+                helpers.chmod_as_parent(ep_obj.show._location)
 
                 # do the library update for synoindex
-                notifiers.synoindex_notifier.addFolder(ep_obj.show._location)  # pylint: disable=protected-access
+                notifiers.synoindex_notifier.addFolder(ep_obj.show._location)
             except (OSError, IOError):
                 raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {0}'.format
-                                                           (ep_obj.show._location))  # pylint: disable=protected-access
+                                                           (ep_obj.show._location))
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
             ep_obj.show.write_metadata(True)
@@ -1125,7 +1135,6 @@ class PostProcessor(object):
         try:
             proper_path = ep_obj.proper_path()
             proper_absolute_path = os.path.join(ep_obj.show.location, proper_path)
-
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
@@ -1172,8 +1181,8 @@ class PostProcessor(object):
                 self._move_and_symlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
                                        app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
-                logger.log(u' "{0}" is an unknown file processing method. '
-                           u'Please correct your app\'s usage of the api.'.format(self.process_method), logger.WARNING)
+                logger.log(u"'{0}' is an unknown file processing method. "
+                           u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
         except (OSError, IOError):
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
