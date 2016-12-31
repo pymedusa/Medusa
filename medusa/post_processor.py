@@ -856,6 +856,28 @@ class PostProcessor(object):
             # If in_history is True it must be a priority download
             return bool(self.in_history or self.is_priority)
 
+    @staticmethod
+    def _should_process(current_quality, new_quality, allowed, preferred):
+        """
+        Determine if a quality should be processed according to the quality system.
+
+        :param current_quality: The current quality of the episode that is being processed
+        :param new_quality: The new quality of the episode that is being processed
+        :param allowed: Qualities that are allowed
+        :param preferred: Qualities that are preferred
+        :return: True if the quality should be processed, False or None otherwise.
+        """
+        if new_quality in preferred:
+            if current_quality in preferred:
+                return new_quality > current_quality
+            return True
+        elif new_quality in allowed:
+            if current_quality in preferred:
+                return False
+            elif current_quality not in allowed:
+                return True
+            return new_quality > current_quality
+
     def _run_extra_scripts(self, ep_obj):
         """
         Execute any extra scripts defined in the config.
@@ -997,7 +1019,7 @@ class PostProcessor(object):
                     self.flag_kodi_clean_library()
                 else:
                     allowed, preferred = show.current_qualities
-                    if not common.Quality.is_higher_quality(old_ep_quality, new_ep_quality, allowed, preferred):
+                    if not self._should_process(old_ep_quality, new_ep_quality, allowed, preferred):
                         raise EpisodePostProcessingFailedException(
                             u'File exists. Marking it unsafe to replace because this quality is not desired')
                     else:
