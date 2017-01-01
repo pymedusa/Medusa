@@ -81,9 +81,8 @@ MediaInfo is optional, but highly recommended since it increases the number of s
 The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms.
 
 
-
-* X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/)
-* armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/)
-* aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/)
+* X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/), [Github](https://github.com/linuxserver/docker-medusa)
+* armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
+* aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
 
  
