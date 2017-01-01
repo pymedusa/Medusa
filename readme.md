@@ -75,3 +75,15 @@ This product uses [MediaInfo](http://mediaarea.net/MediaInfo) library, Copyright
 
 Binaries for Windows and MacOS are included. Linux distributions need to manually install MediaInfo.
 MediaInfo is optional, but highly recommended since it increases the number of supported formats for video metadata extraction. Basic MKV metadata is supported when MediaInfo is not installed.
+
+#### Docker images
+
+The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docker images for X86, armhf and aarch64 platforms.
+
+
+
+* X86 - [Dockerhub](https://hub.docker.com/r/linuxserver/medusa/)
+* armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/)
+* aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/)
+
+ 
