@@ -724,7 +724,7 @@ class QueueItemUpdate(ShowQueueItem):
 
         # get episode list from DB
         try:
-            episodes_from_db = self.show.load_episodes_from_db(self.seasons)
+            episodes_from_db = self.show.load_episodes_from_db()
         except IndexerException as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
