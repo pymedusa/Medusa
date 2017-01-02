@@ -3,6 +3,7 @@
 
 import json
 import operator
+import traceback
 from datetime import datetime
 from babelfish.language import Language
 import jwt
@@ -36,7 +37,8 @@ class BaseRequestHandler(RequestHandler):
             if token == '' and api_key == '':
                 self.api_finish(status=401, error='Invalid token or API key.')
 
-    def write_error(self):
+    def write_error(self, *args, **kwargs):
+        """Only send traceback if app.DEVELOPER is true."""
         if app.DEVELOPER and 'exc_info' in kwargs:
             self.set_header('content-type', 'text/plain')
             for line in traceback.format_exception(*kwargs["exc_info"]):
@@ -53,7 +55,8 @@ class BaseRequestHandler(RequestHandler):
     def set_default_headers(self):
         """Set default CORS headers."""
         self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
+        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type,'
+                                                        'X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
         self.set_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
 
     def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, **kwargs):
