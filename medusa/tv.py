@@ -842,6 +842,13 @@ class TVShow(TVObject):
             if cur_season not in scanned_eps:
                 scanned_eps[cur_season] = {}
 
+            if cur_episode == 0:
+                logger.log(u'{id}: Tried loading {show} {ep} from the DB. With an episode id set to 0.'
+                           u' We dont support that. Skipping to next episode.'.
+                           format(id=cur_show_id, show=cur_show_name,
+                                  ep=episode_num(cur_season, cur_episode)), logger.WARNING)
+                continue
+
             try:
                 cur_ep = self.get_episode(cur_season, cur_episode)
                 if not cur_ep:
@@ -877,7 +884,6 @@ class TVShow(TVObject):
         try:
             if tvapi:
                 t = tvapi
-                show_obj = t[self.indexerid]
             else:
                 indexer_api_params = indexerApi(self.indexer).api_params.copy()
 
@@ -889,8 +895,9 @@ class TVShow(TVObject):
                 if self.dvdorder != 0:
                     indexer_api_params['dvdorder'] = True
 
-                    t = indexerApi(self.indexer).indexer(**indexer_api_params)
-                    show_obj = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
+                t = indexerApi(self.indexer).indexer(**indexer_api_params)
+
+            indexed_show = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
         except IndexerException as e:
             logger.log(u'{id}: {indexer} error, unable to update episodes. Message: {ex}'.format
                        (id=self.indexerid, indexer=indexerApi(self.indexer).name, ex=e), logger.WARNING)
@@ -902,9 +909,9 @@ class TVShow(TVObject):
         scanned_eps = {}
 
         sql_l = []
-        for season in show_obj:
+        for season in indexed_show:
             scanned_eps[season] = {}
-            for episode in show_obj[season]:
+            for episode in indexed_show[season]:
                 # need some examples of wtf episode 0 means to decide if we want it or not
                 if episode == 0:
                     continue
