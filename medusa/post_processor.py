@@ -510,51 +510,36 @@ class PostProcessor(object):
 
     def _find_info(self):
         """
-        For a given file try to find the showid, season, and episode.
+        For a given file try to find the show, season, epsiodes, version and quality.
 
-        :return: A (show, season, episodes, quality, version) tuple
+        :return: A (show, season, episodes, version, quality) tuple
         """
-        show = season = quality = version = None
+        show = season = version = quality = None
         episodes = []
+        name_list = [self.nzb_name, self.file_name, self.rel_path]
 
-        attempt_list = [
+        for counter, name in enumerate(name_list):
 
-            # try to analyze the nzb name
-            lambda: self._analyze_name(self.nzb_name),
-
-            # try to analyze the file name
-            lambda: self._analyze_name(self.file_name),
-
-            # try to analyze the file path
-            lambda: self._analyze_name(self.rel_path)
-        ]
-
-        # Try every possible method to get our info
-        for att_num, attempt in enumerate(attempt_list):
-
-            try:
-                cur_show, cur_season, cur_episodes, cur_quality, cur_version = attempt()
-            except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u'{0}'.format(error), logger.DEBUG)
-                continue
+            cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name)
 
             if not cur_show:
                 continue
             show = cur_show
 
-            if att_num < (len(attempt_list) - 1):
-                if common.Quality.qualityStrings[cur_quality] == 'Unknown':
-                    continue
-            quality = cur_quality
+            if cur_season is not None:
+                season = cur_season
+
+            if cur_episodes:
+                episodes = cur_episodes
 
             # we only get current version from anime
             if cur_version is not None:
                 version = cur_version
 
-            if cur_season is not None:
-                season = cur_season
-            if cur_episodes:
-                episodes = cur_episodes
+            if counter < (len(name_list) - 1):
+                if common.Quality.qualityStrings[cur_quality] == 'Unknown':
+                    continue
+            quality = cur_quality
 
             # for air-by-date shows we need to look up the season/episode from database
             if season == -1 and show and episodes:
@@ -627,11 +612,10 @@ class PostProcessor(object):
 
     def _analyze_name(self, name):
         """
-        Take a name and try to figure out a show, season, and episode from it.
+        Take a name and try to figure out a show, season, episodes, version and quality from it.
 
         :param name: A string which we want to analyze to determine show info from (unicode)
-        :return: A (indexer_id, season, [episodes]) tuple. The first two may be None and episodes may be []
-        if none were found.
+        :return: A (show, season, episodes, version, quality) tuple
         """
         to_return = (None, None, [], None, None)
 
@@ -640,15 +624,12 @@ class PostProcessor(object):
 
         logger.log(u'Analyzing name: {0}'.format(name), logger.DEBUG)
 
-        # parse the name to break it into show name, season, and episode
+        # parse the name to break it into show, season, episodes, quality and version
         try:
             parse_result = NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
-            logger.log(u'{0}'.format(error), logger.DEBUG)
+            logger.log(u"Couldn't parse file name: {0}. Error: {1}".format(name, error), logger.DEBUG)
             return to_return
-
-        # show object
-        show = parse_result.show
 
         if parse_result.is_air_by_date:
             season = -1
@@ -657,24 +638,23 @@ class PostProcessor(object):
             season = parse_result.season_number
             episodes = parse_result.episode_numbers
 
-        to_return = (show, season, episodes, parse_result.quality, parse_result.version)
+        to_return = (parse_result.show, season, episodes, parse_result.quality, parse_result.version)
 
         self._finalize(parse_result)
         return to_return
 
     def _finalize(self, parse_result):
         """
-        Store parse result if it is complete and final.
+        Store release name of result if it is complete and final.
 
-        :param parse_result: Result of parsers
+        :param parse_result: Result of parser
         """
         self.release_group = parse_result.release_group
 
         # remember whether it's a proper
         self.is_proper = bool(parse_result.proper_tags)
 
-        # if the result is complete then remember that for later
-        # if the result is complete then set release name
+        # if the result is complete set release name
         if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
                                          parse_result.air_date) and parse_result.release_group:
 
