@@ -6,6 +6,8 @@ from ....indexers.indexer_config import indexerConfig, reverse_mappings
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
 
+from tornado.escape import json_decode
+
 
 class EpisodeIdentifier(object):
     """Episode Identifier."""
@@ -137,12 +139,39 @@ class ShowHandler(BaseRequestHandler):
         return self.api_finish(data=data)
 
     def put(self, show_id):
-        """Update show information.
+        """Replace whole show object.
 
         :param show_id:
         :type show_id: str
         """
         return self.api_finish()
+
+    def patch(self, show_indexer, show_id, *args, **kwargs):
+        """Update show object."""
+        # @TODO: This should be completely replaced with show_id
+        indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
+        show_indexer = indexer_cfg['id'] if indexer_cfg else None
+        indexerid = self._parse(show_id)
+
+        if show_id is not None:
+            tv_show = Show.find(app.showList, indexerid, show_indexer)
+            print(tv_show)
+
+            data = json_decode(self.request.body)
+            done_data = {}
+            done_errors = []
+            for key in data.keys():
+                if key == 'pause' and str(data['pause']).lower() in ['true', 'false']:
+                    error, _ = Show.pause(indexerid, data['pause'])
+                    if error is not None:
+                        self.api_finish(error=error)
+                    else:
+                        done_data['pause'] = data['pause']
+            if len(done_errors):
+                print('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
+            self.api_finish(data=done_data)
+        else:
+            return self.api_finish(status=404, error='Show not found')
 
     def post(self):
         """Add a show."""

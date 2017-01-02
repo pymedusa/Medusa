@@ -1267,18 +1267,6 @@ class Home(WebRoot):
         )
 
     @staticmethod
-    def plotDetails(show, season, episode):
-        # @TODO: Replace with plot from GET /api/v2/show/{id}
-        main_db_con = db.DBConnection()
-        result = main_db_con.selectOne(
-            b'SELECT description '
-            b'FROM tv_episodes '
-            b'WHERE showid = ? AND season = ? AND episode = ?',
-            (int(show), int(season), int(episode))
-        )
-        return result[b'description'] if result else 'Episode not found.'
-
-    @staticmethod
     def sceneExceptions(show):
         # @TODO: Replace with plot from GET /api/v2/show/{id}
         exceptions_list = get_all_scene_exceptions(show)
