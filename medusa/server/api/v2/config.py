@@ -38,7 +38,7 @@ class ConfigHandler(BaseRequestHandler):
             'timePreset': app.TIME_PRESET,
             'trimZero': app.TRIM_ZERO,
             'fanartBackground': app.FANART_BACKGROUND,
-            'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY,
+            'fanartBackgroundOpacity': int(app.FANART_BACKGROUND_OPACITY),
             'branch': app.BRANCH,
             'commitHash': app.CUR_COMMIT_HASH,
             'release': app.APP_VERSION,

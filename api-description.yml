@@ -21,6 +21,28 @@ produces:
   - application/json
 security: [ { x-api-key: [] }, { Bearer: []  } ]
 paths:
+  /authenticate:
+    post:
+      security: []
+      summary: "Returns a JWT for the provided user. This is required for all other routes."
+      description: |
+        DESCRIPTION.
+      responses:
+        200:
+          description: "The JWT for the user."
+          schema:
+            type: string
+        401:
+          description: "No credentials provided or invalid credentials."
+          schema:
+            type: object
+      parameters:
+        - name: auth
+          in: body
+          description: auth object
+          required: true
+          schema:
+            $ref: '#/definitions/Auth'
   /show:
     get:
       summary: "Returns all shows in Medusa that the user has access to."
@@ -171,26 +193,6 @@ paths:
                   method:
                     type: string
                     enum: ["blackhole", "utorrent", "transmission", "deluge", "deluged", "download_station", "rtorrent", "qbittorrent", "mlnet"]
-  /authenticate:
-    post:
-      security: []
-      summary: "Returns a JWT for the provided user. This is required for all other routes."
-      description: |
-        DESCRIPTION.
-      responses:
-        200:
-          description: "The JWT for the user."
-          schema:
-            type: string
-        401:
-          description: "No credentials provided or invalid credentials."
-      parameters:
-        - name: auth 
-          in: body
-          description: auth object
-          required: true
-          schema:
-            $ref: '#/definitions/Auth'
 definitions:
   Show:
     type: object
@@ -338,4 +340,3 @@ definitions:
         type: string
       fields:
         type: string
-

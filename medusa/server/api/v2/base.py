@@ -10,7 +10,7 @@ import jwt
 from six import text_type
 from tornado.web import RequestHandler
 
-from .... import app
+from .... import app, logger
 
 
 class BaseRequestHandler(RequestHandler):
@@ -26,12 +26,24 @@ class BaseRequestHandler(RequestHandler):
                     token = jwt.decode(self.request.headers.get('Authorization').replace('Bearer ', ''), app.ENCRYPTION_SECRET, algorithms=['HS256'])
                 except jwt.ExpiredSignatureError:
                     self.api_finish(status=401, error='Token has expired.')
+                except jwt.DecodeError:
+                    self.api_finish(status=401, error='Invalid token.')
+
             if self.get_argument('api_key', default='') and self.get_argument('api_key', default='') == app.API_KEY:
                 api_key = self.get_argument('api_key', default='')
             if self.request.headers.get('X-Api-Key') and self.request.headers.get('X-Api-Key') == app.API_KEY:
                 api_key = self.request.headers.get('X-Api-Key')
             if token == '' and api_key == '':
                 self.api_finish(status=401, error='Invalid token or API key.')
+
+    def write_error(self):
+        if app.DEVELOPER and 'exc_info' in kwargs:
+            self.set_header('content-type', 'text/plain')
+            for line in traceback.format_exception(*kwargs["exc_info"]):
+                self.write(line)
+            self.finish()
+        else:
+            self.api_finish(status=500, error='Internal Server Error')
 
     def options(self, *args, **kwargs):
         """Options."""
@@ -41,7 +53,7 @@ class BaseRequestHandler(RequestHandler):
     def set_default_headers(self):
         """Set default CORS headers."""
         self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token, X-Api-Key')
+        self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type, X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
         self.set_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
 
     def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, **kwargs):
@@ -50,6 +62,7 @@ class BaseRequestHandler(RequestHandler):
             for header in headers:
                 self.set_header(header, headers[header])
         if error is not None and status is not None:
+            self.set_header('content-type', 'application/json')
             self.set_status(status)
             self.finish({
                 'error': error
@@ -57,7 +70,7 @@ class BaseRequestHandler(RequestHandler):
         else:
             self.set_status(status or 200)
             if data is not None:
-                self.set_header('Content-Type', 'application/json; charset=UTF-8')
+                self.set_header('content-type', 'application/json')
                 self.finish(json.JSONEncoder(default=json_string_encoder).encode(data))
             elif stream:
                 # This is mainly for assets

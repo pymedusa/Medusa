@@ -31,15 +31,20 @@ class AuthHandler(BaseRequestHandler):
         submitted_username = ''
         submitted_password = ''
         submitted_exp = 86400  # 1 day
+        request_body = {}
 
         # If the user hasn't set a username and/or password just let them login
         if username.strip() != '' and password.strip() != '':
-            if all(x in tornado.escape.json_decode(self.request.body) for x in ['username', 'password']):
-                data = tornado.escape.json_decode(self.request.body)
-                submitted_username = data['username']
-                submitted_password = data['password']
-                if 'exp' in data:
-                    submitted_exp = data['exp']
+            if self.request.body:
+                if self.request.headers['content-type'] == 'application/json':
+                    request_body = tornado.escape.json_decode(self.request.body)
+                else:
+                    self._failed_login(error='Incorrect content-type')
+                if all(x in request_body for x in ['username', 'password']):
+                    submitted_username = request_body['username']
+                    submitted_password = request_body['password']
+                    if 'exp' in request_body:
+                        submitted_exp = request_body['exp']
             else:
                 self._failed_login(error='No Credentials Provided')
 
@@ -63,7 +68,7 @@ class AuthHandler(BaseRequestHandler):
             # @TODO: The jti should be saved so we can revoke tokens
             'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
             'exp': time_now + int(exp),
-            'scopes': ['*'],  # @TODO: This should be reaplce with scopes or roles/groups
+            'scopes': ['show:read', 'show:write'],  # @TODO: This should be reaplce with scopes or roles/groups
             'username': app.WEB_USERNAME,
             'apiKey': app.API_KEY  # TODO: This should be replaced with the JWT itself
         }, app.ENCRYPTION_SECRET, algorithm='HS256'))
