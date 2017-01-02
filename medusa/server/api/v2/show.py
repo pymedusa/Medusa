@@ -1,12 +1,12 @@
 # coding=utf-8
 """Request handler for shows."""
+
+from tornado.escape import json_decode
 from .base import BaseRequestHandler
 from .... import app
 from ....indexers.indexer_config import indexerConfig, reverse_mappings
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
-
-from tornado.escape import json_decode
 
 
 class EpisodeIdentifier(object):
