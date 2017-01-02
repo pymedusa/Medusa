@@ -10,7 +10,7 @@ import jwt
 from six import text_type
 from tornado.web import RequestHandler
 
-from .... import app, logger
+from .... import app
 
 
 class BaseRequestHandler(RequestHandler):
