@@ -3,30 +3,30 @@ MEDUSA.history.index = function() {
         widgets: ['saveSort', 'zebra', 'filter'],
         sortList: [[0, 1]],
         textExtraction: (function() {
-            if ($.isMeta('HISTORY_LAYOUT', ['detailed'])) {
+            if ($.isMeta('historyLayout', ['detailed'])) {
                 return {
-                    0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                    4: function(node) { return $(node).find('span').text().toLowerCase(); } // eslint-disable-line brace-style
+                    // 0: Time 1: Episode 2: Action 3: Provider 4: Quality
+                    0: function(node) { return $(node).find('time').attr('datetime'); }, // Time
+                    1: function(node) { return $(node).find('a').text(); } // Episode
                 };
             }
             return {
-                0: function(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                1: function(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                2: function(node) { return $(node).find('span').text() === null ? null : $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                5: function(node) { return $(node).attr('quality').toLowerCase(); } // eslint-disable-line brace-style
+                // 0: Time 1: Episode 2: Snatched 3: Downloaded 4: Quality
+                0: function(node) { return $(node).find('time').attr('datetime'); }, // Time
+                1: function(node) { return $(node).find('a').text(); }, // Episode
+                2: function(node) { return $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'); }, // Snatched
+                3: function(node) { return $(node).find('img').attr('title') === undefined ? '' : $(node).find('img').attr('title'); } // Downloaded
             };
         })(),
         headers: (function() {
-            if ($.isMeta('HISTORY_LAYOUT', ['detailed'])) {
+            if ($.isMeta('historyLayout', ['detailed'])) {
                 return {
-                    0: {sorter: 'realISODate'},
-                    4: {sorter: 'quality'}
+                    0: {sorter: 'realISODate'}
                 };
             }
             return {
                 0: {sorter: 'realISODate'},
-                4: {sorter: 'title'},
-                5: {sorter: 'quality'}
+                2: {sorter: 'text'}
             };
         })()
     });
