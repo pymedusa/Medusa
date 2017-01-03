@@ -43,7 +43,7 @@ def get_trakt_externals(externals):
                 app.TRAKT_REFRESH_TOKEN = api.refresh_token
                 app.instance.save_config()
         except (TokenExpiredException, TraktException) as e:
-            logger.info(u"Could not use Trakt to enrich with externals. Cause: {cause}", cause=e)
+            logger.info(u'Could not use Trakt to enrich with externals. Cause: {cause}', cause=e)
             return []
         else:
             return result
