@@ -125,8 +125,8 @@
                             <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>
                         </td>
                         <td class="show-table">
-                            % if curShow.network:
-                                <span title="${cur_show.network}"><img class="show-network-image" asset="show/${cur_showShow.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                            % if cur_show.network:
+                                <span title="${cur_show.network}"><img class="show-network-image" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                             % else:
                                 <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                             % endif

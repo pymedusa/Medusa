@@ -143,7 +143,7 @@
                 </div>
             </td>
             <td align="center">
-            % if curShow.network:
+            % if cur_show.network:
                 <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                 <span class="visible-print-inline">${cur_show.network}</span>
             % else:
