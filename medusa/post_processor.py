@@ -514,7 +514,7 @@ class PostProcessor(object):
 
         :return: A (show, season, episodes, version, quality) tuple
         """
-        show = season = version = quality = None
+        show = season = version = airdate = quality = None
         episodes = []
         name_list = [self.nzb_name, self.file_name, self.rel_path]
 
@@ -536,77 +536,76 @@ class PostProcessor(object):
             if cur_version is not None:
                 version = cur_version
 
+            # for air-by-date shows we need to look up the season/episode from database
+            if cur_season == -1 and show and cur_episodes:
+                self._log(u'Looks like this is an air-by-date or sports show, '
+                          u'attempting to convert the date to season and episode', logger.DEBUG)
+
+                try:
+                    airdate = episodes[0].toordinal()
+                except AttributeError:
+                    self._log(u"Couldn't convert to a valid airdate: {0}".format(episodes[0]), logger.DEBUG)
+                    continue
+
             if counter < (len(name_list) - 1):
                 if common.Quality.qualityStrings[cur_quality] == 'Unknown':
                     continue
             quality = cur_quality
 
-            # for air-by-date shows we need to look up the season/episode from database
-            if season == -1 and show and episodes:
-                self._log(u'Looks like this is an air-by-date or sports show, '
-                          u'attempting to convert the date to season/episode', logger.DEBUG)
+            # We have all the information we need
+            break
 
-                try:
-                    airdate = episodes[0].toordinal()
-                except AttributeError:
-                    self._log(u'Could not convert to a valid airdate: {0}'.format(episodes[0]), logger.DEBUG)
-                    episodes = []
-                    continue
+        if airdate and show:
+            # Ignore season 0 when searching for episode
+            # (conflict between special and regular episode, same air date)
+            main_db_con = db.DBConnection()
+            sql_result = main_db_con.select(
+                'SELECT season, episode '
+                'FROM tv_episodes '
+                'WHERE showid = ? '
+                'AND indexer = ? '
+                'AND airdate = ? '
+                'AND season != 0',
+                [show.indexerid, show.indexer, airdate])
 
-                # Ignore season 0 when searching for episode
-                # (conflict between special and regular episode, same air date)
-                main_db_con = db.DBConnection()
+            if sql_result:
+                season = int(sql_result[0]['season'])
+                episodes = [int(sql_result[0]['episode'])]
+            else:
+                # Found no result, trying with season 0
                 sql_result = main_db_con.select(
                     'SELECT season, episode '
                     'FROM tv_episodes '
                     'WHERE showid = ? '
                     'AND indexer = ? '
-                    'AND airdate = ? '
-                    'AND season != 0',
+                    'AND airdate = ?',
                     [show.indexerid, show.indexer, airdate])
 
                 if sql_result:
                     season = int(sql_result[0]['season'])
                     episodes = [int(sql_result[0]['episode'])]
                 else:
-                    # Found no result, trying with season 0
-                    sql_result = main_db_con.select(
-                        'SELECT season, episode '
-                        'FROM tv_episodes '
-                        'WHERE showid = ? '
-                        'AND indexer = ? '
-                        'AND airdate = ?',
-                        [show.indexerid, show.indexer, airdate])
+                    self._log(u'Unable to find episode with date {0} for show {1}, skipping'.format
+                              (episodes[0], show.indexerid), logger.DEBUG)
+                    # we don't want to leave dates in the episode list
+                    # if we couldn't convert them to real episode numbers
+                    episodes = []
 
-                    if sql_result:
-                        season = int(sql_result[0]['season'])
-                        episodes = [int(sql_result[0]['episode'])]
-                    else:
-                        self._log(u'Unable to find episode with date {0} for show {1}, skipping'.format
-                                  (episodes[0], show.indexerid), logger.DEBUG)
-                        # we don't want to leave dates in the episode list
-                        # if we couldn't convert them to real episode numbers
-                        episodes = []
-                        continue
+        # If there's no season, we assume it's the first season
+        elif season is None and show:
+            main_db_con = db.DBConnection()
+            numseasons_result = main_db_con.select(
+                'SELECT COUNT(DISTINCT season) '
+                'FROM tv_episodes '
+                'WHERE showid = ? '
+                'AND indexer = ? '
+                'AND season != 0',
+                [show.indexerid, show.indexer])
 
-            # If there's no season, we assume it's the first season
-            elif season is None and show:
-                main_db_con = db.DBConnection()
-                numseasons_result = main_db_con.select(
-                    'SELECT COUNT(DISTINCT season) '
-                    'FROM tv_episodes '
-                    'WHERE showid = ? '
-                    'AND indexer = ? '
-                    'AND season != 0',
-                    [show.indexerid, show.indexer])
-
-                if int(numseasons_result[0][0]) == 1 and season is None:
-                    self._log(u"Episode doesn't have a season number, but this show appears "
-                              u"to have only 1 season, setting season number to 1...", logger.DEBUG)
-                    season = 1
-
-            if show and season and episodes:
-                return show, season, episodes, quality, version
+            if int(numseasons_result[0][0]) == 1:
+                self._log(u"Episode doesn't have a season number, but this show appears "
+                          u"to have only 1 season, setting season number to 1...", logger.DEBUG)
+                season = 1
 
         return show, season, episodes, quality, version
 
