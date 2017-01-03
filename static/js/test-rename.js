@@ -37,6 +37,6 @@ $(document).ready(function() {
             return false;
         }
 
-        window.location.href = 'home/doRename?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|');
+        window.location.href = $('base').attr('href') + 'home/doRename?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|');
     });
 });

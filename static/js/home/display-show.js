@@ -46,7 +46,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
+        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
     });
 
     $('.seasonCheck').on('click', function() {
@@ -113,7 +113,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         if (val === 0) {
             return;
         }
-        window.location.href = 'home/displayShow?show=' + val;
+        window.location.href = $('base').attr('href') + 'home/displayShow?show=' + val;
     });
 
     // show/hide different types of rows when the checkboxes are changed

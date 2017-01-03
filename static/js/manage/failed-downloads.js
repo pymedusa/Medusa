@@ -5,7 +5,7 @@ MEDUSA.manage.failedDownloads = function() {
         headers: {3: {sorter: false}}
     });
     $('#limit').on('change', function() {
-        window.location.href = 'manage/failedDownloads/?limit=' + $(this).val();
+        window.location.href = $('base').attr('href') + 'manage/failedDownloads/?limit=' + $(this).val();
     });
 
     $('#submitMassRemove').on('click', function() {
@@ -21,7 +21,7 @@ MEDUSA.manage.failedDownloads = function() {
             return false;
         }
 
-        window.location.href = 'manage/failedDownloads?toRemove=' + removeArr.join('|');
+        window.location.href = $('base').attr('href') + 'manage/failedDownloads?toRemove=' + removeArr.join('|');
     });
 
     if ($('.removeCheck').length !== 0) {

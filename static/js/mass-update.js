@@ -12,7 +12,7 @@ $(document).ready(function() {
             return;
         }
 
-        window.location.href = 'manage/massEdit?toEdit=' + editArr.join('|');
+        window.location.href = $('base').attr('href') + 'manage/massEdit?toEdit=' + editArr.join('|');
     });
 
     $('.submitMassUpdate').on('click', function() {
@@ -89,7 +89,7 @@ $(document).ready(function() {
                         toMetadata: metadataArr.join('|')
                     });
 
-                    window.location.href = 'manage/massUpdate?' + params;
+                    window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
                 }
             });
         }
@@ -105,7 +105,7 @@ $(document).ready(function() {
             toRemove: removeArr.join('|'),
             toMetadata: metadataArr.join('|')
         });
-        window.location.href = 'manage/massUpdate?' + params;
+        window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
     });
 
     ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(function(name) {
