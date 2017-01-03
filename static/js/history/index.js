@@ -32,6 +32,6 @@ MEDUSA.history.index = function() {
     });
 
     $('#history_limit').on('change', function() {
-        window.location.href = 'history/?limit=' + $(this).val();
+        window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
     });
 };
