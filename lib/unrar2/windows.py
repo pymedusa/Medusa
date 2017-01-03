@@ -66,15 +66,24 @@ architecture_bits = ctypes.sizeof(ctypes.c_voidp)*8
 dll_name = "unrar.dll"
 if architecture_bits == 64:
     dll_name = "x64\\unrar64.dll"
-    
-volume_naming1 = re.compile("\.r([0-9]{2})$")    
+
+volume_naming1 = re.compile("\.r([0-9]{2})$")
 volume_naming2 = re.compile("\.([0-9]{3}).rar$")
 volume_naming3 = re.compile("\.part([0-9]+).rar$")
-    
+
 try:
-    unrar = ctypes.WinDLL(os.path.join(os.path.split(__file__)[0], 'UnRARDLL', dll_name))
+    dll_filename = os.path.join(os.path.split(__file__)[0], 'UnRARDLL', dll_name)
+
+    if sys.version_info[:3] == (2, 7, 13):
+        # http://bugs.python.org/issue29082
+        dll_filename = str(dll_filename)
+    unrar = ctypes.WinDLL(dll_filename)
 except WindowsError:
-    unrar = ctypes.WinDLL(dll_name)
+    dll_filename = dll_name
+    if sys.version_info[:3] == (2, 7, 13):
+        # http://bugs.python.org/issue29082
+        dll_filename = str(dll_filename)
+    unrar = ctypes.WinDLL(dll_filename)
 
 
 class RAROpenArchiveDataEx(ctypes.Structure):
@@ -173,7 +182,7 @@ class PassiveReader:
     def __init__(self, usercallback = None):
         self.buf = []
         self.ucb = usercallback
-    
+
     def _callback(self, msg, UserData, P1, P2):
         if msg == UCM_PROCESSDATA:
             data = (ctypes.c_char*P2).from_address(P1).raw
@@ -182,7 +191,7 @@ class PassiveReader:
             else:
                 self.buf.append(data)
         return 1
-    
+
     def get_result(self):
         return ''.join(self.buf)
 
@@ -196,10 +205,10 @@ class RarInfoIterator(object):
             raise IncorrectRARPassword
         self.arc.lockStatus = "locked"
         self.arc.needskip = False
-        
+
     def __iter__(self):
         return self
-        
+
     def next(self):
         if self.index>0:
             if self.arc.needskip:
@@ -207,9 +216,9 @@ class RarInfoIterator(object):
             self.res = RARReadHeaderEx(self.arc._handle, ctypes.byref(self.headerData))
 
         if self.res:
-            raise StopIteration 
+            raise StopIteration
         self.arc.needskip = True
-        
+
         data = {}
         data['index'] = self.index
         data['filename'] = self.headerData.FileNameW
@@ -223,7 +232,7 @@ class RarInfoIterator(object):
         self.index += 1
         return data
 
-            
+
     def __del__(self):
         self.arc.lockStatus = "finished"
 
@@ -253,9 +262,9 @@ class RarFileImplementation(object):
 
         if password:
             RARSetPassword(self._handle, password)
-            
+
         self.lockStatus = "ready"
-        
+
         self.isVolume = archiveData.Flags & 1
 
 
@@ -287,7 +296,7 @@ class RarFileImplementation(object):
                 self.needskip = False
                 res.append((info, reader.get_result()))
         return res
-        
+
 
     def extract(self,  checker, path, withSubpath, overwrite):
         res = []
@@ -300,7 +309,7 @@ class RarFileImplementation(object):
                         fn = os.path.split(fn)[-1]
                     target = os.path.join(path, fn)
                 else:
-                    raise DeprecationWarning, "Condition callbacks returning strings are deprecated and only supported in Windows"                    
+                    raise DeprecationWarning, "Condition callbacks returning strings are deprecated and only supported in Windows"
                     target = checkres
                 if overwrite or (not os.path.exists(target)):
                     tmpres = RARProcessFile(self._handle, RAR_EXTRACT, None, target)
@@ -327,6 +336,3 @@ class RarFileImplementation(object):
         if match1 != None:
             return int(match1.group(1)) + 1
         return 0
-            
-
-
