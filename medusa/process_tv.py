@@ -395,14 +395,14 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):
             NameParser().parse(video, cache_result=False)
             return True
         except (InvalidNameException, InvalidShowException) as error:
-            result.output += logHelper(u"{}".format(error), logger.DEBUG)
+            logger.log(u'{0}'.format(error), logger.DEBUG)
 
     for proc_dir in allDirs:
         try:
             NameParser().parse(proc_dir, cache_result=False)
             return True
         except (InvalidNameException, InvalidShowException) as error:
-            result.output += logHelper(u"{}".format(error), logger.DEBUG)
+            logger.log(u'{0}'.format(error), logger.DEBUG)
 
     if app.UNPACK:
         # Search for packed release
@@ -413,7 +413,7 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):
                 NameParser().parse(packed, cache_result=False)
                 return True
             except (InvalidNameException, InvalidShowException) as error:
-                result.output += logHelper(u"{}".format(error), logger.DEBUG)
+                logger.log(u'{0}'.format(error), logger.DEBUG)
 
     result.output += logHelper(u"%s : No processable items found in the folder" % dirName, logger.DEBUG)
     return False

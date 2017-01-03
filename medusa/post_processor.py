@@ -510,128 +510,111 @@ class PostProcessor(object):
 
     def _find_info(self):
         """
-        For a given file try to find the showid, season, and episode.
+        For a given file try to find the show, season, epsiodes, version and quality.
 
-        :return: A (show, season, episodes, quality, version) tuple
+        :return: A (show, season, episodes, version, quality) tuple
         """
-        show = season = quality = version = None
+        show = season = version = airdate = quality = None
         episodes = []
+        name_list = [self.nzb_name, self.file_name, self.rel_path, self.folder_path]
 
-        attempt_list = [
+        for counter, name in enumerate(name_list):
 
-            # try to analyze the nzb name
-            lambda: self._analyze_name(self.nzb_name),
-
-            # try to analyze the file name
-            lambda: self._analyze_name(self.file_name),
-
-            # try to analyze the file path
-            lambda: self._analyze_name(self.rel_path)
-        ]
-
-        # Try every possible method to get our info
-        for att_num, attempt in enumerate(attempt_list):
-
-            try:
-                cur_show, cur_season, cur_episodes, cur_quality, cur_version = attempt()
-            except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u'{0}'.format(error), logger.DEBUG)
-                continue
+            cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name)
 
             if not cur_show:
                 continue
             show = cur_show
 
-            if att_num < (len(attempt_list) - 1):
-                if common.Quality.qualityStrings[cur_quality] == 'Unknown':
-                    continue
-            quality = cur_quality
+            if cur_season is not None:
+                season = cur_season
+
+            if cur_episodes:
+                episodes = cur_episodes
 
             # we only get current version from anime
             if cur_version is not None:
                 version = cur_version
 
-            if cur_season is not None:
-                season = cur_season
-            if cur_episodes:
-                episodes = cur_episodes
-
             # for air-by-date shows we need to look up the season/episode from database
-            if season == -1 and show and episodes:
+            if cur_season == -1 and show and cur_episodes:
                 self._log(u'Looks like this is an air-by-date or sports show, '
-                          u'attempting to convert the date to season/episode', logger.DEBUG)
+                          u'attempting to convert the date to season and episode', logger.DEBUG)
 
                 try:
                     airdate = episodes[0].toordinal()
                 except AttributeError:
-                    self._log(u'Could not convert to a valid airdate: {0}'.format(episodes[0]), logger.DEBUG)
-                    episodes = []
+                    self._log(u"Couldn't convert to a valid airdate: {0}".format(episodes[0]), logger.DEBUG)
                     continue
 
-                # Ignore season 0 when searching for episode
-                # (conflict between special and regular episode, same air date)
-                main_db_con = db.DBConnection()
+            if counter < (len(name_list) - 1):
+                if common.Quality.qualityStrings[cur_quality] == 'Unknown':
+                    continue
+            quality = cur_quality
+
+            # We have all the information we need
+            break
+
+        if airdate and show:
+            # Ignore season 0 when searching for episode
+            # (conflict between special and regular episode, same air date)
+            main_db_con = db.DBConnection()
+            sql_result = main_db_con.select(
+                'SELECT season, episode '
+                'FROM tv_episodes '
+                'WHERE showid = ? '
+                'AND indexer = ? '
+                'AND airdate = ? '
+                'AND season != 0',
+                [show.indexerid, show.indexer, airdate])
+
+            if sql_result:
+                season = int(sql_result[0]['season'])
+                episodes = [int(sql_result[0]['episode'])]
+            else:
+                # Found no result, trying with season 0
                 sql_result = main_db_con.select(
                     'SELECT season, episode '
                     'FROM tv_episodes '
                     'WHERE showid = ? '
                     'AND indexer = ? '
-                    'AND airdate = ? '
-                    'AND season != 0',
+                    'AND airdate = ?',
                     [show.indexerid, show.indexer, airdate])
 
                 if sql_result:
                     season = int(sql_result[0]['season'])
                     episodes = [int(sql_result[0]['episode'])]
                 else:
-                    # Found no result, trying with season 0
-                    sql_result = main_db_con.select(
-                        'SELECT season, episode '
-                        'FROM tv_episodes '
-                        'WHERE showid = ? '
-                        'AND indexer = ? '
-                        'AND airdate = ?',
-                        [show.indexerid, show.indexer, airdate])
+                    self._log(u'Unable to find episode with date {0} for show {1}, skipping'.format
+                              (episodes[0], show.indexerid), logger.DEBUG)
+                    # we don't want to leave dates in the episode list
+                    # if we couldn't convert them to real episode numbers
+                    episodes = []
 
-                    if sql_result:
-                        season = int(sql_result[0]['season'])
-                        episodes = [int(sql_result[0]['episode'])]
-                    else:
-                        self._log(u'Unable to find episode with date {0} for show {1}, skipping'.format
-                                  (episodes[0], show.indexerid), logger.DEBUG)
-                        # we don't want to leave dates in the episode list
-                        # if we couldn't convert them to real episode numbers
-                        episodes = []
-                        continue
+        # If there's no season, we assume it's the first season
+        elif season is None and show:
+            main_db_con = db.DBConnection()
+            numseasons_result = main_db_con.select(
+                'SELECT COUNT(DISTINCT season) '
+                'FROM tv_episodes '
+                'WHERE showid = ? '
+                'AND indexer = ? '
+                'AND season != 0',
+                [show.indexerid, show.indexer])
 
-            # If there's no season, we assume it's the first season
-            elif season is None and show:
-                main_db_con = db.DBConnection()
-                numseasons_result = main_db_con.select(
-                    'SELECT COUNT(DISTINCT season) '
-                    'FROM tv_episodes '
-                    'WHERE showid = ? '
-                    'AND indexer = ? '
-                    'AND season != 0',
-                    [show.indexerid, show.indexer])
-
-                if int(numseasons_result[0][0]) == 1 and season is None:
-                    self._log(u"Episode doesn't have a season number, but this show appears "
-                              u"to have only 1 season, setting season number to 1...", logger.DEBUG)
-                    season = 1
-
-            if show and season and episodes:
-                return show, season, episodes, quality, version
+            if int(numseasons_result[0][0]) == 1:
+                self._log(u"Episode doesn't have a season number, but this show appears "
+                          u"to have only 1 season, setting season number to 1...", logger.DEBUG)
+                season = 1
 
         return show, season, episodes, quality, version
 
     def _analyze_name(self, name):
         """
-        Take a name and try to figure out a show, season, and episode from it.
+        Take a name and try to figure out a show, season, episodes, version and quality from it.
 
         :param name: A string which we want to analyze to determine show info from (unicode)
-        :return: A (indexer_id, season, [episodes]) tuple. The first two may be None and episodes may be []
-        if none were found.
+        :return: A (show, season, episodes, version, quality) tuple
         """
         to_return = (None, None, [], None, None)
 
@@ -640,15 +623,12 @@ class PostProcessor(object):
 
         logger.log(u'Analyzing name: {0}'.format(name), logger.DEBUG)
 
-        # parse the name to break it into show name, season, and episode
+        # parse the name to break it into show, season, episodes, quality and version
         try:
             parse_result = NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
-            logger.log(u'{0}'.format(error), logger.DEBUG)
+            self._log(u'{0}'.format(error), logger.DEBUG)
             return to_return
-
-        # show object
-        show = parse_result.show
 
         if parse_result.is_air_by_date:
             season = -1
@@ -657,24 +637,23 @@ class PostProcessor(object):
             season = parse_result.season_number
             episodes = parse_result.episode_numbers
 
-        to_return = (show, season, episodes, parse_result.quality, parse_result.version)
+        to_return = (parse_result.show, season, episodes, parse_result.quality, parse_result.version)
 
         self._finalize(parse_result)
         return to_return
 
     def _finalize(self, parse_result):
         """
-        Store parse result if it is complete and final.
+        Store release name of result if it is complete and final.
 
-        :param parse_result: Result of parsers
+        :param parse_result: Result of parser
         """
         self.release_group = parse_result.release_group
 
         # remember whether it's a proper
         self.is_proper = bool(parse_result.proper_tags)
 
-        # if the result is complete then remember that for later
-        # if the result is complete then set release name
+        # if the result is complete set release name
         if parse_result.series_name and ((parse_result.season_number is not None and parse_result.episode_numbers) or
                                          parse_result.air_date) and parse_result.release_group:
 
