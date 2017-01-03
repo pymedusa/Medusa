@@ -516,7 +516,7 @@ class PostProcessor(object):
         """
         show = season = version = airdate = quality = None
         episodes = []
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
+        name_list = [self.nzb_name, self.file_name, self.rel_path, self.folder_path]
 
         for counter, name in enumerate(name_list):
 
@@ -627,7 +627,7 @@ class PostProcessor(object):
         try:
             parse_result = NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
-            logger.log(u"Couldn't parse file name: {0}. Error: {1}".format(name, error), logger.DEBUG)
+            self._log(u'{0}'.format(error), logger.DEBUG)
             return to_return
 
         if parse_result.is_air_by_date:
