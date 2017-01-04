@@ -201,7 +201,7 @@ class Home(WebRoot):
 
     @staticmethod
     def testNZBget(host=None, username=None, password=None, use_https=False):
-        connected_status = nzbget.testNZB(host, username, password, use_https)
+        connected_status = nzbget.testNZB(host, username, password, config.checkbox_to_value(use_https))
         if connected_status:
             return 'Success. Connected and authenticated'
         else:
