@@ -1,6 +1,8 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     if (MEDUSA.config.fanartBackground) {
-        $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
+        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
+        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+        $.backstretch(path);
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
@@ -404,5 +406,21 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         indexer_id: $('input#showID').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
+    });
+
+    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
+    $('.display-specials a').on('click', function(){
+        api.patch('config', {
+            layout: {
+                show: {
+                    specials: $(this).text() === 'Hide' ? false : true
+                }
+            }
+        }).then(function(response) {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(function(response){
+            log.error(response.data);
+        });
     });
 };

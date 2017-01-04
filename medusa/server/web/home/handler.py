@@ -209,6 +209,7 @@ class Home(WebRoot):
 
     @staticmethod
     def testTorrent(torrent_method=None, host=None, username=None, password=None):
+        # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
         client = clients.get_client_class(torrent_method)
@@ -1263,18 +1264,6 @@ class Home(WebRoot):
             episode_history=episode_history, season_results=season_results, sql_results=sql_results,
             ep_counts=ep_counts, ep_cats=ep_cats
         )
-
-    @staticmethod
-    def plotDetails(show, season, episode):
-        # @TODO: Replace with plot from GET /api/v2/show/{id}
-        main_db_con = db.DBConnection()
-        result = main_db_con.selectOne(
-            b'SELECT description '
-            b'FROM tv_episodes '
-            b'WHERE showid = ? AND season = ? AND episode = ?',
-            (int(show), int(season), int(episode))
-        )
-        return result[b'description'] if result else 'Episode not found.'
 
     @staticmethod
     def sceneExceptions(show):

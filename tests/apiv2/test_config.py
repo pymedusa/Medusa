@@ -19,13 +19,10 @@ def config(monkeypatch, app_config):
 
     return {
         'anonRedirect': app.ANON_REDIRECT,
-        'anonSplitHome': app.ANIME_SPLIT_HOME,
-        'comingEpsLayout': app.COMING_EPS_LAYOUT,
+        'animeSplitHome': app.ANIME_SPLIT_HOME,
         'comingEpsSort': app.COMING_EPS_SORT,
         'datePreset': app.DATE_PRESET,
         'fuzzyDating': app.FUZZY_DATING,
-        'historyLayout': app.HISTORY_LAYOUT,
-        'homeLayout': app.HOME_LAYOUT,
         'themeName': app.THEME_NAME,
         'posterSortby': app.POSTER_SORTBY,
         'posterSortdir': app.POSTER_SORTDIR,
@@ -34,7 +31,7 @@ def config(monkeypatch, app_config):
         'timePreset': app.TIME_PRESET,
         'trimZero': app.TRIM_ZERO,
         'fanartBackground': app.FANART_BACKGROUND,
-        'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY,
+        'fanartBackgroundOpacity': 0 if app.FANART_BACKGROUND_OPACITY is None else float(app.FANART_BACKGROUND_OPACITY),
         'branch': app.BRANCH,
         'commitHash': app.CUR_COMMIT_HASH,
         'release': app.APP_VERSION,
@@ -57,8 +54,6 @@ def config(monkeypatch, app_config):
         'githubUrl': app.GITHUB_IO_URL,
         'wikiUrl': app.WIKI_URL,
         'sourceUrl': app.APPLICATION_URL,
-        'displayAllSeasons': app.DISPLAY_ALL_SEASONS,
-        'displayShowSpecials': app.DISPLAY_SHOW_SPECIALS,
         'downloadUrl': app.DOWNLOAD_URL,
         'subtitlesMulti': app.SUBTITLES_MULTI,
         'namingForceFolders': app.NAMING_FORCE_FOLDERS,
@@ -70,19 +65,63 @@ def config(monkeypatch, app_config):
         },
         'plex': {
             'server': {
-                'enabled': bool(app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY)
+                'enabled': bool(app.USE_PLEX_SERVER),
+                'notify': {
+                    'snatch': bool(app.PLEX_NOTIFY_ONSNATCH),
+                    'download': bool(app.PLEX_NOTIFY_ONDOWNLOAD),
+                    'subtitleDownload': bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
+                },
+                'updateLibrary': bool(app.PLEX_UPDATE_LIBRARY),
+                'host': app.PLEX_SERVER_HOST,
+                'token': app.PLEX_SERVER_TOKEN,
+                'username': app.PLEX_SERVER_USERNAME,
+                'password': app.PLEX_SERVER_PASSWORD
             },
             'client': {
-                'enabled': False  # Replace this with plex client code
+                'enabled': bool(app.USE_PLEX_CLIENT),
+                'username': app.PLEX_CLIENT_USERNAME,
+                'password': app.PLEX_CLIENT_PASSWORD,
+                'host': app.PLEX_CLIENT_HOST
             }
         },
         'emby': {
             'enabled': bool(app.USE_EMBY)
         },
         'torrents': {
-            'enabled': bool(app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and
-                            (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or
-                             not app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'))
+            'enabled': bool(app.USE_TORRENTS),
+            'method': app.TORRENT_METHOD,
+            'username': app.TORRENT_USERNAME,
+            'password': app.TORRENT_PASSWORD,
+            'label': app.TORRENT_LABEL,
+            'labelAnime': app.TORRENT_LABEL_ANIME,
+            'verifySSL': app.TORRENT_VERIFY_CERT,
+            'path': app.TORRENT_PATH,
+            'seedTime': app.TORRENT_SEED_TIME,
+            'paused': app.TORRENT_PAUSED,
+            'highBandwidth': app.TORRENT_HIGH_BANDWIDTH,
+            'host': app.TORRENT_HOST,
+            'rpcurl': app.TORRENT_RPCURL,
+            'authType': app.TORRENT_AUTH_TYPE
+        },
+        'nzb': {
+            'enabled': bool(app.USE_NZBS),
+            'username': app.NZBGET_USERNAME,
+            'password': app.NZBGET_PASSWORD,
+            # app.NZBGET_CATEGORY
+            # app.NZBGET_CATEGORY_BACKLOG
+            # app.NZBGET_CATEGORY_ANIME
+            # app.NZBGET_CATEGORY_ANIME_BACKLOG
+            'host': app.NZBGET_HOST,
+            'priority': app.NZBGET_PRIORITY
+        },
+        'layout': {
+            'schedule': app.COMING_EPS_LAYOUT,
+            'history': app.HISTORY_LAYOUT,
+            'home': app.HOME_LAYOUT,
+            'show': {
+                'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
+                'specials': bool(app.DISPLAY_SHOW_SPECIALS)
+            }
         }
     }
 

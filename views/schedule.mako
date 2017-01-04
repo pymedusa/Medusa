@@ -26,7 +26,6 @@
     </div>
 </div>
 
-
 <div class="row">
     <div class="col-md-12">
         <div class="key pull-left">
@@ -42,39 +41,39 @@
         </div>
 
         <div class="pull-right">
-                <div class="show-option">
-                    <span>View Paused:
-                        <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
-                            <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
-                        </select>
-                    </span>
-                </div>
-                <div class="show-option">
-                    <span>Layout:
-                        <select name="layout" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                            <option value="setScheduleLayout/?layout=poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
-                            <option value="setScheduleLayout/?layout=calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
-                            <option value="setScheduleLayout/?layout=banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
-                            <option value="setScheduleLayout/?layout=list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
-                        </select>
-                    </span>
-                </div>
-                % if layout == 'list':
-                <div class="show-option">
-                    <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
-                </div>
-                % else:
-                <div class="show-option">
-                    <span>Sort By:
-                        <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
-                            <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
-                            <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
-                            <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
-                        </select>
-                    </span>
-                </div>
-                % endif
+            <div class="show-option">
+                <span>View Paused:
+                    <select name="viewpaused" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                        <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if not bool(app.COMING_EPS_DISPLAY_PAUSED) else ''}>Hidden</option>
+                        <option value="toggleScheduleDisplayPaused" ${'selected="selected"' if app.COMING_EPS_DISPLAY_PAUSED else ''}>Shown</option>
+                    </select>
+                </span>
+            </div>
+            <div class="show-option">
+                <span>Layout:
+                    <select name="layout" class="form-control form-control-inline input-sm">
+                        <option value="poster" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'poster' else ''} >Poster</option>
+                        <option value="calendar" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'calendar' else ''} >Calendar</option>
+                        <option value="banner" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'banner' else ''} >Banner</option>
+                        <option value="list" ${'selected="selected"' if app.COMING_EPS_LAYOUT == 'list' else ''} >List</option>
+                    </select>
+                </span>
+            </div>
+            % if layout == 'list':
+            <div class="show-option">
+                <button id="popover" type="button" class="btn btn-inline">Select Columns <b class="caret"></b></button>
+            </div>
+            % else:
+            <div class="show-option">
+                <span>Sort By:
+                    <select name="sort" class="form-control form-control-inline input-sm" onchange="location = this.options[this.selectedIndex].value;">
+                        <option value="setScheduleSort/?sort=date" ${'selected="selected"' if app.COMING_EPS_SORT == 'date' else ''} >Date</option>
+                        <option value="setScheduleSort/?sort=network" ${'selected="selected"' if app.COMING_EPS_SORT == 'network' else ''} >Network</option>
+                        <option value="setScheduleSort/?sort=show" ${'selected="selected"' if app.COMING_EPS_SORT == 'show' else ''} >Show</option>
+                    </select>
+                </span>
+            </div>
+            % endif
         </div>
     </div>
 </div>
@@ -272,7 +271,7 @@
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
                 <a href="home/displayShow?show=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" src="showPoster/?show=${cur_result['showid']}&amp;which=${(layout, 'poster_thumb')[layout == 'poster']}" />
+                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" asset="show/${cur_result['showid']}?type=${(layout, 'posterThumb')[layout == 'poster']}"/>
                 </a>
             </th>
 % if 'banner' == layout:
@@ -358,7 +357,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" src="showPoster/?show=${cur_result['showid']}&amp;which=poster_thumb" /></a>
+                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" asset="show/${cur_result['showid']}?type=posterThumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">
