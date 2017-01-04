@@ -200,7 +200,7 @@ MEDUSA.config.search = function() {
         nzbget.host = $('#nzbget_host').val();
         nzbget.username = $('#nzbget_username').val();
         nzbget.password = $('#nzbget_password').val();
-        nzbget.useHttps = $('#nzbget_use_https').val();
+        nzbget.useHttps = $('#nzbget_use_https').prop('checked');
 
         $.get('home/testNZBget', {
             host: nzbget.host,
