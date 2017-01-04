@@ -54,7 +54,7 @@ MEDUSA.config.init = function() {
                     $(this).removeAttr('disabled');
                     $(this).next().remove();
                     $(this).show();
-                    window.location.href = 'config/providers/';
+                    window.location.href = $('base').attr('href') + 'config/providers/';
                 });
                 $('#email_show').trigger('notify');
                 $('#prowl_show').trigger('notify');
@@ -82,12 +82,12 @@ MEDUSA.config.init = function() {
             if (data.status === 'success') {
                 if (data.message === 'equal') {
                     // Checkout Branch
-                    window.location.href = url;
+                    window.location.href = $('base').attr('href') + url;
                 }
                 if (data.message === 'upgrade') {
                     if (confirm('Changing branch will upgrade your database.\nYou won\'t be able to downgrade afterward.\nDo you want to continue?')) { // eslint-disable-line no-alert
                         // Checkout Branch
-                        window.location.href = url;
+                        window.location.href = $('base').attr('href') + url;
                     }
                 }
                 if (data.message === 'downgrade') {

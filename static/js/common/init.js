@@ -83,7 +83,7 @@ MEDUSA.common.init = function() {
         $('.dropdown-toggle').on('click', function() {
             var $this = $(this);
             if ($this.attr('aria-expanded') === 'true') {
-                window.location.href = $this.attr('href');
+                window.location.href = $('base').attr('href') + $this.attr('href');
             }
         });
     }

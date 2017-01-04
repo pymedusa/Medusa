@@ -76,7 +76,7 @@ pre {
 </div> <!-- row -->
 <div class="row wide">
     <div class="col-md-12">
-        <pre>${log_lines}</pre>
+        <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div>${log_lines}</pre>
     </div>
 </div>
 </%block>
