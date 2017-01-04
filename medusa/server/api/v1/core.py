@@ -60,7 +60,7 @@ from ....system.restart import Restart
 from ....system.shutdown import Shutdown
 from ....version_checker import CheckVersion
 
-indexer_ids = ["indexerid", "tvdbid"]
+indexer_ids = ["indexerid", "tvdbid", "tvmazeid", "tmdbid"]
 
 # basically everything except RESULT_SUCCESS / success is bad
 RESULT_SUCCESS = 10  # only use inside the run methods
