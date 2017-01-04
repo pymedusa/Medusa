@@ -1,13 +1,13 @@
 # coding=utf-8
 """Base module for request handlers."""
 
+import base64
 import json
 import operator
 import traceback
 from datetime import datetime
 from babelfish.language import Language
 import jwt
-import base64
 
 from six import text_type
 from tornado.web import RequestHandler
