@@ -31,7 +31,7 @@ def config(monkeypatch, app_config):
         'timePreset': app.TIME_PRESET,
         'trimZero': app.TRIM_ZERO,
         'fanartBackground': app.FANART_BACKGROUND,
-        'fanartBackgroundOpacity': 0 if app.FANART_BACKGROUND_OPACITY is None else int(app.FANART_BACKGROUND_OPACITY),
+        'fanartBackgroundOpacity': 0 if app.FANART_BACKGROUND_OPACITY is None else float(app.FANART_BACKGROUND_OPACITY),
         'branch': app.BRANCH,
         'commitHash': app.CUR_COMMIT_HASH,
         'release': app.APP_VERSION,
