@@ -35,6 +35,7 @@ from ..helper.exceptions import ex
 from ..helpers import download_file, get_url, make_session
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from ..scene_exceptions import get_scene_exceptions
 from ..show.show import Show
 from ..show_name_helpers import allPossibleShowNames
 from ..tv_cache import TVCache
@@ -460,7 +461,15 @@ class GenericProvider(object):
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
             elif episode.show.anime:
-                episode_string += '%02d' % int(episode.scene_absolute_number)
+                # If the showname is a season scene exception, we want to use the indexer episode number.
+                if (episode.scene_season > 1 and
+                    show_name in get_scene_exceptions(episode.show.indexerid, season=episode.scene_season,
+                                                      indexer=episode.show.indexer)):
+                    # This is apparently a season exception, let's use the scene_episode instead of absolute
+                    ep = int(episode.scene_episode)
+                else:
+                    ep = int(episode.scene_absolute_number)
+                episode_string += str(ep)
             else:
                 episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
