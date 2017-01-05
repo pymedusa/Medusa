@@ -44,11 +44,13 @@ class BaseRequestHandler(RequestHandler):
             if token == '' and api_key == '':
                 self.api_finish(status=401, error='Invalid token or API key.')
 
-    def write_error(self, *args, **kwargs):
+    def write_error(self, status_code, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
+        if status_code == 405:
+            self.api_finish(status=405, error='Method Not Allowed')
         if app.DEVELOPER and 'exc_info' in kwargs:
             self.set_header('content-type', 'text/plain')
-            for line in traceback.format_exception(*kwargs["exc_info"]):
+            for line in traceback.format_exception(*kwargs['exc_info']):
                 self.write(line)
             self.finish()
         else:
