@@ -21,7 +21,7 @@ from ....failed_history import prepare_failed_name
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
+from ....indexers.indexer_config import mappings, INDEXER_TVDBV2
 from ....indexers.indexer_exceptions import IndexerShowNotFoundInLanguage
 from ....providers.generic_provider import GenericProvider
 from ....sbdatetime import sbdatetime
@@ -758,8 +758,15 @@ class Home(WebRoot):
             if not app.show_queue_scheduler.action.isBeingUpdated(show_obj):
                 submenu.append({
                     'title': 'Resume' if show_obj.paused else 'Pause',
-                    'path': 'home/togglePause?show={show}'.format(show=show_obj.indexerid),
                     'icon': 'ui-icon ui-icon-{state}'.format(state='play' if show_obj.paused else 'pause'),
+                    'patch': {
+                        'resource': 'show/{0}{1}'.format(mappings.get(show_obj.indexer).replace('_id', ''), show_obj.indexerid),
+                        'body': json.dumps({
+                            "config": {
+                                "pause": not bool(show_obj.paused)
+                            }
+                        })
+                    }
                 })
                 submenu.append({
                     'title': 'Remove',
@@ -1067,8 +1074,12 @@ class Home(WebRoot):
             if not app.show_queue_scheduler.action.isBeingUpdated(show_obj):
                 submenu.append({
                     'title': 'Resume' if show_obj.paused else 'Pause',
-                    'path': 'home/togglePause?show={show}'.format(show=show_obj.indexerid),
                     'icon': 'ui-icon ui-icon-{state}'.format(state='play' if show_obj.paused else 'pause'),
+                    'patch': {
+                        'resource': 'show/' + show_obj.indexer + show_obj.indexerid,
+                        'value': bool(show_obj.paused),
+                        'body': '{"config": {"paused": {paused}}}'.format(paused=show_obj.paused)
+                    }
                 })
                 submenu.append({
                     'title': 'Remove',
@@ -1549,18 +1560,6 @@ class Home(WebRoot):
         except Exception:
             logger.log(u'Unable to delete cached results for show: {show}'.format
                        (show=show_obj.name), logger.DEBUG)
-
-    def togglePause(self, show=None):
-        # @TODO: Replace with PUT to update the state var /api/v2/show/{id}
-        error, show_obj = Show.pause(show)
-
-        if error is not None:
-            return self._genericMessage('Error', error)
-
-        ui.notifications.message('{show} has been {state}'.format
-                                 (show=show_obj.name, state='paused' if show_obj.paused else 'resumed'))
-
-        return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
     def deleteShow(self, show=None, full=0):
         # @TODO: Replace with DELETE to delete the show resource /api/v2/show/{id}

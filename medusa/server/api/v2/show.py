@@ -3,7 +3,7 @@
 
 from tornado.escape import json_decode
 from .base import BaseRequestHandler
-from .... import app
+from .... import app, logger, ui
 from ....indexers.indexer_config import indexerConfig, reverse_mappings
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
@@ -85,10 +85,11 @@ class ShowHandler(BaseRequestHandler):
                     'action': ShowQueueActions.names[action],
                     'message': message,
                 } if action is not None else dict()
-            elif query in data:
-                data = data[query]
             else:
-                return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
+                try:
+                    data = dynamic_access_json(data, query)
+                except KeyError:
+                    return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
 
         self.api_finish(data=data)
 
@@ -155,20 +156,24 @@ class ShowHandler(BaseRequestHandler):
 
         if show_id is not None:
             tv_show = Show.find(app.showList, indexerid, show_indexer)
-            print(tv_show)
 
             data = json_decode(self.request.body)
             done_data = {}
             done_errors = []
             for key in data.keys():
-                if key == 'pause' and str(data['pause']).lower() in ['true', 'false']:
-                    error, _ = Show.pause(indexerid, data['pause'])
-                    if error is not None:
-                        self.api_finish(error=error)
-                    else:
-                        done_data['pause'] = data['pause']
+                if key == 'config':
+                    done_data.setdefault('config', {})
+                    if 'pause' in data['config'] and str(data['config']['pause']).lower() in ['true', 'false']:
+                        logger.log('pausing show' if data['config']['pause'] else 'resuming show')
+                        error, show_obj = Show.pause(indexerid, data['config']['pause'])
+                        if error is not None:
+                            self.api_finish(error=error)
+                        else:
+                            done_data['config']['pause'] = data['config']['pause']
+                            ui.notifications.message('{show} has been {state}'.format
+                                                     (show=show_obj.name, state='paused' if show_obj.paused else 'resumed'))
             if len(done_errors):
-                print('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
+                logger.log('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
             self.api_finish(data=done_data)
         else:
             return self.api_finish(status=404, error='Show not found')
@@ -185,3 +190,9 @@ class ShowHandler(BaseRequestHandler):
         """
         error, show = Show.delete(indexer_id=show_id, remove_files=self.get_argument('remove_files', default=False))
         return self.api_finish(error=error, data=show)
+
+def dynamic_access_json(data, json_path):
+    val = data
+    for key in json_path.split('/'):
+        val = val[key]
+    return val

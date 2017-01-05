@@ -140,4 +140,16 @@ MEDUSA.common.init = function() {
             $('#content_' + $(this).attr('id')).fadeOut('fast', 'linear');
         }
     });
+
+    $('[patch]').on('click', function(){
+        // This should work for all API v2 PATCH paths
+        let resource = $(this).attr('patch-resource'); // /show/tvdb00000
+        let body = JSON.parse($(this).attr('patch-body')); // {"config": {"paused": true}}
+        api.patch(resource, body).then(function(response) {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(function(response){
+            log.error(response.data);
+        });
+    });
 };
