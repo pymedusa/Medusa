@@ -1077,8 +1077,11 @@ class Home(WebRoot):
                     'icon': 'ui-icon ui-icon-{state}'.format(state='play' if show_obj.paused else 'pause'),
                     'patch': {
                         'resource': 'show/' + show_obj.indexer + show_obj.indexerid,
-                        'value': bool(show_obj.paused),
-                        'body': '{"config": {"paused": {paused}}}'.format(paused=show_obj.paused)
+                        'body': json.dumps({
+                            "config": {
+                                "paused": not bool(show_obj.paused)
+                            }
+                        })
                     }
                 })
                 submenu.append({
