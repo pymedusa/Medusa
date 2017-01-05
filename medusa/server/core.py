@@ -106,15 +106,22 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             gzip=app.WEB_USE_GZIP,
             xheaders=app.HANDLE_REVERSE_PROXY,
             cookie_secret=app.WEB_COOKIE_SECRET,
-            login_url=r'{root}/login/'.format(root=self.options['web_root']),
+            login_url=r'{root}/login/'.format(root=self.options['web_root'])
         )
 
-        # API v1 handlers
         self.app.add_handlers('.*$', [
-            # Main handler
+            # robots.txt
+            (r'{base}/(robots\.txt)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': self.options['data_root']}),
+
+            # favicon.ico
+            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['data_root'], 'images/ico/')}),
+
+            # API v1 Main Handlers
             (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
 
-            # Key retrieval
+            # API v1 Key Retrieval Handler
             (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
 
             # Builder redirect
@@ -131,13 +138,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # webui handlers
         ] + self._get_webui_routes())
 
+        # API v2 Handlers
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
         # Static File Handlers
         self.app.add_handlers('.*$', [
-            # favicon
-            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images/ico/favicon.ico')}),
 
             # images
             (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
