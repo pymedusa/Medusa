@@ -548,10 +548,16 @@ PREFERRED_WORDS = ""
 
 UNDESIRED_WORDS = ""
 
-TRACKERS_LIST = "udp://coppersurfer.tk:6969/announce,udp://open.demonii.com:1337,"
-TRACKERS_LIST += "udp://exodus.desync.com:6969,udp://9.rarbg.me:2710/announce,"
-TRACKERS_LIST += "udp://glotorrents.pw:6969/announce,udp://tracker.openbittorrent.com:80/announce,"
-TRACKERS_LIST += "udp://9.rarbg.to:2710/announce"
+TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
+    udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\
+    http://tracker.opentrackr.org:1337/announce,udp://p4p.arenabg.com:1337/announce,\
+    http://p4p.arenabg.com:1337/announce,udp://explodie.org:6969/announce,\
+    udp://9.rarbg.com:2710/announce,http://explodie.org:6969/announce,\
+    http://tracker.dler.org:6969/announce,udp://public.popcorn-tracker.org:6969/announce,\
+    udp://tracker.internetwarriors.net:1337/announce,udp://ipv4.tracker.harry.lu:80/announce,\
+    http://ipv4.tracker.harry.lu:80/announce,udp://mgtracker.org:2710/announce,\
+    http://mgtracker.org:6969/announce,udp://tracker.mg64.net:6969/announce,\
+    http://tracker.mg64.net:6881/announce,http://torrentsmd.com:8080/announce"
 
 REQUIRE_WORDS = ""
 IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
