@@ -99,7 +99,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
         uglify: {
             bower: {
                 files: {
-                    '../static/js/vender.min.js': './dist/bower.js'
+                    '../static/js/lib/vender.min.js': './dist/bower.js'
                 }
             }
         },
