@@ -168,7 +168,7 @@ def dynamic_access_json(data, json_path):
         if key != '':
             # If number then check if current val is array and get array element equal to key
             if re.search('[^0-9]', key) is None:
-                if type(val) is OrderedDict:
+                if isinstance(val, OrderedDict):
                     val = val.keys()[int(key)]
                 else:
                     val = val[int(key)]
