@@ -37,7 +37,7 @@ MEDUSA.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if ($.isMeta('comingEpsLayout', ['banner', 'poster'])) {
+    if ($.isMeta('schedule', ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
             loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
