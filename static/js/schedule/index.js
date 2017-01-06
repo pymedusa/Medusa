@@ -1,5 +1,5 @@
 MEDUSA.schedule.index = function() {
-    if ($.isMeta('schedule', ['list'])) {
+    if ($.isMeta({'layout': 'schedule'}, ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
@@ -37,7 +37,7 @@ MEDUSA.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if ($.isMeta('schedule', ['banner', 'poster'])) {
+    if ($.isMeta({'layout': 'schedule'}, ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
             loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
