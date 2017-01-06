@@ -5,6 +5,9 @@ import base64
 import json
 import operator
 import traceback
+import re
+
+from collections import OrderedDict
 
 from datetime import datetime
 from babelfish.language import Language
@@ -158,3 +161,17 @@ def json_string_encoder(o):
         return getattr(o, 'name')
 
     return text_type(o)
+
+def dynamic_access_json(data, json_path):
+    val = data
+    for key in json_path.split('/'):
+        if key != '':
+            # If number then check if current val is array and get array element equal to key
+            if re.search('[^0-9]', key) is None:
+                if type(val) is OrderedDict:
+                    val = val.keys()[int(key)]
+                else:
+                    val = val[int(key)]
+            else:
+                val = val[key]
+    return val

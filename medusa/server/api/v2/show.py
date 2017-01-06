@@ -2,7 +2,7 @@
 """Request handler for shows."""
 
 from tornado.escape import json_decode
-from .base import BaseRequestHandler
+from .base import BaseRequestHandler, dynamic_access_json
 from .... import app, logger, ui
 from ....indexers.indexer_config import indexerConfig, reverse_mappings
 from ....show.show import Show
@@ -164,7 +164,6 @@ class ShowHandler(BaseRequestHandler):
                 if key == 'config':
                     done_data.setdefault('config', {})
                     if 'pause' in data['config'] and str(data['config']['pause']).lower() in ['true', 'false']:
-                        logger.log('pausing show' if data['config']['pause'] else 'resuming show')
                         error, show_obj = Show.pause(indexerid, data['config']['pause'])
                         if error is not None:
                             self.api_finish(error=error)
@@ -190,9 +189,3 @@ class ShowHandler(BaseRequestHandler):
         """
         error, show = Show.delete(indexer_id=show_id, remove_files=self.get_argument('remove_files', default=False))
         return self.api_finish(error=error, data=show)
-
-def dynamic_access_json(data, json_path):
-    val = data
-    for key in json_path.split('/'):
-        val = val[key]
-    return val
