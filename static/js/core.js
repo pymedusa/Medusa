@@ -50,7 +50,7 @@ $.extend({
                 return m[1].toUpperCase();
             });
         }
-        return (reg).test(MEDUSA.config[pyVar]);
+        return (reg).test(MEDUSA.config.layout[pyVar]);
     }
 });
 

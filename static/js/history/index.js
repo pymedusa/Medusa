@@ -19,7 +19,7 @@ MEDUSA.history.index = function() {
             };
         })(),
         headers: (function() {
-            if ($.isMeta('historyLayout', ['detailed'])) {
+            if ($.isMeta('history', ['detailed'])) {
                 return {
                     0: {sorter: 'realISODate'}
                 };

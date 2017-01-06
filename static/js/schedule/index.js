@@ -1,5 +1,5 @@
 MEDUSA.schedule.index = function() {
-    if ($.isMeta('comingEpsLayout', ['list'])) {
+    if ($.isMeta('schedule', ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
