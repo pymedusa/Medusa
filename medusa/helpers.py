@@ -1188,7 +1188,21 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
     hooks, cookies, verify, proxies = request_defaults(kwargs)
     method = u'POST' if post_data else u'GET'
 
+    # Get RequestPolice response instance methods.
+    rpolice_request = kwargs.pop(u'rpolice_request', None)
+
+    # Get RequestPolice response instance methods.
+    rpolice_response = kwargs.pop(u'rpolice_response', None)
+    from helper.request_police import RequestPoliceException
+
     try:
+        if rpolice_request:
+            try:
+                [rpolice_check() for rpolice_check in rpolice_request]
+            except RequestPoliceException as e:
+                logger.info(e.message)
+                return
+
         req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
                                headers=headers, cookies=cookies)
         prepped = session.prepare_request(req)
@@ -1223,6 +1237,11 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
         return None
 
     if not response_type or response_type == u'response':
+        if rpolice_response:
+            try:
+                [rpolice_check(resp) for rpolice_check in rpolice_response]
+            except RequestPoliceException as e:
+                logger.warning(e.message)
         return resp
     else:
         warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format

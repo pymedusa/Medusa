@@ -37,6 +37,7 @@ from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
 from ...helper.encoding import ss
 from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
+from ...helper.request_police import RequestPolice
 
 
 class NewznabProvider(NZBProvider):
@@ -79,6 +80,10 @@ class NewznabProvider(NZBProvider):
         # self.cap_audio_search = None
 
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+
+        self.request_police = RequestPolice()
+        self.request_police.enabled_police_request_hooks = [self.request_police.request_check_nzb_api_limit]
+        self.request_police.enabled_police_response_hooks = [self.request_police.response_check_nzb_api_limit]
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

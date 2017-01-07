@@ -398,6 +398,10 @@ class GenericProvider(object):
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
         kwargs['hooks'] = {'response': self.get_url_hook}
+        if hasattr(self, 'request_police'):
+            kwargs['rpolice_request'] = self.request_police.enabled_police_request_hooks
+            kwargs['rpolice_response'] = self.request_police.enabled_police_response_hooks
+
         return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
 
     def image_name(self):
