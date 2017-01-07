@@ -49,7 +49,7 @@ class RequestPolice(object):
         self.response_score = 0
         self.api_hit_limit = None
         self.api_grab_limit = None
-        self.api_hit_limit_cooldown = 120
+        self.api_hit_limit_cooldown = 86400
         self.api_hit_limit_cooldown_clear = None
         self.next_allowed_request_date = None
         # Methods that are run before the request has been send.
