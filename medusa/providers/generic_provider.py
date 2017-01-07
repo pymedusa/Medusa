@@ -399,8 +399,7 @@ class GenericProvider(object):
         """Load the given URL."""
         kwargs['hooks'] = {'response': self.get_url_hook}
         if hasattr(self, 'request_police'):
-            kwargs['rpolice_request'] = self.request_police.enabled_police_request_hooks
-            kwargs['rpolice_response'] = self.request_police.enabled_police_response_hooks
+            kwargs['rpolice'] = self.request_police
 
         return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
 

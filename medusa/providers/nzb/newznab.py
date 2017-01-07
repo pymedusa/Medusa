@@ -35,9 +35,9 @@ from ... import app, logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
+from ...helper.request_police import RequestPolice, PoliceReservedDailyExceeded
 from ...helper.encoding import ss
 from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
-from ...helper.request_police import RequestPolice
 
 
 class NewznabProvider(NZBProvider):
@@ -82,8 +82,16 @@ class NewznabProvider(NZBProvider):
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
         self.request_police = RequestPolice()
-        self.request_police.enabled_police_request_hooks = [self.request_police.request_check_nzb_api_limit]
-        self.request_police.enabled_police_response_hooks = [self.request_police.response_check_nzb_api_limit]
+
+        # Needs to be configurable per provider. @Omg, i've used your settings now, meaning these are used now for any
+        # Provider.
+        self.request_police.api_hit_limit = 2500
+        self.request_police.daily_reserve_calls = 200
+
+        # These need to be configured per provider
+        self.request_police.enabled_police_request_hooks += [self.request_police.request_counter,
+                                                             self.request_police.request_check_nzb_api_limit]
+        self.request_police.enabled_police_response_hooks += [self.request_police.response_check_nzb_api_limit]
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -152,6 +160,12 @@ class NewznabProvider(NZBProvider):
                         search_params['q'] = search_string
 
                 time.sleep(cpu_presets[app.CPU_PRESET])
+
+                try:
+                    self.request_police.request_check_newznab_daily_reserved_calls(mode)
+                except PoliceReservedDailyExceeded as e:
+                    logger.log(e.message, logger.INFO)
+                    return items
 
                 response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
                 if not response or not response.text:
@@ -472,6 +486,15 @@ class NewznabProvider(NZBProvider):
                             return_categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, return_categories, ''
+
+    def get_user_info(self):
+        if not self.request_police.api_hit_limit:
+            url_params = {'t': 'user',
+                          'user': self.username}
+            if self.needs_auth and self.key:
+                url_params['apikey'] = self.key
+
+            response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
 
     @staticmethod
     def _get_default_providers():

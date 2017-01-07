@@ -1188,17 +1188,15 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
     hooks, cookies, verify, proxies = request_defaults(kwargs)
     method = u'POST' if post_data else u'GET'
 
-    # Get RequestPolice response instance methods.
-    rpolice_request = kwargs.pop(u'rpolice_request', None)
+    # Get RequestPolice instance object.
+    rpolice = kwargs.pop(u'rpolice', None)
 
-    # Get RequestPolice response instance methods.
-    rpolice_response = kwargs.pop(u'rpolice_response', None)
     from helper.request_police import RequestPoliceException
 
     try:
-        if rpolice_request:
+        if rpolice:
             try:
-                [rpolice_check() for rpolice_check in rpolice_request]
+                [rpolice_check() for rpolice_check in rpolice.enabled_police_request_hooks]
             except RequestPoliceException as e:
                 logger.info(e.message)
                 return
@@ -1237,9 +1235,9 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
         return None
 
     if not response_type or response_type == u'response':
-        if rpolice_response:
+        if rpolice:
             try:
-                [rpolice_check(resp) for rpolice_check in rpolice_response]
+                [rpolice_check(resp) for rpolice_check in rpolice.enabled_police_response_hooks]
             except RequestPoliceException as e:
                 logger.warning(e.message)
         return resp
