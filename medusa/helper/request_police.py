@@ -60,8 +60,11 @@ class PoliceReservedDailyExceeded(RequestPoliceException):
     """Police Request Exception for exceeding the reserved daily search limit."""
 
 
+class RequestPoliceInvalidConfiguration(RequestPoliceException):
+    """Invalid or incomplete configuration provided."""
+
 class PolicedSession(requests.Session):
-    def __init__(self, cache_etags=True, serializer=None, heuristic=None):
+    def __init__(self, cache_etags=True, serializer=None, heuristic=None, police=None):
         super(PolicedSession, self).__init__()
         adapter = CacheControlAdapter(
             DictCache(),
@@ -74,6 +77,9 @@ class PolicedSession(requests.Session):
         self.mount('https://', adapter)
         self.cache_controller = adapter.controller
         self.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
+
+        # This can be used to attach a police object
+        self.police = police
 
     @classmethod
     def _request_defaults(cls, kwargs):
@@ -119,12 +125,9 @@ class PolicedSession(requests.Session):
         stream = kwargs.pop(u'stream', False)
         hooks, cookies, verify, proxies = self._request_defaults(kwargs)
 
-        # Get RequestPolice instance object.
-        rpolice = kwargs.pop(u'rpolice', None)
-
         try:
-            if rpolice:
-                [rpolice_check() for rpolice_check in rpolice.enabled_police_request_hooks]
+            if self.police:
+                [police_check() for police_check in self.police.enabled_police_request_hooks]
 
             req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
                                    headers=headers, cookies=cookies)
@@ -135,7 +138,7 @@ class PolicedSession(requests.Session):
             if not resp.ok:
                 # Try to bypass CloudFlare's anti-bot protection
                 if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
-                    cf_prepped = self.prepare_cf_req(session, req)
+                    cf_prepped = self._prepare_cf_req(session, req)
                     if cf_prepped:
                         cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
                                                timeout=timeout, allow_redirects=True)
@@ -160,18 +163,16 @@ class PolicedSession(requests.Session):
                 logger.debug(traceback.format_exc())
             return None
 
-        if rpolice:
+        if self.police:
             try:
-                [rpolice_check(resp) for rpolice_check in rpolice.enabled_police_response_hooks]
+                [police_check(resp) for police_check in self.police.enabled_police_response_hooks]
             except RequestPoliceException as e:
                 logger.warning(e.message)
         return resp
 
 
 class RequestPolice(object):
-    def __init__(self, session):
-        self.session = session
-
+    def __init__(self, enable_api_hit_cooldown=False, enable_daily_request_reserve=False):
         self.request_limit = 0
         # Keep a counter of the total number of requests for this provider.
         self.request_count = 0
@@ -190,10 +191,20 @@ class RequestPolice(object):
         self.daily_request_count = 0
         self.daily_reserve_calls = 0
         self.daily_reserve_calls_next_reset_date = None
+        self.daily_reserve_search_mode = None
+
         # Methods that are run before the request has been send.
-        self.enabled_police_request_hooks = []
+        self.enabled_police_request_hooks = [self.request_counter]
         # Methods that are run after a response has been received. Using header, status code or content checks.
         self.enabled_police_response_hooks = []
+
+        # Configuration
+        if enable_api_hit_cooldown:
+            self.enabled_police_request_hooks.append(self.request_check_nzb_api_limit)
+            self.enabled_police_response_hooks.append(self.response_check_nzb_api_limit)
+
+        if enable_daily_request_reserve:
+            self.enabled_police_request_hooks.append(self.request_check_newznab_daily_reserved_calls)
 
     def request_counter(self):
         self.request_count += 1
@@ -239,7 +250,11 @@ class RequestPolice(object):
                             cooldown_clear=self.api_hit_limit_cooldown_clear.strftime('%I:%M%p on %B %d, %Y'))
                 )
 
-    def request_check_newznab_daily_reserved_calls(self, mode='daily'):
+    def request_check_newznab_daily_reserved_calls(self):
+        if not self.daily_reserve_search_mode:
+            RequestPoliceInvalidConfiguration('Your missing the daily_reserve_search_mode paramater,'
+                                              'which is needed to determin the used providers search type.')
+
         if self.daily_reserve_calls_next_reset_date:
             if self.daily_reserve_calls_next_reset_date > datetime.datetime.now():
                 raise PoliceReservedDailyExceeded(
@@ -249,9 +264,9 @@ class RequestPolice(object):
             else:
                 # We've reached midnight, let's reset the reset_date and the request_count, as now we need to start over
                 self.daily_reserve_calls_next_reset_date = None
-                self.self.daily_request_count = 0
+                self.daily_request_count = 0
 
-        if (mode != 'RSS' and self.api_hit_limit and
+        if (self.daily_reserve_search_mode != 'RSS' and self.api_hit_limit and
                     self.daily_request_count > self.api_hit_limit - self.daily_reserve_calls):
             # Set next reset to coming midnight.
             next_day_time = (datetime.datetime.now() + datetime.timedelta(days=1)).date()

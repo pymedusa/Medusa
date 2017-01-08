@@ -399,8 +399,6 @@ class GenericProvider(object):
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
         kwargs['hooks'] = {'response': self.get_url_hook}
-        if hasattr(self, 'request_police'):
-            kwargs['rpolice'] = self.request_police
 
         if not post_data:
             return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
