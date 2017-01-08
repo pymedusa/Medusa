@@ -221,12 +221,15 @@ class RarbgProvider(TorrentProvider):
             'app_id': app.RARBG_APPID,
         }
 
-        response = self.get_url(self.urls['api'], params=login_params, returns='json')
+        response = self.get_url(self.urls['api'], params=login_params)
         if not response:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        self.token = response.get('token')
+        try:
+            self.token = response.json().get('token')
+        except ValueError:
+            self.token = None
         self.token_expires = datetime.datetime.now() + datetime.timedelta(minutes=14) if self.token else None
         return self.token is not None
 
