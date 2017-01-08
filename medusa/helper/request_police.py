@@ -63,6 +63,7 @@ class PoliceReservedDailyExceeded(RequestPoliceException):
 class RequestPoliceInvalidConfiguration(RequestPoliceException):
     """Invalid or incomplete configuration provided."""
 
+
 class PolicedSession(requests.Session):
     def __init__(self, cache_etags=True, serializer=None, heuristic=None, police=None):
         super(PolicedSession, self).__init__()
@@ -127,7 +128,7 @@ class PolicedSession(requests.Session):
 
         try:
             if self.police:
-                [police_check() for police_check in self.police.enabled_police_request_hooks]
+                [police_check(**kwargs) for police_check in self.police.enabled_police_request_hooks]
 
             req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
                                    headers=headers, cookies=cookies)
@@ -154,6 +155,9 @@ class PolicedSession(requests.Session):
         except requests.exceptions.RequestException as e:
             logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
             return None
+        except RequestPoliceException as e:
+            logger.warning(e.message)
+            return None
         except Exception as e:
             if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
                 logger.warning(
@@ -165,7 +169,7 @@ class PolicedSession(requests.Session):
 
         if self.police:
             try:
-                [police_check(resp) for police_check in self.police.enabled_police_response_hooks]
+                [police_check(resp, **kwargs) for police_check in self.police.enabled_police_response_hooks]
             except RequestPoliceException as e:
                 logger.warning(e.message)
         return resp
@@ -195,7 +199,7 @@ class RequestPolice(object):
 
         # Methods that are run before the request has been send.
         self.enabled_police_request_hooks = [self.request_counter]
-        # Methods that are run after a response has been received. Using header, status code or content checks.
+        # Methods that are run after a response has been received. Using the response object.
         self.enabled_police_response_hooks = []
 
         # Configuration
@@ -206,10 +210,15 @@ class RequestPolice(object):
         if enable_daily_request_reserve:
             self.enabled_police_request_hooks.append(self.request_check_newznab_daily_reserved_calls)
 
-    def request_counter(self):
-        self.request_count += 1
+    def request_counter(self, **kwargs):
+        """Number of provider requests performed.
 
-    def request_check_nzb_api_limit(self):
+        These are not all counted as api hits. As also logins, snatches and newznab capability requests are counted.
+        """
+        if kwargs.get('api_hit'):
+            self.request_count += 1
+
+    def request_check_nzb_api_limit(self, **kwargs):
         """Request hook for checking if the api hit limit has been breached."""
         logger.info('Running request police request_check_nzb_api_limit.')
         if self.api_hit_limit_cooldown_clear and self.api_hit_limit_cooldown_clear > datetime.datetime.now():
@@ -217,17 +226,10 @@ class RequestPolice(object):
         self.request_count = 0
         self.request_score = 0
 
-    def response_check_nzb_api_limit(self, r):
+    def response_check_nzb_api_limit(self, r, **kwargs):
         """Response hook for checking if the api hit limit has been breached."""
         logger.info('Running request police response_check_nzb_api_limit.')
         with BS4Parser(r.text, 'html5lib') as html:
-            ## Unfortunatly this is not reliable, and does not represent the
-            # try:
-            #     if html.caps.limits:
-            #         self.api_hit_limit = int(html.caps.limits['max'])
-            # except AttributeError:
-            #     pass
-
             try:
                 err_desc = html.error.attrs['description']
                 if 'Request limit reached' in err_desc:
@@ -250,32 +252,41 @@ class RequestPolice(object):
                             cooldown_clear=self.api_hit_limit_cooldown_clear.strftime('%I:%M%p on %B %d, %Y'))
                 )
 
-    def request_check_newznab_daily_reserved_calls(self):
-        if not self.daily_reserve_search_mode:
-            RequestPoliceInvalidConfiguration('Your missing the daily_reserve_search_mode paramater,'
-                                              'which is needed to determin the used providers search type.')
+    def request_check_newznab_daily_reserved_calls(self, **kwargs):
+        try:
+            if not all([self.api_hit_limit, self.daily_reserve_calls]):
+                RequestPoliceInvalidConfiguration('Your missing the daily_reserve_search_mode paramater,'
+                                                  'which is needed to determin the used providers search type.')
 
-        if self.daily_reserve_calls_next_reset_date:
-            if self.daily_reserve_calls_next_reset_date > datetime.datetime.now():
-                raise PoliceReservedDailyExceeded(
-                    'Stil in daily search reservation cooldown.'
-                    'Meaning only daily searches are allowed to hit this provider at this time'
-                )
-            else:
-                # We've reached midnight, let's reset the reset_date and the request_count, as now we need to start over
-                self.daily_reserve_calls_next_reset_date = None
-                self.daily_request_count = 0
+            self.daily_reserve_search_mode = kwargs.get('search_mode')
+            if not self.daily_reserve_search_mode:
+                return
 
-        if (self.daily_reserve_search_mode != 'RSS' and self.api_hit_limit and
+            if self.daily_reserve_calls_next_reset_date:
+                if self.daily_reserve_calls_next_reset_date > datetime.datetime.now():
+                    raise PoliceReservedDailyExceeded(
+                        'Stil in daily search reservation cooldown.'
+                        'Meaning only daily searches are allowed to hit this provider at this time'
+                    )
+                else:
+                    # We've reached midnight, let's reset the reset_date and the request_count,
+                    # as now we need to start over
+                    self.daily_reserve_calls_next_reset_date = None
+                    self.daily_request_count = 0
+
+            if (self.daily_reserve_search_mode != 'RSS' and self.api_hit_limit and
                     self.daily_request_count > self.api_hit_limit - self.daily_reserve_calls):
-            # Set next reset to coming midnight.
-            next_day_time = (datetime.datetime.now() + datetime.timedelta(days=1)).date()
-            self.daily_reserve_calls_next_reset_date = datetime.datetime.combine(next_day_time, datetime.time())
+                # Set next reset to coming midnight.
+                next_day_time = (datetime.datetime.now() + datetime.timedelta(days=1)).date()
+                self.daily_reserve_calls_next_reset_date = datetime.datetime.combine(next_day_time, datetime.time())
 
-            raise PoliceReservedDailyExceeded("We've exceeded the reserved [{reserved_calls}] calls for daily search, "
-                                              "we're canceling this request."
-                                              .format(reserved_calls=self.daily_reserve_calls))
-        self.daily_request_count += 1
+                raise PoliceReservedDailyExceeded("We've exceeded the reserved [{reserved_calls}] calls for "
+                                                  "daily search, we're canceling this request."
+                                                  .format(reserved_calls=self.daily_reserve_calls))
+        finally:
+            # We're using this as a flag, so let's reset it for future use.
+            self.daily_reserve_search_mode = None
+            self.daily_request_count += 1
 
 
 # as for backwards compatibility

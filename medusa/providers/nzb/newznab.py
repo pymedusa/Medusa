@@ -105,7 +105,6 @@ class NewznabProvider(NZBProvider):
                 return results
 
         for mode in search_strings:
-            self.session.police.daily_reserve_search_mode = mode
             self.torznab = False
             search_params = {
                 't': 'search',
@@ -163,7 +162,7 @@ class NewznabProvider(NZBProvider):
                 #     logger.log(e.message, logger.INFO)
                 #     return items
 
-                response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
+                response = self.get_url(urljoin(self.url, 'api'), params=search_params, api_hit=True, search_mode=mode)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
