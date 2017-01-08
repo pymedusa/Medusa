@@ -81,7 +81,7 @@ class NewznabProvider(NZBProvider):
 
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-        self.request_police = RequestPolice()
+        self.request_police = RequestPolice(self.session)
 
         # Needs to be configurable per provider. @Omg, i've used your settings now, meaning these are used now for any
         # Provider.

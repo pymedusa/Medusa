@@ -32,7 +32,8 @@ from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helpers import download_file, get_url, make_session
+from ..helper.request_police import PolicedSession
+from ..helpers import download_file
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..scene_exceptions import get_scene_exceptions
@@ -75,7 +76,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = make_session()
+        self.session = PolicedSession()
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -401,7 +402,11 @@ class GenericProvider(object):
         if hasattr(self, 'request_police'):
             kwargs['rpolice'] = self.request_police
 
-        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+        if not post_data:
+            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
+        else:
+            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
+                                     timeout=timeout, **kwargs)
 
     def image_name(self):
         """Return provider image name."""

@@ -19,9 +19,26 @@
 """Request Police Class for monitoring requests responses, and throttling or breaking where needed."""
 
 from ..bs4_parser import BS4Parser
-import logging
-import datetime
 
+import errno
+import datetime
+import logging
+import requests
+import traceback
+
+from cachecontrol import CacheControlAdapter
+from cachecontrol.cache import DictCache
+
+from .. import app
+from ..common import USER_AGENT
+from common import http_code_description
+import certifi
+import cfscrape
+
+try:
+    from urllib.parse import splittype
+except ImportError:
+    from urllib2 import splittype
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +60,118 @@ class PoliceReservedDailyExceeded(RequestPoliceException):
     """Police Request Exception for exceeding the reserved daily search limit."""
 
 
+class PolicedSession(requests.Session):
+    def __init__(self, cache_etags=True, serializer=None, heuristic=None):
+        super(PolicedSession, self).__init__()
+        adapter = CacheControlAdapter(
+            DictCache(),
+            cache_etags=cache_etags,
+            serializer=serializer,
+            heuristic=heuristic,
+        )
+
+        self.mount('http://', adapter)
+        self.mount('https://', adapter)
+        self.cache_controller = adapter.controller
+        self.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
+
+    @classmethod
+    def _request_defaults(cls, kwargs):
+        hooks = kwargs.pop(u'hooks', None)
+        cookies = kwargs.pop(u'cookies', None)
+        verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
+
+        # request session proxies
+        if app.PROXY_SETTING:
+            logger.debug(u"Using global proxy: " + app.PROXY_SETTING)
+            scheme, address = splittype(app.PROXY_SETTING)
+            address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
+            proxies = {
+                "http": address,
+                "https": address,
+            }
+        else:
+            proxies = None
+
+        return hooks, cookies, verify, proxies
+
+    @classmethod
+    def _prepare_cf_req(cls, session, request):
+        logger.debug(u'CloudFlare protection detected, trying to bypass it')
+
+        try:
+            tokens, user_agent = cfscrape.get_tokens(request.url)
+            if request.cookies:
+                request.cookies.update(tokens)
+            else:
+                request.cookies = tokens
+            if request.headers:
+                request.headers.update({u'User-Agent': user_agent})
+            else:
+                request.headers = {u'User-Agent': user_agent}
+            logger.debug(u'CloudFlare protection successfully bypassed.')
+            return session.prepare_request(request)
+        except (ValueError, AttributeError) as error:
+            logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
+
+    def request(self, method, url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
+        response_type = kwargs.pop(u'returns', u'response')
+        stream = kwargs.pop(u'stream', False)
+        hooks, cookies, verify, proxies = self._request_defaults(kwargs)
+
+        # Get RequestPolice instance object.
+        rpolice = kwargs.pop(u'rpolice', None)
+
+        try:
+            if rpolice:
+                [rpolice_check() for rpolice_check in rpolice.enabled_police_request_hooks]
+
+            req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
+                                   headers=headers, cookies=cookies)
+            prepped = self.prepare_request(req)
+            resp = self.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
+                             allow_redirects=True)
+
+            if not resp.ok:
+                # Try to bypass CloudFlare's anti-bot protection
+                if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
+                    cf_prepped = self.prepare_cf_req(session, req)
+                    if cf_prepped:
+                        cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
+                                               timeout=timeout, allow_redirects=True)
+                        if cf_resp.ok:
+                            return cf_resp
+
+                logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+                             (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+
+                if response_type and response_type != u'response':
+                    return None
+
+        except requests.exceptions.RequestException as e:
+            logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
+            return None
+        except Exception as e:
+            if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
+                logger.warning(
+                    u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=e))
+            else:
+                logger.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
+                logger.debug(traceback.format_exc())
+            return None
+
+        if rpolice:
+            try:
+                [rpolice_check(resp) for rpolice_check in rpolice.enabled_police_response_hooks]
+            except RequestPoliceException as e:
+                logger.warning(e.message)
+        return resp
+
+
 class RequestPolice(object):
-    def __init__(self):
+    def __init__(self, session):
+        self.session = session
+
         self.request_limit = 0
         # Keep a counter of the total number of requests for this provider.
         self.request_count = 0
@@ -134,3 +261,16 @@ class RequestPolice(object):
                                               "we're canceling this request."
                                               .format(reserved_calls=self.daily_reserve_calls))
         self.daily_request_count += 1
+
+
+# as for backwards compatibility
+def request_defaults(kwargs):
+    logger.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
+                   'please make use of the PolicedRequest session for all of your requests.')
+    return PolicedSession._request_defaults(kwargs)
+
+
+def prepare_cf_req(session, request):
+    logger.warning('Deprecation warning! Usage of helpers.get_url and prepare_cf_req is deprecated, '
+                   'please make use of the PolicedRequest session for all of your requests.')
+    return PolicedSession._prepare_cf_req(session, request)

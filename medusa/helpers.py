@@ -48,24 +48,23 @@ import adba
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
-import certifi
-
-import cfscrape
-
 from contextlib2 import closing, suppress
 
 import guessit
 
 import requests
+from medusa.common import USER_AGENT
 from requests.compat import urlparse
 
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
 from . import app, db
-from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
+from .helper.request_police import prepare_cf_req, request_defaults
+
+
 from .indexers.indexer_exceptions import IndexerException
 from .show.show import Show
 
@@ -1140,45 +1139,6 @@ def make_session(cache_etags=True, serializer=None, heuristic=None):
     session.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
     return session
-
-
-def request_defaults(kwargs):
-    hooks = kwargs.pop(u'hooks', None)
-    cookies = kwargs.pop(u'cookies', None)
-    verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
-
-    # request session proxies
-    if app.PROXY_SETTING:
-        logger.debug(u"Using global proxy: " + app.PROXY_SETTING)
-        scheme, address = splittype(app.PROXY_SETTING)
-        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
-        proxies = {
-            "http": address,
-            "https": address,
-        }
-    else:
-        proxies = None
-
-    return hooks, cookies, verify, proxies
-
-
-def prepare_cf_req(session, request):
-    logger.debug(u'CloudFlare protection detected, trying to bypass it.')
-
-    try:
-        tokens, user_agent = cfscrape.get_tokens(request.url)
-        if request.cookies:
-            request.cookies.update(tokens)
-        else:
-            request.cookies = tokens
-        if request.headers:
-            request.headers.update({u'User-Agent': user_agent})
-        else:
-            request.headers = {u'User-Agent': user_agent}
-        logger.debug(u'CloudFlare protection successfully bypassed.')
-        return session.prepare_request(request)
-    except (ValueError, AttributeError) as error:
-        logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
 
 
 def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
