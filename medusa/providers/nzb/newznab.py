@@ -48,7 +48,9 @@ class NewznabProvider(NZBProvider):
     """
 
     def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False,
+                 enable_api_hit_cooldown=False, enable_daily_request_reserve=False, api_hit_limit=0,
+                 daily_reserve_calls=0):
         """Initialize the class."""
         super(self.__class__, self).__init__(name)
 
@@ -81,12 +83,15 @@ class NewznabProvider(NZBProvider):
 
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
-        self.session.police = RequestPolice(enable_api_hit_cooldown=True, enable_daily_request_reserve=True)
+        # self.enable_daily_request_reserve = bool(daily_reserve_calls)
 
-        # Needs to be configurable per provider. @Omg, i've used your settings now, meaning these are used now for any
-        # Provider.
-        self.session.police.api_hit_limit = 2500
-        self.session.police.daily_reserve_calls = 200
+        self.session.police = RequestPolice(enable_api_hit_cooldown=enable_api_hit_cooldown,
+                                            daily_reserve_calls=daily_reserve_calls)
+
+        self.session.police.enable_api_hit_cooldown = self.enable_api_hit_cooldown = enable_api_hit_cooldown
+        self.session.police.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
+        self.session.police.api_hit_limit = self.api_hit_limit = api_hit_limit
+        # self.session.police.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

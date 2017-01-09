@@ -93,6 +93,10 @@ class GenericProvider(object):
         self.max_recent_items = 5
         self.stop_at = 3
 
+        # Police attributes
+        self.enable_api_hit_cooldown = False
+        self.enable_daily_request_reserve = False
+
     def download_result(self, result):
         """Download result from provider."""
         if not self.login():
@@ -646,3 +650,9 @@ class GenericProvider(object):
 
         return {'result': False,
                 'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+
+    def __str__(self):
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def __unicode__(self):
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

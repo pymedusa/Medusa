@@ -176,7 +176,7 @@ class PolicedSession(requests.Session):
 
 
 class RequestPolice(object):
-    def __init__(self, enable_api_hit_cooldown=False, enable_daily_request_reserve=False):
+    def __init__(self, enable_api_hit_cooldown=False, daily_reserve_calls=0):
         self.request_limit = 0
         # Keep a counter of the total number of requests for this provider.
         self.request_count = 0
@@ -186,14 +186,17 @@ class RequestPolice(object):
         self.response_score = 0
         self.api_request_count = 0
         self.api_grab_limit = None
+
+        # Api hit cooldown
+        self.enable_api_hit_cooldown = enable_api_hit_cooldown
         self.api_hit_limit_cooldown = 86400
         self.api_hit_limit_cooldown_clear = None
         self.next_allowed_request_date = None
 
         # request_check_newznab_daily_reserved_calls method attributes
-        self.api_hit_limit = None # Moved here, as it's currently only used by daily reserve calls.
+        self.api_hit_limit = None  # Moved here, as it's currently only used by daily reserve calls.
         self.daily_request_count = 0
-        self.daily_reserve_calls = 0
+        self.daily_reserve_calls = daily_reserve_calls
         self.daily_reserve_calls_next_reset_date = None
         self.daily_reserve_search_mode = None
 
@@ -202,12 +205,20 @@ class RequestPolice(object):
         # Methods that are run after a response has been received. Using the response object.
         self.enabled_police_response_hooks = []
 
-        # Configuration
-        if enable_api_hit_cooldown:
+        self.configure_hooks()
+
+    def configure_hooks(self):
+        """Based on the RequestPolice attributes, enable/disable hooks."""
+        # Methods that are run before the request has been send.
+        self.enabled_police_request_hooks = [self.request_counter]
+        # Methods that are run after a response has been received. Using the response object.
+        self.enabled_police_response_hooks = []
+
+        if self.enable_api_hit_cooldown:
             self.enabled_police_request_hooks.append(self.request_check_nzb_api_limit)
             self.enabled_police_response_hooks.append(self.response_check_nzb_api_limit)
 
-        if enable_daily_request_reserve:
+        if self.daily_reserve_calls:
             self.enabled_police_request_hooks.append(self.request_check_newznab_daily_reserved_calls)
 
     def request_counter(self, **kwargs):

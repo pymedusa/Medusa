@@ -213,6 +213,39 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+                        % if hasattr(cur_newznab_provider, 'enable_api_hit_cooldown'):
+                        <div class="field-pair">
+                            <label for="${cur_newznab_provider.get_id()}_enable_api_hit_cooldown">
+                                <span class="component-title">Enable Api hit cooldown</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" name="${cur_newznab_provider.get_id()}_enable_api_hit_cooldown" id="${cur_newznab_provider.get_id()}_enable_api_hit_cooldown" ${'checked="checked"' if cur_newznab_provider.enable_api_hit_cooldown else ''}/>
+                                    <p>Stop hitting provider when the provider responds with a warning of breached api hit threshold. The cooldown will last 24 hours.</p>
+                                </span>
+                            </label>
+                        </div>
+                        % endif
+                        % if hasattr(cur_newznab_provider, 'api_hit_limit'):
+                        <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Api hit limit</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="0" step="1" name="${cur_newznab_provider.get_id()}_api_hit_limit" value="${cur_newznab_provider.api_hit_limit}" class="form-control input-sm input75"/>
+                                        <p>The api hit limit of the newznab provider (e.g. 2500).</p>
+                                    </span>
+                                </label>
+                        </div><!-- usenet retention -->
+                        % endif
+                        % if hasattr(cur_newznab_provider, 'daily_reserve_calls'):
+                        <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Daily search reserved api hits</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="0" step="1" name="${cur_newznab_provider.get_id()}_daily_reserve_calls" value="${cur_newznab_provider.daily_reserve_calls}" class="form-control input-sm input75"/>
+                                        <p>Reserve this amount of api hits for the daily/rss search. Use 0 to disable.</p>
+                                    </span>
+                                </label>
+                        </div><!-- usenet retention -->
+                        % endif
                     </div>
                     % endfor
                     % for cur_nzb_provider in [cur_provider for cur_provider in sorted_provider_list() if cur_provider.provider_type == GenericProvider.NZB and cur_provider not in app.newznabProviderList]:
@@ -304,6 +337,7 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+
                     </div>
                     % endfor
                     % for cur_torrent_provider in [cur_provider for cur_provider in sorted_provider_list() if cur_provider.provider_type == GenericProvider.TORRENT]:
@@ -608,6 +642,7 @@ $('#config-components').tabs();
                             </label>
                         </div>
                         % endif
+
                     </div>
                     % endfor
                     <!-- end div for editing providers -->
