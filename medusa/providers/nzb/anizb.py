@@ -121,8 +121,10 @@ class Anizb(NZBProvider):
         """Override the default _get_size to prevent it from extracting using the default tags."""
         return try_int(item.get('size'))
 
-    def _get_episode_search_strings(self, episode):
+    def _get_episode_search_strings(self, episode, add_string=''):
         """Get episode search strings."""
+        _ = add_string
+
         if not episode:
             return []
 
