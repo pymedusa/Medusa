@@ -35,7 +35,7 @@ from ... import app, logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
-from ...helper.request_police import RequestPolice, PoliceReservedDailyExceeded
+from ...helper.request_police import PolicedSession
 from ...helper.encoding import ss
 from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
@@ -85,13 +85,13 @@ class NewznabProvider(NZBProvider):
 
         # self.enable_daily_request_reserve = bool(daily_reserve_calls)
 
-        self.session.police = RequestPolice(enable_api_hit_cooldown=enable_api_hit_cooldown,
-                                            daily_reserve_calls=daily_reserve_calls)
+        self.session = PolicedSession({'enable_api_hit_cooldown': enable_api_hit_cooldown,
+                                      'daily_reserve_calls': daily_reserve_calls})
 
-        self.session.police.enable_api_hit_cooldown = self.enable_api_hit_cooldown = enable_api_hit_cooldown
-        self.session.police.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
-        self.session.police.api_hit_limit = self.api_hit_limit = api_hit_limit
-        # self.session.police.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
+        self.session.enable_api_hit_cooldown = self.enable_api_hit_cooldown = enable_api_hit_cooldown
+        self.session.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
+        self.session.api_hit_limit = self.api_hit_limit = api_hit_limit
+        # self.session.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -162,7 +162,7 @@ class NewznabProvider(NZBProvider):
                 time.sleep(cpu_presets[app.CPU_PRESET])
 
                 # try:
-                #     self.session.police.request_check_newznab_daily_reserved_calls(mode)
+                #     self.session.request_check_newznab_daily_reserved_calls(mode)
                 # except PoliceReservedDailyExceeded as e:
                 #     logger.log(e.message, logger.INFO)
                 #     return items

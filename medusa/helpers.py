@@ -1145,7 +1145,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
     """Return data retrieved from the url provider."""
     response_type = kwargs.pop(u'returns', u'response')
     stream = kwargs.pop(u'stream', False)
-    hooks, cookies, verify, proxies = request_defaults(kwargs)
+    hooks, cookies, verify, proxies = request_defaults(**kwargs)
     method = u'POST' if post_data else u'GET'
 
     # Get RequestPolice instance object.

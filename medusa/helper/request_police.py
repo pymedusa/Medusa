@@ -64,9 +64,28 @@ class RequestPoliceInvalidConfiguration(RequestPoliceException):
     """Invalid or incomplete configuration provided."""
 
 
-class PolicedSession(requests.Session):
+def cloudflare_bypass(r, **kwargs):
+    # if not r.ok:
+    #     # Try to bypass CloudFlare's anti-bot protection
+    #     if r.status_code == 503 and r.headers.get('server') == u'cloudflare-nginx':
+    #         cf_prepped = MedusaSession._prepare_cf_req(session, req)
+    #         if cf_prepped:
+    #             # cf_resp = r.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
+    #             #                        timeout=timeout, allow_redirects=True)
+    #             # if cf_resp.ok:
+    #             #     return cf_resp
+    #
+    #     logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+    #                  (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+    #
+    #     if response_type and response_type != u'response':
+    #         return None
+    pass
+
+
+class MedusaSession(requests.Session):
     def __init__(self, cache_etags=True, serializer=None, heuristic=None, police=None):
-        super(PolicedSession, self).__init__()
+        super(MedusaSession, self).__init__()
         adapter = CacheControlAdapter(
             DictCache(),
             cache_etags=cache_etags,
@@ -83,7 +102,49 @@ class PolicedSession(requests.Session):
         self.police = police
 
     @classmethod
-    def _request_defaults(cls, kwargs):
+    def cloudflare_hook(cls, r, **kwargs):
+
+        if not r.ok:
+            # Try to bypass CloudFlare's anti-bot protection
+            if r.status_code == 503 and r.headers.get('server') == u'cloudflare-nginx':
+                logger.debug(u'CloudFlare protection detected, trying to bypass it')
+
+                try:
+                    tokens, user_agent = cfscrape.get_tokens(r.request.url)
+                    if r.request._cookies:
+                        cookies = r.request._cookies.update(tokens)
+                    else:
+                        cookies = tokens
+                    if r.request.headers:
+                        r.request.headers.update({u'User-Agent': user_agent})
+                    else:
+                        r.request.headers = {u'User-Agent': user_agent}
+
+                    logger.debug(u'CloudFlare protection successfully bypassed.')
+
+                    # Disable the hooks, to prevent a loop.
+                    r.request.hooks = {}
+
+                    new_session = requests.Session()
+
+                    r.request.prepare_cookies(cookies)
+                    # prepped = new_session.prepare_request(r.request)
+                    cf_resp = new_session.send(r.request, stream=kwargs.get('stream'), verify=kwargs.get('verify'),
+                                               proxies=kwargs.get('proxies'), timeout=kwargs.get('timeout'),
+                                               allow_redirects=True)
+
+                    if cf_resp.ok:
+                        return cf_resp
+
+                except (ValueError, AttributeError) as error:
+                    logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
+                    return
+
+            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
+                         (url=r.url, status=r.status_code, desc=http_code_description(r.status_code)))
+
+    @classmethod
+    def _request_defaults(cls, **kwargs):
         hooks = kwargs.pop(u'hooks', None)
         cookies = kwargs.pop(u'cookies', None)
         verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
@@ -122,35 +183,15 @@ class PolicedSession(requests.Session):
             logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
 
     def request(self, method, url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
-        response_type = kwargs.pop(u'returns', u'response')
         stream = kwargs.pop(u'stream', False)
-        hooks, cookies, verify, proxies = self._request_defaults(kwargs)
+        hooks, cookies, verify, proxies = self._request_defaults(**kwargs)
 
         try:
-            if self.police:
-                [police_check(**kwargs) for police_check in self.police.enabled_police_request_hooks]
-
             req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
                                    headers=headers, cookies=cookies)
             prepped = self.prepare_request(req)
             resp = self.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
                              allow_redirects=True)
-
-            if not resp.ok:
-                # Try to bypass CloudFlare's anti-bot protection
-                if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
-                    cf_prepped = self._prepare_cf_req(session, req)
-                    if cf_prepped:
-                        cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
-                                               timeout=timeout, allow_redirects=True)
-                        if cf_resp.ok:
-                            return cf_resp
-
-                logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                             (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
-
-                if response_type and response_type != u'response':
-                    return None
 
         except requests.exceptions.RequestException as e:
             logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
@@ -167,28 +208,20 @@ class PolicedSession(requests.Session):
                 logger.debug(traceback.format_exc())
             return None
 
-        if self.police:
-            try:
-                [police_check(resp, **kwargs) for police_check in self.police.enabled_police_response_hooks]
-            except RequestPoliceException as e:
-                logger.warning(e.message)
         return resp
 
 
-class RequestPolice(object):
-    def __init__(self, enable_api_hit_cooldown=False, daily_reserve_calls=0):
-        self.request_limit = 0
-        # Keep a counter of the total number of requests for this provider.
+class PolicedSession(MedusaSession):
+    def __init__(self, *args, **kwargs):
+        super(PolicedSession, self).__init__(*args, **kwargs)
+
+        # Generic attributes
         self.request_count = 0
         self.request_score = 0
-        self.response_limit = 0
-        self.response_count = 0
-        self.response_score = 0
-        self.api_request_count = 0
-        self.api_grab_limit = None
+        self.request_limit = 100
 
         # Api hit cooldown
-        self.enable_api_hit_cooldown = enable_api_hit_cooldown
+        self.enable_api_hit_cooldown = kwargs.get('enable_api_hit_cooldown')
         self.api_hit_limit_cooldown = 86400
         self.api_hit_limit_cooldown_clear = None
         self.next_allowed_request_date = None
@@ -196,7 +229,7 @@ class RequestPolice(object):
         # request_check_newznab_daily_reserved_calls method attributes
         self.api_hit_limit = None  # Moved here, as it's currently only used by daily reserve calls.
         self.daily_request_count = 0
-        self.daily_reserve_calls = daily_reserve_calls
+        self.daily_reserve_calls = kwargs.get('daily_reserve_calls')
         self.daily_reserve_calls_next_reset_date = None
         self.daily_reserve_search_mode = None
 
@@ -206,6 +239,16 @@ class RequestPolice(object):
         self.enabled_police_response_hooks = []
 
         self.configure_hooks()
+
+    def request(self, method, url, *args, **kwargs):
+        try:
+            [police_check(**kwargs) for police_check in self.enabled_police_request_hooks]
+            r = super(PolicedSession, self).request(method, url, *args, **kwargs)
+            [police_check(r, **kwargs) for police_check in self.enabled_police_response_hooks]
+            return r
+        except RequestPoliceException as e:
+            logger.warning(e.message)
+            return None
 
     def configure_hooks(self):
         """Based on the RequestPolice attributes, enable/disable hooks."""
@@ -301,10 +344,10 @@ class RequestPolice(object):
 
 
 # as for backwards compatibility
-def request_defaults(kwargs):
+def request_defaults(**kwargs):
     logger.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
                    'please make use of the PolicedRequest session for all of your requests.')
-    return PolicedSession._request_defaults(kwargs)
+    return PolicedSession._request_defaults(**kwargs)
 
 
 def prepare_cf_req(session, request):

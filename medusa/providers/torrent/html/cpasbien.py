@@ -25,6 +25,7 @@ from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
+from ....helper.request_police import cloudflare_bypass
 
 
 class CpasbienProvider(TorrentProvider):
@@ -76,7 +77,9 @@ class CpasbienProvider(TorrentProvider):
                 else:
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url, allow_redirects=False,
+                                            hooks=dict(response=[self.get_url_hook,
+                                                                 self.session.cloudflare_hook]))
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
