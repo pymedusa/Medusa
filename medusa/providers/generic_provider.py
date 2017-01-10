@@ -214,7 +214,7 @@ class GenericProvider(object):
             pubdate = self._get_pubdate(item)
 
             try:
-                parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
+                parse_result = NameParser(show=self.show, parse_method=('normal', 'anime')[show.is_anime]).parse(title)
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log(u"{error}".format(error=error), logger.DEBUG)
                 continue
