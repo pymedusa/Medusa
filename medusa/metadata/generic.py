@@ -926,12 +926,12 @@ class GenericMetadata(object):
             logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
                        (indexer=indexerApi(show_obj.indexer).name,
                         id=show_id), logger.ERROR)
-            raise
+            return False
 
         except IndexerError:
             logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
                        (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
-            raise
+            return False
 
         # check for title and id
         if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
