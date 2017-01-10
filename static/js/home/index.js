@@ -77,7 +77,7 @@ MEDUSA.home.index = function() {
     // This needs to be refined to work a little faster.
     $('.progressbar').each(function() {
         var percentage = $(this).data('progress-percentage');
-        var classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20; // eslint-disable-line no-nested-ternary
+        var classToAdd = percentage === 100 ? 100 : percentage > 80 ? 80 : percentage > 60 ? 60 : percentage > 40 ? 40 : 20;
         $(this).progressbar({
             value: percentage
         });
