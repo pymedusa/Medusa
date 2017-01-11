@@ -856,22 +856,32 @@ class PostProcessor(object):
         """
         Determine if a quality should be processed according to the quality system.
 
+        This method is used only for replace existing files
+
         :param current_quality: The current quality of the episode that is being processed
         :param new_quality: The new quality of the episode that is being processed
         :param allowed: Qualities that are allowed
         :param preferred: Qualities that are preferred
-        :return: True if the quality should be processed, False or None otherwise.
+        :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
         if new_quality in preferred:
             if current_quality in preferred:
-                return new_quality > current_quality
-            return True
+                if new_quality > current_quality:
+                    return True, 'New quality is higher than current Preferred. Accepting quality'
+                else:
+                    return False, 'New quality is same|lower than current Preferred. Ignoring quality'
+            return True, 'New quality is Preferred'
         elif new_quality in allowed:
             if current_quality in preferred:
-                return False
+                return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True
-            return new_quality > current_quality
+                return True, "New quality is Allowed and we don\'t have a current Preferred. Accepting quality"
+            elif new_quality > current_quality:
+                return True, 'New quality is higher than current Preferred. Accepting quality'
+            else:
+                return False, 'New quality is same|lower than current Preferred. Ignoring quality'
+        else:
+            return False, 'New quality is not in Allowed|Preferred. Ignoring quality'
 
     def _run_extra_scripts(self, ep_obj):
         """
@@ -1013,12 +1023,14 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    allowed, preferred = show.current_qualities
-                    if not self._should_process(old_ep_quality, new_ep_quality, allowed, preferred):
+                    allowed_qualities, preferred_qualities = show.current_qualities
+                    should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,
+                                                                                 allowed_qualities, preferred_qualities)
+                    if not should_process:
                         raise EpisodePostProcessingFailedException(
-                            u'File exists. Marking it unsafe to replace because this quality is not desired')
+                            u'File exists. Marking it unsafe to replace. Reason: {0}'.format(should_process_reason))
                     else:
-                        self._log(u'File exists. Marking it safe to replace because this quality is desired')
+                        self._log(u'File exists. Marking it safe to replace. Reason: {0}'.format(should_process_reason))
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
