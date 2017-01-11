@@ -36,7 +36,7 @@ class Config(WebRoot):
             {'title': 'Anime', 'path': 'config/anime/', 'icon': 'menu-icon-anime'},
         ]
 
-        return menu
+        return menu[::-1]
 
     def index(self):
         """
