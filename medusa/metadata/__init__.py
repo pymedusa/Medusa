@@ -53,7 +53,7 @@ class MetaDataProvidersDict(dict):
     """
     def __init__(self, *args, **kwargs):
         """MetaDataDict init."""
-        super(MetaDataDict, self).__init__(*args, **kwargs)
+        super(MetaDataProvidersDict, self).__init__(*args, **kwargs)
 
     def __getitem__(self, key):
         """Get the dict value, and reset the indexer_api to None. This was needed because we initialize the metadata
