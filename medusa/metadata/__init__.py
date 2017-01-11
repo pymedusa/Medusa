@@ -69,10 +69,7 @@ class MetaDataProvidersDict(dict):
 
     def values(self):
         """Override values method."""
-        providers = []
-        for metadata_provider in self:
-            providers.append(self[metadata_provider])
-        return providers
+        return [self[metadata_provider] for metadata_provider in self]
 
 
 def get_metadata_generator_dict():
