@@ -220,14 +220,9 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         """
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        try:
-            my_show = self._get_show_data(ep_obj.show)
-        except IndexerShowNotFound as e:
-            raise ShowNotFoundException(e.message)
-        except IndexerError:
-            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
-            return
+        my_show = self._get_show_data(ep_obj.show)
+        if not my_show:
+            return None
 
         if len(eps_to_write) > 1:
             root_node = etree.Element('kodimultiepisode')
