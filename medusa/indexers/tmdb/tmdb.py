@@ -46,6 +46,7 @@ class Tmdb(BaseIndexer):
         """Tmdb api constructor."""
         super(Tmdb, self).__init__(*args, **kwargs)
 
+        self.indexer = 4
         self.tmdb = tmdb
         self.tmdb.API_KEY = TMDB_API_KEY
         self.tmdb.REQUESTS_SESSION = self.config['session']

@@ -839,7 +839,7 @@ class GenericMetadata(object):
         indexer_lang = show_obj.lang
 
         try:
-            if not self.indexer_api:
+            if not self.indexer_api or show_obj.indexer != self.indexer_api.indexer:
                 l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
                 l_indexer_api_params['banners'] = True
                 l_indexer_api_params['actors'] = True
