@@ -635,6 +635,8 @@ class TVShow(TVObject):
         result = False
 
         logger.log(u'{id}: Writing NFOs for show'.format(id=self.indexerid), logger.DEBUG)
+        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+        # is reset. This will prevent errors, when using multiple indexers and caching.
         for cur_provider in app.metadata_provider_dict.values():
             result = cur_provider.create_show_metadata(self) or result
 
@@ -697,6 +699,8 @@ class TVShow(TVObject):
         result = False
 
         logger.log(u"{id}: Updating NFOs for show with new indexer info".format(id=self.indexerid), logger.INFO)
+        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+        # is reset. This will prevent errors, when using multiple indexers and caching.
         for cur_provider in app.metadata_provider_dict.values():
             result = cur_provider.update_show_indexer_metadata(self) or result
 
@@ -998,6 +1002,8 @@ class TVShow(TVObject):
         fanart_result = poster_result = banner_result = False
         season_posters_result = season_banners_result = season_all_poster_result = season_all_banner_result = False
 
+        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+        # is reset. This will prevent errors, when using multiple indexers and caching.
         for cur_provider in app.metadata_provider_dict.values():
             fanart_result = cur_provider.create_fanart(self) or fanart_result
             poster_result = cur_provider.create_poster(self) or poster_result
@@ -2160,6 +2166,8 @@ class TVEpisode(TVObject):
 
         # check for nfo and tbn
         if self.is_location_valid():
+            # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+            # is reset. This will prevent errors, when using multiple indexers and caching.
             for cur_provider in app.metadata_provider_dict.values():
                 if cur_provider.episode_metadata:
                     new_result = cur_provider.has_episode_metadata(self)
@@ -2650,6 +2658,8 @@ class TVEpisode(TVObject):
 
         result = False
 
+        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+        # is reset. This will prevent errors, when using multiple indexers and caching.
         for cur_provider in app.metadata_provider_dict.values():
             result = cur_provider.create_episode_metadata(self) or result
 
@@ -2659,6 +2669,8 @@ class TVEpisode(TVObject):
 
         result = False
 
+        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+        # is reset. This will prevent errors, when using multiple indexers and caching.
         for cur_provider in app.metadata_provider_dict.values():
             result = cur_provider.create_episode_thumb(self) or result
 
