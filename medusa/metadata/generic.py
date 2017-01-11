@@ -21,6 +21,7 @@ import io
 import os
 import re
 
+from requests.exceptions import RequestException
 from six import iterkeys
 import tmdbsimple as tmdb
 from .. import app, exception_handler, helpers, logger
@@ -719,31 +720,8 @@ class GenericMetadata(object):
         Returns: the binary image data if available, or else None
         """
         image_url = None
-        indexer_lang = show_obj.lang
 
-        try:
-            if not self.indexer_api:
-                # There's gotta be a better way of doing this but we don't wanna
-                # change the language value elsewhere
-                indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-                indexer_api_params['banners'] = True
-
-                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    indexer_api_params['language'] = indexer_lang
-
-                if show_obj.dvdorder != 0:
-                    indexer_api_params['dvdorder'] = True
-
-                self.indexer_api = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
-
-            indexer_show_obj = self.indexer_api[show_obj.indexerid]
-        except (IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + indexerApi(
-                show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
-                       logger.DEBUG)
-            return None
+        indexer_show_obj = self._get_show_data(show_obj)
 
         if image_type not in ('fanart', 'poster', 'banner', 'poster_thumb', 'banner_thumb'):
             logger.log(u"Invalid image type " + str(image_type) + ", couldn't find it in the " + indexerApi(
@@ -783,31 +761,7 @@ class GenericMetadata(object):
         # This holds our resulting dictionary of season art
         result = {}
 
-        indexer_lang = show_obj.lang
-
-        try:
-            if not self.indexer_api:
-                # There's gotta be a better way of doing this but we don't wanna
-                # change the language value elsewhere
-                l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-                l_indexer_api_params['banners'] = True
-
-                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    l_indexer_api_params['language'] = indexer_lang
-
-                if show_obj.dvdorder != 0:
-                    l_indexer_api_params['dvdorder'] = True
-
-                self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
-
-            indexer_show_obj = self.indexer_api[show_obj.indexerid]
-        except (IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + indexerApi(
-                show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
-                       logger.DEBUG)
-            return result
+        indexer_show_obj = self._get_show_data(show_obj)
 
         # if we have no season banners then just finish
         if not getattr(indexer_show_obj, '_banners', None):
@@ -844,31 +798,7 @@ class GenericMetadata(object):
         # This holds our resulting dictionary of season art
         result = {}
 
-        indexer_lang = show_obj.lang
-
-        try:
-            if not self.indexer_api:
-                # There's gotta be a better way of doing this but we don't wanna
-                # change the language value elsewhere
-                l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-                l_indexer_api_params['banners'] = True
-
-                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    l_indexer_api_params['language'] = indexer_lang
-
-                if show_obj.dvdorder != 0:
-                    l_indexer_api_params['dvdorder'] = True
-
-                self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
-
-            indexer_show_obj = self.indexer_api[show_obj.indexerid]
-        except (IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + indexerApi(
-                show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
-                       logger.DEBUG)
-            return result
+        indexer_show_obj = self._get_show_data(show_obj)
 
         # if we have no seasonwide banners then just finish
         if not getattr(indexer_show_obj, '_banners', None):
@@ -898,6 +828,7 @@ class GenericMetadata(object):
         """Retrieve show data from the indexer.
 
         Try to reuse the indexer_api class instance attribute.
+        As whe are doing reusing the indexers results, we need to do a full index including actors and images.
 
         :param show_obj: A TVshow object.
         :return: A re-indexed show object.
@@ -910,7 +841,7 @@ class GenericMetadata(object):
         try:
             if not self.indexer_api:
                 l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
+                l_indexer_api_params['banners'] = True
                 l_indexer_api_params['actors'] = True
 
                 if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
@@ -921,23 +852,23 @@ class GenericMetadata(object):
 
                 self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
 
-                my_show = self.indexer_api[int(show_id)]
+            my_show = self.indexer_api[int(show_id)]
         except IndexerShowNotFound:
             logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
                        (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
+                        id=show_id), logger.WARNING)
             return False
 
-        except IndexerError:
-            logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
+        except (IndexerError, RequestException):
+            logger.log(u"{indexer} is down, can't use its data to add this show".format
+                       (indexer=indexerApi(show_obj.indexer).name), logger.WARNING)
             return False
 
         # check for title and id
         if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
             logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
                        (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
+                        id=show_id), logger.WARNING)
             return False
 
         return my_show
@@ -1005,7 +936,8 @@ class GenericMetadata(object):
 
         return indexer_id, name, indexer
 
-    def _retrieve_show_images_from_tmdb(self, show, img_type):
+    @staticmethod
+    def _retrieve_show_images_from_tmdb(show, img_type):
         types = {'poster': 'poster_path',
                  'banner': None,
                  'fanart': 'backdrop_path',
@@ -1015,7 +947,12 @@ class GenericMetadata(object):
         # get TMDB configuration info
         tmdb.API_KEY = app.TMDB_API_KEY
         config = tmdb.Configuration()
-        response = config.info()
+        try:
+            response = config.info()
+        except RequestException as e:
+            logger.log('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e), logger.WARNING)
+            return False
+
         base_url = response['images']['base_url']
         sizes = response['images']['poster_sizes']
 

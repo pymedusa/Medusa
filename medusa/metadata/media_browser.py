@@ -236,6 +236,11 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         """
         my_show = self._get_show_data(show_obj)
 
+        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
+        # as that pretty useless.
+        if not my_show:
+            return False
+
         tv_node = etree.Element('Series')
 
         if getattr(my_show, 'id', None):

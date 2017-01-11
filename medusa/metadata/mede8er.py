@@ -102,6 +102,11 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         """
         my_show = self._get_show_data(show_obj)
 
+        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
+        # as that pretty useless.
+        if not my_show:
+            return False
+
         root_node = etree.Element('details')
         tv_node = etree.SubElement(root_node, 'movie')
         tv_node.attrib['isExtra'] = 'false'

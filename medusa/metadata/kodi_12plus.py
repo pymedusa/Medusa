@@ -110,6 +110,11 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
 
         my_show = self._get_show_data(show_obj)
 
+        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
+        # as that pretty useless.
+        if not my_show:
+            return False
+
         tv_node = etree.Element('tvshow')
 
         title = etree.SubElement(tv_node, 'title')
