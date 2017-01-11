@@ -49,16 +49,19 @@ def _getMetadataClass(name):
 class MetaDataProvidersDict(dict):
     """A custom dict class, used to reset the indexer_api attribute of an individual indexer.
 
-    therefor the app.metadata_provider_dict may only be itterated through the .values() method.
+    Therefor the app.metadata_provider_dict may only be itterated through the .values() method.
     """
+
     def __init__(self, *args, **kwargs):
         """MetaDataDict init."""
         super(MetaDataProvidersDict, self).__init__(*args, **kwargs)
 
     def __getitem__(self, key):
-        """Get the dict value, and reset the indexer_api to None. This was needed because we initialize the metadata
-        provider object once, and then store it in this dict. We've implemented the indexer_api, to cache the indexer
-        api information, when using it for images, season banners, actor data, show info etc."""
+        """Get the dict value, and reset the indexer_api to None.
+
+        This was needed because we initialize the metadata provider object once, and then store it in this dict.
+        We've implemented the indexer_api, to cache the indexer api information, when using it for images,
+        season banners, actor data, show info etc."""
         val = dict.__getitem__(self, key)
         val.indexer_api = None
         return val
