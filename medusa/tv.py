@@ -630,15 +630,14 @@ class TVShow(TVObject):
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 
-    def __write_show_nfo(self):
+    def __write_show_nfo(self, metadata_provider):
 
         result = False
 
         logger.log(u'{id}: Writing NFOs for show'.format(id=self.indexerid), logger.DEBUG)
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
-        for cur_provider in app.metadata_provider_dict.values():
-            result = cur_provider.create_show_metadata(self) or result
+        result = metadata_provider.create_show_metadata(self) or result
 
         return result
 
@@ -653,9 +652,9 @@ class TVShow(TVObject):
                        logger.WARNING)
             return
 
-        self.__get_images()
-
-        self.__write_show_nfo()
+        for metadata_provider in app.metadata_provider_dict.values():
+            self.__get_images(metadata_provider)
+            self.__write_show_nfo(metadata_provider)
 
         if not show_only:
             self.__write_episode_nfos()
@@ -998,22 +997,18 @@ class TVShow(TVObject):
             main_db_con = db.DBConnection()
             main_db_con.mass_action(sql_l)
 
-    def __get_images(self):
+    def __get_images(self, metadata_provider):
         fanart_result = poster_result = banner_result = False
         season_posters_result = season_banners_result = season_all_poster_result = season_all_banner_result = False
 
-        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
-        # is reset. This will prevent errors, when using multiple indexers and caching.
-        for cur_provider in app.metadata_provider_dict.values():
-            fanart_result = cur_provider.create_fanart(self) or fanart_result
-            poster_result = cur_provider.create_poster(self) or poster_result
-            banner_result = cur_provider.create_banner(self) or banner_result
+        fanart_result = metadata_provider.create_fanart(self) or fanart_result
+        poster_result = metadata_provider.create_poster(self) or poster_result
+        banner_result = metadata_provider.create_banner(self) or banner_result
 
-            season_posters_result = cur_provider.create_season_posters(self) or season_posters_result
-            season_banners_result = cur_provider.create_season_banners(self) or season_banners_result
-            season_all_poster_result = cur_provider.create_season_all_poster(self) or season_all_poster_result
-            season_all_banner_result = cur_provider.create_season_all_banner(self) or season_all_banner_result
-            cur_provider.indexer_api = None  # Let's cleanup the stored indexerApi objects.
+        season_posters_result = metadata_provider.create_season_posters(self) or season_posters_result
+        season_banners_result = metadata_provider.create_season_banners(self) or season_banners_result
+        season_all_poster_result = metadata_provider.create_season_all_poster(self) or season_all_poster_result
+        season_all_banner_result = metadata_provider.create_season_all_banner(self) or season_all_banner_result
 
         return (fanart_result or poster_result or banner_result or season_posters_result or
                 season_banners_result or season_all_poster_result or season_all_banner_result)
@@ -1085,7 +1080,8 @@ class TVShow(TVObject):
                     cur_ep.location = filepath
                     # if the sizes are the same then it's probably the same file
                     same_file = old_size and cur_ep.file_size == old_size
-                    cur_ep.check_for_meta_files()
+                    for metadata_provider in app.metadata_provider_dict.values():
+                        cur_ep.check_for_meta_files(metadata_provider)
 
             if root_ep is None:
                 root_ep = cur_ep
@@ -2019,7 +2015,9 @@ class TVEpisode(TVObject):
         self.loaded = False
         if show:
             self._specify_episode(self.season, self.episode)
-            self.check_for_meta_files()
+
+            for metadata_provider in app.metadata_provider_dict.values():
+                self.check_for_meta_files(metadata_provider)
 
     @staticmethod
     def from_filepath(filepath):
@@ -2152,7 +2150,7 @@ class TVEpisode(TVObject):
 
         return new_subtitles
 
-    def check_for_meta_files(self):
+    def check_for_meta_files(self, metadata_provider):
         """Whether metadata files has changed.
 
         :return:
@@ -2166,20 +2164,17 @@ class TVEpisode(TVObject):
 
         # check for nfo and tbn
         if self.is_location_valid():
-            # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
-            # is reset. This will prevent errors, when using multiple indexers and caching.
-            for cur_provider in app.metadata_provider_dict.values():
-                if cur_provider.episode_metadata:
-                    new_result = cur_provider.has_episode_metadata(self)
-                else:
-                    new_result = False
-                cur_nfo = new_result or cur_nfo
+            if metadata_provider.episode_metadata:
+                new_result = metadata_provider.has_episode_metadata(self)
+            else:
+                new_result = False
+            cur_nfo = new_result or cur_nfo
 
-                if cur_provider.episode_thumbnails:
-                    new_result = cur_provider.has_episode_thumb(self)
-                else:
-                    new_result = False
-                cur_tbn = new_result or cur_tbn
+            if metadata_provider.episode_thumbnails:
+                new_result = metadata_provider.has_episode_thumb(self)
+            else:
+                new_result = False
+            cur_tbn = new_result or cur_tbn
 
         self.hasnfo = cur_nfo
         self.hastbn = cur_tbn
@@ -2647,32 +2642,34 @@ class TVEpisode(TVObject):
                        (id=self.show.indexerid), logger.WARNING)
             return
 
-        self.__create_nfo()
-        self.__create_thumbnail()
+        files_changed = False
+        for metadata_provider in app.metadata_provider_dict.values():
+            self.__create_nfo(metadata_provider)
+            self.__create_thumbnail(metadata_provider)
 
-        if self.check_for_meta_files():
+            files_changed = self.check_for_meta_files(metadata_provider)
+
+        if files_changed:
             logger.log(u'{id}: Saving metadata changes to database'.format(id=self.show.indexerid))
             self.save_to_db()
 
-    def __create_nfo(self):
+    def __create_nfo(self, metadata_provider):
 
         result = False
 
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
-        for cur_provider in app.metadata_provider_dict.values():
-            result = cur_provider.create_episode_metadata(self) or result
+        result = metadata_provider.create_episode_metadata(self) or result
 
         return result
 
-    def __create_thumbnail(self):
+    def __create_thumbnail(self, metadata_provider):
 
         result = False
 
         # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
         # is reset. This will prevent errors, when using multiple indexers and caching.
-        for cur_provider in app.metadata_provider_dict.values():
-            result = cur_provider.create_episode_thumb(self) or result
+        result = metadata_provider.create_episode_thumb(self) or result
 
         return result
 
@@ -3398,7 +3395,8 @@ class TVEpisode(TVObject):
 
         # in case something changed with the metadata just do a quick check
         for cur_ep in [self] + self.related_episodes:
-            cur_ep.check_for_meta_files()
+            for metadata_provider in app.metadata_provider_dict.values():
+                cur_ep.check_for_meta_files(metadata_provider)
 
         # save any changes to the database
         sql_l = []
