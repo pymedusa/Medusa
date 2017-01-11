@@ -29,7 +29,7 @@ from ..helper.common import replace_extension
 from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
 from ..indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from ..indexers.indexer_exceptions import IndexerError, IndexerShowNotFound
+from ..indexers.indexer_exceptions import IndexerException, IndexerShowNotFound
 from ..metadata import helpers as metadata_helpers
 from ..show_name_helpers import allPossibleShowNames
 
@@ -859,7 +859,7 @@ class GenericMetadata(object):
                         id=show_id), logger.WARNING)
             return False
 
-        except (IndexerError, RequestException):
+        except (IndexerException, RequestException):
             logger.log(u"{indexer} is down, can't use its data to add this show".format
                        (indexer=indexerApi(show_obj.indexer).name), logger.WARNING)
             return False
