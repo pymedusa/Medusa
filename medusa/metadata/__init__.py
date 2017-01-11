@@ -53,7 +53,7 @@ class MetaDataProvidersDict(dict):
     """
 
     def __init__(self, *args, **kwargs):
-        """MetaDataDict init."""
+        """Initialize the metadatadict object instance."""
         super(MetaDataProvidersDict, self).__init__(*args, **kwargs)
 
     def __getitem__(self, key):
@@ -61,7 +61,8 @@ class MetaDataProvidersDict(dict):
 
         This was needed because we initialize the metadata provider object once, and then store it in this dict.
         We've implemented the indexer_api, to cache the indexer api information, when using it for images,
-        season banners, actor data, show info etc."""
+        season banners, actor data, show info etc.
+        """
         val = dict.__getitem__(self, key)
         val.indexer_api = None
         return val
