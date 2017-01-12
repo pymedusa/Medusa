@@ -22,9 +22,10 @@ import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from dateutil import parser
+from requests.exceptions import RequestException
 import tmdbsimple as tmdb
 from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete
+from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
 from ...app import TMDB_API_KEY
 
 
@@ -45,11 +46,15 @@ class Tmdb(BaseIndexer):
         """Tmdb api constructor."""
         super(Tmdb, self).__init__(*args, **kwargs)
 
+        self.indexer = 4
         self.tmdb = tmdb
         self.tmdb.API_KEY = TMDB_API_KEY
         self.tmdb.REQUESTS_SESSION = self.config['session']
         self.tmdb_configuration = self.tmdb.Configuration()
-        self.response = self.tmdb_configuration.info()
+        try:
+            self.response = self.tmdb_configuration.info()
+        except RequestException as e:
+            raise IndexerUnavailable('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e))
 
         self.config['artwork_prefix'] = '{base_url}{image_size}{file_path}'
 

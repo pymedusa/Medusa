@@ -22,11 +22,11 @@ import io
 import os
 
 from six import string_types
-from .. import app, helpers, logger
+from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
-from ..helper.exceptions import ShowNotFoundException, ex
+from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from ..metadata import media_browser
 
 try:
@@ -99,47 +99,18 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         show_obj: a TVShow instance to create the NFO for
         """
+        my_show = self._get_show_data(show_obj)
 
-        show_id = show_obj.indexerid
-
-        indexer_lang = show_obj.lang
-        l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-        l_indexer_api_params['actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params['language'] = indexer_lang
-
-        if show_obj.dvdorder != 0:
-            l_indexer_api_params['dvdorder'] = True
-
-        t = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
+        # as that pretty useless.
+        if not my_show:
+            return False
 
         root_node = etree.Element('details')
         tv_node = etree.SubElement(root_node, 'movie')
         tv_node.attrib['isExtra'] = 'false'
         tv_node.attrib['isSet'] = 'false'
         tv_node.attrib['isTV'] = 'true'
-
-        try:
-            my_show = t[int(show_id)]
-        except IndexerShowNotFound:
-            logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            raise
-
-        except IndexerError:
-            logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
-            raise
-
-        # check for title and id
-        if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
-            logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            return False
 
         title = etree.SubElement(tv_node, 'title')
         title.text = my_show['seriesname']
@@ -220,27 +191,9 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        # There's gotta be a better way of doing this but we don't wanna
-        # change the language value elsewhere
-        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params[b'language'] = indexer_lang
-
-        if ep_obj.show.dvdorder != 0:
-            l_indexer_api_params[b'dvdorder'] = True
-
-        try:
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
-        except IndexerShowNotFound as e:
-            raise ShowNotFoundException(e.message)
-        except IndexerError:
-            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
-            return
+        my_show = self._get_show_data(ep_obj.show)
+        if not my_show:
+            return None
 
         root_node = etree.Element('details')
         movie = etree.SubElement(root_node, 'movie')

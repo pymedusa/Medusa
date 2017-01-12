@@ -161,6 +161,8 @@ class HomeAddShows(Home):
                 dir_list.append(cur_dir)
 
                 indexer_id = show_name = indexer = None
+                # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+                # is reset. This will prevent errors, when using multiple indexers and caching.
                 for cur_provider in app.metadata_provider_dict.values():
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
