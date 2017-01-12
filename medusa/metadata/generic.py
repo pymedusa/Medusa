@@ -828,7 +828,7 @@ class GenericMetadata(object):
         """Retrieve show data from the indexer.
 
         Try to reuse the indexer_api class instance attribute.
-        As whe are doing reusing the indexers results, we need to do a full index including actors and images.
+        As we are reusing the indexers results, we need to do a full index including actors and images.
 
         :param show_obj: A TVshow object.
         :return: A re-indexed show object.
