@@ -26,7 +26,7 @@ from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
 from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerSeasonNotFound)
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from ..metadata import media_browser
 
 try:
