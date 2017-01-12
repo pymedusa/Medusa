@@ -24,10 +24,9 @@ import os
 
 from .. import helpers, logger
 from ..helper.common import episode_num
-from ..helper.exceptions import ShowNotFoundException, ex
+from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound,
-                                           IndexerShowNotFound)
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from ..metadata import generic
 
 

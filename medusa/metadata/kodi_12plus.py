@@ -24,10 +24,8 @@ from six import string_types
 from . import generic
 from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num
-from ..helper.exceptions import ShowNotFoundException
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound,
-                                           IndexerShowNotFound)
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 
 try:
     import xml.etree.cElementTree as etree
