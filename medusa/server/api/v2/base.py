@@ -23,7 +23,7 @@ class BaseRequestHandler(RequestHandler):
 
     def prepare(self):
         """Check if JWT or API key is provided and valid."""
-        if self.request.method != 'OPTIONS':
+        if self.request.method != 'OPTIONS' and self.request.uri != '/api/v2/':
             token = ''
             api_key = ''
             if self.request.headers.get('Authorization'):

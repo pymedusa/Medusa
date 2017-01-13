@@ -17,6 +17,7 @@ from ..helpers import create_https_certificates, generate_api_key
 
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
+    from .api.v2.index import IndexHandler
     from .api.v2.config import ConfigHandler
     from .api.v2.log import LogHandler
     from .api.v2.show import ShowHandler
@@ -34,6 +35,7 @@ def get_apiv2_handlers(base):
     asset_group = r'(?P<asset_group>[a-zA-Z0-9]+)'
 
     return [
+        (r'{base}/?'.format(base=base), IndexHandler),
         (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id, query=query), ShowHandler),
         (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
         (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
