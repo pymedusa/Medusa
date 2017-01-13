@@ -403,7 +403,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
         indexer: $('input#indexer').val(),
-        indexer_id: $('input#showID').val() // eslint-disable-line camelcase
+        indexer_id: $('input#showID').val()
     }, function(data) {
         setSeasonSceneException(data);
     });

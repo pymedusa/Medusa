@@ -4,8 +4,8 @@
 import base64
 import json
 import operator
-import traceback
 import re
+import traceback
 
 from collections import OrderedDict
 
@@ -162,7 +162,9 @@ def json_string_encoder(o):
 
     return text_type(o)
 
+
 def dynamic_access_json(data, json_path):
+    """Return nested JSON fields via "/"."""
     val = data
     for key in json_path.split('/'):
         if key != '':

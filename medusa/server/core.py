@@ -24,6 +24,7 @@ def get_apiv2_handlers(base):
     from .api.v2.auth import AuthHandler
     from .api.v2.asset import AssetHandler
     from .api.v2.history import HistoryHandler
+    from .api.v2.exception import ExceptionHandler
     from .api.v2.base import NotFoundHandler
 
     show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
@@ -42,6 +43,7 @@ def get_apiv2_handlers(base):
         (r'{base}/authenticate(/?)'.format(base=base), AuthHandler),
         (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group, query=query_extended), AssetHandler),
         (r'{base}/history/?'.format(base=base), HistoryHandler),
+        (r'{base}/exception(?:/{show_id})'.format(base=base, show_id=show_id), ExceptionHandler),
         (r'{base}(/?.*)'.format(base=base), NotFoundHandler)
     ]
 

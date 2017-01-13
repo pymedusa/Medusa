@@ -1,11 +1,8 @@
 # coding=utf-8
 """Request handler for history."""
-import json
 import logging
 
 from .base import BaseRequestHandler
-from ....logger import LOGGING_LEVELS, filter_logline, read_loglines
-
 
 logger = logging.getLogger(__name__)
 

@@ -155,7 +155,7 @@ class ShowHandler(BaseRequestHandler):
         indexerid = self._parse(show_id)
 
         if show_id is not None:
-            tv_show = Show.find(app.showList, indexerid, show_indexer)
+            # tv_show = Show.find(app.showList, indexerid, show_indexer)
 
             data = json_decode(self.request.body)
             done_data = {}

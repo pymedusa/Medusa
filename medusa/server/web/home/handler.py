@@ -1281,7 +1281,7 @@ class Home(WebRoot):
 
     @staticmethod
     def sceneExceptions(show):
-        # @TODO: Replace with plot from GET /api/v2/show/{id}
+        # @TODO: Replace with GET /api/v2/exception/{show}
         exceptions_list = get_all_scene_exceptions(show)
         if not exceptions_list:
             return 'No scene exceptions'
