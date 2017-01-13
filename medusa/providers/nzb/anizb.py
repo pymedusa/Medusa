@@ -121,10 +121,8 @@ class Anizb(NZBProvider):
         """Override the default _get_size to prevent it from extracting using the default tags."""
         return try_int(item.get('size'))
 
-    def _get_episode_search_strings(self, episode, add_string=''):
+    def _get_episode_search_strings(self, episode):
         """Get episode search strings."""
-        _ = add_string
-
         if not episode:
             return []
 
@@ -139,9 +137,9 @@ class Anizb(NZBProvider):
             if show_name in get_scene_exceptions(episode.show.indexerid, season=episode.scene_season,
                                                  indexer=episode.show.indexer):
                 # This is apparently a season exception, let's use the scene_episode instead of absolute
-                ep = int(episode.scene_episode)
+                ep = episode.scene_episode
             else:
-                ep = int(episode.scene_absolute_number)
+                ep = episode.scene_absolute_number
             episode_string += str(ep)
 
             search_string['Episode'].append(episode_string.strip())
