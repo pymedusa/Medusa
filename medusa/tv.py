@@ -2647,7 +2647,7 @@ class TVEpisode(TVObject):
             self.__create_nfo(metadata_provider)
             self.__create_thumbnail(metadata_provider)
 
-            files_changed = self.check_for_meta_files(metadata_provider)
+            files_changed = files_changed or self.check_for_meta_files(metadata_provider)
 
         if files_changed:
             logger.log(u'{id}: Saving metadata changes to database'.format(id=self.show.indexerid))
