@@ -34,6 +34,7 @@ from ..common import USER_AGENT
 from common import http_code_description
 import certifi
 import cfscrape
+from requests.utils import dict_from_cookiejar
 
 try:
     from urllib.parse import splittype
@@ -81,7 +82,18 @@ class MedusaSession(requests.Session):
         self.headers.update(kwargs.pop('headers', {}))
         self.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
+        self.hooks['response'] = kwargs.pop('hooks', [])
+
         self.policed = isinstance(self, PolicedSession)
+
+    @classmethod
+    def get_url_hook(cls, r, **kwargs):
+        """Get URL hook."""
+        logger.debug('{method} URL: {url} [Status: {status}]', method=r.request.method, url=r.request.url,
+                     status=r.status_code)
+
+        if r.request.method == 'POST':
+            logger.debug('With post data: {data}', data=r.request.body)
 
     @classmethod
     def cloudflare_hook(cls, r, **kwargs):
@@ -92,10 +104,10 @@ class MedusaSession(requests.Session):
 
                 try:
                     tokens, user_agent = cfscrape.get_tokens(r.request.url)
-                    if r.request._cookies:
-                        cookies = r.request._cookies.update(tokens)
-                    else:
-                        cookies = tokens
+                    cookies = dict_from_cookiejar(r.request._cookies)
+                    if tokens:
+                        cookies.update(tokens)
+
                     if r.request.headers:
                         r.request.headers.update({u'User-Agent': user_agent})
                     else:
@@ -124,7 +136,6 @@ class MedusaSession(requests.Session):
 
     @classmethod
     def _request_defaults(cls, **kwargs):
-        hooks = kwargs.pop(u'hooks', None)
         cookies = kwargs.pop(u'cookies', None)
         verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
 
@@ -140,11 +151,12 @@ class MedusaSession(requests.Session):
         else:
             proxies = None
 
-        return hooks, cookies, verify, proxies
+        return cookies, verify, proxies
 
-    def request(self, method, url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
+    def request(self, method, url, post_data=None, params=None, headers=None, timeout=30, session=None,
+                hooks=None, **kwargs):
         stream = kwargs.pop(u'stream', False)
-        hooks, cookies, verify, proxies = self._request_defaults(**kwargs)
+        cookies, verify, proxies = self._request_defaults(**kwargs)
 
         try:
             req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
@@ -197,6 +209,9 @@ class PolicedSession(MedusaSession):
         self.enabled_police_request_hooks = [self.request_counter]
         # Methods that are run after a response has been received. Using the response object.
         self.enabled_police_response_hooks = []
+
+        # Add the cloudflare and get_url hook by default to all PolicedSessions
+        self.hooks['response'] += [self.cloudflare_hook, self.get_url_hook]
 
         self.configure_hooks()
 

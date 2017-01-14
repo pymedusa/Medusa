@@ -19,6 +19,7 @@
 """Various helper methods."""
 
 import base64
+import certifi
 import ctypes
 import datetime
 import errno
@@ -62,7 +63,7 @@ from six.moves import http_client
 from . import app, db
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
-from .helper.request_police import prepare_cf_req, request_defaults
+from .helper.request_police import prepare_cf_req
 
 
 from .indexers.indexer_exceptions import IndexerException
@@ -1141,8 +1142,30 @@ def make_session(cache_etags=True, serializer=None, heuristic=None):
     return session
 
 
+def request_defaults(**kwargs):
+    hooks = kwargs.pop(u'hooks', None)
+    cookies = kwargs.pop(u'cookies', None)
+    verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
+
+    # request session proxies
+    if app.PROXY_SETTING:
+        logger.debug(u"Using global proxy: " + app.PROXY_SETTING)
+        scheme, address = splittype(app.PROXY_SETTING)
+        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
+        proxies = {
+            "http": address,
+            "https": address,
+        }
+    else:
+        proxies = None
+
+    return hooks, cookies, verify, proxies
+
+
 def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
     """Return data retrieved from the url provider."""
+    logger.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
+                   'please make use of the PolicedRequest session for all of your requests.')
     response_type = kwargs.pop(u'returns', u'response')
     stream = kwargs.pop(u'stream', False)
     hooks, cookies, verify, proxies = request_defaults(**kwargs)

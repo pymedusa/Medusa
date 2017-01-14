@@ -76,7 +76,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = PolicedSession()
+        self.session = PolicedSession(hooks=[self.get_url_hook])
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
