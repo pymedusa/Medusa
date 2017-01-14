@@ -64,27 +64,8 @@ class RequestPoliceInvalidConfiguration(RequestPoliceException):
     """Invalid or incomplete configuration provided."""
 
 
-def cloudflare_bypass(r, **kwargs):
-    # if not r.ok:
-    #     # Try to bypass CloudFlare's anti-bot protection
-    #     if r.status_code == 503 and r.headers.get('server') == u'cloudflare-nginx':
-    #         cf_prepped = MedusaSession._prepare_cf_req(session, req)
-    #         if cf_prepped:
-    #             # cf_resp = r.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
-    #             #                        timeout=timeout, allow_redirects=True)
-    #             # if cf_resp.ok:
-    #             #     return cf_resp
-    #
-    #     logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-    #                  (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
-    #
-    #     if response_type and response_type != u'response':
-    #         return None
-    pass
-
-
 class MedusaSession(requests.Session):
-    def __init__(self, cache_etags=True, serializer=None, heuristic=None, police=None):
+    def __init__(self, cache_etags=True, serializer=None, heuristic=None, **kwargs):
         super(MedusaSession, self).__init__()
         adapter = CacheControlAdapter(
             DictCache(),
@@ -96,14 +77,14 @@ class MedusaSession(requests.Session):
         self.mount('http://', adapter)
         self.mount('https://', adapter)
         self.cache_controller = adapter.controller
+
+        self.headers.update(kwargs.pop('headers', {}))
         self.headers.update({'User-Agent': USER_AGENT, 'Accept-Encoding': 'gzip,deflate'})
 
-        # This can be used to attach a police object
-        self.police = police
+        self.policed = isinstance(self, PolicedSession)
 
     @classmethod
     def cloudflare_hook(cls, r, **kwargs):
-
         if not r.ok:
             # Try to bypass CloudFlare's anti-bot protection
             if r.status_code == 503 and r.headers.get('server') == u'cloudflare-nginx':
@@ -126,9 +107,7 @@ class MedusaSession(requests.Session):
                     r.request.hooks = {}
 
                     new_session = requests.Session()
-
                     r.request.prepare_cookies(cookies)
-                    # prepped = new_session.prepare_request(r.request)
                     cf_resp = new_session.send(r.request, stream=kwargs.get('stream'), verify=kwargs.get('verify'),
                                                proxies=kwargs.get('proxies'), timeout=kwargs.get('timeout'),
                                                allow_redirects=True)
@@ -162,25 +141,6 @@ class MedusaSession(requests.Session):
             proxies = None
 
         return hooks, cookies, verify, proxies
-
-    @classmethod
-    def _prepare_cf_req(cls, session, request):
-        logger.debug(u'CloudFlare protection detected, trying to bypass it')
-
-        try:
-            tokens, user_agent = cfscrape.get_tokens(request.url)
-            if request.cookies:
-                request.cookies.update(tokens)
-            else:
-                request.cookies = tokens
-            if request.headers:
-                request.headers.update({u'User-Agent': user_agent})
-            else:
-                request.headers = {u'User-Agent': user_agent}
-            logger.debug(u'CloudFlare protection successfully bypassed.')
-            return session.prepare_request(request)
-        except (ValueError, AttributeError) as error:
-            logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
 
     def request(self, method, url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
         stream = kwargs.pop(u'stream', False)
@@ -242,9 +202,9 @@ class PolicedSession(MedusaSession):
 
     def request(self, method, url, *args, **kwargs):
         try:
-            [police_check(**kwargs) for police_check in self.enabled_police_request_hooks]
+            _ = [police_check(**kwargs) for police_check in self.enabled_police_request_hooks]
             r = super(PolicedSession, self).request(method, url, *args, **kwargs)
-            [police_check(r, **kwargs) for police_check in self.enabled_police_response_hooks]
+            _ = [police_check(r, **kwargs) for police_check in self.enabled_police_response_hooks]
             return r
         except RequestPoliceException as e:
             logger.warning(e.message)
@@ -272,7 +232,7 @@ class PolicedSession(MedusaSession):
         if kwargs.get('api_hit'):
             self.request_count += 1
 
-    def request_check_nzb_api_limit(self, **kwargs):
+    def request_check_nzb_api_limit(self):
         """Request hook for checking if the api hit limit has been breached."""
         logger.info('Running request police request_check_nzb_api_limit.')
         if self.api_hit_limit_cooldown_clear and self.api_hit_limit_cooldown_clear > datetime.datetime.now():
@@ -280,7 +240,7 @@ class PolicedSession(MedusaSession):
         self.request_count = 0
         self.request_score = 0
 
-    def response_check_nzb_api_limit(self, r, **kwargs):
+    def response_check_nzb_api_limit(self, r):
         """Response hook for checking if the api hit limit has been breached."""
         logger.info('Running request police response_check_nzb_api_limit.')
         with BS4Parser(r.text, 'html5lib') as html:
@@ -341,6 +301,24 @@ class PolicedSession(MedusaSession):
             # We're using this as a flag, so let's reset it for future use.
             self.daily_reserve_search_mode = None
             self.daily_request_count += 1
+
+
+class RateLimitedSession(MedusaSession):
+    def __init__(self, max_requests, request_period, **kwargs):
+        super(RateLimitedSession, self).__init__(**kwargs)
+        self.max_requests = max_requests
+        self.request_period = request_period
+        self.num_requests = 0
+
+    def request(self, *args, **kwargs):
+        if datetime.now() > self.reset_time():
+            self.num_requests = 0
+
+        if not kwargs.pop('ignore_limit'):
+            self.num_requests += 1
+            if self.num_requests >= self.max_requests:
+                raise Exception('Limit exceeded')
+        return super(RateLimitedSession, self).request(*args, **kwargs)
 
 
 # as for backwards compatibility

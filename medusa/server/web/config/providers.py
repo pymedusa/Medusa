@@ -270,7 +270,7 @@ class ConfigProviders(Config):
                         newznab_provider_dict[cur_id].session.enable_api_hit_cooldown = newznab_provider_dict[
                             cur_id].enable_api_hit_cooldown
                         newznab_provider_dict[cur_id].session.configure_hooks()
-                    except (AttributeError, KeyError) as e:
+                    except (AttributeError, KeyError):
                         newznab_provider_dict[cur_id].enable_api_hit_cooldown = 0  # these exceptions are actually catching unselected checkboxes
 
                     try:

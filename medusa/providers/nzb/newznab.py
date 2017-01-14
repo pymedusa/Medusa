@@ -167,7 +167,8 @@ class NewznabProvider(NZBProvider):
                 #     logger.log(e.message, logger.INFO)
                 #     return items
 
-                response = self.get_url(urljoin(self.url, 'api'), params=search_params, api_hit=True, search_mode=mode)
+                response = self.session.get(urljoin(self.url, 'api'), params=search_params,
+                                            api_hit=True, search_mode=mode)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -462,7 +463,7 @@ class NewznabProvider(NZBProvider):
         if self.needs_auth and self.key:
             url_params['apikey'] = self.key
 
-        response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
+        response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
             error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             logger.log(error_string, logger.WARNING)
@@ -486,15 +487,6 @@ class NewznabProvider(NZBProvider):
                             return_categories.append({'id': subcat['id'], 'name': subcat['name']})
 
             return True, return_categories, ''
-
-    def get_user_info(self):
-        if not self.request_police.api_hit_limit:
-            url_params = {'t': 'user',
-                          'user': self.username}
-            if self.needs_auth and self.key:
-                url_params['apikey'] = self.key
-
-            response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
 
     @staticmethod
     def _get_default_providers():
