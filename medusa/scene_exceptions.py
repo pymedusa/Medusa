@@ -69,17 +69,19 @@ def set_last_refresh(ex_list):
     )
 
 
-def get_scene_exceptions(indexer_id, season=-1):
+def get_scene_exceptions(indexer_id, season=-1, indexer=1):
     """Given a indexer_id, return a list of all the scene exceptions."""
     exceptions_list = []
 
     if indexer_id not in exceptionsCache or season not in exceptionsCache[indexer_id]:
         cache_db_con = db.DBConnection('cache.db')
-        exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE indexer_id = ? AND season = ?',
-                                         [indexer_id, season])
+        exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE '
+                                         b'indexer = ? AND indexer_id = ? AND season = ?',
+                                         [indexer, indexer_id, season])
         if exceptions:
             exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
 
+            # TODO: Refactor exceptionCache to be usable by multiple indexers.
             if indexer_id not in exceptionsCache:
                 exceptionsCache[indexer_id] = {}
             exceptionsCache[indexer_id][season] = exceptions_list

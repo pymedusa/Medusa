@@ -39,7 +39,8 @@ class SceneTests(test.AppTestDBCase):
     def test_all_possible_show_names(self):
         # common.sceneExceptions[-1] = ['Exception Test']
         test_cache_db_con = db.DBConnection('cache.db')
-        test_cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)", [-1, 'Exception Test', -1])
+        test_cache_db_con.action("INSERT INTO scene_exceptions (indexer, indexer_id, show_name, season) "
+                                 "VALUES (?,?,?,?)", [1, -1, 'Exception Test', -1])
         common.countryList['Full Country Name'] = 'FCN'
 
         self._test_all_possible_show_names('Show Name', expected=['Show Name'])
