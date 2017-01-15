@@ -153,17 +153,17 @@ class PostProcessor(object):
             return PostProcessor.DOESNT_EXIST
 
     @staticmethod
-    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=True):
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=False):
         """
         Search for files in a given path.
 
-        :param path: path to file or folder (NOTE: folder paths must end with slashes)
+        :param path: path to file or folder (folder paths must end with slashes)
         :type path: text_type
         :param pattern: pattern used to match the files
         :type pattern: text_type
         :param subfolders: search for files in subfolders
         :type subfolders: bool
-        :param base_name_only: only match files with the same file name
+        :param base_name_only: only match files with the same name
         :type base_name_only: bool
         :param sort: return files sorted by size
         :type sort: bool
@@ -171,11 +171,27 @@ class PostProcessor(object):
         :rtype: list
         """
         directory = os.path.dirname(path)
-        if base_name_only and os.path.isfile(path):
-            pattern = os.path.basename(path).rpartition('.')[0] + pattern
+
+        if base_name_only:
+            if os.path.isfile(path):
+                new_pattern = os.path.basename(path).rpartition('.')[0]
+            elif os.path.isdir(path):
+                new_pattern = os.path.split(directory)[1]
+            else:
+                return []
+
+            if any(char in new_pattern for char in ['[', '?', '*']):
+                # Escaping is done by wrapping any of "*?[" between square brackets.
+                # Modified from: https://hg.python.org/cpython/file/tip/Lib/glob.py#l161
+                if isinstance(new_pattern, bytes):
+                    new_pattern = re.compile(b'([*?[])').sub(br'[\1]', new_pattern)
+                else:
+                    new_pattern = re.compile('([*?[])').sub(r'[\1]', new_pattern)
+
+            pattern = new_pattern + pattern
 
         found_files = []
-        for root, _, filenames in os.walk(directory):
+        for root, __, filenames in os.walk(directory):
             for filename in fnmatch.filter(filenames, pattern):
                 found_files.append(os.path.join(root, filename))
             if not subfolders:
