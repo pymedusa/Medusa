@@ -153,7 +153,7 @@ class PostProcessor(object):
             return PostProcessor.DOESNT_EXIST
 
     @staticmethod
-    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=None):
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=False):
         """
         Search for files in a given path.
 
