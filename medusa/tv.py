@@ -906,13 +906,18 @@ class TVShow(TVObject):
                        (id=self.indexerid, indexer=indexerApi(self.indexer).name, ex=e), logger.WARNING)
             raise
 
-        logger.log(u'{id}: Loading all episodes from {indexer}'.format
-                   (id=self.indexerid, indexer=indexerApi(self.indexer).name), logger.DEBUG)
+        logger.log(u'{id}: Loading all episodes from {indexer}{season_update}'.format
+                   (id=self.indexerid, indexer=indexerApi(self.indexer).name,
+                    season_update=(u'', u' on seasons {seasons}'.format(seasons=seasons))[len(seasons)]), logger.DEBUG)
 
         scanned_eps = {}
 
         sql_l = []
         for season in indexed_show:
+            # Only index episodes for seasons that are currently being updated.
+            if seasons and season not in seasons:
+                continue
+
             scanned_eps[season] = {}
             for episode in indexed_show[season]:
                 # need some examples of wtf episode 0 means to decide if we want it or not
