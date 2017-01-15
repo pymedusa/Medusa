@@ -4020,9 +4020,3 @@ css helper classes
 .padding-right-15 {
     padding-right: 15px!important;
 }
-
-/* Christmas edition!!!*/
-.navbar-default {
-    background-image: url('../images/medusa-christmas-banner.png')!important;
-    background-color: rgb(51, 51, 51)!important;
-}
