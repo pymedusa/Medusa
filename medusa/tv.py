@@ -1080,8 +1080,7 @@ class TVShow(TVObject):
                     cur_ep.location = filepath
                     # if the sizes are the same then it's probably the same file
                     same_file = old_size and cur_ep.file_size == old_size
-                    for metadata_provider in app.metadata_provider_dict.values():
-                        cur_ep.check_for_meta_files(metadata_provider)
+                    cur_ep.check_for_meta_files()
 
             if root_ep is None:
                 root_ep = cur_ep
@@ -2015,9 +2014,7 @@ class TVEpisode(TVObject):
         self.loaded = False
         if show:
             self._specify_episode(self.season, self.episode)
-
-            for metadata_provider in app.metadata_provider_dict.values():
-                self.check_for_meta_files(metadata_provider)
+            self.check_for_meta_files()
 
     @staticmethod
     def from_filepath(filepath):
@@ -2150,36 +2147,38 @@ class TVEpisode(TVObject):
 
         return new_subtitles
 
-    def check_for_meta_files(self, metadata_provider):
-        """Whether metadata files has changed.
+    def check_for_meta_files(self):
+        """Check Whether metadata files has changed. And write the current set self.hasnfo and set.hastbn.
 
-        :return:
+        :return: Whether a database update should be done on the episode.
         :rtype: bool
         """
         oldhasnfo = self.hasnfo
         oldhastbn = self.hastbn
 
-        cur_nfo = False
-        cur_tbn = False
+        all_nfos = []
+        all_tbns = []
 
         # check for nfo and tbn
-        if self.is_location_valid():
+        if not self.is_location_valid():
+            return False
+
+        for metadata_provider in app.metadata_provider_dict.values():
             if metadata_provider.episode_metadata:
                 new_result = metadata_provider.has_episode_metadata(self)
             else:
                 new_result = False
-            cur_nfo = new_result or cur_nfo
+            all_nfos.append(new_result)
 
             if metadata_provider.episode_thumbnails:
                 new_result = metadata_provider.has_episode_thumb(self)
             else:
                 new_result = False
-            cur_tbn = new_result or cur_tbn
+            all_tbns.append(new_result)
 
-        self.hasnfo = cur_nfo
-        self.hastbn = cur_tbn
+        self.hasnfo = any(all_nfos)
+        self.hastbn = any(all_tbns)
 
-        # if either setting has changed return true, if not return false
         return oldhasnfo != self.hasnfo or oldhastbn != self.hastbn
 
     def _specify_episode(self, season, episode):
@@ -2642,14 +2641,11 @@ class TVEpisode(TVObject):
                        (id=self.show.indexerid), logger.WARNING)
             return
 
-        files_changed = False
         for metadata_provider in app.metadata_provider_dict.values():
             self.__create_nfo(metadata_provider)
             self.__create_thumbnail(metadata_provider)
 
-            files_changed = files_changed or self.check_for_meta_files(metadata_provider)
-
-        if files_changed:
+        if self.check_for_meta_files():
             logger.log(u'{id}: Saving metadata changes to database'.format(id=self.show.indexerid))
             self.save_to_db()
 
@@ -3395,8 +3391,7 @@ class TVEpisode(TVObject):
 
         # in case something changed with the metadata just do a quick check
         for cur_ep in [self] + self.related_episodes:
-            for metadata_provider in app.metadata_provider_dict.values():
-                cur_ep.check_for_meta_files(metadata_provider)
+            cur_ep.check_for_meta_files()
 
         # save any changes to the database
         sql_l = []
