@@ -112,7 +112,7 @@ class ShowUpdater(object):
                 logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show[1], season=show[2]))
-                except (CantUpdateShowException, CantRefreshShowException) as e:
+                except CantUpdateShowException as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
@@ -121,12 +121,27 @@ class ShowUpdater(object):
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
+        # Only refresh updated shows that have been updated using the season updates.
+        # The full refreshed shows, are updated from the queueItem.
+        for show in set(show[1] for show in season_updates):
+            if not show.paused:
+                try:
+                    app.show_queue_scheduler.action.refreshShow(show, True)
+                except CantRefreshShowException as e:
+                    logger.warning(u'Show refresh on show {show_name} failed. Error: {error}',
+                                   show_name=show.name, error=e)
+                except Exception as e:
+                    logger.error(u'Show refresh on show {show_name} failed: Unexpected Error: {error}',
+                                 show_name=show.name, error=e)
+            else:
+                logger.info(u'Show refresh skipped, show: {show_name} is paused.', show_name=show.name)
+
         if refresh_shows or season_updates:
             for indexer in set([show.indexer for show in refresh_shows] + [s[1].indexer for s in season_updates]):
                 indexer_api = indexerApi(indexer)
                 self.last_update.set_last_indexer_update(indexer_api.name)
                 logger.info(u'Updated lastUpdate ts for {indexer_name}', indexer_name=indexer_api.name)
-            logger.info(u'Completed updates on shows')
+            logger.info(u'Completed scheduling updates on shows')
         else:
             logger.info(u'Completed but there was nothing to update')
 
