@@ -908,7 +908,7 @@ class TVShow(TVObject):
 
         logger.log(u'{id}: Loading all episodes from {indexer}{season_update}'.format
                    (id=self.indexerid, indexer=indexerApi(self.indexer).name,
-                    season_update=(u'', u' on seasons {seasons}'.format(seasons=seasons))[len(seasons)]), logger.DEBUG)
+                    season_update=(u'', u' on seasons {seasons}'.format(seasons=seasons))[bool(seasons)]), logger.DEBUG)
 
         scanned_eps = {}
 
