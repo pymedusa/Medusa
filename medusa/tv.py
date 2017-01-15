@@ -2168,13 +2168,13 @@ class TVEpisode(TVObject):
                 new_result = metadata_provider.has_episode_metadata(self)
             else:
                 new_result = False
-            all_nfos += [new_result]
+            all_nfos.append(new_result)
 
             if metadata_provider.episode_thumbnails:
                 new_result = metadata_provider.has_episode_thumb(self)
             else:
                 new_result = False
-            all_tbns += [new_result]
+            all_tbns.append(new_result)
 
         self.hasnfo = any(all_nfos)
         self.hastbn = any(all_tbns)
