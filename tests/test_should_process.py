@@ -48,6 +48,13 @@ import pytest
         'preferred_qualities': [Quality.HDWEBDL, Quality.HDBLURAY],
         'expected': False
     },
+    {  # p6: Preferred lower quality replacing current higher allowed: yes
+        'cur_quality': Quality.HDWEBDL,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.HDWEBDL],
+        'preferred_qualities': [Quality.HDTV],
+        'expected': True
+    },
 ])
 def test_should_process(p):
     # Given
