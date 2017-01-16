@@ -830,23 +830,22 @@ class PostProcessor(object):
                         self.in_history = True
                         return
 
-    def _is_priority(self, ep_obj, old_ep_quality, new_ep_quality):
+    def _is_priority(self, old_ep_quality, new_ep_quality):
             """
             Determine if the episode is a priority download or not (if it is expected).
 
             Episodes which are expected (snatched) are priority, others are not.
 
-            :param ep_obj: The TVEpisode object in question
             :param old_ep_quality: The old quality of the episode that is being processed
             :param new_ep_quality: The new quality of the episode that is being processed
             :return: True if the episode is priority, False otherwise.
             """
             level = logger.DEBUG
-            logger.log(u'In history: {0}'.format(self.in_history), level)
-            logger.log(u'Manual snatch: {0}'.format(self.manually_searched), level)
-            logger.log(u'Existing quality: {0}'.format(old_ep_quality), level)
-            logger.log(u'New quality: {0}'.format(new_ep_quality), level)
-            logger.log(u'Proper: {0}'.format(self.is_proper), level)
+            self._log(u'Snatch in history: {0}'.format(self.in_history), level)
+            self._log(u'Manually snatched: {0}'.format(self.manually_searched), level)
+            self._log(u'Current quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
+            self._log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
+            self._log(u'Proper: {0}'.format(self.is_proper), level)
 
             # If in_history is True it must be a priority download
             return bool(self.in_history or self.is_priority)
@@ -856,22 +855,37 @@ class PostProcessor(object):
         """
         Determine if a quality should be processed according to the quality system.
 
+        This method is used only for replace existing files
+        Despite quality system rules (should_search method), in should_process method:
+         - New higher Allowed replaces current Allowed (overrrides rule where Allowed is final quality)
+         - New higher Preferred replaces current Preferred (overrides rule where Preffered is final quality)
+
         :param current_quality: The current quality of the episode that is being processed
         :param new_quality: The new quality of the episode that is being processed
         :param allowed: Qualities that are allowed
         :param preferred: Qualities that are preferred
-        :return: True if the quality should be processed, False or None otherwise.
+        :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
+        if current_quality is common.Quality.NONE:
+            return False, 'There is no current quality. Skipping as we can only replace existing qualities'
         if new_quality in preferred:
             if current_quality in preferred:
-                return new_quality > current_quality
-            return True
+                if new_quality > current_quality:
+                    return True, 'New quality is higher than current Preferred. Accepting quality'
+                else:
+                    return False, 'New quality is same|lower than current Preferred. Ignoring quality'
+            return True, 'New quality is Preferred'
         elif new_quality in allowed:
             if current_quality in preferred:
-                return False
+                return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True
-            return new_quality > current_quality
+                return True, "New quality is Allowed and we don\'t have a current Preferred. Accepting quality"
+            elif new_quality > current_quality:
+                return True, 'New quality is higher than current Preferred. Accepting quality'
+            else:
+                return False, 'New quality is same|lower than current Preferred. Ignoring quality'
+        else:
+            return False, 'New quality is not in Allowed|Preferred. Ignoring quality'
 
     def _run_extra_scripts(self, ep_obj):
         """
@@ -992,7 +1006,7 @@ class PostProcessor(object):
             self._log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
-        priority_download = self._is_priority(ep_obj, old_ep_quality, new_ep_quality)
+        priority_download = self._is_priority(old_ep_quality, new_ep_quality)
         self._log(u'This episode is a priority download: {0}'.format(priority_download), logger.DEBUG)
 
         # get the version of the episode we're processing (default is -1)
@@ -1013,12 +1027,17 @@ class PostProcessor(object):
                     self._log(u'New file is a PROPER, marking it safe to replace')
                     self.flag_kodi_clean_library()
                 else:
-                    allowed, preferred = show.current_qualities
-                    if not self._should_process(old_ep_quality, new_ep_quality, allowed, preferred):
+                    allowed_qualities, preferred_qualities = show.current_qualities
+                    self._log(u'Checking if new quality {0} should reaplace current quality: {1}'.format
+                              (common.Quality.qualityStrings[new_ep_quality],
+                               common.Quality.qualityStrings[old_ep_quality]))
+                    should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,
+                                                                                 allowed_qualities, preferred_qualities)
+                    if not should_process:
                         raise EpisodePostProcessingFailedException(
-                            u'File exists. Marking it unsafe to replace because this quality is not desired')
+                            u'File exists. Marking it unsafe to replace. Reason: {0}'.format(should_process_reason))
                     else:
-                        self._log(u'File exists. Marking it safe to replace because this quality is desired')
+                        self._log(u'File exists. Marking it safe to replace. Reason: {0}'.format(should_process_reason))
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
