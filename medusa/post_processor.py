@@ -844,8 +844,8 @@ class PostProcessor(object):
             level = logger.DEBUG
             logger.log(u'In history: {0}'.format(self.in_history), level)
             logger.log(u'Manual snatch: {0}'.format(self.manually_searched), level)
-            logger.log(u'Existing quality: {0}'.format(old_ep_quality), level)
-            logger.log(u'New quality: {0}'.format(new_ep_quality), level)
+            logger.log(u'Existing quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
+            logger.log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
             logger.log(u'Proper: {0}'.format(self.is_proper), level)
 
             # If in_history is True it must be a priority download
