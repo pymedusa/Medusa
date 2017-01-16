@@ -830,23 +830,22 @@ class PostProcessor(object):
                         self.in_history = True
                         return
 
-    def _is_priority(self, ep_obj, old_ep_quality, new_ep_quality):
+    def _is_priority(self, old_ep_quality, new_ep_quality):
             """
             Determine if the episode is a priority download or not (if it is expected).
 
             Episodes which are expected (snatched) are priority, others are not.
 
-            :param ep_obj: The TVEpisode object in question
             :param old_ep_quality: The old quality of the episode that is being processed
             :param new_ep_quality: The new quality of the episode that is being processed
             :return: True if the episode is priority, False otherwise.
             """
             level = logger.DEBUG
-            logger.log(u'In history: {0}'.format(self.in_history), level)
-            logger.log(u'Manual snatch: {0}'.format(self.manually_searched), level)
-            logger.log(u'Existing quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
-            logger.log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
-            logger.log(u'Proper: {0}'.format(self.is_proper), level)
+            self._log(u'Snatch in history: {0}'.format(self.in_history), level)
+            self._log(u'Manually snatched: {0}'.format(self.manually_searched), level)
+            self._log(u'Current quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
+            self._log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
+            self._log(u'Proper: {0}'.format(self.is_proper), level)
 
             # If in_history is True it must be a priority download
             return bool(self.in_history or self.is_priority)
@@ -1007,7 +1006,7 @@ class PostProcessor(object):
             self._log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
-        priority_download = self._is_priority(ep_obj, old_ep_quality, new_ep_quality)
+        priority_download = self._is_priority(old_ep_quality, new_ep_quality)
         self._log(u'This episode is a priority download: {0}'.format(priority_download), logger.DEBUG)
 
         # get the version of the episode we're processing (default is -1)
