@@ -55,6 +55,13 @@ import pytest
         'preferred_qualities': [Quality.HDTV],
         'expected': True
     },
+    {  # p7: Current quality is NONE: no
+        'cur_quality': Quality.NONE,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.HDWEBDL],
+        'preferred_qualities': [Quality.HDTV],
+        'expected': False
+    },
 ])
 def test_should_process(p):
     # Given
