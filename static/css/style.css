@@ -1057,8 +1057,7 @@ div#container-display-show {
     display: table-cell;
     vertical-align: middle;
     width: 180px;
-
-    border: 1px solid rgba(220, 220, 220, 0.43);
+    border: 1px solid rgb(136, 136, 136);
     vertical-align: middle;
 }
 
@@ -1302,11 +1301,12 @@ ul.tags li a {
     margin-top: 5px;
     padding: 10px;
     background-color: #EFEFEF;
-    border: 1px solid #DFDEDE;
+    /*border: 1px solid #DFDEDE;*/
     width: 100%;
     overflow: auto;
     cursor: default;
     opacity: 0.8;
+    border: 1px solid rgb(136, 136, 136);
 }
 
 .summaryTable {
