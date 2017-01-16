@@ -857,6 +857,9 @@ class PostProcessor(object):
         Determine if a quality should be processed according to the quality system.
 
         This method is used only for replace existing files
+        Despite quality system rules (should_search method), in should_process method:
+         - New higher Allowed replaces current Allowed (overrrides rule where Allowed is final quality)
+         - New higher Preferred replaces current Preferred (overrides rule where Preffered is final quality)
 
         :param current_quality: The current quality of the episode that is being processed
         :param new_quality: The new quality of the episode that is being processed
@@ -1024,6 +1027,9 @@ class PostProcessor(object):
                     self.flag_kodi_clean_library()
                 else:
                     allowed_qualities, preferred_qualities = show.current_qualities
+                    self._log(u'Checking if new quality {0} should reaplace current quality: {1}'.format
+                              (common.Quality.qualityStrings[new_ep_quality],
+                               common.Quality.qualityStrings[old_ep_quality]))
                     should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,
                                                                                  allowed_qualities, preferred_qualities)
                     if not should_process:
