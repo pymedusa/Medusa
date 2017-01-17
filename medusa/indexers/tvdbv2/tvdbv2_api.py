@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""TVDB2 api module."""
 import logging
 from collections import OrderedDict
 
@@ -222,6 +222,7 @@ class TVDBv2(BaseIndexer):
 
     def _download_episodes(self, tvdb_id, specials=False, aired_season=None):
         """Download episodes for a given tvdb_id.
+
         :param tvdb_id: tvdb id.
         :param specials: enable/disable download of specials. Currently not used.
         :param limit the episodes returned for a specific season.
@@ -262,18 +263,16 @@ class TVDBv2(BaseIndexer):
             log().debug('Error trying to index the episodes')
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
-                'could not get any episodes. Did a {search_type} search. Exception: {ex}'.
-                    format(search_type='full' if not aired_season else
-                'season {season}'.format(season=aired_season), ex=e)
+                'could not get any episodes. Did a {search_type} search. Exception: {ex}'.format
+                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), ex=e)
             )
 
         if not results:
             log().debug('Series results incomplete')
             raise IndexerShowIncomplete(
                 'Show episode search returned incomplete results, '
-                'could not get any episodes. Did a {search_type} search.'.
-                    format(search_type='full' if not aired_season else
-                'season {season}'.format(season=aired_season))
+                'could not get any episodes. Did a {search_type} search.'.format
+                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season))
             )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
