@@ -469,11 +469,11 @@ class GenericProvider(object):
                     show_name in get_scene_exceptions(episode.show.indexerid, season=episode.scene_season,
                                                       indexer=episode.show.indexer)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
-                    ep = int(episode.scene_episode)
+                    ep = episode.scene_episode
                 else:
-                    ep = int(episode.scene_absolute_number)
-                episode_string_fallback = episode_string + '{episode:03d}'.format(episode=ep)
-                episode_string += '{episode:02d}'.format(episode=ep)
+                    ep = episode.scene_absolute_number
+                episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
+                episode_string += '{episode:0>2}'.format(episode=ep)
             else:
                 episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
