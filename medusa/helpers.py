@@ -19,7 +19,6 @@
 """Various helper methods."""
 
 import base64
-import certifi
 import ctypes
 import datetime
 import errno
@@ -42,6 +41,7 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
+
 from itertools import cycle, izip
 
 import adba
@@ -49,12 +49,15 @@ import adba
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
+import certifi
+
 from contextlib2 import closing, suppress
 
 import guessit
 
-import requests
 from medusa.common import USER_AGENT
+
+import requests
 from requests.compat import urlparse
 
 from six import binary_type, string_types, text_type

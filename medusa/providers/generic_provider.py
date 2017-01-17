@@ -652,7 +652,9 @@ class GenericProvider(object):
                 'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
 
     def __str__(self):
+        """Return provider name and provider type."""
         return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
 
     def __unicode__(self):
+        """Return provider name and provider type."""
         return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

@@ -18,23 +18,28 @@
 # pylint:disable=too-many-lines
 """Request Police Class for monitoring requests responses, and throttling or breaking where needed."""
 
-from ..bs4_parser import BS4Parser
-
-import errno
 import datetime
+import errno
 import logging
-import requests
 import traceback
 
 from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
-from .. import app
-from ..common import USER_AGENT
-from common import http_code_description
 import certifi
+
 import cfscrape
+
+from common import http_code_description
+
+import requests
+
 from requests.utils import dict_from_cookiejar
+
+from .. import app
+from ..bs4_parser import BS4Parser
+from ..common import USER_AGENT
+
 
 try:
     from urllib.parse import splittype
@@ -66,7 +71,10 @@ class RequestPoliceInvalidConfiguration(RequestPoliceException):
 
 
 class MedusaSession(requests.Session):
+    """Medusa Session class."""
+
     def __init__(self, cache_etags=True, serializer=None, heuristic=None, **kwargs):
+        """Initialize the class."""
         super(MedusaSession, self).__init__()
         adapter = CacheControlAdapter(
             DictCache(),
@@ -97,8 +105,8 @@ class MedusaSession(requests.Session):
 
     @classmethod
     def cloudflare_hook(cls, r, **kwargs):
+        """Try to bypass CloudFlare's anti-bot protection."""
         if not r.ok:
-            # Try to bypass CloudFlare's anti-bot protection
             if r.status_code == 503 and r.headers.get('server') == u'cloudflare-nginx':
                 logger.debug(u'CloudFlare protection detected, trying to bypass it')
 
@@ -155,6 +163,7 @@ class MedusaSession(requests.Session):
 
     def request(self, method, url, post_data=None, params=None, headers=None, timeout=30, session=None,
                 hooks=None, **kwargs):
+        """Request URL using given params."""
         stream = kwargs.pop(u'stream', False)
         cookies, verify, proxies = self._request_defaults(**kwargs)
 
@@ -184,7 +193,10 @@ class MedusaSession(requests.Session):
 
 
 class PolicedSession(MedusaSession):
+    """Policed Session class."""
+
     def __init__(self, *args, **kwargs):
+        """Initialize the class."""
         super(PolicedSession, self).__init__(*args, **kwargs)
 
         # Generic attributes
@@ -216,10 +228,11 @@ class PolicedSession(MedusaSession):
         self.configure_hooks()
 
     def request(self, method, url, *args, **kwargs):
+        """Request URL using given params."""
         try:
-            _ = [police_check(**kwargs) for police_check in self.enabled_police_request_hooks]
+            #  _ = [police_check(**kwargs) for police_check in self.enabled_police_request_hooks]
             r = super(PolicedSession, self).request(method, url, *args, **kwargs)
-            _ = [police_check(r, **kwargs) for police_check in self.enabled_police_response_hooks]
+            #  _ = [police_check(r, **kwargs) for police_check in self.enabled_police_response_hooks]
             return r
         except RequestPoliceException as e:
             logger.warning(e.message)
@@ -282,6 +295,7 @@ class PolicedSession(MedusaSession):
                 )
 
     def request_check_newznab_daily_reserved_calls(self, **kwargs):
+        """Check if we reached reserved calls and if we do, don't request URL."""
         try:
             if not all([self.api_hit_limit, self.daily_reserve_calls]):
                 RequestPoliceInvalidConfiguration('Your missing the daily_reserve_search_mode paramater,'
@@ -319,13 +333,17 @@ class PolicedSession(MedusaSession):
 
 
 class RateLimitedSession(MedusaSession):
+    """Rate limited Session class."""
+
     def __init__(self, max_requests, request_period, **kwargs):
+        """Initialize the class."""
         super(RateLimitedSession, self).__init__(**kwargs)
         self.max_requests = max_requests
         self.request_period = request_period
         self.num_requests = 0
 
     def request(self, *args, **kwargs):
+        """Request URL if limit not exceeded."""
         if datetime.now() > self.reset_time():
             self.num_requests = 0
 
@@ -338,12 +356,14 @@ class RateLimitedSession(MedusaSession):
 
 # as for backwards compatibility
 def request_defaults(**kwargs):
+    """Warn develop of deprecated method."""
     logger.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
                    'please make use of the PolicedRequest session for all of your requests.')
     return PolicedSession._request_defaults(**kwargs)
 
 
 def prepare_cf_req(session, request):
+    """Warn develop of deprecated method."""
     logger.warning('Deprecation warning! Usage of helpers.get_url and prepare_cf_req is deprecated, '
                    'please make use of the PolicedRequest session for all of your requests.')
     return PolicedSession._prepare_cf_req(session, request)
