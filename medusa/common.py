@@ -596,7 +596,8 @@ class Quality(object):
     def should_search(status, show_obj, manually_searched):
         """Return true if that episodes should be search for a better quality.
 
-        If cur_quality is Quality.NONE or Quality.UNKNOWN, it will return True
+        If cur_quality is Quality.NONE, it will return True as its a invalid quality
+        If cur_quality is Quality.UNKNOWN it will return True only if is not in Allowed (Unknown can be in Allowed)
 
         :param status: current status of the episode
         :param show_obj: TVShow object of the episode we will check if we should search or not
@@ -606,12 +607,14 @@ class Quality(object):
         cur_status, cur_quality = Quality.split_composite_status(int(status) or UNKNOWN)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
+        # When user manually searched, we should consider this as final quality.
         if manually_searched:
             return False
 
         if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             return False
 
+        # If current status is WANTED, we must always search
         if cur_status != WANTED:
             if preferred_qualities:
                 if cur_quality in preferred_qualities:
