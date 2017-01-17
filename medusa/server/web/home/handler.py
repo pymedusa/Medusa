@@ -21,7 +21,7 @@ from ....failed_history import prepare_failed_name
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import mappings, INDEXER_TVDBV2
+from ....indexers.indexer_config import INDEXER_TVDBV2, mappings
 from ....indexers.indexer_exceptions import IndexerShowNotFoundInLanguage
 from ....providers.generic_provider import GenericProvider
 from ....sbdatetime import sbdatetime
