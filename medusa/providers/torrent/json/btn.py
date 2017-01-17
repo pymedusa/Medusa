@@ -195,9 +195,9 @@ class BTNProvider(TorrentProvider):
             # Search for the year of the air by date show
             current_params['name'] = str(ep_obj.airdate).split('-')[0]
         elif ep_obj.show.is_anime:
-            current_params['name'] = '%d' % ep_obj.scene_absolute_number
+            current_params['name'] = '{0:d}'.format(ep_obj.scene_absolute_number)
         else:
-            current_params['name'] = 'Season ' + str(ep_obj.season)
+            current_params['name'] = 'Season {0}'.format(ep_obj.scene_season)
 
         # Search
         if ep_obj.show.indexer == 1:
@@ -228,7 +228,7 @@ class BTNProvider(TorrentProvider):
             # combined with the series identifier should result in just one episode
             search_params['name'] = date_str.replace('-', '.')
         elif ep_obj.show.anime:
-            search_params['name'] = '%i' % int(ep_obj.scene_absolute_number)
+            search_params['name'] = '{ep:d}'.format(ep=int(ep_obj.scene_absolute_number))
         else:
             # Do a general name search for the episode, formatted like SXXEYY
             search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))

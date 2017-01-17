@@ -81,6 +81,8 @@ class GenericProvider(object):
         self.supports_backlog = True
         self.url = ''
         self.urls = {}
+        # Ability to override the search separator. As for example anizb is using '*' instead of space.
+        self.search_separator = ' '
 
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
         self.enable_cookies = False
@@ -452,7 +454,8 @@ class GenericProvider(object):
         }
 
         for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            episode_string = show_name + ' '
+            episode_string = show_name + self.search_separator
+            episode_string_fallback = None
 
             if episode.show.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
@@ -466,10 +469,11 @@ class GenericProvider(object):
                     show_name in get_scene_exceptions(episode.show.indexerid, season=episode.scene_season,
                                                       indexer=episode.show.indexer)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
-                    ep = '{episode:02d}'.format(episode=episode.scene_episode)
+                    ep = episode.scene_episode
                 else:
                     ep = episode.scene_absolute_number
-                episode_string += str(ep)
+                episode_string_fallback = episode_string + '{episode:03d}'.format(episode=ep)
+                episode_string += '{episode:02d}'.format(episode=ep)
             else:
                 episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
@@ -477,9 +481,13 @@ class GenericProvider(object):
                 }
 
             if add_string:
-                episode_string += ' ' + add_string
+                episode_string += self.search_separator + add_string
+                if episode_string_fallback:
+                    episode_string_fallback += self.search_separator + add_string
 
             search_string['Episode'].append(episode_string.strip())
+            if episode_string_fallback:
+                search_string['Episode'].append(episode_string_fallback.strip())
 
         return [search_string]
 
