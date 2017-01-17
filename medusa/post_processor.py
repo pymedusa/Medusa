@@ -879,7 +879,7 @@ class PostProcessor(object):
             if current_quality in preferred:
                 return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
             elif current_quality not in allowed:
-                return True, "New quality is Allowed and we don\'t have a current Preferred. Accepting quality"
+                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
             elif new_quality > current_quality:
                 return True, 'New quality is higher than current Preferred. Accepting quality'
             else:
@@ -1028,7 +1028,7 @@ class PostProcessor(object):
                     self.flag_kodi_clean_library()
                 else:
                     allowed_qualities, preferred_qualities = show.current_qualities
-                    self._log(u'Checking if new quality {0} should reaplace current quality: {1}'.format
+                    self._log(u'Checking if new quality {0} should replace current quality: {1}'.format
                               (common.Quality.qualityStrings[new_ep_quality],
                                common.Quality.qualityStrings[old_ep_quality]))
                     should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,

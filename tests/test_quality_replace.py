@@ -412,7 +412,18 @@ import pytest
         'force': False,
         'manually_searched': False,
         'expected': False
-    }
+    },
+    {  # p37: Current quality is NONE: yes
+        'ep_status': SNATCHED,
+        'cur_quality': Quality.NONE,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_replace(p):
     # Given
