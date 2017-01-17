@@ -27,9 +27,6 @@ from ... import logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...helper.common import try_int
 
-from ...scene_exceptions import get_scene_exceptions
-from ...show_name_helpers import allPossibleShowNames
-
 
 class Anizb(NZBProvider):
     """Nzb Provider using the open api of anizb.org for daily (rss) and backlog/forced searches."""
