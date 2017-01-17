@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for medusa/test_quality_replace.py."""
+"""Tests for medusa/test_should_replace.py."""
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 
 import pytest
@@ -426,6 +426,7 @@ import pytest
     },
 ])
 def test_should_replace(p):
+    """Run the test."""
     # Given
     ep_status = p['ep_status']
     cur_quality = p['cur_quality']
