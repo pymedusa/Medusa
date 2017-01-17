@@ -344,7 +344,7 @@ class RateLimitedSession(MedusaSession):
 
     def request(self, *args, **kwargs):
         """Request URL if limit not exceeded."""
-        if datetime.now() > self.reset_time():
+        if datetime.datetime.now() > self.reset_time():
             self.num_requests = 0
 
         if not kwargs.pop('ignore_limit'):
