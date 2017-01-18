@@ -24,7 +24,8 @@ LOG_FILENAME = 'application.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'Medusa'
-CHANGES_URL = 'https://cdn.pymedusa.com/news/CHANGES.md'
+BASE_PYMEDUSA_URL = 'https://cdn.pymedusa.com'
+CHANGES_URL = '{base_url}/news/CHANGES.md'.format(base_url=BASE_PYMEDUSA_URL)
 APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
@@ -109,8 +110,8 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://cdn.pymedusa.com/news/news.md'
-LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
+NEWS_URL = '{base_url}/news/news.md'.format(base_url=BASE_PYMEDUSA_URL)
+LOGO_URL = '{base_url}/images/ico/favicon-64.png'.format(base_url=BASE_PYMEDUSA_URL)
 
 NEWS_LAST_READ = None
 NEWS_LATEST = None

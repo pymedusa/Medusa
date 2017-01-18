@@ -19,6 +19,7 @@
 from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
+from ..app import BASE_PYMEDUSA_URL
 from ..helpers import make_session
 
 initConfig = {
@@ -57,7 +58,7 @@ indexerConfig = {
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
-        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvdb.json',
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://api.thetvdb.com',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
@@ -76,7 +77,7 @@ indexerConfig = {
         'trakt_id': 'tvdb_id',
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
-        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tvmaze.json',
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=BASE_PYMEDUSA_URL),
         'show_url': 'http://www.tvmaze.com/shows/',
         'base_url': 'http://api.tvmaze.com/',
         'mapped_to': 'tvmaze_id',  # The attribute to which other indexers can map there tvmaze id to
@@ -94,7 +95,7 @@ indexerConfig = {
         },
         'trakt_id': 'tvdb_id',
         'icon': 'tmdb16.png',
-        'scene_loc': 'https://cdn.pymedusa.com/scene_exceptions/scene_exceptions_tmdb.json',
+        'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://www.themoviedb.org',
         'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map there tmdb id to

@@ -23,6 +23,7 @@ import re
 from dateutil import tz
 from six import iteritems
 from . import db, helpers, logger
+from app import BASE_PYMEDUSA_URL
 from .helper.common import try_int
 
 try:
@@ -42,7 +43,7 @@ def update_network_dict():
     """Update timezone information from Medusa repositories."""
 
     logger.log(u'Started updating network timezones', logger.DEBUG)
-    url = 'https://cdn.pymedusa.com/sb_network_timezones/network_timezones.txt'
+    url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
     response = helpers.get_url(url, session=helpers.make_session(), returns='response')
     if not response or not response.text:
         logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)

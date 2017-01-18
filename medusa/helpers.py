@@ -1684,7 +1684,7 @@ def get_broken_providers():
     # Update last broken providers update-timestamp to avoid updating again in less than 60 minutes
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
-    url = 'https://cdn.pymedusa.com/providers/broken_providers.json'
+    url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
     response = get_url(url, session=make_session(), returns='json')
     if not response:
         logger.warning('Unable to update the list with broken providers. '

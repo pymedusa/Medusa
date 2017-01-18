@@ -88,7 +88,7 @@ class CalendarHandler(BaseHandler):
                 ical += 'DTSTART:{date}\r\n'.format(date=air_date_time.strftime('%Y%m%dT%H%M%SZ'))
                 ical += 'DTEND:{date}\r\n'.format(date=air_date_time_end.strftime('%Y%m%dT%H%M%SZ'))
                 if app.CALENDAR_ICONS:
-                    icon_url = 'https://cdn.pymedusa.com/images/ico/favicon-16.png'
+                    icon_url = '{base_url}/images/ico/favicon-16.png'.format(base_url=app.BASE_PYMEDUSA_URL)
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-ICON:{icon_url}\r\n'.format(icon_url=icon_url)
                     ical += 'X-GOOGLE-CALENDAR-CONTENT-DISPLAY:CHIP\r\n'
                 ical += 'SUMMARY: {show} - {season}x{episode} - {title}\r\n'.format(
