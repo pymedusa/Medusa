@@ -20,10 +20,10 @@
 import datetime
 import re
 
+from app import BASE_PYMEDUSA_URL
 from dateutil import tz
 from six import iteritems
 from . import db, helpers, logger
-from app import BASE_PYMEDUSA_URL
 from .helper.common import try_int
 
 try:
