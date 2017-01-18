@@ -65,7 +65,7 @@ class BTNProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=15)  # Only poll BTN every 15 minutes max
+        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BTN every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint:disable=too-many-locals
         """
@@ -194,10 +194,8 @@ class BTNProvider(TorrentProvider):
         if ep_obj.show.air_by_date or ep_obj.show.sports:
             # Search for the year of the air by date show
             current_params['name'] = str(ep_obj.airdate).split('-')[0]
-        elif ep_obj.show.is_anime:
-            current_params['name'] = '{0:d}'.format(ep_obj.scene_absolute_number)
         else:
-            current_params['name'] = 'Season {0}'.format(ep_obj.scene_season)
+            current_params['name'] = 'Season {0}'.format(ep_obj.season)
 
         # Search
         if ep_obj.show.indexer == 1:
@@ -227,8 +225,6 @@ class BTNProvider(TorrentProvider):
             # BTN uses dots in dates, we just search for the date since that
             # combined with the series identifier should result in just one episode
             search_params['name'] = date_str.replace('-', '.')
-        elif ep_obj.show.anime:
-            search_params['name'] = '{ep:d}'.format(ep=int(ep_obj.scene_absolute_number))
         else:
             # Do a general name search for the episode, formatted like SXXEYY
             search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))
