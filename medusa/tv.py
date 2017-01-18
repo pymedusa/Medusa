@@ -633,10 +633,6 @@ class TVShow(TVObject):
     def __write_show_nfo(self, metadata_provider):
 
         result = False
-
-        logger.log(u'{id}: Writing NFOs for show'.format(id=self.indexerid), logger.DEBUG)
-        # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
-        # is reset. This will prevent errors, when using multiple indexers and caching.
         result = metadata_provider.create_show_metadata(self) or result
 
         return result

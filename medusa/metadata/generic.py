@@ -249,7 +249,8 @@ class GenericMetadata(object):
 
     def create_show_metadata(self, show_obj):
         if self.show_metadata and show_obj and not self._has_show_metadata(show_obj):
-            logger.log(u"Metadata provider " + self.name + " creating show metadata for " + show_obj.name, logger.DEBUG)
+            logger.log(u"Metadata provider {metadata_provider} creating show metadata for {show_name}"
+                       .format(metadata_provider=self.name, show_name=show_obj.name), logger.DEBUG)
             return self.write_show_file(show_obj)
         return False
 
