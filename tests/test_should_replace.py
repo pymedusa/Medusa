@@ -424,6 +424,28 @@ import pytest
         'manually_searched': False,
         'expected': True
     },
+    {  # p38: Downloaded UNKNOWN and its on Allowed: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.UNKNOWN,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.UNKNOWN, Quality.SDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': False
+    },
+    {  # p39: Downloaded UNKNOWN and its on Allowed but found Preferred: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.UNKNOWN,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.UNKNOWN],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_replace(p):
     """Run the test."""

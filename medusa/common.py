@@ -648,8 +648,9 @@ class Quality(object):
             if not force:
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
 
+        # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
         if old_quality == Quality.UNKNOWN:
-            if not force:
+            if not (force or preferred_qualities):
                 return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
         if manually_searched:
