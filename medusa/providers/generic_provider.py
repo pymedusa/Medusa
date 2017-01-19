@@ -508,7 +508,7 @@ class GenericProvider(object):
             elif episode.show.anime:
                 episode_string += 'Season'
             else:
-                episode_string += 'S%02d' % int(episode.season)
+                episode_string += 'S{season:0>2}'.format(season=episode.season)
 
             search_string['Season'].append(episode_string.strip())
 
