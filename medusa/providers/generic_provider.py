@@ -282,9 +282,9 @@ class GenericProvider(object):
                             )
                             add_cache_entry = True
 
-                    if not add_cache_entry:
-                        actual_season = parse_result.season_number
-                        actual_episodes = parse_result.episode_numbers
+                    # we've added the results to cache, now assign them to the found season, episodes vars.
+                    actual_season = parse_result.season_number
+                    actual_episodes = parse_result.episode_numbers
                 else:
                     same_day_special = False
 
@@ -333,8 +333,6 @@ class GenericProvider(object):
 
                 if ci is not None:
                     cl.append(ci)
-
-                continue
 
             episode_wanted = True
 
