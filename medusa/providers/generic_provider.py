@@ -260,7 +260,7 @@ class GenericProvider(object):
                 self.episode_wanted = False
 
             def __str__(self):
-                return 'A SearchResult class for item: {title}'.format(item=self.item)
+                return 'A SearchResult class for item: {title}'.format(title=self.title)
 
         for item in items_list:
 
