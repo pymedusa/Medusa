@@ -257,7 +257,7 @@ class GenericProvider(object):
                 self.actual_episodes = None
                 self.add_cache_entry = None
                 self.same_day_special = None
-                self.episode_wanted = None
+                self.episode_wanted = False
 
             def __str__(self):
                 return 'A SearchResult class for item: {title}'.format(item=self.item)
@@ -265,6 +265,7 @@ class GenericProvider(object):
         for item in items_list:
 
             search_result = SearchResult(item)
+            search_results.append(search_result)
 
             (search_result.title, search_result.url) = self._get_title_and_url(item)
             (search_result.seeders, search_result.leechers) = self._get_result_info(item)
@@ -282,7 +283,7 @@ class GenericProvider(object):
             search_result.quality = parse_result.quality
             search_result.release_group = parse_result.release_group
             search_result.version = parse_result.version
-            search_result.add_cache_entry = False
+            search_result.add_cache_entry = True
 
             if not manual_search:
                 if not (search_result.show_object.air_by_date or search_result.show_object.sports):
@@ -313,6 +314,7 @@ class GenericProvider(object):
                                 "snatch, skipping it" % search_result.title, logger.DEBUG
                             )
                             search_result.add_cache_entry = True
+                            continue
 
                     # we've added the results to cache, now assign them to the found season, episodes vars.
                     search_result.actual_season = parse_result.season_number
@@ -350,10 +352,11 @@ class GenericProvider(object):
                             )
                             search_result.add_cache_entry = True
 
-                    if not search_result.add_cache_entry and not search_result.same_day_special:
-                        search_result.actual_season = int(sql_results[0][b'season'])
-                        search_result.actual_episodes = [int(sql_results[0][b'episode'])]
+                        if not search_result.add_cache_entry and not search_result.same_day_special:
+                            search_result.actual_season = int(sql_results[0][b'season'])
+                            search_result.actual_episodes = [int(sql_results[0][b'episode'])]
             else:
+                # This is a manual search
                 search_result.actual_season = parse_result.season_number
                 search_result.actual_episodes = parse_result.episode_numbers
 
@@ -366,10 +369,12 @@ class GenericProvider(object):
                     cl.append(ci)
 
             search_result.episode_wanted = True
-            search_results.append(search_result)
 
         # Iterate again over the search results, and see if there is anything we want.
         for search_result in search_results:
+            if not search_result.episode_wanted:
+                continue
+
             if not manual_search:
                 for episode_number in search_result.actual_episodes:
                     if not search_result.show_object.want_episode(search_result.actual_season, episode_number,
