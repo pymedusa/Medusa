@@ -234,41 +234,73 @@ class GenericProvider(object):
 
         cl = []
 
+        # Move through each item and parse it into a quality
+
+        search_results = []
+
+        class SearchResult():
+            def __init__(self, item):
+                self.add_cache_entry = False
+                self.same_day_special = False
+                self.item = item
+                self.title = None
+                self.url = None
+                self.seeders = None
+                self.leechers = None
+                self.size = None
+                self.pubdate = None
+                self.show_object = None
+                self.quality = None
+                self.release_group = None
+                self.version = None
+                self.actual_season = None
+                self.actual_episodes = None
+                self.add_cache_entry = None
+                self.same_day_special = None
+                self.episode_wanted = None
+
+            def __str__(self):
+                return 'A SearchResult class for item: {title}'.format(item=self.item)
+
         for item in items_list:
-            (title, url) = self._get_title_and_url(item)
-            (seeders, leechers) = self._get_result_info(item)
-            size = self._get_size(item)
-            pubdate = self._get_pubdate(item)
+
+            search_result = SearchResult(item)
+
+            (search_result.title, search_result.url) = self._get_title_and_url(item)
+            (search_result.seeders, search_result.leechers) = self._get_result_info(item)
+
+            search_result.size = self._get_size(item)
+            search_result.pubdate = self._get_pubdate(item)
 
             try:
-                parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(title)
+                parse_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]).parse(search_result.title)
             except (InvalidNameException, InvalidShowException) as error:
                 logger.log(u"{error}".format(error=error), logger.DEBUG)
                 continue
 
-            show_object = parse_result.show
-            quality = parse_result.quality
-            release_group = parse_result.release_group
-            version = parse_result.version
-            add_cache_entry = False
+            search_result.show_object = parse_result.show
+            search_result.quality = parse_result.quality
+            search_result.release_group = parse_result.release_group
+            search_result.version = parse_result.version
+            search_result.add_cache_entry = False
 
             if not manual_search:
-                if not (show_object.air_by_date or show_object.sports):
+                if not (search_result.show_object.air_by_date or search_result.show_object.sports):
                     if search_mode == 'sponly':
                         if parse_result.episode_numbers:
                             logger.log(
                                 'This is supposed to be a season pack search but the result %s is not a valid '
-                                'season pack, skipping it' % title, logger.DEBUG
+                                'season pack, skipping it' % search_result.title, logger.DEBUG
                             )
-                            add_cache_entry = True
+                            search_result.add_cache_entry = True
                         elif not [ep for ep in episodes if
                                   parse_result.season_number == (ep.season, ep.scene_season)[ep.show.is_scene]]:
                             logger.log(
-                                'This season result %s is for a season we are not searching for, skipping it' % title,
+                                'This season result %s is for a season we are not searching for, '
+                                'skipping it' % search_result.title,
                                 logger.DEBUG
                             )
-                            add_cache_entry = True
-
+                            search_result.add_cache_entry = True
                     else:
                         if not all([parse_result.season_number is not None,
                                     parse_result.episode_numbers,
@@ -278,93 +310,97 @@ class GenericProvider(object):
                                      parse_result.episode_numbers]]):
                             logger.log(
                                 "The result %s doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it" % title, logger.DEBUG
+                                "snatch, skipping it" % search_result.title, logger.DEBUG
                             )
-                            add_cache_entry = True
+                            search_result.add_cache_entry = True
 
                     # we've added the results to cache, now assign them to the found season, episodes vars.
-                    actual_season = parse_result.season_number
-                    actual_episodes = parse_result.episode_numbers
+                    search_result.actual_season = parse_result.season_number
+                    search_result.actual_episodes = parse_result.episode_numbers
                 else:
-                    same_day_special = False
+                    search_result.same_day_special = False
 
                     if not parse_result.is_air_by_date:
                         logger.log(
                             "This is supposed to be a date search but the result %s didn't parse as one, "
-                            "skipping it" % title, logger.DEBUG
+                            "skipping it" % search_result.title, logger.DEBUG
                         )
-                        add_cache_entry = True
+                        search_result.add_cache_entry = True
                     else:
                         air_date = parse_result.air_date.toordinal()
                         db = DBConnection()
                         sql_results = db.select(
                             'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?',
-                            [show_object.indexerid, air_date]
+                            [search_result.show_object.indexerid, air_date]
                         )
 
                         if len(sql_results) == 2:
                             if int(sql_results[0][b'season']) == 0 and int(sql_results[1][b'season']) != 0:
-                                actual_season = int(sql_results[1][b'season'])
-                                actual_episodes = [int(sql_results[1][b'episode'])]
-                                same_day_special = True
+                                search_result.actual_season = int(sql_results[1][b'season'])
+                                search_result.actual_episodes = [int(sql_results[1][b'episode'])]
+                                search_result.same_day_special = True
                             elif int(sql_results[1][b'season']) == 0 and int(sql_results[0][b'season']) != 0:
-                                actual_season = int(sql_results[0][b'season'])
-                                actual_episodes = [int(sql_results[0][b'episode'])]
-                                same_day_special = True
+                                search_result.actual_season = int(sql_results[0][b'season'])
+                                search_result.actual_episodes = [int(sql_results[0][b'episode'])]
+                                search_result.same_day_special = True
                         elif len(sql_results) != 1:
                             logger.log(
                                 "Tried to look up the date for the episode %s but the database didn't return proper "
-                                "results, skipping it" % title, logger.WARNING
+                                "results, skipping it" % search_result.title, logger.WARNING
                             )
-                            add_cache_entry = True
+                            search_result.add_cache_entry = True
 
-                    if not add_cache_entry and not same_day_special:
-                        actual_season = int(sql_results[0][b'season'])
-                        actual_episodes = [int(sql_results[0][b'episode'])]
+                    if not search_result.add_cache_entry and not search_result.same_day_special:
+                        search_result.actual_season = int(sql_results[0][b'season'])
+                        search_result.actual_episodes = [int(sql_results[0][b'episode'])]
             else:
-                actual_season = parse_result.season_number
-                actual_episodes = parse_result.episode_numbers
+                search_result.actual_season = parse_result.season_number
+                search_result.actual_episodes = parse_result.episode_numbers
 
-            if add_cache_entry:
-                logger.log('Adding item from search to cache: %s' % title, logger.DEBUG)
-
-                # Access to a protected member of a client class
-                ci = self.cache.add_cache_entry(title, url, seeders, leechers, size, pubdate)
-
+            # Cache the item if needed
+            if search_result.add_cache_entry:
+                logger.log('Adding item from search to cache: %s' % search_result.title, logger.DEBUG)
+                ci = self.cache.add_cache_entry(search_result.title, search_result.url, search_result.seeders,
+                                                search_result.leechers, search_result.size, search_result.pubdate)
                 if ci is not None:
                     cl.append(ci)
 
-            episode_wanted = True
+            search_result.episode_wanted = True
+            search_results.append(search_result)
 
+        # Iterate again over the search results, and see if there is anything we want.
+        for search_result in search_results:
             if not manual_search:
-                for episode_number in actual_episodes:
-                    if not show_object.want_episode(actual_season, episode_number, quality, forced_search,
-                                                    download_current_quality):
-                        episode_wanted = False
+                for episode_number in search_result.actual_episodes:
+                    if not search_result.show_object.want_episode(search_result.actual_season, episode_number,
+                                                                  search_result.quality, forced_search,
+                                                                  download_current_quality):
+                        search_result.episode_wanted = False
                         break
 
-                if not episode_wanted:
-                    logger.log('Ignoring result %s.' % title, logger.DEBUG)
+                if not search_result.episode_wanted:
+                    logger.log('Ignoring result %s.' % search_result.title, logger.DEBUG)
                     continue
 
-            logger.log('Found result %s at %s' % (title, url), logger.DEBUG)
+            logger.log('Found result %s at %s' % (search_result.title, search_result.url), logger.DEBUG)
 
             episode_object = []
-            for current_episode in actual_episodes:
-                episode_object.append(show_object.get_episode(actual_season, current_episode))
+            for current_episode in search_result.actual_episodes:
+                episode_object.append(search_result.show_object.get_episode(search_result.actual_season,
+                                                                            current_episode))
 
             result = self.get_result(episode_object)
-            result.show = show_object
-            result.url = url
-            result.seeders = seeders
-            result.leechers = leechers
-            result.name = title
-            result.quality = quality
-            result.release_group = release_group
-            result.version = version
+            result.show = search_result.show_object
+            result.url = search_result.url
+            result.seeders = search_result.seeders
+            result.leechers = search_result.leechers
+            result.name = search_result.title
+            result.quality = search_result.quality
+            result.release_group = search_result.release_group
+            result.version = search_result.version
             result.content = None
-            result.size = self._get_size(item)
-            result.pubdate = self._get_pubdate(item)
+            result.size = self._get_size(search_result.item)
+            result.pubdate = self._get_pubdate(search_result.item)
 
             if not episode_object:
                 episode_number = SEASON_RESULT
@@ -383,7 +419,6 @@ class GenericProvider(object):
                 results[episode_number].append(result)
 
         if cl:
-
             # Access to a protected member of a client class
             db = self.cache._get_db()
             db.mass_action(cl)
