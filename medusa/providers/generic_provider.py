@@ -249,7 +249,7 @@ class GenericProvider(object):
                         if not all([parse_result.season_number is not None,
                                     parse_result.episode_numbers,
                                     [ep for ep in episodes if (ep.season, ep.scene_season)[ep.show.is_scene] ==
-                                     parse_result.season_number and
+                                     (parse_result.season_number, parse_result.scene_season)[ep.show.is_scene] and
                                      (ep.episode, ep.scene_episode)[ep.show.is_scene] in
                                      parse_result.episode_numbers]]):
                             logger.log(
