@@ -160,7 +160,7 @@ class HDBitsProvider(TorrentProvider):
             elif show.anime:
                 post_data['tvdb'] = {
                     'id': show.indexerid,
-                    'episode': '%i' % int(episode.scene_absolute_number)
+                    'episode': "{0}".format(episode.scene_absolute_number)
                 }
             else:
                 post_data['tvdb'] = {
@@ -178,7 +178,7 @@ class HDBitsProvider(TorrentProvider):
             elif show.anime:
                 post_data['tvdb'] = {
                     'id': show.indexerid,
-                    'season': '%d' % season.scene_absolute_number,
+                    'season': "{0}".format(season.scene_absolute_number),
                 }
             else:
                 post_data['tvdb'] = {

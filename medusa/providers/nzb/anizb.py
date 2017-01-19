@@ -27,9 +27,6 @@ from ... import logger, tv_cache
 from ...bs4_parser import BS4Parser
 from ...helper.common import try_int
 
-from ...scene_exceptions import get_scene_exceptions
-from ...show_name_helpers import allPossibleShowNames
-
 
 class Anizb(NZBProvider):
     """Nzb Provider using the open api of anizb.org for daily (rss) and backlog/forced searches."""
@@ -53,6 +50,7 @@ class Anizb(NZBProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.anime_only = True
+        self.search_separator = '*'
 
         # Torrent Stats
 
@@ -120,31 +118,6 @@ class Anizb(NZBProvider):
     def _get_size(self, item):
         """Override the default _get_size to prevent it from extracting using the default tags."""
         return try_int(item.get('size'))
-
-    def _get_episode_search_strings(self, episode):
-        """Get episode search strings."""
-        if not episode:
-            return []
-
-        search_string = {
-            'Episode': []
-        }
-
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            episode_string = show_name + '*'
-
-            # If the showname is a season scene exception, we want to use the indexer episode number.
-            if show_name in get_scene_exceptions(episode.show.indexerid, season=episode.scene_season,
-                                                 indexer=episode.show.indexer):
-                # This is apparently a season exception, let's use the scene_episode instead of absolute
-                ep = '{episode:02d}'.format(episode=episode.scene_episode)
-            else:
-                ep = episode.scene_absolute_number
-            episode_string += str(ep)
-
-            search_string['Episode'].append(episode_string.strip())
-
-        return [search_string]
 
 
 provider = Anizb()
