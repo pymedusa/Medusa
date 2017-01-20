@@ -594,16 +594,27 @@ class Quality(object):
 
     @staticmethod
     def should_search(status, show_obj, manually_searched):
-        """Return true if that episodes should be search for a better quality."""
+        """Return true if that episodes should be search for a better quality.
+
+        If cur_quality is Quality.NONE, it will return True as its a invalid quality
+        If cur_quality is Quality.UNKNOWN it will return True only if is not in Allowed (Unknown can be in Allowed)
+
+        :param status: current status of the episode
+        :param show_obj: TVShow object of the episode we will check if we should search or not
+        :param manually_searched: if episode was manually searched by user
+        :return: True if need to run a search for given episode
+        """
         cur_status, cur_quality = Quality.split_composite_status(int(status) or UNKNOWN)
         allowed_qualities, preferred_qualities = show_obj.current_qualities
 
+        # When user manually searched, we should consider this as final quality.
         if manually_searched:
             return False
 
         if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             return False
 
+        # If current status is WANTED, we must always search
         if cur_status != WANTED:
             if preferred_qualities:
                 if cur_quality in preferred_qualities:
@@ -621,13 +632,25 @@ class Quality(object):
         if preferred quality, then new quality should be higher than existing one AND not be in preferred
         If new quality is already in preferred then is already final quality.
         Force (forced search) bypass episode status only or unknown quality
+        If old quality is Quality.NONE, it will be replaced
+
+        :param ep_status: current status of the episode
+        :param old_quality: current quality of the episode
+        :param new_quality: quality of the episode we found it and check if we should snatch it
+        :param allowed_qualities: List of selected allowed qualities of the show we are checking
+        :param preferred_qualities: List of selected preferred qualities of the show we are checking
+        :param download_current_quality: True if user wants the same existing quality to be snatched
+        :param force: True if user did a forced search for that episode
+        :param manually_searched: True if episode was manually searched by user
+        :return: True if the old quality should be replaced with new quality.
         """
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
             if not force:
                 return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
 
+        # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
         if old_quality == Quality.UNKNOWN:
-            if not force:
+            if not (force or preferred_qualities):
                 return False, 'Existing quality is UNKNOWN. Ignoring new quality'
 
         if manually_searched:

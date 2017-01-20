@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for medusa/test_quality_replace.py."""
+"""Tests for medusa/test_should_process.py."""
 from medusa.common import Quality
 from medusa.post_processor import PostProcessor
 import pytest
@@ -64,6 +64,7 @@ import pytest
     },
 ])
 def test_should_process(p):
+    """Run the test."""
     # Given
     current_quality = p['cur_quality']
     new_quality = p['new_quality']
