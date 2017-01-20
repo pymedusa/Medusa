@@ -290,7 +290,8 @@ class Manage(Home, WebRoot):
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
                     continue
 
-                if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                ep_status = Quality.split_composite_status(tv_episode.status).status
+                if ep_status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
                 if not tv_episode.show.subtitles:
