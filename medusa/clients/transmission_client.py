@@ -279,15 +279,17 @@ class TransmissionAPI(GenericClient):
                     status = 'stopped'
 
             if status == 'completed':
-                logger.warning("Torrent completed and reached minimum ratio: [{ratio}]. Removing it: [{name}]".format
-                               (ratio=torrent['uploadRatio'], name=torrent['name']))
+                logger.warning("Torrent completed and reached minimum ratio: [{ratio}] or "
+                               "seed idle limit: [{seed_limit} min]. Removing it: [{name}]".format
+                               (ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name']))
                 self.remove_torrent(torrent['hashString'])
             else:
                 logger.info("Torrent didn't reached minimum ratio: [{ratio}]. "
                             "Keeping it: [{name}]".format
-                             (ratio=torrent['uploadRatio'],name=torrent['name']))
+                             (ratio=torrent['uploadRatio'], name=torrent['name']))
 
         if not found_torrents:
             logger.info('No torrents found that were snatched by Medusa')
+
 
 api = TransmissionAPI
