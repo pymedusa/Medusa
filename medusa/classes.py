@@ -115,6 +115,61 @@ class SearchResult(object):
         return u'{}.{}'.format(self.episodes[0].pretty_name(), self.resultType)
 
 
+class EvaluateSearchResult(SearchResult):
+    """A subclass of SearchResult, to use as an evaluation class."""
+    def __init__(self, item, download_current_quality):
+        super(EvaluateSearchResult, self).__init__(None)
+        # Raw result in a dictionary
+        self.item = item
+        self.download_current_quality = download_current_quality
+        self.add_cache_entry = True
+        self.same_day_special = False
+        self.episode_wanted = False
+        self.actual_season = None
+        self.actual_episodes = None
+
+    def add_result_to_cache(self, cache):
+        # Cache the item if needed
+        if self.add_cache_entry:
+            logger.debug('Adding item from search to cache: {release_name}', release_name=self.name)
+            return cache.add_cache_entry(self.name, self.url, self.seeders,
+                                         self.leechers, self.size, self.pubdate)
+        return None
+
+    def check_episodes_for_quality(self, forced_search, download_current_quality):
+        """We could have gotten a multi-ep result, let's see if at least one if them is wat we want
+        in the correct quality.
+        """
+        if not self.actual_episodes or self.action_season:
+            return False
+
+        episode_wanted = False
+        for episode_number in self.actual_episodes:
+            # Check whether or not the episode with the specified quality is wanted.
+            if self.show_object.want_episode(self.actual_season, episode_number,
+                                             self.quality, forced_search, download_current_quality):
+                episode_wanted = True
+
+        if not episode_wanted:
+            logger.debug('We could not find a result in the correct quality for {release_name} with url {url}',
+                         release_name=self.name, url=self.url)
+            return False
+        return True
+
+    def create_episode_object(self):
+        """Use this result to create an episode segment out of it."""
+        episode_object = []
+        for current_episode in self.actual_episodes:
+            episode_object.append(self.show.get_episode(self.actual_season,
+                                                        current_episode))
+        self.episodes = episode_object
+        return episode_object
+
+    def finish_search_result(self, provider):
+        self.size = provider._get_size(self.item)
+        self.pubdate = provider._get_pubdate(self.item)
+
+
 class NZBSearchResult(SearchResult):
     """Regular NZB result with an URL to the NZB."""
 
