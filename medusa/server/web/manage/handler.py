@@ -291,7 +291,11 @@ class Manage(Home, WebRoot):
                     continue
 
                 ep_status = Quality.split_composite_status(tv_episode.status).status
-                if ep_status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                if ep_status in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
+                    status = 'snatched'
+                elif ep_status in Quality.DOWNLOADED:
+                    status = 'downloaded'
+                else:
                     continue
 
                 if not tv_episode.show.subtitles:
@@ -314,7 +318,7 @@ class Manage(Home, WebRoot):
                     age_value = age_minutes
 
                 app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
-                                           'season': tv_episode.season, 'episode': tv_episode.episode,
+                                           'season': tv_episode.season, 'episode': tv_episode.episode, 'status': status,
                                            'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
         app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
 
