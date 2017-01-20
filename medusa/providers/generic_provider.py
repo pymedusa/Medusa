@@ -404,7 +404,7 @@ class GenericProvider(object):
 
         return quality
 
-    def get_result(self, episodes, search_result):
+    def get_result(self, episodes):
         """Get result."""
         result = self._get_result(episodes)
 
