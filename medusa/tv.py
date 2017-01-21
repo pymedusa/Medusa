@@ -204,6 +204,12 @@ class TVShow(TVObject):
         self._load_from_db()
 
     def get_indexer_api(self, indexer_api=None, refresh=False):
+        """Return an indexer_api object, using the self._cached_indexer_api attribute. Or indexer_api param if provided.
+
+        :param indexer_api: Indexer object passed. If the indexer_api is passed, it will overwrite the local attribute.
+        :param refresh: If True, it will force the creation of a new indexer api object.
+        :return: The local self._cached_indexer_api object.
+        """
         if indexer_api:
             self._cached_indexer_api = indexer_api
 
@@ -2303,8 +2309,6 @@ class TVEpisode(TVObject):
             season = self.season
         if episode is None:
             episode = self.episode
-
-        indexer_lang = self.show.lang
 
         try:
             if cached_season:
