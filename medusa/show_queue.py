@@ -535,7 +535,6 @@ class QueueItemAdd(ShowQueueItem):
         self.show.write_metadata()
         self.show.update_metadata()
         self.show.populate_cache()
-        self.show.create_next_season_update()
 
         self.show.flush_episodes()
 
@@ -889,14 +888,6 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                         logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
-
-            # If this is a season limited update, let's update the cache season next_update
-            if self.seasons:
-                for season in self.seasons:
-                    self.show.create_next_season_update(season)
-            else:
-                # We did a show refresh, let's updated each next season update
-                self.show.create_next_season_update()
 
         # Save only after all changes were applied
         try:
