@@ -195,12 +195,32 @@ class TVShow(TVObject):
         self.release_groups = None
         self.exceptions = []
         self.externals = {}
+        self._cached_indexer_api = None
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
         self._load_from_db()
+
+    def get_indexer_api(self, indexer_api=None, refresh=False):
+        if indexer_api:
+            self._cached_indexer_api = indexer_api
+
+        elif not self._cached_indexer_api or refresh:
+            indexer_api_params = indexerApi(self.indexer).api_params.copy()
+
+            if self.lang:
+                indexer_api_params[b'language'] = self.lang
+                logger.log(u'{id}: Using language from show settings: {lang}'.format
+                           (id=self.indexerid, lang=self.lang), logger.DEBUG)
+
+            if self.dvdorder != 0:
+                indexer_api_params[b'dvdorder'] = True
+
+            self._cached_indexer_api = indexerApi(self.indexer).indexer(**indexer_api_params)
+
+        return self._cached_indexer_api
 
     @property
     def is_anime(self):
@@ -798,19 +818,10 @@ class TVShow(TVObject):
                        (id=self.indexerid, error_msg=error), logger.ERROR)
             return scanned_eps
 
-        indexer_api_params = indexerApi(self.indexer).api_params.copy()
-
-        if self.lang:
-            indexer_api_params[b'language'] = self.lang
-            logger.log(u'{id}: Using language from show settings: {lang}'.format
-                       (id=self.indexerid, lang=self.lang), logger.DEBUG)
-
-        if self.dvdorder != 0:
-            indexer_api_params[b'dvdorder'] = True
-
-        t = indexerApi(self.indexer).indexer(**indexer_api_params)
+        t = self.get_indexer_api()
 
         cached_show = t[self.indexerid]
+
         cached_seasons = {}
         cur_show_name = ''
         cur_show_id = ''
@@ -881,22 +892,8 @@ class TVShow(TVObject):
         :rtype: dict(int -> dict(int -> bool))
         """
         try:
-            if tvapi:
-                t = tvapi
-            else:
-                indexer_api_params = indexerApi(self.indexer).api_params.copy()
-
-                indexer_api_params['cache'] = False
-
-                if self.lang:
-                    indexer_api_params['language'] = self.lang
-
-                if self.dvdorder != 0:
-                    indexer_api_params['dvdorder'] = True
-
-                t = indexerApi(self.indexer).indexer(**indexer_api_params)
-
-            indexed_show = t.get_episodes_for_season(self.indexerid, specials=False, aired_season=seasons)
+            t = self.get_indexer_api(tvapi)
+            indexed_show = t[self.indexerid]
         except IndexerException as e:
             logger.log(u'{id}: {indexer} error, unable to update episodes. Message: {ex}'.format
                        (id=self.indexerid, indexer=indexerApi(self.indexer).name, ex=e), logger.WARNING)
@@ -1244,23 +1241,7 @@ class TVShow(TVObject):
         logger.log(u'{0}: Loading show info from {1}'.format(
             self.indexerid, indexerApi(self.indexer).name), logger.DEBUG)
 
-        # There's gotta be a better way of doing this but we don't wanna
-        # change the cache value elsewhere
-        if tvapi:
-            t = tvapi
-        else:
-            indexer_api_params = indexerApi(self.indexer).api_params.copy()
-
-            indexer_api_params['cache'] = False
-
-            if self.lang:
-                indexer_api_params['language'] = self.lang
-
-            if self.dvdorder != 0:
-                indexer_api_params['dvdorder'] = True
-
-            # TODO: Add exception handling.
-            t = indexerApi(self.indexer).indexer(**indexer_api_params)
+        t = self.get_indexer_api(tvapi)
 
         indexed_show = t[self.indexerid]
 
@@ -1502,6 +1483,9 @@ class TVShow(TVObject):
         # make sure the show dir is where we think it is unless dirs are created on the fly
         if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
+
+        # Let's get some fresh indexer info, as we might need it later on.
+        self.get_indexer_api(refresh=True)
 
         # load from dir
         self.load_episodes_from_dir()
@@ -2326,20 +2310,7 @@ class TVEpisode(TVObject):
             if cached_season:
                 my_ep = cached_season[episode]
             else:
-                if tvapi:
-                    t = tvapi
-                else:
-                    indexer_api_params = indexerApi(self.indexer).api_params.copy()
-
-                    indexer_api_params['cache'] = False
-
-                    if indexer_lang:
-                        indexer_api_params['language'] = indexer_lang
-
-                    if self.show.dvdorder != 0:
-                        indexer_api_params['dvdorder'] = True
-
-                    t = indexerApi(self.indexer).indexer(**indexer_api_params)
+                t = self.show.get_indexer_api()
                 my_ep = t[self.show.indexerid][season][episode]
 
         except (IndexerError, IOError) as e:
@@ -2638,8 +2609,8 @@ class TVEpisode(TVObject):
     def create_meta_files(self):
         """Create episode metadata files."""
         if not self.show.is_location_valid():
-            logger.log(u'{id}: The show dir is missing, unable to create metadata'.format
-                       (id=self.show.indexerid), logger.WARNING)
+            logger.log(u'{id}: The show dir is missing, unable to create metadata'.format(id=self.show.indexerid),
+                       logger.WARNING)
             return
 
         for metadata_provider in app.metadata_provider_dict.values():
@@ -2647,7 +2618,7 @@ class TVEpisode(TVObject):
             self.__create_thumbnail(metadata_provider)
 
         if self.check_for_meta_files():
-            logger.log(u'{id}: Saving metadata changes to database'.format(id=self.show.indexerid))
+            logger.log(u'{id}: Saving metadata changes to database'.format(id=self.show.indexerid), logger.WARNING)
             self.save_to_db()
 
     def __create_nfo(self, metadata_provider):

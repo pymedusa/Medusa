@@ -1021,7 +1021,7 @@ def validate_show(show, season=None, episode=None):
         if show.dvdorder != 0:
             indexer_api_params['dvdorder'] = True
 
-        t = indexerApi(show.indexer).indexer(**indexer_api_params)
+        t = show.get_indexer_api()
         if season is None and episode is None:
             return t
 
