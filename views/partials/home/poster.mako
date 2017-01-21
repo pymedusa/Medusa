@@ -90,7 +90,7 @@
             <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
             <div class="show-title">
                 ${cur_show.name}
-                % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer):
+                % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
                     <img src="images/xem.png" width="16" height="16" />
                 % endif
             </div>

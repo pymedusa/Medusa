@@ -367,7 +367,7 @@ def get_scene_numbering_for_show(indexer_id, indexer):
     return result
 
 
-def get_xem_numbering_for_show(indexer_id, indexer):
+def get_xem_numbering_for_show(indexer_id, indexer, refresh_data=True):
     """
     Returns a dict of (season, episode) : (sceneSeason, sceneEpisode) mappings
     for an entire show.  Both the keys and values of the dict are tuples.
@@ -379,7 +379,8 @@ def get_xem_numbering_for_show(indexer_id, indexer):
     indexer_id = int(indexer_id)
     indexer = int(indexer)
 
-    xem_refresh(indexer_id, indexer)
+    if refresh_data:
+        xem_refresh(indexer_id, indexer)
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
