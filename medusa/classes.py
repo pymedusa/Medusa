@@ -140,7 +140,7 @@ class EvaluateSearchResult(SearchResult):
         """We could have gotten a multi-ep result, let's see if at least one if them is wat we want
         in the correct quality.
         """
-        if not self.actual_episodes or self.action_season:
+        if not self.actual_episodes or self.actual_season:
             return False
 
         episode_wanted = False
