@@ -816,6 +816,11 @@ home_addShows.mako
 
 #addShowPortal a {
     padding: 10px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    margin-bottom: 15px;
 }
 
 div.button {

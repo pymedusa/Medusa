@@ -21,8 +21,6 @@
         </div>
     </a>
 
-    <br><br>
-
     <a href="addShows/popularShows/" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addimdb"></div></div>
         <div class="buttontext">
@@ -30,8 +28,6 @@
             <p>View IMDB's list of the most popular shows. This feature uses IMDB's MOVIEMeter algorithm to identify popular TV Series.</p>
         </div>
     </a>
-
-    <br><br>
 
     <a href="addShows/popularAnime/" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addanime"></div></div>
