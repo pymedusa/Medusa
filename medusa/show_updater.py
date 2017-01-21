@@ -21,8 +21,6 @@ import threading
 import time
 import app
 
-from six import text_type
-
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
