@@ -34,7 +34,7 @@ class ShowUpdater(object):
         self.lock = threading.Lock()
         self.amActive = False
         self.session = helpers.make_session()
-        self.last_update = ShowUpdate()
+        self.update_cache = UpdateCache()
 
     def run(self, force=False):
 
@@ -58,7 +58,7 @@ class ShowUpdater(object):
                 continue
             if hasattr(t, 'get_last_updated_seasons'):
                 # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
-                last_update = self.last_update.get_last_indexer_update(indexerApi(show.indexer).name)
+                last_update = self.update_cache.get_last_indexer_update(indexerApi(show.indexer).name)
                 if not last_update or last_update < time.time() - 604800 * update_max_weeks:
                     # no entry in lastUpdate, or last update was too long ago,
                     # let's refresh the show for this indexer
@@ -137,7 +137,7 @@ class ShowUpdater(object):
         if refresh_shows or season_updates:
             for indexer in set([show.indexer for show in refresh_shows] + [s[1].indexer for s in season_updates]):
                 indexer_api = indexerApi(indexer)
-                self.last_update.set_last_indexer_update(indexer_api.name)
+                self.update_cache.set_last_indexer_update(indexer_api.name)
                 logger.info(u'Updated lastUpdate ts for {indexer_name}', indexer_name=indexer_api.name)
             logger.info(u'Completed scheduling updates on shows')
         else:
@@ -149,9 +149,9 @@ class ShowUpdater(object):
         pass
 
 
-class ShowUpdate(db.DBConnection):
+class UpdateCache(db.DBConnection):
     def __init__(self):
-        super(ShowUpdate, self).__init__('cache.db')
+        super(UpdateCache, self).__init__('cache.db')
 
     def get_last_indexer_update(self, indexer):
         """Get the last update timestamp from the lastUpdate table.
