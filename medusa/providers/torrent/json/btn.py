@@ -237,6 +237,7 @@ class BTNProvider(TorrentProvider):
             name_exceptions = list(
                 set(scene_exceptions.get_scene_exceptions(ep_obj.show.indexerid) + [ep_obj.show.name]))
             for cur_exception in name_exceptions:
+                 # Search by name if we don't have tvdb id
                 search_params['series'] = cur_exception
                 to_return.append(search_params)
 
