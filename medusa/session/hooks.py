@@ -8,65 +8,87 @@ import cfscrape
 import requests
 from requests.utils import dict_from_cookiejar
 
-from medusa.helper.common import http_code_description
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-def log_url(r, **kwargs):
+def log_url(resp, **kwargs):
     """Response hook to log request URL."""
     log.debug(
         '{method} URL: {url} [Status: {status}]'.format(
-            method=r.request.method,
-            url=r.request.url,
-            status=r.status_code,
+            method=resp.request.method,
+            url=resp.request.url,
+            status=resp.status_code,
         )
     )
+    log.debug('User-Agent: {}'.format(resp.request.headers['User-Agent']))
 
-    if r.request.method.upper() == 'POST':
-        log.debug('With post data: {data}'.format(data=r.request.body))
+    if resp.request.method.upper() == 'POST':
+        log.debug('With post data: {data}'.format(data=resp.request.body))
+
+    return resp
 
 
-def cloudflare(r, **kwargs):
-    """Try to bypass CloudFlare's anti-bot protection."""
-    if all([r.status_code == 503,
-            r.headers.get('server') == u'cloudflare-nginx']):
+def cloudflare(resp, **kwargs):
+    """
+    Bypass CloudFlare's anti-bot protection.
+
+    A response hook that retries a request after bypassing CloudFlare anti-bot
+    protection.  Use the sessioned hook factory to attach the session to the
+    response to persist CloudFlare authentication at the session level.
+    """
+    if all([resp.status_code == 503,  # Service unavailable
+            resp.headers.get('server') == u'cloudflare-nginx', ]):
+
         log.debug(u'CloudFlare protection detected, trying to bypass it')
 
-        try:
-            tokens, user_agent = cfscrape.get_tokens(r.request.url)
-            cookies = dict_from_cookiejar(r.request._cookies)
-            if tokens:
-                cookies.update(tokens)
+        # Get the session used or create a new one
+        session = getattr(resp, 'session', requests.Session())
 
-            r.request.headers.update({u'User-Agent': user_agent})
-            log.debug(u'CloudFlare protection successfully bypassed.')
+        # Get the original request
+        original_request = resp.request
 
-            # Disable the hooks, to prevent a loop.
-            r.request.hooks = {}
+        # Avoid recursion by removing the hook from the original request
+        original_request.hooks['response'].remove(cloudflare)
 
-            new_session = requests.Session()
-            r.request.prepare_cookies(cookies)
-            cf_resp = new_session.send(r.request,
-                                       stream=kwargs.get('stream'),
-                                       verify=kwargs.get('verify'),
-                                       proxies=kwargs.get('proxies'),
-                                       timeout=kwargs.get('timeout'),
-                                       allow_redirects=True)
+        # Get the CloudFlare tokens and original user-agent
+        tokens, user_agent = cfscrape.get_tokens(original_request.url)
 
-            if cf_resp.ok:
-                return cf_resp
+        # Add CloudFlare tokens to the session cookies
+        session.cookies.update(tokens)
+        # Add CloudFlare Tokens to the original request
+        original_cookies = dict_from_cookiejar(original_request._cookies)
+        original_cookies.update(tokens)
+        original_request.prepare_cookies(original_cookies)
 
-        except (ValueError, AttributeError) as error:
-            log.warning(
-                u'Failed to bypass CloudFlare anti-bot protection.'
-                u' Error: {err_msg}',
-                err_msg=error
-            )
-            return
+        # The same User-Agent must be used for the retry
+        # Update the session with the CloudFlare User-Agent
+        session.headers['User-Agent'] = user_agent
+        # Update the original request with the CloudFlare User-Agent
+        original_request.headers['User-Agent'] = user_agent
 
-    log.debug(
-        u'Requested url {url} returned status code {status}: {desc}'.format
-        (url=r.url, status=r.status_code,
-         desc=http_code_description(r.status_code)))
+        # Resend the request
+        cf_resp = session.send(
+            original_request,
+            allow_redirects=True,
+            **kwargs
+        )
+
+        if cf_resp.ok:
+            log.debug('CloudFlare successfully bypassed.')
+        return cf_resp
+    else:
+        return resp
+
+
+def sessioned(session):
+    """
+    Hook factory to add a session to a response.
+    """
+    def sessioned_response_hook(response, *args, **kwargs):
+        """
+        Returns a sessioned response.
+        """
+        response.session = session
+        return response
+    return sessioned_response_hook
