@@ -805,7 +805,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     show=self.show.name,
                     season=u' with season(s) [{0}]'.
                     format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
-                    ), logger.DEBUG)
+                    ), logger.INFO)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
@@ -899,7 +899,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.ERROR)
 
         logger.log(u'{id}: Finished update of {show}'.format
-                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+                   (id=self.show.indexerid, show=self.show.name), logger.INFO)
 
         self.finish()
 
