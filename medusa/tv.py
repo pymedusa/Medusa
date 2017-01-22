@@ -215,7 +215,7 @@ class TVShow(TVObject):
         """Set an Indexer API instance."""
         self._cached_indexer_api = value
 
-    def create_indexer(self):
+    def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True, ):
         """Force the creation of a new Indexer API."""
         api = indexerApi(self.indexer)
         params = api.api_params.copy()
@@ -227,8 +227,14 @@ class TVShow(TVObject):
                 (id=self.indexerid, lang=self.lang), logger.DEBUG
             )
 
-        if self.dvd_order != 0:
+        if self.dvd_order != 0 or dvd_order:
             params[b'dvdorder'] = True
+
+        params[b'actors'] = actors
+
+        params[b'banners'] = banners
+
+        params[b'episodes'] = episodes
 
         self._cached_indexer_api = api.indexer(**params)
 
