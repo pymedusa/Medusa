@@ -192,6 +192,20 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     app.auto_post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
 
 
+def change_TORRENT_CHECKER_FREQUENCY(freq):
+    """
+    Change frequency of Torrent Checker thread
+
+    :param freq: New frequency
+    """
+    app.TORRENT_CHECKER_FREQUECY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+
+    if app.TORRENT_CHECKER_FREQUECY < app.MIN_TORRENT_CHECKER_FREQUENCY:
+        app.TORRENT_CHECKER_FREQUECY = app.MIN_TORRENT_CHECKER_FREQUENCY
+
+    app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUECY)
+
+
 def change_DAILYSEARCH_FREQUENCY(freq):
     """
     Change frequency of daily search thread

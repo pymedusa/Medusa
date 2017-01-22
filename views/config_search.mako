@@ -105,6 +105,17 @@
                                     </span>
                                 </label>
                             </div>
+                            <div id="content_remove_from_client">
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Check finished torrents every</span>
+                                        <span class="component-desc">
+                                            <input type="number" min="${app.MIN_TORRENT_CHECKER_FREQUENCY}" step="1" name="torrent_checker_frequency" value="${app.TORRENT_CHECKER_FREQUENCY}" class="form-control input-sm input75"/>
+                                            <p>How many minutes to check if torrent reached ratio (default: 60 minutes)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Usenet retention</span>
