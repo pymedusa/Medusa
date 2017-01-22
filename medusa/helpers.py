@@ -1018,14 +1018,13 @@ def validate_show(show, season=None, episode=None):
         if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
             indexer_api_params['language'] = indexer_lang
 
-        if show.dvdorder != 0:
+        if show.dvd_order != 0:
             indexer_api_params['dvdorder'] = True
 
-        t = show.get_indexer_api()
         if season is None and episode is None:
-            return t
+            return show.indexer_api
 
-        return t[show.indexerid][season][episode]
+        return show.indexer_api[show.indexerid][season][episode]
     except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
         pass
 

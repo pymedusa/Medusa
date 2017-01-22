@@ -680,7 +680,7 @@ class QueueItemUpdate(ShowQueueItem):
                    logger.DEBUG)
         try:
             # Let's make sure we refresh the indexer_api object attached to the show object.
-            self.show.get_indexer_api(refresh=True)
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
@@ -812,7 +812,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                    logger.DEBUG)
         try:
             # Let's make sure we refresh the indexer_api object attached to the show object.
-            self.show.get_indexer_api(refresh=True)
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format

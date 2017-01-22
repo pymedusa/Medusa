@@ -150,7 +150,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvdorder == 1 else ''} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>

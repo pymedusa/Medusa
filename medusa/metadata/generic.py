@@ -840,9 +840,9 @@ class GenericMetadata(object):
         indexer_lang = show_obj.lang
 
         try:
-            if show_obj._cached_indexer_api and all([show_obj._cached_indexer_api.config['banners_enabled'],
-                                                     show_obj._cached_indexer_api.config['actors_enabled']]):
-                self.indexer_api = show_obj.get_indexer_api()
+            if show_obj.indexer_api and all([show_obj.indexer_api.config['banners_enabled'],
+                                             show_obj.indexer_api.config['actors_enabled']]):
+                self.indexer_api = show_obj.indexer_api
             elif not self.indexer_api:
                 l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
                 l_indexer_api_params['banners'] = True
@@ -851,11 +851,11 @@ class GenericMetadata(object):
                 if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
                     l_indexer_api_params['language'] = indexer_lang
 
-                if show_obj.dvdorder != 0:
+                if show_obj.dvd_order != 0:
                     l_indexer_api_params['dvdorder'] = True
 
                 self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
-                show_obj._cached_indexer_api = self.indexer_api
+                show_obj.indexer_api = self.indexer_api
 
             my_show = self.indexer_api[int(show_id)]
         except IndexerShowNotFound:

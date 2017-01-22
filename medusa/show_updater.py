@@ -151,17 +151,22 @@ class ShowUpdater(object):
 
 class ShowUpdate(db.DBConnection):
     def __init__(self):
-        db.DBConnection.__init__(self, 'cache.db')
+        super(ShowUpdate, self).__init__('cache.db')
 
     def get_last_indexer_update(self, indexer):
         """Get the last update timestamp from the lastUpdate table.
 
         :param indexer:
-        :type indexer: string, name respresentation, like 'theTVDB'. Check the indexer_config's name attribute.
+        :type indexer: Indexer name from indexer_config's name attribute.
         :return: epoch timestamp
         :rtype: int
         """
-        last_update_indexer = self.select('SELECT time FROM lastUpdate WHERE provider = ?', [indexer])
+        last_update_indexer = self.select(
+            'SELECT time '
+            'FROM lastUpdate '
+            'WHERE provider = ?',
+            [indexer]
+        )
         return last_update_indexer[0]['time'] if last_update_indexer else None
 
     def set_last_indexer_update(self, indexer):

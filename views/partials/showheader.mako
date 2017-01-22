@@ -99,8 +99,8 @@
                      <% rating_tip = str(show.imdb_info['rating']) + " / 10" + " Stars" + "<br>" + str(show.imdb_info['votes']) + " Votes" %>
                      <span class="imdbstars" qtip-content="${rating_tip}">${show.imdb_info['rating']}</span>
                  % endif
-                 % if not show.imdbid:
-                     <span>(${show.startyear}) - ${show.runtime} minutes - </span>
+                 % if not show.imdb_id:
+                     <span>(${show.start_year}) - ${show.runtime} minutes - </span>
                  % else:
                      % if 'country_codes' in show.imdb_info:
                          % for country in show.imdb_info['country_codes'].split('|'):
@@ -113,7 +113,7 @@
                      % endif
                                      ${show.imdb_info.get('runtimes') or show.runtime} minutes
                                  </span>
-                                 <a href="${anon_url('http://www.imdb.com/title/', show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdbid}">
+                                 <a href="${anon_url('http://www.imdb.com/title/', show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="http://www.imdb.com/title/${show.imdb_id}">
                                      <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                                  </a>
                  % endif
@@ -217,7 +217,7 @@
                             <tr><td class="showLegend">Air-by-Date: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.air_by_date)]}" alt="${("N", "Y")[bool(show.air_by_date)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Sports: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_sports)]}" alt="${("N", "Y")[bool(show.is_sports)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Anime: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.is_anime)]}" alt="${("N", "Y")[bool(show.is_anime)]}" width="16" height="16" /></td></tr>
-                            <tr><td class="showLegend">DVD Order: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.dvdorder)]}" alt="${("N", "Y")[bool(show.dvdorder)]}" width="16" height="16" /></td></tr>
+                            <tr><td class="showLegend">DVD Order: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.dvd_order)]}" alt="${("N", "Y")[bool(show.dvd_order)]}" width="16" height="16" /></td></tr>
                             <tr><td class="showLegend">Scene Numbering: </td><td><img src="images/${("no16.png", "yes16.png")[bool(show.scene)]}" alt="${("N", "Y")[bool(show.scene)]}" width="16" height="16" /></td></tr>
                         </table>
                      </div> <!-- end of show-status -->

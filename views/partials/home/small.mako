@@ -153,8 +153,8 @@
             % endif
             </td>
             <td align="center">
-                % if cur_show.imdbid:
-                    <a href="${anon_url('http://www.imdb.com/title/', cur_show.imdbid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdbid}">
+                % if cur_show.imdb_id:
+                    <a href="${anon_url('http://www.imdb.com/title/', cur_show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdb_id}">
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                     </a>
                 % endif
