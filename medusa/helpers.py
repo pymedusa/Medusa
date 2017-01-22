@@ -4,7 +4,7 @@
 # This file is part of Medusa.
 #
 # Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
+# it under the terms of the GNU General Public License as published byFRWL
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
@@ -716,7 +716,7 @@ def sanitize_scene_name(name, anime=False):
         name = name.replace(x, '')
 
     # tidy up stuff that doesn't belong in scene names
-    name = name.replace('- ', '.').replace(' ', '.').replace('&', 'and').replace('/', '.').replace(': ', '-')
+    name = name.replace('- ', '.').replace(' ', '.').replace('&', 'and').replace('/', '.').replace(': ', ' ')
     name = re.sub(r'\.\.*', '.', name)
 
     if name.endswith('.'):
