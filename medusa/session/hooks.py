@@ -28,9 +28,10 @@ def log_url(r, **kwargs):
         log.debug('With post data: {data}'.format(data=r.request.body))
 
 
-def cloudflare_hook(cls, r, **kwargs):
+def cloudflare(r, **kwargs):
     """Try to bypass CloudFlare's anti-bot protection."""
-    if r.status_code == 503 and r.headers.get('server') == u'cloudflare-nginx':
+    if all([r.status_code == 503,
+            r.headers.get('server') == u'cloudflare-nginx']):
         log.debug(u'CloudFlare protection detected, trying to bypass it')
 
         try:
@@ -39,11 +40,7 @@ def cloudflare_hook(cls, r, **kwargs):
             if tokens:
                 cookies.update(tokens)
 
-            if r.request.headers:
-                r.request.headers.update({u'User-Agent': user_agent})
-            else:
-                r.request.headers = {u'User-Agent': user_agent}
-
+            r.request.headers.update({u'User-Agent': user_agent})
             log.debug(u'CloudFlare protection successfully bypassed.')
 
             # Disable the hooks, to prevent a loop.
