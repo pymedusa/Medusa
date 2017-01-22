@@ -214,8 +214,8 @@ class TransmissionAPI(GenericClient):
 
         return self.response.json()['result'] == 'success'
 
-    def get_torrents_status(self):
-        """Get status of all snatches from Medusa.
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
 
         0 = Torrent is stopped
         1 = Queued to check files
@@ -224,8 +224,6 @@ class TransmissionAPI(GenericClient):
         4 = Downloading
         5 = Queued to seed
         6 = Seeding
-
-        :return: list of releases Medusa sent to Transmission
         """
         logger.info('Checking Transmission torrent status.')
 
@@ -243,12 +241,12 @@ class TransmissionAPI(GenericClient):
         try:
             returned_data = json.loads(self.response.content)
         except ValueError:
-            logger.warning('Unexpected data received from Transmission: {0}'.format(self.response.content))
+            logger.warning('Unexpected data received from Transmission: {resp}', resp=self.response.content)
             return
 
         if not returned_data['result'] == 'success':
             logger.debug('Nothing in queue or error')
-            return []
+            return
 
         found_torrents = False
         for torrent in returned_data['arguments']['torrents']:
@@ -265,8 +263,8 @@ class TransmissionAPI(GenericClient):
 
             # Don't need to check status if we are not going to remove it.
             if not to_remove:
-                logger.info("Torrent wasn't post-processed yet. Skipping: {torrent_name}".format
-                            (torrent_name=torrent['name']))
+                logger.info("Torrent wasn't post-processed yet. Skipping: {torrent_name}",
+                            torrent_name=torrent['name'])
                 continue
 
             status = 'busy'
@@ -280,13 +278,13 @@ class TransmissionAPI(GenericClient):
 
             if status == 'completed':
                 logger.warning("Torrent completed and reached minimum ratio: [{ratio}] or "
-                               "seed idle limit: [{seed_limit} min]. Removing it: [{name}]".format
-                               (ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name']))
+                               "seed idle limit: [{seed_limit} min]. Removing it: [{name}]",
+                               ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name'])
                 self.remove_torrent(torrent['hashString'])
             else:
                 logger.info("Torrent didn't reached minimum ratio: [{ratio}]. "
-                            "Keeping it: [{name}]".format
-                             (ratio=torrent['uploadRatio'], name=torrent['name']))
+                            "Keeping it: [{name}]",
+                            ratio=torrent['uploadRatio'], name=torrent['name'])
 
         if not found_torrents:
             logger.info('No torrents found that were snatched by Medusa')

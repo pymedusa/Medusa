@@ -42,8 +42,8 @@ class TorrentChecker(object):
 
         try:
             client = clients.get_client_class(app.TORRENT_METHOD)()
-            client.get_torrents_status()
+            client.remove_ratio_reached()
         except Exception as e:
-            logger.debug('Failed to check torrent status. Error: {error}'.format(error=e))
+            logger.debug('Failed to check torrent status. Error: {error}', error=e)
 
         self.amActive = False
