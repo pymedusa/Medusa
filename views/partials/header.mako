@@ -63,7 +63,7 @@
                     % if app.USE_EMBY and app.EMBY_HOST != "" and app.EMBY_APIKEY != "":
                         <li><a href="home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                     % endif
-                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'):
+                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and app.TORRENT_HOST[:4] == 'http':
                         <li><a href="manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                     % endif
                     % if app.USE_FAILED_DOWNLOADS:
