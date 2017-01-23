@@ -130,4 +130,19 @@ class QBittorrentAPI(GenericClient):
         }
         return self._request(method='post', data=data, cookies=self.session.cookies)
 
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        self.url = '{host}command/deletePerm'.format(host=self.host)
+        data = {
+            'hashes': info_hash.lower(),
+        }
+
+        return self._request(method='post', data=data, cookies=self.session.cookies)
+
 api = QBittorrentAPI

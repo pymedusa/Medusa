@@ -21,13 +21,19 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import os
 import re
 from base64 import b64encode
 
 from requests.compat import urljoin
+
 from .generic import GenericClient
 from .. import app
+from ..helpers import is_already_processed_media, is_info_hash_in_history, is_info_hash_processed
+
+
+logger = logging.getLogger(__name__)
 
 
 class TransmissionAPI(GenericClient):
@@ -185,6 +191,109 @@ class TransmissionAPI(GenericClient):
         self._request(method='post', data=post_data)
 
         return self.response.json()['result'] == 'success'
+
+    def remove_torrent(self, info_hash):
+        """Remove torrent from client using given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        arguments = {
+            'ids': [info_hash],
+            'delete-local-data': 1,
+        }
+
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-remove',
+        })
+
+        self._request(method='post', data=post_data)
+
+        return self.response.json()['result'] == 'success'
+
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
+
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+
+        0 = Torrent is stopped
+        1 = Queued to check files
+        2 = Checking files
+        3 = Queued to download
+        4 = Downloading
+        5 = Queued to seed
+        6 = Seeding
+        """
+        logger.info('Checking Transmission torrent status.')
+
+        return_params = {
+            'fields': ['id', 'name', 'hashString', 'percentDone', 'status', 'eta', 'isStalled',
+                       'isFinished', 'downloadDir', 'uploadRatio', 'secondsSeeding', 'seedIdleLimit', 'files']
+        }
+
+        post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
+
+        if not self._request(method='post', data=post_data):
+            logger.debug('Could not connect to Transmission. Check logs')
+            return
+
+        try:
+            returned_data = json.loads(self.response.content)
+        except ValueError:
+            logger.warning('Unexpected data received from Transmission: {resp}', resp=self.response.content)
+            return
+
+        if not returned_data['result'] == 'success':
+            logger.debug('Nothing in queue or error')
+            return
+
+        found_torrents = False
+        for torrent in returned_data['arguments']['torrents']:
+
+            # Check if that hash was sent by Medusa
+            if not is_info_hash_in_history(str(torrent['hashString'])):
+                continue
+            found_torrents = True
+
+            to_remove = False
+            for i in torrent['files']:
+                # Check if media was processed OR check hash in case of RARed torrents
+                if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
+                    to_remove = True
+
+            # Don't need to check status if we are not going to remove it.
+            if not to_remove:
+                logger.info("Torrent wasn't post-processed yet. Skipping: {torrent_name}",
+                            torrent_name=torrent['name'])
+                continue
+
+            status = 'busy'
+            if torrent.get('isStalled') and not torrent['percentDone'] == 1:
+                status = 'failed'
+            elif torrent['status'] == 0:
+                if torrent['percentDone'] == 1 and torrent.get('isFinished'):
+                    status = 'completed'
+                else:
+                    status = 'stopped'
+
+            if status == 'completed':
+                logger.info("Torrent completed and reached minimum ratio: [{ratio}] or "
+                            "seed idle limit: [{seed_limit} min]. Removing it: [{name}]",
+                            ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name'])
+                #  self.remove_torrent(torrent['hashString'])
+            else:
+                logger.info("Torrent didn't reached minimum ratio: [{ratio}]. "
+                            "Keeping it: [{name}]",
+                            ratio=torrent['uploadRatio'], name=torrent['name'])
+
+        if not found_torrents:
+            logger.info('No torrents found that were snatched by Medusa')
 
 
 api = TransmissionAPI

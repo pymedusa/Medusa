@@ -67,7 +67,7 @@ from six import text_type
 from . import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
+    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -551,6 +551,7 @@ class Application(object):
 
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
+            app.REMOVE_FROM_CLIENT = bool(check_setting_int(app.CFG, 'General', 'remove_from_client', 0))
             app.CHECK_PROPERS_INTERVAL = check_setting_str(app.CFG, 'General', 'check_propers_interval', 'daily',
                                                            valid_values=('15m', '45m', '90m', '4h', 'daily'))
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
@@ -564,9 +565,11 @@ class Application(object):
                                                   check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency',
                                                                     app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY))
 
+            app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
+                                                check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
+                                                                  app.DEFAULT_TORRENT_CHECKER_FREQUENCY))
             app.DAILYSEARCH_FREQUENCY = max(app.MIN_DAILYSEARCH_FREQUENCY,
                                             check_setting_int(app.CFG, 'General', 'dailysearch_frequency', app.DEFAULT_DAILYSEARCH_FREQUENCY))
-
             app.MIN_BACKLOG_FREQUENCY = Application.get_backlog_cycle_time()
             app.BACKLOG_FREQUENCY = max(app.MIN_BACKLOG_FREQUENCY, check_setting_int(app.CFG, 'General', 'backlog_frequency', app.DEFAULT_BACKLOG_FREQUENCY))
             app.UPDATE_FREQUENCY = max(app.MIN_UPDATE_FREQUENCY, check_setting_int(app.CFG, 'General', 'update_frequency', app.DEFAULT_UPDATE_FREQUENCY))
@@ -1106,6 +1109,12 @@ class Application(object):
                                                                  run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
+            update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
+            app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
+                                                                cycleTime=update_interval,
+                                                                threadName="TORRENTCHECKER",
+                                                                run_delay=update_interval)
+
             app.__INITIALIZED__ = True
             return True
 
@@ -1227,6 +1236,11 @@ class Application(object):
                 app.trakt_checker_scheduler.silent = True
             app.trakt_checker_scheduler.start()
 
+            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+                app.torrent_checker_scheduler.enable = True
+            app.torrent_checker_scheduler.silent = False
+            app.torrent_checker_scheduler.start()
+
             app.started = True
 
     @staticmethod
@@ -1251,6 +1265,7 @@ class Application(object):
                 app.trakt_checker_scheduler,
                 app.proper_finder_scheduler,
                 app.subtitles_finder_scheduler,
+                app.torrent_checker_scheduler,
                 app.events
             ]
 
@@ -1346,12 +1361,14 @@ class Application(object):
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
         new_config['General']['autopostprocessor_frequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
+        new_config['General']['torrent_checker_frequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
         new_config['General']['dailysearch_frequency'] = int(app.DAILYSEARCH_FREQUENCY)
         new_config['General']['backlog_frequency'] = int(app.BACKLOG_FREQUENCY)
         new_config['General']['update_frequency'] = int(app.UPDATE_FREQUENCY)
         new_config['General']['showupdate_hour'] = int(app.SHOWUPDATE_HOUR)
         new_config['General']['download_propers'] = int(app.DOWNLOAD_PROPERS)
         new_config['General']['propers_search_days'] = int(app.PROPERS_SEARCH_DAYS)
+        new_config['General']['remove_from_client'] = int(app.REMOVE_FROM_CLIENT)
         new_config['General']['randomize_providers'] = int(app.RANDOMIZE_PROVIDERS)
         new_config['General']['check_propers_interval'] = app.CHECK_PROPERS_INTERVAL
         new_config['General']['allow_high_priority'] = int(app.ALLOW_HIGH_PRIORITY)

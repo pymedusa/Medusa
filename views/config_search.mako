@@ -95,6 +95,27 @@
                                         </span>
                                 </label>
                             </div><!-- daily search frequency -->
+                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD != 'transmission' else ''}>
+                                <label for="remove_from_client">
+                                    <span class="component-title">Remove from client when ratio reached</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD == 'transmission' else ''}/>
+                                        <p>Remove torrent from client when provider ratio is reached</p>
+                                        <p><b>Note:</b> For now only Transmission is supported</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="content_remove_from_client">
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Check finished torrents every</span>
+                                        <span class="component-desc">
+                                            <input type="number" min="${app.MIN_TORRENT_CHECKER_FREQUENCY}" step="1" name="torrent_checker_frequency" value="${app.TORRENT_CHECKER_FREQUENCY}" class="form-control input-sm input75"/>
+                                            <p>How many minutes to check if torrent reached ratio (default: 60 minutes)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Usenet retention</span>

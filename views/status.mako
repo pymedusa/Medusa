@@ -23,6 +23,7 @@
         'Post Process': 'auto_post_processor_scheduler',
         'Subtitles Finder': 'subtitles_finder_scheduler',
         'Trakt Checker': 'trakt_checker_scheduler',
+        'Torrent Checker': 'torrent_checker_scheduler',
     }
 %>
 <div id="config-content">

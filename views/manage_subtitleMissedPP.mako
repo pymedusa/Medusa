@@ -29,6 +29,9 @@
         </thead>
         <tbody aria-live="polite" aria-relevant="all">
         % for index, epResult in enumerate(releases_in_pp):
+           % if epResult['status'] != 'snatched':
+               <% continue %>
+           % endif
             <tr class="snatched" role="row" release_id=${index}>
                 <td class="tvShow" align="left"><a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">
                         ${epResult['show_name']}
@@ -51,6 +54,7 @@
         % endfor
         </tbody>
     </table>
+
 <%include file="subtitle_modal.mako"/>
 <br>
 <form name="processForm" method="post" action="home/postprocess/processEpisode" style="float: right;">
@@ -66,5 +70,36 @@
 </table>
     <input id="submit" class="btn" type="submit" value="Run Manual Post-Process" />
 </form>
+<br>
+    <h3 style="display: inline;">Releases waiting minimum ratio</h3>
+    <table id="releasesPP-downloaded" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
+        <thead aria-live="polite" aria-relevant="all">
+            <tr>
+                <th>Show</th>
+                <th>Episode</th>
+                <th>Release</th>
+            </tr>
+        </thead>
+        <tbody aria-live="polite" aria-relevant="all">
+        % for index, epResult in enumerate(releases_in_pp):
+           % if epResult['status'] != 'downloaded':
+               <% continue %>
+           % endif
+            <tr class="downloaded" role="row" release_id=${index}>
+                <td class="tvShow" align="left"><a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">
+                        ${epResult['show_name']}
+                </td>
+                <td class="tvShow" align="center">
+                        ${episode_num(epResult['season'], epResult['episode'])}
+                </td>
+                <td class="tvShow" align="left">
+                    <span class="break-word" title=${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}>
+                        ${os.path.basename(epResult['release'])}
+                    </span>
+                </td>
+            </tr>
+        % endfor
+        </tbody>
+    </table>
 </div>
 </%block>
