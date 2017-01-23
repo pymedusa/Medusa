@@ -29,7 +29,6 @@ from ..torrent_provider import TorrentProvider
 from .... import app, logger, scene_exceptions, tv_cache
 from ....common import cpu_presets
 from ....helper.common import episode_num
-from ....helpers import sanitize_scene_name
 
 
 class BTNProvider(TorrentProvider):
@@ -206,7 +205,7 @@ class BTNProvider(TorrentProvider):
                 set(scene_exceptions.get_scene_exceptions(ep_obj.show.indexerid) + [ep_obj.show.name]))
             for name in name_exceptions:
                 # Search by name if we don't have tvdb id
-                current_params['series'] = sanitize_scene_name(name)
+                current_params['series'] = name
                 search_params.append(current_params)
 
         return search_params
@@ -238,7 +237,8 @@ class BTNProvider(TorrentProvider):
             name_exceptions = list(
                 set(scene_exceptions.get_scene_exceptions(ep_obj.show.indexerid) + [ep_obj.show.name]))
             for cur_exception in name_exceptions:
-                search_params['series'] = sanitize_scene_name(cur_exception)
+                # Search by name if we don't have tvdb id
+                search_params['series'] = cur_exception
                 to_return.append(search_params)
 
         return to_return

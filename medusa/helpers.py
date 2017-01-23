@@ -716,7 +716,7 @@ def sanitize_scene_name(name, anime=False):
         name = name.replace(x, '')
 
     # tidy up stuff that doesn't belong in scene names
-    name = name.replace('- ', '.').replace(' ', '.').replace('&', 'and').replace('/', '.')
+    name = name.replace('- ', '.').replace(' ', '.').replace('&', 'and').replace('/', '.').replace(': ', ' ')
     name = re.sub(r'\.\.*', '.', name)
 
     if name.endswith('.'):
