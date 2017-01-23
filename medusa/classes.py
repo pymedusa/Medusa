@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Classes module."""
 import logging
 
 from dateutil import parser
@@ -117,6 +117,7 @@ class SearchResult(object):
 
 class EvaluateSearchResult(SearchResult):
     """A subclass of SearchResult, to use as an evaluation class."""
+
     def __init__(self, item, download_current_quality):
         super(EvaluateSearchResult, self).__init__(None)
         # Raw result in a dictionary
@@ -129,7 +130,7 @@ class EvaluateSearchResult(SearchResult):
         self.actual_episodes = None
 
     def add_result_to_cache(self, cache):
-        # Cache the item if needed
+        """Cache the item if needed."""
         if self.add_cache_entry:
             logger.debug('Adding item from search to cache: {release_name}', release_name=self.name)
             return cache.add_cache_entry(self.name, self.url, self.seeders,
@@ -137,7 +138,9 @@ class EvaluateSearchResult(SearchResult):
         return None
 
     def check_episodes_for_quality(self, forced_search, download_current_quality):
-        """We could have gotten a multi-ep result, let's see if at least one if them is wat we want
+        """Check if that episode is wanted in that quality.
+
+        We could have gotten a multi-ep result, let's see if at least one if them is what we want
         in the correct quality.
         """
         if not self.actual_episodes or self.actual_season:
@@ -330,6 +333,7 @@ class Viewer(object):
         :rtype: list of medusa.logger.LogLine
         """
         return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
+
 
 try:
     import urllib
