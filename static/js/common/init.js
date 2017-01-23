@@ -140,4 +140,10 @@ MEDUSA.common.init = function() {
             $('#content_' + $(this).attr('id')).fadeOut('fast', 'linear');
         }
     });
+
+    /* When the user clicks on the menu button in mobile view, clicking a
+    button with a dropdown with initiate an automatic scrolldown, of 300px */
+    $(document.body).on('click', '.dropdown-toggle', function(){
+        $("#main_nav").animate({scrollTop: "250px"}, 1000);
+    });
 };
