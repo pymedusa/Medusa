@@ -5,20 +5,29 @@
             % for menuItem in submenu:
                 % if 'requires' not in menuItem or menuItem['requires']:
                     <% icon_class = '' if 'icon' not in menuItem else ' ' + menuItem['icon'] %>
-                      % if type(menuItem['path']) == dict:
-                          ${("</span><span>", "")[bool(first)]}<b>${menuItem['title']}</b>
-                          <%
-                              first = False
-                              inner_first = True
-                          %>
-                          % for cur_link in menuItem['path']:
-                              ${("&middot; ", "")[bool(inner_first)]}<a class="inner" href="${menuItem['path'][cur_link]}">${cur_link}</a>
-                              <% inner_first = False %>
-                          % endfor
-                      % else:
-                          <a href="${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a>
-                          <% first = False %>
-                      % endif
+                    % if 'path' in menuItem:
+                        % if type(menuItem['path']) == dict:
+                            ${("</span><span>", "")[bool(first)]}<b>${menuItem['title']}</b>
+                            <%
+                                first = False
+                                inner_first = True
+                            %>
+                            % for cur_link in menuItem['path']:
+                                ${("&middot; ", "")[bool(inner_first)]}<a class="inner" href="${menuItem['path'][cur_link]}">${cur_link}</a>
+                                <% inner_first = False %>
+                            % endfor
+                        % else:
+                            <a href="${menuItem['path']}" class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a>
+                            <% first = False %>
+                        % endif
+                    % endif
+                    % if 'patch' in menuItem:
+                        <a
+                            patch
+                            patch-resource="${menuItem['patch']['resource']}"
+                            patch-body='${menuItem['patch']['body']}'
+                            class="btn${('', ' confirm ' + menuItem.get('class', ''))['confirm' in menuItem]} top-5 bottom-5">${('', '<span class="pull-left ' + icon_class + '"></span> ')[bool(icon_class)]}${menuItem['title']}</a>
+                    % endif
                 % endif
             % endfor
         </div>

@@ -1,5 +1,6 @@
 <%!
     import datetime
+    import json
     import urllib
     import ntpath
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
@@ -39,8 +40,21 @@
         <div id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
                 % if season_special:
+                <%
+                    patch_body = json.dumps({
+                        "layout": {
+                            "show": {
+                                "specials": False if app.DISPLAY_SHOW_SPECIALS else True
+                            }
+                        }
+                    })
+                %>
                 Display Specials:
-                    <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                    <a
+                    patch
+                    patch-resource="config"
+                    patch-body='${patch_body}'
+                    class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
                 % endif
             </span>
 

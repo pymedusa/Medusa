@@ -1,10 +1,10 @@
-module.exports = function(grunt) { // eslint-disable-line xo/filename-case
+module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     grunt.initConfig({
         clean: {
             dist: './dist/',
-            bower_components: './bower_components', // eslint-disable-line camelcase
+            bower_components: './bower_components',
             fonts: '../static/css/*.ttf',
             options: {
                 force: true
@@ -17,15 +17,11 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                 }
             }
         },
-        bower_concat: { // eslint-disable-line camelcase
+        bower_concat: {
             all: {
                 dest: {
                     js: './dist/bower.js',
                     css: './dist/bower.css'
-                },
-                exclude: [
-                ],
-                dependencies: {
                 },
                 mainFiles: {
                     'tablesorter': [
@@ -99,7 +95,7 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
         uglify: {
             bower: {
                 files: {
-                    '../static/js/vender.min.js': './dist/bower.js'
+                    '../static/js/lib/vender.min.js': './dist/bower.js'
                 }
             }
         },

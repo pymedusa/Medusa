@@ -4,7 +4,10 @@
 import base64
 import json
 import operator
+import re
 import traceback
+
+from collections import OrderedDict
 
 from datetime import datetime
 from babelfish.language import Language
@@ -20,7 +23,7 @@ class BaseRequestHandler(RequestHandler):
 
     def prepare(self):
         """Check if JWT or API key is provided and valid."""
-        if self.request.method != 'OPTIONS':
+        if self.request.method != 'OPTIONS' and self.request.uri != '/api/v2/':
             token = ''
             api_key = ''
             if self.request.headers.get('Authorization'):
@@ -44,11 +47,13 @@ class BaseRequestHandler(RequestHandler):
             if token == '' and api_key == '':
                 self.api_finish(status=401, error='Invalid token or API key.')
 
-    def write_error(self, *args, **kwargs):
+    def write_error(self, status_code, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
+        if status_code == 405:
+            self.api_finish(status=405, error='Method Not Allowed')
         if app.DEVELOPER and 'exc_info' in kwargs:
             self.set_header('content-type', 'text/plain')
-            for line in traceback.format_exception(*kwargs["exc_info"]):
+            for line in traceback.format_exception(*kwargs['exc_info']):
                 self.write(line)
             self.finish()
         else:
@@ -156,3 +161,19 @@ def json_string_encoder(o):
         return getattr(o, 'name')
 
     return text_type(o)
+
+
+def dynamic_access_json(data, json_path):
+    """Return nested JSON fields via "/"."""
+    val = data
+    for key in json_path.split('/'):
+        if key != '':
+            # If number then check if current val is array and get array element equal to key
+            if re.search('[^0-9]', key) is None:
+                if isinstance(val, OrderedDict):
+                    val = val.keys()[int(key)]
+                else:
+                    val = val[int(key)]
+            else:
+                val = val[key]
+    return val

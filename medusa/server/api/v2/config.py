@@ -6,7 +6,7 @@ import sys
 from six import text_type
 from tornado.escape import json_decode
 
-from .base import BaseRequestHandler
+from .base import BaseRequestHandler, dynamic_access_json
 from .... import app, db, logger
 
 
@@ -24,21 +24,11 @@ class ConfigHandler(BaseRequestHandler):
         :param query:
         :type query: str
         """
+        data = {}
         config_data = {
             'anonRedirect': app.ANON_REDIRECT,
-            'animeSplitHome': app.ANIME_SPLIT_HOME,
-            'comingEpsSort': app.COMING_EPS_SORT,
-            'datePreset': app.DATE_PRESET,
-            'fuzzyDating': app.FUZZY_DATING,
-            'themeName': app.THEME_NAME,
-            'posterSortby': app.POSTER_SORTBY,
-            'posterSortdir': app.POSTER_SORTDIR,
             'rootDirs': app.ROOT_DIRS,
             'sortArticle': app.SORT_ARTICLE,
-            'timePreset': app.TIME_PRESET,
-            'trimZero': app.TRIM_ZERO,
-            'fanartBackground': app.FANART_BACKGROUND,
-            'fanartBackgroundOpacity': 0 if app.FANART_BACKGROUND_OPACITY is None else float(app.FANART_BACKGROUND_OPACITY),
             'branch': app.BRANCH,
             'commitHash': app.CUR_COMMIT_HASH,
             'release': app.APP_VERSION,
@@ -122,20 +112,51 @@ class ConfigHandler(BaseRequestHandler):
                 'priority': app.NZBGET_PRIORITY
             },
             'layout': {
-                'schedule': app.COMING_EPS_LAYOUT,
-                'history': app.HISTORY_LAYOUT,
-                'home': app.HOME_LAYOUT,
+                'home': {
+                    'current': app.HOME_LAYOUT,
+                    'poster': {
+                        'sortBy': app.POSTER_SORTBY,
+                        'sortDir': app.POSTER_SORTDIR
+                    },
+                    'animeSplitHome': bool(app.ANIME_SPLIT_HOME)
+                },
+                'history': {
+                    'current': app.HISTORY_LAYOUT,
+                    'limit': app.HISTORY_LIMIT,
+                },
                 'show': {
                     'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
-                    'specials': bool(app.DISPLAY_SHOW_SPECIALS)
+                    'specials': bool(app.DISPLAY_SHOW_SPECIALS),
+                    'fanartBackground': app.FANART_BACKGROUND,
+                    'fanartBackgroundOpacity': 0 if app.FANART_BACKGROUND_OPACITY is None else float(app.FANART_BACKGROUND_OPACITY)
+                },
+                'schedule': {
+                    'current': app.COMING_EPS_LAYOUT,
+                    'showPaused': app.COMING_EPS_DISPLAY_PAUSED,
+                    'sort': app.COMING_EPS_SORT,
+                    'missedRange': app.COMING_EPS_MISSED_RANGE
+                },
+                'global': {
+                    'fuzzyDating': bool(app.FUZZY_DATING),
+                    'trimZero': bool(app.TRIM_ZERO),
+                    'datePreset': app.DATE_PRESET,
+                    'timePreset': app.TIME_PRESET,
+                    'timePresetWithSeconds': app.TIME_PRESET_W_SECONDS,
+                    'timezoneDisplay': app.TIMEZONE_DISPLAY,
+                    'theme': app.THEME_NAME
                 }
             }
         }
 
-        if query and query not in config_data:
-            return self.api_finish(status=404, error='{key} not found'.format(key=query))
+        if query:
+            try:
+                data = dynamic_access_json(config_data, query)
+            except KeyError:
+                return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
+        else:
+            data = config_data
 
-        self.api_finish(data=config_data[query] if query else config_data)
+        self.api_finish(data=data)
 
     def patch(self, *args, **kwargs):
         """Patch general configuration."""
@@ -194,14 +215,12 @@ class ConfigHandler(BaseRequestHandler):
             if key == 'emby':
                 done_data.setdefault('emby', {})
                 if 'enabled' in data['emby'] and str(data['emby']['enabled']).lower() in ['true', 'false']:
-                    # @TODO: All booleans should be saved as booleans
-                    app.USE_EMBY = int(data['emby']['enabled'])
+                    app.USE_EMBY = bool(data['emby']['enabled'])
                     done_data['emby'].setdefault('enabled', bool(app.USE_EMBY))
             if key == 'torrents':
                 done_data.setdefault('torrents', {})
                 if 'enabled' in data['torrents'] and str(data['torrents']['enabled']).lower() in ['true', 'false']:
-                    # @TODO: All booleans should be saved as booleans
-                    app.USE_TORRENTS = int(data['torrents']['enabled'])
+                    app.USE_TORRENTS = bool(data['torrents']['enabled'])
                     done_data['torrents'].setdefault('enabled', bool(app.USE_TORRENTS))
                 if 'username' in data['torrents']:
                     app.TORRENT_USERNAME = str(data['torrents']['username'])
@@ -216,8 +235,7 @@ class ConfigHandler(BaseRequestHandler):
                     app.TORRENT_LABEL_ANIME = str(data['torrents']['labelAnime'])
                     done_data['torrents'].setdefault('labelAnime', app.TORRENT_LABEL_ANIME)
                 if 'verifySSL' in data['torrents'] and str(data['torrents']['verifySSL']).lower() in ['true', 'false']:
-                    # @TODO: All booleans should be saved as booleans
-                    app.TORRENT_VERIFY_CERT = int(data['torrents']['verifySSL'])
+                    app.TORRENT_VERIFY_CERT = bool(data['torrents']['verifySSL'])
                     done_data['torrents'].setdefault('verifySSL', bool(app.TORRENT_VERIFY_CERT))
                 if 'path' in data['torrents']:
                     app.TORRENT_PATH = str(data['torrents']['path'])
@@ -243,33 +261,37 @@ class ConfigHandler(BaseRequestHandler):
             if key == 'layout':
                 done_data.setdefault('layout', {})
                 if 'schedule' in data['layout']:
-                    if data['layout']['schedule'] in ('poster', 'banner', 'list', 'calendar'):
-                        if data['layout']['schedule'] == 'calendar':
-                            app.COMING_EPS_SORT = 'date'
-                        app.COMING_EPS_LAYOUT = data['layout']['schedule']
-                    else:
-                        app.COMING_EPS_LAYOUT = 'banner'
-                    done_data['layout'].setdefault('schedule', app.COMING_EPS_LAYOUT)
-                if 'history' in data['layout']:
-                    if data['layout']['history'] in ('compact', 'detailed'):
-                        app.HISTORY_LAYOUT = data['layout']['history']
-                    else:
-                        app.HISTORY_LAYOUT = 'detailed'
-                    done_data['layout'].setdefault('history', app.HISTORY_LAYOUT)
-                if 'home' in data['layout']:
-                    if data['layout']['home'] in ('poster', 'small', 'banner', 'simple', 'coverflow'):
-                        app.HOME_LAYOUT = data['layout']['home']
-                    else:
-                        app.HOME_LAYOUT = 'poster'
-                    done_data['layout'].setdefault('home', app.HOME_LAYOUT)
-                if 'show' in data['layout']:
-                    done_data['layout'].setdefault('show', {})
-                    if 'allSeasons' in data['layout']['show'] and str(data['layout']['show']['allSeasons']).lower() in ['true', 'false']:
-                        app.DISPLAY_ALL_SEASONS = int(data['layout']['show']['allSeasons'])
-                        done_data['layout']['show'].setdefault('allSeasons', bool(app.DISPLAY_ALL_SEASONS))
-                    if 'specials' in data['layout']['show'] and str(data['layout']['show']['specials']).lower() in ['true', 'false']:
-                        app.DISPLAY_SHOW_SPECIALS = int(data['layout']['show']['specials'])
-                        done_data['layout']['show'].setdefault('specials', bool(app.DISPLAY_SHOW_SPECIALS))
+                    done_data['layout'].setdefault('schedule', {})
+                    if 'current' in data['layout']['schedule']:
+                        if data['layout']['schedule']['current'] in ('poster', 'banner', 'list', 'calendar'):
+                            if data['layout']['schedule']['current'] == 'calendar':
+                                app.COMING_EPS_SORT = 'date'
+                                app.COMING_EPS_LAYOUT = 'calendar'
+                                done_data['layout']['schedule'].setdefault('sort', app.COMING_EPS_SORT)
+                            else:
+                                app.COMING_EPS_LAYOUT = data['layout']['schedule']['current']
+                            done_data['layout']['schedule'].setdefault('current', app.COMING_EPS_LAYOUT)
+
+                # if 'history' in data['layout']:
+                #     if data['layout']['history'] in ('compact', 'detailed'):
+                #         app.HISTORY_LAYOUT = data['layout']['history']
+                #     else:
+                #         app.HISTORY_LAYOUT = 'detailed'
+                #     done_data['layout'].setdefault('history', app.HISTORY_LAYOUT)
+                # if 'home' in data['layout']:
+                #     if data['layout']['home'] in ('poster', 'small', 'banner', 'simple', 'coverflow'):
+                #         app.HOME_LAYOUT = data['layout']['home']
+                #     else:
+                #         app.HOME_LAYOUT = 'poster'
+                #     done_data['layout'].setdefault('home', app.HOME_LAYOUT)
+                # if 'show' in data['layout']:
+                #     done_data['layout'].setdefault('show', {})
+                #     if 'allSeasons' in data['layout']['show'] and str(data['layout']['show']['allSeasons']).lower() in ['true', 'false']:
+                #         app.DISPLAY_ALL_SEASONS = int(data['layout']['show']['allSeasons'])
+                #         done_data['layout']['show'].setdefault('allSeasons', bool(app.DISPLAY_ALL_SEASONS))
+                #     if 'specials' in data['layout']['show'] and str(data['layout']['show']['specials']).lower() in ['true', 'false']:
+                #         app.DISPLAY_SHOW_SPECIALS = int(data['layout']['show']['specials'])
+                #         done_data['layout']['show'].setdefault('specials', bool(app.DISPLAY_SHOW_SPECIALS))
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
         if len(done_errors):

@@ -403,24 +403,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
         indexer: $('input#indexer').val(),
-        indexer_id: $('input#showID').val() // eslint-disable-line camelcase
+        indexer_id: $('input#showID').val()
     }, function(data) {
         setSeasonSceneException(data);
-    });
-
-    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
-    $('.display-specials a').on('click', function(){
-        api.patch('config', {
-            layout: {
-                show: {
-                    specials: $(this).text() === 'Hide' ? false : true
-                }
-            }
-        }).then(function(response) {
-            log.info(response.data);
-            window.location.reload();
-        }).catch(function(response){
-            log.error(response.data);
-        });
     });
 };

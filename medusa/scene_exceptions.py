@@ -104,6 +104,7 @@ def get_all_scene_exceptions(indexer_id):
     """
     exceptions_dict = {}
 
+    # @TODO: This needs to take into account multiple indexers
     cache_db_con = db.DBConnection('cache.db')
     exceptions = cache_db_con.select(b'SELECT show_name, season FROM scene_exceptions WHERE indexer_id = ?',
                                      [indexer_id])

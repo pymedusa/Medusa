@@ -1,7 +1,4 @@
-// eslint-disable-line max-lines
-// @TODO Move these into common.ini when possible,
-//       currently we can't do that as browser.js and a few others need it before this is loaded
-var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
+var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />';
 var apiRoot = $('body').attr('api-root');
 var apiKey = $('body').attr('api-key');
 
@@ -26,8 +23,8 @@ var UTIL = {
         }
     },
     init: function() {
-        if (typeof startVue === 'function') { // eslint-disable-line no-undef
-            startVue(); // eslint-disable-line no-undef
+        if (typeof startVue === 'function') {
+            startVue();
         } else {
             $('[v-cloak]').removeAttr('v-cloak');
         }
@@ -42,8 +39,9 @@ var UTIL = {
     }
 };
 
+// @TODO: Remove this whole crap!
 $.extend({
-    isMeta: function(pyVar, result) { // eslint-disable-line no-unused-vars
+    isMeta: function(pyVar, result) {
         var reg = new RegExp(result.length > 1 ? result.join('|') : result);
 
         if (typeof(pyVar) === 'object' && Object.keys(pyVar).length == 1) {
@@ -59,6 +57,7 @@ $.extend({
     }
 });
 
+// Toggles a warning class
 $.fn.extend({
     addRemoveWarningClass: function(_) {
         if (_) {

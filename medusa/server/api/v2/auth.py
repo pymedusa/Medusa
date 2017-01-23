@@ -26,6 +26,7 @@ class AuthHandler(BaseRequestHandler):
 
     def post(self, *args, **kwargs):
         """Request JWT."""
+        # @TODO: Add in checks for refresh token being submitted
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
         submitted_username = ''
@@ -62,16 +63,21 @@ class AuthHandler(BaseRequestHandler):
 
         logger.log('{user} logged into the API v2'.format(user=app.WEB_USERNAME), logger.INFO)
         time_now = int(time.time())
-        self.api_finish(data=jwt.encode({
-            'iss': 'Medusa ' + app.APP_VERSION,
-            'iat': time_now,
-            # @TODO: The jti should be saved so we can revoke tokens
-            'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
-            'exp': time_now + int(exp),
-            'scopes': ['show:read', 'show:write'],  # @TODO: This should be reaplce with scopes or roles/groups
-            'username': app.WEB_USERNAME,
-            'apiKey': app.API_KEY  # TODO: This should be replaced with the JWT itself
-        }, app.ENCRYPTION_SECRET, algorithm='HS256'))
+        self.api_finish(data={
+            'token_type': 'bearer',
+            'expires_in': exp,
+            'access_token': jwt.encode({
+                'iss': 'Medusa ' + app.APP_VERSION,
+                'iat': time_now,
+                # @TODO: The jti should be saved so we can revoke tokens
+                'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
+                'exp': time_now + int(exp),
+                'scopes': ['show:read', 'show:write'],  # @TODO: This should be reaplce with scopes or roles/groups
+                'username': app.WEB_USERNAME,
+                'apiKey': app.API_KEY  # TODO: This should be replaced with the JWT itself
+            }, app.ENCRYPTION_SECRET, algorithm='HS256'),
+            'refresh_token': ''
+        })
 
     def _failed_login(self, error=None):
         self.api_finish(status=401, error=error)

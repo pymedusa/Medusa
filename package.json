@@ -10,8 +10,6 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test": "xo",
-    "security": "snyk test",
     "build": "./node_modules/grunt-cli/bin/grunt"
   },
   "devDependencies": {

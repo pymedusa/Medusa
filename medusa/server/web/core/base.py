@@ -276,11 +276,6 @@ class WebRoot(WebHandler):
     def index(self):
         return self.redirect('/{page}/'.format(page=app.DEFAULT_PAGE))
 
-    def robots_txt(self):
-        """ Keep web crawlers out """
-        self.set_header('Content-Type', 'text/plain')
-        return 'User-agent: *\nDisallow: /'
-
     def apibuilder(self):
         def titler(x):
             return (helpers.remove_article(x), x)[not x or app.SORT_ARTICLE]
