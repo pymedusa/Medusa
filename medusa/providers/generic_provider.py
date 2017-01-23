@@ -357,10 +357,8 @@ class GenericProvider(object):
                 continue
 
             if not manual_search:
-                # Use all the previous rules to decide if we want to go on with this result.
                 # The second check, will loop through actual_episodes and check if there's anything useful in it.
-                if (not search_result.episode_wanted or
-                        not search_result.check_episodes_for_quality(forced_search, download_current_quality)):
+                if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
                     logger.log('Ignoring result %s.' % search_result.name, logger.DEBUG)
                     continue
 

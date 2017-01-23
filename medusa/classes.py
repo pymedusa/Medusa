@@ -88,6 +88,7 @@ class SearchResult(object):
         # content
         self.content = None
 
+        # Result type like: nzb, nzbdata, torrent
         self.resultType = u''
 
     def __str__(self):
@@ -128,6 +129,7 @@ class EvaluateSearchResult(SearchResult):
         self.episode_wanted = False
         self.actual_season = None
         self.actual_episodes = None
+        self.multi_epp = False
 
     def add_result_to_cache(self, cache):
         """Cache the item if needed."""
