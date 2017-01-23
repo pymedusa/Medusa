@@ -906,8 +906,6 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         logger.log(u'{id}: Finished update of {show}'.format
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
-        # Refresh show needs to be forced since current execution locks the queue
-        app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
