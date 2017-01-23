@@ -217,6 +217,11 @@ class TransmissionAPI(GenericClient):
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
 
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+
         0 = Torrent is stopped
         1 = Queued to check files
         2 = Checking files
@@ -258,6 +263,7 @@ class TransmissionAPI(GenericClient):
 
             to_remove = False
             for i in torrent['files']:
+                # Check if media was processed OR check hash in case of RARed torrents
                 if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
                     to_remove = True
 
