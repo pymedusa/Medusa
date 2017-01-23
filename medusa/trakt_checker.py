@@ -133,7 +133,7 @@ class TraktChecker(object):
                 'shows': [
                     {
                         'title': show_obj.name,
-                        'year': show_obj.startyear,
+                        'year': show_obj.start_year,
                         'ids': {}
                     }
                 ]
@@ -174,7 +174,7 @@ class TraktChecker(object):
                 'shows': [
                     {
                         'title': show_obj.name,
-                        'year': show_obj.startyear,
+                        'year': show_obj.start_year,
                         'ids': {}
                     }
                 ]
@@ -365,7 +365,7 @@ class TraktChecker(object):
 
                     if not self._check_list(trakt_id, show_obj.indexerid, 0, 0, List='Show'):
                         logger.log('Adding Show {0} with ID: {1} to Trakt watchlist'.format(show_obj.name, show_obj.indexerid), logger.DEBUG)
-                        show_el = {'title': show_obj.name, 'year': show_obj.startyear, 'ids': {}}
+                        show_el = {'title': show_obj.name, 'year': show_obj.start_year, 'ids': {}}
                         if trakt_id == 'tvdb_id':
                             show_el['ids']['tvdb'] = show_obj.indexerid
                         else:
@@ -387,13 +387,13 @@ class TraktChecker(object):
             if app.showList:
                 for show in app.showList:
                     if show.status == 'Ended':
-                        if not show.imdbid:
+                        if not show.imdb_id:
                             logger.log('Could not check trakt progress for {0} because the imdb id is missing from tvdb data, skipping'.format
                                        (show.name), logger.WARNING)
                             continue
 
                         try:
-                            progress = self._request('shows/{0}/progress/watched'.format(show.imdbid)) or []
+                            progress = self._request('shows/{0}/progress/watched'.format(show.imdb_id)) or []
                         except TraktException as e:
                             logger.log('Could not connect to Trakt. Aborting removing show {0} from Medusa. Error: {1}'.format(show.name, repr(e)), logger.WARNING)
                             continue
@@ -669,9 +669,9 @@ class TraktChecker(object):
         uniqueShows = {}
         uniqueSeasons = {}
 
-        for showid, indexerid, show_name, startyear, season, episode in data:
+        for showid, indexerid, show_name, start_year, season, episode in data:
             if showid not in uniqueShows:
-                uniqueShows[showid] = {'title': show_name, 'year': startyear, 'ids': {}, 'seasons': []}
+                uniqueShows[showid] = {'title': show_name, 'year': start_year, 'ids': {}, 'seasons': []}
                 trakt_id = indexerApi(indexerid).config['trakt_id']
 
                 if trakt_id == 'tvdb_id':
@@ -681,7 +681,7 @@ class TraktChecker(object):
                 uniqueSeasons[showid] = []
 
         # Get the unique seasons per Show
-        for showid, indexerid, show_name, startyear, season, episode in data:
+        for showid, indexerid, show_name, start_year, season, episode in data:
             if season not in uniqueSeasons[showid]:
                 uniqueSeasons[showid].append(season)
 
@@ -695,7 +695,7 @@ class TraktChecker(object):
             for searchedSeason in uniqueSeasons[searchedShow]:
                 episodesList = []
 
-                for showid, indexerid, show_name, startyear, season, episode in data:
+                for showid, indexerid, show_name, start_year, season, episode in data:
                     if season == searchedSeason and showid == searchedShow:
                         episodesList.append({'number': episode})
                 show = uniqueShows[searchedShow]

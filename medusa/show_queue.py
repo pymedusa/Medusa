@@ -535,7 +535,6 @@ class QueueItemAdd(ShowQueueItem):
         self.show.write_metadata()
         self.show.update_metadata()
         self.show.populate_cache()
-        self.show.create_next_season_update()
 
         self.show.flush_episodes()
 
@@ -680,6 +679,8 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
+            # Let's make sure we refresh the indexer_api object attached to the show object.
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
@@ -804,12 +805,14 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     show=self.show.name,
                     season=u' with season(s) [{0}]'.
                     format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
-                    ), logger.DEBUG)
+                    ), logger.INFO)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
+            # Let's make sure we refresh the indexer_api object attached to the show object.
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
@@ -886,14 +889,6 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
-            # If this is a season limited update, let's update the cache season next_update
-            if self.seasons:
-                for season in self.seasons:
-                    self.show.create_next_season_update(season)
-            else:
-                # We did a show refresh, let's updated each next season update
-                self.show.create_next_season_update()
-
         # Save only after all changes were applied
         try:
             logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid), logger.DEBUG)
@@ -904,10 +899,8 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.ERROR)
 
         logger.log(u'{id}: Finished update of {show}'.format
-                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+                   (id=self.show.indexerid, show=self.show.name), logger.INFO)
 
-        # Refresh show needs to be forced since current execution locks the queue
-        app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
 
 

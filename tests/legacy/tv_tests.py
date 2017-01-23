@@ -46,7 +46,7 @@ class TVShowTests(test.AppTestDBCase):
         show.status = "Ended"
         show.default_ep_status = "5"
         show.airs = "monday"
-        show.startyear = 1987
+        show.start_year = 1987
 
         show.save_to_db()
         show._load_from_db()
@@ -100,7 +100,7 @@ class TVTests(test.AppTestDBCase):
         show.status = "Ended"
         show.default_ep_status = "5"
         show.airs = "monday"
-        show.startyear = 1987
+        show.start_year = 1987
         show.save_to_db()
         app.showList = [show]
         # TODO: implement

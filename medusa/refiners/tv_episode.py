@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 SHOW_MAPPING = {
     'series_tvdb_id': 'tvdb_id',
-    'series_imdb_id': 'imdbid',
-    'year': 'startyear'
+    'series_imdb_id': 'imdb_id',
+    'year': 'start_year'
 }
 
 EPISODE_MAPPING = {

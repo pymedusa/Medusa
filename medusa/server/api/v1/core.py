@@ -1867,7 +1867,7 @@ class CMD_Show(ApiCall):
         show_dict["sports"] = (0, 1)[show_obj.sports]
         show_dict["anime"] = (0, 1)[show_obj.anime]
         show_dict["airs"] = str(show_obj.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ')
-        show_dict["dvdorder"] = (0, 1)[show_obj.dvdorder]
+        show_dict["dvdorder"] = (0, 1)[show_obj.dvd_order]
 
         if show_obj.rls_require_words:
             show_dict["rls_require_words"] = show_obj.rls_require_words.split(", ")
@@ -1894,9 +1894,9 @@ class CMD_Show(ApiCall):
             show_dict["network"] = ""
         show_dict["status"] = show_obj.status
 
-        if try_int(show_obj.nextaired, 1) > 693595:
+        if try_int(show_obj.next_aired, 1) > 693595:
             dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                network_timezones.parse_date_time(show_obj.nextaired, show_dict['airs'], show_dict['network']))
+                network_timezones.parse_date_time(show_obj.next_aired, show_dict['airs'], show_dict['network']))
             show_dict['airs'] = sbdatetime.sbdatetime.sbftime(dt_episode_airs, t_preset=timeFormat).lstrip('0').replace(
                 ' 0', ' ')
             show_dict['next_ep_airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
@@ -2751,9 +2751,9 @@ class CMD_Shows(ApiCall):
                 "subtitles": (0, 1)[cur_show.subtitles],
             }
 
-            if try_int(cur_show.nextaired, 1) > 693595:  # 1900
+            if try_int(cur_show.next_aired, 1) > 693595:  # 1900
                 dt_episode_airs = sbdatetime.sbdatetime.convert_to_setting(
-                    network_timezones.parse_date_time(cur_show.nextaired, cur_show.airs, show_dict['network']))
+                    network_timezones.parse_date_time(cur_show.next_aired, cur_show.airs, show_dict['network']))
                 show_dict['next_ep_airdate'] = sbdatetime.sbdatetime.sbfdate(dt_episode_airs, d_preset=dateFormat)
             else:
                 show_dict['next_ep_airdate'] = ''

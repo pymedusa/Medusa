@@ -30,6 +30,7 @@ log_name_filters = {
     'SEARCHQUEUE-RETRY': 'Search Queue (Retry/Failed)',
     'SEARCHQUEUE-RSS': 'Search Queue (RSS)',
     'SHOWQUEUE-UPDATE': 'Show Queue (Update)',
+    'SHOWQUEUE-SEASON-UPDATE': 'Show Season Queue (Update)',
     'SHOWQUEUE-REFRESH': 'Show Queue (Refresh)',
     'FINDPROPERS': 'Find Propers',
     'POSTPROCESSOR': 'PostProcessor',

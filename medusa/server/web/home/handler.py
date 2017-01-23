@@ -1302,7 +1302,7 @@ class Home(WebRoot):
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
-                 air_by_date=None, sports=None, dvdorder=None, indexerLang=None,
+                 air_by_date=None, sports=None, dvd_order=None, indexerLang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
@@ -1365,7 +1365,7 @@ class Home(WebRoot):
                                 controller='home', action='editShow')
 
         flatten_folders = not config.checkbox_to_value(flatten_folders)  # UI inverts this value
-        dvdorder = config.checkbox_to_value(dvdorder)
+        dvd_order = config.checkbox_to_value(dvd_order)
         paused = config.checkbox_to_value(paused)
         air_by_date = config.checkbox_to_value(air_by_date)
         scene = config.checkbox_to_value(scene)
@@ -1455,7 +1455,7 @@ class Home(WebRoot):
 
             if not directCall:
                 show_obj.lang = indexer_lang
-                show_obj.dvdorder = dvdorder
+                show_obj.dvd_order = dvd_order
                 show_obj.rls_ignore_words = rls_ignore_words.strip()
                 show_obj.rls_require_words = rls_require_words.strip()
 

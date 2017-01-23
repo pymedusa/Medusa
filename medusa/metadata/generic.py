@@ -249,7 +249,8 @@ class GenericMetadata(object):
 
     def create_show_metadata(self, show_obj):
         if self.show_metadata and show_obj and not self._has_show_metadata(show_obj):
-            logger.log(u"Metadata provider " + self.name + " creating show metadata for " + show_obj.name, logger.DEBUG)
+            logger.log(u"Metadata provider {metadata_provider} creating show metadata for {show_name}"
+                       .format(metadata_provider=self.name, show_name=show_obj.name), logger.DEBUG)
             return self.write_show_file(show_obj)
         return False
 
@@ -836,22 +837,12 @@ class GenericMetadata(object):
 
         show_id = show_obj.indexerid
 
-        indexer_lang = show_obj.lang
-
         try:
-            if not self.indexer_api:
-                l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-                l_indexer_api_params['banners'] = True
-                l_indexer_api_params['actors'] = True
+            if not (show_obj.indexer_api and all([show_obj.indexer_api.config['banners_enabled'],
+                                                  show_obj.indexer_api.config['actors_enabled']])):
+                show_obj.create_indexer(banners=True, actors=True)
 
-                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    l_indexer_api_params['language'] = indexer_lang
-
-                if show_obj.dvdorder != 0:
-                    l_indexer_api_params['dvdorder'] = True
-
-                self.indexer_api = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
-
+            self.indexer_api = show_obj.indexer_api
             my_show = self.indexer_api[int(show_id)]
         except IndexerShowNotFound:
             logger.log(u'Unable to find {indexer} show {id}, skipping it'.format

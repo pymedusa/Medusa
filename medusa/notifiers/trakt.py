@@ -68,7 +68,7 @@ class Notifier(object):
                     'shows': [
                         {
                             'title': ep_obj.show.name,
-                            'year': ep_obj.show.startyear,
+                            'year': ep_obj.show.start_year,
                             'ids': {},
                         }
                     ]
@@ -131,7 +131,7 @@ class Notifier(object):
                         'shows': [
                             {
                                 'title': show_obj.name,
-                                'year': show_obj.startyear,
+                                'year': show_obj.start_year,
                                 'ids': {},
                             }
                         ]
