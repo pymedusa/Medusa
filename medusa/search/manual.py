@@ -16,14 +16,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Manual search module."""
 
 import json
 import threading
 import time
 
 from datetime import datetime
+
 from dateutil import parser
+
 from .queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from .. import app, db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
@@ -38,10 +40,7 @@ SEARCH_STATUS_SEARCHING = "searching"
 
 
 def get_quality_class(ep_obj):
-    """
-    Find the quality class for the episode
-    """
-
+    """Find the quality class for the episode."""
     _, ep_quality = Quality.split_composite_status(ep_obj.status)
     if ep_quality in Quality.cssClassStrings:
         quality_class = Quality.cssClassStrings[ep_quality]
@@ -52,7 +51,7 @@ def get_quality_class(ep_obj):
 
 
 def get_episode(show, season=None, episode=None, absolute=None):
-    """ Get a specific episode object based on show, season and episode number
+    """Get a specific episode object based on show, season and episode number.
 
     :param show: Season number
     :param season: Season number
@@ -82,8 +81,7 @@ def get_episode(show, season=None, episode=None, absolute=None):
 
 
 def get_episodes(search_thread, searchstatus):
-    """ Get all episodes located in a search thread with a specific status """
-
+    """Get all episodes located in a search thread with a specific status."""
     results = []
     # NOTE!: Show.find called with just indexerid!
     show_obj = Show.find(app.showList, int(search_thread.show.indexerid))
@@ -115,8 +113,8 @@ def get_episodes(search_thread, searchstatus):
 
 
 def update_finished_search_queue_item(snatch_queue_item):
-    """
-    Updates the previous manual searched queue item with the correct status
+    """Update the previous manual searched queue item with the correct status.
+
     @param snatch_queue_item: A successful snatch queue item, send from pickManualSearch().
     @return: True if status update was successful, False if not.
     """
@@ -140,9 +138,9 @@ def update_finished_search_queue_item(snatch_queue_item):
 
 
 def collect_episodes_from_search_thread(show):
-    """
-    Collects all episodes from from the forced_search_queue_scheduler
-    and looks for episodes that are in status queued or searching.
+    """Collect all episodes from from the forced_search_queue_scheduler.
+
+    And looks for episodes that are in status queued or searching.
     If episodes are found in FORCED_SEARCH_HISTORY, these are set to status finished.
     """
     episodes = []
@@ -180,10 +178,7 @@ def collect_episodes_from_search_thread(show):
 
 
 def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, **search_show):  # pylint: disable=too-many-locals,unused-argument
-    """
-    Check all provider cache tables for search results
-    """
-
+    """Check all provider cache tables for search results."""
     show = search_show.get('show')
     season = search_show.get('season')
     episode = search_show.get('episode')
