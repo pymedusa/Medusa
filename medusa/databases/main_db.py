@@ -40,12 +40,12 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_duplicate_episodes()
         self.fix_orphan_episodes()
         self.fix_unaired_episodes()
-        self.fix_tvrage_show_statues()
+        #  self.fix_tvrage_show_statues()
         self.fix_episode_statuses()
         self.fix_invalid_airdates()
-        # self.fix_subtitles_codes()
+        #  self.fix_subtitles_codes()
         self.fix_show_nfo_lang()
-        self.convert_tvrage_to_tvdb()
+        #  self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
         self.update_old_propers()
         self.fix_subtitle_reference()
@@ -117,6 +117,7 @@ class MainSanityCheck(db.DBSanityCheck):
             self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" % (fixedStatus, archivedEp['episode_id']))
 
     def convert_tvrage_to_tvdb(self):
+        #  Remove?
         logger.log(u"Checking for shows with tvrage id's, since tvrage is gone", logger.DEBUG)
         from ..indexers.indexer_config import INDEXER_TVRAGE
         from ..indexers.indexer_config import INDEXER_TVDBV2
@@ -261,6 +262,7 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired["episode_id"]])
 
     def fix_tvrage_show_statues(self):
+        #  Remove?
         status_map = {
             'returning series': 'Continuing',
             'canceled/ended': 'Ended',
