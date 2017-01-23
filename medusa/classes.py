@@ -37,7 +37,7 @@ class ApplicationURLopener(FancyURLopener, object):
 class SearchResult(object):
     """Represents a search result from an indexer."""
 
-    def __init__(self, episodes):
+    def __init__(self, episodes=None):
         self.provider = None
 
         # release show object
@@ -91,6 +91,9 @@ class SearchResult(object):
         # Result type like: nzb, nzbdata, torrent
         self.resultType = u''
 
+        # Store the parse result, as it might be usefull of other information later on.
+        self.parsed_result = None
+
     def __str__(self):
 
         if self.provider is None:
@@ -118,15 +121,16 @@ class SearchResult(object):
 
 class EvaluateSearchResult(SearchResult):
     """A subclass of SearchResult, to use as an evaluation class."""
-
-    def __init__(self, item, download_current_quality):
-        super(EvaluateSearchResult, self).__init__(None)
+    def __init__(self, episodes=None, provider=None):
+        super(EvaluateSearchResult, self).__init__(episodes)
+        # Reference to the search_provider
+        self.provider = provider
         # Raw result in a dictionary
-        self.item = item
-        self.download_current_quality = download_current_quality
+        self.item = None
+        self.download_current_quality = None
         self.add_cache_entry = True
         self.same_day_special = False
-        self.episode_wanted = False
+        self.result_wanted = False
         self.actual_season = None
         self.actual_episodes = None
         self.multi_epp = False
@@ -136,7 +140,7 @@ class EvaluateSearchResult(SearchResult):
         if self.add_cache_entry:
             logger.debug('Adding item from search to cache: {release_name}', release_name=self.name)
             return cache.add_cache_entry(self.name, self.url, self.seeders,
-                                         self.leechers, self.size, self.pubdate)
+                                         self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
         return None
 
     def check_episodes_for_quality(self, forced_search, download_current_quality):
@@ -145,17 +149,17 @@ class EvaluateSearchResult(SearchResult):
         We could have gotten a multi-ep result, let's see if at least one if them is what we want
         in the correct quality.
         """
-        if not self.actual_episodes or self.actual_season:
+        if not self.actual_episodes or not self.actual_season:
             return False
 
-        episode_wanted = False
+        result_wanted = False
         for episode_number in self.actual_episodes:
             # Check whether or not the episode with the specified quality is wanted.
-            if self.show_object.want_episode(self.actual_season, episode_number,
-                                             self.quality, forced_search, download_current_quality):
-                episode_wanted = True
+            if self.show.want_episode(self.actual_season, episode_number,
+                                      self.quality, forced_search, download_current_quality):
+                result_wanted = True
 
-        if not episode_wanted:
+        if not result_wanted:
             logger.debug('We could not find a result in the correct quality for {release_name} with url {url}',
                          release_name=self.name, url=self.url)
             return False
@@ -175,27 +179,27 @@ class EvaluateSearchResult(SearchResult):
         self.pubdate = provider._get_pubdate(self.item)
 
 
-class NZBSearchResult(SearchResult):
+class NZBSearchResult(EvaluateSearchResult):
     """Regular NZB result with an URL to the NZB."""
 
-    def __init__(self, episodes):
-        super(NZBSearchResult, self).__init__(episodes)
+    def __init__(self, episodes, provider=None):
+        super(NZBSearchResult, self).__init__(episodes, provider=provider)
         self.resultType = u'nzb'
 
 
-class NZBDataSearchResult(SearchResult):
+class NZBDataSearchResult(EvaluateSearchResult):
     """NZB result where the actual NZB XML data is stored in the extraInfo."""
 
-    def __init__(self, episodes):
-        super(NZBDataSearchResult, self).__init__(episodes)
+    def __init__(self, episodes, provider=None):
+        super(NZBDataSearchResult, self).__init__(episodes, provider=provider)
         self.resultType = u'nzbdata'
 
 
-class TorrentSearchResult(SearchResult):
+class TorrentSearchResult(EvaluateSearchResult):
     """Torrent result with an URL to the torrent."""
 
-    def __init__(self, episodes):
-        super(TorrentSearchResult, self).__init__(episodes)
+    def __init__(self, episodes, provider=None):
+        super(TorrentSearchResult, self).__init__(episodes, provider=provider)
         self.resultType = u'torrent'
 
 
