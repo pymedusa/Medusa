@@ -47,6 +47,7 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_show_nfo_lang()
         self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
+        self.update_old_propers()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
 
