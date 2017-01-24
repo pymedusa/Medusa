@@ -3,6 +3,7 @@
     from medusa import app
     from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_config import mappings
     from medusa import sbdatetime
     import datetime
     import time
@@ -135,7 +136,7 @@
             </td>
             <td>
 % if cur_result['description']:
-                <img alt="" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${'%s_%s_%s' % (cur_result['showid'], cur_result['season'], cur_result['episode'])}" />
+                <img alt="" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${str(mappings.get(cur_indexer).replace('_id', '')) + str(cur_result['showid'])}_${str(cur_result["season"])}_${str(cur_result["episode"])}" />
 % else:
                 <img alt="" src="images/info32.png" width="16" height="16" class="plotInfoNone"  />
 % endif
