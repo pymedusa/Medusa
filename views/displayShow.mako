@@ -24,7 +24,7 @@
 <div class="clearfix"></div><!-- div.clearfix //-->
 
 <div class="row">
-    <div class="form-inline col-md-12">
+    <div class="form-inline col-lg-3 col-md-4 col-sm-6 col-xs-12">
         <label for="select-show">Change Show:</label>
         <div class="select-show-group">
             <div class="navShow"><img id="prevShow" src="images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>
@@ -165,7 +165,7 @@
                     <th class="col-ep">Scene</th>
                     <th class="col-ep">Scene Absolute</th>
                     <th class="col-name hidden-xs">Name</th>
-                    <th class="col-name">File Name</th>
+                    <th class="col-name hidden-xs">File Name</th>
                     <th class="col-ep">Size</th>
                     <th class="col-airdate">Airdate</th>
                     <th class="col-ep">Download</th>
@@ -207,7 +207,7 @@
                     <th class="col-ep">Scene</th>
                     <th class="col-ep">Scene Absolute</th>
                     <th class="col-name hidden-xs">Name</th>
-                    <th class="col-name">File Name</th>
+                    <th class="col-name hidden-xs">File Name</th>
                     <th class="col-ep">Size</th>
                     <th class="col-airdate">Airdate</th>
                     <th class="col-ep">Download</th>

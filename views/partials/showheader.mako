@@ -84,10 +84,16 @@
 <div class="row">
     <div id="container-display-show" class="col-md-12">
         <div class="show-poster-container">
-            <a asset="show/${show.indexerid}?type=poster" rel="dialog" title="View Poster for ${show.name}">
-                <img asset="show/${show.indexerid}?type=posterThumb" class="tvshowImg" alt=""/>
-            </a>
+            <div class="row">
+                <div class="image-flex-container col-md-12">
+                    <a asset="show/${show.indexerid}?type=poster">
+                        <img alt="" class="show-image" asset="show/${show.indexerid}?type=posterThumb" />
+                    </a>
+                </div>
+            </div>
         </div>
+
+        <div class="ver-spacer"></div>
 
         <div class="show-info-container">
             <div class="row">
@@ -134,7 +140,7 @@
                                  <a href="${anon_url('http://www.imdb.com/search/title?count=100&title_type=tv_series&genres=', imdbgenre.lower())}" target="_blank" title="View other popular ${imdbgenre} shows on IMDB."><li>${imdbgenre}</li></a>
                              % endfor
                          % elif show.genre:
-                             % for genre in show.genre[1:-1].split('|'):
+                             % for genre in show.genre.strip('|').split('|'):
                                  <a href="${anon_url('http://trakt.tv/shows/popular/?genres=', genre.lower())}" target="_blank" title="View other popular ${genre} shows on trakt.tv."><li>${genre}</li></a>
                              % endfor
                          % endif
@@ -145,7 +151,7 @@
             <div class="row">
                 <!-- Show Summary -->
                 <div id="summary" class="col-md-12">
-                    <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-8 col-md-8 col-sm-8 col-xs-12">
+                    <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
                         <table class="summaryTable pull-left">
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
@@ -204,8 +210,8 @@
                         </table><!-- Option table right -->
                     </div>
 
-                        <!-- Option table right -->
-                    <div id="show-status" class="col-lg-4 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
+                    <!-- Option table right -->
+                    <div id="show-status" class="col-lg-3 col-md-4 col-sm-4 col-xs-12 pull-xs-left">
                         <table class="pull-xs-left pull-md-right pull-sm-right pull-lg-right">
                             <% info_flag = subtitles.code_from_code(show.lang) if show.lang else '' %>
                             <tr><td class="showLegend">Info Language:</td><td><img src="images/subtitles/flags/${info_flag}.png" width="16" height="11" alt="${show.lang}" title="${show.lang}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/></td></tr>

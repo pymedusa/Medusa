@@ -19,17 +19,17 @@
 <table id="showListTable${cur_list_type}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
-            <th class="nowrap">Next Ep</th>
-            <th class="nowrap">Prev Ep</th>
+            <th class="min-cell-width nowrap">Next Ep</th>
+            <th class="min-cell-width nowrap">Prev Ep</th>
             <th>Show</th>
-            <th>Network</th>
-            <th>Indexer</th>
-            <th>Quality</th>
-            <th>Downloads</th>
-            <th>Size</th>
-            <th>Active</th>
-            <th>Status</th>
-            <th>XEM</th>
+            <th class="min-cell-width nowrap">Network</th>
+            <th class="min-cell-width nowrap">Indexer</th>
+            <th class="min-cell-width nowrap">Quality</th>
+            <th class="min-cell-width nowrap"> Downloads</th>
+            <th style="width: 100px">Size</th>
+            <th class="min-cell-width nowrap">Active</th>
+            <th class="min-cell-width nowrap">Status</th>
+            <th class="min-cell-width nowrap">XEM</th>
         </tr>
     </thead>
     <tfoot class="hidden-print">

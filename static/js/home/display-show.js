@@ -295,32 +295,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
     });
 
-    $('.addQTip').each(function() {
-        $(this).css({
-            'cursor': 'help', // eslint-disable-line quote-props
-            'text-shadow': '0px 0px 0.5px #666'
-        });
-        $(this).qtip({
-            show: {
-                solo: true
-            },
-            position: {
-                my: 'left center',
-                adjust: {
-                    y: -10,
-                    x: 2
-                }
-            },
-            style: {
-                tip: {
-                    corner: true,
-                    method: 'polygon'
-                },
-                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
-            }
-        });
-    });
-
     $.fn.generateStars = function() {
         return this.each(function(i, e) {
             $(e).html($('<span/>').width($(e).text() * 12));

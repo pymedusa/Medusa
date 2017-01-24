@@ -14,7 +14,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8 col-md-offset-2">
         <form name="processForm" method="post" action="home/postprocess/processEpisode" style="line-height: 40px;">
         <table>
             <input type="hidden" id="proc_type" name="type" value="manual">
@@ -23,7 +23,7 @@
                     <b>Enter the folder containing the episode:</b>
                 </td>
                 <td>
-                    <input type="text" name="proc_dir" id="episodeDir" class="form-control form-control-inline input-sm input350" style="margin-right: 5px;"/>
+                    <input type="text" name="proc_dir" id="episodeDir" class="form-control form-control-inline input-sm" style="margin-right: 5px;"/>
                 </td>
             </tr>
             <tr>
