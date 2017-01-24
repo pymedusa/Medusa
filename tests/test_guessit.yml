@@ -4102,3 +4102,13 @@
   subtitle_language: es
   release_group: SC
   type: episode
+
+? Show.Name.S01E02.HDTV.XviD.2HD.720p.HDTV.X264
+: title: Show Name
+  season: 1
+  episode: 2
+  format: HDTV
+  video_codec: XviD
+  release_group: 2HD
+  screen_size: 720p
+  type: episode
