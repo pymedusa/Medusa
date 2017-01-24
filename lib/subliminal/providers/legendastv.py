@@ -398,10 +398,11 @@ class LegendasTVProvider(Provider):
                 expiration_time = (datetime.utcnow().replace(tzinfo=pytz.utc) - a.timestamp).total_seconds()
 
                 # attempt to get the releases from the cache
-                releases = region.get(releases_key.format(archive_id=a.id), expiration_time=expiration_time)
+                # releases = region.get(releases_key.format(archive_id=a.id), expiration_time=expiration_time)
 
                 # the releases are not in cache or cache is expired
-                if releases == NO_VALUE:
+                # Force download of archive
+                if True or releases == NO_VALUE:
                     logger.info('Releases not found in cache')
 
                     # download archive
@@ -425,7 +426,8 @@ class LegendasTVProvider(Provider):
                         releases.append(name)
 
                     # cache the releases
-                    region.set(releases_key.format(archive_id=a.id), releases)
+                    # region.set(releases_key.format(archive_id=a.id), releases)
+                    # Disabled as the html timestamp is not updated when a new subtitle is added to the pack
 
                 # iterate over releases
                 for r in releases:
