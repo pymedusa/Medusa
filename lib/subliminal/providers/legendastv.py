@@ -199,7 +199,8 @@ class LegendasTVProvider(Provider):
 
         self.session.close()
 
-    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    #  @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    #  As SHOW_EXPIRATION_TIME=3 weeks, a subtitle for a show can be missed if a new title is added before expiration
     def search_titles(self, title):
         """Search for titles matching the `title`.
 
