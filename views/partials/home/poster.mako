@@ -143,10 +143,7 @@
                     </div>
                 </div> <!-- col -->
             </div> <!-- show-poster-footer -->
-                % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
-                    <img src="images/xem.png" width="16" height="16" />
-                % endif
-            </div>
+        </div> <!-- show container -->
     % endfor
     </div>
 </div>
