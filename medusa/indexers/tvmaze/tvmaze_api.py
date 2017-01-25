@@ -371,7 +371,7 @@ class TVmaze(BaseIndexer):
         for order, cur_actor in enumerate(actors.people):
             save_actor = Actor()
             save_actor['id'] = cur_actor.id
-            save_actor['image'] = cur_actor.image.get('original')
+            save_actor['image'] = cur_actor.image.get('original') if cur_actor.image else ''
             save_actor['name'] = cur_actor.name
             save_actor['role'] = cur_actor.character.name
             save_actor['sortorder'] = order

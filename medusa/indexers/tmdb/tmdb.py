@@ -560,7 +560,7 @@ class Tmdb(BaseIndexer):
                     new_list.append(show.indexerid)
             total_updates = new_list
 
-        return total_updates
+        return list(total_updates)
 
     # Public methods, usable separate from the default api's interface api['show_id']
     def get_last_updated_seasons(self, show_list, from_time, weeks=1):
