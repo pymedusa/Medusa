@@ -276,7 +276,7 @@ class TVDBv2(BaseIndexer):
             )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
-        return OrderedDict({'episode': mapped_episodes})
+        return OrderedDict({'episode': mapped_episodes if isinstance(mapped_episodes, list) else [mapped_episodes]})
 
     def _parse_episodes(self, tvdb_id, episode_data):
         """Parse retreived episodes."""
