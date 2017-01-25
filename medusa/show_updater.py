@@ -46,7 +46,10 @@ class ShowUpdater(object):
         network_timezones.update_network_dict()
         logger.info(u'Started periodic show updates')
 
+        # Cache for the indexers list of updated show
         indexer_updated_shows = {}
+        # Cache for the last indexer update timestamp
+        last_updates = {}
 
         # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
         for show in app.showList:
@@ -63,8 +66,11 @@ class ShowUpdater(object):
                             indexer_name=indexerApi(show.indexer).name, show=show.name)
                 continue
 
-            # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
-            last_update = self.update_cache.get_last_indexer_update(indexerApi(show.indexer).name)
+            # Get the lastUpdate timestamp for this indexer.
+            if indexerApi(show.indexer).name not in last_updates:
+                last_updates[indexerApi(show.indexer).name] = \
+                    self.update_cache.get_last_indexer_update(indexerApi(show.indexer).name)
+            last_update = last_updates[indexerApi(show.indexer).name]
 
             # Get a list of updated shows from the indexer, since last update.
             # Use the list, to limit the shows for which are requested for the last updated seasons.
