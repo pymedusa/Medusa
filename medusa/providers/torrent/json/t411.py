@@ -119,12 +119,18 @@ class T411Provider(TorrentProvider):
         """
         items = []
 
-        unsorted_torrent_rows = data.get('torrents') if mode != 'RSS' else data
+        if not data:
+            logger.log('No data returned from provider', logger.DEBUG)
+            return items
 
-        if not unsorted_torrent_rows or not isinstance(unsorted_torrent_rows, dict):
+        # Data is `dict` when episode search and `list` when RSS search
+        if not ((isinstance(data, dict) and data.get('torrents')) or
+                isinstance(data, list) and len(data)):
             logger.log('Data returned from provider does not contain any {0}torrents'.format(
                 'confirmed ' if self.confirmed else ''), logger.DEBUG)
             return items
+
+        unsorted_torrent_rows = data.get('torrents') if mode != 'RSS' else data
 
         torrent_rows = sorted(unsorted_torrent_rows, key=itemgetter('added'), reverse=True)
 
