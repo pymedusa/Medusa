@@ -896,15 +896,13 @@ class FixTvChaosUkWorkaround(Rule):
 
             video_codecs = matches.range(filepart.start, filepart.end, lambda match: match.name == 'video_codec')
             formats = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'format')
-            unique_codecs = {v.value for v in video_codecs}
-            unique_formats = {v.value for v in formats}
-            if len(unique_codecs) > 1:
+            if len(video_codecs) > 1:
                 to_remove.append(m_x264)
-                if len(unique_formats) <= 1:
+                if len(formats) <= 1:
                     m_hdtv.tags.append('tvchaosuk')
-            if len(unique_formats) > 1:
+            if len(formats) > 1:
                 to_remove.append(m_hdtv)
-                if len(unique_codecs) <= 1:
+                if len(video_codecs) <= 1:
                     m_x264.tags.append('tvchaosuk')
 
         return to_remove
