@@ -21,6 +21,7 @@ from collections import OrderedDict
 
 from requests.compat import urljoin
 from requests.packages.urllib3.exceptions import MaxRetryError, RequestError
+from six import string_types
 
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.rest import ApiException
@@ -104,7 +105,7 @@ class TVDBv2(BaseIndexer):
 
         tvdb_response = getattr(tvdb_response, 'data', tvdb_response)
 
-        if not isinstance(tvdb_response, list):
+        if isinstance(tvdb_response, string_types):
             tvdb_response = [tvdb_response]
 
         for parse_object in tvdb_response:
@@ -117,7 +118,7 @@ class TVDBv2(BaseIndexer):
                             continue
 
                         if isinstance(value, list):
-                            if list_separator and all(isinstance(x, (str, unicode)) for x in value):
+                            if list_separator and all(isinstance(x, string_types) for x in value):
                                 value = list_separator.join(value)
                             else:
                                 value = [self._object_to_dict(x, key_mapping) for x in value]
@@ -180,7 +181,7 @@ class TVDBv2(BaseIndexer):
             return
 
         mapped_results = self._object_to_dict(results, self.series_map, '|')
-        mapped_results = [mapped_results] if not isinstance(mapped_results, list) else mapped_results
+        mapped_results = [mapped_results] if isinstance(mapped_results, string_types) else mapped_results
 
         # Remove results with an empty series_name.
         # Skip shows when they do not have a series_name in the searched language. example: '24 h berlin' in 'en'
@@ -228,7 +229,7 @@ class TVDBv2(BaseIndexer):
         """
         results = []
         if aired_season:
-            aired_season = [aired_season] if not isinstance(aired_season, list) else aired_season
+            aired_season = [aired_season] if isinstance(aired_season, string_types) else aired_season
 
         # Parse episode data
         logger.debug('Getting all episodes of %s', [tvdb_id])
@@ -274,7 +275,7 @@ class TVDBv2(BaseIndexer):
             )
 
         mapped_episodes = self._object_to_dict(results, self.series_map, '|')
-        return OrderedDict({'episode': mapped_episodes if isinstance(mapped_episodes, list) else [mapped_episodes]})
+        return OrderedDict({'episode': [mapped_episodes] if isinstance(mapped_episodes, string_types) else mapped_episodes})
 
     def _parse_episodes(self, tvdb_id, episode_data):
         """Parse retreived episodes."""
@@ -282,7 +283,7 @@ class TVDBv2(BaseIndexer):
             return False
 
         episodes = episode_data['episode']
-        if not isinstance(episodes, list):
+        if isinstance(episodes, string_types):
             episodes = [episodes]
 
         for cur_ep in episodes:
@@ -331,7 +332,7 @@ class TVDBv2(BaseIndexer):
             logger.debug('Series result returned zero')
             IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
 
-        if not isinstance(all_series, list):
+        if isinstance(all_series, string_types):
             all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
@@ -475,7 +476,7 @@ class TVDBv2(BaseIndexer):
             return
 
         cur_actors = Actors()
-        for cur_actor in actors.data if isinstance(actors.data, list) else [actors.data]:
+        for cur_actor in [actors.data] if isinstance(actors.data, string_types) else actors.data:
             new_actor = Actor()
             new_actor['id'] = cur_actor.id
             new_actor['image'] = self.config['artwork_prefix'] % cur_actor.image
