@@ -313,8 +313,8 @@ class GenericProvider(object):
 
                         # Compare the episodes and season from the result with what was searched.
                         if not [searched_episode for searched_episode in episodes
-                                if searched_episode.season == search_result.parsed_result.season_number
-                                and (searched_episode.episode, searched_episode.scene_episode)
+                                if searched_episode.season == search_result.parsed_result.season_number and
+                                (searched_episode.episode, searched_episode.scene_episode)
                                 [searched_episode.show.is_scene] in search_result.parsed_result.episode_numbers]:
                             logger.log(
                                 "The result %s doesn't seem to match an episode that we are currently trying to "

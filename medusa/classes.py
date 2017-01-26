@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Classes module."""
+"""Collection of generic used classes."""
 import logging
 
 from dateutil import parser
@@ -121,6 +121,7 @@ class SearchResult(object):
 
 class EvaluateSearchResult(SearchResult):
     """A subclass of SearchResult, to use as an evaluation class."""
+
     def __init__(self, episodes=None, provider=None):
         super(EvaluateSearchResult, self).__init__(episodes)
         # Reference to the search_provider
