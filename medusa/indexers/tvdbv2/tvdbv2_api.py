@@ -69,10 +69,10 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            logger.warn("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
             raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
         except (MaxRetryError, RequestError) as e:
-            logger.warn("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
             raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
 
         self.search_api = SearchApi(auth_client)
@@ -137,7 +137,7 @@ class TVDBv2(BaseIndexer):
                             return_dict[attribute] = value
 
                     except Exception as e:
-                        logger.warn('Exception trying to parse attribute: %s, with exception: %r', attribute, e)
+                        logger.warning('Exception trying to parse attribute: %s, with exception: %r', attribute, e)
                 parsed_response.append(return_dict)
             else:
                 logger.debug('Missing attribute map, cant parse to dict')
@@ -298,7 +298,7 @@ class TVDBv2(BaseIndexer):
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                logger.warn('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
+                logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
@@ -436,7 +436,7 @@ class TVDBv2(BaseIndexer):
                         base_path[k] = v
 
             except Exception as e:
-                logger.warn('Could not parse Poster for showid: %s, with exception: %r', sid, e)
+                logger.warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
                 return False
 
         self._save_images(sid, _images)

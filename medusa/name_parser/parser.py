@@ -113,14 +113,14 @@ class NameParser(object):
                     logger.debug('Indexer info for show {name}: {ep}',
                                  name=result.show.name, ep=episode_num(season_number, episode_numbers[0]))
                 except IndexerEpisodeNotFound:
-                    logger.warn("Unable to find episode with date {date} for show '{name}'. Skipping",
-                                date=result.air_date, name=result.show.name)
+                    logger.warning("Unable to find episode with date {date} for show '{name}'. Skipping",
+                                   date=result.air_date, name=result.show.name)
                     episode_numbers = []
                 except IndexerError as e:
-                    logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    logger.warning('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
                     episode_numbers = []
                 except IndexerException as e:
-                    logger.warn('Indexer exception: {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    logger.warning('Indexer exception: {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
                     episode_numbers = []
 
             for episode_number in episode_numbers:

@@ -61,9 +61,9 @@ class ShowUpdater(object):
             try:
                 t = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
-                logger.warn(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                            u'connectivity issues. While trying to look for showupdates on show: {show}',
-                            indexer_name=indexerApi(show.indexer).name, show=show.name)
+                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                               u'connectivity issues. While trying to look for showupdates on show: {show}',
+                               indexer_name=indexerApi(show.indexer).name, show=show.name)
                 continue
 
             # Get the lastUpdate timestamp for this indexer.
@@ -80,14 +80,14 @@ class ShowUpdater(object):
                         indexer_updated_shows[show.indexer] = t.get_last_updated_series(last_update,
                                                                                         update_max_weeks)
                     except IndexerUnavailable:
-                        logger.warn(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                    u'connectivity issues while trying to look for showupdates on show: {show}',
-                                    indexer_name=indexerApi(show.indexer).name, show=show.name)
+                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                       u'connectivity issues while trying to look for showupdates on show: {show}',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
                         continue
                     except IndexerException as e:
-                        logger.warn(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                    u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                    indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                       u'issues while trying to get updates for show {show}. Cause: {cause}',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                         continue
 
                 # If the current show is not in the list, move on to the next.
@@ -117,14 +117,14 @@ class ShowUpdater(object):
                 try:
                     updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
                 except IndexerUnavailable:
-                    logger.warn(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                u'connectivity issues while trying to look for showupdates on show: {show}',
-                                indexer_name=indexerApi(show.indexer).name, show=show.name)
+                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                   u'connectivity issues while trying to look for showupdates on show: {show}',
+                                   indexer_name=indexerApi(show.indexer).name, show=show.name)
                     continue
                 except IndexerException as e:
-                    logger.warn(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                   u'issues while trying to get updates for show {show}. Cause: {cause}',
+                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                     continue
 
                 if updated_seasons[show.indexerid]:
@@ -143,7 +143,7 @@ class ShowUpdater(object):
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
-                    logger.warn(u'Automatic update failed. Error: {error}', error=e)
+                    logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
             else:
@@ -157,7 +157,7 @@ class ShowUpdater(object):
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show[1], season=show[2]))
                 except CantUpdateShowException as e:
-                    logger.warn(u'Automatic update failed. Error: {error}', error=e)
+                    logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
             else:
@@ -172,8 +172,8 @@ class ShowUpdater(object):
                 try:
                     app.show_queue_scheduler.action.refreshShow(show, True)
                 except CantRefreshShowException as e:
-                    logger.warn(u'Show refresh on show {show_name} failed. Error: {error}',
-                                show_name=show.name, error=e)
+                    logger.warning(u'Show refresh on show {show_name} failed. Error: {error}',
+                                   show_name=show.name, error=e)
                 except Exception as e:
                     logger.error(u'Show refresh on show {show_name} failed: Unexpected Error: {error}',
                                  show_name=show.name, error=e)
