@@ -56,6 +56,8 @@ from contextlib2 import closing, suppress
 
 import guessit
 
+from imdbpie import imdbpie
+
 import requests
 from requests.compat import urlparse
 
@@ -1729,3 +1731,30 @@ def is_info_hash_processed(info_hash):
                                         'WHERE d.action LIKE "%04"',
                                         [info_hash])
     return bool(history_result)
+
+
+def title_to_imdb(title, start_year, imdb_api=None):
+    """Get the IMDb ID from a title."""
+    if imdb_api is None:
+        imdb_api = imdbpie.Imdb()
+
+    imdb_results = imdb_api.search_for_title(title)
+
+    if len(imdb_results) == 1:
+        return imdb_results[0]['imdb_id']
+
+    title = title.lower()
+    # ImdbPie returns the year as string
+    start_year = str(start_year)
+
+    title_matches = []
+    for candidate in imdb_results:
+        # This check should be made more reliable
+        if candidate['title'].lower() == title:
+            if candidate['year'] == start_year:
+                return candidate['imdb_id']
+            title_matches.append(candidate['imdb_id'])
+
+    # Return the most relevant result (can be erroneous)
+    if title_matches:
+        return title_matches[0]
