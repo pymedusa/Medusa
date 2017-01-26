@@ -29,9 +29,7 @@ from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowInco
 from ...app import TMDB_API_KEY
 
 
-def log():
-    """Log Init."""
-    return logging.getLogger('tmdb')
+logger = logging.getLogger(__name__)
 
 
 class Tmdb(BaseIndexer):
@@ -150,7 +148,7 @@ class Tmdb(BaseIndexer):
                 return_dict['airs_time'] = '0:00AM'
 
             except Exception as e:
-                log().warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
+                logger.warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
 
             parsed_response.append(return_dict)
 
@@ -191,7 +189,7 @@ class Tmdb(BaseIndexer):
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
         series = series.encode('utf-8')
-        log().debug('Searching for show %s', [series])
+        logger.debug('Searching for show %s', [series])
 
         results = self._show_search(series, request_language=self.config['language'])
 
@@ -209,7 +207,7 @@ class Tmdb(BaseIndexer):
         :return: An ordered dict with the show searched for.
         """
         if tmdb_id:
-            log().debug('Getting all show data for %s', [tmdb_id])
+            logger.debug('Getting all show data for %s', [tmdb_id])
             results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
 
         if not results:
@@ -238,7 +236,7 @@ class Tmdb(BaseIndexer):
             raise IndexerShowIncomplete('This show does not have any seasons on TMDB.')
 
         # Parse episode data
-        log().debug('Getting all episodes of %s', [tmdb_id])
+        logger.debug('Getting all episodes of %s', [tmdb_id])
 
         # get episodes for each season
         for season in aired_season:
@@ -246,7 +244,7 @@ class Tmdb(BaseIndexer):
             results += season_info['episodes']
 
         if not results:
-            log().debug('Series results incomplete')
+            logger.debug('Series results incomplete')
             raise IndexerShowIncomplete('Show search returned incomplete results '
                                         '(cannot find complete show on TheMovieDb)')
 
@@ -262,7 +260,7 @@ class Tmdb(BaseIndexer):
 
         for cur_ep in episodes:
             if self.config['dvdorder']:
-                log().debug('Using DVD ordering.')
+                logger.debug('Using DVD ordering.')
                 use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
             else:
                 use_dvd = False
@@ -273,7 +271,7 @@ class Tmdb(BaseIndexer):
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                log().warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
+                logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
@@ -312,7 +310,7 @@ class Tmdb(BaseIndexer):
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
         image_sizes = {'fanart': 'backdrop_sizes', 'poster': 'poster_sizes'}
 
-        log().debug('Getting show banners for %s', sid)
+        logger.debug('Getting show banners for %s', sid)
         _images = {}
 
         # Let's fget the different type of images available for this series
@@ -351,14 +349,14 @@ class Tmdb(BaseIndexer):
                             _images[image_type][resolution][bid][k] = v
                             if k.endswith('path'):
                                 new_key = '_%s' % k
-                                log().debug('Adding base url for image: %s', v)
+                                logger.debug('Adding base url for image: %s', v)
                                 _images[image_type][resolution][bid][new_key] = self.config['artwork_prefix'].format(
                                     base_url=self.tmdb_configuration.images['base_url'],
                                     image_size=size,
                                     file_path=v)
 
             except Exception as e:
-                log().warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
+                logger.warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
                 return False
 
         season_images = self._parse_season_images(sid)
@@ -411,13 +409,13 @@ class Tmdb(BaseIndexer):
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
-        log().debug('Getting actors for %s', sid)
+        logger.debug('Getting actors for %s', sid)
 
         # TMDB also support passing language here as a param.
         credits = self.tmdb.TV(sid).credits(language=self.config['language'])  # pylint: disable=W0622
 
         if not credits or not credits.get('cast'):
-            log().debug('Actors result returned zero')
+            logger.debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
@@ -441,12 +439,12 @@ class Tmdb(BaseIndexer):
         shows[series_id][season_number][episode_number]
         """
         if self.config['language'] is None:
-            log().debug('Config language is none, using show language')
+            logger.debug('Config language is none, using show language')
             if language is None:
                 raise IndexerError("config['language'] was None, this should not happen")
             get_show_in_language = language
         else:
-            log().debug(
+            logger.debug(
                 'Configured language %s override show language of %s' % (
                     self.config['language'],
                     language
@@ -455,13 +453,13 @@ class Tmdb(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log().debug('Getting all series data for %s' % sid)
+        logger.debug('Getting all series data for %s' % sid)
 
         # Parse show information
         series_info = self._get_show_by_id(sid, request_language=get_show_in_language)
 
         if not series_info:
-            log().debug('Series result returned zero')
+            logger.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
 
         # get series data / add the base_url to the image urls
