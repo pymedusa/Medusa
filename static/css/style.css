@@ -1319,7 +1319,9 @@ ul.tags li a {
     height:200px;
     background-color: #EFEFEF;
     opacity: 0.8;
-    border: 1px solid rgb(136, 136, 136);
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
 }
 
 .summaryTable {
