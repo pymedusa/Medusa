@@ -1552,7 +1552,8 @@ class TVShow(TVObject):
         # clean up any empty season folders after deletion of associated files
         if os.path.isdir(self.location):
             for sub_dir in os.listdir(self.location):
-                helpers.delete_empty_folders(os.path.join(self.location, sub_dir), self.location)
+                if os.path.isdir(sub_dir):
+                    helpers.delete_empty_folders(os.path.join(self.location, sub_dir), self.location)
 
         if sql_l:
             main_db_con = db.DBConnection()
