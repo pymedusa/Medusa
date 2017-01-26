@@ -6,6 +6,20 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
+    // adjust the summary background position and size on page load and resize
+    $(window).resize(function() {
+        var height = $("#summary").height() + 10;
+        var top = $("#summary").offset().top + 5
+        $("#summaryBackground").height(height);
+        $("#summaryBackground").offset({ top: top, left: 0})
+    });
+    $(function() {
+        var height = $("#summary").height() + 10;
+        var top = $("#summary").offset().top + 5;
+        $("#summaryBackground").height(height);
+        $("#summaryBackground").offset({ top: top, left: 0})
+    });
+
     $.ajaxEpSearch({
         colorRow: true
     });
