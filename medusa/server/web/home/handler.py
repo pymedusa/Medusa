@@ -22,7 +22,7 @@ from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_api import indexerApi
 from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerShowNotFoundInLanguage
+from ....indexers.indexer_exceptions import IndexerException, IndexerShowNotFoundInLanguage
 from ....providers.generic_provider import GenericProvider
 from ....sbdatetime import sbdatetime
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
@@ -1293,8 +1293,8 @@ class Home(WebRoot):
         indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
         indexer_api_params['language'] = language
         indexer_api_params['episodes'] = False
-        t = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
         try:
+            t = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
             t[show_obj.indexerid]
         except IndexerShowNotFoundInLanguage:
             return False
@@ -1374,16 +1374,19 @@ class Home(WebRoot):
         subtitles = config.checkbox_to_value(subtitles)
 
         if indexerLang and indexerLang in indexerApi(show_obj.indexer).indexer().config['valid_languages']:
-            if self.check_show_for_language(show_obj, indexerLang):
-                indexer_lang = indexerLang
-            else:
-                errors.append(u"Could not change language to '{language} for show {show_id} on indexer {indexer_name}'".
-                              format(language=indexerLang, show_id=show_obj.indexerid,
-                                     indexer_name=indexerApi(show_obj.indexer).name))
-                logger.log(u"Could not change language to '{language}' for show {show_id} on indexer {indexer_name}".
-                           format(language=indexerLang, show_id=show_obj.indexerid,
-                                  indexer_name=indexerApi(show_obj.indexer).name), logger.WARNING)
-                indexer_lang = show_obj.lang
+            try:
+                if self.check_show_for_language(show_obj, indexerLang):
+                    indexer_lang = indexerLang
+                else:
+                    errors.append(u"Could not change language to '{language} for show {show_id} "
+                                  u"on indexer {indexer_name}'".format(language=indexerLang, show_id=show_obj.indexerid,
+                                                                       indexer_name=indexerApi(show_obj.indexer).name))
+                    logger.log(errors[-1], logger.WARNING)
+                    indexer_lang = show_obj.lang
+            except IndexerException as e:
+                errors.append(u'Tried getting the show in a specific language. But unfortunately something went wrong. '
+                              u'Please try again later. Error is: {0}'.format(e))
+                logger.log(errors[-1], logger.WARNING)
         else:
             indexer_lang = show_obj.lang
 
