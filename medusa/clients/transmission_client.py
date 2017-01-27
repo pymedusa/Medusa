@@ -283,7 +283,7 @@ class TransmissionAPI(GenericClient):
                     status = 'stopped'
 
             if status == 'completed':
-                logger.info("Torrent completed and reached minimum ratio: [{ratio}] or "
+                logger.info("Torrent completed and reached minimum ratio: [{ratio:.3f}] or "
                             "seed idle limit: [{seed_limit} min]. Removing it: [{name}]",
                             ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name'])
                 #  self.remove_torrent(torrent['hashString'])
