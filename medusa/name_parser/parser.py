@@ -411,11 +411,13 @@ class ParseResult(object):
         return self.guess.get('video_codec')
 
 
-class NameParserCache(object):
+class NameParserCache:
     """Name parser cache."""
 
-    _previous_parsed = OrderedDict()
-    _cache_size = 1000
+    def __init__(self, max_size=1000):
+        """Initiate the cache with a maximum size."""
+        self.cache = OrderedDict()
+        self.max_size = max_size
 
     def add(self, name, parse_result):
         """Add the result to the parser cache.
@@ -425,9 +427,9 @@ class NameParserCache(object):
         :param parse_result:
         :type parse_result: ParseResult
         """
-        self._previous_parsed[name] = parse_result
-        while len(self._previous_parsed) > self._cache_size:
-            del self._previous_parsed[self._previous_parsed.keys()[0]]
+        while len(self.cache) >= self.max_size:
+            self.cache.popitem(last=False)
+        self.cache[name] = parse_result
 
     def get(self, name):
         """Return the cached parsed result.
@@ -437,9 +439,9 @@ class NameParserCache(object):
         :return:
         :rtype: ParseResult
         """
-        if name in self._previous_parsed:
+        if name in self.cache:
             logger.debug("Using cached parse result for '{name}'", name=name)
-            return self._previous_parsed[name]
+            return self.cache[name]
 
 
 name_parser_cache = NameParserCache()
