@@ -67,6 +67,15 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                 </div>
                                 <div class="field-pair">
+                                    <label class="clearfix" for="subtitles_erase_cache">
+                                        <span class="component-title">Erase subtitles cache on next boot</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="subtitles_erase_cache" id="subtitles_erase_cache" ${('', 'checked="checked"')[bool(app.SUBTITLES_ERASE_CACHE)]}/>
+                                            <p>Erases all subtitles cache files. May help fix some subtitles not being found</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Directory</span>
                                         <input type="text" value="${app.SUBTITLES_DIR}" id="subtitles_dir" name="subtitles_dir" class="form-control input-sm input350">
