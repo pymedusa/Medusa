@@ -8,16 +8,18 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     }
 
     // adjust the summary background position and size on page load and resize
-    funcion moveSummaryBackground() {
+    function moveSummaryBackground() {
         var height = $("#summary").height() + 10;
         var top = $("#summary").offset().top + 5
         $("#summaryBackground").height(height);
         $("#summaryBackground").offset({ top: top, left: 0})
     }
+    
     $(window).resize(function() {
         moveSummaryBackground();
     });
-    $(window).on('load',function() {
+
+    $(function() {
         moveSummaryBackground();
     });
 
