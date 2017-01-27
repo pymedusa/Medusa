@@ -125,8 +125,9 @@
                             </td>
                             <td class="col-provider">
                                 <span title="${hItem["provider"]}" class="addQTip">
-                                    <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/></td>
+                                    <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                                 </span>
+                            </td>
                             <td align="center">${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
                                 <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"]}"/>
