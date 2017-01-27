@@ -753,7 +753,7 @@ class CreateAliasWithAlternativeTitles(Rule):
                 previous = alternative_title
 
             alias.end = previous.end
-            return alias
+            return [alias]
 
 
 class CreateAliasWithCountryOrYear(Rule):
@@ -833,7 +833,7 @@ class CreateAliasWithCountryOrYear(Rule):
                 alias.value = alias.value + ' ' + re.sub(r'\W*', '', str(after_title.raw))
                 alias.end = after_title.end
                 alias.raw_end = after_title.raw_end
-                return alias
+                return [alias]
 
 
 class FixTvChaosUkWorkaround(Rule):
