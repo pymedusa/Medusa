@@ -206,8 +206,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         videoFiles = [x for x in files if helpers.is_media_file(x)]
         rarFiles = [x for x in files if helpers.is_rar_file(x)]
         rarContent = ""
-        if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
-            # Unpack only if video file was not already extracted by 'postpone if no subs' feature
+        if rarFiles:
             rarContent = unRAR(path, rarFiles, force, result)
             files += rarContent
             videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
@@ -262,8 +261,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                 videoFiles = [x for x in fileList if helpers.is_media_file(x)]
                 rarFiles = [x for x in fileList if helpers.is_rar_file(x)]
                 rarContent = ""
-                if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
-                    # Unpack only if video file was not already extracted by 'postpone if no subs' feature
+                if rarFiles:
                     rarContent = unRAR(processPath, rarFiles, force, result)
                     fileList = set(fileList + rarContent)
                     videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
@@ -451,7 +449,13 @@ def unRAR(path, rarFiles, force, result):
                                                    file_in_archive, logger.DEBUG)
                         skip_file = True
                         break
+                    if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
+                        result.output += logHelper(u"Archive file already extracted, extraction skipped: %s" %
+                                                   file_in_archive, logger.DEBUG)
 
+                        skip_file = True
+                        unpacked_files.append(file_in_archive)
+                        break
                 if skip_file:
                     continue
 
