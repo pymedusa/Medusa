@@ -276,8 +276,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         cached_results = [dict(row) for row in sql_total]
         for i in cached_results:
             i['quality_name'] = Quality.split_quality(int(i['quality']))
-            i['time'] = datetime.fromtimestamp(i['time'])
-            i['time_pretty'] = pretty_date(i['time'])
+            i['time_pretty'] = pretty_date(datetime.fromtimestamp(i['time']))
+            i['time'] = datetime.fromtimestamp(i['time']).strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET)
             i['release_group'] = i['release_group'] or 'None'
             i['provider_img_link'] = 'images/providers/' + i['provider_image'] or 'missing.png'
             i['provider'] = i['provider'] if i['provider_image'] else 'missing provider'
