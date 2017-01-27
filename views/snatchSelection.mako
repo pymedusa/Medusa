@@ -140,7 +140,9 @@
                             </td>
                             <td class="col-size">${hItem["pretty_size"]}</td>
                             <td align="center">${hItem["provider_type"]}</td>
-                            <td class="col-date">${hItem["time_pretty"]}</td>
+                            <td class="col-date">
+                                <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["time"]}'>${hItem["time_pretty"]}</span>
+                            </td>
                             <td class="col-date">${hItem["pubdate"]}</td>
                             <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>
