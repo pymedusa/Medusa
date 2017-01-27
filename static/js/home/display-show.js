@@ -3,21 +3,22 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
         let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
         $.backstretch(path);
+        $('.backstretch').css('top','50px');
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
     // adjust the summary background position and size on page load and resize
-    $(window).resize(function() {
+    funcion moveSummaryBackground() {
         var height = $("#summary").height() + 10;
         var top = $("#summary").offset().top + 5
         $("#summaryBackground").height(height);
         $("#summaryBackground").offset({ top: top, left: 0})
+    }
+    $(window).resize(function() {
+        moveSummaryBackground();
     });
-    $(function() {
-        var height = $("#summary").height() + 10;
-        var top = $("#summary").offset().top + 5;
-        $("#summaryBackground").height(height);
-        $("#summaryBackground").offset({ top: top, left: 0})
+    $(window).on('load',function() {
+        moveSummaryBackground();
     });
 
     $.ajaxEpSearch({
