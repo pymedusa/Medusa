@@ -33,8 +33,8 @@
                <% continue %>
            % endif
             <tr class="snatched" role="row" release_id=${index}>
-                <td class="tvShow" align="left"><a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">
-                        ${epResult['show_name']}
+                <td class="tvShow" align="left">
+                    <a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">${epResult['show_name']}</a>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}
@@ -86,8 +86,8 @@
                <% continue %>
            % endif
             <tr class="downloaded" role="row" release_id=${index}>
-                <td class="tvShow" align="left"><a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">
-                        ${epResult['show_name']}
+                <td class="tvShow" align="left">
+                    <a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">${epResult['show_name']}</a>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}

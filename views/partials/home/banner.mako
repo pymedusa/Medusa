@@ -139,7 +139,8 @@
                 <span style="display: none;">${cur_show.name}</span>
                 <div class="imgbanner banner">
                     <a href="home/displayShow?show=${cur_show.indexerid}">
-                    <img asset="show/${cur_show.indexerid}?type=banner" class="banner" alt="${cur_show.indexerid}" title="${cur_show.name}"/>
+                    <img src="show/${cur_show.indexerid}?type=banner" class="banner" alt="${cur_show.indexerid}" title="${cur_show.name}"/>
+                    </a>
                 </div>
             </td>
             <td align="center">
