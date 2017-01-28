@@ -95,8 +95,8 @@ MEDUSA.common.init = function() {
             prefixFromNow: 'In ',
             suffixAgo: 'ago',
             suffixFromNow: '',
-            seconds: 'less than a minute',
-            minute: 'about a minute',
+            seconds: 'few seconds',
+            minute: 'a minute',
             minutes: '%d minutes',
             hour: 'an hour',
             hours: '%d hours',
@@ -156,7 +156,7 @@ MEDUSA.common.init = function() {
             },
             position: {
                 my: my,
-		        at: at,
+                at: at,
             },
             style: {
                 tip: {
