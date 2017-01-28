@@ -1281,35 +1281,41 @@ class Home(WebRoot):
 
     @staticmethod
     def check_show_for_language(show_obj, language):
-        """Request the show in a specific language from the indexer.
+        """
+        Request the show in a specific language from the indexer.
 
-        If the indexer throws the ShowNotFoundInLanguage Exception, we catch it,
-        and report it's not available in this language.
-        :param show_obj: (TVShow) Show object.
-        :param language: Language passed as string as a two letter country ccde. For ex: 'en'.
-
-        :returns: True (show found in language) False (show not found in language)
+        :param show_obj: (TVShow) Show object
+        :param language: Language two-letter country code. For ex: 'en'
+        :returns: True if show is found in language else False
         """
 
-        indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-        indexer_api_params['language'] = language
-        indexer_api_params['episodes'] = False
-        indexer_api = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+        # Get the Indexer used by the show
+        show_indexer = indexerApi(show_obj.indexer)
 
-        if language and language in indexer_api.config['valid_languages']:
+        # Add the language to the show indexer's parameters
+        params = show_indexer.api_params.copy()
+        params.update({
+            'language': language,
+            'episodes': False,
+        })
+
+        # Create an indexer with the updated parameters
+        indexer = show_indexer.indexer(**params)
+
+        if language in indexer.config['valid_languages']:
             try:
-                indexer_api[show_obj.indexerid]
+                indexer[show_obj.indexerid]
             except IndexerShowNotFoundInLanguage:
                 return False
-            return True
-        return False
+            else:
+                return True
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
-                 air_by_date=None, sports=None, dvd_order=None, indexerLang=None,
+                 air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
-                 defaultEpStatus=None, quality_preset=None):
+                 defaultEpStatus=None, quality_preset=None, **kwargs):
         # @TODO: Replace with PATCH /api/v2/show/{id}
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
@@ -1376,27 +1382,35 @@ class Home(WebRoot):
         sports = config.checkbox_to_value(sports)
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
+        indexer_lang = indexer_lang or kwargs.get('indexerLang')
 
-        if show_obj.lang != indexerLang:
+        if show_obj.lang != indexer_lang:
+            msg = 'Checking show language'
             try:
-                if self.check_show_for_language(show_obj, indexerLang):
-                    indexer_lang = indexerLang
-                else:
-                    errors.append(u"Could not change language to '{language} for show {show_id} "
-                                  u"on indexer {indexer_name}'".format(language=indexerLang, show_id=show_obj.indexerid,
-                                                                       indexer_name=indexerApi(show_obj.indexer).name))
-                    logger.log(errors[-1], logger.WARNING)
-                    indexer_lang = show_obj.lang
-            except IndexerException as e:
-                errors.append(u'Tried getting the show in a specific language. But unfortunately something went wrong. '
-                              u'Please try again later. Error is: {0}'.format(e))
-                logger.log(errors[-1], logger.WARNING)
-
-        # if we changed the language then kick off an update
-        if indexer_lang == show_obj.lang:
-            do_update = False
-        else:
-            do_update = True
+                do_update = self.check_show_for_language(
+                    show_obj, indexer_lang,
+                )
+                msg = (
+                    u"Could not change language to {language} for"
+                    u" {indexer_name} show {show_id}".format(
+                        language=indexer_lang,
+                        show_id=show_obj.indexerid,
+                        indexer_name=indexerApi(show_obj.indexer).name,
+                    )
+                )
+            except IndexerException as error:
+                do_update = False
+                msg = (
+                    u'Failed getting show in specified language ({lang}).'
+                    u' Please try again later. Error: {err}'.format(
+                        lang=indexer_lang,
+                        err=error,
+                    )
+                )
+                indexer_lang = show_obj.lang
+            finally:
+                errors.append(msg)
+                logger.log(msg, logger.WARNING)
 
         if scene == show_obj.scene and anime == show_obj.anime:
             do_update_scene_numbering = False
@@ -1412,7 +1426,8 @@ class Home(WebRoot):
         if not isinstance(exceptions_list, list):
             exceptions_list = [exceptions_list]
 
-        # If directCall from mass_edit_update no scene exceptions handling or blackandwhite list handling
+        # If directCall from mass_edit_update no scene exceptions handling or
+        # blackandwhite list handling
         if directCall:
             do_update_exceptions = False
         else:
