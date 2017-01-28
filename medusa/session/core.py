@@ -30,3 +30,14 @@ class Session(requests.Session):
         for header, value in self.default_headers:
             # Use `setdefault` to avoid clobbering existing headers
             self.headers.setdefault(header, value)
+
+
+class ThrottledSession(Session):
+    """
+    A Throttled Session that rate limits requests.
+    """
+    def __init__(self, throttle, **kwargs):
+        super(ThrottledSession, self).__init__(**kwargs)
+        self.throttle = throttle
+        if self.throttle:
+            self.request = self.throttle(super(ThrottledSession, self).request)
