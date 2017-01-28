@@ -596,6 +596,8 @@ div.xem {
 .show-image {
     max-width: 100%;
     overflow: hidden;
+    border: 1px solid rgb(136, 136, 136);
+
 }
 
 /* Used by the displayShow and snatchSelection show header posters */
@@ -1058,12 +1060,8 @@ div#container-display-show {
 
 .show-poster-container {
     margin-right: 10px;
-    margin-right: 10px;
     display: table-cell;
-    vertical-align: middle;
     width: 180px;
-    border: 1px solid rgb(136, 136, 136);
-    vertical-align: middle;
 }
 
 .ver-spacer {
@@ -1305,13 +1303,22 @@ ul.tags li a {
 #summary {
     margin-top: 5px;
     padding: 10px;
-    background-color: #EFEFEF;
     /*border: 1px solid #DFDEDE;*/
     width: 100%;
     overflow: auto;
     cursor: default;
+}
+
+#summaryBackground {
+    position: absolute;
+    top:305px;
+    width: 100%;
+    height:200px;
+    background-color: #EFEFEF;
     opacity: 0.8;
-    border: 1px solid rgb(136, 136, 136);
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
 }
 
 .summaryTable {
@@ -1650,7 +1657,7 @@ div.season-scene-exception {
 #showBanner {
     float: right;
     height: 50px;
-    border: 1px solid black;
+    border: 1px solid rgb(136, 136, 136);
 }
 
 .fanart {
