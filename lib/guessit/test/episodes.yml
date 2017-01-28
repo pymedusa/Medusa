@@ -2901,3 +2901,135 @@
   video_codec: h264
   release_group: CasStudio
   type: episode
+
+? Zoo.S02E05.1080p.WEB-DL.DD5.1.H.264.HKD/160725_02.mkv
+: title: Zoo
+  season: 2
+  episode: 5
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: HKD
+  container: mkv
+  type: episode
+
+? We.Bare.Bears.S01E14.Brother.Up.1080p.WEB-DL.AAC2.0.H.264-TVSmash/mxNMuJWeO7PUWCMEwqKSsS6D8Vs9S6V3PHD.mkv
+: title: We Bare Bears
+  season: 1
+  episode: 14
+  episode_title: Brother Up
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: TVSmash
+  container: mkv
+  type: episode
+
+? Beyond.S01E02.Tempus.Fugit.720p.FREE.WEBRip.AAC2.0.x264-BTW/gNWDXow11s7E0X7GTDrZ.mkv
+: title: Beyond
+  season: 1
+  episode: 2
+  episode_title: Tempus Fugit
+  screen_size: 720p
+  format: WEBRip
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: BTW
+  container: mkv
+  type: episode
+
+? Bones.S12E02.The.Brain.In.The.Bot.1080p.WEB-DL.DD5.1.H.264-R2D2/161219_06.mkv
+: title: Bones
+  season: 12
+  episode: 2
+  episode_title: The Brain In The Bot
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: R2D2
+  container: mkv
+  type: episode
+
+? Proof.2015.S01E10.1080p.WEB-DL.DD5.1.H.264-KINGS.mkv
+: title: Proof
+  season: 1
+  episode: 10
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: KINGS
+  container: mkv
+  type: episode
+
+? The.Messengers.2015.S01E07.1080p.WEB-DL.DD5.1.H264.Nlsubs-Q/QoQ-sbuSLN.462.H.1.5DD.LD-BEW.p0801.70E10S.5102.sregnesseM.ehT.mkv
+: title: The Messengers
+  year: 2015
+  season: 1
+  episode: 7
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  subtitle_language: nl
+  release_group: Q
+  container: mkv
+  type: episode
+
+? /Finding.Carter.S02E01.Love.the.Way.You.Lie.1080p.WEB-DL.AAC2.0.H.264-NL/LN-462.H.0.2CAA.LD-BEW.p0801.eiL.uoY.yaW.eht.evoL.10E20S.retraC.gnidniF.mkv
+: title: Finding Carter
+  season: 2
+  episode: 1
+  episode_title: Love the Way You Lie
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  language: nl
+  container: mkv
+  type: episode
+
+? Mr.Robot.S02E12.1080p.WEB-DL.DD5.1-NL.Subs-Het.Robot.Team.OYM/sbuS LN-1.5DD LD-BEW p0801 21E20S toboR .rM.mkv
+: title: Mr Robot
+  season: 2
+  episode: 12
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  release_group: Het.Robot.Team.OYM
+  type: episode
+
+? /tv/Daniel Tiger's Neighborhood/S02E06 - Playtime Is Different.mp4
+: season: 2
+  episode: 6
+  title: Daniel Tiger's Neighborhood
+  episode_title: Playtime Is Different
+  container: mp4
+  type: episode
+
+? From [ WWW.TORRENTING.COM ] - White.Rabbit.Project.S01E08.1080p.NF.WEBRip.DD5.1.x264-ViSUM/White.Rabbit.Project.S01E08.1080p.NF.WEBRip.DD5.1.x264-ViSUM.mkv
+: title: White Rabbit Project
+  website: WWW.TORRENTING.COM
+  season: 1
+  episode: 8
+  screen_size: 1080p
+  streaming_service: Netflix
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: ViSUM
+  container: mkv
+  type: episode
+

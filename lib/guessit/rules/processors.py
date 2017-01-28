@@ -20,10 +20,6 @@ from .common.words import iter_words
 class EnlargeGroupMatches(CustomRule):
     """
     Enlarge matches that are starting and/or ending group to include brackets in their span.
-    :param matches:
-    :type matches:
-    :return:
-    :rtype:
     """
     priority = PRE_PROCESS
 
@@ -130,12 +126,15 @@ class RemoveAmbiguous(Rule):
 
 class RemoveLessSpecificSeasonEpisode(RemoveAmbiguous):
     """
-    If multiple season/episode matches are found with different values, keep the one in the rightmost filepart.
+    If multiple season/episodes matches are found with different values,
+    keep the one tagged as 'SxxExx' or in the rightmost filepart.
     """
-    def __init__(self):
+    def __init__(self, name):
         super(RemoveLessSpecificSeasonEpisode, self).__init__(
-            sort_function=lambda markers, matches: reversed(markers),
-            predicate=lambda match: match.name in ('episode', 'season'))
+            sort_function=(lambda markers, matches:
+                           marker_sorted(list(reversed(markers)), matches,
+                                         lambda match: match.name == name and 'SxxExx' in match.tags)),
+            predicate=lambda match: match.name == name)
 
 
 def _preferred_string(value1, value2):  # pylint:disable=too-many-return-statements
@@ -233,5 +232,7 @@ def processors():
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    return Rebulk().rules(EnlargeGroupMatches, EquivalentHoles, RemoveLessSpecificSeasonEpisode,
+    return Rebulk().rules(EnlargeGroupMatches, EquivalentHoles,
+                          RemoveLessSpecificSeasonEpisode('season'),
+                          RemoveLessSpecificSeasonEpisode('episode'),
                           RemoveAmbiguous, SeasonYear, Processors, StripSeparators)
