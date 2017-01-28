@@ -1060,11 +1060,8 @@ div#container-display-show {
 
 .show-poster-container {
     margin-right: 10px;
-    margin-right: 10px;
     display: table-cell;
-    vertical-align: middle;
     width: 180px;
-    vertical-align: middle;
 }
 
 .ver-spacer {
