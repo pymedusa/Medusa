@@ -290,7 +290,7 @@ def episodes():
 
     # TODO: List of words
     # detached of X count (season/episode)
-    rebulk.regex(r'(?P<episode>\d+)?-?' + build_or_pattern(of_words) +
+    rebulk.regex(r'(?P<episode>\d+)-?' + build_or_pattern(of_words) +
                  r'-?(?P<count>\d+)-?' + build_or_pattern(episode_words) + '?',
                  abbreviations=[dash], children=True, private_parent=True, formatter=int)
 

@@ -36,21 +36,17 @@ class TitleToEpisodeTitle(Rule):
 
     def when(self, matches, context):
         titles = matches.named('title')
-
-        if len(titles) < 2:
-            return
-
         title_groups = defaultdict(list)
         for title in titles:
             title_groups[title.value].append(title)
 
+        if len(title_groups) < 2:
+            return
+
         episode_titles = []
-        main_titles = []
         for title in titles:
             if matches.previous(title, lambda match: match.name == 'episode'):
                 episode_titles.append(title)
-            else:
-                main_titles.append(title)
 
         if episode_titles:
             return episode_titles
@@ -199,7 +195,15 @@ class Filepart2EpisodeTitle(Rule):
     AAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB
 
     If BBBB contains episode and AAA contains a hole followed by seasonNumber
-    Then title is to be found in AAAA.
+    then title is to be found in AAAA.
+
+    or
+
+    Serie name/SO1E01-episode_title.mkv
+    AAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB
+
+    If BBBB contains season and episode and AAA contains a hole
+    then title is to be found in AAAA.
     """
     consequence = AppendMatch('title')
 
@@ -213,7 +217,8 @@ class Filepart2EpisodeTitle(Rule):
 
         episode_number = matches.range(filename.start, filename.end, lambda match: match.name == 'episode', 0)
         if episode_number:
-            season = matches.range(directory.start, directory.end, lambda match: match.name == 'season', 0)
+            season = (matches.range(directory.start, directory.end, lambda match: match.name == 'season', 0) or
+                      matches.range(filename.start, filename.end, lambda match: match.name == 'season', 0))
             if season:
                 hole = matches.holes(directory.start, directory.end, formatter=cleanup, seps=title_seps,
                                      predicate=lambda match: match.value, index=0)
