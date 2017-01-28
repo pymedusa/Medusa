@@ -2,7 +2,6 @@
 <%!
     from medusa import app
     from medusa.helpers import anon_url
-    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -125,8 +124,9 @@
                             </td>
                             <td class="col-provider">
                                 <span title="${hItem["provider"]}" class="addQTip">
-                                    <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/></td>
+                                    <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                                 </span>
+                            </td>
                             <td align="center">${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
                                 <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem["proper_tags"]}"/>
@@ -140,7 +140,9 @@
                             </td>
                             <td class="col-size">${hItem["pretty_size"]}</td>
                             <td align="center">${hItem["provider_type"]}</td>
-                            <td class="col-date">${hItem["time"]}</td>
+                            <td class="col-date">
+                                <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
+                            </td>
                             <td class="col-date">${hItem["pubdate"]}</td>
                             <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>
