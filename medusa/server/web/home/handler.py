@@ -7,6 +7,7 @@ import json
 import os
 import time
 from datetime import date, datetime
+import warnings
 
 import adba
 from requests.compat import quote_plus, unquote_plus
@@ -1317,6 +1318,13 @@ class Home(WebRoot):
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None, **kwargs):
         # @TODO: Replace with PATCH /api/v2/show/{id}
+
+        if kwargs:
+            # Warn if called with arguments that haven't been refactored
+            warnings.warn(
+                'Calling editShow with deprecated arguments: {}'.format(kwargs)
+            )
+
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
         exceptions_list = exceptions_list or []
