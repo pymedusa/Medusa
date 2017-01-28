@@ -1538,8 +1538,8 @@ class Home(WebRoot):
         if errors:
             ui.notifications.error(
                 '{num} error{s} while saving changes:'.format(num=len(errors), s='s' if len(errors) > 1 else ''),
-                '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error)
-                                                             for error in errors])))
+                '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error_item)
+                                                             for error_item in errors])))
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
