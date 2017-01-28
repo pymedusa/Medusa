@@ -477,8 +477,8 @@ class HomeAddShows(Home):
         # done adding show
         return self.redirect('/home/')
 
-    def addNewShow(self, whichSeries=None, indexerLang=None, rootDir=None, defaultStatus=None,
-                   quality_preset=None, allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
+    def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
+                   allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
                    scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
         """
@@ -487,7 +487,7 @@ class HomeAddShows(Home):
         """
         provided_indexer = providedIndexer
 
-        indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexerLang else indexerLang
+        indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexer_lang else indexer_lang
 
         # grab our list of other dirs if given
         if not other_shows:

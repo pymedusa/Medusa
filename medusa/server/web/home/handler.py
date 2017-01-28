@@ -7,7 +7,6 @@ import json
 import os
 import time
 from datetime import date, datetime
-import warnings
 
 import adba
 from requests.compat import quote_plus, unquote_plus
@@ -1316,14 +1315,8 @@ class Home(WebRoot):
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
-                 defaultEpStatus=None, quality_preset=None, **kwargs):
+                 defaultEpStatus=None, quality_preset=None):
         # @TODO: Replace with PATCH /api/v2/show/{id}
-
-        if kwargs:
-            # Warn if called with arguments that haven't been refactored
-            warnings.warn(
-                'Calling editShow with deprecated arguments: {}'.format(kwargs)
-            )
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
@@ -1390,7 +1383,6 @@ class Home(WebRoot):
         sports = config.checkbox_to_value(sports)
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
-        indexer_lang = indexer_lang or kwargs.get('indexerLang')
 
         if show_obj.lang != indexer_lang:
             msg = 'Checking show language'
