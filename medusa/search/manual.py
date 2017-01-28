@@ -27,7 +27,7 @@ from dateutil import parser
 from .queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from .. import app, db, logger
 from ..common import Overview, Quality, cpu_presets, statusStrings
-from ..helper.common import enabled_providers, pretty_date, pretty_file_size
+from ..helper.common import enabled_providers, pretty_file_size
 from ..sbdatetime import sbdatetime
 from ..show.show import Show
 from ..show_name_helpers import containsAtLeastOneWord, filterBadReleases
@@ -276,8 +276,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         cached_results = [dict(row) for row in sql_total]
         for i in cached_results:
             i['quality_name'] = Quality.split_quality(int(i['quality']))
-            i['time_pretty'] = pretty_date(datetime.fromtimestamp(i['time']))
-            i['time'] = datetime.fromtimestamp(i['time']).strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET)
+            i['time'] = datetime.fromtimestamp(i['time'])
             i['release_group'] = i['release_group'] or 'None'
             i['provider_img_link'] = 'images/providers/' + i['provider_image'] or 'missing.png'
             i['provider'] = i['provider'] if i['provider_image'] else 'missing provider'

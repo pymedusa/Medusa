@@ -161,9 +161,10 @@ MEDUSA.home.snatchSelection = function() {
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
                 initTableSorter('#showTable');
+                $('[datetime]').timeago();
             }
             if (data.result === 'error') {
-                // ep search is finished
+                // ep search is finished but with an error
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
