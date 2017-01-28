@@ -262,7 +262,7 @@ class SpanishNewpctReleaseName(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
+    consequence = [RemoveMatch, AppendMatch, RenameMatch('title')]
     season_re = re.compile(r'^tem(p|porada)?\W*\d*$', flags=re.IGNORECASE)
     prefix = '[cap.'
     episode_re = re.compile(r'^\[cap\.(?P<season>\d{1,2})(?P<episode>\d{2})'
@@ -290,6 +290,15 @@ class SpanishNewpctReleaseName(Rule):
         if not alternative_titles and not episode_titles:
             return
 
+        to_remove = []
+        to_rename = []
+
+        titles = matches.named('title', predicate=lambda match: self.season_re.match(match.value.lower()))
+        if titles:
+            to_remove.extend(titles)
+            if not episode_titles:
+                to_rename.extend(matches.named('episode_title'))
+
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):
             # retrieve all groups
@@ -307,7 +316,6 @@ class SpanishNewpctReleaseName(Rule):
                     # fix the show_type as this is not anime
                     context['show_type'] = 'normal'
 
-                to_remove = []
                 to_append = []
 
                 # remove "[Cap.] match, if any
@@ -344,7 +352,7 @@ class SpanishNewpctReleaseName(Rule):
                             new_episode.end = new_episode.start + len(g['end_episode'])
                         to_append.append(new_episode)
 
-                return to_remove, to_append
+                return to_remove, to_append, to_rename
 
 
 class FixSeasonRangeWithGap(Rule):
