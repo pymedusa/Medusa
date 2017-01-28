@@ -1290,15 +1290,19 @@ class Home(WebRoot):
 
         :returns: True (show found in language) False (show not found in language)
         """
+
         indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
         indexer_api_params['language'] = language
         indexer_api_params['episodes'] = False
-        try:
-            t = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
-            t[show_obj.indexerid]
-        except IndexerShowNotFoundInLanguage:
-            return False
-        return True
+        indexer_api = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
+
+        if language and language in indexer_api.config['valid_languages']:
+            try:
+                indexer_api[show_obj.indexerid]
+            except IndexerShowNotFoundInLanguage:
+                return False
+            return True
+        return False
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
@@ -1373,7 +1377,7 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
-        if indexerLang and indexerLang in indexerApi(show_obj.indexer).indexer().config['valid_languages']:
+        if show_obj.lang != indexerLang:
             try:
                 if self.check_show_for_language(show_obj, indexerLang):
                     indexer_lang = indexerLang
@@ -1387,8 +1391,6 @@ class Home(WebRoot):
                 errors.append(u'Tried getting the show in a specific language. But unfortunately something went wrong. '
                               u'Please try again later. Error is: {0}'.format(e))
                 logger.log(errors[-1], logger.WARNING)
-        else:
-            indexer_lang = show_obj.lang
 
         # if we changed the language then kick off an update
         if indexer_lang == show_obj.lang:
