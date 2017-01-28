@@ -62,7 +62,7 @@ from requests.compat import urlparse
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
-from . import app, db
+from . import app, db, notifiers
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
@@ -497,39 +497,36 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     return True
 
 
-def delete_empty_folders(check_empty_dir, keep_dir=None):
+def delete_empty_folders(top_dir, keep_dir=None):
     """Walk backwards up the path and deletes any empty folders found.
 
-    :param check_empty_dir: The path to clean (absolute path to a folder)
-    :type check_empty_dir: str
-    :param keep_dir: Clean until this path is reached
+    :param top_dir: Clean until this directory is reached (absolute path to a folder)
+    :type top_dir: str
+    :param keep_dir: Don't delete this directory, even if it's empty
     :type keep_dir: str
     """
-    # treat check_empty_dir as empty when it only contains these items
-    ignore_items = []
+    if not top_dir or not os.path.isdir(top_dir):
+        return
 
-    logger.info(u'Trying to clean any empty folders under {path}', path=check_empty_dir)
+    logger.info(u'Trying to clean any empty folder under {path}'.format(path=top_dir))
 
-    # as long as the folder exists and doesn't contain any files, delete it
-    while os.path.isdir(check_empty_dir) and check_empty_dir != keep_dir:
-        check_files = os.listdir(check_empty_dir)
+    for directory in os.walk(top_dir, topdown=False):
+        dirpath = directory[0]
 
-        if not check_files or (len(check_files) <= len(ignore_items) and all(
-                [check_file in ignore_items for check_file in check_files])):
-            # directory is empty or contains only ignore_items
+        if dirpath == top_dir:
+            return
+
+        if dirpath != keep_dir and not os.listdir(dirpath):
             try:
-                logger.info(u'Deleting empty folder: {folder}', folder=check_empty_dir)
-                # need shutil.rmtree when ignore_items is really implemented
-                os.rmdir(check_empty_dir)
-                # do the library update for synoindex
-                from . import notifiers
-                notifiers.synoindex_notifier.deleteFolder(check_empty_dir)
+                logger.info(u'Deleting empty folder: {folder}'.format(folder=dirpath))
+                os.rmdir(dirpath)
+
+                # Do the library update for synoindex
+                notifiers.synoindex_notifier.deleteFolder(dirpath)
             except OSError as e:
-                logger.warning(u'Unable to delete {folder}. Error: {error!r}', folder=check_empty_dir, error=e)
-                break
-            check_empty_dir = os.path.dirname(check_empty_dir)
+                logger.warning(u'Unable to delete {folder}. Error: {error!r}'.format(folder=dirpath, error=e))
         else:
-            break
+            logger.debug(u'Not deleting {folder}. The folder is not empty or should be kept.'.format(folder=dirpath))
 
 
 def file_bit_filter(mode):
