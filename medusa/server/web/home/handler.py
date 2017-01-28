@@ -1303,12 +1303,8 @@ class Home(WebRoot):
         indexer = show_indexer.indexer(**params)
 
         if language in indexer.config['valid_languages']:
-            try:
-                indexer[show_obj.indexerid]
-            except IndexerShowNotFoundInLanguage:
-                return False
-            else:
-                return True
+            indexer[show_obj.indexerid]
+            return True
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
@@ -1385,32 +1381,38 @@ class Home(WebRoot):
         subtitles = config.checkbox_to_value(subtitles)
 
         if show_obj.lang != indexer_lang:
-            msg = 'Checking show language'
+            msg = (
+                '{{status}} {language}'
+                ' for {indexer_name} show {show_id}'.format(
+                    language=indexer_lang,
+                    show_id=show_obj.indexerid,
+                    indexer_name=indexerApi(show_obj.indexer).name,
+                )
+            )
+            do_update = False
+            status = 'Unexpected result when changing language to'
+            log_level = logger.WARNING
+            language = show_obj.lang
             try:
                 do_update = self.check_show_for_language(
-                    show_obj, indexer_lang,
+                    show_obj,
+                    indexer_lang,
                 )
-                msg = (
-                    u"Could not change language to {language} for"
-                    u" {indexer_name} show {show_id}".format(
-                        language=indexer_lang,
-                        show_id=show_obj.indexerid,
-                        indexer_name=indexerApi(show_obj.indexer).name,
-                    )
-                )
+            except IndexerShowNotFoundInLanguage:
+                status = 'Could not change language to'
             except IndexerException as error:
-                do_update = False
-                msg = (
-                    u'Failed getting show in specified language ({lang}).'
-                    u' Please try again later. Error: {err}'.format(
-                        lang=indexer_lang,
-                        err=error,
-                    )
+                status = u'Failed getting show in'
+                msg += u' Please try again later. Error: {err}'.format(
+                    err=error,
                 )
-                indexer_lang = show_obj.lang
+            else:
+                language = indexer_lang
+                status = 'Changing language to'
+                log_level = logger.INFO
             finally:
-                errors.append(msg)
-                logger.log(msg, logger.WARNING)
+                indexer_lang = language
+                errors.append(msg.format(status=status))
+                logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
             do_update_scene_numbering = False
