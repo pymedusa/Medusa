@@ -62,7 +62,7 @@ from requests.compat import urlparse
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
-from . import app, db, notifiers
+from . import app, db
 from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
@@ -522,6 +522,7 @@ def delete_empty_folders(top_dir, keep_dir=None):
                 os.rmdir(dirpath)
 
                 # Do the library update for synoindex
+                from . import notifiers
                 notifiers.synoindex_notifier.deleteFolder(dirpath)
             except OSError as e:
                 logger.warning(u'Unable to delete {folder}. Error: {error!r}'.format(folder=dirpath, error=e))
