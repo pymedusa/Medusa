@@ -4112,3 +4112,14 @@
   release_group: 2HD
   screen_size: 720p
   type: episode
+
+# Regression 1986: Anime should be detected
+? Show Name - 722 [HD_1280x720].mp4
+: title: Show Name
+  absolute_episode: 722
+  episode: 722
+  other: HD
+  screen_size: 720p
+  container: mp4
+  mimetype: video/mp4
+  type: episode
