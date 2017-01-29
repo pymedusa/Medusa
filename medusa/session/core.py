@@ -6,12 +6,10 @@ import certifi
 import logging
 import requests
 
-from cachecontrol import CacheControlAdapter
-from cachecontrol.cache import DictCache
-
 from . import hooks
 from .. import app
 import medusa.common
+import factory
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -44,18 +42,19 @@ class Session(requests.Session):
     else:
         proxies = None
 
-    def __init__(self, cache_etags=True, serializer=None, heuristic=None, verify=True, **kwargs):
+    def __init__(self, verify=True, **kwargs):
+        # Add
         self.my_hooks = kwargs.pop('hooks', [])
+
+        # Pop the cache_control config
+        cache_control = kwargs.pop('cache_control', [])
+
+        # Initialize request.session
         super(Session, self).__init__(**kwargs)
-        adapter = CacheControlAdapter(
-            DictCache(),
-            cache_etags=cache_etags,
-            serializer=serializer,
-            heuristic=heuristic,
-        )
-        self.mount('http://', adapter)
-        self.mount('https://', adapter)
-        self.cache_controller = adapter.controller
+
+        # Add cache control of provided as a dict. Needs to be attached after super init.
+        if cache_control:
+            factory.add_cache_control(self, cache_control)
 
         # Configure global session hooks
         self.hooks['response'].append(hooks.log_url)
@@ -70,12 +69,3 @@ class Session(requests.Session):
 
         # Set default ssl verify
         self.verify = certifi.old_where() if all([app.SSL_VERIFY, verify]) else False
-class ThrottledSession(Session):
-    """
-    A Throttled Session that rate limits requests.
-    """
-    def __init__(self, throttle, **kwargs):
-        super(ThrottledSession, self).__init__(**kwargs)
-        self.throttle = throttle
-        if self.throttle:
-            self.request = self.throttle(super(ThrottledSession, self).request)

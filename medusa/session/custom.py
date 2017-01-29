@@ -17,6 +17,8 @@ class PolicedSession(Session):
 
     def __init__(self, *args, **kwargs):
         """Initialize the class."""
+        kwargs['cache_control'] = {'cache_etags': True, 'serializer': None, 'heuristic': None}
+
         super(PolicedSession, self).__init__(*args, **kwargs)
 
         # Generic attributes
@@ -47,9 +49,10 @@ class PolicedSession(Session):
     def request(self, method, url, *args, **kwargs):
         """Request URL using given params."""
         try:
-            #  _ = [police_check(**kwargs) for police_check in self.enabled_police_request_hooks]
+            police_options = kwargs.pop('police_options', {})
+            _ = [police_check(**police_options) for police_check in self.enabled_police_request_hooks]
             r = super(PolicedSession, self).request(method, url, *args, **kwargs)
-            #  _ = [police_check(r, **kwargs) for police_check in self.enabled_police_response_hooks]
+            _ = [police_check(r, **police_options) for police_check in self.enabled_police_response_hooks]
             return r
         except PolicedRequestException as e:
             logger.warning(e.message)
@@ -69,12 +72,12 @@ class PolicedSession(Session):
         if self.daily_reserve_calls:
             self.enabled_police_request_hooks.append(self.request_check_newznab_daily_reserved_calls)
 
-    def request_counter(self, **kwargs):
+    def request_counter(self, **store):
         """Number of provider requests performed.
 
         These are not all counted as api hits. As also logins, snatches and newznab capability requests are counted.
         """
-        if kwargs.get('api_hit'):
+        if store.get('api_hit'):
             self.request_count += 1
 
     def request_check_nzb_api_limit(self):
@@ -169,3 +172,14 @@ class RateLimitedSession(Session):
             if self.num_requests >= self.max_requests:
                 raise Exception('Limit exceeded')
         return super(RateLimitedSession, self).request(*args, **kwargs)
+
+
+class ThrottledSession(Session):
+    """
+    A Throttled Session that rate limits requests.
+    """
+    def __init__(self, throttle, **kwargs):
+        super(ThrottledSession, self).__init__(**kwargs)
+        self.throttle = throttle
+        if self.throttle:
+            self.request = self.throttle(super(ThrottledSession, self).request)

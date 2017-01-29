@@ -168,7 +168,7 @@ class NewznabProvider(NZBProvider):
                 #     return items
 
                 response = self.session.get(urljoin(self.url, 'api'), params=search_params,
-                                            api_hit=True, search_mode=mode)
+                                            police_options={'api_hit': True, 'search_mode': mode})
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue

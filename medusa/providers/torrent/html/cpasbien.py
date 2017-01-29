@@ -76,9 +76,7 @@ class CpasbienProvider(TorrentProvider):
                 else:
                     search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
 
-                response = self.session.get(search_url, allow_redirects=False,
-                                            hooks=dict(response=[self.get_url_hook,
-                                                                 self.session.cloudflare_hook]))
+                response = self.session.get(search_url, allow_redirects=False)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
