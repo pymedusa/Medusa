@@ -640,12 +640,12 @@ body {
     cursor: pointer;
     background-color: rgb(97, 97, 97);
     *background-color: rgb(97, 97, 97);
-    background-image: -ms-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(41, 122, 184)), to(rgb(21, 82, 143)));
-    background-image: -webkit-linear-gradient(top, #777, rgb(85, 85, 85));
-    background-image: -o-linear-gradient(top, #777, rgb(85, 85, 85));
-    background-image: linear-gradient(top, #777, rgb(85, 85, 85));
-    background-image: -moz-linear-gradient(top, #777, rgb(85, 85, 85));
+    background-image: -ms-linear-gradient(top, rgb(51, 51, 51), rgb(85, 85, 85));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(51, 51, 51)), to(rgb(85, 85, 85)));
+    background-image: -webkit-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: -o-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
     background-repeat: repeat-x;
     border: 1px solid rgb(17, 17, 17);
     *border: 0;

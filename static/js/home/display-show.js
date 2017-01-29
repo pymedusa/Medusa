@@ -3,7 +3,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
         let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
         $.backstretch(path);
-        $('.backstretch').css('top','50px');
+        $('.backstretch').css('top','110px');
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
@@ -14,7 +14,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $("#summaryBackground").height(height);
         $("#summaryBackground").offset({ top: top, left: 0});
     }
-    
+
     $(window).resize(function() {
         moveSummaryBackground();
     });

@@ -3,6 +3,7 @@ MEDUSA.home.snatchSelection = function() {
         let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
         let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
         $.backstretch(path);
+        $('.backstretch').css('top','110px');
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
@@ -14,7 +15,7 @@ MEDUSA.home.snatchSelection = function() {
         $("#summaryBackground").height(height);
         $("#summaryBackground").offset({ top: top, left: 0});
     }
-    
+
     $(window).resize(function() {
         moveSummaryBackground();
     });

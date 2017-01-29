@@ -233,10 +233,10 @@
                 </div> <!-- end of summary -->
             </div> <!-- end of row -->
             <div class="row"> <!-- Checkbox filter controls -->
-                <div class="col-md-12" id="checkboxControls">
+                <div class="col-lg-12" id="checkboxControls">
                     <div class="key">
                         <div class="row">
-                            <div class="pull-left col-md-7">
+                            <div class="pull-left col-lg-8 col-md-12">
                                 <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
                                 <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${ep_counts[Overview.WANTED]}</b></span></label>
                                 <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${ep_counts[Overview.QUAL]}</b></span></label>
@@ -245,10 +245,11 @@
                                 <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
                                 <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
                                 <button class="btn btn-xs clearAll">Clear All</button>
+                                <button id="popover" type="button" class="btn btn-xs">Select Columns <b class="caret"></b></button>
                             </div>
-                            <div class="pull-right col-md-5">
-                                <div class="pull-right">
-                                    Change selected episodes to: <select id="statusSelect" class="form-control form-control-inline input-sm">
+                            <div class="pull-lg-right col-lg-4 col-md-12">
+                                <div class="pull-lg-right">
+                                    Change selected to: <select id="statusSelect" class="form-control form-control-inline input-sm">
                                     <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
                                     % if not app.USE_FAILED_DOWNLOADS:
                                     <% availableStatus.remove(FAILED) %>

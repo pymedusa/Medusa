@@ -2681,7 +2681,7 @@ bootstrap Overrides
 ========================================================================== */
 
 #vue-wrap {
-        padding-top: 60px;
+        padding-top: 120px;
 }
 
 body {
@@ -2873,6 +2873,16 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .form-control-inline {
     display: inline;
     width: auto;
+}
+
+#sub-menu-container {
+    position:fixed;
+    top: 60px;
+    width:100%;
+    z-index:550;
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
 }
 
 .btn {
