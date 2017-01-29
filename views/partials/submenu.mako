@@ -1,6 +1,6 @@
 <!-- BEGIN SUBMENU -->
     <div id="sub-menu-container" class="row">
-        <div id="sub-menu" class="hidden-print col-md-12">
+        <div id="sub-menu" class="submenu-default hidden-print col-md-8 col-sm-12">
             <% first = True %>
             % for menuItem in submenu:
                 % if 'requires' not in menuItem or menuItem['requires']:
@@ -22,6 +22,11 @@
                 % endif
             % endfor
         </div>
+        % if (action == "displayShow" or action == "snatchSelection"):
+            <%include file="/partials/showSelector.mako"/>
+        % else:
+            <div id="showSelector" class="hidden-print col-md-4 col-xs-12 pull-md-left"></div>
+        % endif
     </div> <!-- end of container -->
 <!-- END sub-menu -->
 

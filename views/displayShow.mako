@@ -22,52 +22,14 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="showID" value="${show.indexerid}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
-
-<div class="row">
-    <div class="form-inline col-lg-3 col-md-4 col-sm-6 col-xs-12">
-        <label for="select-show">Change Show:</label>
-        <div class="select-show-group">
-            <div class="navShow"><img id="prevShow" src="images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>
-            <select id="select-show" class="form-control input-sm">
-            % for cur_show_list in sortedShowLists:
-                <% cur_show_type = cur_show_list[0] %>
-                <% cur_show_list = cur_show_list[1] %>
-                % if len(sortedShowLists) > 1:
-                    <optgroup label="${cur_show_type}">
-                % endif
-                    % for cur_show in cur_show_list:
-                    <option value="${cur_show.indexerid}" ${'selected="selected"' if cur_show == show else ''}>${cur_show.name}</option>
-                    % endfor
-                % if len(sortedShowLists) > 1:
-                    </optgroup>
-                % endif
-            % endfor
-            </select>
-            <div class="navShow"><img id="nextShow" src="images/next.png" alt="&gt;&gt;" title="Next Show" /></div>
-        </div>
-    </div>
 </div>
 <div class="clearfix"></div>
+<div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
 
 <%include file="/partials/showheader.mako"/>
 
 <div class="row">
     <div class="col-md-12" >
-        Change selected episodes to:<br>
-        <select id="statusSelect" class="form-control form-control-inline input-sm">
-        <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-        % if not app.USE_FAILED_DOWNLOADS:
-        <% availableStatus.remove(FAILED) %>
-        % endif
-        % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-            % if cur_status not in [DOWNLOADED, ARCHIVED]:
-            <option value="${cur_status}">${statusStrings[cur_status]}</option>
-            % endif
-        % endfor
-        </select>
-        <input type="hidden" id="showID" value="${show.indexerid}" />
-        <input type="hidden" id="indexer" value="${show.indexer}" />
-        <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
 
         <div class="pull-right">
             <button id="popover" type="button" class="btn top-5 bottom-5">Select Columns <b class="caret"></b></button>

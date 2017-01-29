@@ -1072,6 +1072,12 @@ div#container-display-show {
     margin-bottom: 15px;
 }
 
+#showSelector {
+    overflow: hidden;
+    display: table-cell;
+    left:20px;
+}
+
 .show-info-container {
     overflow:hidden;
     display: table-cell;
@@ -1127,7 +1133,7 @@ div#container-display-show {
     }
 
     .select-show-group {
-        width: 100%;
+        width: 323px;
         margin: 0 auto;
     }
 
@@ -1210,8 +1216,15 @@ div#container-display-show {
     }
 }
 
+.container-navShow {
+    margin: 0 0 0 367px;
+    z-index:10;
+}
+
 .navShow {
-    display: inline;
+    width:18px;
+    max-height:15px;
+    display: block;;
     cursor: pointer;
 }
 
@@ -1326,7 +1339,7 @@ ul.tags li a {
 }
 
 #checkboxControls {
-    padding-top: 5px;
+    padding-top: 1px;
 }
 
 #checkboxControls span {
@@ -1672,7 +1685,7 @@ div.season-scene-exception {
 
 select#select-show {
     display: inline-block;
-    width: calc(100% - 40px);
+    width: 100%;
 }
 
 
