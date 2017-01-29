@@ -66,7 +66,6 @@ from six.moves import http_client
 from . import app, db
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
-from .helper.request_police import prepare_cf_req
 
 
 from .indexers.indexer_exceptions import IndexerException
@@ -1177,16 +1176,9 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
     # Get RequestPolice instance object.
     rpolice = kwargs.pop(u'rpolice', None)
 
-    from helper.request_police import RequestPoliceException
+    from session.exceptions import PolicedRequestException
 
     try:
-        if rpolice:
-            try:
-                [rpolice_check() for rpolice_check in rpolice.enabled_police_request_hooks]
-            except RequestPoliceException as e:
-                logger.info(e.message)
-                return
-
         req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
                                headers=headers, cookies=cookies)
         prepped = session.prepare_request(req)

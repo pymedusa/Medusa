@@ -32,7 +32,8 @@ from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helper.request_police import PolicedSession
+from ..session.custom import PolicedSession
+from ..session.hooks import cloudflare, log_url
 from ..helpers import download_file
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
@@ -76,7 +77,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = PolicedSession(hooks=[self.get_url_hook])
+        self.session = PolicedSession(hooks=[cloudflare])
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -402,6 +403,7 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
+        logger.log('providers.generic_provider.get_url() is deprecated, please rewrite your provider to make use of the PolicedSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
 
         if not post_data:

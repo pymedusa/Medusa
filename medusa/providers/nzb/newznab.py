@@ -36,7 +36,7 @@ from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
 from ...helper.encoding import ss
-from ...helper.request_police import PolicedSession
+from ...session.custom import PolicedSession
 from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
 
