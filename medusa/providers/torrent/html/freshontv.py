@@ -96,7 +96,7 @@ class FreshOnTVProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                 search_url = self.urls['search'] % (freeleech, search_string)
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
 
                 max_page_number = 0
 
@@ -139,7 +139,7 @@ class FreshOnTVProvider(TorrentProvider):
                     for x in range(1, max_page_number):
                         time.sleep(1)
                         page_search_url = '{url}&page={x}'.format(url=search_url, x=x)
-                        page = self.get_url(page_search_url, returns='response')
+                        page = self.session.get(page_search_url)
 
                         if not page:
                             continue
@@ -232,7 +232,7 @@ class FreshOnTVProvider(TorrentProvider):
         if self._uid and self._hash:
             add_dict_to_cookiejar(self.session.cookies, self.cookies)
         else:
-            response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+            response = self.session.post(self.urls['login'], data=login_params)
             if not response or not response.text:
                 logger.log('Unable to connect to provider', logger.WARNING)
                 return False

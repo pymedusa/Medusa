@@ -102,7 +102,7 @@ class SDBitsProvider(TorrentProvider):
                         search_params['search'] = search_string
                         logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -197,7 +197,7 @@ class SDBitsProvider(TorrentProvider):
             'returnto': '/',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

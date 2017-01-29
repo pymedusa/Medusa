@@ -94,7 +94,7 @@ class SCCProvider(TorrentProvider):
 
                 search_url = self.urls['search'].format(string=self._strip_year(search_string),
                                                         cats=self.categories[mode])
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -175,7 +175,7 @@ class SCCProvider(TorrentProvider):
             'submit': 'come on in',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.get(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

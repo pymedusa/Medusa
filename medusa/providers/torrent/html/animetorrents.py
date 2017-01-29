@@ -115,7 +115,7 @@ class AnimeTorrentsProvider(TorrentProvider):
                 self.headers = headers_paged
                 for cat in self.categories:
                     search_params['cat'] = cat
-                    response = self.get_url(self.urls['search_ajax'], params=search_params, returns='response')
+                    response = self.session.get(self.urls['search_ajax'], params=search_params)
 
                     if not response or not response.text or 'Access Denied!' in response.text:
                         logger.log('No data returned from provider', logger.DEBUG)
@@ -211,13 +211,12 @@ class AnimeTorrentsProvider(TorrentProvider):
             'rememberme[]': 1,
         }
 
-        request = self.get_url(self.urls['login'], returns='response')
+        request = self.session.get(self.urls['login'])
         if not hasattr(request, 'cookies'):
             logger.log('Unable to retrieve the required cookies', logger.WARNING)
             return False
 
-        response = self.get_url(self.urls['login'], post_data=login_params, cookies=request.cookies,
-                                returns='response')
+        response = self.session.post(self.urls['login'], data=login_params, cookies=request.cookies)
 
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)

@@ -95,7 +95,7 @@ class TorrentLeechProvider(TorrentProvider):
                     'categories': ','.join(categories),
                     'query': search_string
                 }
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -188,7 +188,7 @@ class TorrentLeechProvider(TorrentProvider):
             'remember_me': 'on',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

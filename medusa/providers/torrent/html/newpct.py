@@ -192,7 +192,7 @@ class NewpctProvider(TorrentProvider):
 
         return title.strip()
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
+    def get_url(self, url, params=None, timeout=30, **kwargs):
         """
         Previously we must parse the URL to get torrent file.
 
@@ -201,13 +201,15 @@ class NewpctProvider(TorrentProvider):
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':
             kwargs['returns'] = 'text'
-            data = super(NewpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout,
-                                                       **kwargs)
+            data = self.session.get(url, params=params, timeout=timeout, **kwargs).text
             url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
-        kwargs['returns'] = trickery
-        return super(NewpctProvider, self).get_url(url, post_data=post_data, params=params,
-                                                   timeout=timeout, **kwargs)
+        # kwargs['returns'] = trickery
+        response = self.session.get(url, params=params, timeout=timeout, **kwargs)
+        if trickery == 'text':
+            return response.text
+        else:
+            return response
 
     def download_result(self, result):
         """Save the result to disk."""

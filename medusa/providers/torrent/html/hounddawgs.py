@@ -105,7 +105,7 @@ class HoundDawgsProvider(TorrentProvider):
                         logger.log('Searching only ranked torrents', logger.DEBUG)
 
                 search_params['searchstr'] = search_string
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -208,8 +208,8 @@ class HoundDawgsProvider(TorrentProvider):
         }
 
         # Initialize session with a GET to have cookies
-        self.get_url(self.urls['base_url'], returns='response')
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        self.session.get(self.urls['base_url'])
+        response = self.session.get(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

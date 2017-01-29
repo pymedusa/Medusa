@@ -74,7 +74,7 @@ class Anizb(NZBProvider):
                                (search=search_string), logger.DEBUG)
 
                     search_url = (self.urls['rss'], self.urls['api'] + search_string)[mode != 'RSS']
-                    response = self.get_url(search_url, returns='response')
+                    response = self.session.get(search_url)
                     if not response or not response.text:
                         logger.log('No data returned from provider', logger.DEBUG)
                         continue

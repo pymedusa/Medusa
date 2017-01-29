@@ -117,7 +117,7 @@ class RarbgProvider(TorrentProvider):
                 time.sleep(5)
 
                 search_url = self.urls['api']
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.content:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -221,7 +221,7 @@ class RarbgProvider(TorrentProvider):
             'app_id': app.RARBG_APPID,
         }
 
-        response = self.get_url(self.urls['api'], params=login_params)
+        response = self.session.get(self.urls['api'], params=login_params)
         if not response:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

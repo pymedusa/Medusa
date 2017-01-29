@@ -403,7 +403,8 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
-        logger.log('providers.generic_provider.get_url() is deprecated, please rewrite your provider to make use of the PolicedSession session class.')
+        logger.log('providers.generic_provider.get_url() is deprecated, '
+                   'please rewrite your provider to make use of the PolicedSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
 
         if not post_data:

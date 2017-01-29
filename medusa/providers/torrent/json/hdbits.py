@@ -70,7 +70,7 @@ class HDBitsProvider(TorrentProvider):
 
         self._check_auth()
 
-        response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
+        response = self.session.post(self.urls['search'], data=search_strings)
         if not response or not response.content:
             logger.log('No data returned from provider', logger.DEBUG)
             return results
@@ -201,12 +201,14 @@ class HDBitsCache(tv_cache.TVCache):
         results = []
 
         try:
-            parsed_json = self.provider.get_url(self.provider.urls['rss'],
-                                                post_data=self.provider._make_post_data_json(), returns='json')
+            parsed_json = self.provider.session.post(self.provider.urls['rss'],
+                                                     data=self.provider._make_post_data_json()).json()
 
             if self.provider._check_auth_from_data(parsed_json):
                 results = parsed_json['data']
-        except Exception:
+        except Exception as cause:
+            logger.log('HDBitsCache: error while trying to get the RSS data, cause: {cause}'.format(cause=cause),
+                       logger.DEBUG)
             pass
 
         return {'entries': results}
