@@ -111,7 +111,7 @@
                         % endif
                         </h3>
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
-                        % if app.DISPLAY_ALL_SEASONS is False:
+                        % if not app.DISPLAY_ALL_SEASONS:
                             <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
                         % endif
                     </th>
@@ -153,7 +153,7 @@
                         </h3>
                         <!-- @TODO: port the season scene exceptions to angular -->
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
-                        % if app.DISPLAY_ALL_SEASONS is False:
+                        % if not app.DISPLAY_ALL_SEASONS:
                             <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
                         % endif
                     </th>
@@ -179,7 +179,7 @@
                 </tr>
                     % endif
             </tbody>
-                % if app.DISPLAY_ALL_SEASONS is False:
+                % if not app.DISPLAY_ALL_SEASONS:
                 <tbody class="toggle collapse${("", " in")[cur_season == -1]}" id="collapseSeason-${epResult['season']}">
                 % else:
                 <tbody>
