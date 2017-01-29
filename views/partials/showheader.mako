@@ -245,6 +245,7 @@
                                 <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
                                 <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
                                 <button class="btn btn-xs clearAll">Clear All</button>
+                                <button id="popover" type="button" class="btn">Select Columns <b class="caret"></b></button>
                             </div>
                             <div class="pull-lg-right col-lg-4 col-md-12">
                                 <div class="pull-lg-right">

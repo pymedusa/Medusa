@@ -79,7 +79,7 @@ MEDUSA.home.snatchSelection = function() {
                 filter_hideFilters: true, // eslint-disable-line camelcase
                 filter_saveFilters: true, // eslint-disable-line camelcase
                 columnSelector_saveColumns: true, // eslint-disable-line camelcase
-                columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
+                columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
                 columnSelector_mediaquery: false, // eslint-disable-line camelcase
                 columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
             }
@@ -209,6 +209,7 @@ MEDUSA.home.snatchSelection = function() {
     $('#popover').popover({
         placement: 'bottom',
         html: true, // required if content has HTML
+        container: 'body',
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable'), '#popover-target');
