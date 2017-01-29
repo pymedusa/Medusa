@@ -1390,7 +1390,6 @@ class Home(WebRoot):
                     indexer_name=indexerApi(show_obj.indexer).name,
                 )
             )
-
             status = 'Unexpected result when changing language to'
             log_level = logger.WARNING
             language = show_obj.lang
