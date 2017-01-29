@@ -1380,6 +1380,7 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
+        do_update = False
         if show_obj.lang != indexer_lang:
             msg = (
                 '{{status}} {language}'
@@ -1389,7 +1390,6 @@ class Home(WebRoot):
                     indexer_name=indexerApi(show_obj.indexer).name,
                 )
             )
-            do_update = False
             status = 'Unexpected result when changing language to'
             log_level = logger.WARNING
             language = show_obj.lang
