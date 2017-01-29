@@ -645,7 +645,7 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
                     # Add the correct title
                     new_title = copy.copy(title)
                     new_title.value = cleanup(new_value)
-                    new_title.end = m.start()
+                    new_title.end = title.start + m.start()
                     to_append.append(new_title)
 
                 # and add the absolute episode range
