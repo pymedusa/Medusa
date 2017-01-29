@@ -333,7 +333,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('#popover').popover({
         placement: 'bottom',
         html: true, // required if content has HTML
-        container: 'body',
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');

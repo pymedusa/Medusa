@@ -209,7 +209,6 @@ MEDUSA.home.snatchSelection = function() {
     $('#popover').popover({
         placement: 'bottom',
         html: true, // required if content has HTML
-        container: 'body',
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         $.tablesorter.columnSelector.attachTo($('#showTable'), '#popover-target');
