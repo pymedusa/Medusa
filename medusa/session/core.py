@@ -15,12 +15,6 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-try:
-    from urllib.parse import splittype
-except ImportError:
-    from urllib2 import splittype
-
-
 class Session(requests.Session):
     """
     A Medusa Session.
@@ -30,19 +24,7 @@ class Session(requests.Session):
         'Accept-Encoding': 'gzip,deflate',
     }
 
-    # request session proxies
-    if app.PROXY_SETTING:
-        log.debug(u"Using global proxy: " + app.PROXY_SETTING)
-        scheme, address = splittype(app.PROXY_SETTING)
-        address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
-        proxies = {
-            "http": address,
-            "https": address,
-        }
-    else:
-        proxies = None
-
-    def __init__(self, verify=True, **kwargs):
+    def __init__(self, verify=True, proxies=factory.add_proxies(), **kwargs):
         # Add
         self.my_hooks = kwargs.pop('hooks', [])
 
@@ -55,6 +37,9 @@ class Session(requests.Session):
         # Add cache control of provided as a dict. Needs to be attached after super init.
         if cache_control:
             factory.add_cache_control(self, cache_control)
+
+        # add proxies
+        self.proxies = proxies
 
         # Configure global session hooks
         self.hooks['response'].append(hooks.log_url)
