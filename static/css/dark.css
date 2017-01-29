@@ -643,9 +643,9 @@ body {
     background-image: -ms-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(41, 122, 184)), to(rgb(21, 82, 143)));
     background-image: -webkit-linear-gradient(top, #777, rgb(85, 85, 85));
-    background-image: -o-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -moz-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
+    background-image: -o-linear-gradient(top, #777, rgb(85, 85, 85));
+    background-image: linear-gradient(top, #777, rgb(85, 85, 85));
+    background-image: -moz-linear-gradient(top, #777, rgb(85, 85, 85));
     background-repeat: repeat-x;
     border: 1px solid rgb(17, 17, 17);
     *border: 0;

@@ -1083,6 +1083,10 @@ div#container-display-show {
     display: table-cell;
 }
 
+.select-show-group {
+    width: 363px;
+}
+
 .tvshowImg {
     border: 1px solid rgb(204, 204, 204);
     border-radius: 5px;
@@ -1133,7 +1137,7 @@ div#container-display-show {
     }
 
     .select-show-group {
-        width: 323px;
+        width: 363px;
         margin: 0 auto;
     }
 
@@ -1217,12 +1221,15 @@ div#container-display-show {
 }
 
 .container-navShow {
-    margin: 0 0 0 367px;
+    margin-top: 2px;
+    margin-left: 367px;
     z-index:10;
 }
 
 .navShow {
     width:18px;
+    padding-top: 2px;
+    padding bottom: 2px;
     max-height:15px;
     display: block;;
     cursor: pointer;

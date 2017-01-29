@@ -1,6 +1,6 @@
 <!-- BEGIN SUBMENU -->
     <div id="sub-menu-container" class="row">
-        <div id="sub-menu" class="submenu-default hidden-print col-md-8 col-sm-12">
+        <div id="sub-menu" class="submenu-default hidden-print col-md-6 col-sm-12">
             <% first = True %>
             % for menuItem in submenu:
                 % if 'requires' not in menuItem or menuItem['requires']:
