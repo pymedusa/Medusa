@@ -67,7 +67,6 @@ from .common import USER_AGENT
 from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from .helper.exceptions import ex
 from .indexers.indexer_exceptions import IndexerException
-from .notifiers import synoindex_notifier
 from .show.show import Show
 
 logger = logging.getLogger(__name__)
@@ -186,8 +185,10 @@ def make_dir(path):
     if not os.path.isdir(path):
         try:
             os.makedirs(path)
+
             # do the library update for synoindex
-            synoindex_notifier.addFolder(path)
+            from . import notifiers
+            notifiers.synoindex_notifier.addFolder(path)
         except OSError:
             return False
     return True
@@ -435,8 +436,10 @@ def make_dirs(path):
                     os.mkdir(sofar)
                     # use normpath to remove end separator, otherwise checks permissions against itself
                     chmod_as_parent(os.path.normpath(sofar))
+
                     # do the library update for synoindex
-                    synoindex_notifier.addFolder(sofar)
+                    from . import notifiers
+                    notifiers.synoindex_notifier.addFolder(sofar)
                 except (OSError, IOError) as e:
                     logger.error(u'Failed creating {path} : {error!r}', path=sofar, error=e)
                     return False
@@ -521,7 +524,8 @@ def delete_empty_folders(top_dir, keep_dir=None):
                 os.rmdir(dirpath)
 
                 # Do the library update for synoindex
-                synoindex_notifier.deleteFolder(dirpath)
+                from . import notifiers
+                notifiers.synoindex_notifier.deleteFolder(dirpath)
             except OSError as e:
                 logger.warning(u'Unable to delete {folder}. Error: {error!r}'.format(folder=dirpath, error=e))
         else:
