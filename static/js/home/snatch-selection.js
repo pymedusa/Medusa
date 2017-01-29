@@ -10,11 +10,11 @@ MEDUSA.home.snatchSelection = function() {
 
     function moveSummaryBackground() {
         var height = $("#summary").height() + 10;
-        var top = $("#summary").offset().top + 5
+        var top = $("#summary").offset().top + 5;
         $("#summaryBackground").height(height);
-        $("#summaryBackground").offset({ top: top, left: 0})
+        $("#summaryBackground").offset({ top: top, left: 0});
     }
-    
+
     $(window).resize(function() {
         moveSummaryBackground();
     });
