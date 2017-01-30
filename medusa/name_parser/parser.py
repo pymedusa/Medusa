@@ -411,7 +411,7 @@ class ParseResult(object):
         return self.guess.get('video_codec')
 
 
-class NameParserCache:
+class NameParserCache(object):
     """Name parser cache."""
 
     def __init__(self, max_size=1000):
