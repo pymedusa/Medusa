@@ -175,7 +175,6 @@ def get_scene_exception_by_name_multiple(show_name):
 
 def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     """Given a indexer_id, and a list of all show scene exceptions, update the db."""
-
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(b'DELETE FROM scene_exceptions WHERE indexer_id=? and season=? and indexer=?',
                         [indexer_id, season, indexer])
@@ -183,7 +182,7 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     logger.log('Updating scene exceptions...', logger.INFO)
 
     # A change has been made to the scene exception list. Let's clear the cache, to make this visible
-    #@TODO make sure we add indexer, when the global exceptionsCache var has been changed.
+    # TODO: make sure we add indexer, when the global exceptionsCache var has been changed.
     if indexer_id in exceptionsCache:
         exceptionsCache[indexer_id] = {}
         exceptionsCache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
