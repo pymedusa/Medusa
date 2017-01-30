@@ -83,7 +83,7 @@
 </div>
 
 <div id="summaryBackground"></div>
-<div class="row">
+
 <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
     <div id="container-display-show" class="col-md-12">
         <div class="show-poster-container">
