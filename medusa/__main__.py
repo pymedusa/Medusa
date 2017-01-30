@@ -1000,10 +1000,10 @@ class Application(object):
                     for cache_file in ['application.dbm', 'subliminal.dbm']:
                         file_path = os.path.join(app.CACHE_DIR, cache_file)
                         if os.path.isfile(file_path):
-                            logger.debug(u"Removing subtitles cache file: {cache_file}", cache_file=file_path)
+                            logger.info(u"Removing subtitles cache file: {cache_file}", cache_file=file_path)
                             os.remove(file_path)
                 except OSError as e:
-                    logger.debug(u"Unable to remove subtitles cache files. Error: {error}", error=e)
+                    logger.warning(u"Unable to remove subtitles cache files. Error: {error}", error=e)
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
 
