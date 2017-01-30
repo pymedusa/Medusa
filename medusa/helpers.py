@@ -1173,33 +1173,12 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
     hooks, cookies, verify, proxies = request_defaults(**kwargs)
     method = u'POST' if post_data else u'GET'
 
-    # Get RequestPolice instance object.
-    rpolice = kwargs.pop(u'rpolice', None)
-
-    from session.exceptions import PolicedRequestException
-
     try:
         req = requests.Request(method, url, data=post_data, params=params, hooks=hooks,
                                headers=headers, cookies=cookies)
         prepped = session.prepare_request(req)
         resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
                             allow_redirects=True)
-
-        if not resp.ok:
-            # Try to bypass CloudFlare's anti-bot protection
-            if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
-                cf_prepped = prepare_cf_req(session, req)
-                if cf_prepped:
-                    cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
-                                           timeout=timeout, allow_redirects=True)
-                    if cf_resp.ok:
-                        return cf_resp
-
-            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                         (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
-
-            if response_type and response_type != u'response':
-                return None
 
     except requests.exceptions.RequestException as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
@@ -1213,11 +1192,6 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
         return None
 
     if not response_type or response_type == u'response':
-        if rpolice:
-            try:
-                [rpolice_check(resp) for rpolice_check in rpolice.enabled_police_response_hooks]
-            except RequestPoliceException as e:
-                logger.warning(e.message)
         return resp
     else:
         warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format

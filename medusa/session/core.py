@@ -16,8 +16,21 @@ log.addHandler(logging.NullHandler())
 
 
 class Session(requests.Session):
-    """
-    A Medusa Session.
+
+    """Base Session object.
+
+    This is a Medusa base session, used to create and configure a session object with Medusa specific base
+    values.
+
+    :param verify: Enable/Disable SSL certificate verification.
+    :param proxies: Provide a proxy configuration in the form of a dict: {
+        "http": address,
+        "https": address,
+    }
+    Optional arguments:
+    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
+    :cache_control: Provide a cache control dict of cache_control options.
+    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
     """
     default_headers = {
         'User-Agent': medusa.common.USER_AGENT,
@@ -25,11 +38,12 @@ class Session(requests.Session):
     }
 
     def __init__(self, verify=True, proxies=factory.add_proxies(), **kwargs):
-        # Add
+        """Create base Medusa session instance."""
+        # Add response hooks
         self.my_hooks = kwargs.pop('hooks', [])
 
         # Pop the cache_control config
-        cache_control = kwargs.pop('cache_control', [])
+        cache_control = kwargs.pop('cache_control', None)
 
         # Initialize request.session
         super(Session, self).__init__(**kwargs)
