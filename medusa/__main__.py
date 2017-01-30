@@ -820,6 +820,7 @@ class Application(object):
             app.EMAIL_SUBJECT = check_setting_str(app.CFG, 'Email', 'email_subject', '')
 
             app.USE_SUBTITLES = bool(check_setting_int(app.CFG, 'Subtitles', 'use_subtitles', 0))
+            app.SUBTITLES_ERASE_CACHE = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_erase_cache', 0))
             app.SUBTITLES_LANGUAGES = check_setting_str(app.CFG, 'Subtitles', 'subtitles_languages', '').split(',')
             if app.SUBTITLES_LANGUAGES[0] == '':
                 app.SUBTITLES_LANGUAGES = []
@@ -993,6 +994,18 @@ class Application(object):
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
                 self.save_config()
+
+            if app.SUBTITLES_ERASE_CACHE:
+                try:
+                    for cache_file in ['application.dbm', 'subliminal.dbm']:
+                        file_path = os.path.join(app.CACHE_DIR, cache_file)
+                        if os.path.isfile(file_path):
+                            logger.info(u"Removing subtitles cache file: {cache_file}", cache_file=file_path)
+                            os.remove(file_path)
+                except OSError as e:
+                    logger.warning(u"Unable to remove subtitles cache files. Error: {error}", error=e)
+                # Disable flag to erase cache
+                app.SUBTITLES_ERASE_CACHE = 0
 
             # initialize the main SB database
             main_db_con = db.DBConnection()
@@ -1762,6 +1775,7 @@ class Application(object):
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
+        new_config['Subtitles']['subtitles_erase_cache'] = int(app.SUBTITLES_ERASE_CACHE)
         new_config['Subtitles']['subtitles_languages'] = ','.join(app.SUBTITLES_LANGUAGES)
         new_config['Subtitles']['SUBTITLES_SERVICES_LIST'] = ','.join(app.SUBTITLES_SERVICES_LIST)
         new_config['Subtitles']['SUBTITLES_SERVICES_ENABLED'] = '|'.join([str(x) for x in app.SUBTITLES_SERVICES_ENABLED])
