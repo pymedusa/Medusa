@@ -846,7 +846,7 @@ class Home(WebRoot):
         if show_obj.is_anime:
             bwl = show_obj.release_groups
 
-        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
         indexerid = int(show_obj.indexerid)
         indexer = int(show_obj.indexer)
@@ -1135,7 +1135,7 @@ class Home(WebRoot):
         if show_obj.is_anime:
             bwl = show_obj.release_groups
 
-        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
         indexer_id = int(show_obj.indexerid)
         indexer = int(show_obj.indexer)
@@ -1337,7 +1337,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_string)
 
-        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
         if try_int(quality_preset, None):
             preferred_qualities = []
@@ -1362,7 +1362,7 @@ class Home(WebRoot):
 
             with show_obj.lock:
                 show = show_obj
-                scene_exceptions = get_scene_exceptions(show_obj.indexerid)
+                scene_exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
             if show_obj.is_anime:
                 return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
@@ -1519,7 +1519,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions_list)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')

@@ -1724,7 +1724,7 @@ class TVShow(TVObject):
                 ('flattenFolders', bool(self.flatten_folders)),
                 ('scene', self.is_scene),
                 ('defaultEpisodeStatus', statusStrings[self.default_ep_status]),
-                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid)),
+                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)),
                 ('release', OrderedDict([
                     ('blacklist', bw_list.blacklist),
                     ('whitelist', bw_list.whitelist),
