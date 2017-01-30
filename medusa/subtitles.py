@@ -717,7 +717,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         if embedded_subtitles is None:
             embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
 
-        # Enzime only mkv
+        #  Enzyme only when mkv
         if video_path.endswith('mkv'):
             episode_refiners += ('metadata',)
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
