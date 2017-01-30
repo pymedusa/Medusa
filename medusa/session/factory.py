@@ -17,11 +17,8 @@ except ImportError:
 
 
 def add_cache_control(session, cache_control_config):
-    if not all(['cache_etags' in cache_control_config,
-                'serializer' in cache_control_config,
-                'heuristic' in cache_control_config]):
-        logging.warning('Insufficient paramaters provided for the add_cache_control factory.')
-        return
+    """Add cache_control adapter to session object."""
+    assert {'cache_etags', 'serializer', 'heuristic'}.issubset(cache_control_config.keys()), cache_control_config
 
     adapter = CacheControlAdapter(
         DictCache(),
