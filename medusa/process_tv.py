@@ -226,6 +226,9 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         # Don't Link media when the media is extracted from a rar in the same path
         if process_method in (u'hardlink', u'symlink') and videoInRar:
             process_media(path, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
+            #  As is a hardlink/symlink we can't keep the extracted file in the folder
+            #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
+            #  That's why we don't check for app.DELRARCONTENTS here.
             delete_files(path, rarContent, result)
             for video in set(videoFiles) - set(videoInRar):
                 process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
@@ -277,6 +280,9 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
                                   is_priority, ignore_subs, result)
+                    #  As is a hardlink/symlink we can't keep the extracted file in the folder
+                    #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
+                    #  That's why we don't check for app.DELRARCONTENTS here.
                     delete_files(processPath, rarContent, result)
                 elif app.DELRARCONTENTS and videoInRar:
                     process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
@@ -455,6 +461,8 @@ def unRAR(path, rarFiles, force, result):
                                                    file_in_archive, logger.DEBUG)
 
                         skip_file = True
+                        #  We need to return the media file inside the .RAR so we can move
+                        #  when method is hardlink/symlink
                         unpacked_files.append(file_in_archive)
                         break
                 if skip_file:

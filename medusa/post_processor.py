@@ -377,7 +377,10 @@ class PostProcessor(object):
                     sub_lang = 'pt-BR'
                 new_extension = sub_lang + split_extension[1]
                 changed_extension = True
+                #  If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
+                #  Otherwise when torrent+data gets removed the folder won't be deleted because of subtitle
                 if app.POSTPONE_IF_NO_SUBS:
+                    #  subtitle_action = move
                     action = subtitle_action or action
 
             # replace nfo with nfo-orig to avoid conflicts
