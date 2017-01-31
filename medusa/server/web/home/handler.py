@@ -22,7 +22,7 @@ from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
 from ....indexers.indexer_api import indexerApi
 from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerShowNotFoundInLanguage
+from ....indexers.indexer_exceptions import IndexerException, IndexerShowNotFoundInLanguage
 from ....providers.generic_provider import GenericProvider
 from ....sbdatetime import sbdatetime
 from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
@@ -846,7 +846,7 @@ class Home(WebRoot):
         if show_obj.is_anime:
             bwl = show_obj.release_groups
 
-        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
         indexerid = int(show_obj.indexerid)
         indexer = int(show_obj.indexer)
@@ -1135,7 +1135,7 @@ class Home(WebRoot):
         if show_obj.is_anime:
             bwl = show_obj.release_groups
 
-        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
         indexer_id = int(show_obj.indexerid)
         indexer = int(show_obj.indexer)
@@ -1281,32 +1281,39 @@ class Home(WebRoot):
 
     @staticmethod
     def check_show_for_language(show_obj, language):
-        """Request the show in a specific language from the indexer.
-
-        If the indexer throws the ShowNotFoundInLanguage Exception, we catch it,
-        and report it's not available in this language.
-        :param show_obj: (TVShow) Show object.
-        :param language: Language passed as string as a two letter country ccde. For ex: 'en'.
-
-        :returns: True (show found in language) False (show not found in language)
         """
-        indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-        indexer_api_params['language'] = language
-        indexer_api_params['episodes'] = False
-        t = indexerApi(show_obj.indexer).indexer(**indexer_api_params)
-        try:
-            t[show_obj.indexerid]
-        except IndexerShowNotFoundInLanguage:
-            return False
-        return True
+        Request the show in a specific language from the indexer.
+
+        :param show_obj: (TVShow) Show object
+        :param language: Language two-letter country code. For ex: 'en'
+        :returns: True if show is found in language else False
+        """
+
+        # Get the Indexer used by the show
+        show_indexer = indexerApi(show_obj.indexer)
+
+        # Add the language to the show indexer's parameters
+        params = show_indexer.api_params.copy()
+        params.update({
+            'language': language,
+            'episodes': False,
+        })
+
+        # Create an indexer with the updated parameters
+        indexer = show_indexer.indexer(**params)
+
+        if language in indexer.config['valid_languages']:
+            indexer[show_obj.indexerid]
+            return True
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
                  exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
-                 air_by_date=None, sports=None, dvd_order=None, indexerLang=None,
+                 air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
                  defaultEpStatus=None, quality_preset=None):
         # @TODO: Replace with PATCH /api/v2/show/{id}
+
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
         exceptions_list = exceptions_list or []
@@ -1330,7 +1337,7 @@ class Home(WebRoot):
             else:
                 return self._genericMessage('Error', error_string)
 
-        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid)
+        show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
         if try_int(quality_preset, None):
             preferred_qualities = []
@@ -1355,7 +1362,7 @@ class Home(WebRoot):
 
             with show_obj.lock:
                 show = show_obj
-                scene_exceptions = get_scene_exceptions(show_obj.indexerid)
+                scene_exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
             if show_obj.is_anime:
                 return t.render(show=show, scene_exceptions=scene_exceptions, groups=groups, whitelist=whitelist,
@@ -1373,25 +1380,39 @@ class Home(WebRoot):
         anime = config.checkbox_to_value(anime)
         subtitles = config.checkbox_to_value(subtitles)
 
-        if indexerLang and indexerLang in indexerApi(show_obj.indexer).indexer().config['valid_languages']:
-            if self.check_show_for_language(show_obj, indexerLang):
-                indexer_lang = indexerLang
+        do_update = False
+        if show_obj.lang != indexer_lang:
+            msg = (
+                '{{status}} {language}'
+                ' for {indexer_name} show {show_id}'.format(
+                    language=indexer_lang,
+                    show_id=show_obj.indexerid,
+                    indexer_name=indexerApi(show_obj.indexer).name,
+                )
+            )
+            status = 'Unexpected result when changing language to'
+            log_level = logger.WARNING
+            language = show_obj.lang
+            try:
+                do_update = self.check_show_for_language(
+                    show_obj,
+                    indexer_lang,
+                )
+            except IndexerShowNotFoundInLanguage:
+                status = 'Could not change language to'
+            except IndexerException as error:
+                status = u'Failed getting show in'
+                msg += u' Please try again later. Error: {err}'.format(
+                    err=error,
+                )
             else:
-                errors.append(u"Could not change language to '{language} for show {show_id} on indexer {indexer_name}'".
-                              format(language=indexerLang, show_id=show_obj.indexerid,
-                                     indexer_name=indexerApi(show_obj.indexer).name))
-                logger.log(u"Could not change language to '{language}' for show {show_id} on indexer {indexer_name}".
-                           format(language=indexerLang, show_id=show_obj.indexerid,
-                                  indexer_name=indexerApi(show_obj.indexer).name), logger.WARNING)
-                indexer_lang = show_obj.lang
-        else:
-            indexer_lang = show_obj.lang
-
-        # if we changed the language then kick off an update
-        if indexer_lang == show_obj.lang:
-            do_update = False
-        else:
-            do_update = True
+                language = indexer_lang
+                status = 'Changing language to'
+                log_level = logger.INFO
+            finally:
+                indexer_lang = language
+                errors.append(msg.format(status=status))
+                logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
             do_update_scene_numbering = False
@@ -1407,7 +1428,8 @@ class Home(WebRoot):
         if not isinstance(exceptions_list, list):
             exceptions_list = [exceptions_list]
 
-        # If directCall from mass_edit_update no scene exceptions handling or blackandwhite list handling
+        # If directCall from mass_edit_update no scene exceptions handling or
+        # blackandwhite list handling
         if directCall:
             do_update_exceptions = False
         else:
@@ -1497,7 +1519,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions_list)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')
@@ -1518,8 +1540,8 @@ class Home(WebRoot):
         if errors:
             ui.notifications.error(
                 '{num} error{s} while saving changes:'.format(num=len(errors), s='s' if len(errors) > 1 else ''),
-                '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error)
-                                                             for error in errors])))
+                '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error_item)
+                                                             for error_item in errors])))
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 

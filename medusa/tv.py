@@ -1549,10 +1549,8 @@ class TVShow(TVObject):
                                     u'{id}: Could not delete associated file: {related_file}. Error: {error_msg}'.format
                                     (id=self.indexerid, related_file=related_file, error_msg=e), logger.WARNING)
 
-        # clean up any empty season folders after deletion of associated files
-        if os.path.isdir(self.location):
-            for sub_dir in os.listdir(self.location):
-                helpers.delete_empty_folders(os.path.join(self.location, sub_dir), self.location)
+        # Clean up any empty season folders after deletion of associated files
+        helpers.delete_empty_folders(self.location)
 
         if sql_l:
             main_db_con = db.DBConnection()
@@ -1726,7 +1724,7 @@ class TVShow(TVObject):
                 ('flattenFolders', bool(self.flatten_folders)),
                 ('scene', self.is_scene),
                 ('defaultEpisodeStatus', statusStrings[self.default_ep_status]),
-                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid)),
+                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)),
                 ('release', OrderedDict([
                     ('blacklist', bw_list.blacklist),
                     ('whitelist', bw_list.whitelist),

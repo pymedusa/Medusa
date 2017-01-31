@@ -645,7 +645,7 @@ class FixInvalidTitleOrAlternativeTitle(Rule):
                     # Add the correct title
                     new_title = copy.copy(title)
                     new_title.value = cleanup(new_value)
-                    new_title.end = m.start()
+                    new_title.end = title.start + m.start()
                     to_append.append(new_title)
 
                 # and add the absolute episode range
@@ -1066,7 +1066,16 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
 
         # if it's not detected as anime and season (weak_duplicate) is not 0, then skip.
         if not matches.named('video_profile') and not matches.tagged('anime') and weak_duplicate.value > 0:
-            return
+            is_anime = False
+            groups = matches.markers.named('group')
+            for group in groups:
+                screen_size = matches.range(group.start, group.end, index=0, predicate=lambda match: match.name == 'screen_size')
+                if screen_size:
+                    is_anime = True
+                    screen_size.tags.append('anime')
+                    break
+            if not is_anime:
+                return
 
         fileparts = matches.markers.named('path')
         for filepart in marker_sorted(fileparts, matches):

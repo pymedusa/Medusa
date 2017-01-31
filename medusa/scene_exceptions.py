@@ -69,7 +69,7 @@ def set_last_refresh(ex_list):
     )
 
 
-def get_scene_exceptions(indexer_id, season=-1, indexer=1):
+def get_scene_exceptions(indexer_id, indexer, season=-1):
     """Given a indexer_id, return a list of all the scene exceptions."""
     exceptions_list = []
 
@@ -90,7 +90,7 @@ def get_scene_exceptions(indexer_id, season=-1, indexer=1):
 
     # Add generic exceptions regardless of the season if there is no exception for season
     if season != -1 and not exceptions_list:
-        exceptions_list += get_scene_exceptions(indexer_id, season=-1)
+        exceptions_list += get_scene_exceptions(indexer_id, indexer, season=-1)
 
     return list({exception for exception in exceptions_list})
 
@@ -173,21 +173,23 @@ def get_scene_exception_by_name_multiple(show_name):
     return [(None, None)]
 
 
-def update_scene_exceptions(indexer_id, scene_exceptions, season=-1):
+def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     """Given a indexer_id, and a list of all show scene exceptions, update the db."""
     cache_db_con = db.DBConnection('cache.db')
-    cache_db_con.action(b'DELETE FROM scene_exceptions WHERE indexer_id=? and season=?', [indexer_id, season])
+    cache_db_con.action(b'DELETE FROM scene_exceptions WHERE indexer_id=? and season=? and indexer=?',
+                        [indexer_id, season, indexer])
 
     logger.log('Updating scene exceptions...', logger.INFO)
 
     # A change has been made to the scene exception list. Let's clear the cache, to make this visible
+    # TODO: make sure we add indexer, when the global exceptionsCache var has been changed.
     if indexer_id in exceptionsCache:
         exceptionsCache[indexer_id] = {}
         exceptionsCache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
 
     for cur_exception in [se.decode('utf-8') for se in scene_exceptions]:
-        cache_db_con.action(b'INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)',
-                            [indexer_id, cur_exception, season])
+        cache_db_con.action(b'INSERT INTO scene_exceptions (indexer_id, show_name, season, indexer) VALUES (?,?,?,?)',
+                            [indexer_id, cur_exception, season, indexer])
 
 
 def retrieve_exceptions():
