@@ -135,7 +135,7 @@
                     <th class="col-search">Search</th>
                 </tr>
                     % else:
-                <tr id="season-${epResult["season"]}-footer" class="seasoncols">
+                <tr id="season-${epResult["season"]}-footer" class="seasoncols border-bottom shadow">
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
                 <% epCount = 0 %>
@@ -159,7 +159,7 @@
                 </tr>
             </tbody>
             <tbody class="tablesorter-no-sort">
-                <tr id="season-${epResult["season"]}-cols" class="seasoncols">
+                <tr id="season-${epResult["season"]}-cols" class="seasoncols ${'' if app.DISPLAY_ALL_SEASONS else 'shadow'}">
                     <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${epResult["season"]}" /></th>
                     <th class="col-metadata">NFO</th>
                     <th class="col-metadata">TBN</th>
@@ -305,10 +305,11 @@
                     </td>
                 </tr>
             % endfor
-                <tr id="season-${epResult["season"]}-footer" class="seasoncols">
+                <tr id="season-${epResult["season"]}-footer" class="seasoncols border-bottom shadow">
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
             </tbody>
+            <tbody class="tablesorter-no-sort"><tr><td></td></tr></tbody>
         </table>
     </div> <!-- end of col -->
 </div> <!-- row -->

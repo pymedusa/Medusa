@@ -3,17 +3,25 @@ MEDUSA.home.snatchSelection = function() {
         let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
         let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
         $.backstretch(path);
-        $('.backstretch').css('top','110px');
+        $('.backstretch').css('top',backstretchOffset());
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 
-    // adjust the summary background position and size on page load and resize
+    function backstretchOffset() {
+        var offset = '90px';
+        if ($(window).width() < 1281) {
+            offset = '50px';
+        }
+        return offset;
+    }
 
+    // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $("#summary").height() + 10;
         var top = $("#summary").offset().top + 5;
         $("#summaryBackground").height(height);
         $("#summaryBackground").offset({ top: top, left: 0});
+        $('.backstretch').css('top',backstretchOffset());
     }
 
     $(window).resize(function() {
@@ -72,7 +80,6 @@ MEDUSA.home.snatchSelection = function() {
     function initTableSorter(table) {
         // Nasty hack to re-initialize tablesorter after refresh
         $(table).tablesorter({
-            widthFixed: true,
             widgets: ['saveSort', 'stickyHeaders', 'columnSelector', 'filter'],
             widgetOptions: {
                 filter_columnFilters: true, // eslint-disable-line camelcase

@@ -129,9 +129,6 @@ bootstrap Overrides
 
 /* ssubmenu styling */
 #sub-menu-container {
-    margin-top: -15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
     background-color: rgb(85, 85, 85);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(85, 85, 85)));

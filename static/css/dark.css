@@ -612,11 +612,8 @@ body {
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
-/* ssubmenu styling */
+/* submenu styling */
 #sub-menu-container {
-    margin-top: -15px;
-    padding-top: 10px;
-    padding-bottom: 10px;
     background-color: rgb(51, 51, 51);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(85, 85, 85)));
@@ -668,22 +665,22 @@ body {
 .btn.active,
 .btn.disabled,
 .btn[disabled] {
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
-    color: rgb(255, 255, 255);
+    background-color: rgb(204, 204, 204);
+    *background-color: rgb(204, 204, 204);
+    color: rgb(55, 55, 55);
 }
 
 .btn:active,
 .btn.active {
-    background-color: rgb(204, 204, 204) \9;
-    color: rgb(255, 255, 255);
+    background-color: rgb(204, 204, 204);
+    color: rgb(55, 55, 55);
 }
 
 .btn:hover {
-    color: rgb(255, 255, 255);
+    color: rgb(55, 55, 55);
     text-decoration: none;
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
+    background-color: rgb(204, 204, 204);
+    *background-color: rgb(204, 204, 204);
     background-position: 0 -150px;
     -webkit-transition: background-position 0.0s linear;
     -moz-transition: background-position 0.0s linear;
@@ -701,8 +698,8 @@ body {
 
 .btn.active,
 .btn:active {
-    background-color: rgb(38, 114, 182);
-    background-color: rgb(38, 114, 182) \9;
+    background-color: rgb(204, 204, 204);
+    *background-color: rgb(204, 204, 204);
     background-image: none;
     color: rgb(255, 255, 255);
     outline: 0;
@@ -714,7 +711,7 @@ body {
 .btn.disabled,
 .btn[disabled] {
     cursor: default;
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(204, 204, 204);
     background-image: none;
     opacity: 0.65;
     filter: alpha(opacity=65);

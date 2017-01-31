@@ -24,13 +24,6 @@
 
 <div class="row">
     <div class="col-md-12">
-        <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
-        <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
-        <div id="searchNotification"></div><!-- #searchNotification //-->
-        <div class="pull-right clearfix" id="filterControls">
-            <button id="popover" type="button" class="btn top-5 bottom-5">Select Columns <b class="caret"></b></button>
-            <button id="btnReset" type="button" class="btn top-5 bottom-5">Reset Sort</button>
-        </div><!-- #filterControls //-->
         <div class="clearfix"></div><!-- .clearfix //-->
         <div id="wrapper" data-history-toggle="hide">
             <div id="container">
@@ -77,28 +70,28 @@
                             </td>
                             </tr>
                         % endfor
+                        <tr id="history-footer" class="tablesorter-no-sort border-bottom shadow">
+                            <th class="tablesorter-no-sort" colspan=4 align=left></th>
+                        </tr>
                     </tbody>
+                    <tbody class="tablesorter-no-sort"><tr style="height: 30px;"><td></td></tr></tbody>
                 </table>
             % endif
             <!-- add provider meta data -->
                 <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
-                <table id="showTableSeason" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
-                    <!-- @TODO: Change this first thead to a caption with CSS styling -->
-                    <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
-                        <tr style="height: 60px;" role="row">
-                            <th style="vertical-align: bottom; width: auto;" colspan="10" class="row-seasonheader ${"displayShowTableFanArt" if app.FANART_BACKGROUND else "displayShowTable"}">
-                                <h3 style="display: inline;">
-                                    Season ${season}
-                                % if manual_search_type != 'season':
-                                    Episode ${episode}
-                                % endif
-                                </h3>
-                            </th>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="col-md-12 bottom-15">
+                    <div class="col-md-8">
+                    <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
+                    <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
+                    <div id="searchNotification"></div><!-- #searchNotification //-->
+                    </div>
+                    <div class="pull-right clearfix class="col-md-4"" id="filterControls">
+                        <button id="popover" type="button" class="btn">Select Columns <b class="caret"></b></button>
+                        <button id="btnReset" type="button" class="btn">Reset Sort</button>
+                    </div><!-- #filterControls //-->
+                </div>
                 <table id="showTable" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
-                    <thead aria-live="polite" aria-relevant="all">
+                    <thead>
                         <tr>
                             <th data-priority="critical" class="col-name">Release</th>
                             <th>Group</th>
@@ -147,7 +140,11 @@
                             <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>
                     % endfor
+                        <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
+                            <th class="tablesorter-no-sort" colspan=11 align=left></th>
+                        </tr>
                     </tbody>
+                    <tbody class="tablesorter-no-sort"><tr style="height: 30px;"><td></td></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->

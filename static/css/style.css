@@ -1073,6 +1073,7 @@ div#container-display-show {
 }
 
 #showSelector {
+    height:31px;
     overflow: hidden;
     display: table-cell;
     left:20px;
@@ -1084,7 +1085,13 @@ div#container-display-show {
 }
 
 .select-show-group {
-    width: 363px;
+    width: 300px;
+}
+
+.container-navShow {
+    margin-top: -2px;
+    margin-left: 305px;
+    z-index:10;
 }
 
 .tvshowImg {
@@ -1094,7 +1101,54 @@ div#container-display-show {
     width: auto;
     float: left;
 }
+
+@media (min-width: 1281px) {
+    #sub-menu-container {
+        position:fixed;
+        width:100%;
+        margin-top: -15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        top: 60px;
+    }
+}
+
+@media (max-width: 1281px) {
+    #sub-menu-container {
+        position:relative;
+        margin-top: -15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        top: -60px;
+    }
+}
+
+@media (max-width: 767px) and (min-width: 341px) {
+    .select-show-group {
+        width: 300px;
+        margin: 0 auto;
+    }
+
+    .container-navShow {
+        margin-left: 305px;
+    }
+}
+
+@media (max-width: 340px) {
+    .select-show-group {
+        width: 260px;
+    }
+
+    .container-navShow {
+        margin-left: 265px;
+    }
+}
+
 @media (max-width: 767px) {
+    #showSelector {
+        left:5px;
+    }
+
     .pull-xs-left {
         float: left;
     }
@@ -1136,17 +1190,11 @@ div#container-display-show {
         margin: 0 -13px;
     }
 
-    .select-show-group {
-        width: 363px;
-        margin: 0 auto;
-    }
-
     .show-info-container {
-    display: block;
-    padding-top: 5px;
-    width: 100%;
-}
-
+        display: block;
+        padding-top: 5px;
+        width: 100%;
+    }
 
 }
 
@@ -1220,16 +1268,8 @@ div#container-display-show {
     }
 }
 
-.container-navShow {
-    margin-top: 2px;
-    margin-left: 367px;
-    z-index:10;
-}
-
 .navShow {
     width:18px;
-    padding-top: 2px;
-    padding bottom: 2px;
     max-height:15px;
     display: block;;
     cursor: pointer;
@@ -1351,7 +1391,7 @@ ul.tags li a {
 
 #checkboxControls span {
     padding: 5px;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: bold;
     border-radius: 5px;
 }
@@ -1691,6 +1731,7 @@ div.season-scene-exception {
 }
 
 select#select-show {
+    padding-top:5px;
     display: inline-block;
     width: 100%;
 }
@@ -2876,13 +2917,21 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 #sub-menu-container {
-    position:fixed;
-    top: 60px;
-    width:100%;
+    padding-bottom: 10px;
     z-index:550;
     border-width: 1px;
-    border-style: solid none solid none;
-    border-color: rgb(136, 136, 136);
+    border-style: none none solid none;
+    border-color: rgb(62, 63, 58);
+}
+
+.shadow {
+    box-shadow: 5px 5px 5px #111;
+}
+
+.border-bottom {
+    border-width: 1px;
+    border-style: none none solid none;
+    border-color: rgb(62, 63, 58);
 }
 
 .btn {

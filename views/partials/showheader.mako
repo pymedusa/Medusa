@@ -15,12 +15,11 @@
 <div class="row">
     <div id="showtitle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" data-showname="${show.name}">
         <div>
+        % if action == 'displayShow':
+        $season = '';
+        % endif
         % if action == 'snatchSelection':
-            <h1 class="title" id="scene_exception_${show.indexerid}">
-                <a href="home/displayShow?show=${show.indexerid}" class="snatchTitle">
-                    ${show.name}
-                </a>
-            </h1>
+            <%include file="/partials/seasonEpisode.mako"/>
         % else:
             <h1 class="title" id="scene_exception_${show.indexerid}">${show.name}</h1>
         % endif
@@ -82,7 +81,7 @@
 % endif
 </div>
 
-<div id="summaryBackground"></div>
+<div id="summaryBackground" class="shadow"></div>
 
 <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
     <div id="container-display-show" class="col-md-12">
@@ -90,7 +89,7 @@
             <div class="row">
                 <div class="image-flex-container col-md-12">
                     <a asset="show/${show.indexerid}?type=poster">
-                        <img alt="" class="show-image" asset="show/${show.indexerid}?type=posterThumb" />
+                        <img alt="" class="show-image shadow" asset="show/${show.indexerid}?type=posterThumb" />
                     </a>
                 </div>
             </div>
@@ -101,7 +100,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right" asset="show/${show.indexerid}?type=banner">
+                    <img id="showBanner" class="pull-right shadow" asset="show/${show.indexerid}?type=banner">
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -245,11 +244,12 @@
                                 <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
                                 <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
                                 <button class="btn btn-xs clearAll">Clear All</button>
-                                <button id="popover" type="button" class="btn">Select Columns <b class="caret"></b></button>
                             </div>
                             <div class="pull-lg-right col-lg-4 col-md-12">
                                 <div class="pull-lg-right">
-                                    Change selected to: <select id="statusSelect" class="form-control form-control-inline input-sm">
+                                    <select id="statusSelect" class="form-control form-control-inline input-sm">
+                                    <option selected value="">Change selected to:</option>
+                                    <option value=""">--------------------------------------------</option>
                                     <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
                                     % if not app.USE_FAILED_DOWNLOADS:
                                     <% availableStatus.remove(FAILED) %>
