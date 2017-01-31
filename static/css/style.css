@@ -2925,7 +2925,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 .shadow {
-    box-shadow: 5px 5px 5px #111;
+    box-shadow: 5px 5px 5px rgba(17,17,17,0.7);
 }
 
 .border-bottom {

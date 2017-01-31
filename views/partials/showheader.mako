@@ -15,9 +15,6 @@
 <div class="row">
     <div id="showtitle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" data-showname="${show.name}">
         <div>
-        % if action == 'displayShow':
-        $season = '';
-        % endif
         % if action == 'snatchSelection':
             <%include file="/partials/seasonEpisode.mako"/>
         % else:
