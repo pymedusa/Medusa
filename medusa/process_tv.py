@@ -267,7 +267,8 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
 
                 videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
-                notwantedFiles = [x for x in fileList if x not in videoFiles]
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                notwantedFiles = [x for x in fileList if x not in videoFiles and x[-3:] not in allowed_extensions]
                 if notwantedFiles:
                     result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
 
