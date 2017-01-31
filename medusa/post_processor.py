@@ -411,17 +411,16 @@ class PostProcessor(object):
 
             action(cur_file_path, new_file_path)
 
-    def _move(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
+    def post_process_action(self, file_path, new_path, new_base_name, action, associated_files=False, subtitles=False):
         """
-        Move file and set proper permissions.
+        Run the given action on file and set proper permissions.
 
-        :param file_path: The full path of the media file to move
-        :param new_path: Destination path where we want to move the file to
-        :param new_base_name: The base filename (no extension) to use during the move. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should move similarly-named files too
+        :param file_path: The full path of the media file
+        :param new_path: Destination path where we want the file to
+        :param new_base_name: The base filename (no extension) to use. Use None to keep the same name.
+        :param associated_files: Boolean, whether we should run the action in similarly-named files too
         """
-        def _int_move(cur_file_path, new_file_path):
-
+        def move(cur_file_path, new_file_path):
             self._log(u'Moving file from {0} to {1} '.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.move_file(cur_file_path, new_file_path)
@@ -431,20 +430,7 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_move,
-                                      subtitles=subtitles)
-
-    def _copy(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
-        """
-        Copy file and set proper permissions.
-
-        :param file_path: The full path of the media file to copy
-        :param new_path: Destination path where we want to copy the file to
-        :param new_base_name: The base filename (no extension) to use during the copy. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should copy similarly-named files too
-        """
-        def _int_copy(cur_file_path, new_file_path):
-
+        def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.copy_file(cur_file_path, new_file_path)
@@ -454,20 +440,7 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_copy,
-                                      subtitles=subtitles)
-
-    def _hardlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
-        """
-        Hardlink file and set proper permissions.
-
-        :param file_path: The full path of the media file to move
-        :param new_path: Destination path where we want to create a hard linked file
-        :param new_base_name: The base filename (no extension) to use during the link. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should move similarly-named files too
-        """
-        def _int_hard_link(cur_file_path, new_file_path):
-
+        def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.hardlink_file(cur_file_path, new_file_path)
@@ -477,31 +450,7 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        def _int_move(cur_file_path, new_file_path):
-
-            self._log(u'Moving file from {0} to {1} '.format(cur_file_path, new_file_path), logger.DEBUG)
-            try:
-                helpers.move_file(cur_file_path, new_file_path)
-                helpers.chmod_as_parent(new_file_path)
-            except (IOError, OSError) as e:
-                self._log(u'Unable to move file {0} to {1}: {2!r}'.format
-                          (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
-
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
-                                      action=_int_hard_link, subtitles=subtitles, subtitle_action=_int_move)
-
-    def _move_and_symlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
-        """
-        Move file, symlink source location back to destination, and set proper permissions.
-
-        :param file_path: The full path of the media file to move
-        :param new_path: Destination path where we want to move the file to create a symbolic link to
-        :param new_base_name: The base filename (no extension) to use during the link. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should move similarly-named files too
-        """
-        def _int_move_and_sym_link(cur_file_path, new_file_path):
-
+        def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
                       (cur_file_path, new_file_path), logger.DEBUG)
             try:
@@ -512,8 +461,9 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
+        subtitle_action = move if self.process_method in ['hardlink', 'symlink'] else eval(self.process_method)
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
-                                      action=_int_move_and_sym_link, subtitles=subtitles)
+                                      action=eval(action), subtitle_action=subtitle_action, subtitles=subtitles)
 
     @staticmethod
     def _build_anidb_episode(connection, file_path):
@@ -1204,25 +1154,13 @@ class PostProcessor(object):
             self._add_to_anidb_mylist(self.file_path)
 
         try:
-            # move the episode and associated files to the show dir
-            if self.process_method == 'copy':
-                if helpers.is_file_locked(self.file_path, False):
-                    raise EpisodePostProcessingFailedException('File is locked for reading')
-                self._copy(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                           app.USE_SUBTITLES and ep_obj.show.subtitles)
-            elif self.process_method == 'move':
-                if helpers.is_file_locked(self.file_path, True):
-                    raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._move(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                           app.USE_SUBTITLES and ep_obj.show.subtitles)
-            elif self.process_method == "hardlink":
-                self._hardlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                               app.USE_SUBTITLES and ep_obj.show.subtitles)
-            elif self.process_method == "symlink":
-                if helpers.is_file_locked(self.file_path, True):
-                    raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._move_and_symlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                                       app.USE_SUBTITLES and ep_obj.show.subtitles)
+            # do the action to the episode and associated files to the show dir
+            if self.process_method in ['copy', 'hardlink', 'move', 'symlink']:
+                if not self.process_method == 'hardlink':
+                    if helpers.is_file_locked(self.file_path, False):
+                        raise EpisodePostProcessingFailedException('File is locked for reading')
+                self.post_process_action(self.file_path, dest_path, new_base_name, self.process_method,
+                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
