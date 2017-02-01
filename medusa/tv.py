@@ -1519,7 +1519,7 @@ class TVShow(TVObject):
                             logger.log(u"{id}: Location for {show} {ep} doesn't exist, "
                                        u"removing it and changing our status to '{status}'".format
                                        (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                                        status=statusStrings[new_status]), logger.DEBUG)
+                                        status=statusStrings[new_status].upper()), logger.DEBUG)
                             cur_ep.status = new_status
                             cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
@@ -1849,7 +1849,7 @@ class TVShow(TVObject):
             return False
 
         ep_status = int(sql_results[0][b'status'])
-        ep_status_text = statusStrings[ep_status]
+        ep_status_text = statusStrings[ep_status].upper()
         manually_searched = sql_results[0][b'manually_searched']
         _, cur_quality = Quality.split_composite_status(ep_status)
 
@@ -2411,7 +2411,7 @@ class TVEpisode(TVObject):
                            (id=self.show.indexerid, show=self.show.name,
                             ep=episode_num(season, episode), status=statusStrings[self.status].upper()), logger.DEBUG)
 
-        #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHVED
+        #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
         elif helpers.is_media_file(self.location):
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + \
                     Quality.ARCHIVED + Quality.SNATCHED_BEST:
@@ -2420,7 +2420,8 @@ class TVEpisode(TVObject):
                 logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}' "
                            u"as current status is not SNATCHED|DOWNLOADED|ARCHIVED".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                            old_status=old_status, new_status=self.status), logger.DEBUG)
+                            old_status=statusStrings[old_status].upper(),
+                            new_status=statusStrings[self.status].upper()), logger.DEBUG)
 
             else:
                 logger.log(u"{id}: {show} {ep} status untouched: '{status}'".format
@@ -2431,7 +2432,7 @@ class TVEpisode(TVObject):
         else:
             logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to 'UNKNOWN'".format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                        old_status=self.status), logger.WARNING)
+                        old_status=statusStrings[self.status].upper()), logger.WARNING)
             self.status = UNKNOWN
 
     def __load_from_nfo(self, location):
