@@ -2411,13 +2411,14 @@ class TVEpisode(TVObject):
                            (id=self.show.indexerid, show=self.show.name,
                             ep=episode_num(season, episode), status=statusStrings[self.status].upper()), logger.DEBUG)
 
-        # if we have a media file then it's downloaded
+        #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHVED
         elif helpers.is_media_file(self.location):
-            # leave propers alone, you have to either post-process them or manually change them back
-            if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + Quality.ARCHIVED:
+            if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + \
+                    Quality.ARCHIVED + Quality.SNATCHED_BEST:
                 old_status = self.status
                 self.status = Quality.status_from_name(self.location, anime=self.show.is_anime)
-                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}'".format
+                logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}' "
+                           u"as current status is not SNATCHED|DOWNLOADED|ARCHIVED".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
                             old_status=old_status, new_status=self.status), logger.DEBUG)
 
