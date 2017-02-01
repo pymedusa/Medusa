@@ -2411,7 +2411,7 @@ class TVEpisode(TVObject):
                            (id=self.show.indexerid, show=self.show.name,
                             ep=episode_num(season, episode), status=statusStrings[self.status].upper()), logger.DEBUG)
 
-        #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHVED
+        #  We only change the episode's status if a file exists and the status is not SNATCHED|DOWNLOADED|ARCHIVED
         elif helpers.is_media_file(self.location):
             if self.status not in Quality.SNATCHED_PROPER + Quality.DOWNLOADED + Quality.SNATCHED + \
                     Quality.ARCHIVED + Quality.SNATCHED_BEST:
