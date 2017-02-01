@@ -1519,7 +1519,7 @@ class TVShow(TVObject):
                             logger.log(u"{id}: Location for {show} {ep} doesn't exist, "
                                        u"removing it and changing our status to '{status}'".format
                                        (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                                        status=statusStrings[new_status]), logger.DEBUG)
+                                        status=statusStrings[new_status].upper()), logger.DEBUG)
                             cur_ep.status = new_status
                             cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
@@ -1849,7 +1849,7 @@ class TVShow(TVObject):
             return False
 
         ep_status = int(sql_results[0][b'status'])
-        ep_status_text = statusStrings[ep_status]
+        ep_status_text = statusStrings[ep_status].upper()
         manually_searched = sql_results[0][b'manually_searched']
         _, cur_quality = Quality.split_composite_status(ep_status)
 
