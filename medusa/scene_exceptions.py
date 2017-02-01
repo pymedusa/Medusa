@@ -69,23 +69,30 @@ def set_last_refresh(ex_list):
     )
 
 
-def get_scene_exceptions(indexer_id, indexer, season=-1):
-    """Given a indexer_id, return a list of all the scene exceptions."""
+def update_scene_exceptions_cache(indexer_id, indexer, season=-1):
+    """Update the scene_exceptions cache from db. And return the scene_exceptions available."""
     exceptions_list = []
+    cache_db_con = db.DBConnection('cache.db')
+    exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE '
+                                     b'indexer = ? AND indexer_id = ? AND season = ?',
+                                     [indexer, indexer_id, season])
+    if exceptions:
+        # TODO: I'd like to know in which use-cases we can't find a result in cache, but can from db?
+        exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
 
-    if indexer_id not in exceptionsCache or season not in exceptionsCache[indexer_id]:
-        cache_db_con = db.DBConnection('cache.db')
-        exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE '
-                                         b'indexer = ? AND indexer_id = ? AND season = ?',
-                                         [indexer, indexer_id, season])
-        if exceptions:
-            exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
+        # TODO: Refactor exceptionCache to be usable by multiple indexers.
+        if indexer_id not in exceptionsCache:
+            exceptionsCache[indexer_id] = {}
+        exceptionsCache[indexer_id][season] = exceptions_list
+        # I'm only calling get_scene_exceptions here because that adds the -1 by default when there are
+        # no season exceptions defined. Apparently this is needed.
+    return get_scene_exceptions(indexer_id, indexer, season)
 
-            # TODO: Refactor exceptionCache to be usable by multiple indexers.
-            if indexer_id not in exceptionsCache:
-                exceptionsCache[indexer_id] = {}
-            exceptionsCache[indexer_id][season] = exceptions_list
-    else:
+
+def get_scene_exceptions(indexer_id, indexer, season=-1):
+    """Given a indexer_id, return a list of all the scene exceptions from the scene_exception cache."""
+    exceptions_list = []
+    if indexer_id in exceptionsCache and season in exceptionsCache[indexer_id]:
         exceptions_list = exceptionsCache[indexer_id][season]
 
     # Add generic exceptions regardless of the season if there is no exception for season
