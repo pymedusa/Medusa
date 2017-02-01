@@ -400,8 +400,8 @@ class UI(WebRoot):
         cur_notification_num = 1
         for cur_notification in ui.notifications.get_notifications(self.request.remote_ip):
             messages['notification-{number}'.format(number=cur_notification_num)] = {
-                'title': '{0}'.format(cur_notification.title),
-                'message': '{0}'.format(cur_notification.message),
+                'title': '{0}'.format(cur_notification.title.decode('utf-8')),
+                'message': '{0}'.format(cur_notification.message.decode('utf-8')),
                 'type': '{0}'.format(cur_notification.notification_type),
             }
             cur_notification_num += 1

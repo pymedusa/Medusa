@@ -337,7 +337,8 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                     ui.notifications.message("We have found season packs for {0}".format(self.show.name),
                                              "These should become visible in the manual select page.")
                 else:
-                    ui.notifications.message("We have found results for {0}".format(self.segment[0].pretty_name()),
+                    ui.notifications.message("We have found results for {0}".format(self.segment[0].pretty_name()
+                                                                                    .encode('utf-8')),
                                              "These should become visible in the manual select page.")
             else:
                 ui.notifications.message('No results were found')
