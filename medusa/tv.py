@@ -2420,7 +2420,8 @@ class TVEpisode(TVObject):
                 logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to '{new_status}' "
                            u"as current status is not SNATCHED|DOWNLOADED|ARCHIVED".format
                            (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                            old_status=old_status, new_status=self.status), logger.DEBUG)
+                            old_status=statusStrings[old_status].upper(),
+                            new_status=statusStrings[self.status].upper()), logger.DEBUG)
 
             else:
                 logger.log(u"{id}: {show} {ep} status untouched: '{status}'".format
@@ -2431,7 +2432,7 @@ class TVEpisode(TVObject):
         else:
             logger.log(u"{id}: {show} {ep} status changed from '{old_status}' to 'UNKNOWN'".format
                        (id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode),
-                        old_status=self.status), logger.WARNING)
+                        old_status=statusStrings[self.status].upper()), logger.WARNING)
             self.status = UNKNOWN
 
     def __load_from_nfo(self, location):
