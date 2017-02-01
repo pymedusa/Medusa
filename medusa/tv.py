@@ -44,7 +44,7 @@ from .black_and_white_list import BlackAndWhiteList
 from .common import (
     ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
     NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED,
-    SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, qualityPresets, statusStrings
+    SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, qualityPresets, statusStrings
 )
 from .helper.common import (
     dateFormat, dateTimeFormat, episode_num, pretty_file_size, remove_extension, replace_extension, sanitize_filename,
@@ -1075,49 +1075,75 @@ class TVShow(TVObject):
 
             # if they replace a file on me I'll make some attempt at re-checking the
             # quality unless I know it's the same file
-            if check_quality_again and not same_file:
+            if same_file:
+                logger.log(u"{0}: Existing episode file is the same as founded file: {1}".format
+                           (self.indexerid, filepath), logger.DEBUG)
+            elif not helpers.is_media_file(filepath):
+                logger.log(u"{0}: New episode file is not a valid media file. Ignoring it: {1}".format
+                           (self.indexerid, filepath), logger.DEBUG)
+            elif check_quality_again:
                 new_quality = Quality.name_quality(filepath, self.is_anime)
-                logger.log(u'{0}: Since this file has been renamed, I checked {1} and found quality {2}'.format
-                           (self.indexerid, filepath, Quality.qualityStrings[new_quality]), logger.DEBUG)
                 if new_quality != Quality.UNKNOWN:
                     with cur_ep.lock:
+                        logger.log(u"{0}: New episode file is a valid media: '{1}'. Setting new status: '{2}'".format
+                                   (self.indexerid, filepath, Quality.qualityStrings[new_quality]), logger.DEBUG)
                         cur_ep.status = Quality.composite_status(DOWNLOADED, new_quality)
+                else:
+                    logger.log(u"{0}: New episode file has UNKNOWN quality. Ignoring it: {1}".format
+                               (self.indexerid, filepath), logger.WARNING)
 
             # check for status/quality changes as long as it's a new file
-            elif not same_file and helpers.is_media_file(filepath) and (
-                    cur_ep.status not in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]):
+            elif cur_ep.status not in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
                 old_status, old_quality = Quality.split_composite_status(cur_ep.status)
                 new_quality = Quality.name_quality(filepath, self.is_anime)
                 new_status = None
 
                 # if it was snatched and now exists then set the status correctly
-                if old_status == SNATCHED and old_quality <= new_quality:
-                    logger.log(
-                        u"{0}: This ep used to be snatched with quality '{1}' but a file exists with quality '{2}' "
-                        u"so setting the status to 'DOWNLOADED'".format
-                        (self.indexerid, Quality.qualityStrings[old_quality],
-                         Quality.qualityStrings[new_quality]), logger.DEBUG)
-                    new_status = DOWNLOADED
+                if old_status == SNATCHED or old_status == SNATCHED_BEST:
+                    if old_quality <= new_quality:
+                        logger.log(u"{0}: This episode used to be 'SNATCHED' with quality '{1}' but a file exists"
+                                   u" with same|higher quality '{2}'. Setting the status to 'DOWNLOADED'".format
+                                   (self.indexerid, Quality.qualityStrings[old_quality],
+                                    Quality.qualityStrings[new_quality]), logger.DEBUG)
+                        new_status = DOWNLOADED
+                    else:
+                        logger.log(u"{0}: This episode used to be 'SNATCHED' with quality '{1}' "
+                                   u"but a file exists with lower quality '{2}'. Not changing status".format
+                                   (self.indexerid, Quality.qualityStrings[old_quality],
+                                    Quality.qualityStrings[new_quality]), logger.WARNING)
 
                 # if it was snatched proper and we found a higher quality one then allow the status change
-                elif old_status == SNATCHED_PROPER and old_quality < new_quality:
-                    logger.log(u"{0}: This ep used to be snatched proper with quality '{1}' "
-                               u"but a file exists with quality '{2}' so setting the status to 'DOWNLOADED'".format
-                               (self.indexerid, Quality.qualityStrings[old_quality],
-                                Quality.qualityStrings[new_quality]), logger.DEBUG)
-                    new_status = DOWNLOADED
+                elif old_status == SNATCHED_PROPER:
+                    if old_quality < new_quality:
+                        logger.log(u"{0}: This episode used to be 'SNATCHED PROPER' with quality '{1}' "
+                                   u"but a file exists with quality '{2}'. Setting the status to 'DOWNLOADED'".format
+                                   (self.indexerid, Quality.qualityStrings[old_quality],
+                                    Quality.qualityStrings[new_quality]), logger.DEBUG)
+                        new_status = DOWNLOADED
+                    else:
+                        logger.log(u"{0}: This episode used to be 'SNATCHED PROPER' with quality '{1}' "
+                                   u"but a file exists with lower quality '{2}'. Not changing status'".format
+                                   (self.indexerid, Quality.qualityStrings[old_quality],
+                                    Quality.qualityStrings[new_quality]), logger.WARNING)
 
-                elif old_status not in (SNATCHED, SNATCHED_PROPER):
+                elif old_status not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+                    logger.log(u"{0}: This episode used to be '{1}' "
+                               u"but a file exists with quality '{2}'. Setting the status to 'DOWNLOADED'".format
+                               (self.indexerid, statusStrings[old_status],
+                                Quality.qualityStrings[new_quality]), logger.DEBUG)
                     new_status = DOWNLOADED
 
                 if new_status is not None:
                     with cur_ep.lock:
                         old_ep_status = cur_ep.status
                         cur_ep.status = Quality.composite_status(new_status, new_quality)
-                        logger.log(u'{0}: We have an associated file, '
-                                   u'so setting the status from {1} to DOWNLOADED/{2}'.format
-                                   (self.indexerid, old_ep_status, cur_ep.status), logger.DEBUG)
-
+                        logger.log(u'{0}: We have an associated file.'
+                                   u"Setting the status from '{1}' to '{2}'".format
+                                   (self.indexerid, statusStrings[old_ep_status], statusStrings[cur_ep.status]),
+                                   logger.DEBUG)
+            else:
+                logger.log(u"{0}: Old episode is '{1}'. Ignoring file: {2}".format
+                           (self.indexerid, statusStrings[cur_ep.status], filepath), logger.DEBUG)
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
 
