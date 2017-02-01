@@ -308,7 +308,7 @@ ul.tags li {
 .defaultTable th {
     color: rgb(255, 255, 255);
     text-align: center;
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(55, 55, 55);
     white-space: nowrap;
 }
 
@@ -359,7 +359,7 @@ h2.network {
     color: rgb(255, 255, 255);
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(51, 51, 51);
 }
 
 .tvshowDiv {
@@ -465,7 +465,7 @@ config_postProcessing.mako
     margin: 0;
     color: rgb(255, 255, 255);
     text-align: center;
-    background: rgb(21, 82, 143);
+    background: rgb(55, 55, 55);
 }
 
 .Key tr {
@@ -779,7 +779,7 @@ div.formpaginate .next {
     color: rgb(255, 255, 255);
     cursor: hand;
     cursor: pointer;
-    background: rgb(34, 101, 161);
+    background: rgb(95,95,95);
     -webkit-border-radius: 6px;
         -moz-border-radius: 6px;
             border-radius: 6px;
@@ -932,7 +932,7 @@ jquery.confirm.css
 }
 
 #confirmBox h1 {
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(55, 55, 55);
     border-bottom: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     margin: 0;
@@ -961,7 +961,7 @@ bootstrap modal
 .modal-header {
     padding: 9px 15px;
     border-bottom: 1px solid rgb(238, 238, 238);
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(55, 55, 55);
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;
     -moz-border-radius-topleft: 5px;
@@ -1070,5 +1070,5 @@ new #confirmBox
 /* Christmas edition*/
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(21, 82, 143)!important;
+    background-color: rgb(51, 51, 51)!important;
 }

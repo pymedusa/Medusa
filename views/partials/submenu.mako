@@ -1,6 +1,7 @@
+% if not (controller == "schedule") and not (action == "previewRename"):
 <!-- BEGIN SUBMENU -->
     <div id="sub-menu-container" class="row shadow">
-        <div id="sub-menu" class="submenu-default hidden-print col-md-8 col-sm-12">
+        <div id="sub-menu" class="submenu-default hidden-print ${'col-md-8' if (action == "displayShow") else 'col-md-12'} col-sm-12">
             <% first = True %>
             % for menuItem in submenu:
                 % if 'requires' not in menuItem or menuItem['requires']:
@@ -24,8 +25,6 @@
         </div>
         % if (action == "displayShow"):
             <%include file="/partials/showSelector.mako"/>
-        % else:
-            <div id="showSelector" class="hidden-print col-md-4 col-xs-12 pull-md-left"></div>
         % endif
     </div> <!-- end of container -->
 <!-- END sub-menu -->
@@ -41,3 +40,4 @@
     <li><a href="#">Separated link</a></li>
   </ul>
 </div>
+% endif

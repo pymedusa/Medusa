@@ -16,7 +16,7 @@
     % if cur_list_type == "Anime":
         <h1 class="header">Anime List</h1>
     % endif
-<table id="showListTable${cur_list_type}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable${cur_list_type}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th class="min-cell-width nowrap">Next Ep</th>
@@ -32,7 +32,7 @@
             <th class="min-cell-width nowrap">XEM</th>
         </tr>
     </thead>
-    <tfoot class="hidden-print">
+    <tfoot class="hidden-print shadow">
         <tr>
             <th rowspan="1" colspan="1" align="center"><a href="addShows/">Add ${('Show', 'Anime')[cur_list_type == 'Anime']}</a></th>
             <th>&nbsp;</th>

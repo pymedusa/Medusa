@@ -9,7 +9,6 @@ inc_top.mako
 .header {
     display: block;
     clear: right;
-    margin-top: 15px;
 }
 
 .navbaricon {
@@ -425,6 +424,18 @@ inc_rootDirs.mako
 
 .rootdir-controls {
     text-align: center;
+}
+
+/* =======================================================================
+history.mako
+========================================================================== */
+.layout-controls {
+    padding-top:24px;
+}
+
+.fanartOpacity
+{
+    opacity: 0.9;
 }
 
 /* =======================================================================
@@ -1119,7 +1130,6 @@ div#container-display-show {
         margin-top: -15px;
         padding-top: 10px;
         padding-bottom: 10px;
-        top: -60px;
     }
 }
 
@@ -2514,6 +2524,10 @@ a.whitelink {
 Global
 ========================================================================== */
 
+.logging-filter-controll {
+    padding-top: 24px;
+}
+
 span.path {
     padding: 3px 6px;
     color: rgb(139, 0, 0);
@@ -2722,7 +2736,7 @@ bootstrap Overrides
 ========================================================================== */
 
 #vue-wrap {
-        padding-top: 120px;
+        padding-top: 60px;
 }
 
 body {
@@ -2925,7 +2939,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 .shadow {
-    box-shadow: 5px 5px 5px rgba(17,17,17,0.7);
+    box-shadow: 3px 3px 3px rgba(17,17,17,0.5);
 }
 
 .border-bottom {
