@@ -26,6 +26,7 @@ import stat
 import threading
 import time
 import traceback
+import warnings
 
 from collections import OrderedDict, namedtuple
 from itertools import groupby
@@ -128,25 +129,18 @@ class TVObject(object):
 
     @property
     def tvdb_id(self):
-        """Return the tvdb_id.
-
-        :return:
-        :rtype: int
-        """
-        return self.indexerid if self.indexerid and self.indexer == INDEXER_TVDBV2 else None
+        """The item's tvdb_id."""
+        if self.indexerid and self.indexer == INDEXER_TVDBV2:
+            return self.indexerid
 
     def __getstate__(self):
-        """Get threading lock state.
-
-        :return:
-        :rtype: dict(str -> threading.Lock)
-        """
+        """Make object serializable."""
         d = dict(self.__dict__)
         del d['lock']
         return d
 
     def __setstate__(self, d):
-        """Set threading lock state."""
+        """Un-serialize the object."""
         d['lock'] = threading.Lock()
         self.__dict__.update(d)
 
@@ -240,103 +234,87 @@ class TVShow(TVObject):
 
     @property
     def is_anime(self):
-        """Whether this show is an anime or not.
-
-        :return:
-        :rtype: bool
-        """
-        return int(self.anime) > 0
-
-    @property
-    def is_sports(self):
-        """Whether this is a sport show or not.
-
-        :return:
-        :rtype: bool
-        """
-        return int(self.sports) > 0
-
-    @property
-    def is_scene(self):
-        """Whether this is a scene show or not.
-
-        :return:
-        :rtype: bool
-        """
-        return int(self.scene) > 0
-
-    @property
-    def network_logo_name(self):
-        """Return the network logo name.
-
-        :return:
-        :rtype: str
-        """
-        return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').lower()
-
-    @property
-    def is_recently_deleted(self):
-        """Whether the show was recently deleted.
-
-        A property that checks if this show has been recently deleted, or was attempted to be deleted.
-        Can be used to suppress some error messages, when the TVShow was used, just after a removal.
-
-        :return:
-        :rtype: bool
-        """
-        return self.indexerid in app.RECENTLY_DELETED
-
-    @property
-    def raw_location(self):
-        """Return the raw location without executing any validation.
-
-        :return:
-        :rtype: str
-        """
-        return self._location
-
-    @property
-    def location(self):
-        """Return the location.
-
-        :return:
-        :rtype: str
-        """
-        # no dir check needed if missing show dirs are created during post-processing
-        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
-            return self._location
-
-        raise ShowDirectoryNotFoundException("Show folder doesn't exist, you shouldn't be using it")
-
-    @location.setter
-    def location(self, value):
-        logger.log(u'{id}: Setter sets location to {location}'.format
-                   (id=self.indexerid, location=value), logger.DEBUG)
-        # Don't validate dir if user wants to add shows without creating a dir
-        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
-            self._location = value
-        else:
-            raise ShowDirectoryNotFoundException('Invalid folder for the show!')
+        """Check if the show is Anime."""
+        return bool(self.anime)
 
     def is_location_valid(self, location=None):
-        """Return whether the location is valid.
+        """
+        Check if the location is valid.
 
-        :param location:
-        :type location: str
-        :return:
-        :rtype: bool
+        :param location: Path to check
+        :return: True if the given path is a directory
         """
         return os.path.isdir(location or self._location)
 
     @property
+    def is_recently_deleted(self):
+        """
+        Check if the show was recently deleted.
+
+        Can be used to suppress error messages such as attempting to use the
+        show object just after being removed.
+        """
+        # TODO: Fix for multi-indexer.
+        # https://github.com/pymedusa/Medusa/issues/2073
+        return self.indexerid in app.RECENTLY_DELETED
+
+    @property
+    def is_scene(self):
+        """Check if this ia a scene show."""
+        return bool(self.scene)
+
+    @property
+    def is_sports(self):
+        """Check if this is a sport show."""
+        return bool(self.sports)
+
+    @property
+    def network_logo_name(self):
+        """The network logo name."""
+        return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').lower()
+
+    @property
+    def raw_location(self):
+        """The raw show location, unvalidated."""
+        return self._location
+
+    @property
+    def location(self):
+        """The show location."""
+        # no dir check needed if missing
+        # show dirs are created during post-processing
+        if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
+            return self._location
+        raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
+
+    @location.setter
+    def location(self, value):
+        logger.log(
+            u'{indexer} {id}: Setting location: {location}'.format(
+                indexer=self.indexer_api.name,
+                id=self.indexerid,
+                location=value
+            ),
+            logger.DEBUG
+        )
+        # Don't validate dir if user wants to add shows without creating a dir
+        if app.ADD_SHOWS_WO_DIR or self.is_location_valid(value):
+            self._location = value
+        else:
+            raise ShowDirectoryNotFoundException(u'Invalid show folder!')
+
+    @property
     def current_qualities(self):
-        """Current qualities."""
-        allowed_qualities, preferred_qualities = Quality.split_quality(int(self.quality))
-        return allowed_qualities, preferred_qualities
+        """
+        The show qualities.
+
+        :returns: A tuple of allowed and preferred qualities
+        """
+        return Quality.split_quality(int(self.quality))
 
     @property
     def using_preset_quality(self):
-        """Whether preset is used."""
+        """Check if a preset is used."""
         return self.quality in qualityPresets
 
     @property
@@ -344,10 +322,23 @@ class TVShow(TVObject):
         """Default episode status name."""
         return statusStrings[self.default_ep_status]
 
+    @property
+    def size(self):
+        """Size of the show on disk."""
+        return helpers.get_size(self.raw_location)
+
     def show_size(self, pretty=False):
-        """Show size."""
-        show_size = helpers.get_size(self.raw_location)
-        return pretty_file_size(show_size) if pretty else show_size
+        """
+        Deprecated method to get the size of the show on disk.
+
+        :param pretty: True if you want a pretty size. (e.g. 3 GB)
+        :return:  Size of the show on disk.
+        """
+        warnings.warn(
+            DeprecationWarning,
+            u'Method show_size is deprecated.  Use size property instead.'
+        )
+        return pretty_file_size(self.size) if pretty else self.size
 
     @property
     def subtitle_flag(self):
@@ -1913,21 +1904,6 @@ class TVShow(TVObject):
         else:
             logger.log(u'Could not parse episode status into a valid overview status: {status}'.format
                        (status=ep_status), logger.ERROR)
-
-    def __getstate__(self):
-        """Get threading lock state.
-
-        :return:
-        :rtype: dict(str -> threading.Lock)
-        """
-        d = dict(self.__dict__)
-        del d['lock']
-        return d
-
-    def __setstate__(self, d):
-        """Set threading lock state."""
-        d['lock'] = threading.Lock()
-        self.__dict__.update(d)
 
 
 class TVEpisode(TVObject):
