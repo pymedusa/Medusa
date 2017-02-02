@@ -41,6 +41,10 @@ class SceneTests(test.AppTestDBCase):
         test_cache_db_con = db.DBConnection('cache.db')
         test_cache_db_con.action("INSERT INTO scene_exceptions (indexer, indexer_id, show_name, season) "
                                  "VALUES (?,?,?,?)", [1, -1, 'Exception Test', -1])
+
+        # Make sure cache has been created
+        scene_exceptions.refresh_exceptions_cache()
+
         common.countryList['Full Country Name'] = 'FCN'
 
         self._test_all_possible_show_names('Show Name', expected=['Show Name'])
@@ -63,6 +67,7 @@ class SceneExceptionTestCase(test.AppTestDBCase):
         """Set up tests."""
         super(SceneExceptionTestCase, self).setUp()
         scene_exceptions.retrieve_exceptions()
+
         # Make sure cache has been created
         scene_exceptions.refresh_exceptions_cache()
 
