@@ -63,6 +63,8 @@ class SceneExceptionTestCase(test.AppTestDBCase):
         """Set up tests."""
         super(SceneExceptionTestCase, self).setUp()
         scene_exceptions.retrieve_exceptions()
+        # Make sure cache has been created
+        scene_exceptions.refresh_exceptions_cache()
 
     def test_scene_ex_empty(self):
         self.assertEqual(scene_exceptions.get_scene_exceptions(0, 0), [])
