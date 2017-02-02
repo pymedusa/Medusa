@@ -80,30 +80,32 @@
             <!-- add provider meta data -->
                 <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
                 <div class="col-md-12 bottom-15">
-                    <div class="col-md-8">
+                    <div class="col-md-8" style="margin-left:-30px">
                     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
                     <input class="btn manualSearchButton" type="button" id="reloadResultsForceSearch" value="Force Search" data-force-search="1" />
                     <div id="searchNotification"></div><!-- #searchNotification //-->
                     </div>
-                    <div class="pull-right clearfix class="col-md-4"" id="filterControls">
-                        <button id="popover" type="button" class="btn">Select Columns <b class="caret"></b></button>
-                        <button id="btnReset" type="button" class="btn">Reset Sort</button>
+                    <div class="pull-right clearfix col-md-4" id="filterControls" style="margin-right:-30px">
+                        <div class="pull-right">
+                            <button id="popover" type="button" class="btn">Select Columns <b class="caret"></b></button>
+                            <button id="btnReset" type="button" class="btn">Reset Sort</button>
+                        </div>
                     </div><!-- #filterControls //-->
                 </div>
                 <table id="showTable" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                     <thead>
                         <tr>
                             <th data-priority="critical" class="col-name">Release</th>
-                            <th>Group</th>
-                            <th>Provider</th>
-                            <th>Quality</th>
-                            <th>Seeds</th>
-                            <th>Peers</th>
-                            <th>Size</th>
-                            <th>Type</th>
-                            <th>Updated</th>
-                            <th>Published</th>
-                            <th data-priority="critical" class="col-search">Snatch</th>
+                            <th width="5px">Group</th>
+                            <th width="5px">Provider</th>
+                            <th width="5px">Quality</th>
+                            <th width="5px">Seeds</th>
+                            <th width="5px">Peers</th>
+                            <th width="5px">Size</th>
+                            <th width="5px">Type</th>
+                            <th width="5px">Updated</th>
+                            <th width="5px">Published</th>
+                            <th data-priority="critical" class="col-search" width="5x">Snatch</th>
                         </tr>
                     </thead>
                     <tbody aria-live="polite" aria-relevant="all">
