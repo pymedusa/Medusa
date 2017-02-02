@@ -42,7 +42,7 @@ from six import text_type
 from . import app, db, helpers, image_cache, logger, network_timezones, notifiers, post_processor, subtitles
 from .black_and_white_list import BlackAndWhiteList
 from .common import (
-    ARCHIVED, DOWNLOADED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
+    ARCHIVED, DOWNLOADED, FAILED, IGNORED, NAMING_DUPLICATE, NAMING_EXTEND, NAMING_LIMITED_EXTEND,
     NAMING_LIMITED_EXTEND_E_PREFIXED, NAMING_SEPARATED_REPEAT, Overview, Quality, SKIPPED,
     SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, qualityPresets, statusStrings
 )
@@ -992,6 +992,46 @@ class TVShow(TVObject):
         return (fanart_result or poster_result or banner_result or season_posters_result or
                 season_banners_result or season_all_poster_result or season_all_banner_result)
 
+    @staticmethod
+    def should_refresh_file(cur_status, same_file, check_quality_again, anime, filepath):
+        """Check if we should use the dectect file to change status."""
+        if same_file:
+            return False, 'New file is the same as current file'
+        if not helpers.is_media_file(filepath):
+            return False, 'New file is not a valid media file'
+
+        new_quality = Quality.name_quality(filepath, anime)
+
+        if check_quality_again:
+            if new_quality != Quality.UNKNOWN:
+                return True, 'New file has different name from the database but has valid quality.'
+            else:
+                return False, 'New file has UNKNOWN quality'
+
+        if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
+            return False, 'Existing status is {0} and its not allowed'.format(statusStrings[cur_status])
+
+        if cur_status in [FAILED, SKIPPED, WANTED, UNKNOWN, UNAIRED]:
+            return True, 'Existing status is {0} and its allowed'.format(statusStrings[cur_status])
+
+        old_status, old_quality = Quality.split_composite_status(cur_status)
+
+        if old_status == SNATCHED or old_status == SNATCHED_BEST:
+            #  Only use new file if is same|higher quality
+            if old_quality <= new_quality:
+                return True, 'Existing status is {0} and new quality is same|higher'.format(statusStrings[cur_status])
+            else:
+                return False, 'Existing status is {0} and new quality is lower'.format(statusStrings[cur_status])
+
+        if old_status == SNATCHED_PROPER:
+            #  Only use new file if is a higher quality (not necessary a PROPER)
+            if old_quality < new_quality:
+                return True, 'Existing status is {0} and new quality is higher'.format(statusStrings[cur_status])
+            else:
+                return False, 'Existing status is {0} and new quality is same|lower'.format(statusStrings[cur_status])
+
+        return False, 'There is no rule set to allow this file'
+
     def make_ep_from_file(self, filepath):
         """Make a TVEpisode object from a media file.
 
@@ -1075,75 +1115,20 @@ class TVShow(TVObject):
 
             # if they replace a file on me I'll make some attempt at re-checking the
             # quality unless I know it's the same file
-            if same_file:
-                logger.log(u"{0}: Existing episode file is the same as founded file: {1}".format
-                           (self.indexerid, filepath), logger.DEBUG)
-            elif not helpers.is_media_file(filepath):
-                logger.log(u"{0}: New episode file is not a valid media file. Ignoring it: {1}".format
-                           (self.indexerid, filepath), logger.DEBUG)
-            elif check_quality_again:
-                new_quality = Quality.name_quality(filepath, self.is_anime)
-                if new_quality != Quality.UNKNOWN:
-                    with cur_ep.lock:
-                        logger.log(u"{0}: New episode file is a valid media: '{1}'. Setting new status: '{2}'".format
-                                   (self.indexerid, filepath, Quality.qualityStrings[new_quality]), logger.DEBUG)
-                        cur_ep.status = Quality.composite_status(DOWNLOADED, new_quality)
-                else:
-                    logger.log(u"{0}: New episode file has UNKNOWN quality. Ignoring it: {1}".format
-                               (self.indexerid, filepath), logger.WARNING)
-
-            # check for status/quality changes as long as it's a new file
-            elif cur_ep.status not in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
-                old_status, old_quality = Quality.split_composite_status(cur_ep.status)
-                new_quality = Quality.name_quality(filepath, self.is_anime)
-                new_status = None
-
-                # if it was snatched and now exists then set the status correctly
-                if old_status == SNATCHED or old_status == SNATCHED_BEST:
-                    if old_quality <= new_quality:
-                        logger.log(u"{0}: This episode used to be 'SNATCHED' with quality '{1}' but a file exists"
-                                   u" with same|higher quality '{2}'. Setting the status to 'DOWNLOADED'".format
-                                   (self.indexerid, Quality.qualityStrings[old_quality],
-                                    Quality.qualityStrings[new_quality]), logger.DEBUG)
-                        new_status = DOWNLOADED
-                    else:
-                        logger.log(u"{0}: This episode used to be 'SNATCHED' with quality '{1}' "
-                                   u"but a file exists with lower quality '{2}'. Not changing status".format
-                                   (self.indexerid, Quality.qualityStrings[old_quality],
-                                    Quality.qualityStrings[new_quality]), logger.WARNING)
-
-                # if it was snatched proper and we found a higher quality one then allow the status change
-                elif old_status == SNATCHED_PROPER:
-                    if old_quality < new_quality:
-                        logger.log(u"{0}: This episode used to be 'SNATCHED PROPER' with quality '{1}' "
-                                   u"but a file exists with quality '{2}'. Setting the status to 'DOWNLOADED'".format
-                                   (self.indexerid, Quality.qualityStrings[old_quality],
-                                    Quality.qualityStrings[new_quality]), logger.DEBUG)
-                        new_status = DOWNLOADED
-                    else:
-                        logger.log(u"{0}: This episode used to be 'SNATCHED PROPER' with quality '{1}' "
-                                   u"but a file exists with lower quality '{2}'. Not changing status'".format
-                                   (self.indexerid, Quality.qualityStrings[old_quality],
-                                    Quality.qualityStrings[new_quality]), logger.WARNING)
-
-                elif old_status not in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
-                    logger.log(u"{0}: This episode used to be '{1}' "
-                               u"but a file exists with quality '{2}'. Setting the status to 'DOWNLOADED'".format
-                               (self.indexerid, statusStrings[old_status],
-                                Quality.qualityStrings[new_quality]), logger.DEBUG)
-                    new_status = DOWNLOADED
-
-                if new_status is not None:
-                    with cur_ep.lock:
-                        old_ep_status = cur_ep.status
-                        cur_ep.status = Quality.composite_status(new_status, new_quality)
-                        logger.log(u'{0}: We have an associated file.'
-                                   u"Setting the status from '{1}' to '{2}'".format
-                                   (self.indexerid, statusStrings[old_ep_status], statusStrings[cur_ep.status]),
-                                   logger.DEBUG)
+            should_refresh, should_refresh_reason = self.should_refresh_file(cur_ep.status, same_file,
+                                                                             check_quality_again, self.is_anime,
+                                                                             filepath)
+            if should_refresh:
+                with cur_ep.lock:
+                    old_ep_status = cur_ep.status
+                    new_quality = Quality.name_quality(filepath, self.is_anime)
+                    cur_ep.status = Quality.composite_status(DOWNLOADED, new_quality)
+                    logger.log(u"{0}: Setting the status from '{1}' to '{2}' based on file: {3}. Reason: {4}".format
+                               (self.indexerid, statusStrings[old_ep_status], statusStrings[cur_ep.status],
+                                filepath, should_refresh_reason), logger.DEBUG)
             else:
-                logger.log(u"{0}: Old episode is '{1}'. Ignoring file: {2}".format
-                           (self.indexerid, statusStrings[cur_ep.status], filepath), logger.DEBUG)
+                logger.log(u'{0}: Not changing status based on file: {1}. '
+                           u'Reason: {2}'.format(self.indexerid, filepath, should_refresh_reason), logger.DEBUG)
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
 
