@@ -39,6 +39,7 @@ selected = None
             </select>
         </div>
     </div>
+    <div id="quality_explanation">
         % if preferred_qualities:
             <h5>Downloads <b>any</b> of this qualities:
                 ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}.</h5>
@@ -48,4 +49,5 @@ selected = None
             <h5>Downloads <b>any</b> of this qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])} and stop searching.</h5>
             <b>Note:</b> Status will be SNATCHED.
         % endif
+    </div>
 </div>
