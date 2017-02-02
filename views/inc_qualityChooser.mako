@@ -40,14 +40,14 @@ selected = None
         </div>
     </div>
     <div id="quality_explanation">
+        <h5><b>Quality setting explanation:</b></h5>
         % if preferred_qualities:
-            <h5>Downloads <b>any</b> of this qualities:
+            <h5>Downloads <b>any</b> of these qualities:
                 ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}.</h5>
-            <h5>But will <b>stop searching</b> when find <b>any</b> from: ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
-                <b>Note:</b> Status from Preferred quality will be SNATCHED BEST, else SNATCHED.
+            <h5>Stop search only when downloads <b>any</b> from Preferred: ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
         % else:
-            <h5>Downloads <b>any</b> of this qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])} and stop searching.</h5>
-            <b>Note:</b> Status will be SNATCHED.
+            <h5>Downloads <b>any</b> of these qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</h5>
+            <h5>Stop search</h5>
         % endif
     </div>
 </div>

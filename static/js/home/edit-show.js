@@ -16,13 +16,15 @@ MEDUSA.home.editShow = function() {
         var both = allowed.concat(preferred.filter(function (item) {
             return allowed.indexOf(item) < 0;
         }));
+        var html = '<h5><b>Quality setting explanation:</b></h5>'
         if (preferred.length) {
-            var html = '<h5>Downloads <b>any</b> of this qualities: ' + both + '</h5>';
-                html += '<h5>But will <b>stop searching</b> when find <b>any</b> from: ' + preferred + '</h5>';
-                html += '<b>Note:</b> Status from Preferred quality will be SNATCHED BEST, else SNATCHED.';
+                html += '<h5>Downloads <b>any</b> of these qualities: ' + both + '</h5>';
+                html += '<h5>Stop search only when downloads <b>any</b> from Preferred: ' + preferred + '</h5>';
             $('#quality_explanation').html(html);
         } else {
-            $('#quality_explanation').html('<h5>Downloads <b>any</b> of these qualities: ' + qualities + ' and stop searching.</h5><b>Note:</b> Status will be SNATCHED.');
+                html += '<h5>Downloads <b>any</b> of these qualities: ' + allowed + '</h5>';
+                html += '<h5>Stop search</h5>'
+            $('#quality_explanation').html(html);
         }
     });
 };
