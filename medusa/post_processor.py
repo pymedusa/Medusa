@@ -411,7 +411,7 @@ class PostProcessor(object):
 
             action(cur_file_path, new_file_path)
 
-    def post_process_action(self, file_path, new_path, new_base_name, action, associated_files=False, subtitles=False):
+    def post_process_action(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
         """
         Run the given action on file and set proper permissions.
 
@@ -461,9 +461,11 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        subtitle_action = move if self.process_method in ['hardlink', 'symlink'] else eval(self.process_method)
+        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
+        # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
+        subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move}.get(self.process_method)
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
-                                      action=eval(action), subtitle_action=subtitle_action, subtitles=subtitles)
+                                      action=action, subtitle_action=subtitle_action, subtitles=subtitles)
 
     @staticmethod
     def _build_anidb_episode(connection, file_path):
@@ -1159,7 +1161,7 @@ class PostProcessor(object):
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
-                self.post_process_action(self.file_path, dest_path, new_base_name, self.process_method,
+                self.post_process_action(self.file_path, dest_path, new_base_name,
                                          app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
