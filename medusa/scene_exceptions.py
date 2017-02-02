@@ -20,21 +20,70 @@
 from __future__ import unicode_literals
 
 import datetime
+import logging
 import threading
 import time
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
 from six import iteritems, text_type
-from . import app, db, helpers, logger
+from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
 
-exceptionsCache = {}
-exceptionsSeasonCache = {}
+exceptions_cache = {}
+exceptions_season_cache = {}
 
 exceptionLock = threading.Lock()
 
 xem_session = helpers.make_session()
+
+log = logging.getLogger(__name__)
+
+
+def refresh_exceptions_cache():
+    """Query the db for show exceptions and update the exceptions_cache."""
+    log.info('Updating exception_cache and exception_season_cache')
+
+    # Empty the module level variables
+    exceptions_cache.clear()
+    exceptions_season_cache.clear()
+
+    cache_db_con = db.DBConnection('cache.db')
+    exceptions = cache_db_con.select(b'SELECT indexer, indexer_id, show_name, season FROM scene_exceptions')
+
+    if exceptions:
+        # Start building up a new exceptions_cache.
+        for exception in exceptions:
+            # indexer = int(exception[b'indexer'])
+            indexer_id = int(exception[b'indexer_id'])
+            season = int(exception[b'season'])
+
+            # Create exceptions_cache[indexerid]
+            if indexer_id not in exceptions_cache:
+                exceptions_cache[indexer_id] = {}
+
+            # Create exceptions_cache[indexerid][season]
+            if season not in exceptions_cache[indexer_id]:
+                exceptions_cache[indexer_id][season] = []
+
+            # exceptions_cache[indexerid][season] = ['showname 1', 'showname 2']
+            if exception[b'show_name'] not in exceptions_cache[indexer_id][season]:
+                exceptions_cache[indexer_id][season].append(exception[b'show_name'])
+
+            # Do the same for the exceptions_season_cache
+            if int(indexer_id) not in exceptions_season_cache:
+                exceptions_season_cache[int(indexer_id)] = []
+
+            # exception_season_cache[indexerid] = [-1, 2, 3]
+            if season not in exceptions_season_cache[indexer_id]:
+                exceptions_season_cache[indexer_id].append(season)
+
+    log.info('Finished processing {nr} scene exceptions.', nr=len(exceptions))
+
+
+def refresh_exceptions_season_cache():
+    """Query the db for show exceptions and update the exceptions_season_cache."""
+    return True
 
 
 def should_refresh(ex_list):
@@ -71,7 +120,6 @@ def set_last_refresh(ex_list):
 
 def update_scene_exceptions_cache(indexer_id, indexer, season=-1):
     """Update the scene_exceptions cache from db. And return the scene_exceptions available."""
-    exceptions_list = []
     cache_db_con = db.DBConnection('cache.db')
     exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE '
                                      b'indexer = ? AND indexer_id = ? AND season = ?',
@@ -81,9 +129,9 @@ def update_scene_exceptions_cache(indexer_id, indexer, season=-1):
         exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
 
         # TODO: Refactor exceptionCache to be usable by multiple indexers.
-        if indexer_id not in exceptionsCache:
-            exceptionsCache[indexer_id] = {}
-        exceptionsCache[indexer_id][season] = exceptions_list
+        if indexer_id not in exceptions_cache:
+            exceptions_cache[indexer_id] = {}
+        exceptions_cache[indexer_id][season] = exceptions_list
         # I'm only calling get_scene_exceptions here because that adds the -1 by default when there are
         # no season exceptions defined. Apparently this is needed.
     return get_scene_exceptions(indexer_id, indexer, season)
@@ -92,8 +140,8 @@ def update_scene_exceptions_cache(indexer_id, indexer, season=-1):
 def get_scene_exceptions(indexer_id, indexer, season=-1):
     """Given a indexer_id, return a list of all the scene exceptions from the scene_exception cache."""
     exceptions_list = []
-    if indexer_id in exceptionsCache and season in exceptionsCache[indexer_id]:
-        exceptions_list = exceptionsCache[indexer_id][season]
+    if indexer_id in exceptions_cache and season in exceptions_cache[indexer_id]:
+        exceptions_list = exceptions_cache[indexer_id][season]
 
     # Add generic exceptions regardless of the season if there is no exception for season
     if season != -1 and not exceptions_list:
@@ -127,19 +175,19 @@ def get_scene_seasons(indexer_id):
     """Return a list of season numbers that have scene exceptions."""
     exceptions_season_list = []
 
-    if indexer_id not in exceptionsSeasonCache:
+    if indexer_id not in exceptions_season_cache:
         cache_db_con = db.DBConnection('cache.db')
         sql_results = cache_db_con.select(
             b'SELECT DISTINCT(season) AS season FROM scene_exceptions WHERE indexer_id = ?', [indexer_id])
         if sql_results:
             exceptions_season_list = list({int(x[b'season']) for x in sql_results})
 
-            if indexer_id not in exceptionsSeasonCache:
-                exceptionsSeasonCache[indexer_id] = {}
+            if indexer_id not in exceptions_season_cache:
+                exceptions_season_cache[indexer_id] = {}
 
-            exceptionsSeasonCache[indexer_id] = exceptions_season_list
+            exceptions_season_cache[indexer_id] = exceptions_season_list
     else:
-        exceptions_season_list = exceptionsSeasonCache[indexer_id]
+        exceptions_season_list = exceptions_season_cache[indexer_id]
 
     return exceptions_season_list
 
@@ -169,8 +217,7 @@ def get_scene_exception_by_name_multiple(show_name):
 
         if show_name.lower() in (cur_exception_name.lower(),
                                  helpers.sanitize_scene_name(cur_exception_name).lower().replace('.', ' ')):
-            logger.log('Scene exception lookup got indexer ID {0}, using that'.format
-                       (cur_indexer_id), logger.DEBUG)
+            log.debug('Scene exception lookup got indexer ID {cur_indexer}, using that', cur_indexer=cur_indexer_id)
 
             out.append((cur_indexer_id, int(cur_exception[b'season'])))
 
@@ -186,13 +233,13 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     cache_db_con.action(b'DELETE FROM scene_exceptions WHERE indexer_id=? and season=? and indexer=?',
                         [indexer_id, season, indexer])
 
-    logger.log('Updating scene exceptions...', logger.INFO)
+    log.info('Updating scene exceptions...')
 
     # A change has been made to the scene exception list. Let's clear the cache, to make this visible
     # TODO: make sure we add indexer, when the global exceptionsCache var has been changed.
-    if indexer_id in exceptionsCache:
-        exceptionsCache[indexer_id] = {}
-        exceptionsCache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
+    if indexer_id in exceptions_cache:
+        exceptions_cache[indexer_id] = {}
+        exceptions_cache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
 
     for cur_exception in [se.decode('utf-8') for se in scene_exceptions]:
         cache_db_con.action(b'INSERT INTO scene_exceptions (indexer_id, show_name, season, indexer) VALUES (?,?,?,?)',
@@ -236,7 +283,7 @@ def retrieve_exceptions():
                                 [indexer, indexer_id, scene_exception, season]])
     if queries:
         cache_db_con.mass_action(queries)
-        logger.log('Updated scene exceptions.', logger.INFO)
+        log.info('Updated scene exceptions.')
 
 
 def combine_exceptions(*scene_exceptions):
@@ -261,15 +308,15 @@ def _get_custom_exceptions():
         for indexer in indexerApi().indexers:
             try:
                 location = indexerApi(indexer).config['scene_loc']
-                logger.log('Checking for scene exception updates from {0}'.format(location))
+                log.info('Checking for scene exception updates from {location}', location=location)
 
                 response = helpers.get_url(location, session=indexerApi(indexer).session,
                                            timeout=60, returns='response')
                 try:
                     jdata = response.json()
                 except (ValueError, AttributeError) as error:
-                    logger.log('Check scene exceptions update failed. Unable to update from {0}. Error: {1}'.format
-                               (location, error), logger.DEBUG)
+                    log.debug('Check scene exceptions update failed. Unable to update from {location}. Error: {error}',
+                              location=location, error=error)
                     return custom_exceptions
 
                 if indexer not in custom_exceptions:
@@ -282,8 +329,8 @@ def _get_custom_exceptions():
                                   ['identifier']][indexer_id][scene_season]]
                     custom_exceptions[indexer][indexer_id] = alias_list
             except Exception as error:
-                logger.log('Unable to update scene exceptions for {0}. Error: {1}'.format
-                           (indexer, error), logger.ERROR)
+                log.error('Unable to update scene exceptions for {indexer}. Error: {error}',
+                          indexer=indexer, error=error)
                 continue
 
             set_last_refresh('custom_exceptions')
@@ -301,8 +348,8 @@ def _get_xem_exceptions():
             if not indexerApi(indexer).config.get('xem_origin'):
                 continue
 
-            logger.log('Checking for XEM scene exceptions updates for {0}'.format
-                       (indexerApi(indexer).name))
+            log.info('Checking for XEM scene exceptions updates for {indexer_name}',
+                     indexer_name=indexerApi(indexer).name)
 
             if indexer not in xem_exceptions:
                 xem_exceptions[indexer] = {}
@@ -314,22 +361,22 @@ def _get_xem_exceptions():
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:
-                logger.log('Check scene exceptions update failed for {0}. Unable to get URL: {1}'.format
-                           (indexerApi(indexer).name, xem_url), logger.DEBUG)
+                log.debug('Check scene exceptions update failed for {indexer_name}. Unable to get URL: {xem_url}',
+                          indexer_name=indexerApi(indexer).name, xem_url=xem_url)
                 continue
 
             if not jdata['data'] or jdata['result'] == 'failure':
-                logger.log('No data returned from XEM while checking for scene exceptions. '
-                           'Update failed for {0}'.format(indexerApi(indexer).name), logger.DEBUG)
+                log.debug('No data returned from XEM while checking for scene exceptions. '
+                          'Update failed for {indexer_name}', indexer_name=indexerApi(indexer).name)
                 continue
 
             for indexer_id, exceptions in iteritems(jdata['data']):
                 try:
                     xem_exceptions[indexer][indexer_id] = exceptions
                 except Exception as error:
-                    logger.log('XEM: Rejected entry: Indexer ID: {0}, Exceptions: {1}'.format
-                               (indexer_id, exceptions), logger.WARNING)
-                    logger.log('XEM: Rejected entry error message: {0}'.format(error), logger.ERROR)
+                    log.warning('XEM: Rejected entry: Indexer ID: {indexer_id}, Exceptions: {e}',
+                                indexer_id=indexer_id, e=exceptions)
+                    log.warning('XEM: Rejected entry error message: {e}', e=error)
 
         set_last_refresh('xem')
 
@@ -340,19 +387,19 @@ def _get_anidb_exceptions():
     anidb_exceptions = {}
 
     if should_refresh('anidb'):
-        logger.log('Checking for scene exceptions updates from AniDB')
+        log.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:
             if all([show.name, show.is_anime, show.indexer == INDEXER_TVDBV2]):
                 try:
                     anime = adba.Anime(None, name=show.name, tvdbid=show.indexerid, autoCorrectName=True)
                 except ValueError as error:
-                    logger.log("Couldn't update scene exceptions for {0}, AniDB doesn't have this show.".format
-                               (show.name), logger.DEBUG)
+                    log.debug("Couldn't update scene exceptions for {show_name}, AniDB doesn't have this show.",
+                              show_name=show.name)
                     continue
                 except Exception as error:
-                    logger.log('Checking AniDB scene exceptions update failed for {0}. Error: {1}'.format
-                               (show.name, error), logger.ERROR)
+                    log.error('Checking AniDB scene exceptions update failed for {show_name}. Error: {e}',
+                              show_name=show.name, e=error)
                     continue
 
                 if anime and anime.name != show.name:

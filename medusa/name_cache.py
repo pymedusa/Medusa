@@ -22,7 +22,7 @@ import threading
 from six import iteritems
 from . import app, db, logger
 from .helpers import full_sanitize_scene_name
-from .scene_exceptions import (get_scene_seasons, retrieve_exceptions, update_scene_exceptions_cache)
+from .scene_exceptions import (get_scene_exceptions, get_scene_seasons, refresh_exceptions_cache, retrieve_exceptions)
 
 name_cache = {}
 nameCacheLock = threading.Lock()
@@ -85,7 +85,7 @@ def build_name_cache(show=None):
         """Builds the name cache for a single show."""
         clear_cache(show.indexerid)
         for season in [-1] + get_scene_seasons(show.indexerid):
-            for name in set(update_scene_exceptions_cache(show.indexerid, show.indexer, season=season) + [show.name]):
+            for name in set(get_scene_exceptions(show.indexerid, show.indexer, season=season) + [show.name]):
                 name = full_sanitize_scene_name(name)
                 if name in name_cache:
                     continue
@@ -99,6 +99,9 @@ def build_name_cache(show=None):
 
     with nameCacheLock:
         retrieve_exceptions()
+
+    # Create cache from db for the scene_exceptions.
+    refresh_exceptions_cache()
 
     if not show:
         # logger.log(u"Building internal name cache for all shows", logger.INFO)
