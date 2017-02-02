@@ -173,23 +173,7 @@ def get_all_scene_exceptions(indexer_id):
 
 def get_scene_seasons(indexer_id):
     """Return a list of season numbers that have scene exceptions."""
-    exceptions_season_list = []
-
-    if indexer_id not in exceptions_season_cache:
-        cache_db_con = db.DBConnection('cache.db')
-        sql_results = cache_db_con.select(
-            b'SELECT DISTINCT(season) AS season FROM scene_exceptions WHERE indexer_id = ?', [indexer_id])
-        if sql_results:
-            exceptions_season_list = list({int(x[b'season']) for x in sql_results})
-
-            if indexer_id not in exceptions_season_cache:
-                exceptions_season_cache[indexer_id] = {}
-
-            exceptions_season_cache[indexer_id] = exceptions_season_list
-    else:
-        exceptions_season_list = exceptions_season_cache[indexer_id]
-
-    return exceptions_season_list
+    return exceptions_season_cache.get(indexer_id, [])
 
 
 def get_scene_exception_by_name(show_name):
