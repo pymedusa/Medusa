@@ -2,20 +2,20 @@
 """Tests for medusa/test_should_search.py."""
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED,
                            SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED)
-from medusa.tv import TVShow
+from medusa.tv import Series
 
 import pytest
 
 
-class TestTVShow(TVShow):
-    """A test `TVShow` object that does not need DB access."""
+class TestTVShow(Series):
+    """A test `Series` object that does not need DB access."""
 
     def __init__(self, indexer, indexer_id, lang, quality):
         """Initialize the object."""
         super(TestTVShow, self).__init__(indexer, indexer_id, lang, quality)
 
     def _load_from_db(self):
-        """Override TVShow._load_from_db to avoid DB access during testing."""
+        """Override Series._load_from_db to avoid DB access during testing."""
         pass
 
 

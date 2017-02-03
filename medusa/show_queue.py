@@ -36,7 +36,7 @@ from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
                                           IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
                                           IndexerShowNotFoundInLanguage)
-from .tv import TVShow
+from .tv import Series
 
 
 class ShowQueueActions(object):
@@ -430,7 +430,7 @@ class QueueItemAdd(ShowQueueItem):
             return
 
         try:
-            newShow = TVShow(self.indexer, self.indexer_id, self.lang)
+            newShow = Series(self.indexer, self.indexer_id, self.lang)
             newShow.load_from_indexer(t)
 
             self.show = newShow

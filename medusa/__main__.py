@@ -85,7 +85,7 @@ from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from .server.core import AppWebServer
 from .system.shutdown import Shutdown
-from .tv import TVShow
+from .tv import Series
 
 logger = logging.getLogger(__name__)
 
@@ -1988,7 +1988,7 @@ class Application(object):
         app.showList = []
         for sql_show in sql_results:
             try:
-                cur_show = TVShow(sql_show[b'indexer'], sql_show[b'indexer_id'])
+                cur_show = Series(sql_show[b'indexer'], sql_show[b'indexer_id'])
                 cur_show.next_episode()
                 app.showList.append(cur_show)
             except Exception as error:

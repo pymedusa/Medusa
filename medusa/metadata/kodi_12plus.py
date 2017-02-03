@@ -103,7 +103,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for an KODI-style tvshow.nfo and
         returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
 
         my_show = self._get_show_data(show_obj)

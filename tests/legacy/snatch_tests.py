@@ -24,7 +24,7 @@ import unittest
 
 from medusa import app, common, providers
 from medusa.search.core import search_providers
-from medusa.tv import TVEpisode, TVShow
+from medusa.tv import TVEpisode, Series
 from . import test_lib as test
 
 TESTS = {
@@ -93,7 +93,7 @@ def generator(tvdb_id, show_name, cur_data, force_search):
         """Test to perform."""
         global search_items  # pylint: disable=global-statement
         search_items = cur_data["i"]
-        show = TVShow(1, tvdb_id)
+        show = Series(1, tvdb_id)
         show.name = show_name
         show.quality = cur_data["q"]
         show.save_to_db()

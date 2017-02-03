@@ -194,7 +194,7 @@ class GenericMetadata(object):
         """
         Returns the full path to the file for a given season poster.
 
-        show_obj: a TVShow instance for which to generate the path
+        show_obj: a Series instance for which to generate the path
         season: a season number to be used for the path. Note that season 0
                 means specials.
         """
@@ -212,7 +212,7 @@ class GenericMetadata(object):
         """
         Returns the full path to the file for a given season banner.
 
-        show_obj: a TVShow instance for which to generate the path
+        show_obj: a Series instance for which to generate the path
         season: a season number to be used for the path. Note that season 0
                 means specials.
         """
@@ -387,7 +387,7 @@ class GenericMetadata(object):
         Generates and writes show_obj's metadata under the given path to the
         filename given by get_show_file_path()
 
-        show_obj: TVShow object for which to create the metadata
+        show_obj: Series object for which to create the metadata
 
         path: An absolute or relative path where we should put the file. Note that
                 the file name will be the default show_file_name.
@@ -504,7 +504,7 @@ class GenericMetadata(object):
         Downloads a fanart image and saves it to the filename specified by fanart_name
         inside the show's root folder.
 
-        show_obj: a TVShow object for which to download fanart
+        show_obj: a Series object for which to download fanart
         """
 
         # use the default fanart name
@@ -523,7 +523,7 @@ class GenericMetadata(object):
         Downloads a poster image and saves it to the filename specified by poster_name
         inside the show's root folder.
 
-        show_obj: a TVShow object for which to download a poster
+        show_obj: a Series object for which to download a poster
         """
 
         # use the default poster name
@@ -542,7 +542,7 @@ class GenericMetadata(object):
         Downloads a banner image and saves it to the filename specified by banner_name
         inside the show's root folder.
 
-        show_obj: a TVShow object for which to download a banner
+        show_obj: a Series object for which to download a banner
         """
 
         # use the default banner name
@@ -560,7 +560,7 @@ class GenericMetadata(object):
         """
         Saves all season posters to disk for the given show.
 
-        show_obj: a TVShow object for which to save the season thumbs
+        show_obj: a Series object for which to save the season thumbs
 
         Cycles through all seasons and saves the season posters if possible. This
         method should not need to be overridden by implementing classes, changing
@@ -607,7 +607,7 @@ class GenericMetadata(object):
         """
         Saves all season banners to disk for the given show.
 
-        show_obj: a TVShow object for which to save the season thumbs
+        show_obj: a Series object for which to save the season thumbs
 
         Cycles through all seasons and saves the season banners if possible. This
         method should not need to be overridden by implementing classes, changing
@@ -715,7 +715,7 @@ class GenericMetadata(object):
         Gets an image URL from theTVDB.com and TMDB.com, downloads it and returns the data.
 
         image_type: type of image to retrieve (currently supported: fanart, poster, banner)
-        show_obj: a TVShow object to use when searching for the image
+        show_obj: a Series object to use when searching for the image
         which: optional, a specific numbered poster to look for
 
         Returns: the binary image data if available, or else None

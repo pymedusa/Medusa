@@ -16,7 +16,7 @@ from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
-from medusa.tv import TVEpisode, TVShow
+from medusa.tv import TVEpisode, Series
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
@@ -119,8 +119,8 @@ def create_sub(monkeypatch):
 def create_tvshow(monkeypatch):
     def create(indexer=INDEXER_TVDBV2, indexerid=0, lang='', quality=Quality.UNKNOWN, flatten_folders=0,
                enabled_subtitles=0, **kwargs):
-        monkeypatch.setattr(TVShow, '_load_from_db', lambda method: None)
-        target = TVShow(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
+        monkeypatch.setattr(Series, '_load_from_db', lambda method: None)
+        target = Series(indexer=indexer, indexerid=indexerid, lang=lang, quality=quality,
                         flatten_folders=flatten_folders, enabled_subtitles=enabled_subtitles)
         return _patch_object(monkeypatch, target, **kwargs)
 

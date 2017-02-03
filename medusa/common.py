@@ -600,7 +600,7 @@ class Quality(object):
         If cur_quality is Quality.UNKNOWN it will return True only if is not in Allowed (Unknown can be in Allowed)
 
         :param status: current status of the episode
-        :param show_obj: TVShow object of the episode we will check if we should search or not
+        :param show_obj: Series object of the episode we will check if we should search or not
         :param manually_searched: if episode was manually searched by user
         :return: True if need to run a search for given episode
         """

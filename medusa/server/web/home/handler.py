@@ -1284,7 +1284,7 @@ class Home(WebRoot):
         """
         Request the show in a specific language from the indexer.
 
-        :param show_obj: (TVShow) Show object
+        :param show_obj: (Series) Show object
         :param language: Language two-letter country code. For ex: 'en'
         :returns: True if show is found in language else False
         """
