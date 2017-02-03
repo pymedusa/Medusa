@@ -94,7 +94,7 @@ def should_refresh(ex_list):
     rows = cache_db_con.select(b'SELECT last_refreshed FROM scene_exceptions_refresh WHERE list = ?', [ex_list])
     if rows:
         last_refresh = int(rows[0][b'last_refreshed'])
-        return int(time.mktime(datetime.datetime.today().timetuple())) > last_refresh + max_refresh_age_secs
+        return int(time.time()) > last_refresh + max_refresh_age_secs
     else:
         return True
 
@@ -108,7 +108,7 @@ def set_last_refresh(ex_list):
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.upsert(
         b'scene_exceptions_refresh',
-        {b'last_refreshed': int(time.mktime(datetime.datetime.today().timetuple()))},
+        {b'last_refreshed': int(time.time())},
         {b'list': ex_list}
     )
 
