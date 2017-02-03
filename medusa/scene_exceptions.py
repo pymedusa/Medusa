@@ -113,25 +113,6 @@ def set_last_refresh(ex_list):
     )
 
 
-def update_scene_exceptions_cache(indexer_id, indexer, season=-1):
-    """Update the scene_exceptions cache from db. And return the scene_exceptions available."""
-    cache_db_con = db.DBConnection('cache.db')
-    exceptions = cache_db_con.select(b'SELECT show_name FROM scene_exceptions WHERE '
-                                     b'indexer = ? AND indexer_id = ? AND season = ?',
-                                     [indexer, indexer_id, season])
-    if exceptions:
-        # TODO: I'd like to know in which use-cases we can't find a result in cache, but can from db?
-        exceptions_list = list({cur_exception[b'show_name'] for cur_exception in exceptions})
-
-        # TODO: Refactor exceptionCache to be usable by multiple indexers.
-        if indexer_id not in exceptions_cache:
-            exceptions_cache[indexer_id] = {}
-        exceptions_cache[indexer_id][season] = exceptions_list
-        # I'm only calling get_scene_exceptions here because that adds the -1 by default when there are
-        # no season exceptions defined. Apparently this is needed.
-    return get_scene_exceptions(indexer_id, indexer, season)
-
-
 def get_scene_exceptions(indexer_id, indexer, season=-1):
     """Given a indexer_id, return a list of all the scene exceptions from the scene_exception cache."""
     exceptions_list = []
@@ -150,24 +131,18 @@ def get_all_scene_exceptions(indexer_id):
     Get all scene exceptions for a show ID.
 
     :param indexer_id: ID to check
-    :return: dict of exceptions
+    :return: dict of exceptions. For example: exceptions_cache[season][exception_name]
     """
-    exceptions_dict = {}
-
-    cache_db_con = db.DBConnection('cache.db')
-    exceptions = cache_db_con.select(b'SELECT show_name, season FROM scene_exceptions WHERE indexer_id = ?',
-                                     [indexer_id])
-    if exceptions:
-        for cur_exception in exceptions:
-            if not cur_exception[b'season'] in exceptions_dict:
-                exceptions_dict[cur_exception[b'season']] = []
-            exceptions_dict[cur_exception[b'season']].append(cur_exception[b'show_name'])
-
-    return exceptions_dict
+    return exceptions_cache.get(indexer_id, {})
 
 
 def get_scene_seasons(indexer_id):
-    """Return a list of season numbers that have scene exceptions."""
+    """
+    Get a list of season numbers form the scene_exceptions, for which exceptions have been added.
+
+    :param indexer_id: ID to check
+    :return: list of seasons.
+    """
     return exceptions_season_cache.get(indexer_id, [])
 
 
@@ -218,11 +193,23 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     # TODO: make sure we add indexer, when the global exceptionsCache var has been changed.
     if indexer_id in exceptions_cache:
         exceptions_cache[indexer_id] = {}
-        exceptions_cache[indexer_id][season] = [se.decode('utf-8') for se in scene_exceptions]
 
-    for cur_exception in [se.decode('utf-8') for se in scene_exceptions]:
-        cache_db_con.action(b'INSERT INTO scene_exceptions (indexer_id, show_name, season, indexer) VALUES (?,?,?,?)',
-                            [indexer_id, cur_exception, season, indexer])
+    decoded_scene_exceptions = [se.decode('utf-8') for se in scene_exceptions]
+    for cur_exception in decoded_scene_exceptions:
+        if indexer_id not in exceptions_cache:
+            exceptions_cache[indexer_id] = {}
+
+        if season not in exceptions_cache[indexer_id]:
+            exceptions_cache[indexer_id][season] = []
+
+        if cur_exception not in exceptions_cache[indexer_id][season]:
+            # Add to cache
+            exceptions_cache[indexer_id][season].append(cur_exception)
+
+            # Add to db
+            cache_db_con.action(
+                b'INSERT INTO scene_exceptions (indexer_id, show_name, season, indexer) VALUES (?,?,?,?)',
+                [indexer_id, cur_exception, season, indexer])
 
 
 def retrieve_exceptions():
