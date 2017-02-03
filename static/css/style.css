@@ -3997,6 +3997,94 @@ div#searchNotification {
     display: inline-block;
 }
 
+.left-30 {
+    margin-left:-30px;
+}
+
+.right-30 {
+    margin-right:-30px;
+}
+
+.vMiddle {
+    vertical-align: middle;
+}
+
+.curHelp {
+    cursor: help;
+}
+
+#historyTable.tablesorter tbody:nth-child(1) tr:nth-child(1) {
+    height: 60px;
+}
+
+#historyTable.tablesorter tbody:nth-child(4) tr:nth-child(1) {
+    height: 30px;
+}
+
+#resultTable.tablesorter tbody:nth-child(2) tr:nth-child(2) {
+    height: 30px;
+}
+
+#historyTable th.row-seasonheader {
+    vertical-align: bottom;
+    width: auto;
+}
+
+#historyTable th.row-seasonheader h3 {
+    display: inline;
+}
+
+
+#historyTable.tablesorter tbody:nth-child(2) th:nth-child(1) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#historyTable.tablesorter tbody:nth-child(2) th:nth-child(2) {
+    width: 15%;
+    text-align: center!important;
+}
+
+
+#historyTable.tablesorter tbody:nth-child(2) th:nth-child(3) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#historyTable.tablesorter tbody:nth-child(2) th:nth-child(4) {
+    width: 52%;
+    text-align: center!important;
+}
+
+
+#historyTable.tablesorter td:nth-child(1) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#historyTable.tablesorter td:nth-child(2) {
+    width: 18%;
+    text-align: center!important;
+}
+
+#historyTable.tablesorter td:nth-child(3) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#historyTable.tablesorter td:nth-child(4) {
+    width: 52%;
+}
+
+#resultTable.tablesorter td:nth-child(1) {
+    width: 60%;
+}
+
+#resultTable.tablesorter td:nth-child(n+2) {
+    width: 4%;
+}
+
+
 .summaryTable tr td {
     word-break: break-all;
 }
