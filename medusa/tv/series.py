@@ -85,7 +85,7 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.tv.base import TVObject
+from medusa.tv.base import TV
 from medusa.tv.episode import TVEpisode
 
 
@@ -105,7 +105,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 
-class TVShow(TVObject):
+class TVShow(TV):
     """Represent a TV Show."""
 
     def __init__(self, indexer, indexerid, lang='', quality=None, flatten_folders=None, enabled_subtitles=None):

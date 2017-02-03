@@ -86,7 +86,7 @@ from medusa.scene_numbering import (
     get_scene_numbering,
     xem_refresh,
 )
-from medusa.tv.base import TVObject
+from medusa.tv.base import TV
 
 try:
     import xml.etree.cElementTree as ETree
@@ -104,7 +104,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 
-class TVEpisode(TVObject):
+class TVEpisode(TV):
     """Represent a TV Show episode."""
 
     def __init__(self, show, season, episode, filepath=''):
