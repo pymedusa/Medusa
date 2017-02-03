@@ -24,7 +24,7 @@ from ....helper.exceptions import (
 )
 from ....helpers import is_media_file
 from ....show.show import Show
-from ....tv import TVEpisode
+from ....tv import Episode
 
 
 @route('/manage(/?.*)')
@@ -284,7 +284,7 @@ class Manage(Home, WebRoot):
                 video_date = datetime.datetime.fromtimestamp(os.stat(video_path).st_ctime)
                 video_age = datetime.datetime.today() - video_date
 
-                tv_episode = TVEpisode.from_filepath(video_path)
+                tv_episode = Episode.from_filepath(video_path)
 
                 if not tv_episode:
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)

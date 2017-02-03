@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Series and TVEpisode classes."""
+"""Series and Episode classes."""
 
 import datetime
 import glob
@@ -86,7 +86,7 @@ from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 from medusa.tv.base import TV
-from medusa.tv.episode import TVEpisode
+from medusa.tv.episode import Episode
 
 
 try:
@@ -337,7 +337,7 @@ class Series(TV):
         :param has_location:
         :type has_location: bool
         :return:
-        :rtype: list of TVEpisode
+        :rtype: list of Episode
         """
         sql_selection = b'SELECT season, episode, '
 
@@ -417,7 +417,7 @@ class Series(TV):
         :param should_cache:
         :type should_cache: bool
         :return:
-        :rtype: TVEpisode
+        :rtype: Episode
         """
         season = try_int(season, None)
         episode = try_int(episode, None)
@@ -466,9 +466,9 @@ class Series(TV):
             return None
 
         if filepath:
-            ep = TVEpisode(self, season, episode, filepath)
+            ep = Episode(self, season, episode, filepath)
         else:
-            ep = TVEpisode(self, season, episode)
+            ep = Episode(self, season, episode)
 
         if ep is not None and should_cache:
             self.episodes[season][episode] = ep
@@ -949,7 +949,7 @@ class Series(TV):
         :param filepath:
         :type filepath: str
         :return:
-        :rtype: TVEpisode
+        :rtype: Episode
         """
         if not os.path.isfile(filepath):
             logger.log(u"{0}: That isn't even a real file dude... {1}".format

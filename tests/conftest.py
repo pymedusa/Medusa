@@ -16,7 +16,7 @@ from medusa.helper.common import dateTimeFormat
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger import CensoredFormatter, ContextFilter, FORMATTER_PATTERN, instance
 from medusa.logger import read_loglines as logger_read_loglines
-from medusa.tv import TVEpisode, Series
+from medusa.tv import Episode, Series
 from medusa.version_checker import CheckVersion
 from mock.mock import Mock
 import pytest
@@ -130,8 +130,8 @@ def create_tvshow(monkeypatch):
 @pytest.fixture
 def create_tvepisode(monkeypatch):
     def create(show, season, episode, filepath='', **kwargs):
-        monkeypatch.setattr(TVEpisode, '_specify_episode', lambda method, season, episode: None)
-        target = TVEpisode(show=show, season=season, episode=episode, filepath=filepath)
+        monkeypatch.setattr(Episode, '_specify_episode', lambda method, season, episode: None)
+        target = Episode(show=show, season=season, episode=episode, filepath=filepath)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create

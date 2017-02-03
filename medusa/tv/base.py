@@ -27,7 +27,7 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 
 class TV(object):
-    """Base class for Series and TVEpisode."""
+    """Base class for Series and Episode."""
 
     def __init__(self, indexer, indexerid, ignored_properties):
         """Constructor with ignore_properties.

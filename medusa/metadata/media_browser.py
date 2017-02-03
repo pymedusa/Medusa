@@ -108,7 +108,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Returns a full show dir/metadata/episode.xml path for MediaBrowser
         episode metadata files
 
-        ep_obj: a TVEpisode object to get the path for
+        ep_obj: a Episode object to get the path for
         """
 
         if os.path.isfile(ep_obj.location):
@@ -128,7 +128,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Returns a full show dir/metadata/episode.jpg path for MediaBrowser
         episode thumbs.
 
-        ep_obj: a TVEpisode object to get the path from
+        ep_obj: a Episode object to get the path from
         """
 
         if os.path.isfile(ep_obj.location):

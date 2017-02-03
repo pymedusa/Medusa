@@ -106,12 +106,12 @@ class ShowHandler(BaseRequestHandler):
 
     @staticmethod
     def _find_tv_episode(tv_show, ep_id):
-        """Find TVEpisode based on specified criteria.
+        """Find Episode based on specified criteria.
 
         :param tv_show:
         :param ep_id:
         :return:
-        :rtype: medusa.tv.TVEpisode or tuple(int, string)
+        :rtype: medusa.tv.Episode or tuple(int, string)
         """
         if ep_id.season is not None and ep_id.episode is not None:
             tv_episode = tv_show.get_episode(season=ep_id.season, episode=ep_id.episode, should_cache=False)
