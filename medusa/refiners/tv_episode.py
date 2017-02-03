@@ -53,7 +53,7 @@ def refine(video, tv_episode=None, **kwargs):
         return
 
     if tv_episode.show:
-        logger.debug('Refining using TVShow information.')
+        logger.debug('Refining using Series information.')
         series, year, _ = series_re.match(tv_episode.show.name).groups()
         enrich({'series': series, 'year': int(year) if year else None}, video)
         enrich(SHOW_MAPPING, video, tv_episode.show)

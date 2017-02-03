@@ -78,7 +78,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
 
     Provide the external id's you have in a dictionary, and use as much available resources as possible to retrieve
     external id's.
-    :param show: TVShow object.
+    :param show: Series object.
     :param indexer: Indexer id. For example 1 for tvdb or 4 for tmdb.
     :param indexed_show: The result of a fully indexed shows. For example after an t['12345']
     """

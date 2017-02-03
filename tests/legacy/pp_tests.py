@@ -24,7 +24,7 @@ import unittest
 from medusa import app
 from medusa.name_cache import addNameToCache
 from medusa.post_processor import PostProcessor
-from medusa.tv import TVEpisode, TVShow
+from medusa.tv import TVEpisode, Series
 from . import test_lib as test
 
 
@@ -46,7 +46,7 @@ class PPBasicTests(test.AppTestDBCase):
     """Basic tests."""
 
     def test_process(self):
-        show = TVShow(1, 3)
+        show = Series(1, 3)
         show.name = test.SHOW_NAME
         show.location = test.SHOW_DIR
         show.save_to_db()

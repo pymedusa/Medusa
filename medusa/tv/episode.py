@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""TVShow and TVEpisode classes."""
+"""Series and TVEpisode classes."""
 
 import datetime
 import os.path
@@ -111,7 +111,7 @@ class TVEpisode(TV):
         """Instantiate a TVEpisode with database information.
 
         :param show:
-        :type show: TVShow
+        :type show: Series
         :param season:
         :type season: int
         :param episode:
@@ -158,7 +158,7 @@ class TVEpisode(TV):
 
         IMPORTANT: The filepath is not kept in the TVEpisode.location
         TVEpisode.location should only be set after it's post-processed and it's in the correct location.
-        As of now, TVEpisode is also not cached in TVShow.episodes since this method is only used during postpone PP.
+        As of now, TVEpisode is also not cached in Series.episodes since this method is only used during postpone PP.
         Goal here is to slowly move to use this method to create TVEpisodes. New parameters might be introduced.
 
         :param filepath:

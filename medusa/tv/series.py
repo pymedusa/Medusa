@@ -1,5 +1,5 @@
 # coding=utf-8
-"""TVShow and TVEpisode classes."""
+"""Series and TVEpisode classes."""
 
 import datetime
 import glob
@@ -105,11 +105,11 @@ shutil.copyfile = shutil_custom.copyfile_custom
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 
-class TVShow(TV):
+class Series(TV):
     """Represent a TV Show."""
 
     def __init__(self, indexer, indexerid, lang='', quality=None, flatten_folders=None, enabled_subtitles=None):
-        """Instantiate a TVShow with database information based on indexerid.
+        """Instantiate a Series with database information based on indexerid.
 
         :param indexer:
         :type indexer: int
@@ -118,7 +118,7 @@ class TVShow(TV):
         :param lang:
         :type lang: str
         """
-        super(TVShow, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
+        super(Series, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
         self.name = ''
         self.imdb_id = ''
         self.network = ''

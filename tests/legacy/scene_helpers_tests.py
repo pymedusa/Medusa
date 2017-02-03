@@ -4,7 +4,7 @@
 import unittest
 
 from medusa import common, db, name_cache, scene_exceptions, show_name_helpers
-from medusa.tv import TVShow as Show
+from medusa.tv import Series as Show
 from . import test_lib as test
 
 

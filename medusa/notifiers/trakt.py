@@ -105,7 +105,7 @@ class Notifier(object):
         """
         Sends a request to trakt indicating that the given episode is part of our library.
 
-        show_obj: The TVShow object to add to trakt
+        show_obj: The Series object to add to trakt
         s: season number
         e: episode number
         data_show: structured object of shows trakt type

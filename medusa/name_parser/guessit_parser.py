@@ -82,7 +82,7 @@ def get_expected_titles(show_list):
     (since they can confuse guessit).
 
     :param show_list:
-    :type show_list: list of medusa.tv.TVShow
+    :type show_list: list of medusa.tv.Series
     :return:
     :rtype: list of str
     """

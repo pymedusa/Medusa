@@ -176,7 +176,7 @@ class WDTVMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for a WDTV style episode.xml
         and returns the resulting data object.
 
-        ep_obj: a TVShow instance to create the NFO for
+        ep_obj: a Series instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes

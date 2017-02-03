@@ -22,7 +22,7 @@ from __future__ import print_function
 from bs4 import BeautifulSoup
 from medusa.helpers import get_url, make_session
 from medusa.providers.torrent.json.bitcannon import BitCannonProvider
-from medusa.tv import TVEpisode, TVShow
+from medusa.tv import TVEpisode, Series
 from six.moves.urllib_parse import urljoin
 from . import test_lib as test
 
@@ -34,7 +34,7 @@ class TorrentBasicTests(test.AppTestDBCase):
     def setUpClass(cls):
         cls.shows = []
 
-        show = TVShow(1, 121361)
+        show = Series(1, 121361)
         show.name = "Italian Works"
         show.episodes = []
         episode = TVEpisode(show, 5, 10)

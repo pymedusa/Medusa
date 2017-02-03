@@ -97,7 +97,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Creates an elementTree XML structure for a MediaBrowser-style series.xml
         returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
         my_show = self._get_show_data(show_obj)
 
@@ -186,7 +186,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Creates an elementTree XML structure for a MediaBrowser style episode.xml
         and returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
@@ -315,7 +315,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Generates and writes show_obj's metadata under the given path to the
         filename given by get_show_file_path()
 
-        show_obj: TVShow object for which to create the metadata
+        show_obj: Series object for which to create the metadata
 
         path: An absolute or relative path where we should put the file. Note that
                 the file name will be the default show_file_name.

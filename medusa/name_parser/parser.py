@@ -43,7 +43,7 @@ class NameParser(object):
         """The NameParser constructor.
 
         :param show:
-        :type show: medusa.tv.TVShow
+        :type show: medusa.tv.Series
         :param try_indexers:
         :type try_indexers: bool
         :param naming_pattern:

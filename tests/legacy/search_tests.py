@@ -24,7 +24,7 @@ import unittest
 
 from medusa import common, providers
 from medusa.providers.generic_provider import GenericProvider
-from medusa.tv import TVEpisode, TVShow
+from medusa.tv import TVEpisode, Series
 import test_lib as test
 
 TESTS = {
@@ -53,7 +53,7 @@ def generator(cur_data, cur_name, cur_provider):
     """
     def do_test(self):
         """Test to perform."""
-        show = TVShow(1, int(cur_data["tvdbid"]))
+        show = Series(1, int(cur_data["tvdbid"]))
         show.name = cur_name
         show.quality = common.ANY | common.Quality.UNKNOWN | common.Quality.RAWHDTV
         # show.save_to_db()
