@@ -1,11 +1,14 @@
 # coding=utf-8
 """Tests for medusa/test_should_refresh.py."""
-from medusa.common import ARCHIVED, DOWNLOADED, IGNORED, Quality, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, SKIPPED
+from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED,
+                           SNATCHED_BEST, SNATCHED_PROPER, UNAIRED)
+
 from medusa.tv import TVShow
 
 import pytest
 
 
+#  Tests order has ve same order as the rules order
 @pytest.mark.parametrize('p', [
     {  # p0: File is the same: no
         'cur_status': Quality.composite_status(DOWNLOADED, Quality.HDTV),
@@ -71,7 +74,15 @@ import pytest
         'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.mkv',
         'expected': True
     },
-    {  # p8: Status is SNATCHED BEST and new quality is lower: no
+    {  # p8: Status is UNAIRED: no
+        'cur_status': Quality.composite_status(UNAIRED, None),
+        'same_file': False,
+        'check_quality_again': False,
+        'anime': False,
+        'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.mkv',
+        'expected': False
+    },
+    {  # p9: Status is SNATCHED BEST and new quality is lower: no
         'cur_status': Quality.composite_status(SNATCHED_BEST, Quality.HDTV),
         'same_file': False,
         'check_quality_again': False,
@@ -79,7 +90,7 @@ import pytest
         'filepath': 'Show.S01E01.HDTV.X264-GROUP.mkv',
         'expected': False
     },
-    {  # p9: Status is SNATCHED and new quality is higher: yes
+    {  # p10: Status is SNATCHED and new quality is higher: yes
         'cur_status': Quality.composite_status(SNATCHED, Quality.SDTV),
         'same_file': False,
         'check_quality_again': False,
@@ -87,7 +98,7 @@ import pytest
         'filepath': 'Show.S01E01.720p.HDTV.X264-GROUP.mkv',
         'expected': True
     },
-    {  # p10: Status is SNATCHED PROPER and new quality is higher NON-PROPER: yes
+    {  # p11: Status is SNATCHED PROPER and new quality is higher NON-PROPER: yes
         'cur_status': Quality.composite_status(SNATCHED_PROPER, Quality.HDTV),
         'same_file': False,
         'check_quality_again': False,
@@ -95,7 +106,7 @@ import pytest
         'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.mkv',
         'expected': True
     },
-    {  # p11: Status is SNATCHED PROPER and new quality is higher PROPER: yes
+    {  # p12: Status is SNATCHED PROPER and new quality is higher PROPER: yes
         'cur_status': Quality.composite_status(SNATCHED_PROPER, Quality.HDTV),
         'same_file': False,
         'check_quality_again': False,
@@ -103,7 +114,7 @@ import pytest
         'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.mkv',
         'expected': True
     },
-    {  # p12: Status is SNATCHED PROPER and new quality is same: no
+    {  # p13: Status is SNATCHED PROPER and new quality is same: no
         'cur_status': Quality.composite_status(SNATCHED_PROPER, Quality.HDTV),
         'same_file': False,
         'check_quality_again': False,

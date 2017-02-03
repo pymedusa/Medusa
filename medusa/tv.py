@@ -1008,10 +1008,10 @@ class TVShow(TVObject):
             else:
                 return False, 'New file has UNKNOWN quality'
 
-        if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
+        if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED, UNAIRED]:
             return False, 'Existing status is {0} and its not allowed'.format(statusStrings[cur_status])
 
-        if cur_status in [FAILED, SKIPPED, WANTED, UNKNOWN, UNAIRED]:
+        if cur_status in [FAILED, SKIPPED, WANTED, UNKNOWN]:
             return True, 'Existing status is {0} and its allowed'.format(statusStrings[cur_status])
 
         old_status, old_quality = Quality.split_composite_status(cur_status)
