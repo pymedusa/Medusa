@@ -108,9 +108,7 @@ class T411Provider(TorrentProvider):
 
                 for category in categories:
                     search_params.update({'cid': category})
-                    response = self.get_url(
-                        search_url, params=search_params, returns='response'
-                    )
+                    response = self.session.get(search_url, params=search_params)
 
                     if not response or not response.content:
                         logger.log('No data returned from provider', logger.DEBUG)
@@ -213,7 +211,7 @@ class T411Provider(TorrentProvider):
             'password': self.password,
         }
 
-        response = self.get_url(self.urls['login_page'], post_data=login_params, returns='json')
+        response = self.session.post(self.urls['login_page'], data=login_params).json()
         if not response:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

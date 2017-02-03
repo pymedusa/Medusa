@@ -21,13 +21,14 @@ from __future__ import unicode_literals
 
 import re
 from requests.compat import urljoin
-from .. import app, common, helpers, logger
+from .. import app, common, logger
+from ..session.core import Session
 
 
 class Notifier(object):
 
     def __init__(self):
-        self.session = helpers.make_session()
+        self.session = Session()
         self.url = 'https://api.pushbullet.com/v2/'
 
     def test_notify(self, pushbullet_api):

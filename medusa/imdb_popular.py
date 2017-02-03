@@ -5,7 +5,9 @@ import re
 from datetime import date
 
 from bs4 import BeautifulSoup
+
 from . import app, helpers
+from .session.core import Session
 
 
 class ImdbPopular(object):
@@ -23,14 +25,14 @@ class ImdbPopular(object):
             'year': '%s,%s' % (date.today().year - 1, date.today().year + 1),
         }
 
-        self.session = helpers.make_session()
+        self.session = Session()
 
     def fetch_popular_shows(self):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        response = helpers.get_url(self.url, session=self.session, params=self.params,
-                                   headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
+        response = self.session.get(self.url, params=self.params,
+                                    headers={'Referer': 'http://akas.imdb.com/'})
         if not response or not response.text:
             return None
 

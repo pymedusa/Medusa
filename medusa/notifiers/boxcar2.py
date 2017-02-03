@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from .. import app, common, logger
-from ..helpers import get_url, make_session
+from ..session.core import Session
 
 
 class Notifier(object):
@@ -30,7 +30,7 @@ class Notifier(object):
 
     def __init__(self):
         """Initialize the class."""
-        self.session = make_session()
+        self.session = Session()
         self.url = 'https://new.boxcar.io/api/notifications'
 
     def test_notify(self, accesstoken, title='Medusa: Test'):
@@ -58,7 +58,8 @@ class Notifier(object):
             'notification[icon_url]': app.LOGO_URL
         }
 
-        response = get_url(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
+        # TODO: SESSION: Check if this needs exception handling.
+        response = self.session.post(self.url, data=post_data, timeout=60).json()
         if not response:
             logger.log('Boxcar2 notification failed.', logger.ERROR)
             return False

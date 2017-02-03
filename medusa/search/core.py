@@ -129,7 +129,7 @@ def snatch_episode(result):
         else:
             if not result.content and not result.url.startswith('magnet'):
                 if result.provider.login():
-                    result.content = result.provider.get_url(result.url, returns='content')
+                    result.content = result.provider.session.get(result.url).content
 
             if result.content or result.url.startswith('magnet'):
                 client = clients.get_client_class(app.TORRENT_METHOD)()

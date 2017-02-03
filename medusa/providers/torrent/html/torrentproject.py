@@ -93,7 +93,7 @@ class TorrentProjectProvider(TorrentProvider):
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue

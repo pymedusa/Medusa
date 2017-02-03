@@ -23,8 +23,10 @@ import re
 from app import BASE_PYMEDUSA_URL
 from dateutil import tz
 from six import iteritems
+
 from . import db, helpers, logger
 from .helper.common import try_int
+from .session.core import Session
 
 try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
@@ -37,6 +39,8 @@ time_regex = re.compile(r'(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2})?)? ?(?P<meri
 network_dict = None
 missing_network_timezones = set()
 
+session = Session()
+
 
 # update the network timezone table
 def update_network_dict():
@@ -44,7 +48,7 @@ def update_network_dict():
 
     logger.log(u'Started updating network timezones', logger.DEBUG)
     url = '{base_url}/sb_network_timezones/network_timezones.txt'.format(base_url=BASE_PYMEDUSA_URL)
-    response = helpers.get_url(url, session=helpers.make_session(), returns='response')
+    response = session.get(url)
     if not response or not response.text:
         logger.log(u'Updating network timezones failed, this can happen from time to time. URL: %s' % url, logger.WARNING)
         load_network_dict()

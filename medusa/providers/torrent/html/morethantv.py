@@ -108,7 +108,7 @@ class MoreThanTVProvider(TorrentProvider):
 
                 search_params['searchstr'] = search_string
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -214,7 +214,7 @@ class MoreThanTVProvider(TorrentProvider):
             'login': 'Log in',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
@@ -243,7 +243,7 @@ class MoreThanTVProvider(TorrentProvider):
 
         # Take a break before querying the provider again
         time.sleep(0.5)
-        response = self.get_url(urljoin(self.url, details_url), returns='response')
+        response = self.session.get(urljoin(self.url, details_url))
         if not response or not response.text:
             logger.log("Could't open season pack details page for title: {0}".format(title), logger.DEBUG)
             return title

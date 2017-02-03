@@ -21,11 +21,12 @@
 from __future__ import unicode_literals
 
 from .. import app, common, helpers, logger
+from ..session.core import Session
 
 
 class Notifier(object):
     def __init__(self):
-        self.session = helpers.make_session()
+        self.session = Session()
 
     def test_notify(self, pushalot_authorizationtoken):
         return self._sendPushalot(
@@ -94,11 +95,10 @@ class Notifier(object):
             'Body': message or ''
         }
 
-        jdata = helpers.get_url(
+        # TODO: SESSION: Check if this needs exception handling.
+        jdata = self.session.post(
             'https://pushalot.com/api/sendmessage',
-            post_data=post_data, session=self.session,
-            returns='json'
-        ) or {}
+            data=post_data).json() or {}
 
         #  {'Status': 200, 'Description': 'The request has been completed successfully.', 'Success': True}
 

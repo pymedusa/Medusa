@@ -28,13 +28,14 @@ from medusa.indexers.indexer_api import indexerApi
 from six import iteritems, text_type
 from . import app, db, helpers, logger
 from .indexers.indexer_config import INDEXER_TVDBV2
+from .session.core import Session
 
 exceptionsCache = {}
 exceptionsSeasonCache = {}
 
 exceptionLock = threading.Lock()
 
-xem_session = helpers.make_session()
+xem_session = Session()
 
 
 def should_refresh(ex_list):
@@ -256,8 +257,7 @@ def _get_custom_exceptions():
                 location = indexerApi(indexer).config['scene_loc']
                 logger.log('Checking for scene exception updates from {0}'.format(location))
 
-                response = helpers.get_url(location, session=indexerApi(indexer).session,
-                                           timeout=60, returns='response')
+                response = indexerApi(indexer).session.get(location, timeout=60)
                 try:
                     jdata = response.json()
                 except (ValueError, AttributeError) as error:
@@ -303,7 +303,7 @@ def _get_xem_exceptions():
             xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'.format(
                 indexerApi(indexer).config['xem_origin'])
 
-            response = helpers.get_url(xem_url, session=xem_session, timeout=60, returns='response')
+            response = xem_session.get(xem_url, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

@@ -98,7 +98,7 @@ class TVChaosUKProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                 search_params['keywords'] = search_string
-                response = self.get_url(self.urls['search'], post_data=search_params, returns='response')
+                response = self.session.post(self.urls['search'], data=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -215,7 +215,7 @@ class TVChaosUKProvider(TorrentProvider):
             'returnto': '/browse.php',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
@@ -238,7 +238,7 @@ class TVChaosUKProvider(TorrentProvider):
         # Strip trailing 3 dots
         title = title[:-3]
         search_params = {'input': title}
-        result = self.get_url(self.urls['query'], params=search_params, returns='response')
+        result = self.session.get(self.urls['query'], params=search_params)
         with BS4Parser(result.text, 'html5lib') as html:
             titles = html('results')
             for item in titles:

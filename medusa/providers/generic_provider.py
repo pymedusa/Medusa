@@ -32,7 +32,9 @@ from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helpers import download_file, get_url, make_session
+from ..session.custom import PolicedSession
+from ..session.hooks import cloudflare, log_url
+from ..helpers import download_file
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..scene_exceptions import get_scene_exceptions
@@ -75,7 +77,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = make_session()
+        self.session = PolicedSession(hooks=[cloudflare])
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -91,6 +93,10 @@ class GenericProvider(object):
         # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
         self.stop_at = 3
+
+        # Police attributes
+        self.enable_api_hit_cooldown = False
+        self.enable_daily_request_reserve = False
 
     def download_result(self, result):
         """Download result from provider."""
@@ -397,8 +403,15 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
+        logger.log('providers.generic_provider.get_url() is deprecated, '
+                   'please rewrite your provider to make use of the PolicedSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+
+        if not post_data:
+            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
+        else:
+            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
+                                     timeout=timeout, **kwargs)
 
     def image_name(self):
         """Return provider image name."""
@@ -640,3 +653,11 @@ class GenericProvider(object):
 
         return {'result': False,
                 'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+
+    def __str__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def __unicode__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

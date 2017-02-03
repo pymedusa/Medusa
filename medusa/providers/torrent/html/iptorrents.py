@@ -93,7 +93,7 @@ class IPTorrentsProvider(TorrentProvider):
                 search_url = self.urls['search'] % (self.categories, freeleech, search_string)
                 search_url += ';o=seeders' if mode != 'RSS' else ''
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -186,8 +186,8 @@ class IPTorrentsProvider(TorrentProvider):
         }
 
         # Initialize session with a GET to have cookies
-        self.get_url(self.urls['login'], returns='response')
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        self.session.get(self.urls['login'])
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             logger.log('Unable to connect to provider', logger.WARNING)
             return False

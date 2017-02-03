@@ -36,6 +36,7 @@ from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
 from ...helper.encoding import ss
+from ...session.custom import PolicedSession
 from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
 
@@ -47,7 +48,9 @@ class NewznabProvider(NZBProvider):
     """
 
     def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
+                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False,
+                 enable_api_hit_cooldown=False, enable_daily_request_reserve=False, api_hit_limit=0,
+                 daily_reserve_calls=0):
         """Initialize the class."""
         super(self.__class__, self).__init__(name)
 
@@ -79,6 +82,16 @@ class NewznabProvider(NZBProvider):
         # self.cap_audio_search = None
 
         self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+
+        # self.enable_daily_request_reserve = bool(daily_reserve_calls)
+
+        self.session = PolicedSession({'enable_api_hit_cooldown': enable_api_hit_cooldown,
+                                      'daily_reserve_calls': daily_reserve_calls})
+
+        self.session.enable_api_hit_cooldown = self.enable_api_hit_cooldown = enable_api_hit_cooldown
+        self.session.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
+        self.session.api_hit_limit = self.api_hit_limit = api_hit_limit
+        # self.session.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -148,7 +161,14 @@ class NewznabProvider(NZBProvider):
 
                 time.sleep(cpu_presets[app.CPU_PRESET])
 
-                response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
+                # try:
+                #     self.session.request_check_newznab_daily_reserved_calls(mode)
+                # except PoliceReservedDailyExceeded as e:
+                #     logger.log(e.message, logger.INFO)
+                #     return items
+
+                response = self.session.get(urljoin(self.url, 'api'), params=search_params,
+                                            police_options={'api_hit': True, 'search_mode': mode})
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -443,7 +463,7 @@ class NewznabProvider(NZBProvider):
         if self.needs_auth and self.key:
             url_params['apikey'] = self.key
 
-        response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
+        response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
             error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             logger.log(error_string, logger.WARNING)

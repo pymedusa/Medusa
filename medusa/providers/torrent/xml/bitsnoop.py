@@ -78,7 +78,7 @@ class BitSnoopProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                 search_url = (self.urls['rss'], self.urls['search'] + search_string + '/s/d/1/?fmt=rss')[mode != 'RSS']
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue

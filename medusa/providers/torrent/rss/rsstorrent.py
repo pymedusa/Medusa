@@ -185,7 +185,7 @@ class TorrentRssProvider(TorrentProvider):
                 return {'result': True,
                         'message': 'RSS feed Parsed correctly'}
             else:
-                torrent_file = self.get_url(url, returns='content')
+                torrent_file = self.session.get(url).content
                 try:
                     bdecode(torrent_file)
                 except Exception as error:
