@@ -51,32 +51,31 @@ def refresh_exceptions_cache():
     cache_db_con = db.DBConnection('cache.db')
     exceptions = cache_db_con.select(b'SELECT indexer, indexer_id, show_name, season FROM scene_exceptions')
 
-    if exceptions:
-        # Start building up a new exceptions_cache.
-        for exception in exceptions:
-            # indexer = int(exception[b'indexer'])
-            indexer_id = int(exception[b'indexer_id'])
-            season = int(exception[b'season'])
+    # Start building up a new exceptions_cache.
+    for exception in exceptions:
+        # indexer = int(exception[b'indexer'])
+        indexer_id = int(exception[b'indexer_id'])
+        season = int(exception[b'season'])
 
-            # Create exceptions_cache[indexerid]
-            if indexer_id not in exceptions_cache:
-                exceptions_cache[indexer_id] = {}
+        # Create exceptions_cache[indexerid]
+        if indexer_id not in exceptions_cache:
+            exceptions_cache[indexer_id] = {}
 
-            # Create exceptions_cache[indexerid][season]
-            if season not in exceptions_cache[indexer_id]:
-                exceptions_cache[indexer_id][season] = []
+        # Create exceptions_cache[indexerid][season]
+        if season not in exceptions_cache[indexer_id]:
+            exceptions_cache[indexer_id][season] = []
 
-            # exceptions_cache[indexerid][season] = ['showname 1', 'showname 2']
-            if exception[b'show_name'] not in exceptions_cache[indexer_id][season]:
-                exceptions_cache[indexer_id][season].append(exception[b'show_name'])
+        # exceptions_cache[indexerid][season] = ['showname 1', 'showname 2']
+        if exception[b'show_name'] not in exceptions_cache[indexer_id][season]:
+            exceptions_cache[indexer_id][season].append(exception[b'show_name'])
 
-            # Do the same for the exceptions_season_cache
-            if int(indexer_id) not in exceptions_season_cache:
-                exceptions_season_cache[indexer_id] = []
+        # Do the same for the exceptions_season_cache
+        if int(indexer_id) not in exceptions_season_cache:
+            exceptions_season_cache[indexer_id] = []
 
-            # exception_season_cache[indexerid] = [-1, 2, 3]
-            if season not in exceptions_season_cache[indexer_id]:
-                exceptions_season_cache[indexer_id].append(season)
+        # exception_season_cache[indexerid] = [-1, 2, 3]
+        if season not in exceptions_season_cache[indexer_id]:
+            exceptions_season_cache[indexer_id].append(season)
 
     logger.info('Finished processing {nr} scene exceptions.', nr=len(exceptions or []))
 
