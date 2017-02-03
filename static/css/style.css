@@ -1420,10 +1420,9 @@ ul.tags li a {
 }
 
 #checkboxControls span {
-    padding: 5px;
+    padding: 2px 5px 2px 5px;
     font-size: 11px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 #checkboxControls label {
@@ -1469,32 +1468,26 @@ background-color: rgb(255, 153, 153);
 
 span.unaired {
     color: rgb(88, 75, 32);
-    border: 1px solid rgb(88, 75, 32);
 }
 
 span.skipped {
     color: rgb(29, 80, 104);
-    border: 1px solid rgb(29, 80, 104);
 }
 
 span.good {
     color: rgb(41, 87, 48);
-    border: 1px solid rgb(41, 87, 48);
 }
 
 span.qual {
     color: rgb(118, 81, 0);
-    border: 1px solid rgb(118, 81, 0);
 }
 
 span.wanted {
     color: rgb(137, 0, 0);
-    border: 1px solid rgb(137, 0, 0);
 }
 
 span.snatched {
     color: rgb(101, 33, 100);
-    border: 1px solid rgb(101, 33, 100);
 }
 
 span.unaired b,
