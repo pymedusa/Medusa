@@ -21,7 +21,7 @@
 from __future__ import print_function
 
 from medusa import app
-from medusa.tv import TVEpisode, Series
+from medusa.tv import Episode, Series
 from . import test_lib as test
 
 
@@ -75,7 +75,7 @@ class TVEpisodeTests(test.AppTestDBCase):
 
     def test_init_empty_db(self):
         show = Series(1, 1, "en")
-        episode = TVEpisode(show, 1, 1)
+        episode = Episode(show, 1, 1)
         episode.name = "asdasdasdajkaj"
         episode.save_to_db()
         episode.load_from_db(1, 1)

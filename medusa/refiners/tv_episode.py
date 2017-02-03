@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""TVEpisode refiner."""
+"""Episode refiner."""
 from __future__ import unicode_literals
 
 import logging
@@ -37,15 +37,15 @@ def refine(video, tv_episode=None, **kwargs):
     :param video: the video to refine.
     :type video: Episode
     :param tv_episode: the TVEpisode to be used.
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param kwargs:
     """
     if video.series_tvdb_id and video.tvdb_id:
-        logger.debug('No need to refine with TVEpisode')
+        logger.debug('No need to refine with Episode')
         return
 
     if not tv_episode:
-        logger.debug('No TVEpisode to be used to refine')
+        logger.debug('No Episode to be used to refine')
         return
 
     if not isinstance(video, Episode):
@@ -58,7 +58,7 @@ def refine(video, tv_episode=None, **kwargs):
         enrich({'series': series, 'year': int(year) if year else None}, video)
         enrich(SHOW_MAPPING, video, tv_episode.show)
 
-    logger.debug('Refining using TVEpisode information.')
+    logger.debug('Refining using Episode information.')
     enrich(EPISODE_MAPPING, video, tv_episode)
     enrich(ADDITIONAL_MAPPING, video, tv_episode, overwrite=False)
     guess = Quality.to_guessit(tv_episode.status)

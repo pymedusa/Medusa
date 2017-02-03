@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Series and TVEpisode classes."""
+"""Series and Episode classes."""
 
 import datetime
 import os.path
@@ -104,11 +104,11 @@ shutil.copyfile = shutil_custom.copyfile_custom
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 
-class TVEpisode(TV):
+class Episode(TV):
     """Represent a TV Show episode."""
 
     def __init__(self, show, season, episode, filepath=''):
-        """Instantiate a TVEpisode with database information.
+        """Instantiate a Episode with database information.
 
         :param show:
         :type show: Series
@@ -119,8 +119,8 @@ class TVEpisode(TV):
         :param filepath:
         :type filepath: str
         """
-        super(TVEpisode, self).__init__(int(show.indexer) if show else 0, 0,
-                                        {'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
+        super(Episode, self).__init__(int(show.indexer) if show else 0, 0,
+                                      {'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
                                          'related_episodes', 'wanted_quality'})
         self.show = show
         self.name = ''
@@ -154,17 +154,17 @@ class TVEpisode(TV):
 
     @staticmethod
     def from_filepath(filepath):
-        """Return an TVEpisode for the given filepath.
+        """Return an Episode for the given filepath.
 
-        IMPORTANT: The filepath is not kept in the TVEpisode.location
-        TVEpisode.location should only be set after it's post-processed and it's in the correct location.
-        As of now, TVEpisode is also not cached in Series.episodes since this method is only used during postpone PP.
+        IMPORTANT: The filepath is not kept in the Episode.location
+        Episode.location should only be set after it's post-processed and it's in the correct location.
+        As of now, Episode is also not cached in Series.episodes since this method is only used during postpone PP.
         Goal here is to slowly move to use this method to create TVEpisodes. New parameters might be introduced.
 
         :param filepath:
         :type filepath: str
         :return:
-        :rtype: TVEpisode
+        :rtype: Episode
         """
         try:
             parse_result = NameParser(try_indexers=True).parse(filepath, cache_result=True)
@@ -183,7 +183,7 @@ class TVEpisode(TV):
                 return episode  # only root episode has related_episodes
 
         except (InvalidNameException, InvalidShowException):
-            logger.log(u'Cannot create TVEpisode from path {path}'.format(path=filepath), logger.WARNING)
+            logger.log(u'Cannot create Episode from path {path}'.format(path=filepath), logger.WARNING)
 
     @property
     def identifier(self):

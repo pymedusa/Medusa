@@ -28,7 +28,7 @@ from medusa.helper.encoding import ss
 from medusa.notifiers.emailnotify import Notifier as EmailNotifier
 from medusa.notifiers.prowl import Notifier as ProwlNotifier
 from medusa.server.web import Home
-from medusa.tv import TVEpisode, Series
+from medusa.tv import Episode, Series
 from . import test_lib as test
 
 
@@ -55,7 +55,7 @@ class NotifierTests(test.AppTestDBCase):
             show.name = "Show " + str(show_counter)
             show.episodes = []
             for episode_counter in range(0, num_episodes_per_show):
-                episode = TVEpisode(show, test.SEASON, episode_counter)
+                episode = Episode(show, test.SEASON, episode_counter)
                 episode.name = "Episode " + str(episode_counter + 1)
                 episode.quality = "SDTV"
                 show.episodes.append(episode)
@@ -67,7 +67,7 @@ class NotifierTests(test.AppTestDBCase):
             show.name = "Show " + str(show_counter)
             show.episodes = []
             for episode_counter in range(0, num_episodes_per_show):
-                episode = TVEpisode(show, test.SEASON, episode_counter)
+                episode = Episode(show, test.SEASON, episode_counter)
                 episode.name = "Episode " + str(episode_counter + 1)
                 episode.quality = "SDTV"
                 show.episodes.append(episode)

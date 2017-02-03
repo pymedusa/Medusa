@@ -24,7 +24,7 @@ import unittest
 
 from medusa import app, common, providers
 from medusa.search.core import search_providers
-from medusa.tv import TVEpisode, Series
+from medusa.tv import Episode, Series
 from . import test_lib as test
 
 TESTS = {
@@ -101,7 +101,7 @@ def generator(tvdb_id, show_name, cur_data, force_search):
         episode = None
 
         for epNumber in cur_data["e"]:
-            episode = TVEpisode(show, cur_data["s"], epNumber)
+            episode = Episode(show, cur_data["s"], epNumber)
             episode.status = common.WANTED
             episode.save_to_db()
 

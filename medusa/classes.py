@@ -49,7 +49,7 @@ class SearchResult(object):
         # used by some providers to store extra info associated with the result
         self.extraInfo = []
 
-        # list of TVEpisode objects that this result is associated with
+        # list of Episode objects that this result is associated with
         self.episodes = episodes
 
         # quality of the release

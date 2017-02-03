@@ -174,7 +174,7 @@ class GenericMetadata(object):
     def get_episode_thumb_path(ep_obj):
         """
         Returns the path where the episode thumbnail should be stored.
-        ep_obj: a TVEpisode instance for which to create the thumbnail
+        ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
 
@@ -362,7 +362,7 @@ class GenericMetadata(object):
         Returns the URL to use for downloading an episode's thumbnail. Uses
         theTVDB.com data.
 
-        ep_obj: a TVEpisode object for which to grab the thumb URL
+        ep_obj: a Episode object for which to grab the thumb URL
         """
         all_eps = [ep_obj] + ep_obj.related_episodes
 
@@ -429,7 +429,7 @@ class GenericMetadata(object):
         given filename root. Uses the episode's name with the extension in
         _ep_nfo_extension.
 
-        ep_obj: TVEpisode object for which to create the metadata
+        ep_obj: Episode object for which to create the metadata
 
         file_name_path: The file name to use for this metadata. Note that the extension
                 will be automatically added based on _ep_nfo_extension. This should
@@ -471,7 +471,7 @@ class GenericMetadata(object):
         be overridden by implementing classes, changing get_episode_thumb_path and
         _get_episode_thumb_url should suffice.
 
-        ep_obj: a TVEpisode object for which to generate a thumbnail
+        ep_obj: a Episode object for which to generate a thumbnail
         """
 
         file_path = self.get_episode_thumb_path(ep_obj)

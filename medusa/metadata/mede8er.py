@@ -363,7 +363,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         given filename root. Uses the episode's name with the extension in
         _ep_nfo_extension.
 
-        ep_obj: TVEpisode object for which to create the metadata
+        ep_obj: Episode object for which to create the metadata
 
         file_name_path: The file name to use for this metadata. Note that the extension
                 will be automatically added based on _ep_nfo_extension. This should

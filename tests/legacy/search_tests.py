@@ -24,7 +24,7 @@ import unittest
 
 from medusa import common, providers
 from medusa.providers.generic_provider import GenericProvider
-from medusa.tv import TVEpisode, Series
+from medusa.tv import Episode, Series
 import test_lib as test
 
 TESTS = {
@@ -60,7 +60,7 @@ def generator(cur_data, cur_name, cur_provider):
         # app.showList.append(show)
 
         for ep_number in cur_data["e"]:
-            episode = TVEpisode(show, cur_data["s"], ep_number)
+            episode = Episode(show, cur_data["s"], ep_number)
             episode.status = common.WANTED
 
             # We aren't updating scene numbers, so fake it here
