@@ -74,13 +74,13 @@ import pytest
         'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.mkv',
         'expected': True
     },
-    {  # p8: Status is UNAIRED: no
+    {  # p8: Status is UNAIRED: yes
         'cur_status': Quality.composite_status(UNAIRED, None),
         'same_file': False,
         'check_quality_again': False,
         'anime': False,
         'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.mkv',
-        'expected': False
+        'expected': True
     },
     {  # p9: Status is SNATCHED BEST and new quality is lower: no
         'cur_status': Quality.composite_status(SNATCHED_BEST, Quality.HDTV),
