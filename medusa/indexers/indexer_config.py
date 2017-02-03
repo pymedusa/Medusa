@@ -20,7 +20,8 @@ from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
 from ..app import BASE_PYMEDUSA_URL
-from ..helpers import make_session
+from ..session.core import Session
+
 
 initConfig = {
     'valid_languages': [
@@ -53,7 +54,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': make_session(cache_etags=False),
+            'session': Session(cache_control={'cache_etags': False}),
         },
         'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
@@ -72,7 +73,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': make_session(cache_etags=False),
+            'session': Session(cache_control={'cache_etags': False}),
         },
         'trakt_id': 'tvdb_id',
         'xem_mapped_to': INDEXER_TVDBV2,
@@ -91,7 +92,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': make_session(cache_etags=False),
+            'session': Session(cache_control={'cache_etags': False}),
         },
         'trakt_id': 'tvdb_id',
         'icon': 'tmdb16.png',

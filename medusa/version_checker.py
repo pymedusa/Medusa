@@ -30,6 +30,7 @@ import traceback
 from . import app, db, helpers, logger, notifiers, ui
 from .github_client import get_github_repo
 from .helper.exceptions import ex
+from .session.core import Session
 
 
 class CheckVersion(object):
@@ -45,7 +46,7 @@ class CheckVersion(object):
         elif self.install_type == 'source':
             self.updater = SourceUpdateManager()
 
-        self.session = helpers.make_session()
+        self.session = Session()
 
     def run(self, force=False):
 
@@ -757,7 +758,7 @@ class SourceUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
-        self.session = helpers.make_session()
+        self.session = Session()
 
     @staticmethod
     def _find_installed_branch():

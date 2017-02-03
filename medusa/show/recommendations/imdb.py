@@ -12,6 +12,7 @@ from simpleanidb import Anidb
 from .recommended import RecommendedShow
 from ... import app, helpers, logger
 from ...indexers.indexer_config import INDEXER_TVDBV2
+from ...session.core import Session
 
 
 class ImdbPopular(object):
@@ -20,7 +21,7 @@ class ImdbPopular(object):
     def __init__(self):
         """Constructor for ImdbPopular."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = helpers.make_session()
+        self.session = Session()
         self.recommender = 'IMDB Popular'
         self.default_img_src = 'poster.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
@@ -60,8 +61,7 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        response = helpers.get_url(self.url, session=self.session, params=self.params,
-                                   headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
+        response = self.session.get(self.url, params=self.params, headers={'Referer': 'http://akas.imdb.com/'})
         if not response or not response.text:
             return None
 

@@ -6,7 +6,8 @@ import markdown2
 from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
-from .... import app, helpers, logger
+from .... import app, logger
+from ....session.core import Session
 
 
 @route('/changes(/?.*)')
@@ -16,7 +17,8 @@ class HomeChangeLog(Home):
 
     def index(self):
         try:
-            changes = helpers.get_url(app.CHANGES_URL, session=helpers.make_session(), returns='text')
+            # TODO: SESSION: Check if this needs some more explicit exception handling.
+            changes = Session().get(app.CHANGES_URL).text
         except Exception:
             logger.log('Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md]({url})'.format(url=app.CHANGES_URL)

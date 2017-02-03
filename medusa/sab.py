@@ -22,8 +22,9 @@ import datetime
 
 from requests.compat import urljoin
 from . import app, helpers, logger
+from .session.core import Session
 
-session = helpers.make_session()
+session = Session()
 
 
 def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branches, too-many-statements

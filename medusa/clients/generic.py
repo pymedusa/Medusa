@@ -15,6 +15,8 @@ import requests
 from six.moves.http_cookiejar import CookieJar
 from .. import app, db, helpers, logger
 from ..helper.common import http_code_description
+from ..session.core import Session
+
 
 
 class GenericClient(object):
@@ -41,7 +43,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = helpers.make_session()
+        self.session = Session()
         self.session.auth = (self.username, self.password)
         self.session.cookies = CookieJar()
 

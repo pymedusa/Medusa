@@ -18,13 +18,11 @@ except ImportError:
 
 def add_cache_control(session, cache_control_config):
     """Add cache_control adapter to session object."""
-    assert {'cache_etags', 'serializer', 'heuristic'}.issubset(cache_control_config.keys()), cache_control_config
-
     adapter = CacheControlAdapter(
         DictCache(),
-        cache_etags=cache_control_config.get('cache_etags'),
-        serializer=cache_control_config.get('serializer'),
-        heuristic=cache_control_config.get('heuristic'),
+        cache_etags=cache_control_config.get('cache_etags', True),
+        serializer=cache_control_config.get('serializer', None),
+        heuristic=cache_control_config.get('heuristic', None),
     )
     session.mount('http://', adapter)
     session.mount('https://', adapter)

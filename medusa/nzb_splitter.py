@@ -25,6 +25,7 @@ from . import classes, helpers, logger
 from .helper.encoding import ss
 from .helper.exceptions import ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from .session.core import Session
 
 try:
     import xml.etree.cElementTree as ETree
@@ -148,7 +149,7 @@ def split_result(obj):
     :param obj: to search for results
     :return: a list of episode objects or an empty list
     """
-    url_data = helpers.get_url(obj.url, session=helpers.make_session(), returns='content')
+    url_data = helpers.get_url(obj.url, session=Session(), returns='content')
     if url_data is None:
         logger.log(u"Unable to load url " + obj.url + ", can't download season NZB", logger.ERROR)
         return []

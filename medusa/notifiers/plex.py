@@ -23,7 +23,7 @@ import re
 from six import iteritems
 from .. import app, common, logger
 from ..helper.exceptions import ex
-from ..helpers import get_url, make_session
+from ..session.core import Session
 
 try:
     import xml.etree.cElementTree as etree
@@ -39,7 +39,7 @@ class Notifier(object):
             'X-Plex-Client-Identifier': common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
-        self.session = make_session()
+        self.session = Session()
 
     @staticmethod
     def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
@@ -141,7 +141,8 @@ class Notifier(object):
 
             url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
-                xml_response = get_url(url, headers=self.headers, session=self.session, returns='text')
+                # TODO: SESSION: Check if this needs exception handling.
+                xml_response = self.session.get(url, headers=self.headers).text
                 if not xml_response:
                     logger.log(u'PLEX: Error while trying to contact Plex Media Server: {0}'.format
                                (cur_host), logger.WARNING)

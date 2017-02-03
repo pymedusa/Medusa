@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from .. import helpers, logger
+from .. import logger
+from ..session.core import Session
 
-meta_session = helpers.make_session()
+meta_session = Session()
 
 
 def getShowImage(url, imgNum=None):
@@ -34,7 +35,8 @@ def getShowImage(url, imgNum=None):
 
     logger.log(u"Fetching image from " + tempURL, logger.DEBUG)
 
-    image_data = helpers.get_url(tempURL, session=meta_session, returns='content')
+    # TODO: SESSION: Check if this needs exception handling.
+    image_data = meta_session.get(tempURL).content
     if image_data is None:
         logger.log(u"There was an error trying to retrieve the image, aborting", logger.WARNING)
         return

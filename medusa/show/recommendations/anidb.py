@@ -22,8 +22,9 @@ import traceback
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
 from .recommended import (MissingTvdbMapping, RecommendedShow)
-from ... import app, helpers
+from ... import app
 from ...indexers.indexer_config import INDEXER_TVDBV2
+from ...session.core import Session
 
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         List of returned shows is mapped to a RecommendedShow object
         """
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = helpers.make_session()
+        self.session = Session()
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
         self.default_img_src = 'poster.png'
