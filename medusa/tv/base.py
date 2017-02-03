@@ -26,7 +26,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 
-class TVObject(object):
+class TV(object):
     """Base class for TVShow and TVEpisode."""
 
     def __init__(self, indexer, indexerid, ignored_properties):
@@ -55,7 +55,7 @@ class TVObject(object):
         if key == '_location' or (not key.startswith('_') and key not in self.__ignored_properties):
             self.__dirty |= self.__dict__.get(key) != value
 
-        super(TVObject, self).__setattr__(key, value)
+        super(TV, self).__setattr__(key, value)
 
     @property
     def dirty(self):
