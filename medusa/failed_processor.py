@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Tyler Fenby <tylerfenby@gmail.com>
-
 #
 # This file is part of Medusa.
 #
@@ -41,7 +40,7 @@ class FailedProcessor(object):
 
         :return: True
         """
-        self._log(u"Failed download detected: (" + str(self.nzb_name) + ", " + str(self.dir_name) + ")")
+        self._log(u"Failed download detected: ({0}, {1})".format(self.nzb_name, self.dir_name))
 
         releaseName = show_name_helpers.determineReleaseName(self.dir_name, self.nzb_name)
         if not releaseName:
@@ -51,7 +50,7 @@ class FailedProcessor(object):
         try:
             parsed = NameParser().parse(releaseName)
         except (InvalidNameException, InvalidShowException) as error:
-            self._log(u"{}".format(error), logger.DEBUG)
+            self._log(u"{0}".format(error), logger.DEBUG)
             raise FailedPostProcessingFailedException()
 
         self._log(u"name_parser info: {result}".format(result=parsed), logger.DEBUG)

@@ -22,6 +22,7 @@ import time
 import traceback
 
 from .. import app, common, failed_history, generic_queue, history, logger, providers, ui
+from ..helpers import pretty_file_size
 from ..search.core import (
     search_for_needed_episodes,
     search_providers,
@@ -259,7 +260,8 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                         logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
                                    result.seeders, result.leechers, result.provider.name))
                     else:
-                        logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
+                        logger.log(u"Downloading {0} with size: {1} from {2}".format
+                                   (result.name, pretty_file_size(result.size), result.provider.name))
                     self.success = snatch_episode(result)
 
                     # give the CPU a break
@@ -325,7 +327,9 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                                format(search_result[0].name,
                                       search_result[0].seeders, search_result[0].leechers, search_result[0].provider.name))
                 else:
-                    logger.log(u"Downloading {0} from {1}".format(search_result[0].name, search_result[0].provider.name))
+                    logger.log(u"Downloading {0} with size: {1} from {2}".format
+                               (search_result.name[0], pretty_file_size(search_result[0].size),
+                                search_result[0].provider.name))
                 self.success = snatch_episode(search_result[0])
 
                 # give the CPU a break
@@ -412,7 +416,8 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
                                format(search_result.name,
                                       search_result.seeders, search_result.leechers, search_result.provider.name))
                 else:
-                    logger.log(u"Downloading {0} from {1}".format(search_result.name, search_result.provider.name))
+                    logger.log(u"Downloading {0} with size: {1} from {2}".format
+                               (search_result.name, pretty_file_size(search_result.size), search_result.provider.name))
                 self.success = snatch_episode(search_result)
             else:
                 logger.log(u"Unable to snatch release: {0}".format(search_result.name))
@@ -464,7 +469,8 @@ class BacklogQueueItem(generic_queue.QueueItem):
                                        format(result.name,
                                               result.seeders, result.leechers, result.provider.name))
                         else:
-                            logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
+                            logger.log(u"Downloading {0} with size: {1} from {2}".format
+                                       (result.name, pretty_file_size(result.size), result.provider.name))
                         self.success = snatch_episode(result)
 
                         # give the CPU a break
@@ -528,7 +534,8 @@ class FailedQueueItem(generic_queue.QueueItem):
                         logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
                                    result.seeders, result.leechers, result.provider.name))
                     else:
-                        logger.log(u"Downloading {0} from {1}".format(result.name, result.provider.name))
+                        logger.log(u"Downloading {0} with size: {1} from {2}".format
+                                   (result.name, pretty_file_size(result.size), result.provider.name))
                     self.success = snatch_episode(result)
 
                     # give the CPU a break
