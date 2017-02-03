@@ -19,11 +19,11 @@ MEDUSA.home.editShow = function() {
         var html = '<h5><b>Quality setting explanation:</b></h5>'
         if (preferred.length) {
                 html += '<h5>Downloads <b>any</b> of these qualities: ' + both + '</h5>';
-                html += '<h5>Stop search only when downloads <b>any</b> from Preferred: ' + preferred + '</h5>';
+                html += '<h5>and stop search for other qualities only when downloads <b>any</b> from Preferred: ' + preferred + '</h5>';
             $('#quality_explanation').html(html);
         } else {
                 html += '<h5>Downloads <b>any</b> of these qualities: ' + allowed + '</h5>';
-                html += '<h5>Stop search</h5>'
+                html += '<h5>and stop search for other qualities</h5>'
             $('#quality_explanation').html(html);
         }
     });
