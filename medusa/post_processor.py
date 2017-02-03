@@ -960,7 +960,7 @@ class PostProcessor(object):
 
         :return: True on success, False on failure
         """
-        self._log(u'Processing {0} ({1})'.format(self.file_path, self.nzb_name or 'Torrent'))
+        self._log(u'Processing {0}'.format(self.file_path))
 
         if os.path.isdir(self.file_path):
             self._log(u'File {0} seems to be a directory'.format(self.file_path))
