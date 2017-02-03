@@ -212,7 +212,7 @@ class CheckVersion(object):
 
             check_url = 'http://cdn.rawgit.com/{org}/{repo}/{commit}/medusa/databases/main_db.py'.format(
                 org=app.GIT_ORG, repo=app.GIT_REPO, commit=cur_hash)
-            response = helpers.get_url(check_url, session=self.session, returns='response')
+            response = self.session(check_url)
 
             # Get remote DB version
             match_max_db = re.search(r'MAX_DB_VERSION\s*=\s*(?P<version>\d{2,3})', response.text)
@@ -305,7 +305,7 @@ class CheckVersion(object):
         # Grab a copy of the news
         logger.log(u'check_for_new_news: Checking GitHub for latest news.', logger.DEBUG)
         try:
-            news = helpers.get_url(app.NEWS_URL, session=self.session, returns='text')
+            news = self.session.get(app.NEWS_URL).text
         except Exception:
             logger.log(u'check_for_new_news: Could not load news from repo.', logger.WARNING)
             news = ''

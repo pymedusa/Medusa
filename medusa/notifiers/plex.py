@@ -201,7 +201,8 @@ class Notifier(object):
 
             url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
             try:
-                get_url(url, headers=self.headers, session=self.session, returns='text')
+                # TODO: Check if this needs exception handling
+                self.session.get(url, headers=self.headers).text
             except Exception as error:
                 logger.log(u'PLEX: Error updating library section for Plex Media Server: {0}'.format
                            (ex(error)), logger.WARNING)
@@ -231,11 +232,9 @@ class Notifier(object):
         }
 
         try:
-            response = get_url('https://plex.tv/users/sign_in.json',
-                               post_data=params,
-                               headers=self.headers,
-                               session=self.session,
-                               returns='json')
+            response = self.session.post('https://plex.tv/users/sign_in.json',
+                                         data=params,
+                                         headers=self.headers).json()
 
             self.headers['X-Plex-Token'] = response['user']['authentication_token']
 

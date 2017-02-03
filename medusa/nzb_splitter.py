@@ -33,6 +33,9 @@ except ImportError:
     import xml.etree.ElementTree as ETree
 
 
+session = Session()
+
+
 def get_season_nzbs(name, url_data, season):
     """
     Split a season NZB into episodes
@@ -149,7 +152,8 @@ def split_result(obj):
     :param obj: to search for results
     :return: a list of episode objects or an empty list
     """
-    url_data = helpers.get_url(obj.url, session=Session(), returns='content')
+    # TODO: Check if this needs exception handling.
+    url_data = session.get(obj.url).content
     if url_data is None:
         logger.log(u"Unable to load url " + obj.url + ", can't download season NZB", logger.ERROR)
         return []

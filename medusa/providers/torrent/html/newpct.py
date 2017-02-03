@@ -96,7 +96,7 @@ class NewpctProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                 search_params['q'] = search_string
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -222,7 +222,7 @@ class NewpctProvider(TorrentProvider):
         for url in urls:
             # Search results don't return torrent files directly,
             # it returns show sheets so we must parse showSheet to access torrent.
-            response = self.get_url(url, returns='response')
+            response = self.session.get(url)
             url_torrent = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', response.text, re.DOTALL).group()
 
             if url_torrent.startswith('http'):

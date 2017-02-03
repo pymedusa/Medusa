@@ -64,11 +64,13 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
     if nzb.resultType == 'nzb':
         params['mode'] = 'addurl'
         params['name'] = nzb.url
-        jdata = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
+        # TODO: Check if this needs exception handling
+        jdata = session.get(url, params=params, verify=False).json()
     elif nzb.resultType == 'nzbdata':
         params['mode'] = 'addfile'
         multiPartParams = {'nzbfile': (nzb.name + '.nzb', nzb.extraInfo[0])}
-        jdata = helpers.get_url(url, params=params, file=multiPartParams, session=session, returns='json', verify=False)
+        # TODO: Check if this needs exception handling
+        jdata = session.post(url, params=params, files=multiPartParams, verify=False).json()
 
     if not jdata:
         logger.log('Error connecting to sab, no data returned')
@@ -106,7 +108,7 @@ def getSabAccesMethod(host=None):
     """
     params = {'mode': 'auth', 'output': 'json'}
     url = urljoin(host, 'api')
-    data = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
+    data = session.get(url, params=params, verify=False).json()
     if not data:
         return False, data
 
@@ -135,7 +137,8 @@ def testAuthentication(host=None, username=None, password=None, apikey=None):
 
     url = urljoin(host, 'api')
 
-    data = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
+    # TODO: Check if this needs exception handling
+    data = session.get(url, params=params, verify=False).json()
     if not data:
         return False, data
 

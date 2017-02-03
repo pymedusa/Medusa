@@ -257,8 +257,7 @@ def _get_custom_exceptions():
                 location = indexerApi(indexer).config['scene_loc']
                 logger.log('Checking for scene exception updates from {0}'.format(location))
 
-                response = helpers.get_url(location, session=indexerApi(indexer).session,
-                                           timeout=60, returns='response')
+                response = indexerApi(indexer).session.get(location, timeout=60)
                 try:
                     jdata = response.json()
                 except (ValueError, AttributeError) as error:
@@ -304,7 +303,7 @@ def _get_xem_exceptions():
             xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'.format(
                 indexerApi(indexer).config['xem_origin'])
 
-            response = helpers.get_url(xem_url, session=xem_session, timeout=60, returns='response')
+            response = xem_session.get(xem_url, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

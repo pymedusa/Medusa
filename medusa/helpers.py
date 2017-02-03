@@ -1448,7 +1448,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     tvdb_id = ''
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
-        data = get_url(url, session=session, returns='content')
+        data = session.get(url).content
         if data is None:
             return tvdb_id
 
@@ -1462,7 +1462,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'ZAP2IT':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
-        data = get_url(url, session=session, returns='content')
+        data = session.get(url).content
         if data is None:
             return tvdb_id
 
@@ -1475,7 +1475,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'TVMAZE':
         url = "http://api.tvmaze.com/shows/%s" % indexer_id
-        data = get_url(url, session=session, returns='json')
+        data = session.get(url).json()
         if data is None:
             return tvdb_id
         tvdb_id = data['externals']['thetvdb']
@@ -1484,7 +1484,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     # If indexer is IMDB and we've still not returned a tvdb_id, let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
         url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
-        data = get_url(url, session=session, returns='json')
+        data = session.get(url).json()
         if not data:
             return tvdb_id
         tvdb_id = data['externals'].get('thetvdb', '')

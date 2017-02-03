@@ -31,8 +31,8 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        response = helpers.get_url(self.url, session=self.session, params=self.params,
-                                   headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
+        response = self.session.get(self.url, params=self.params,
+                                    headers={'Referer': 'http://akas.imdb.com/'})
         if not response or not response.text:
             return None
 
