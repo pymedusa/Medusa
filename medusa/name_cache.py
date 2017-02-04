@@ -22,7 +22,11 @@ import threading
 from six import iteritems
 from . import app, db, logger
 from .helpers import full_sanitize_scene_name
-from .scene_exceptions import (get_scene_exceptions, get_scene_seasons, refresh_exceptions_cache, retrieve_exceptions)
+from .scene_exceptions import (
+    refresh_exceptions_cache,
+    retrieve_exceptions,
+    exceptions_cache,
+)
 
 name_cache = {}
 nameCacheLock = threading.Lock()
@@ -60,11 +64,19 @@ def clear_cache(indexerid=0):
     """
     Deletes all "unknown" entries from the cache (names with indexer_id of 0).
     """
+    indexer_ids = (0, indexerid)
     cache_db_con = db.DBConnection('cache.db')
-    cache_db_con.action("DELETE FROM scene_names WHERE indexer_id = ? OR indexer_id = ?", (indexerid, 0))
-
-    toRemove = [key for key, value in iteritems(name_cache) if value == 0 or value == indexerid]
-    for key in toRemove:
+    cache_db_con.action(
+        "DELETE FROM scene_names "
+        "WHERE indexer_id IN ?",
+        [indexer_ids]
+    )
+    to_remove = (
+        key
+        for key, value in iteritems(name_cache)
+        if value in indexer_ids
+    )
+    for key in to_remove:
         del name_cache[key]
 
 
@@ -84,18 +96,18 @@ def build_name_cache(show=None, force=False):
     """
     def _cache_name(show):
         """Builds the name cache for a single show."""
-        clear_cache(show.indexerid)
-        for season in get_scene_seasons(show.indexerid):
-            for name in set(get_scene_exceptions(show.indexerid, show.indexer, season=season) + [show.name]):
-                name = full_sanitize_scene_name(name)
-                if name in name_cache:
-                    continue
-                name_cache[name] = int(show.indexerid)
-        logger.log(u'Internal name cache for {show.name} set to: [{names}]'.format(
-            show=show,
-            names=u', '.join([key for key, value
-                              in iteritems(name_cache)
-                              if value == show.indexerid])
+        indexer_id = show.indexerid
+        clear_cache(indexer_id)
+        scene_exceptions = exceptions_cache[indexer_id]
+        names = {
+            full_sanitize_scene_name(name): int(indexer_id)
+            for season_exceptions in scene_exceptions.values()
+            for name in season_exceptions
+        }
+        name_cache.update()
+        logger.log(u'Internal name cache for {show} set to: [{names}]'.format(
+            show=show.name,
+            names=names.keys()
         ), logger.DEBUG)
 
     with nameCacheLock:
@@ -105,9 +117,9 @@ def build_name_cache(show=None, force=False):
     refresh_exceptions_cache()
 
     if not show:
-        # logger.log(u"Building internal name cache for all shows", logger.INFO)
+        logger.log(u"Building internal name cache for all shows", logger.INFO)
         for show in app.showList:
             _cache_name(show)
     else:
-        # logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
+        logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
         _cache_name(show)
