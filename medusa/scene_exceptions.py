@@ -361,9 +361,10 @@ def _get_xem_exceptions():
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed for {indexer}.'
-                    ' Unable to get URL: {xem_url}'.format(
+                    ' Unable to get URL: {xem_url} Error: {error}'.format(
                         indexer=indexer.name,
                         xem_url=url,
+                        error=error,
                     )
                 )
                 continue
