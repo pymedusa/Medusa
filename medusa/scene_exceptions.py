@@ -115,7 +115,7 @@ def get_scene_exceptions(indexer_id, indexer, season=-1):
     if season != -1 and not exceptions_list:
         exceptions_list += get_scene_exceptions(indexer_id, indexer)
 
-    return list(set(exceptions_list))
+    return sorted(set(exceptions_list), key=len)
 
 
 def get_all_scene_exceptions(indexer_id):
