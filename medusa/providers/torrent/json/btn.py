@@ -205,7 +205,8 @@ class BTNProvider(TorrentProvider):
                 ep_obj.show.indexerid,
                 ep_obj.show.indexer
             )
-            for name in name_exceptions | {ep_obj.show.name}:
+            name_exceptions.add(ep_obj.show.name)
+            for name in name_exceptions:
                 # Search by name if we don't have tvdb id
                 current_params['series'] = name
                 search_params.append(current_params)
@@ -240,7 +241,8 @@ class BTNProvider(TorrentProvider):
                 ep_obj.show.indexerid,
                 ep_obj.show.indexer
             )
-            for cur_exception in name_exceptions | {ep_obj.show.name}:
+            name_exceptions.add(ep_obj.show.name)
+            for cur_exception in name_exceptions:
                 # Search by name if we don't have tvdb id
                 search_params['series'] = cur_exception
                 to_return.append(search_params)

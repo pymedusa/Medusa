@@ -105,10 +105,9 @@ def allPossibleShowNames(show, season=-1):
     Returns: all possible show names
     """
 
-    show_names = {show.name}
-    show_names.update(
-        get_scene_exceptions(show.indexerid, show.indexer, season)
-    )
+    show_names = get_scene_exceptions(show.indexerid, show.indexer, season)
+    show_names.add(show.name)
+
     new_show_names = set()
 
     if not show.is_anime:
