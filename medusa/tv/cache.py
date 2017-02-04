@@ -52,29 +52,33 @@ class CacheDBConnection(db.DBConnection):
         # Create the table if it's not already there
         try:
             if not self.hasTable(provider_id):
-                logger.log('Creating cache table for provider {0}'.format(provider_id), logger.DEBUG)
+                logger.log(
+                    'Creating cache table for provider {0}'.format(
+                        provider_id
+                    ),
+                    logger.DEBUG
+                )
                 self.action(
-                    b'CREATE TABLE [{provider_id}]'
-                    b' (name TEXT,'
-                    b'  season NUMERIC,'
-                    b'  episodes TEXT,'
-                    b'  indexerid NUMERIC,'
-                    b'  url TEXT,'
-                    b'  time NUMERIC,'
-                    b'  quality NUMERIC,'
-                    b'  release_group TEXT'
-                    b')'.format(provider_id=provider_id))
+                    b'CREATE TABLE [{name}]'
+                    b'   (name TEXT,'
+                    b'    season NUMERIC,'
+                    b'    episodes TEXT,'
+                    b'    indexerid NUMERIC,'
+                    b'    url TEXT,'
+                    b'    time NUMERIC,'
+                    b'    quality NUMERIC,'
+                    b'    release_group TEXT)'.format(name=provider_id))
             else:
                 sql_results = self.select(
                     b'SELECT url, COUNT(url) AS count '
-                    b'FROM [{provider_id}] '
+                    b'FROM [{name}] '
                     b'GROUP BY url '
-                    b'HAVING count > 1'.format(provider_id=provider_id)
+                    b'HAVING count > 1'.format(name=provider_id)
                 )
                 for duplicate in sql_results:
                     self.action(
-                        b'DELETE FROM [{provider_id}] '
-                        b'WHERE url = ?'.format(provider_id=provider_id),
+                        b'DELETE FROM [{name}] '
+                        b'WHERE url = ?'.format(name=provider_id),
                         [duplicate[b'url']]
                     )
 
@@ -119,19 +123,25 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasColumn(provider_id, 'proper_tags'):
                 self.addColumn(provider_id, 'proper_tags', 'TEXT', '')
 
-        except Exception as e:
-            if str(e) != 'table [{provider_id}] already exists'.format(provider_id=provider_id):
+        except Exception as error:
+            msg = 'table [{name}] already exists'.format(name=provider_id)
+            if str(error) != msg:
                 raise
 
         # Create the table if it's not already there
         try:
-            if not self.hasTable('lastUpdate'):
-                self.action(b'CREATE TABLE lastUpdate (provider TEXT, time NUMERIC)')
-        except Exception as e:
+            if not self.hasTable('last_update'):
+                self.action(
+                    b'CREATE TABLE last_update'
+                    b'   (provider TEXT, '
+                    b'    time NUMERIC)'
+                )
+        except Exception as error:
             logger.log('Error while searching {provider_id}, skipping: {e!r}'.
-                       format(provider_id=provider_id, e=e), logger.DEBUG)
+                       format(provider_id=provider_id, e=error), logger.DEBUG)
             logger.log(traceback.format_exc(), logger.DEBUG)
-            if str(e) != 'table lastUpdate already exists':
+            msg = 'table [{name}] already exists'.format(name='last_update')
+            if str(error) != msg:
                 raise
 
 
@@ -154,23 +164,27 @@ class Cache(object):
         return self.provider_db
 
     def _clear_cache(self):
-        """Perform reqular cache cleaning as required."""
+        """Perform regular cache cleaning as required."""
         # if cache trimming is enabled
         if app.CACHE_TRIMMING:
             # trim items older than MAX_CACHE_AGE days
-            self.trim_cache(days=app.MAX_CACHE_AGE)
+            self.trim(days=app.MAX_CACHE_AGE)
 
-    def trim_cache(self, days=None):
+    def trim(self, days=None):
         """
         Remove old items from cache.
 
         :param days: Number of days to retain
         """
         if days:
-            now = int(time.time())  # current timestamp
+            now = int(time())  # current timestamp
             retention_period = now - (days * 86400)
-            logger.log('Removing cache entries older than {x} days from {provider}'.format
-                       (x=days, provider=self.provider_id))
+            logger.log(
+                'Removing cache entries older than {x} days'
+                ' from {provider}'.format(
+                    x=days, provider=self.provider_id
+                )
+            )
             cache_db_con = self._get_db()
             cache_db_con.action(
                 b'DELETE FROM [{provider}] '
@@ -196,10 +210,11 @@ class Cache(object):
 
     def _get_rss_data(self):
         """Return rss data."""
-        return {'entries': self.provider.search(self.search_params)} if self.search_params else None
+        if self.search_params:
+            return {'entries': self.provider.search(self.search_params)}
 
     def _check_auth(self, data):
-        """Check if we are autenticated."""
+        """Check if we are authenticated."""
         return True
 
     def _check_item_auth(self, title, url):
@@ -223,33 +238,45 @@ class Cache(object):
 
                 # get last 5 rss cache results
                 recent_results = self.provider.recent_results
-                found_recent_results = 0  # A counter that keeps track of the number of items that have been found in cache
 
-                cl = []
+                # counter for number of items found in cache
+                found_recent_results = 0
+
+                results = []
                 index = 0
                 for index, item in enumerate(data['entries'] or []):
-                    if item['link'] in {cache_item['link'] for cache_item in recent_results}:
+                    if item['link'] in {cache_item['link']
+                                        for cache_item in recent_results}:
                         found_recent_results += 1
 
                     if found_recent_results >= self.provider.stop_at:
-                        logger.log('Hit the old cached items, not parsing any more for: {0}'.format
-                                   (self.provider_id), logger.DEBUG)
+                        logger.log(
+                            'Hit old cached items, not parsing any more'
+                            ' for: {0}'.format(self.provider_id),
+                            logger.DEBUG
+                        )
                         break
                     try:
-                        ci = self._parse_item(item)
-                        if ci is not None:
-                            cl.append(ci)
+                        result = self._parse_item(item)
+                        if result is not None:
+                            results.append(result)
                     except UnicodeDecodeError as e:
-                        logger.log('Unicode decoding error, missed parsing item from provider {0}: {1!r}'.format
-                                   (self.provider.name, e), logger.WARNING)
+                        logger.log(
+                            'Unicode decoding error, missed parsing item'
+                            ' from provider {0}: {1!r}'.format(
+                                self.provider.name, e
+                            ),
+                            logger.WARNING
+                        )
 
                 cache_db_con = self._get_db()
-                if cl:
-                    cache_db_con.mass_action(cl)
+                if results:
+                    cache_db_con.mass_action(results)
 
-                # finished processing, let's save the newest x (index) items and store these in cache with a max of 5
-                # (overwritable per provider, throug hthe max_recent_items attribute.
-                self.provider.recent_results = data['entries'][0:min(index, self.provider.max_recent_items)]
+                # finished processing, let's save the newest x (index) items
+                # and store up to max_recent_items in cache
+                limit = min(index, self.provider.max_recent_items)
+                self.provider.recent_results = data['entries'][0:limit]
 
         except AuthException as e:
             logger.log('Authentication error: {0!r}'.format(e), logger.ERROR)
@@ -260,29 +287,45 @@ class Cache(object):
         self._clear_cache()
 
         try:
-            cl = []
+            results = []
             for item in manual_data:
-                logger.log('Adding to cache item found in manual search: {0}'.format(item.name), logger.DEBUG)
-                ci = self.add_cache_entry(item.name, item.url, item.seeders, item.leechers, item.size, item.pubdate)
-                if ci is not None:
-                    cl.append(ci)
+                logger.log(
+                    'Adding to cache item found in'
+                    ' manual search: {0}'.format(item.name),
+                    logger.DEBUG
+                )
+                result = self.add_cache_entry(
+                    item.name, item.url, item.seeders,
+                    item.leechers, item.size, item.pubdate
+                )
+                if result is not None:
+                    results.append(result)
         except Exception as e:
-            logger.log('Error while adding to cache item found in manual seach for provider {0},'
-                       ' skipping: {1!r}'.format(self.provider.name, e), logger.WARNING)
+            logger.log(
+                'Error while adding to cache item found in manual search'
+                ' for provider {0}, skipping: {1!r}'.format(
+                    self.provider.name, e
+                ),
+                logger.WARNING
+            )
 
         results = []
         cache_db_con = self._get_db()
-        if cl:
-            logger.log('Mass updating cache table with manual results for provider: {0}'.
-                       format(self.provider.name), logger.DEBUG)
-            results = cache_db_con.mass_action(cl)
+        if results:
+            logger.log(
+                'Mass updating cache table with manual results'
+                ' for provider: {0}'.format(self.provider.name),
+                logger.DEBUG
+            )
+            results = cache_db_con.mass_action(results)
 
         return any(results)
 
     def get_rss_feed(self, url, params=None):
         """Get rss feed entries."""
         if self.provider.login():
-            return getFeed(url, params=params, request_hook=self.provider.get_url)
+            return getFeed(url, params=params,
+                           request_hook=self.provider.get_url)
         return {'entries': []}
 
     @staticmethod
@@ -308,48 +351,60 @@ class Cache(object):
             title = self._translate_title(title)
             url = self._translate_link_url(url)
 
-            # logger.log('Attempting to add item to cache: ' + title, logger.DEBUG)
-            return self.add_cache_entry(title, url, seeders, leechers, size, pubdate)
+            return self.add_cache_entry(title, url, seeders,
+                                        leechers, size, pubdate)
 
         else:
             logger.log(
-                'The data returned from the {0} feed is incomplete, this result is unusable'.format(self.provider.name),
-                logger.DEBUG)
+                'The data returned from the {0} feed is incomplete,'
+                ' this result is unusable'.format(self.provider.name),
+                logger.DEBUG
+            )
 
         return False
 
     def _get_last_update(self):
         """Get last provider update."""
         cache_db_con = self._get_db()
-        sql_results = cache_db_con.select(b'SELECT time FROM lastUpdate WHERE provider = ?', [self.provider_id])
+        sql_results = cache_db_con.select(
+            b'SELECT time '
+            b'FROM lastUpdate '
+            b'WHERE provider = ?',
+            [self.provider_id]
+        )
 
         if sql_results:
             last_time = int(sql_results[0][b'time'])
-            if last_time > int(time.mktime(datetime.datetime.today().timetuple())):
+            if last_time > int(time.mktime(datetime.today().timetuple())):
                 last_time = 0
         else:
             last_time = 0
 
-        return datetime.datetime.fromtimestamp(last_time)
+        return datetime.fromtimestamp(last_time)
 
     def _get_last_search(self):
         """Get provider last search."""
         cache_db_con = self._get_db()
-        sql_results = cache_db_con.select(b'SELECT time FROM lastSearch WHERE provider = ?', [self.provider_id])
+        sql_results = cache_db_con.select(
+            b'SELECT time '
+            b'FROM lastSearch '
+            b'WHERE provider = ?',
+            [self.provider_id]
+        )
 
         if sql_results:
             last_time = int(sql_results[0][b'time'])
-            if last_time > int(time.mktime(datetime.datetime.today().timetuple())):
+            if last_time > int(time.mktime(datetime.today().timetuple())):
                 last_time = 0
         else:
             last_time = 0
 
-        return datetime.datetime.fromtimestamp(last_time)
+        return datetime.fromtimestamp(last_time)
 
     def set_last_update(self, to_date=None):
         """Set provider last update."""
         if not to_date:
-            to_date = datetime.datetime.today()
+            to_date = datetime.today()
 
         cache_db_con = self._get_db()
         cache_db_con.upsert(
@@ -361,7 +416,7 @@ class Cache(object):
     def set_last_search(self, to_date=None):
         """Ser provider last search."""
         if not to_date:
-            to_date = datetime.datetime.today()
+            to_date = datetime.today()
 
         cache_db_con = self._get_db()
         cache_db_con.upsert(
@@ -376,20 +431,19 @@ class Cache(object):
     def should_update(self):
         """Check if we should update provider cache."""
         # if we've updated recently then skip the update
-        if datetime.datetime.today() - self.lastUpdate < datetime.timedelta(minutes=self.minTime):
-            logger.log('Last update was too soon, using old cache: {0}. '
-                       'Updated less then {1} minutes ago'.format(self.lastUpdate, self.minTime), logger.DEBUG)
+        if datetime.today() - self.lastUpdate < timedelta(minutes=self.minTime):
+            logger.log(
+                'Last update was too soon, using old cache: {0}.'
+                ' Updated less then {1} minutes ago'.format(
+                    self.lastUpdate,
+                    self.minTime,
+                ),
+                logger.DEBUG
+            )
             return False
         logger.log("Updating providers cache", logger.DEBUG)
 
         return True
-
-    def should_clear_cache(self):
-        """Check if we should clear cache."""
-        # # if daily search hasn't used our previous results yet then don't clear the cache
-        # if self.lastUpdate > self.lastSearch:
-        #     return False
-        return False
 
     def add_cache_entry(self, name, url, seeders, leechers, size, pubdate):
         """Add item into cache database."""
@@ -402,16 +456,21 @@ class Cache(object):
         if not parse_result or not parse_result.series_name:
             return None
 
-        # if we made it this far then lets add the parsed result to cache for usager later on
-        season = parse_result.season_number if parse_result.season_number is not None else 1
+        # add the parsed result to cache for usage later on
+        season = 1
+        if parse_result.season_number is not None:
+            season = parse_result.season_number
+
         episodes = parse_result.episode_numbers
 
         if season is not None and episodes is not None:
-            # store episodes as a seperated string
-            episode_text = '|{0}|'.format('|'.join({str(episode) for episode in episodes if episode}))
+            # store episodes as a separated string
+            episode_text = '|{0}|'.format(
+                '|'.join({str(episode) for episode in episodes if episode})
+            )
 
             # get the current timestamp
-            cur_timestamp = int(time.mktime(datetime.datetime.today().timetuple()))
+            cur_timestamp = int(time.mktime(datetime.today().timetuple()))
 
             # get quality of release
             quality = parse_result.quality
@@ -427,65 +486,83 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            logger.log('Added RSS item: [{0}] to cache: [{1}]'.format(name, self.provider_id), logger.DEBUG)
+            logger.log(
+                'Added RSS item: [{0}] to cache: [{1}]'.format(
+                    name, self.provider_id
+                ),
+                logger.DEBUG
+            )
 
             return [
-                b'INSERT OR REPLACE INTO [{provider_id}] '
-                b'(name, season, episodes, indexerid, url, time, quality, release_group, '
-                b'version, seeders, leechers, size, pubdate, proper_tags) '
-                b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(provider_id=self.provider_id),
-                [name, season, episode_text, parse_result.show.indexerid, url, cur_timestamp, quality,
-                 release_group, version, seeders, leechers, size, pubdate, proper_tags]]
+                b'INSERT OR REPLACE INTO [{name}] '
+                b'   (name, season, episodes, indexerid, url, '
+                b'    time, quality, release_group, version, '
+                b'    seeders, leechers, size, pubdate, proper_tags) '
+                b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                    name=self.provider_id
+                ),
+                [name, season, episode_text, parse_result.show.indexerid, url,
+                 cur_timestamp, quality, release_group, version,
+                 seeders, leechers, size, pubdate, proper_tags]
+            ]
 
-    def search_cache(self, episode, forced_search=False, down_cur_quality=False):
+    def search_cache(self, episode, forced_search=False,
+                     down_cur_quality=False):
         """Search cache for needed episodes."""
-        needed_eps = self.find_needed_episodes(episode, forced_search, down_cur_quality)
+        needed_eps = self.find_needed_episodes(episode, forced_search,
+                                               down_cur_quality)
         return needed_eps[episode] if episode in needed_eps else []
 
-    def list_propers(self, date=None):
-        """Method is currently not used anywhere.
-
-        It can be usefull with some small modifications. First we'll need to flag the propers in db.
-        Then this method can be used to retrieve those, and let the properFinder use results from cache,
-        before moving on with hitting the providers.
-        """
-        cache_db_con = self._get_db()
-        sql = b"SELECT * FROM [{provider_id}] WHERE proper_tags != ''".format(provider_id=self.provider_id)
-
-        if date:
-            sql += b' AND time >= {0}'.format(int(time.mktime(date.timetuple())))
-
-        propers_results = cache_db_con.select(sql)
-        return [x for x in propers_results if x[b'indexerid']]
-
-    def find_needed_episodes(self, episode, forced_search=False, down_cur_quality=False):
+    def find_needed_episodes(self, episode, forced_search=False,
+                             down_cur_quality=False):
         """Find needed episodes."""
         needed_eps = {}
-        cl = []
+        results = []
 
         cache_db_con = self._get_db()
         if not episode:
-            sql_results = cache_db_con.select(b'SELECT * FROM [{provider_id}]'.format(provider_id=self.provider_id))
+            sql_results = cache_db_con.select(
+                b'SELECT * FROM [{name}]'.format(name=self.provider_id))
         elif not isinstance(episode, list):
             sql_results = cache_db_con.select(
-                b'SELECT * FROM [{provider_id}] WHERE indexerid = ? AND season = ? AND episodes LIKE ?'.format(provider_id=self.provider_id),
-                [episode.show.indexerid, episode.season, b'%|{0}|%'.format(episode.episode)])
+                b'SELECT * FROM [{name}] '
+                b'WHERE indexerid = ? AND'
+                b'     season = ? AND'
+                b'     episodes LIKE ?'.format(name=self.provider_id),
+                [episode.show.indexerid, episode.season,
+                 b'%|{0}|%'.format(episode.episode)]
+            )
         else:
             for ep_obj in episode:
-                cl.append([
-                    b'SELECT * FROM [{0}] WHERE indexerid = ? AND season = ? AND episodes LIKE ? AND quality IN ({1})'.
-                    format(self.provider_id, ','.join([str(x) for x in ep_obj.wanted_quality])),
-                    [ep_obj.show.indexerid, ep_obj.season, b'%|{0}|%'.format(ep_obj.episode)]])
+                results.append([
+                    b'SELECT * FROM [{name}] '
+                    b'WHERE indexerid = ? AND'
+                    b'    season = ? AND'
+                    b'    episodes LIKE ? AND '
+                    b'    quality IN ({qualities})'.format(
+                        name=self.provider_id,
+                        qualities=','.join((str(x)
+                                            for x in ep_obj.wanted_quality))
+                    ),
+                    [ep_obj.show.indexerid, ep_obj.season,
+                     b'%|{0}|%'.format(ep_obj.episode)]]
+                )
 
-            if cl:
+            if results:
                 # Only execute the query if we have results
-                sql_results = cache_db_con.mass_action(cl, fetchall=True)
+                sql_results = cache_db_con.mass_action(results, fetchall=True)
                 sql_results = list(itertools.chain(*sql_results))
             else:
                 sql_results = []
-                logger.log("No cached results in {provider} for show '{show_name}' episode '{ep}'".format
-                           (provider=self.provider_id, show_name=ep_obj.show.name,
-                            ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
+                logger.log(
+                    "No cached results in {provider} for show '{show_name}'"
+                    " episode '{ep}'".format(
+                        provider=self.provider_id,
+                        show_name=ep_obj.show.name,
+                        ep=episode_num(ep_obj.season, ep_obj.episode)
+                    ),
+                    logger.DEBUG
+                )
 
         # for each cache entry
         for cur_result in sql_results:
@@ -493,14 +570,17 @@ class Cache(object):
             if not show_name_helpers.filterBadReleases(cur_result[b'name']):
                 continue
 
-            # get the show object, or if it's not one of our shows then ignore it
+            # get the show, or ignore if it's not one of our shows
             show_obj = Show.find(app.showList, int(cur_result[b'indexerid']))
             if not show_obj:
                 continue
 
             # skip if provider is anime only and show is not anime
             if self.provider.anime_only and not show_obj.is_anime:
-                logger.log('{0} is not an anime, skiping'.format(show_obj.name), logger.DEBUG)
+                logger.log(
+                    '{0} is not an anime, skiping'.format(show_obj.name),
+                    logger.DEBUG
+                )
                 continue
 
             # get season and ep data (ignoring multi-eps for now)
@@ -519,8 +599,12 @@ class Cache(object):
             cur_version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not show_obj.want_episode(cur_season, cur_ep, cur_quality, forced_search, down_cur_quality):
-                logger.log('Ignoring {0}'.format(cur_result[b'name']), logger.DEBUG)
+            if not show_obj.want_episode(cur_season, cur_ep, cur_quality,
+                                         forced_search, down_cur_quality):
+                logger.log(
+                    'Ignoring {0}'.format(cur_result[b'name']),
+                    logger.DEBUG
+                )
                 continue
 
             ep_obj = show_obj.get_episode(cur_season, cur_ep)
