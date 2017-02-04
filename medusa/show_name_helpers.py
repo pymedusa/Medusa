@@ -109,6 +109,7 @@ def allPossibleShowNames(show, season=-1):
     show_names.update(
         get_scene_exceptions(show.indexerid, show.indexer, season)
     )
+    new_show_names = set()
 
     if not show.is_anime:
         country_list = {}
@@ -129,11 +130,11 @@ def allPossibleShowNames(show, season=-1):
                 pattern_2 = ' ({0})'.format(country)
                 replacement = ' ({0})'.format(country_list[country])
                 if name.endswith(pattern_1):
-                    show_names.add(name.replace(pattern_1, replacement))
+                    new_show_names.add(name.replace(pattern_1, replacement))
                 elif name.endswith(pattern_2):
-                    show_names.add(name.replace(pattern_2, replacement))
+                    new_show_names.add(name.replace(pattern_2, replacement))
 
-    return show_names
+    return show_names.union(new_show_names)
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):
