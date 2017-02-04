@@ -76,10 +76,11 @@ def saveNameCacheToDb():
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name) VALUES (?, ?)", [indexer_id, name])
 
 
-def build_name_cache(show=None):
+def build_name_cache(show=None, force=False):
     """Build internal name cache
 
     :param show: Specify show to build name cache for, if None, just do all shows
+    :param force: Force the build name cache. Do not depend on the scene_exception_refresh table.
     """
     def _cache_name(show):
         """Builds the name cache for a single show."""
@@ -98,7 +99,7 @@ def build_name_cache(show=None):
         ), logger.DEBUG)
 
     with nameCacheLock:
-        retrieve_exceptions()
+        retrieve_exceptions(force)
 
     # Create cache from db for the scene_exceptions.
     refresh_exceptions_cache()

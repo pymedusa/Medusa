@@ -209,7 +209,7 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
             )
 
 
-def retrieve_exceptions():
+def retrieve_exceptions(force=False):
     """
     Look up the exceptions from all sources.
 
@@ -217,13 +217,13 @@ def retrieve_exceptions():
     scene_exceptions table in cache.db. Also clears the scene name cache.
     """
     # Custom scene exceptions
-    custom_exceptions = _get_custom_exceptions()
+    custom_exceptions = _get_custom_exceptions(force)
 
     # XEM scene exceptions
-    xem_exceptions = _get_xem_exceptions()
+    xem_exceptions = _get_xem_exceptions(force)
 
     # AniDB scene exceptions
-    anidb_exceptions = _get_anidb_exceptions()
+    anidb_exceptions = _get_anidb_exceptions(force)
 
     # Combined scene exceptions from all sources
     combined_exceptions = combine_exceptions(custom_exceptions, xem_exceptions, anidb_exceptions)
@@ -264,10 +264,10 @@ def combine_exceptions(*scene_exceptions):
     return combined_ex
 
 
-def _get_custom_exceptions():
+def _get_custom_exceptions(force=False):
     custom_exceptions = {}
 
-    if should_refresh('custom_exceptions'):
+    if should_refresh('custom_exceptions') or force:
         for indexer in indexerApi().indexers:
             try:
                 location = indexerApi(indexer).config['scene_loc']
@@ -301,10 +301,10 @@ def _get_custom_exceptions():
     return custom_exceptions
 
 
-def _get_xem_exceptions():
+def _get_xem_exceptions(force=False):
     xem_exceptions = {}
 
-    if should_refresh('xem'):
+    if should_refresh('xem') or force:
         for indexer in indexerApi().indexers:
 
             # Not query XEM for unsupported indexers
@@ -346,10 +346,10 @@ def _get_xem_exceptions():
     return xem_exceptions
 
 
-def _get_anidb_exceptions():
+def _get_anidb_exceptions(force=False):
     anidb_exceptions = {}
 
-    if should_refresh('anidb'):
+    if should_refresh('anidb') or force:
         logger.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:

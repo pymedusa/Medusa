@@ -518,7 +518,7 @@ class QueueItemAdd(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.DEBUG)
 
         # update internal name cache
-        name_cache.build_name_cache(self.show)
+        name_cache.build_name_cache(self.show, force=True)
 
         try:
             self.show.load_episodes_from_dir()
