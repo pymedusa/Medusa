@@ -155,8 +155,8 @@ def get_scene_exceptions_by_name(show_name):
     scene_exceptions = cache_db_con.select(
         b'SELECT indexer_id, season '
         b'FROM scene_exceptions '
-        b'WHERE LOWER(show_name) = ? ORDER BY season ASC',
-        [show_name.lower()])
+        b'WHERE show_name = ? ORDER BY season ASC',
+        [show_name])
     if scene_exceptions:
         return [(int(exception[b'indexer_id']), int(exception[b'season']))
                 for exception in scene_exceptions]
