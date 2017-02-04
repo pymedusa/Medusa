@@ -42,12 +42,10 @@ selected = None
     <div id="quality_explanation">
         <h5><b>Quality setting explanation:</b></h5>
         % if preferred_qualities:
-            <h5>Downloads <b>any</b> of these qualities:
-                ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}.</h5>
-            <h5>and stop search for other qualities only when downloads <b>any</b> from Preferred: ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
+            <h5>This will download any of these ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</h5>
+            <h5>But it will stop searching when one of these is downloaded ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
         % else:
-            <h5>Downloads <b>any</b> of these qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</h5>
-            <h5>and stop search for other qualities</h5>
+            <h5>This will download <b>any</b> of these and then stop searching ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</h5>
         % endif
     </div>
 </div>
