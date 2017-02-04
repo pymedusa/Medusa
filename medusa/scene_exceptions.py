@@ -115,7 +115,7 @@ def get_scene_exceptions(indexer_id, indexer, season=-1):
     # If there is no exception for season
     # Add generic exceptions regardless of the season
     if season != -1 and not exceptions_list:
-        exceptions_list += get_scene_exceptions(indexer_id, indexer, season=-1)
+        exceptions_list += get_scene_exceptions(indexer_id, indexer)
 
     return list({exception for exception in exceptions_list})
 
