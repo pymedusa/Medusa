@@ -96,37 +96,44 @@ def filterBadReleases(name, parse=True):
 
 def allPossibleShowNames(show, season=-1):
     """
-    Figures out every possible variation of the name for a particular show. Includes TVDB name, TVRage name,
-    country codes on the end, eg. "Show Name (AU)", and any scene exception names.
+    Figures out every possible variation of the name for a particular show.
+
+    Includes indexer name, and any scene exception names, and country code
+    at the end of the name (e.g. "Show Name (AU)".
 
     show: a TVShow object that we should get the names of
-
-    Returns: a list of all the possible show names
+    Returns: all possible show names
     """
 
-    showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
-    showNames.add(show.name)
+    show_names = {show.name}
+    show_names.update(
+        get_scene_exceptions(show.indexerid, show.indexer, season)
+    )
 
     if not show.is_anime:
-        newShowNames = set()
-        country_list = common.countryList
-        country_list.update(dict(zip(common.countryList.values(), common.countryList.keys())))
-        for curName in showNames:
-            if not curName:
+        country_list = {}
+        # add the country list
+        country_list.update(common.countryList)
+        # add the reversed mapping of the country list
+        country_list.update({v: k for k, v in common.countryList.items()})
+
+        for name in show_names:
+            if not name:
                 continue
 
             # if we have "Show Name Australia" or "Show Name (Australia)"
             # this will add "Show Name (AU)" for any countries defined in
             # common.countryList (and vice versa)
-            for curCountry in country_list:
-                if curName.endswith(' ' + curCountry):
-                    newShowNames.add(curName.replace(' ' + curCountry, ' (' + country_list[curCountry] + ')'))
-                elif curName.endswith(' (' + curCountry + ')'):
-                    newShowNames.add(curName.replace(' (' + curCountry + ')', ' (' + country_list[curCountry] + ')'))
+            for country in country_list:
+                pattern_1 = ' {0}'.format(country)
+                pattern_2 = ' ({0})'.format(country)
+                replacement = ' ({0})'.format(country_list[country])
+                if name.endswith(pattern_1):
+                    show_names.add(name.replace(pattern_1, replacement))
+                elif name.endswith(pattern_2):
+                    show_names.add(name.replace(pattern_2, replacement))
 
-        showNames += newShowNames
-
-    return showNames
+    return show_names
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):
