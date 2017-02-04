@@ -156,6 +156,14 @@ class TestTVShow(TVShow):
         'manually_searched': False,
         'expected': True
     },
+    {  # p17: ´SNATCHED BEST but this quality is no longer wanted: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
+                                                                 [Quality.HDBLURAY])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_search(p):
     """Run the test."""

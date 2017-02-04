@@ -611,7 +611,12 @@ class Quality(object):
         if manually_searched:
             return False, 'Episode was manually searched. Skipping episode'
 
-        #  Can't be SNATCHED_BEST because is quality is already final.
+        #  User has SNATCHED BEST but changed qualities removing the snatched quality
+        if cur_status == SNATCHED_BEST and cur_quality not in preferred_qualities:
+            return True, 'Status is {0} but quality is no longer wanted. ' \
+                         'Searching episode'.format(statusStrings[status])
+
+        #  Can't be SNATCHED_BEST because the quality is already final (unless user changes qualities).
         #  All other status will return false: IGNORED, SKIPPED, FAILED.
         if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER):
             return False, 'Status is not allowed: {0}. Skipping episode'.format(statusStrings[cur_status])
