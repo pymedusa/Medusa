@@ -19,10 +19,10 @@
 
 from __future__ import unicode_literals
 
-from collections import defaultdict
 import logging
 import threading
 import time
+from collections import defaultdict
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
