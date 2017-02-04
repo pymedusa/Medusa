@@ -426,7 +426,7 @@ def _get_anidb_exceptions():
                     continue
 
                 if anime and anime.name != show.name:
-                    indexer_id = text_type(show.indexerid)
+                    indexer_id = int(show.indexerid)
                     exceptions[indexer_id] = [{anime.name.decode('utf-8'): -1}]
 
         set_last_refresh('anidb')
