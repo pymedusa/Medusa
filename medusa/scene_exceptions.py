@@ -33,7 +33,7 @@ from .indexers.indexer_config import INDEXER_TVDBV2
 
 logger = logging.getLogger(__name__)
 
-exceptions_cache = defaultdict(lambda: defaultdict(list))
+exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
 xem_session = helpers.make_session()
@@ -61,7 +61,7 @@ def refresh_exceptions_cache():
 
         # exceptions_cache[indexerid][season] = ['showname 1', 'showname 2']
         if show not in exceptions_cache[indexer_id][season]:
-            exceptions_cache[indexer_id][season].append(show)
+            exceptions_cache[indexer_id][season].add(show)
 
     logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
 
@@ -110,7 +110,7 @@ def get_scene_exceptions(indexer_id, indexer, season=-1):
     if season != -1 and not exceptions_list:
         exceptions_list = get_scene_exceptions(indexer_id, indexer)
 
-    return sorted(set(exceptions_list), key=len)
+    return set(exceptions_list)
 
 
 def get_all_scene_exceptions(indexer_id):
@@ -120,7 +120,7 @@ def get_all_scene_exceptions(indexer_id):
     :param indexer_id: ID to check
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
-    return exceptions_cache.get(indexer_id, defaultdict(list))
+    return exceptions_cache.get(indexer_id, defaultdict(set))
 
 
 def get_scene_seasons(indexer_id):
@@ -194,7 +194,7 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     for exception in decoded_scene_exceptions:
         if exception not in exceptions_cache[indexer_id][season]:
             # Add to cache
-            exceptions_cache[indexer_id][season].append(exception)
+            exceptions_cache[indexer_id][season].add(exception)
 
             # Add to db
             cache_db_con.action(
