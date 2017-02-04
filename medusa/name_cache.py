@@ -118,9 +118,9 @@ def build_name_cache(show=None):
     refresh_exceptions_cache()
 
     if not show:
-        logger.log(u"Building internal name cache for all shows", logger.INFO)
+        logger.log(u'Building internal name cache for all shows', logger.INFO)
         for show in app.showList:
             _cache_name(show)
     else:
-        logger.log(u"Building internal name cache for " + show.name, logger.DEBUG)
+        logger.log(u'Building internal name cache for '.format(show.name), logger.DEBUG)
         _cache_name(show)
