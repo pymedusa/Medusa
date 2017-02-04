@@ -85,7 +85,7 @@ def build_name_cache(show=None, force=False):
     def _cache_name(show):
         """Builds the name cache for a single show."""
         clear_cache(show.indexerid)
-        for season in [-1] + get_scene_seasons(show.indexerid):
+        for season in get_scene_seasons(show.indexerid):
             for name in set(get_scene_exceptions(show.indexerid, show.indexer, season=season) + [show.name]):
                 name = full_sanitize_scene_name(name)
                 if name in name_cache:
