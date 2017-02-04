@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+from collections import defaultdict
 import logging
 import threading
 import time
@@ -30,7 +31,7 @@ from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
 
 exceptions_cache = {}
-exceptions_season_cache = {}
+exceptions_season_cache = defaultdict(list)
 
 exceptionLock = threading.Lock()
 
@@ -49,7 +50,8 @@ def refresh_exceptions_cache():
 
     cache_db_con = db.DBConnection('cache.db')
     exceptions = cache_db_con.select(
-        b'SELECT indexer, indexer_id, show_name, season FROM scene_exceptions'
+        b'SELECT indexer, indexer_id, show_name, season '
+        b'FROM scene_exceptions'
     ) or []
 
     # Start building up a new exceptions_cache.
@@ -57,22 +59,15 @@ def refresh_exceptions_cache():
         # indexer = int(exception[b'indexer'])
         indexer_id = int(exception[b'indexer_id'])
         season = int(exception[b'season'])
+        show = exception[b'show_name']
 
         # Create exceptions_cache[indexerid]
         if indexer_id not in exceptions_cache:
-            exceptions_cache[indexer_id] = {}
-
-        # Create exceptions_cache[indexerid][season]
-        if season not in exceptions_cache[indexer_id]:
-            exceptions_cache[indexer_id][season] = []
+            exceptions_cache[indexer_id] = defaultdict(list)
 
         # exceptions_cache[indexerid][season] = ['showname 1', 'showname 2']
-        if exception[b'show_name'] not in exceptions_cache[indexer_id][season]:
-            exceptions_cache[indexer_id][season].append(exception[b'show_name'])
-
-        # Do the same for the exceptions_season_cache
-        if int(indexer_id) not in exceptions_season_cache:
-            exceptions_season_cache[indexer_id] = []
+        if show not in exceptions_cache[indexer_id][season]:
+            exceptions_cache[indexer_id][season].append(show)
 
         # exception_season_cache[indexerid] = [-1, 2, 3]
         if season not in exceptions_season_cache[indexer_id]:
