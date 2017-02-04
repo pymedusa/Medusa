@@ -186,8 +186,9 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
         [indexer_id, season, indexer]
     )
 
-    # A change has been made to the scene exception list. Let's clear the cache, to make this visible
-    # TODO: make sure we add indexer, when the global exceptionsCache var has been changed.
+    # A change has been made to the scene exception list.
+    # Let's clear the cache, to make this visible
+    # TODO: make sure we add indexer when the exceptions_cache changes
     if indexer_id in exceptions_cache:
         exceptions_cache[indexer_id] = {}
 
