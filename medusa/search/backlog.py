@@ -156,10 +156,13 @@ class BacklogSearcher(object):
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            if not common.Quality.should_search(sql_result['status'], show, sql_result['manually_searched']):
+            should_search, shold_search_reason = common.Quality.should_search(sql_result['status'], show,
+                                                                              sql_result['manually_searched'])
+            if not should_search:
                 continue
-            logger.log(u"Found needed backlog episodes for: {show} {ep}".format
-                       (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"])), logger.INFO)
+            logger.log(u"Found needed backlog episodes for: {show} {ep}. Reason: {reason}".format
+                       (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"]),
+                        reason=shold_search_reason), logger.INFO)
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 
             if ep_obj.season not in wanted:

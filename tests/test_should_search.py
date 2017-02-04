@@ -166,8 +166,9 @@ def test_should_search(p):
     expected = p['expected']
 
     # When
-    replace = Quality.should_search(status, show_obj, manually_searched)
+    replace, msg = Quality.should_search(status, show_obj, manually_searched)
     actual = replace
 
     # Then
+    print msg
     assert expected == actual
