@@ -30,14 +30,13 @@ from six import iteritems, text_type
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
 
+logger = logging.getLogger(__name__)
+
 exceptions_cache = defaultdict(lambda: defaultdict(list))
 exceptions_season_cache = defaultdict(list)
-
 exceptionLock = threading.Lock()
 
 xem_session = helpers.make_session()
-
-logger = logging.getLogger(__name__)
 
 
 def refresh_exceptions_cache():
@@ -174,7 +173,6 @@ def get_scene_exception_by_name_multiple(show_name):
 
 def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
     """Update database with all show scene exceptions by indexer_id."""
-
     logger.info('Updating scene exceptions...')
 
     cache_db_con = db.DBConnection('cache.db')
