@@ -122,5 +122,5 @@ def build_name_cache(show=None):
         for show in app.showList:
             _cache_name(show)
     else:
-        logger.log(u'Building internal name cache for '.format(show.name), logger.DEBUG)
+        logger.log(u'Building internal name cache for {show}'.format(show=show.name), logger.DEBUG)
         _cache_name(show)
