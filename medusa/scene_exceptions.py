@@ -89,17 +89,17 @@ def should_refresh(ex_list):
         return True
 
 
-def set_last_refresh(ex_list):
+def set_last_refresh(source):
     """
     Update last cache update time for shows in list.
 
-    :param ex_list: exception list to set refresh time
+    :param source: scene exception source refreshed (e.g. xem)
     """
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.upsert(
         b'scene_exceptions_refresh',
         {b'last_refreshed': int(time.time())},
-        {b'list': ex_list}
+        {b'list': source}
     )
 
 
@@ -110,6 +110,8 @@ def get_scene_exceptions(indexer_id, indexer, season=-1):
     if season != -1 and not exceptions_list:
         exceptions_list = get_scene_exceptions(indexer_id, indexer)
 
+    # Return a set to avoid duplicates and it makes a copy of the list so the
+    # original doesn't get modified
     return set(exceptions_list)
 
 
@@ -144,7 +146,9 @@ def get_scene_exception_by_name_multiple(show_name):
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     exception_result = cache_db_con.select(
-        b'SELECT indexer_id, season FROM scene_exceptions WHERE LOWER(show_name) = ? ORDER BY season ASC',
+        b'SELECT indexer_id, season '
+        b'FROM scene_exceptions '
+        b'WHERE LOWER(show_name) = ? ORDER BY season ASC',
         [show_name.lower()])
     if exception_result:
         return [(int(x[b'indexer_id']), int(x[b'season'])) for x in exception_result]
