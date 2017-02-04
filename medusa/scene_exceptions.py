@@ -195,21 +195,21 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
         exception.decode('utf-8')
         for exception in scene_exceptions
     )
-    for cur_exception in decoded_scene_exceptions:
+    for exception in decoded_scene_exceptions:
         if indexer_id not in exceptions_cache:
             exceptions_cache[indexer_id] = {}
 
         if season not in exceptions_cache[indexer_id]:
             exceptions_cache[indexer_id][season] = []
 
-        if cur_exception not in exceptions_cache[indexer_id][season]:
+        if exception not in exceptions_cache[indexer_id][season]:
             # Add to cache
-            exceptions_cache[indexer_id][season].append(cur_exception)
+            exceptions_cache[indexer_id][season].append(exception)
 
             # Add to db
             cache_db_con.action(
                 b'INSERT INTO scene_exceptions (indexer_id, show_name, season, indexer) VALUES (?,?,?,?)',
-                [indexer_id, cur_exception, season, indexer])
+                [indexer_id, exception, season, indexer])
 
 
 def retrieve_exceptions():
