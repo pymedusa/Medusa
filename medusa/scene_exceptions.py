@@ -282,7 +282,7 @@ def combine_exceptions(*scene_exceptions):
 
 
 def _get_custom_exceptions():
-    custom_exceptions = {}
+    custom_exceptions = defaultdict(dict)
 
     if should_refresh('custom_exceptions'):
         for indexer in indexerApi().indexers:
@@ -309,9 +309,6 @@ def _get_custom_exceptions():
                         )
                     )
                     return custom_exceptions
-
-                if indexer not in custom_exceptions:
-                    custom_exceptions[indexer] = {}
 
                 indexer_ids = jdata[indexerApi(indexer).config['identifier']]
                 for indexer_id in indexer_ids:
