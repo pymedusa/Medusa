@@ -105,10 +105,6 @@ def allPossibleShowNames(show, season=-1):
     """
 
     showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
-    if not showNames:  # if we dont have any season specific exceptions fallback to generic exceptions
-        season = -1
-        showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
-
     showNames.append(show.name)
 
     if not show.is_anime:
