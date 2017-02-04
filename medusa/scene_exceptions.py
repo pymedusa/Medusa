@@ -134,15 +134,15 @@ def get_scene_seasons(indexer_id):
     :param indexer_id: ID to check
     :return: list of seasons.
     """
-    warnings.warn(DeprecationWarning, 'Use dict.keys() directly instead.')
+    warnings.warn('Use dict.keys() directly instead.', DeprecationWarning)
     return exceptions_cache[indexer_id].keys()
 
 
 def get_scene_exception_by_name(show_name):
     """Get the first indexer_id and season of the scene exception."""
     warnings.warn(
+        'Use the first element of get_scene_exceptions_by_name instead.',
         DeprecationWarning,
-        'Use the first element of get_scene_exceptions_by_name instead.'
     )
     return get_scene_exceptions_by_name(show_name)[0]
 
