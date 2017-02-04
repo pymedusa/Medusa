@@ -23,9 +23,9 @@ from six import iteritems
 from . import app, db, logger
 from .helpers import full_sanitize_scene_name
 from .scene_exceptions import (
+    exceptions_cache,
     refresh_exceptions_cache,
     retrieve_exceptions,
-    exceptions_cache,
 )
 
 name_cache = {}
