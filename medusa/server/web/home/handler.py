@@ -1307,7 +1307,7 @@ class Home(WebRoot):
             return True
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
-                 exceptions=None, flatten_folders=None, paused=None, directCall=False,
+                 exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
@@ -1316,7 +1316,9 @@ class Home(WebRoot):
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions = exceptions or set()
+        exceptions = set()
+        if exceptions_list:
+            exceptions.update(exceptions_list)
 
         anidb_failed = False
         errors = []
