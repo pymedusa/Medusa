@@ -46,7 +46,7 @@ class ShowUpdater(object):
 
         network_timezones.update_network_dict()
 
-        # Refresh the exceptions_cache and exceptions_season_cache from db.
+        # Refresh the exceptions_cache from db.
         refresh_exceptions_cache()
 
         logger.info(u'Started periodic show updates')
