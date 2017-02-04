@@ -27,7 +27,7 @@ from collections import defaultdict
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
-from six import iteritems, text_type
+from six import iteritems
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
 
