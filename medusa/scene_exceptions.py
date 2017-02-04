@@ -137,12 +137,12 @@ def get_scene_seasons(indexer_id):
 
 
 def get_scene_exception_by_name(show_name):
-    """Given a show name, return the first indexerid and season of the exceptions list."""
-    return get_scene_exception_by_name_multiple(show_name)[0]
+    """Get the first indexer_id and season of the scene exception."""
+    return get_scene_exceptions_by_name(show_name)[0]
 
 
-def get_scene_exception_by_name_multiple(show_name):
-    """Given a show name, return the indexerid of the exception, None if no exception is present."""
+def get_scene_exceptions_by_name(show_name):
+    """Get the indexer_id and season of the scene exception."""
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     exception_result = cache_db_con.select(
@@ -151,10 +151,14 @@ def get_scene_exception_by_name_multiple(show_name):
         b'WHERE LOWER(show_name) = ? ORDER BY season ASC',
         [show_name.lower()])
     if exception_result:
-        return [(int(x[b'indexer_id']), int(x[b'season'])) for x in exception_result]
+        return [(int(x[b'indexer_id']), int(x[b'season']))
+                for x in exception_result]
 
     out = []
-    all_exception_results = cache_db_con.select(b'SELECT show_name, indexer_id, season FROM scene_exceptions')
+    all_exception_results = cache_db_con.select(
+        b'SELECT show_name, indexer_id, season '
+        b'FROM scene_exceptions'
+    )
 
     for cur_exception in all_exception_results:
 
