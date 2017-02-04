@@ -91,37 +91,25 @@ class CacheDBConnection(db.DBConnection):
                 logger.DEBUG
             )
             self.action(
-                b'CREATE UNIQUE INDEX IF NOT EXISTS idx_url_{0}'
+                b'CREATE UNIQUE INDEX '
+                b'IF NOT EXISTS idx_url_{0} '
                 b'ON [{1}] (url)'.format(provider_id, provider_id)
             )
 
             # add release_group column to table if missing
-            if not self.hasColumn(provider_id, 'release_group'):
-                self.addColumn(provider_id, 'release_group', 'TEXT', '')
-
-            # add version column to table if missing
-            if not self.hasColumn(provider_id, 'version'):
-                self.addColumn(provider_id, 'version', 'NUMERIC', '-1')
-
-            # add seeders column to table if missing
-            if not self.hasColumn(provider_id, 'seeders'):
-                self.addColumn(provider_id, 'seeders', 'NUMERIC', '-1')
-
-            # add leechers column to table if missing
-            if not self.hasColumn(provider_id, 'leechers'):
-                self.addColumn(provider_id, 'leechers', 'NUMERIC', '-1')
-
-            # add size column to table if missing
-            if not self.hasColumn(provider_id, 'size'):
-                self.addColumn(provider_id, 'size', 'NUMERIC', '-1')
-
-            # add pubdate column to table if missing
-            if not self.hasColumn(provider_id, 'pubdate'):
-                self.addColumn(provider_id, 'pubdate', 'NUMERIC', '')
-
-            # add proper_tags column to table if missing
-            if not self.hasColumn(provider_id, 'proper_tags'):
-                self.addColumn(provider_id, 'proper_tags', 'TEXT', '')
+            table = (
+                ('release_group', 'TEXT', None),
+                ('version', 'NUMERIC', -1),
+                ('seeders', 'NUMERIC', -1),
+                ('leechers', 'NUMERIC', -1),
+                ('size', 'NUMERIC', -1),
+                ('pubdate', 'NUMERIC', None),
+                ('proper_tags', 'TEXT', None),
+            )
+            for column, data_type, default in table:
+                # add columns to table if missing
+                if not self.hasColumn(provider_id, column):
+                    self.addColumn(provider_id, column, data_type, default)
 
         except Exception as error:
             msg = 'table [{name}] already exists'.format(name=provider_id)
