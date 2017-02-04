@@ -1050,6 +1050,25 @@ home_postprocess.mako
     margin-left: auto;
 }
 
+.lineH-40 {
+    line-height: 40px;
+}
+
+#episodeDir {
+    width: 70%;
+    margin-right: 5px;
+}
+
+.smallhelp {
+    line-height: 0;
+    font-size: 12px;
+}
+
+#process td:nth-child(1) {
+    padding-right: 10px;
+    width: 290px;
+}
+
 /* =======================================================================
 displayShow.mako
 ========================================================================== */
