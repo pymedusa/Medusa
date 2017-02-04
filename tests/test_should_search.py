@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for medusa/test_should_search_replace.py."""
+"""Tests for medusa/test_should_search.py."""
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED,
                            SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED)
 from medusa.tv import TVShow
@@ -170,5 +170,6 @@ def test_should_search(p):
     actual = replace
 
     # Then
-    print msg
+    if expected != actual:
+        print msg
     assert expected == actual
