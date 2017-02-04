@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import logging
 import threading
 import time
+import warnings
 from collections import defaultdict
 
 import adba
@@ -129,6 +130,7 @@ def get_scene_seasons(indexer_id):
     :param indexer_id: ID to check
     :return: list of seasons.
     """
+    warnings.warn(DeprecationWarning, 'Use dict.keys() directly instead.')
     return exceptions_cache[indexer_id].keys()
 
 
