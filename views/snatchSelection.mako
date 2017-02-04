@@ -28,7 +28,7 @@
         <div id="wrapper" data-history-toggle="hide">
             <div id="container">
             % if episode_history:
-                <table id="historyTable" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default" cellspacing="1" border="0" cellpadding="0">
+                <table id="snatchhistory" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default" cellspacing="1" border="0" cellpadding="0">
                     <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                         <tr role="row">
                             <th colspan="4" class="row-seasonheader">
@@ -71,7 +71,7 @@
                             </tr>
                         % endfor
                         <tr id="history-footer" class="tablesorter-no-sort border-bottom shadow">
-                            <th class="tablesorter-no-sort" colspan=4 align=left></th>
+                            <th class="tablesorter-no-sort" colspan=4></th>
                         </tr>
                     </tbody>
                     <tbody class="tablesorter-no-sort"><tr><td></td></tr></tbody>
@@ -92,7 +92,7 @@
                         </div>
                     </div><!-- #filterControls //-->
                 </div>
-                <table id="resultTable" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
+                <table id="srchresults" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default hasSaveSort hasStickyHeaders" cellspacing="1" border="0" cellpadding="0">
                     <thead>
                         <tr>
                             <th data-priority="critical" class="col-name">Release</th>
@@ -122,19 +122,19 @@
                                     <img src="${hItem["provider_img_link"]}" width="16" height="16" class="vMiddle curHelp" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                                 </span>
                             </td>
-                            <td align="center">${renderQualityPill(int(hItem["quality"]))}
+                            <td>${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
                                 <img src="images/info32.png" width="16" height="16" class="vMmiddle" title="${hItem["proper_tags"]}"/>
                             % endif
                             </td>
-                            <td align="center">
+                            <td>
                                 <span class="${hItem['seed_highlight']}">${hItem["seeders"]}</span>
                             </td>
-                            <td align="center">
+                            <td>
                                 <span class="${hItem['leech_highlight']}">${hItem["leechers"]}</span>
                             </td>
                             <td class="col-size">${hItem["pretty_size"]}</td>
-                            <td align="center">${hItem["provider_type"]}</td>
+                            <td>${hItem["provider_type"]}</td>
                             <td class="col-date">
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
