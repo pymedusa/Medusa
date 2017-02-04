@@ -337,20 +337,20 @@ def _get_xem_exceptions():
 
     if should_refresh('xem'):
         for indexer in indexerApi().indexers:
-            indexer = indexerApi(indexer)
+            indexer_api = indexerApi(indexer)
 
             # Not query XEM for unsupported indexers
-            if not indexer.config.get('xem_origin'):
+            if not indexer_api.config.get('xem_origin'):
                 continue
 
             logger.info(
                 'Checking for XEM scene exceptions updates for'
                 ' {indexer_name}'.format(
-                    indexer_name=indexer.name
+                    indexer_name=indexer_api.name
                 )
             )
 
-            url = xem_url.format(indexer.config['xem_origin'])
+            url = xem_url.format(indexer_api.config['xem_origin'])
             response = helpers.get_url(url, session=xem_session,
                                        timeout=60, returns='response')
             try:
@@ -359,7 +359,7 @@ def _get_xem_exceptions():
                 logger.debug(
                     'Check scene exceptions update failed for {indexer}.'
                     ' Unable to get URL: {url} Error: {error}'.format(
-                        indexer=indexer.name, url=url, error=error,
+                        indexer=indexer_api.name, url=url, error=error,
                     )
                 )
                 continue
@@ -368,7 +368,7 @@ def _get_xem_exceptions():
                 logger.debug(
                     'No data returned from XEM while checking for scene'
                     ' exceptions. Update failed for {indexer}'.format(
-                        indexer=indexer.name
+                        indexer=indexer_api.name
                     )
                 )
                 continue
