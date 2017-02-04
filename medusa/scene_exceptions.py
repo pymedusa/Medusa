@@ -272,14 +272,11 @@ def retrieve_exceptions():
 def combine_exceptions(*scene_exceptions):
     """Combine the exceptions from all sources."""
     # ex_dicts = iter(scene_exceptions)
-    combined_ex = {}
+    combined_ex = defaultdict(dict)
 
     for scene_exception in scene_exceptions:
-        if scene_exception:
-            for indexer in scene_exception:
-                if indexer not in combined_ex:
-                    combined_ex[indexer] = {}
-                combined_ex[indexer].update(scene_exception[indexer])
+        for indexer in scene_exception or []:
+            combined_ex[indexer].update(scene_exception[indexer])
 
     return combined_ex
 
