@@ -288,29 +288,45 @@ def _get_custom_exceptions():
         for indexer in indexerApi().indexers:
             try:
                 location = indexerApi(indexer).config['scene_loc']
-                logger.info('Checking for scene exception updates from {location}', location=location)
+                logger.info(
+                    'Checking for scene exception updates from {location}',
+                    location=location
+                )
 
-                response = helpers.get_url(location, session=indexerApi(indexer).session,
-                                           timeout=60, returns='response')
+                response = helpers.get_url(
+                    location,
+                    session=indexerApi(indexer).session,
+                    timeout=60,
+                    returns='response'
+                )
                 try:
                     jdata = response.json()
                 except (ValueError, AttributeError) as error:
-                    logger.debug('Check scene exceptions update failed. Unable to update from {location}. '
-                                 'Error: {error}', location=location, error=error)
+                    logger.debug(
+                        'Check scene exceptions update failed. Unable to '
+                        'update from {location}. Error: {error}'.format(
+                            location=location, error=error
+                        )
+                    )
                     return custom_exceptions
 
                 if indexer not in custom_exceptions:
                     custom_exceptions[indexer] = {}
 
-                for indexer_id in jdata[indexerApi(indexer).config['identifier']]:
-                    alias_list = [{scene_exception: int(scene_season)}
-                                  for scene_season in jdata[indexerApi(indexer).config['identifier']][indexer_id]
-                                  for scene_exception in jdata[indexerApi(indexer).config
-                                  ['identifier']][indexer_id][scene_season]]
+                indexer_ids = jdata[indexerApi(indexer).config['identifier']]
+                for indexer_id in indexer_ids:
+                    indexer_exceptions = indexer_ids[indexer_id]
+                    alias_list = [{exception: int(season)}
+                                  for season in indexer_exceptions
+                                  for exception in indexer_exceptions[season]]
                     custom_exceptions[indexer][indexer_id] = alias_list
             except Exception as error:
-                logger.error('Unable to update scene exceptions for {indexer}. Error: {error}',
-                             indexer=indexer, error=error)
+                logger.error(
+                    'Unable to update scene exceptions for {indexer}.'
+                    ' Error: {error}'.format(
+                        indexer=indexer, error=error
+                    )
+                )
                 continue
 
             set_last_refresh('custom_exceptions')
