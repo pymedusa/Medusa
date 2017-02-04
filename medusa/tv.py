@@ -193,7 +193,7 @@ class TVShow(TVObject):
         self.episodes = {}
         self.next_aired = ''
         self.release_groups = None
-        self.exceptions = []
+        self.exceptions = set()
         self.externals = {}
         self._cached_indexer_api = None
 

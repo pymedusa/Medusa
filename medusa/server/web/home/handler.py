@@ -1307,7 +1307,7 @@ class Home(WebRoot):
             return True
 
     def editShow(self, show=None, location=None, allowed_qualities=None, preferred_qualities=None,
-                 exceptions_list=None, flatten_folders=None, paused=None, directCall=False,
+                 exceptions=None, flatten_folders=None, paused=None, directCall=False,
                  air_by_date=None, sports=None, dvd_order=None, indexer_lang=None,
                  subtitles=None, rls_ignore_words=None, rls_require_words=None,
                  anime=None, blacklist=None, whitelist=None, scene=None,
@@ -1316,7 +1316,7 @@ class Home(WebRoot):
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions_list = exceptions_list or []
+        exceptions = exceptions or set()
 
         anidb_failed = False
         errors = []
@@ -1425,15 +1425,15 @@ class Home(WebRoot):
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
 
-        if not isinstance(exceptions_list, list):
-            exceptions_list = [exceptions_list]
+        if not isinstance(exceptions, set):
+            exceptions = {exceptions}
 
         # If directCall from mass_edit_update no scene exceptions handling or
         # blackandwhite list handling
         if directCall:
             do_update_exceptions = False
         else:
-            if set(exceptions_list) == set(show_obj.exceptions):
+            if exceptions == show_obj.exceptions:
                 do_update_exceptions = False
             else:
                 do_update_exceptions = True
@@ -1519,7 +1519,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')
