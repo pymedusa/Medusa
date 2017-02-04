@@ -196,12 +196,6 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
         for exception in scene_exceptions
     )
     for exception in decoded_scene_exceptions:
-        if indexer_id not in exceptions_cache:
-            exceptions_cache[indexer_id] = {}
-
-        if season not in exceptions_cache[indexer_id]:
-            exceptions_cache[indexer_id][season] = []
-
         if exception not in exceptions_cache[indexer_id][season]:
             # Add to cache
             exceptions_cache[indexer_id][season].append(exception)
