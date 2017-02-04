@@ -30,7 +30,7 @@ from six import iteritems, text_type
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
 
-exceptions_cache = {}
+exceptions_cache = defaultdict(lambda: defaultdict(list))
 exceptions_season_cache = defaultdict(list)
 
 exceptionLock = threading.Lock()
@@ -60,10 +60,6 @@ def refresh_exceptions_cache():
         indexer_id = int(exception[b'indexer_id'])
         season = int(exception[b'season'])
         show = exception[b'show_name']
-
-        # Create exceptions_cache[indexerid]
-        if indexer_id not in exceptions_cache:
-            exceptions_cache[indexer_id] = defaultdict(list)
 
         # exceptions_cache[indexerid][season] = ['showname 1', 'showname 2']
         if show not in exceptions_cache[indexer_id][season]:
