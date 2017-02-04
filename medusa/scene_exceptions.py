@@ -112,12 +112,10 @@ def get_scene_exceptions(indexer_id, indexer, season=-1):
     """Get scene exceptions from exceptions_cache for an indexer id."""
     exceptions_list = exceptions_cache[indexer_id][season]
 
-    # If there is no exception for season
-    # Add generic exceptions regardless of the season
     if season != -1 and not exceptions_list:
         exceptions_list += get_scene_exceptions(indexer_id, indexer)
 
-    return list({exception for exception in exceptions_list})
+    return list(set(exceptions_list))
 
 
 def get_all_scene_exceptions(indexer_id):
