@@ -105,31 +105,28 @@ def allPossibleShowNames(show, season=-1):
     """
 
     showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
-    showNames.append(show.name)
+    showNames.add(show.name)
 
     if not show.is_anime:
-        newShowNames = []
+        newShowNames = set()
         country_list = common.countryList
         country_list.update(dict(zip(common.countryList.values(), common.countryList.keys())))
-        for curName in set(showNames):
+        for curName in showNames:
             if not curName:
                 continue
 
-            # if we have "Show Name Australia" or "Show Name (Australia)" this will add "Show Name (AU)" for
-            # any countries defined in common.countryList
-            # (and vice versa)
+            # if we have "Show Name Australia" or "Show Name (Australia)"
+            # this will add "Show Name (AU)" for any countries defined in
+            # common.countryList (and vice versa)
             for curCountry in country_list:
                 if curName.endswith(' ' + curCountry):
-                    newShowNames.append(curName.replace(' ' + curCountry, ' (' + country_list[curCountry] + ')'))
+                    newShowNames.add(curName.replace(' ' + curCountry, ' (' + country_list[curCountry] + ')'))
                 elif curName.endswith(' (' + curCountry + ')'):
-                    newShowNames.append(curName.replace(' (' + curCountry + ')', ' (' + country_list[curCountry] + ')'))
-
-            # # if we have "Show Name (2013)" this will strip the (2013) show year from the show name
-            # newShowNames.append(re.sub('\(\d{4}\)', '', curName))
+                    newShowNames.add(curName.replace(' (' + curCountry + ')', ' (' + country_list[curCountry] + ')'))
 
         showNames += newShowNames
 
-    return set(showNames)
+    return showNames
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):
