@@ -147,6 +147,7 @@ def get_scene_exception_by_name(show_name):
 
 def get_scene_exceptions_by_name(show_name):
     """Get the indexer_id and season of the scene exception."""
+    # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
     exception_result = cache_db_con.select(
@@ -169,10 +170,17 @@ def get_scene_exceptions_by_name(show_name):
         cur_exception_name = cur_exception[b'show_name']
         cur_indexer_id = int(cur_exception[b'indexer_id'])
 
-        if show_name.lower() in (cur_exception_name.lower(),
-                                 helpers.sanitize_scene_name(cur_exception_name).lower().replace('.', ' ')):
-            logger.debug('Scene exception lookup got indexer ID {cur_indexer}, using that', cur_indexer=cur_indexer_id)
+        sanitized_name = helpers.sanitize_scene_name(cur_exception_name)
+        show_names = (
+            cur_exception_name.lower(),
+            sanitized_name.lower().replace('.', ' '),
+        )
 
+        if show_name.lower() in show_names:
+            logger.debug(
+                'Scene exception lookup got indexer ID {cur_indexer},'
+                ' using that', cur_indexer=cur_indexer_id
+            )
             out.append((cur_indexer_id, int(cur_exception[b'season'])))
 
     if out:
