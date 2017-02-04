@@ -466,8 +466,9 @@ class GenericProvider(object):
             elif episode.show.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                    show_name in get_scene_exceptions(episode.show.indexerid, episode.show.indexer,
-                                                      season=episode.scene_season)):
+                    show_name in get_scene_exceptions(episode.show.indexerid,
+                                                      episode.show.indexer,
+                                                      episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:
