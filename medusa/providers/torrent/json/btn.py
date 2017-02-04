@@ -22,11 +22,11 @@ import socket
 import time
 
 import jsonrpclib
-
 from six import itervalues
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import app, logger, scene_exceptions, tv_cache
+from .... import app, logger, scene_exceptions
 from ....common import cpu_presets
 from ....helper.common import episode_num
 
@@ -64,7 +64,7 @@ class BTNProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BTN every 15 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):  # pylint:disable=too-many-locals
         """

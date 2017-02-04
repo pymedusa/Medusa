@@ -20,8 +20,9 @@ from __future__ import unicode_literals
 
 from requests.compat import urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....helper.exceptions import AuthException
 
 
@@ -70,7 +71,7 @@ class ShazbatProvider(TorrentProvider):
         return True
 
 
-class ShazbatCache(tv_cache.TVCache):
+class ShazbatCache(tv.Cache):
     """Provider cache class."""
 
     def _get_rss_data(self):

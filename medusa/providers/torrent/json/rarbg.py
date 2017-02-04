@@ -24,8 +24,9 @@ import traceback
 
 from dateutil import parser
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import app, logger, tv_cache
+from .... import app, logger
 from ....helper.common import convert_size, try_int
 
 
@@ -59,7 +60,7 @@ class RarbgProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # only poll RARBG every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # only poll RARBG every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

@@ -24,8 +24,9 @@ import traceback
 
 from requests.compat import urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import helpers, logger, tv_cache
+from .... import helpers, logger
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size
 
@@ -53,7 +54,7 @@ class NewpctProvider(TorrentProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=20)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

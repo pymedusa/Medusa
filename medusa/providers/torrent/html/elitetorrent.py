@@ -23,8 +23,9 @@ import traceback
 
 from requests.compat import urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....bs4_parser import BS4Parser
 from ....helper.common import try_int
 
@@ -55,7 +56,7 @@ class EliteTorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
+        self.cache = tv.Cache(self)  # Only poll EliteTorrent every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

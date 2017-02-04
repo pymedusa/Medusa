@@ -22,8 +22,9 @@ import traceback
 
 from requests.compat import urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
@@ -61,7 +62,7 @@ class TVChaosUKProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

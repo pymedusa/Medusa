@@ -20,14 +20,14 @@ from __future__ import unicode_literals
 
 import time
 import traceback
-
 from operator import itemgetter
 
 from requests.auth import AuthBase
 from requests.compat import quote, urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....common import USER_AGENT
 from ....helper.common import convert_size, try_int
 
@@ -66,7 +66,7 @@ class T411Provider(TorrentProvider):
         self.minleech = 0
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll T411 every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.

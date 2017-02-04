@@ -26,6 +26,7 @@ from random import shuffle
 
 from requests.utils import add_dict_to_cookiejar
 
+from medusa.tv.cache import Cache
 from .. import app, config, logger, ui
 from ..classes import Proper, SearchResult
 from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
@@ -38,7 +39,6 @@ from ..name_parser.parser import InvalidNameException, InvalidShowException, Nam
 from ..scene_exceptions import get_scene_exceptions
 from ..show.show import Show
 from ..show_name_helpers import allPossibleShowNames
-from ..tv_cache import TVCache
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -64,7 +64,7 @@ class GenericProvider(object):
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
             'http://torrasave.site/torrent/{info_hash}.torrent',
         ]
-        self.cache = TVCache(self)
+        self.cache = Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
         self.enable_daily = False
