@@ -48,7 +48,9 @@ def refresh_exceptions_cache():
     exceptions_season_cache.clear()
 
     cache_db_con = db.DBConnection('cache.db')
-    exceptions = cache_db_con.select(b'SELECT indexer, indexer_id, show_name, season FROM scene_exceptions')
+    exceptions = cache_db_con.select(
+        b'SELECT indexer, indexer_id, show_name, season FROM scene_exceptions'
+    ) or []
 
     # Start building up a new exceptions_cache.
     for exception in exceptions:
@@ -76,7 +78,7 @@ def refresh_exceptions_cache():
         if season not in exceptions_season_cache[indexer_id]:
             exceptions_season_cache[indexer_id].append(season)
 
-    logger.info('Finished processing {nr} scene exceptions.', nr=len(exceptions or []))
+    logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
 
 
 def should_refresh(ex_list):
