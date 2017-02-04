@@ -81,7 +81,12 @@ def should_refresh(ex_list):
     max_refresh_age_secs = 86400  # 1 day
 
     cache_db_con = db.DBConnection('cache.db')
-    rows = cache_db_con.select(b'SELECT last_refreshed FROM scene_exceptions_refresh WHERE list = ?', [ex_list])
+    rows = cache_db_con.select(
+        b'SELECT last_refreshed '
+        b'FROM scene_exceptions_refresh '
+        b'WHERE list = ?',
+        [ex_list]
+    )
     if rows:
         last_refresh = int(rows[0][b'last_refreshed'])
         return int(time.time()) > last_refresh + max_refresh_age_secs
@@ -104,12 +109,11 @@ def set_last_refresh(ex_list):
 
 
 def get_scene_exceptions(indexer_id, indexer, season=-1):
-    """Given a indexer_id, return a list of all the scene exceptions from the scene_exception cache."""
-    exceptions_list = []
-    if indexer_id in exceptions_cache and season in exceptions_cache[indexer_id]:
-        exceptions_list = exceptions_cache[indexer_id][season]
+    """Get scene exceptions from exceptions_cache for an indexer id."""
+    exceptions_list = exceptions_cache[indexer_id][season]
 
-    # Add generic exceptions regardless of the season if there is no exception for season
+    # If there is no exception for season
+    # Add generic exceptions regardless of the season
     if season != -1 and not exceptions_list:
         exceptions_list += get_scene_exceptions(indexer_id, indexer, season=-1)
 
