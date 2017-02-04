@@ -21,12 +21,12 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+import validators
 from requests.compat import urljoin
 
-import validators
-
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
@@ -55,7 +55,7 @@ class ThePirateBayProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=20)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

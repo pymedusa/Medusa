@@ -21,8 +21,9 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....helper.common import convert_size, try_int
 
 
@@ -53,7 +54,7 @@ class NyaaProvider(TorrentProvider):
         self.minleech = 0
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
+        self.cache = tv.Cache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

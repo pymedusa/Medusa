@@ -22,12 +22,12 @@ import re
 import traceback
 
 from contextlib2 import suppress
-
 from requests.compat import urljoin
 from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 
@@ -64,7 +64,7 @@ class LimeTorrentsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)
+        self.cache = tv.Cache(self, min_time=10)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

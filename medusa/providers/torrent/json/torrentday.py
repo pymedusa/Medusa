@@ -22,12 +22,12 @@ import re
 import traceback
 
 from dateutil import parser
-
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....helper.common import convert_size
 
 
@@ -65,7 +65,7 @@ class TorrentDayProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

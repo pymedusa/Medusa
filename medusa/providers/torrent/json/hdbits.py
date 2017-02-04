@@ -21,8 +21,9 @@ import json
 
 from requests.compat import urlencode, urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....helper.exceptions import AuthException
 
 
@@ -192,7 +193,7 @@ class HDBitsProvider(TorrentProvider):
         return json.dumps(post_data)
 
 
-class HDBitsCache(tv_cache.TVCache):
+class HDBitsCache(tv.Cache):
     """Provider cache class."""
 
     def _get_rss_data(self):

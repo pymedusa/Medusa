@@ -21,11 +21,11 @@ from __future__ import unicode_literals
 import traceback
 
 from dateutil import parser
-
 from requests.compat import urljoin
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....helper.common import convert_size
 
 
@@ -56,7 +56,7 @@ class HD4FreeProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

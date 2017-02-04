@@ -24,14 +24,13 @@ import re
 import time
 import traceback
 
+import validators
 from dateutil import parser
-
 from requests.compat import urljoin
 
-import validators
-
+from medusa import tv
 from .nzb_provider import NZBProvider
-from ... import app, logger, tv_cache
+from ... import app, logger
 from ...bs4_parser import BS4Parser
 from ...common import cpu_presets
 from ...helper.common import convert_size, try_int
@@ -78,7 +77,7 @@ class NewznabProvider(NZBProvider):
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tv.Cache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

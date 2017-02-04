@@ -24,11 +24,11 @@ import traceback
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
 from six.moves.urllib_parse import parse_qs
 
+from medusa import tv
 from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
+from .... import logger
 from ....bs4_parser import BS4Parser
 from ....helper.common import convert_size, try_int
 from ....helper.exceptions import AuthException
@@ -66,7 +66,7 @@ class TNTVillageProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
+        self.cache = tv.Cache(self, min_time=30)  # only poll TNTVillage every 30 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
