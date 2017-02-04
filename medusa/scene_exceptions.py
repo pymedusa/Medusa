@@ -333,6 +333,7 @@ def _get_custom_exceptions():
 
 def _get_xem_exceptions():
     xem_exceptions = {}
+    xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'
 
     if should_refresh('xem'):
         for indexer in indexerApi().indexers:
@@ -341,35 +342,52 @@ def _get_xem_exceptions():
             if not indexerApi(indexer).config.get('xem_origin'):
                 continue
 
-            logger.info('Checking for XEM scene exceptions updates for {indexer_name}',
-                        indexer_name=indexerApi(indexer).name)
-
+            logger.info(
+                'Checking for XEM scene exceptions updates for'
+                ' {indexer_name}'.format(
+                    indexer_name=indexerApi(indexer).name
+                )
+            )
             if indexer not in xem_exceptions:
                 xem_exceptions[indexer] = {}
 
-            xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'.format(
-                indexerApi(indexer).config['xem_origin'])
+            url = xem_url.format(indexerApi(indexer).config['xem_origin'])
 
-            response = helpers.get_url(xem_url, session=xem_session, timeout=60, returns='response')
+            response = helpers.get_url(url, session=xem_session,
+                                       timeout=60, returns='response')
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:
-                logger.debug('Check scene exceptions update failed for {indexer_name}. Unable to get URL: {xem_url}',
-                             indexer_name=indexerApi(indexer).name, xem_url=xem_url)
+                logger.debug(
+                    'Check scene exceptions update failed for {indexer}.'
+                    ' Unable to get URL: {xem_url}'.format(
+                        indexer=indexerApi(indexer).name,
+                        xem_url=url,
+                    )
+                )
                 continue
 
             if not jdata['data'] or jdata['result'] == 'failure':
-                logger.debug('No data returned from XEM while checking for scene exceptions. '
-                             'Update failed for {indexer_name}', indexer_name=indexerApi(indexer).name)
+                logger.debug(
+                    'No data returned from XEM while checking for scene'
+                    ' exceptions. Update failed for {indexer}'.format(
+                        indexer=indexerApi(indexer).name
+                    )
+                )
                 continue
 
             for indexer_id, exceptions in iteritems(jdata['data']):
                 try:
                     xem_exceptions[indexer][indexer_id] = exceptions
                 except Exception as error:
-                    logger.warning('XEM: Rejected entry: Indexer ID: {indexer_id}, Exceptions: {e}',
-                                   indexer_id=indexer_id, e=exceptions)
-                    logger.warning('XEM: Rejected entry error message: {e}', e=error)
+                    logger.warning(
+                        'XEM: Rejected entry: Indexer ID: {indexer_id},'
+                        ' Exceptions: {e}'.format(
+                            indexer_id=indexer_id, e=exceptions
+                        )
+                    )
+                    logger.warning('XEM: Rejected entry error message:'
+                                   ' {error}'.format(error=error))
 
         set_last_refresh('xem')
 
