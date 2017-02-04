@@ -332,7 +332,7 @@ def _get_custom_exceptions():
 
 
 def _get_xem_exceptions():
-    xem_exceptions = {}
+    xem_exceptions = defaultdict(dict)
     xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'
 
     if should_refresh('xem'):
@@ -349,11 +349,8 @@ def _get_xem_exceptions():
                     indexer_name=indexer.name
                 )
             )
-            if indexer not in xem_exceptions:
-                xem_exceptions[indexer] = {}
 
             url = xem_url.format(indexer.config['xem_origin'])
-
             response = helpers.get_url(url, session=xem_session,
                                        timeout=60, returns='response')
             try:
@@ -361,10 +358,8 @@ def _get_xem_exceptions():
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed for {indexer}.'
-                    ' Unable to get URL: {xem_url} Error: {error}'.format(
-                        indexer=indexer.name,
-                        xem_url=url,
-                        error=error,
+                    ' Unable to get URL: {url} Error: {error}'.format(
+                        indexer=indexer.name, url=url, error=error,
                     )
                 )
                 continue
