@@ -150,43 +150,39 @@ def get_scene_exceptions_by_name(show_name):
     # TODO: Rewrite to use exceptions_cache since there is no need to hit db.
     # Try the obvious case first
     cache_db_con = db.DBConnection('cache.db')
-    exception_result = cache_db_con.select(
+    scene_exceptions = cache_db_con.select(
         b'SELECT indexer_id, season '
         b'FROM scene_exceptions '
         b'WHERE LOWER(show_name) = ? ORDER BY season ASC',
         [show_name.lower()])
-    if exception_result:
-        return [(int(x[b'indexer_id']), int(x[b'season']))
-                for x in exception_result]
+    if scene_exceptions:
+        return [(int(exception[b'indexer_id']), int(exception[b'season']))
+                for exception in scene_exceptions]
 
-    out = []
-    all_exception_results = cache_db_con.select(
+    result = []
+    scene_exceptions = cache_db_con.select(
         b'SELECT show_name, indexer_id, season '
         b'FROM scene_exceptions'
     )
 
-    for cur_exception in all_exception_results:
+    for exception in scene_exceptions:
+        indexer_id = int(exception[b'indexer_id'])
+        exception_name = exception[b'show_name']
 
-        cur_exception_name = cur_exception[b'show_name']
-        cur_indexer_id = int(cur_exception[b'indexer_id'])
-
-        sanitized_name = helpers.sanitize_scene_name(cur_exception_name)
+        sanitized_name = helpers.sanitize_scene_name(exception_name)
         show_names = (
-            cur_exception_name.lower(),
+            exception_name.lower(),
             sanitized_name.lower().replace('.', ' '),
         )
 
         if show_name.lower() in show_names:
             logger.debug(
                 'Scene exception lookup got indexer ID {cur_indexer},'
-                ' using that', cur_indexer=cur_indexer_id
+                ' using that', cur_indexer=indexer_id
             )
-            out.append((cur_indexer_id, int(cur_exception[b'season'])))
+            result.append((indexer_id, int(exception[b'season'])))
 
-    if out:
-        return out
-
-    return [(None, None)]
+    return result or [(None, None)]
 
 
 def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
