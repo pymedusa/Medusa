@@ -38,6 +38,8 @@ exceptionLock = threading.Lock()
 
 xem_session = helpers.make_session()
 
+# TODO: Fix multiple indexer support
+
 
 def refresh_exceptions_cache():
     """Query the db for show exceptions and update the exceptions_cache."""
@@ -228,34 +230,40 @@ def retrieve_exceptions():
     Parses the exceptions into a dict, and inserts them into the
     scene_exceptions table in cache.db. Also clears the scene name cache.
     """
-    # Custom scene exceptions
-    custom_exceptions = _get_custom_exceptions()
-
-    # XEM scene exceptions
-    xem_exceptions = _get_xem_exceptions()
-
-    # AniDB scene exceptions
-    anidb_exceptions = _get_anidb_exceptions()
-
     # Combined scene exceptions from all sources
-    combined_exceptions = combine_exceptions(custom_exceptions, xem_exceptions, anidb_exceptions)
+    combined_exceptions = combine_exceptions(
+        # Custom scene exceptions
+        _get_custom_exceptions(),
+        # XEM scene exceptions
+        _get_xem_exceptions(),
+        # AniDB scene exceptions
+        _get_anidb_exceptions(),
+    )
 
     queries = []
     cache_db_con = db.DBConnection('cache.db')
+
+    # TODO: See if this can be optimized
     for indexer in combined_exceptions:
         for indexer_id in combined_exceptions[indexer]:
-            sql_ex = cache_db_con.select(b'SELECT show_name, indexer FROM scene_exceptions WHERE indexer = ? AND '
-                                         b'indexer_id = ?', [indexer, indexer_id])
+            sql_ex = cache_db_con.select(
+                b'SELECT show_name, indexer '
+                b'FROM scene_exceptions '
+                b'WHERE indexer = ? AND '
+                b'    indexer_id = ?',
+                [indexer, indexer_id]
+            )
             existing_exceptions = [x[b'show_name'] for x in sql_ex]
 
             for exception_dict in combined_exceptions[indexer][indexer_id]:
                 for scene_exception, season in iteritems(exception_dict):
                     if scene_exception not in existing_exceptions:
-                        queries.append(
-                            [
-                                b'INSERT OR IGNORE INTO scene_exceptions (indexer, indexer_id, show_name, season) '
-                                b'VALUES (?,?,?,?)',
-                                [indexer, indexer_id, scene_exception, season]])
+                        queries.append([
+                            b'INSERT OR IGNORE INTO scene_exceptions'
+                            b'(indexer, indexer_id, show_name, season)'
+                            b'VALUES (?,?,?,?)',
+                            [indexer, indexer_id, scene_exception, season]
+                        ])
     if queries:
         cache_db_con.mass_action(queries)
         logger.info('Updated scene exceptions.')
