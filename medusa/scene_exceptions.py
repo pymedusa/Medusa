@@ -138,6 +138,10 @@ def get_scene_seasons(indexer_id):
 
 def get_scene_exception_by_name(show_name):
     """Get the first indexer_id and season of the scene exception."""
+    warnings.warn(
+        DeprecationWarning,
+        'Use the first element of get_scene_exceptions_by_name instead.'
+    )
     return get_scene_exceptions_by_name(show_name)[0]
 
 
