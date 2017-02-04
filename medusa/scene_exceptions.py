@@ -202,8 +202,11 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
 
             # Add to db
             cache_db_con.action(
-                b'INSERT INTO scene_exceptions (indexer_id, show_name, season, indexer) VALUES (?,?,?,?)',
-                [indexer_id, exception, season, indexer])
+                b'INSERT INTO scene_exceptions '
+                b'    (indexer_id, show_name, season, indexer)'
+                b'VALUES (?,?,?,?)',
+                [indexer_id, exception, season, indexer]
+            )
 
 
 def retrieve_exceptions():
