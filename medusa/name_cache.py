@@ -89,7 +89,7 @@ def saveNameCacheToDb():
         cache_db_con.action("INSERT OR REPLACE INTO scene_names (indexer_id, name) VALUES (?, ?)", [indexer_id, name])
 
 
-def build_name_cache(show=None, force=False):
+def build_name_cache(show=None):
     """Build internal name cache
 
     :param show: Specify show to build name cache for, if None, just do all shows
@@ -112,7 +112,7 @@ def build_name_cache(show=None, force=False):
         ), logger.DEBUG)
 
     with nameCacheLock:
-        retrieve_exceptions(force)
+        retrieve_exceptions()
 
     # Create cache from db for the scene_exceptions.
     refresh_exceptions_cache()

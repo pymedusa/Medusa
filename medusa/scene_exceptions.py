@@ -205,7 +205,7 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
             )
 
 
-def retrieve_exceptions(force=False):
+def retrieve_exceptions():
     """
     Look up the exceptions from all sources.
 
@@ -213,13 +213,13 @@ def retrieve_exceptions(force=False):
     scene_exceptions table in cache.db. Also clears the scene name cache.
     """
     # Custom scene exceptions
-    custom_exceptions = _get_custom_exceptions(force)
+    custom_exceptions = _get_custom_exceptions()
 
     # XEM scene exceptions
-    xem_exceptions = _get_xem_exceptions(force)
+    xem_exceptions = _get_xem_exceptions()
 
     # AniDB scene exceptions
-    anidb_exceptions = _get_anidb_exceptions(force)
+    anidb_exceptions = _get_anidb_exceptions()
 
     # Combined scene exceptions from all sources
     combined_exceptions = combine_exceptions(custom_exceptions, xem_exceptions, anidb_exceptions)
@@ -260,10 +260,10 @@ def combine_exceptions(*scene_exceptions):
     return combined_ex
 
 
-def _get_custom_exceptions(force=False):
+def _get_custom_exceptions():
     custom_exceptions = {}
 
-    if should_refresh('custom_exceptions') or force:
+    if should_refresh('custom_exceptions'):
         for indexer in indexerApi().indexers:
             try:
                 location = indexerApi(indexer).config['scene_loc']
@@ -297,10 +297,10 @@ def _get_custom_exceptions(force=False):
     return custom_exceptions
 
 
-def _get_xem_exceptions(force=False):
+def _get_xem_exceptions():
     xem_exceptions = {}
 
-    if should_refresh('xem') or force:
+    if should_refresh('xem'):
         for indexer in indexerApi().indexers:
 
             # Not query XEM for unsupported indexers
@@ -342,10 +342,10 @@ def _get_xem_exceptions(force=False):
     return xem_exceptions
 
 
-def _get_anidb_exceptions(force=False):
+def _get_anidb_exceptions():
     anidb_exceptions = {}
 
-    if should_refresh('anidb') or force:
+    if should_refresh('anidb'):
         logger.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:
