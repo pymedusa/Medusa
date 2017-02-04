@@ -392,7 +392,9 @@ def _get_xem_exceptions():
 
 
 def _get_anidb_exceptions():
-    anidb_exceptions = {}
+    anidb_exceptions = defaultdict(dict)
+    # AniDB exceptions use TVDB as indexer
+    exceptions = anidb_exceptions[INDEXER_TVDBV2]
 
     if should_refresh('anidb'):
         logger.info('Checking for scene exceptions updates from AniDB')
@@ -424,8 +426,8 @@ def _get_anidb_exceptions():
                     continue
 
                 if anime and anime.name != show.name:
-                    anidb_exceptions[INDEXER_TVDBV2] = {}
-                    anidb_exceptions[INDEXER_TVDBV2][text_type(show.indexerid)] = [{anime.name.decode('utf-8'): -1}]
+                    indexer_id = text_type(show.indexerid)
+                    exceptions[indexer_id] = [{anime.name.decode('utf-8'): -1}]
 
         set_last_refresh('anidb')
 
