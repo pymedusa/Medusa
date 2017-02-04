@@ -173,10 +173,15 @@ def get_scene_exception_by_name_multiple(show_name):
 
 
 def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
-    """Given a indexer_id, and a list of all show scene exceptions, update the db."""
+    """Update database with all show scene exceptions by indexer_id."""
     cache_db_con = db.DBConnection('cache.db')
-    cache_db_con.action(b'DELETE FROM scene_exceptions WHERE indexer_id=? and season=? and indexer=?',
-                        [indexer_id, season, indexer])
+    cache_db_con.action(
+        b'DELETE FROM scene_exceptions '
+        b'WHERE indexer_id=? and '
+        b'    season=? and '
+        b'    indexer=?',
+        [indexer_id, season, indexer]
+    )
 
     logger.info('Updating scene exceptions...')
 
