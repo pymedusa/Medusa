@@ -100,17 +100,17 @@ def build_name_cache(show=None):
         indexer_id = show.indexerid
         clear_cache(indexer_id)
 
-        # Add original name to name cache
-        show_name = full_sanitize_scene_name(show.name)
-        name_cache[show_name] = indexer_id
-
-        # Add scene exceptions to name cache
-        scene_exceptions = exceptions_cache[indexer_id]
+        scene_exceptions = exceptions_cache[indexer_id].copy()
         names = {
             full_sanitize_scene_name(name): int(indexer_id)
             for season_exceptions in scene_exceptions.values()
             for name in season_exceptions
         }
+        # Add original name to name cache
+        show_name = full_sanitize_scene_name(show.name)
+        names[show_name] = indexer_id
+
+        # Add scene exceptions to name cache
         name_cache.update(names)
 
         logger.log(u'Internal name cache for {show} set to: [{names}]'.format(
