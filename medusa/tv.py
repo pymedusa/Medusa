@@ -994,7 +994,13 @@ class TVShow(TVObject):
 
     @staticmethod
     def should_refresh_file(cur_status, same_file, check_quality_again, anime, filepath):
-        """Check if we should use the dectect file to change status."""
+        """Check if we should use the dectect file to change status.
+
+        This method only refreshes when there is a existing file in show folder
+        For SNATCHED status without existing file (first snatch), it won't use this method
+        For SNATCHED BEST status, there is a existing file in `location` in DB, so it MUST stop in `same_file` rule
+        so user doesn't lose this SNATCHED_BEST status
+        """
         if same_file:
             return False, 'New file is the same as current file'
         if not helpers.is_media_file(filepath):
@@ -1008,6 +1014,7 @@ class TVShow(TVObject):
             else:
                 return False, 'New file has UNKNOWN quality'
 
+        #  Reach here to check for status/quality changes as long as it's a new/different file
         if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
             return False, 'Existing status is {0} and its not allowed'.format(statusStrings[cur_status])
 
