@@ -257,8 +257,9 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                 for result in found_results:
                     # just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
-                                   result.seeders, result.leechers, result.provider.name))
+                        logger.log(u"Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
+                                   (result.name, result.seeders, result.leechers, pretty_file_size(result.size),
+                                    result.provider.name))
                     else:
                         logger.log(u"Downloading {0} with size: {1} from {2}".format
                                    (result.name, pretty_file_size(result.size), result.provider.name))
@@ -323,9 +324,9 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
             if not self.manual_search and search_result:
                 # just use the first result for now
                 if search_result[0].seeders not in (-1, None) and search_result[0].leechers not in (-1, None):
-                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
-                               format(search_result[0].name,
-                                      search_result[0].seeders, search_result[0].leechers, search_result[0].provider.name))
+                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
+                               (search_result[0].name, search_result[0].seeders, search_result[0].leechers,
+                                pretty_file_size(search_result[0].size), search_result[0].provider.name))
                 else:
                     logger.log(u"Downloading {0} with size: {1} from {2}".format
                                (search_result.name[0], pretty_file_size(search_result[0].size),
@@ -412,9 +413,9 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 
             if search_result:
                 if search_result.seeders not in (-1, None) and search_result.leechers not in (-1, None):
-                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
-                               format(search_result.name,
-                                      search_result.seeders, search_result.leechers, search_result.provider.name))
+                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
+                               (search_result.name, search_result.seeders, search_result.leechers,
+                                pretty_file_size(search_result.size), search_result.provider.name))
                 else:
                     logger.log(u"Downloading {0} with size: {1} from {2}".format
                                (search_result.name, pretty_file_size(search_result.size), search_result.provider.name))
@@ -465,9 +466,9 @@ class BacklogQueueItem(generic_queue.QueueItem):
                     for result in search_result:
                         # just use the first result for now
                         if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                            logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".
-                                       format(result.name,
-                                              result.seeders, result.leechers, result.provider.name))
+                            logger.log(u"Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
+                                       (result.name, result.seeders, result.leechers, pretty_file_size(result.size),
+                                        result.provider.name))
                         else:
                             logger.log(u"Downloading {0} with size: {1} from {2}".format
                                        (result.name, pretty_file_size(result.size), result.provider.name))
@@ -531,8 +532,9 @@ class FailedQueueItem(generic_queue.QueueItem):
                 for result in search_result:
                     # just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        logger.log(u"Downloading {0} with {1} seeders and {2} leechers from {3}".format(result.name,
-                                   result.seeders, result.leechers, result.provider.name))
+                        logger.log(u"Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
+                                   (result.name, result.seeders, result.leechers, pretty_file_size(result.size),
+                                    result.provider.name))
                     else:
                         logger.log(u"Downloading {0} with size: {1} from {2}".format
                                    (result.name, pretty_file_size(result.size), result.provider.name))
