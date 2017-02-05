@@ -1885,7 +1885,7 @@ class TVShow(TVObject):
         if backlog_mode:
             if ep_status == WANTED:
                 return Overview.WANTED
-            elif Quality.should_search(ep_status, self, manually_searched):
+            elif Quality.should_search(ep_status, self, manually_searched)[0]:
                 return Overview.QUAL
             return Overview.GOOD
 
@@ -1906,7 +1906,7 @@ class TVShow(TVObject):
         elif ep_status in Quality.SNATCHED_BEST:
             return Overview.SNATCHED_BEST
         elif ep_status in Quality.DOWNLOADED:
-            if Quality.should_search(ep_status, self, manually_searched):
+            if Quality.should_search(ep_status, self, manually_searched)[0]:
                 return Overview.QUAL
             else:
                 return Overview.GOOD
