@@ -12,7 +12,7 @@ import pytest
         'file_path': '/media/postprocess/Show.Name.S01E01.1080p.HDTV.X264-DIMENSION.mkv',
         'nzb_name': None,
         'expected': {
-            'series_name': 'Show Name',
+            'show': 'Show Name',
             'season': 1,
             'episodes': [1],
             'quality': Quality.FULLHDTV,
@@ -23,7 +23,7 @@ import pytest
         'file_path': '/media/postprocess/Show.Name.S02.Season.2.1080p.BluRay.x264-PublicHD/show.name.s02e10.1080p.bluray.x264-rovers.mkv',
         'nzb_name': 'Show.Name.S02.Season.2.1080p.BluRay.x264-PublicHD',
         'expected': {
-            'series_name': 'show name',
+            'show': 'show name',
             'season': 2,
             'episodes': [10],
             'quality': Quality.FULLHDBLURAY,
@@ -34,7 +34,7 @@ import pytest
         'file_path': '/media/postprocess/Show.Name.S03E13.1080p.HDTV.X264-DIMENSION/Show.Name.S03E13.1080p.HDTV.X264-DIMENSION.mkv',
         'nzb_name': 'Show.Name.S03E13.1080p.HDTV.X264-DIMENSION',
         'expected': {
-            'series_name': 'Show Name',
+            'show': 'Show Name',
             'season': 3,
             'episodes': [13],
             'quality': Quality.FULLHDTV,
@@ -45,7 +45,7 @@ import pytest
         'file_path': '/media/postprocess/Show.Name.S12E02.The.Brain.In.The.Bot.1080p.WEB-DL.DD5.1.H.264-R2D2/161219_06.mkv',
         'nzb_name': 'Show.Name.S12E02.The.Brain.In.The.Bot.1080p.WEB-DL.DD5.1.H.264-R2D2',
         'expected': {
-            'series_name': 'Show Name',
+            'show': 'Show Name',
             'season': 12,
             'episodes': [2],
             'quality': Quality.FULLHDWEBDL,
@@ -56,7 +56,7 @@ import pytest
         'file_path': '/media/postprocess/Show.Name.S03E01E02.HDTV.x264-LOL/Show.Name.S03E01E02.HDTV.x264-LOL.mkv',
         'nzb_name': 'Show.Name.S03E01E02.HDTV.x264-LOL',
         'expected': {
-            'series_name': 'Show Name',
+            'show': 'Show Name',
             'season': 3,
             'episodes': [1, 2],
             'quality': Quality.SDTV,
@@ -76,7 +76,7 @@ def test_parse_info(p, monkeypatch, parse_method):
     # Then
     assert show is not None
     assert p['expected'] == {
-        'series_name': show.name,
+        'show': show.name,
         'season': season,
         'episodes': episodes,
         'quality': quality,
