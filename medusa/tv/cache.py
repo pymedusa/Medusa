@@ -23,13 +23,23 @@ import itertools
 import time
 import traceback
 
-from six import text_type
-from medusa import app, db, logger, show_name_helpers
+from medusa import (
+    app,
+    db,
+    logger,
+    show_name_helpers,
+)
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException,
+    NameParser,
+)
 from medusa.rss_feeds import getFeed
 from medusa.show.show import Show
+
+from six import text_type
 
 
 class CacheDBConnection(db.DBConnection):

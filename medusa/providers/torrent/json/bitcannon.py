@@ -20,13 +20,18 @@ from __future__ import unicode_literals
 
 import traceback
 
-import validators
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....helper.common import convert_size, try_int
+from requests.compat import urljoin
+import validators
 
 
 class BitCannonProvider(TorrentProvider):

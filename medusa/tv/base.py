@@ -3,23 +3,10 @@
 import datetime
 import shutil
 import threading
-import shutil_custom
 
-from medusa import (
-    app,
-)
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 
-try:
-    import xml.etree.cElementTree as ETree
-except ImportError:
-    import xml.etree.ElementTree as ETree
-
-try:
-    from send2trash import send2trash
-except ImportError:
-    app.TRASH_REMOVE_SHOW = 0
-
+import shutil_custom
 
 shutil.copyfile = shutil_custom.copyfile_custom
 

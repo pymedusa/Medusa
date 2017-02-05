@@ -22,13 +22,16 @@ import re
 import traceback
 
 from dateutil import parser
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....helper.common import convert_size
 
 
 class TorrentDayProvider(TorrentProvider):

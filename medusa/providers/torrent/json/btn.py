@@ -22,13 +22,18 @@ import socket
 import time
 
 import jsonrpclib
-from six import itervalues
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import app, logger, scene_exceptions
-from ....common import cpu_presets
-from ....helper.common import episode_num
+from medusa import (
+    app,
+    logger,
+    scene_exceptions,
+    tv,
+)
+from medusa.common import cpu_presets
+from medusa.helper.common import episode_num
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from six import itervalues
 
 
 class BTNProvider(TorrentProvider):

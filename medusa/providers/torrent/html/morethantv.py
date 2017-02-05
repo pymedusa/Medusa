@@ -23,16 +23,22 @@ import time
 import traceback
 
 from dateutil import parser
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.helper.exceptions import AuthException
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from six.moves.urllib_parse import parse_qs
-
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
-from ....helper.exceptions import AuthException
 
 
 class MoreThanTVProvider(TorrentProvider):

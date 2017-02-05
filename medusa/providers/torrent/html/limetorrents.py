@@ -22,14 +22,20 @@ import re
 import traceback
 
 from contextlib2 import suppress
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
-
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*)\.html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)

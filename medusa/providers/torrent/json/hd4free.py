@@ -21,12 +21,15 @@ from __future__ import unicode_literals
 import traceback
 
 from dateutil import parser
-from requests.compat import urljoin
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....helper.common import convert_size
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from requests.compat import urljoin
 
 
 class HD4FreeProvider(TorrentProvider):

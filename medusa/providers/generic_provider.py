@@ -24,21 +24,45 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-from requests.utils import add_dict_to_cookiejar
+from medusa import (
+    app,
+    config,
+    logger,
+    tv,
+    ui,
+)
+from medusa.classes import (
+    Proper,
+    SearchResult,
+)
+from medusa.common import (
+    MULTI_EP_RESULT,
+    Quality,
+    SEASON_RESULT,
+    UA_POOL,
+)
+from medusa.db import DBConnection
+from medusa.helper.common import (
+    replace_extension,
+    sanitize_filename,
+)
+from medusa.helper.exceptions import ex
+from medusa.helpers import (
+    download_file,
+    get_url,
+    make_session,
+)
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException,
+    NameParser,
+)
+from medusa.scene_exceptions import get_scene_exceptions
+from medusa.show.show import Show
+from medusa.show_name_helpers import allPossibleShowNames
 
-from medusa.tv.cache import Cache
-from .. import app, config, logger, ui
-from ..classes import Proper, SearchResult
-from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
-from ..db import DBConnection
-from ..helper.common import replace_extension, sanitize_filename
-from ..helper.exceptions import ex
-from ..helpers import download_file, get_url, make_session
-from ..indexers.indexer_config import INDEXER_TVDBV2
-from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from ..scene_exceptions import get_scene_exceptions
-from ..show.show import Show
-from ..show_name_helpers import allPossibleShowNames
+from requests.utils import add_dict_to_cookiejar
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -64,7 +88,7 @@ class GenericProvider(object):
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
             'http://torrasave.site/torrent/{info_hash}.torrent',
         ]
-        self.cache = Cache(self)
+        self.cache = tv.Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
         self.enable_daily = False
