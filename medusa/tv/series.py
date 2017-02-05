@@ -246,8 +246,8 @@ class Series(TV):
     @location.setter
     def location(self, value):
         logger.log(
-            u'{indexer} {id}: Setting location: {location}'.format(
-                indexer=self.indexer_api.name,
+            u'{indexer!r} {id}: Setting location: {location}'.format(
+                indexer=indexerApi(self.indexer).name,
                 id=self.indexerid,
                 location=value
             ),
