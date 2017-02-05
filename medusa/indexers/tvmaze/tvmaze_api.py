@@ -29,8 +29,7 @@ from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowNotFound
 
 
-def log():
-    return logging.getLogger('tvmaze')
+logger = logging.getLogger(__name__)
 
 
 class TVmaze(BaseIndexer):
@@ -42,6 +41,8 @@ class TVmaze(BaseIndexer):
 
     def __init__(self, *args, **kwargs):  # pylint: disable=too-many-locals,too-many-arguments
         super(TVmaze, self).__init__(*args, **kwargs)
+
+        self.indexer = 3
 
         # List of language from http://thetvmaze.com/api/0629B785CE550C8D/languages.xml
         # Hard-coded here as it is realtively static, and saves another HTTP request, as
@@ -125,7 +126,7 @@ class TVmaze(BaseIndexer):
                             if value.get('medium'):
                                 return_dict['image_medium'] = value.get('medium')
                                 return_dict['image_original'] = value.get('original')
-                                return_dict['poster'] = value.get('original')
+                                return_dict['poster'] = value.get('medium')
                         if key == 'externals':
                             return_dict['tvrage_id'] = value.get('tvrage')
                             return_dict['tvdb_id'] = value.get('thetvdb')
@@ -158,7 +159,7 @@ class TVmaze(BaseIndexer):
                     return_dict['network'] = network.name
 
             except Exception as e:
-                log().warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
+                logger.warning('Exception trying to parse attribute: %s, with exception: %r', key, e)
 
             parsed_response.append(return_dict)
 
@@ -193,7 +194,7 @@ class TVmaze(BaseIndexer):
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
         series = series.encode('utf-8')
-        log().debug('Searching for show %s', [series])
+        logger.debug('Searching for show %s', [series])
 
         results = self._show_search(series, request_language=self.config['language'])
 
@@ -213,7 +214,7 @@ class TVmaze(BaseIndexer):
         """
         results = None
         if tvmaze_id:
-            log().debug('Getting all show data for %s', [tvmaze_id])
+            logger.debug('Getting all show data for %s', [tvmaze_id])
             results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
 
         if not results:
@@ -231,11 +232,11 @@ class TVmaze(BaseIndexer):
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
         # Parse episode data
-        log().debug('Getting all episodes of %s', [tvmaze_id])
+        logger.debug('Getting all episodes of %s', [tvmaze_id])
         try:
             results = self.tvmaze_api.episode_list(tvmaze_id, specials=specials)
         except IDNotFound:
-            log().debug('Episode search did not return any results.')
+            logger.debug('Episode search did not return any results.')
             return False
 
         episodes = self._map_results(results, self.series_map)
@@ -248,7 +249,7 @@ class TVmaze(BaseIndexer):
 
         for cur_ep in episodes:
             if self.config['dvdorder']:
-                log().debug('Using DVD ordering.')
+                logger.debug('Using DVD ordering.')
                 use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
             else:
                 use_dvd = False
@@ -259,7 +260,7 @@ class TVmaze(BaseIndexer):
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                log().warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
+                logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
                 continue  # Skip to next episode
 
             seas_no = int(seasnum)
@@ -269,7 +270,7 @@ class TVmaze(BaseIndexer):
                 k = k.lower()
 
                 if v is not None:
-                    if k == 'image_original':
+                    if k == 'image_medium':
                         self._set_item(tvmaze_id, seas_no, ep_no, 'filename', v)
                 self._set_item(tvmaze_id, seas_no, ep_no, k, v)
 
@@ -290,22 +291,22 @@ class TVmaze(BaseIndexer):
 
         This interface will be improved in future versions.
         """
-        log().debug('Getting show banners for %s', [tvmaze_id])
+        logger.debug('Getting show banners for %s', [tvmaze_id])
 
         try:
-            image_original = self.shows[tvmaze_id]['image_original']
+            image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
-            log().debug('Could not parse Poster for showid: %s', [tvmaze_id])
+            logger.debug('Could not parse Poster for showid: %s', [tvmaze_id])
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
         _images = {u'poster': {u'1014x1500': {u'1': {u'rating': 1,
                                                      u'language': u'en',
                                                      u'ratingcount': 1,
-                                                     u'bannerpath': image_original.split('/')[-1],
+                                                     u'bannerpath': image_medium.split('/')[-1],
                                                      u'bannertype': u'poster',
                                                      u'bannertype2': u'210x195',
-                                                     u'_bannerpath': image_original,
+                                                     u'_bannerpath': image_medium,
                                                      u'id': u'1035106'}}}}
 
         season_images = self._parse_season_images(tvmaze_id)
@@ -319,7 +320,7 @@ class TVmaze(BaseIndexer):
         """Parse Show and Season posters."""
         seasons = {}
         if tvmaze_id:
-            log().debug('Getting all show data for %s', [tvmaze_id])
+            logger.debug('Getting all show data for %s', [tvmaze_id])
             seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
 
         _images = {'season': {'original': {}}}
@@ -358,18 +359,18 @@ class TVmaze(BaseIndexer):
         Any key starting with an underscore has been processed (not the raw
         data from the indexer)
         """
-        log().debug('Getting actors for %s', [tvmaze_id])
+        logger.debug('Getting actors for %s', [tvmaze_id])
         try:
             actors = self.tvmaze_api.show_cast(tvmaze_id)
         except CastNotFound:
-            log().debug('Actors result returned zero')
+            logger.debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
         for order, cur_actor in enumerate(actors.people):
             save_actor = Actor()
             save_actor['id'] = cur_actor.id
-            save_actor['image'] = cur_actor.image.get('original')
+            save_actor['image'] = cur_actor.image.get('original') if cur_actor.image else ''
             save_actor['name'] = cur_actor.name
             save_actor['role'] = cur_actor.character.name
             save_actor['sortorder'] = order
@@ -383,12 +384,12 @@ class TVmaze(BaseIndexer):
         """
 
         if self.config['language'] is None:
-            log().debug('Config language is none, using show language')
+            logger.debug('Config language is none, using show language')
             if language is None:
                 raise IndexerError("config['language'] was None, this should not happen")
             get_show_in_language = language
         else:
-            log().debug(
+            logger.debug(
                 'Configured language %s override show language of %s' % (
                     self.config['language'],
                     language
@@ -397,13 +398,13 @@ class TVmaze(BaseIndexer):
             get_show_in_language = self.config['language']
 
         # Parse show information
-        log().debug('Getting all series data for %s' % tvmaze_id)
+        logger.debug('Getting all series data for %s' % tvmaze_id)
 
         # Parse show information
         series_info = self._get_show_by_id(tvmaze_id, request_language=get_show_in_language)
 
         if not series_info:
-            log().debug('Series result returned zero')
+            logger.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
 
         # save all retrieved show information to Show object.
@@ -433,7 +434,7 @@ class TVmaze(BaseIndexer):
         return True
 
     def _get_all_updates(self, tvmaze_id=None, start_date=None, end_date=None):
-        """Retrieve all updates (show,season,episode) from TVMaze"""
+        """Retrieve all updates (show,season,episode) from TVMaze."""
         results = []
         try:
             updates = self.tvmaze_api.show_updates()
@@ -490,7 +491,7 @@ class TVmaze(BaseIndexer):
                                 in externals.items()
                                 if external_value and mapping.get(external_id)}
                 except ShowNotFound:
-                    log().debug('Could not get tvmaze externals using external key %s and id %s',
-                                external_id, kwargs.get(external_id))
+                    logger.debug('Could not get tvmaze externals using external key %s and id %s',
+                                 external_id, kwargs.get(external_id))
                     continue
         return externals

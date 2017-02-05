@@ -207,7 +207,7 @@ class TorrentRssProvider(TorrentProvider):
             file_out = io.open(dump_name, 'wb')
             file_out.write(data)
             file_out.close()
-            helpers.chmodAsParent(dump_name)
+            helpers.chmod_as_parent(dump_name)
         except IOError as error:
             logger.log('Unable to save the file: {0}'.format(ex(error)), logger.ERROR)
             return False

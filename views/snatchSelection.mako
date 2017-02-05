@@ -2,7 +2,6 @@
 <%!
     from medusa import app
     from medusa.helpers import anon_url
-    from medusa.indexers.indexer_api import indexerApi
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -117,19 +116,16 @@
                     <tbody aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
-                            <td class="tvShow">
-                                <span class="break-word ${hItem['name_highlight']}">
-                                    ${hItem["name"]}
-                                </span>
+                            <td class="release-name-ellipses">
+                                <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
                             </td>
-                            <td class="col-group">
-                                <span class="break-word ${hItem['rg_highlight']}">
-                                    ${hItem['release_group']}
-                                </span>
+                            <td class="col-group break-word">
+                                <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
                             </td>
                             <td class="col-provider">
-                                <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
-                                ${hItem["provider"]}
+                                <span title="${hItem["provider"]}" class="addQTip">
+                                    <img src="${hItem["provider_img_link"]}" width="16" height="16" style="vertical-align:middle;" style="cursor: help;" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
+                                </span>
                             </td>
                             <td align="center">${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
@@ -137,18 +133,16 @@
                             % endif
                             </td>
                             <td align="center">
-                                <span class="${hItem['seed_highlight']}">
-                                    ${hItem["seeders"]}
-                                </span>
+                                <span class="${hItem['seed_highlight']}">${hItem["seeders"]}</span>
                             </td>
                             <td align="center">
-                                <span class="${hItem['leech_highlight']}">
-                                    ${hItem["leechers"]}
-                                </span>
+                                <span class="${hItem['leech_highlight']}">${hItem["leechers"]}</span>
                             </td>
                             <td class="col-size">${hItem["pretty_size"]}</td>
                             <td align="center">${hItem["provider_type"]}</td>
-                            <td class="col-date">${hItem["time"]}</td>
+                            <td class="col-date">
+                                <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
+                            </td>
                             <td class="col-date">${hItem["pubdate"]}</td>
                             <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>

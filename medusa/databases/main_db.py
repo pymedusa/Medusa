@@ -30,7 +30,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 3
+CURRENT_MINOR_DB_VERSION = 4
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -40,13 +40,13 @@ class MainSanityCheck(db.DBSanityCheck):
         self.fix_duplicate_episodes()
         self.fix_orphan_episodes()
         self.fix_unaired_episodes()
-        self.fix_tvrage_show_statues()
+        self.fix_indexer_show_statues()
         self.fix_episode_statuses()
         self.fix_invalid_airdates()
-        # self.fix_subtitles_codes()
+        #  self.fix_subtitles_codes()
         self.fix_show_nfo_lang()
-        self.convert_tvrage_to_tvdb()
         self.convert_archived_to_compound()
+        self.update_old_propers()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
 
@@ -100,11 +100,11 @@ class MainSanityCheck(db.DBSanityCheck):
             logger.log(u"Found %i shows with bare archived status, attempting automatic conversion..." % len(sql_results), logger.WARNING)
 
         for archivedEp in sql_results:
-            fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, common.Quality.UNKNOWN)
+            fixedStatus = common.Quality.composite_status(common.ARCHIVED, common.Quality.UNKNOWN)
             existing = archivedEp['location'] and os.path.exists(archivedEp['location'])
             if existing:
-                quality = common.Quality.nameQuality(archivedEp['location'], archivedEp['anime'], extend=False)
-                fixedStatus = common.Quality.compositeStatus(common.ARCHIVED, quality)
+                quality = common.Quality.name_quality(archivedEp['location'], archivedEp['anime'], extend=False)
+                fixedStatus = common.Quality.composite_status(common.ARCHIVED, quality)
 
             logger.log(u'Changing status from {old_status} to {new_status} for {id}: {ep} at {location} (File {result})'.format
                        (old_status=common.statusStrings[common.ARCHIVED], new_status=common.statusStrings[fixedStatus],
@@ -114,59 +114,6 @@ class MainSanityCheck(db.DBSanityCheck):
                         result=('NOT FOUND', 'EXISTS')[bool(existing)]))
 
             self.connection.action("UPDATE tv_episodes SET status = %i WHERE episode_id = %i" % (fixedStatus, archivedEp['episode_id']))
-
-    def convert_tvrage_to_tvdb(self):
-        logger.log(u"Checking for shows with tvrage id's, since tvrage is gone", logger.DEBUG)
-        from ..indexers.indexer_config import INDEXER_TVRAGE
-        from ..indexers.indexer_config import INDEXER_TVDBV2
-
-        sql_results = self.connection.select("SELECT indexer_id, show_name, location FROM tv_shows WHERE indexer = %i" % INDEXER_TVRAGE)
-
-        if sql_results:
-            logger.log(u"Found %i shows with TVRage ID's, attempting automatic conversion..." % len(sql_results), logger.WARNING)
-
-        for tvrage_show in sql_results:
-            logger.log(u"Processing %s at %s" % (tvrage_show['show_name'], tvrage_show['location']))
-            mapping = self.connection.select("SELECT mindexer_id FROM indexer_mapping WHERE indexer_id=%i AND indexer=%i AND mindexer=%i" %
-                                             (tvrage_show['indexer_id'], INDEXER_TVRAGE, INDEXER_TVDBV2))
-
-            if len(mapping) != 1:
-                logger.log(u"Error mapping show from tvrage to tvdb for %s (%s), found %i mapping results. Cannot convert automatically!" %
-                           (tvrage_show['show_name'], tvrage_show['location'], len(mapping)), logger.WARNING)
-                logger.log(u"Removing the TVRage show and it's episodes from the DB, use 'addExistingShow'", logger.WARNING)
-                self.connection.action("DELETE FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (tvrage_show['indexer_id'], INDEXER_TVRAGE))
-                self.connection.action("DELETE FROM tv_episodes WHERE showid = %i" % tvrage_show['indexer_id'])
-                continue
-
-            logger.log(u'Checking if there is already a show with id:%i in the show list')
-            duplicate = self.connection.select("SELECT show_name, indexer_id, location FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (mapping[0]['mindexer_id'], INDEXER_TVDBV2))
-            if duplicate:
-                logger.log(u'Found %s which has the same id as %s, cannot convert automatically so I am pausing %s' %
-                           (duplicate[0]['show_name'], tvrage_show['show_name'], duplicate[0]['show_name']), logger.WARNING)
-                self.connection.action("UPDATE tv_shows SET paused=1 WHERE indexer=%i AND indexer_id=%i" %
-                                       (INDEXER_TVDBV2, duplicate[0]['indexer_id']))
-
-                logger.log(u"Removing %s and it's episodes from the DB" % tvrage_show['show_name'], logger.WARNING)
-                self.connection.action("DELETE FROM tv_shows WHERE indexer_id = %i AND indexer = %i" % (tvrage_show['indexer_id'], INDEXER_TVRAGE))
-                self.connection.action("DELETE FROM tv_episodes WHERE showid = %i" % tvrage_show['indexer_id'])
-                logger.log(u'Manually move the season folders from %s into %s, and delete %s before rescanning %s and unpausing it' %
-                           (tvrage_show['location'], duplicate[0]['location'], tvrage_show['location'], duplicate[0]['show_name']), logger.WARNING)
-                continue
-
-            logger.log(u'Mapping %s to tvdb id %i' % (tvrage_show['show_name'], mapping[0]['mindexer_id']))
-
-            self.connection.action(
-                "UPDATE tv_shows SET indexer=%i, indexer_id=%i WHERE indexer_id=%i" %
-                (INDEXER_TVDBV2, mapping[0]['mindexer_id'], tvrage_show['indexer_id'])
-            )
-
-            logger.log(u'Relinking episodes to show')
-            self.connection.action(
-                "UPDATE tv_episodes SET indexer=%i, showid=%i, indexerid=0 WHERE showid=%i" %
-                (INDEXER_TVDBV2, mapping[0]['mindexer_id'], tvrage_show['indexer_id'])
-            )
-
-            logger.log(u'Please perform a full update on %s' % tvrage_show['show_name'], logger.WARNING)
 
     def fix_duplicate_shows(self, column='indexer_id'):
 
@@ -259,7 +206,7 @@ class MainSanityCheck(db.DBSanityCheck):
             self.connection.action("UPDATE tv_episodes SET status = ? WHERE episode_id = ?",
                                    [common.UNAIRED, cur_unaired["episode_id"]])
 
-    def fix_tvrage_show_statues(self):
+    def fix_indexer_show_statues(self):
         status_map = {
             'returning series': 'Continuing',
             'canceled/ended': 'Ended',
@@ -334,7 +281,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
 def backupDatabase(version):
     logger.log(u"Backing up database before upgrade")
-    if not helpers.backupVersionedFile(db.dbFilename(), version):
+    if not helpers.backup_versioned_file(db.dbFilename(), version):
         logger.log_error_and_exit(u"Database backup failed, abort upgrading database")
     else:
         logger.log(u"Proceeding with upgrade")
@@ -546,3 +493,21 @@ class AddManualSearched(AddProperTags):
         self.inc_minor_version()
 
         logger.log(u'Updated to: %d.%d' % self.connection.version)
+
+
+class AddInfoHash(AddManualSearched):
+    """Adds column info_hash to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.4
+        """
+        return self.connection.version >= (44, 4)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        logger.log(u"Adding column info_hash in history")
+        if not self.hasColumn("history", "info_hash"):
+            self.addColumn("history", "info_hash", 'TEXT', None)
+        self.inc_minor_version()

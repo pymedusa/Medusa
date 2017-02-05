@@ -141,4 +141,4 @@ class HelpersFileTests(unittest.TestCase):
 
         for cur_test in extension_tests, sample_tests, edge_cases:
             for cur_name, expected_result in cur_test.items():
-                self.assertEqual(helpers.isMediaFile(cur_name), expected_result, cur_name)
+                self.assertEqual(helpers.is_media_file(cur_name), expected_result, cur_name)

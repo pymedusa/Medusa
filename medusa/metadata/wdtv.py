@@ -20,11 +20,10 @@ import datetime
 import os
 import re
 
-from .. import app, helpers, logger
+from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num as ep_num, replace_extension
-from ..helper.exceptions import ShowNotFoundException
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from ..metadata import generic
 
 try:
@@ -182,27 +181,9 @@ class WDTVMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-        l_indexer_api_params[b'actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params[b'language'] = indexer_lang
-
-        if ep_obj.show.dvdorder != 0:
-            l_indexer_api_params[b'dvdorder'] = True
-
-        try:
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
-        except IndexerShowNotFound as e:
-            raise ShowNotFoundException(e.message)
-        except IndexerError:
-            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
-            return False
+        my_show = self._get_show_data(ep_obj.show)
+        if not my_show:
+            return None
 
         root_node = etree.Element('details')
 
@@ -295,7 +276,7 @@ class WDTVMetadata(generic.GenericMetadata):
                 overview.text = ep_to_write.description
 
             # Make it purdy
-            helpers.indentXML(root_node)
+            helpers.indent_xml(root_node)
             data = etree.ElementTree(root_node)
 
         return data

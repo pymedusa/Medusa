@@ -23,7 +23,7 @@ from .search.queue import FailedQueueItem
 
 
 class FailedProcessor(object):
-    """Take appropriate action when a download fails to complete"""
+    """Take appropriate action when a download fails to complete."""
 
     def __init__(self, dirName, nzbName):
         """
@@ -69,11 +69,11 @@ class FailedProcessor(object):
         if segment:
             self._log(u"Adding this release to failed queue: {0}".format(releaseName), logger.DEBUG)
             cur_failed_queue_item = FailedQueueItem(parsed.show, segment)
-            app.forcedSearchQueueScheduler.action.add_item(cur_failed_queue_item)
+            app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
         return True
 
     def _log(self, message, level=logger.INFO):
-        """Log to regular logfile and save for return for PP script log"""
+        """Log to regular logfile and save for return for PP script log."""
         logger.log(message, level)
         self.log += message + "\n"

@@ -83,7 +83,7 @@ MEDUSA.common.init = function() {
         $('.dropdown-toggle').on('click', function() {
             var $this = $(this);
             if ($this.attr('aria-expanded') === 'true') {
-                window.location.href = $this.attr('href');
+                window.location.href = $('base').attr('href') + $this.attr('href');
             }
         });
     }
@@ -95,8 +95,8 @@ MEDUSA.common.init = function() {
             prefixFromNow: 'In ',
             suffixAgo: 'ago',
             suffixFromNow: '',
-            seconds: 'less than a minute',
-            minute: 'about a minute',
+            seconds: 'a few seconds',
+            minute: 'a minute',
             minutes: '%d minutes',
             hour: 'an hour',
             hours: '%d hours',
@@ -139,5 +139,32 @@ MEDUSA.common.init = function() {
         } else {
             $('#content_' + $(this).attr('id')).fadeOut('fast', 'linear');
         }
+    });
+
+    $('.addQTip').each(function() {
+        $(this).css({
+            'cursor': 'help', // eslint-disable-line quote-props
+            'text-shadow': '0px 0px 0.5px #666'
+        });
+
+        var my = $(this).data('qtip-my') || 'left center';
+        var at = $(this).data('qtip-at') || 'middle right';
+
+        $(this).qtip({
+            show: {
+                solo: true
+            },
+            position: {
+                my: my,
+                at: at,
+            },
+            style: {
+                tip: {
+                    corner: true,
+                    method: 'polygon'
+                },
+                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
+            }
+        });
     });
 };

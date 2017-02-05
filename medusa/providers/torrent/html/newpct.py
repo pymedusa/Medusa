@@ -218,7 +218,8 @@ class NewpctProvider(TorrentProvider):
         urls, filename = self._make_url(result)
 
         for url in urls:
-            # Search results don't return torrent files directly, it returns show sheets so we must parse showSheet to access torrent.
+            # Search results don't return torrent files directly,
+            # it returns show sheets so we must parse showSheet to access torrent.
             response = self.get_url(url, returns='response')
             url_torrent = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', response.text, re.DOTALL).group()
 

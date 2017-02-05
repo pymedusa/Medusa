@@ -104,10 +104,10 @@ def allPossibleShowNames(show, season=-1):
     Returns: a list of all the possible show names
     """
 
-    showNames = get_scene_exceptions(show.indexerid, season=season)
+    showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
     if not showNames:  # if we dont have any season specific exceptions fallback to generic exceptions
         season = -1
-        showNames = get_scene_exceptions(show.indexerid, season=season)
+        showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
 
     showNames.append(show.name)
 
@@ -137,7 +137,7 @@ def allPossibleShowNames(show, season=-1):
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):
-    """Determine a release name from an nzb and/or folder name"""
+    """Determine a release name from an nzb and/or folder name."""
 
     if nzb_name is not None:
         logger.log(u"Using nzb_name for release name.")

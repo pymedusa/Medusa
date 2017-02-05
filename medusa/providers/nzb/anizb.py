@@ -50,6 +50,7 @@ class Anizb(NZBProvider):
         # Miscellaneous Options
         self.supports_absolute_numbering = True
         self.anime_only = True
+        self.search_separator = '*'
 
         # Torrent Stats
 

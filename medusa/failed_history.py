@@ -184,8 +184,8 @@ def mark_failed(ep_obj):
 
     try:
         with ep_obj.lock:
-            quality = Quality.splitCompositeStatus(ep_obj.status)[1]
-            ep_obj.status = Quality.compositeStatus(FAILED, quality)
+            quality = Quality.split_composite_status(ep_obj.status)[1]
+            ep_obj.status = Quality.composite_status(FAILED, quality)
             ep_obj.save_to_db()
 
     except EpisodeNotFoundException as error:

@@ -20,7 +20,7 @@
 from __future__ import print_function
 
 from bs4 import BeautifulSoup
-from medusa.helpers import getURL, make_session
+from medusa.helpers import get_url, make_session
 from medusa.providers.torrent.json.bitcannon import BitCannonProvider
 from medusa.tv import TVEpisode, TVShow
 from six.moves.urllib_parse import urljoin
@@ -62,7 +62,7 @@ class TorrentBasicTests(test.AppTestDBCase):
         url = 'http://kickass.to/'
         search_url = 'http://kickass.to/usearch/American%20Dad%21%20S08%20-S08E%20category%3Atv/?field=seeders&sorder=desc'
 
-        html = getURL(search_url, session=make_session(), returns='text')
+        html = get_url(search_url, session=make_session(), returns='text')
         if not html:
             return
 

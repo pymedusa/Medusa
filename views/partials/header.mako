@@ -16,7 +16,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa-christmas.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+            <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
         </div>
     % if loggedIn:
         <div class="collapse navbar-collapse" id="main_nav">
@@ -63,7 +63,7 @@
                     % if app.USE_EMBY and app.EMBY_HOST != "" and app.EMBY_APIKEY != "":
                         <li><a href="home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                     % endif
-                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and (app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'https' or not app.ENABLE_HTTPS and app.TORRENT_HOST[:5] == 'http:'):
+                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and app.TORRENT_HOST[:4] == 'http':
                         <li><a href="manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                     % endif
                     % if app.USE_FAILED_DOWNLOADS:
@@ -96,7 +96,7 @@
                     <div style="clear:both;"></div>
                 </li>
                 <li id="NAVsystem" class="navbar-split dropdown${' active' if topmenu == 'system' else ''}">
-                    <a href="home/status/" class="dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
+                    <a href="home/status/" class="padding-right-15 dropdown-toggle" aria-haspopup="true" data-toggle="dropdown" data-hover="dropdown"><span class="visible-xs-inline">Tools</span><img src="images/menu/system18-2.png" class="navbaricon hidden-xs" />${toolsBadge}
                     <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">

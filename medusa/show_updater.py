@@ -21,13 +21,10 @@ import threading
 import time
 import app
 
-from six import text_type
-
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
-from .indexers.indexer_exceptions import IndexerUnavailable
-from .show.show import Show
+from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +34,7 @@ class ShowUpdater(object):
         self.lock = threading.Lock()
         self.amActive = False
         self.session = helpers.make_session()
-        self.last_update = ShowUpdate()
+        self.update_cache = UpdateCache()
 
     def run(self, force=False):
 
@@ -49,109 +46,102 @@ class ShowUpdater(object):
         network_timezones.update_network_dict()
         logger.info(u'Started periodic show updates')
 
-        # Initialize the indexer_update table. Add seasons with next_update, if they don't already exist.
-        self.last_update.initialize_indexer_update(app.showList)
-
-        # Get a list of seasons that have reached their update timer
-        expired_seasons = self.last_update.expired_seasons()
+        # Cache for the indexers list of updated show
+        indexer_updated_shows = {}
+        # Cache for the last indexer update timestamp
+        last_updates = {}
 
         # Loop through the list of shows, and per show evaluate if we can use the .get_last_updated_seasons()
         for show in app.showList:
+            if show.paused:
+                logger.info(u'The show {show} is paused, not updating it.', show=show.name)
+                continue
+
             indexer_api_params = indexerApi(show.indexer).api_params.copy()
             try:
                 t = indexerApi(show.indexer).indexer(**indexer_api_params)
-
-                if hasattr(t, 'get_last_updated_seasons'):
-                    # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
-                    last_update = self.last_update.get_last_indexer_update(indexerApi(show.indexer).name)
-                    if not last_update or last_update < time.time() - 604800 * update_max_weeks:
-                        # no entry in lastUpdate, or last update was too long ago,
-                        # let's refresh the show for this indexer
-                        refresh_shows.append(show)
-                    else:
-                        # Get updated seasons and add them to the season update list.
-                        updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
-                        for season in updated_seasons[show.indexerid]:
-                            season_updates.append((show.indexer, show, season))
             except IndexerUnavailable:
                 logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                u'connectivity issues. While trying to look for showupdates on show: {show}',
                                indexer_name=indexerApi(show.indexer).name, show=show.name)
                 continue
 
-        for indexer in expired_seasons:
-            try:
-                # Set refresh to True, to force refreshing of the entire show.
-                refresh = False
+            # Get the lastUpdate timestamp for this indexer.
+            if indexerApi(show.indexer).name not in last_updates:
+                last_updates[indexerApi(show.indexer).name] = \
+                    self.update_cache.get_last_indexer_update(indexerApi(show.indexer).name)
+            last_update = last_updates[indexerApi(show.indexer).name]
 
-                # Query the indexer for changed shows, since last update
-                # refresh network timezones
-                # network_timezones.update_network_dict()
-                # Returns in the following format: {dict} {indexer: {indexerid: {season: next_update_timestamp} }}
-                last_update = self.last_update.get_last_indexer_update(indexerApi(indexer).name)
-
-                if not last_update or last_update < time.time() - 604800 * update_max_weeks:
-                    # no entry in lastUpdate, or last update was too long ago, let's refresh the show for this indexer
-                    refresh = True
-                else:
-                    indexer_api_params = indexerApi(indexer).api_params.copy()
-                    t = indexerApi(indexer).indexer(**indexer_api_params)
-                    updated_shows = t.get_last_updated_series(last_update, update_max_weeks)
-
-                # Move through each show from the expired season cache table.
-                # And run the full show or per season update.
-                for show_id in expired_seasons[indexer]:
-                    # Loop through the shows.
-
-                    # Get the show object and check, to prevent issues further down the line.
-                    show = Show.find_by_id(app.showList, indexer, show_id)
-
-                    if not show:
-                        logger.warning(u'Could not get show object for indexer id: {show_id} '
-                                       u'and indexer: {indexer}', show_id=show_id, indexer=indexer)
+            # Get a list of updated shows from the indexer, since last update.
+            # Use the list, to limit the shows for which are requested for the last updated seasons.
+            if last_update and last_update > time.time() - (604800 * update_max_weeks):
+                if show.indexer not in indexer_updated_shows:
+                    try:
+                        indexer_updated_shows[show.indexer] = t.get_last_updated_series(last_update,
+                                                                                        update_max_weeks)
+                    except IndexerUnavailable:
+                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                       u'connectivity issues while trying to look for showupdates on show: {show}',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name)
+                        continue
+                    except IndexerException as e:
+                        logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                       u'issues while trying to get updates for show {show}. Cause: {cause}',
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                         continue
 
-                    # Check if this indexer/show combination is already scheduled for updating through a show refresh.
-                    # probably it was scheduled for refresh using the get_last_updated_seasons method.
-                    if [_ for _ in refresh_shows if _.indexer == indexer and _.indexerid == show_id]:
-                        continue
+                # If the current show is not in the list, move on to the next.
+                # Only do this for shows, that's have been recently updated (the < 12 weeks).
+                if all([isinstance(indexer_updated_shows[show.indexer], list),
+                        show.indexerid not in indexer_updated_shows.get(show.indexer)]):
+                    logger.debug(u'Skipping show {show}. As this indexer had a recent update but the show is not '
+                                 u'in the indexers {indexer_name} list with updated shows', show=show.name,
+                                 indexer_name=indexerApi(show.indexer).name)
+                    continue
 
-                    # Check if this indexer/show combination is already scheduled for updating through a
-                    # season expiration. probably it was scheduled for update using the get_last_updated_seasons method.
-                    if show in [_[1] for _ in season_updates]:
-                        continue
+            # These are the criteria for performing a full show refresh.
+            if any([not hasattr(t, 'get_last_updated_seasons'),
+                    not last_update,
+                    last_update < time.time() - 604800 * update_max_weeks]):
+                # no entry in lastUpdate, or last update was too long ago,
+                # let's refresh the show for this indexer
+                logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
+                             u" or the indexer doesn't support per season updates. doing a full update.",
+                             show=show.name, indexer_name=indexerApi(show.indexer).name,
+                             weeks=update_max_weeks)
+                refresh_shows.append(show)
 
-                    if refresh:
-                        # Marked as a refresh, we don't need to check on season.
-                        refresh_shows.append(show)
-                    else:
-                        # These support getting a list of seasons updated per show.
+            # Else fall back to per season updates.
+            elif hasattr(t, 'get_last_updated_seasons'):
+                # Get updated seasons and add them to the season update list.
+                try:
+                    updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                except IndexerUnavailable:
+                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                   u'connectivity issues while trying to look for showupdates on show: {show}',
+                                   indexer_name=indexerApi(show.indexer).name, show=show.name)
+                    continue
+                except IndexerException as e:
+                    logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                   u'issues while trying to get updates for show {show}. Cause: {cause}',
+                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                    continue
 
-                        # We only know the show has been updated, so let's be smart about it, and only update those
-                        # seasons, that got back from the expired_seasons list.
-                        if updated_shows and show_id in updated_shows:
-                            # Refresh this season, because it was expired AND it's in the indexer updated shows list.
-                            # Meaning A change to a episode occurred. Altough we don't update all seasons. But only
-                            # the expired one.
-                            for season in expired_seasons[indexer][show_id]:
-                                season_updates.append((indexer, show, season))
-            except IndexerUnavailable:
-                logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                               u'connectivity issues', indexer_name=indexerApi(show.indexer).name)
-                continue
-
-            # update the lastUpdate for this indexer
-            self.last_update.set_last_indexer_update(indexerApi(indexer).name)
+                if updated_seasons[show.indexerid]:
+                    logger.info(u'{show_name}: Adding the following seasons for update to queue: {seasons}',
+                                show_name=show.name, seasons=updated_seasons[show.indexerid])
+                    for season in updated_seasons[show.indexerid]:
+                        season_updates.append((show.indexer, show, season))
 
         pi_list = []
 
         # Full refreshes
         for show in refresh_shows:
-            # If the cur_show is not 'paused' then add to the showQueueScheduler
+            # If the cur_show is not 'paused' then add to the show_queue_scheduler
             if not show.paused:
                 logger.info(u'Full update on show: {show}', show=show.name)
                 try:
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show))
+                    pi_list.append(app.show_queue_scheduler.action.updateShow(show))
                 except (CantUpdateShowException, CantRefreshShowException) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
@@ -161,12 +151,12 @@ class ShowUpdater(object):
 
         # Only update expired season
         for show in season_updates:
-            # If the cur_show is not 'paused' then add to the showQueueScheduler
+            # If the cur_show is not 'paused' then add to the show_queue_scheduler
             if not show[1].paused:
                 logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
                 try:
-                    pi_list.append(app.showQueueScheduler.action.updateShow(show[1], season=show[2]))
-                except (CantUpdateShowException, CantRefreshShowException) as e:
+                    pi_list.append(app.show_queue_scheduler.action.updateShow(show[1], season=show[2]))
+                except CantUpdateShowException as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
@@ -175,8 +165,27 @@ class ShowUpdater(object):
 
         ui.ProgressIndicators.setIndicator('dailyUpdate', ui.QueueProgressIndicator("Daily Update", pi_list))
 
+        # Only refresh updated shows that have been updated using the season updates.
+        # The full refreshed shows, are updated from the queueItem.
+        for show in set(show[1] for show in season_updates):
+            if not show.paused:
+                try:
+                    app.show_queue_scheduler.action.refreshShow(show, True)
+                except CantRefreshShowException as e:
+                    logger.warning(u'Show refresh on show {show_name} failed. Error: {error}',
+                                   show_name=show.name, error=e)
+                except Exception as e:
+                    logger.error(u'Show refresh on show {show_name} failed: Unexpected Error: {error}',
+                                 show_name=show.name, error=e)
+            else:
+                logger.info(u'Show refresh skipped, show: {show_name} is paused.', show_name=show.name)
+
         if refresh_shows or season_updates:
-            logger.info(u'Completed updates on shows')
+            for indexer in set([show.indexer for show in refresh_shows] + [s[1].indexer for s in season_updates]):
+                indexer_api = indexerApi(indexer)
+                self.update_cache.set_last_indexer_update(indexer_api.name)
+                logger.info(u'Updated lastUpdate ts for {indexer_name}', indexer_name=indexer_api.name)
+            logger.info(u'Completed scheduling updates on shows')
         else:
             logger.info(u'Completed but there was nothing to update')
 
@@ -186,98 +195,24 @@ class ShowUpdater(object):
         pass
 
 
-class ShowUpdate(db.DBConnection):
+class UpdateCache(db.DBConnection):
     def __init__(self):
-        db.DBConnection.__init__(self, 'cache.db')
-
-    def initialize_indexer_update(self, show_list):
-        """Add initial next_update to new seasons or shows.
-
-        And cleanup the indexer_update table with shows that have been removed.
-        :param show_list: List of show objects.
-        """
-        for show in show_list:
-            for season in show.get_all_seasons(True):
-                if not self.get_next_season_update(show.indexer, show.indexerid, season):
-                    show.create_next_season_update(season)
-
-        # Cleanup
-        self.clean_expired_seasons(show_list)
-
-    def get_next_season_update(self, indexer, indexer_id, season):
-        """Get the next season update for a show, the date a season should be refreshed from indexer."""
-        next_refresh = self.select('SELECT next_update FROM indexer_update WHERE indexer = ? AND indexer_id = ?'
-                                   ' AND season = ?',
-                                   [indexer, indexer_id, season])
-
-        return next_refresh[0]['next_update'] if next_refresh else 0
-
-    def set_next_season_update(self, indexer, indexer_id, season):
-        """Set the last update to now, for a show (indexer_id) and it's indexer."""
-        return self.upsert('indexer_update',
-                           {'next_update': int(time.time())},
-                           {'indexer': indexer, 'indexer_id': indexer_id, 'season': season})
-
-    def expired_seasons(self):
-        """Get the next season update for a show, the date a season should be refreshed from indexer."""
-        show_seasons = self.select('SELECT * FROM indexer_update where next_update < ? ', [int(time.time())])
-
-        seasons_dict = {}
-        for season in show_seasons:
-            if season['indexer'] not in seasons_dict:
-                seasons_dict[season['indexer']] = {}
-            if season['indexer_id'] not in seasons_dict[season['indexer']]:
-                seasons_dict[season['indexer']][season['indexer_id']] = {}
-            seasons_dict[season['indexer']][season['indexer_id']][season['season']] = season['next_update']
-
-        return seasons_dict
-
-    def clean_expired_seasons(self, show_list):
-        """Remove show/season combination from the indexer_update table.
-
-        :param show_list: A list of show_objects, used to clean up the indexer_update table.
-        :return: returns a list with show_id's removed.
-        """
-        remove_row = []
-        remove_show = []
-
-        next_updates = self.select(b'SELECT indexer_update_id, indexer, indexer_id FROM indexer_update')
-
-        for row in next_updates:
-            if not [show for show in show_list if
-                    show.indexer == row['indexer'] and
-                    show.indexerid == row['indexer_id']]:
-
-                remove_row.append(row['indexer_update_id'])
-                remove_show.append(row['indexer_id'])
-
-        def get_rows_by_slice(seq, row_len):
-            """Simple pagination/slice method. Will transform [1,2,3,4] into [[1,2],[3,4]] when provided rowlen=2."""
-            for start in xrange(0, len(seq), row_len):
-                yield seq[start:start + row_len]
-
-        if remove_row:
-            remove_show = ','.join(text_type(s) for s in set(remove_show))
-            for paged_list in get_rows_by_slice(remove_row, 50):
-                self.action(
-                    b'DELETE FROM indexer_update '
-                    b'WHERE indexer_update_id IN (%s)' % ','.join('?' * len(paged_list)),
-                    paged_list
-                )
-            logger.info(u'Removed following shows from season update cache: [{shows}]',
-                        shows=remove_show)
-
-        return remove_show
+        super(UpdateCache, self).__init__('cache.db')
 
     def get_last_indexer_update(self, indexer):
         """Get the last update timestamp from the lastUpdate table.
 
         :param indexer:
-        :type indexer: string, name respresentation, like 'theTVDB'. Check the indexer_config's name attribute.
+        :type indexer: Indexer name from indexer_config's name attribute.
         :return: epoch timestamp
         :rtype: int
         """
-        last_update_indexer = self.select('SELECT time FROM lastUpdate WHERE provider = ?', [indexer])
+        last_update_indexer = self.select(
+            'SELECT time '
+            'FROM lastUpdate '
+            'WHERE provider = ?',
+            [indexer]
+        )
         return last_update_indexer[0]['time'] if last_update_indexer else None
 
     def set_last_indexer_update(self, indexer):

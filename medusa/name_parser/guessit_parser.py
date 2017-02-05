@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Guessit Name Parser."""
-from __future__ import unicode_literals
 
 import re
 from datetime import timedelta
@@ -10,44 +9,22 @@ from time import time
 from guessit.rules.common.date import valid_year
 from .rules import default_api
 from .. import app
-from ..cache import memory_cache
 
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 
-# hardcoded expected titles
-fixed_expected_titles = {
-    # guessit: conflicts with italian language
-    r're:(?<![^/\\])\w+ it\b',
-}
-
 # release group exception list
-expected_groups = {
-    # https://github.com/guessit-io/guessit/issues/297
-    # guessit blacklists parts of the name for the following groups
-    r're:\bbyEMP\b',
-    r're:\bELITETORRENT\b',
-    r're:\bNovaRip\b',
-    r're:\bPARTiCLE\b',
-    r're:\bPOURMOi\b',
-    r're:\bRipPourBox\b',
-    r're:\bRiPRG\b',
-    r're:\bNBY\b',
-
+expected_groups = [
     # release groups with numbers
     # https://github.com/guessit-io/guessit/issues/294
-    r're:\b4EVERHD\b',
-    r're:\bF4ST3R\b',
-    r're:\bF4ST\b',
-    r're:\bTGNF4ST\b',
-    r're:\bTV2LAX9\b',
+    'TV2LAX9',
 
     # https://github.com/guessit-io/guessit/issues/352
-    r're:\bS4L\b',
+    'S4L',
 
     # https://github.com/guessit-io/guessit/issues/356
-    r're:\bDHD\b',
-}
+    'DHD',
+]
 
 allowed_languages = {
     'de',
@@ -98,18 +75,6 @@ def guessit(name, options=None):
     return result
 
 
-def _key_generator(namespace, fn):
-    fname = fn.__name__
-
-    def generate_key(show_list):
-        names = []
-        for show in show_list:
-            names.extend([show.name] + show.exceptions)
-        return '{0}:{1}:{2}'.format(namespace, fname, names)
-    return generate_key
-
-
-@memory_cache.cache_on_arguments(expiration_time=EXPECTED_TITLES_EXPIRATION_TIME, function_key_generator=_key_generator)
 def get_expected_titles(show_list):
     """Return expected titles to be used by guessit.
 
@@ -121,7 +86,7 @@ def get_expected_titles(show_list):
     :return:
     :rtype: list of str
     """
-    expected_titles = list(fixed_expected_titles)
+    expected_titles = []
     for show in show_list:
         names = [show.name] + show.exceptions
         for name in names:
@@ -140,48 +105,6 @@ def get_expected_titles(show_list):
             if not any([char.isdigit() for char in series]):
                 continue
 
-            if not any([char.isalpha() for char in series]):
-                # if no alpha chars then add series name 'as-is'
-                expected_titles.append(series)
-
-            # (?<![^/\\]) means -> it matches nothing but path separators and dot (negative lookbehind)
-            fmt = r're:(?<=[\W_]){name}(?=[\W_]|$)' if show.is_anime else r're:(?<![^/\\\.]){name}(?=[\W_]|$)'
-            expected_titles.append(fmt.format(name=prepare(series)))
+            expected_titles.append(series)
 
     return expected_titles
-
-
-def prepare(string):
-    """Prepare a string to be used as a regex in guessit expected_title.
-
-    :param string:
-    :type string: str
-    :return:
-    :rtype: str
-    """
-    # replace some special characters with space
-    characters = {'-', '.', ',', '*', '(', ')'}
-    string = re.sub(r'[%s]' % re.escape(''.join(characters)), ' ', string)
-
-    # replace unicode characters with period
-    string = re.sub(r'[^\x00-\x7F]+', '.', string)
-
-    # escape other characters that might be problematic
-    string = re.escape(string)
-
-    # dots (the replacement of unicode characters) shouldn't be escaped and should match 1 or more characters
-    string = string.replace('\.', '.+')
-
-    # ' should be optional
-    string = string.replace(r"\'", r"'?")
-
-    # spaces shouldn't be escaped
-    string = string.replace('\ ', ' ')
-
-    # replace multiple spaces with one
-    string = re.sub(r'\s+', ' +', string.strip())
-
-    # : should be optional or space
-    string = string.replace(r"\:", r" ?")
-
-    return string

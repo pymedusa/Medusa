@@ -24,7 +24,7 @@ import traceback
 from operator import itemgetter
 
 from requests.auth import AuthBase
-from requests.compat import urljoin
+from requests.compat import quote, urljoin
 
 from ..torrent_provider import TorrentProvider
 from .... import logger, tv_cache
@@ -48,10 +48,10 @@ class T411Provider(TorrentProvider):
         # URLs
         self.url = 'https://api.t411.li'
         self.urls = {
-            'search': urljoin(self.url, 'torrents/search/%s*?cid=%s&limit=100'),
+            'search': urljoin(self.url, 'torrents/search/{search}'),
             'rss': urljoin(self.url, 'torrents/top/today'),
             'login_page': urljoin(self.url, 'auth'),
-            'download': urljoin(self.url, 'torrents/download/%s'),
+            'download': urljoin(self.url, 'torrents/download/{id}'),
         }
 
         # Proper Strings
@@ -80,6 +80,8 @@ class T411Provider(TorrentProvider):
         if not self.login():
             return results
 
+        search_params = {}
+
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
@@ -90,10 +92,25 @@ class T411Provider(TorrentProvider):
                     if self.confirmed:
                         logger.log('Searching only confirmed torrents', logger.DEBUG)
 
-                search_urls = ([self.urls['search'] % (search_string, u)
-                               for u in self.subcategories], [self.urls['rss']])[mode == 'RSS']
-                for search_url in search_urls:
-                    response = self.get_url(search_url, returns='response')
+                    # use string formatting to safely coerce the search term
+                    # to unicode then utf-8 encode the unicode string
+                    term = '{term}'.format(term=search_string).encode('utf-8')
+                    # build the search URL
+                    search_url = self.urls['search'].format(
+                        search=quote(term)  # URL encode the search term
+                    )
+                    categories = self.subcategories
+                    search_params.update({'limit': 100})
+                else:
+                    search_url = self.urls['rss']
+                    # Using None as a category removes it as a search param
+                    categories = [None]  # Must be a list for iteration
+
+                for category in categories:
+                    search_params.update({'cid': category})
+                    response = self.get_url(
+                        search_url, params=search_params, returns='response'
+                    )
 
                     if not response or not response.content:
                         logger.log('No data returned from provider', logger.DEBUG)
@@ -121,9 +138,12 @@ class T411Provider(TorrentProvider):
 
         unsorted_torrent_rows = data.get('torrents') if mode != 'RSS' else data
 
-        if not unsorted_torrent_rows or not isinstance(unsorted_torrent_rows, dict):
-            logger.log('Data returned from provider does not contain any {0}torrents'.format(
-                'confirmed ' if self.confirmed else ''), logger.DEBUG)
+        if not unsorted_torrent_rows:
+            logger.log(
+                'Data returned from provider does not contain any {torrents}'.format(
+                    torrents='confirmed torrents' if self.confirmed else 'torrents'
+                ), logger.DEBUG
+            )
             return items
 
         torrent_rows = sorted(unsorted_torrent_rows, key=itemgetter('added'), reverse=True)
@@ -139,7 +159,7 @@ class T411Provider(TorrentProvider):
             try:
                 title = row['name']
                 torrent_id = row['id']
-                download_url = (self.urls['download'] % torrent_id)
+                download_url = self.urls['download'].format(id=torrent_id)
                 if not all([title, download_url]):
                     continue
 

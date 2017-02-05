@@ -32,9 +32,10 @@ from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, UA_POOL
 from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
-from ..helpers import download_file, getURL, make_session
+from ..helpers import download_file, get_url, make_session
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from ..scene_exceptions import get_scene_exceptions
 from ..show.show import Show
 from ..show_name_helpers import allPossibleShowNames
 from ..tv_cache import TVCache
@@ -69,7 +70,7 @@ class GenericProvider(object):
         self.enable_daily = False
         self.enabled = False
         self.headers = {'User-Agent': UA_POOL.random}
-        self.proper_strings = ['PROPER|REPACK|REAL']
+        self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
         self.provider_type = None
         self.public = False
         self.search_fallback = False
@@ -80,6 +81,8 @@ class GenericProvider(object):
         self.supports_backlog = True
         self.url = ''
         self.urls = {}
+        # Ability to override the search separator. As for example anizb is using '*' instead of space.
+        self.search_separator = ' '
 
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
         self.enable_cookies = False
@@ -395,7 +398,7 @@ class GenericProvider(object):
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return getURL(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
 
     def image_name(self):
         """Return provider image name."""
@@ -451,7 +454,8 @@ class GenericProvider(object):
         }
 
         for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
-            episode_string = show_name + ' '
+            episode_string = show_name + self.search_separator
+            episode_string_fallback = None
 
             if episode.show.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
@@ -460,7 +464,16 @@ class GenericProvider(object):
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
             elif episode.show.anime:
-                episode_string += '%02d' % int(episode.scene_absolute_number)
+                # If the showname is a season scene exception, we want to use the indexer episode number.
+                if (episode.scene_season > 1 and
+                    show_name in get_scene_exceptions(episode.show.indexerid, episode.show.indexer,
+                                                      season=episode.scene_season)):
+                    # This is apparently a season exception, let's use the scene_episode instead of absolute
+                    ep = episode.scene_episode
+                else:
+                    ep = episode.scene_absolute_number
+                episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
+                episode_string += '{episode:0>2}'.format(episode=ep)
             else:
                 episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
@@ -468,9 +481,13 @@ class GenericProvider(object):
                 }
 
             if add_string:
-                episode_string += ' ' + add_string
+                episode_string += self.search_separator + add_string
+                if episode_string_fallback:
+                    episode_string_fallback += self.search_separator + add_string
 
             search_string['Episode'].append(episode_string.strip())
+            if episode_string_fallback:
+                search_string['Episode'].append(episode_string_fallback.strip())
 
         return [search_string]
 
@@ -491,7 +508,7 @@ class GenericProvider(object):
             elif episode.show.anime:
                 episode_string += 'Season'
             else:
-                episode_string += 'S%02d' % int(episode.season)
+                episode_string += 'S{season:0>2}'.format(season=episode.season)
 
             search_string['Season'].append(episode_string.strip())
 

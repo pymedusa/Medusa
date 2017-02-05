@@ -23,7 +23,7 @@ from traktor import TokenExpiredException, TraktApi, TraktException
 from .. import app
 from ..indexers.indexer_api import indexerApi
 from ..indexers.indexer_config import indexerConfig
-from ..indexers.indexer_exceptions import IndexerShowAllreadyInLibrary, IndexerUnavailable
+from ..indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 
 
 logger = logging.getLogger(__name__)
@@ -42,10 +42,11 @@ def get_trakt_externals(externals):
                 app.TRAKT_ACCESS_TOKEN = api.access_token
                 app.TRAKT_REFRESH_TOKEN = api.refresh_token
                 app.instance.save_config()
-        except (TokenExpiredException, TraktException):
-            app.TRAKT_ACCESS_TOKEN = ''
-            raise
-        return result
+        except (TokenExpiredException, TraktException) as e:
+            logger.info(u'Could not use Trakt to enrich with externals. Cause: {cause}', cause=e)
+            return []
+        else:
+            return result
 
     trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
                       'trakt_api_secret': app.TRAKT_API_SECRET,
@@ -107,7 +108,11 @@ def get_externals(show=None, indexer=None, indexed_show=None):
             logger.debug(u"Trying other indexers {indexer_name} get_id_by_external",
                          indexer_name=indexerApi(other_indexer).name)
             # Call the get_id_by_external and pass all the externals we have, except for the indexers own.
-            new_show_externals.update(t.get_id_by_external(**new_show_externals))
+            try:
+                new_show_externals.update(t.get_id_by_external(**new_show_externals))
+            except IndexerException as e:
+                logger.warning(u'Error getting external ids for other indexer {indexer_name} with cause {cause}',
+                               indexer_name=indexerApi(show.indexer).name, cause=e)
 
     # Try to update with the Trakt externals.
     new_show_externals.update(get_trakt_externals(new_show_externals))

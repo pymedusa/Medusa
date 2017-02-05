@@ -34,7 +34,7 @@ def getShowImage(url, imgNum=None):
 
     logger.log(u"Fetching image from " + tempURL, logger.DEBUG)
 
-    image_data = helpers.getURL(tempURL, session=meta_session, returns='content')
+    image_data = helpers.get_url(tempURL, session=meta_session, returns='content')
     if image_data is None:
         logger.log(u"There was an error trying to retrieve the image, aborting", logger.WARNING)
         return

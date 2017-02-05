@@ -19,6 +19,7 @@
 import logging
 
 from dateutil import parser
+
 from six.moves.urllib.request import FancyURLopener
 
 from . import app
@@ -110,7 +111,7 @@ class SearchResult(object):
 
         return my_string
 
-    def fileName(self):
+    def file_name(self):
         return u'{}.{}'.format(self.episodes[0].pretty_name(), self.resultType)
 
 
@@ -161,23 +162,23 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
             if 'searchterm' in self.config:
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
-                for curShow in all_series:
-                    if curShow in search_results:
+                for cur_show in all_series:
+                    if cur_show in search_results:
                         continue
 
-                    if 'seriesname' in curShow:
-                        series_names.append(curShow['seriesname'])
-                    if 'aliasnames' in curShow:
-                        series_names.extend(curShow['aliasnames'].split('|'))
+                    if 'seriesname' in cur_show:
+                        series_names.append(cur_show['seriesname'])
+                    if 'aliasnames' in cur_show:
+                        series_names.extend(cur_show['aliasnames'].split('|'))
 
                     for name in series_names:
                         if search_term.lower() in name.lower():
-                            if 'firstaired' not in curShow:
+                            if 'firstaired' not in cur_show:
                                 default_date = parser.parse('1900-01-01').date()
-                                curShow['firstaired'] = default_date.strftime(dateTimeFormat)
+                                cur_show['firstaired'] = default_date.strftime(dateTimeFormat)
 
-                            if curShow not in search_results:
-                                search_results += [curShow]
+                            if cur_show not in search_results:
+                                search_results += [cur_show]
 
         return search_results
 
@@ -199,9 +200,9 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
         try:
             # try to pick a show that's in my show list
             show_id_list = [int(x.indexerid) for x in app.showList]
-            for curShow in all_series:
-                if int(curShow['id']) in show_id_list:
-                    return curShow
+            for cur_show in all_series:
+                if int(cur_show['id']) in show_id_list:
+                    return cur_show
         except Exception:
             pass
 

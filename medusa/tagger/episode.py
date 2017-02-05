@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Episode tagger to extract information from episodes
-"""
+"""Episode tagger to extract information from episodes."""
 
 from __future__ import unicode_literals
 

@@ -28,7 +28,7 @@ class MissingTvdbMapping(Exception):
 
 
 class RecommendedShow(object):
-    """Base class for show recommendations"""
+    """Base class for show recommendations."""
     def __init__(self, rec_show_prov, show_id, title, indexer, indexer_id, **show_attr):
         """Create a show recommendation
 

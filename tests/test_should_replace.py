@@ -1,6 +1,6 @@
 # coding=utf-8
-"""Tests for medusa/test_quality_replace.py."""
-from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, WANTED
+"""Tests for medusa/test_should_replace.py."""
+from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
 
 import pytest
 
@@ -401,9 +401,54 @@ import pytest
         'force': True,
         'manually_searched': True,
         'expected': True
-    }
+    },
+    {  # p36: SNATCHED BEST and found HDBLURAY: no
+        'ep_status': SNATCHED_BEST,
+        'cur_quality': Quality.HDTV,
+        'new_quality': Quality.HDBLURAY,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': False
+    },
+    {  # p37: Current quality is NONE: yes
+        'ep_status': SNATCHED,
+        'cur_quality': Quality.NONE,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
+    {  # p38: Downloaded UNKNOWN and its on Allowed: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.UNKNOWN,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.UNKNOWN, Quality.SDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': False
+    },
+    {  # p39: Downloaded UNKNOWN and its on Allowed but found Preferred: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.UNKNOWN,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.UNKNOWN],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_replace(p):
+    """Run the test."""
     # Given
     ep_status = p['ep_status']
     cur_quality = p['cur_quality']

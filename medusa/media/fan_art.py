@@ -21,9 +21,7 @@ from ..image_cache import ImageCache
 
 
 class ShowFanArt(GenericMedia):
-    """
-    Get the fan art of a show
-    """
+    """Get the fan art of a show."""
 
     def get_default_media_name(self):
         return 'fanart.png'

@@ -9,19 +9,17 @@ import copy
 import six
 
 from rebulk import Rebulk, Rule, CustomRule, POST_PROCESS, PRE_PROCESS, AppendMatch, RemoveMatch
-from guessit.rules.common.words import iter_words
+
+from .common import seps_no_groups
 from .common.formatters import cleanup
 from .common.comparators import marker_sorted
 from .common.date import valid_year
+from .common.words import iter_words
 
 
 class EnlargeGroupMatches(CustomRule):
     """
     Enlarge matches that are starting and/or ending group to include brackets in their span.
-    :param matches:
-    :type matches:
-    :return:
-    :rtype:
     """
     priority = PRE_PROCESS
 
@@ -128,12 +126,15 @@ class RemoveAmbiguous(Rule):
 
 class RemoveLessSpecificSeasonEpisode(RemoveAmbiguous):
     """
-    If multiple season/episode matches are found with different values, keep the one in the rightmost filepart.
+    If multiple season/episodes matches are found with different values,
+    keep the one tagged as 'SxxExx' or in the rightmost filepart.
     """
-    def __init__(self):
+    def __init__(self, name):
         super(RemoveLessSpecificSeasonEpisode, self).__init__(
-            sort_function=lambda markers, matches: reversed(markers),
-            predicate=lambda match: match.name in ('episode', 'season'))
+            sort_function=(lambda markers, matches:
+                           marker_sorted(list(reversed(markers)), matches,
+                                         lambda match: match.name == name and 'SxxExx' in match.tags)),
+            predicate=lambda match: match.name == name)
 
 
 def _preferred_string(value1, value2):  # pylint:disable=too-many-return-statements
@@ -205,11 +206,33 @@ class Processors(CustomRule):
         pass
 
 
+class StripSeparators(CustomRule):
+    """
+    Strip separators from matches. Keep separators if they are from acronyms, like in ".S.H.I.E.L.D."
+    """
+    priority = POST_PROCESS
+
+    def when(self, matches, context):
+        return matches
+
+    def then(self, matches, when_response, context):  # pragma: no cover
+        for match in matches:
+            for _ in range(0, len(match.span)):
+                if match.raw[0] in seps_no_groups and (len(match.raw) < 3 or match.raw[2] not in seps_no_groups):
+                    match.raw_start += 1
+
+            for _ in reversed(range(0, len(match.span))):
+                if match.raw[-1] in seps_no_groups and (len(match.raw) < 3 or match.raw[-3] not in seps_no_groups):
+                    match.raw_end -= 1
+
+
 def processors():
     """
     Builder for rebulk object.
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    return Rebulk().rules(EnlargeGroupMatches, EquivalentHoles, RemoveLessSpecificSeasonEpisode,
-                          RemoveAmbiguous, SeasonYear, Processors)
+    return Rebulk().rules(EnlargeGroupMatches, EquivalentHoles,
+                          RemoveLessSpecificSeasonEpisode('season'),
+                          RemoveLessSpecificSeasonEpisode('episode'),
+                          RemoveAmbiguous, SeasonYear, Processors, StripSeparators)

@@ -7,7 +7,6 @@ import babelfish
 from guessit.reutils import build_or_pattern
 from guessit.rules.common import alt_dash, dash
 from guessit.rules.common.validators import seps, seps_surround
-from guessit.rules.properties.audio_codec import Ac3Rule, AudioValidatorRule, HqConflictRule
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
@@ -41,38 +40,19 @@ def format_():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='format')
+    rebulk.defaults(name='format', tags='video-codec-prefix')
 
     # More accurate formats
-    rebulk.regex('BD(?!\d)', 'BD-?Rip', 'BD-?Mux', 'BD-?Rip-?Mux',
-                 value='BDRip', validator=seps_surround,
+    rebulk.regex('BD-?Rip', 'BD(?=-?Mux)', value='BDRip',
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
-    rebulk.regex('BR-?Rip', 'BR-?Mux', 'BR-?Rip-?Mux',
-                 value='BRRip',
+    rebulk.regex('BD(?!\d)', value='BDRip', validator=seps_surround,
+                 conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
+    rebulk.regex('BR-?Rip', 'BR(?=-?Mux)', value='BRRip',
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
     rebulk.regex('DVD-?Rip', value='DVDRip',
                  conflict_solver=lambda match, other: other if other.name == 'format' else '__default__')
 
-    # https://github.com/guessit-io/guessit/issues/307
-    rebulk.regex('HDTV-?Mux', value='HDTV')
-    rebulk.regex('Blu-?ray-?Mux', value='BluRay')
-    rebulk.regex('DVD-?Mux', value='DVD')
-    rebulk.regex('WEB-?Mux', 'DL-?WEB-?Mux', 'WEB-?DL-?Mux', 'DL-?Mux', value='WEB-DL')
-
     rebulk.regex('DVD\d', value='DVD')
-
-    return rebulk
-
-
-def audio_codec():
-    """Audio codec property.
-
-    :return:
-    :rtype: Rebulk
-    """
-    rebulk = Rebulk().regex_defaults(name='audio_codec', flags=re.IGNORECASE)
-    rebulk.regex(r'DDP', value='AC3')
-    rebulk.rules(Ac3Rule, AudioValidatorRule, HqConflictRule)
 
     return rebulk
 
@@ -101,9 +81,6 @@ def other():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='other', validator=seps_surround)
 
-    # https://github.com/guessit-io/guessit/issues/300
-    rebulk.regex(r'Re-?Enc(?:oded)?', value='Re-Encoded')
-
     rebulk.regex('DIRFIX', value='DirFix')
     rebulk.regex('INTERNAL', value='Internal')
     rebulk.regex(r'(?:HD)?iTunes(?:HD)?', value='iTunes')
@@ -111,27 +88,13 @@ def other():
     rebulk.regex(r'MULTi', value='Multi Language')
     rebulk.regex('HC', value='Hardcoded subtitles')
 
+    rebulk.regex('F1', value='Formula One',
+                 conflict_solver=lambda match, other: other if other.name == 'film' else '__default__')
+
     # Discarded:
     rebulk.regex('DownRev', 'small-size', private=True)
 
     rebulk.rules(ValidateHardcodedSubs)
-
-    return rebulk
-
-
-def size():
-    """Size property.
-
-    Remove when https://github.com/guessit-io/guessit/issues/299 is fixed.
-    :return:
-    :rtype: Rebulk
-    """
-    def format_size(value):
-        return re.sub(r'(?<=\d)[.](?=[^\d])', '', value.upper())
-
-    rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='size', validator=seps_surround)
-    rebulk.regex(r'\d+\.?[mgt]b', r'\d+\.\d+[mgt]b', formatter=format_size, tags=['release-group-prefix'])
 
     return rebulk
 
@@ -164,7 +127,7 @@ def subtitle_language():
     # special handling
     rebulk.regex(r'Legenda(?:s|do)?@PT-?BR', value=babelfish.Language('por', 'BR'))
     rebulk.regex(r'Legenda(?:s|do)?@PT(?!-?BR)', value=babelfish.Language('por'))
-    rebulk.regex('Subtitulado@ESP(?:a[nñ]ol)?@Spanish', 'Subtitulado@ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
+    rebulk.regex('Subtitulado@?ESP(?:a[nñ]ol)?@?Spanish', 'Subtitulado@?ESP(?:a[nñ]ol)?', value=babelfish.Language('spa'),
                  conflict_solver=lambda match, other: other if other.name == 'language' else '__default__')
 
     # undefined language
@@ -184,7 +147,6 @@ def container():
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
     rebulk.defaults(name='container',
-                    formatter=lambda value: value[1:],
                     tags=['extension'],
                     conflict_solver=lambda match, other: other
                     if other.name in ['format', 'video_codec'] or

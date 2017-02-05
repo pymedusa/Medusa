@@ -520,6 +520,18 @@ home.mako
     background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
 }
 
+div.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 85%
+}
+
+div.xem {
+    position: absolute;
+    right: 1px;
+    top: 0;
+}
 
 /* Show options */
 
@@ -580,9 +592,17 @@ home.mako
     overflow: hidden;
 }
 
+/* Used by isotope scaling */
 .show-image {
     max-width: 100%;
     overflow: hidden;
+    border: 1px solid rgb(136, 136, 136);
+
+}
+
+/* Used by the displayShow and snatchSelection show header posters */
+#container-display-show img.show-image {
+    max-width: 180px;
 }
 
 .background-image img {
@@ -778,12 +798,19 @@ td.tvShow a:hover {
     margin-left: -50px;
 }
 
+.min-cell-width {
+    width: 1px;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
 /* =======================================================================
 home_addShows.mako
 ========================================================================== */
 
 #addShowPortal {
-    width: 700px;
     padding: 10px 0;
     margin-right: auto;
     margin-left: auto;
@@ -791,6 +818,11 @@ home_addShows.mako
 
 #addShowPortal a {
     padding: 10px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    margin-bottom: 15px;
 }
 
 div.button {
@@ -1022,9 +1054,18 @@ displayShow.mako
     overflow-y: auto;
 }
 
+div#container-display-show {
+    display: table;
+}
+
 .show-poster-container {
-    float: left;
     margin-right: 10px;
+    display: table-cell;
+    width: 180px;
+}
+
+.ver-spacer {
+    width: 15px;
 }
 
 #show-specials-and-seasons {
@@ -1033,6 +1074,7 @@ displayShow.mako
 
 .show-info-container {
     overflow:hidden;
+    display: table-cell;
 }
 
 .tvshowImg {
@@ -1067,11 +1109,13 @@ displayShow.mako
         display: inline-block;
         width: 100%;
         margin: 0 auto;
+        border-style: none;
     }
 
     .show-poster-container img {
         display: block;
         margin: 0 auto;
+        max-width: 280px!important;
     }
 
     .tvshowImg {
@@ -1125,11 +1169,16 @@ displayShow.mako
         float: left;
         display: inline-block;
         width: 100%;
+        border-style: none;
     }
 
     .show-info-container {
         display: block;
         width: 100%;
+    }
+
+    #container-display-show img.show-image {
+        max-width: 280px;
     }
 }
 
@@ -1253,15 +1302,23 @@ ul.tags li a {
 
 #summary {
     margin-top: 5px;
-    margin-bottom: 5px;
     padding: 10px;
-    background-color: #EFEFEF;
-    border: 1px solid #DFDEDE;
+    /*border: 1px solid #DFDEDE;*/
     width: 100%;
     overflow: auto;
     cursor: default;
+}
+
+#summaryBackground {
+    position: absolute;
+    top:305px;
+    width: 100%;
+    height:200px;
+    background-color: #EFEFEF;
     opacity: 0.8;
-    min-height: 213px;
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
 }
 
 .summaryTable {
@@ -1536,7 +1593,6 @@ td.col-subtitles {
 
 th.col-status,
 td.col-status {
-    width: 230px;
     text-align: center;
 }
 
@@ -1556,19 +1612,16 @@ td.col-search {
 }
 
 td.col-date {
-    min-width: 104px;
     text-align: center;
     white-space: nowrap;
 }
 
 td.col-size {
-    min-width: 79px;
     text-align: center;
     white-space: nowrap;
 }
 
 td.col-provider {
-    min-width: 133px;
     text-align: center;
     white-space: nowrap;
 }
@@ -1604,7 +1657,7 @@ div.season-scene-exception {
 #showBanner {
     float: right;
     height: 50px;
-    border: 1px solid black;
+    border: 1px solid rgb(136, 136, 136);
 }
 
 .fanart {
@@ -1621,6 +1674,7 @@ select#select-show {
     display: inline-block;
     width: calc(100% - 40px);
 }
+
 
 /* =======================================================================
 schedule.mako
@@ -1792,6 +1846,7 @@ h2.network {
 
 .calendarShow .poster {
     padding-bottom: 2px;
+    height: 212px;
 }
 
 .calendarShow .poster img {
@@ -2515,8 +2570,9 @@ span.true {
     color: rgb(102, 153, 102);
 }
 
-span.break-word {
+.break-word {
     word-break: break-all;
+    word-wrap: break-word;
 }
 
 span.required {
@@ -3852,9 +3908,34 @@ div#searchNotification {
     word-break: break-all;
 }
 
+.release-name-ellipses {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 250px;
+}
+
 /* =======================================================================
 viewLog.mako
 ========================================================================== */
+div .notepad {
+    position: absolute;
+    right: 15px;
+    opacity: 0.1;
+    zoom: 1;
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    -webkit-transition: opacity 0.5s; /* Safari */
+    transition: opacity 0.5s;
+}
+
+div .notepad:hover {
+    opacity: 0.4;
+}
+
+div.notepad img {
+    width: 50px;
+}
 
 /* Pull left in mobile resolutions */
 @media (max-width: 767px) {
@@ -3954,13 +4035,7 @@ css helper classes
   .mobile {display: none;}
 }
 
-/* Christmas edition!!!*/
-.navbar-default {
-    background-image: url('../images/medusa-christmas-banner.png')!important;
-    background-color: rgb(51, 51, 51)!important;
-}
-
-/* @FIXME: These fixed width are going to be removed with the all configuration pages are bootstrapped.*/
-.ui-tabs-panel {
-    min-width: 980px;
+/* navbar padding, to make room for in-page scrollbars */
+.padding-right-15 {
+    padding-right: 15px!important;
 }

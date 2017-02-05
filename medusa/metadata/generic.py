@@ -21,6 +21,7 @@ import io
 import os
 import re
 
+from requests.exceptions import RequestException
 from six import iterkeys
 import tmdbsimple as tmdb
 from .. import app, exception_handler, helpers, logger
@@ -28,7 +29,7 @@ from ..helper.common import replace_extension
 from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
 from ..indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from ..indexers.indexer_exceptions import IndexerError
+from ..indexers.indexer_exceptions import IndexerException, IndexerShowNotFound
 from ..metadata import helpers as metadata_helpers
 from ..show_name_helpers import allPossibleShowNames
 
@@ -248,7 +249,8 @@ class GenericMetadata(object):
 
     def create_show_metadata(self, show_obj):
         if self.show_metadata and show_obj and not self._has_show_metadata(show_obj):
-            logger.log(u"Metadata provider " + self.name + " creating show metadata for " + show_obj.name, logger.DEBUG)
+            logger.log(u"Metadata provider {metadata_provider} creating show metadata for {show_name}"
+                       .format(metadata_provider=self.name, show_name=show_obj.name), logger.DEBUG)
             return self.write_show_file(show_obj)
         return False
 
@@ -280,10 +282,10 @@ class GenericMetadata(object):
                     etree.SubElement(root, "id").text = str(show_obj.indexerid)
 
                 # Make it purdy
-                helpers.indentXML(root)
+                helpers.indent_xml(root)
 
                 showXML.write(nfo_file_path, encoding='UTF-8')
-                helpers.chmodAsParent(nfo_file_path)
+                helpers.chmod_as_parent(nfo_file_path)
 
                 return True
             except etree.ParseError as error:
@@ -337,7 +339,7 @@ class GenericMetadata(object):
                        logger.DEBUG)
             for season in iterkeys(show_obj.episodes):  # @UnusedVariable
                 if not self._has_season_banner(show_obj, season):
-                    result = result + [self.save_season_banners(show_obj, season)]
+                    result += [self.save_season_banners(show_obj, season)]
             return all(result)
         return False
 
@@ -365,12 +367,12 @@ class GenericMetadata(object):
         all_eps = [ep_obj] + ep_obj.related_episodes
 
         # validate show
-        if not helpers.validateShow(ep_obj.show):
+        if not helpers.validate_show(ep_obj.show):
             return None
 
         # try all included episodes in case some have thumbs and others don't
         for cur_ep in all_eps:
-            myEp = helpers.validateShow(cur_ep.show, cur_ep.season, cur_ep.episode)
+            myEp = helpers.validate_show(cur_ep.show, cur_ep.season, cur_ep.episode)
             if not myEp:
                 continue
 
@@ -407,14 +409,14 @@ class GenericMetadata(object):
             if not os.path.isdir(nfo_file_dir):
                 logger.log(u"Metadata dir didn't exist, creating it at " + nfo_file_dir, logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u"Writing show nfo file to " + nfo_file_path, logger.DEBUG)
 
             nfo_file = io.open(nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
         except IOError as e:
             exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
@@ -450,13 +452,13 @@ class GenericMetadata(object):
             if not os.path.isdir(nfo_file_dir):
                 logger.log(u"Metadata dir didn't exist, creating it at " + nfo_file_dir, logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u"Writing episode nfo file to " + nfo_file_path, logger.DEBUG)
             nfo_file = io.open(nfo_file_path, 'wb')
             data.write(nfo_file, encoding='UTF-8')
             nfo_file.close()
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
         except IOError as e:
             exception_handler.handle(e, u'Unable to write file to {location}', location=nfo_file_path)
             return False
@@ -594,7 +596,7 @@ class GenericMetadata(object):
                 logger.log(u"No season poster data available, skipping this season", logger.DEBUG)
                 continue
 
-            result = result + [self._write_image(seasonData, season_poster_file_path)]
+            result += [self._write_image(seasonData, season_poster_file_path)]
 
         if result:
             return all(result)
@@ -641,7 +643,7 @@ class GenericMetadata(object):
                 logger.log(u"No season banner data available, skipping this season", logger.DEBUG)
                 continue
 
-            result = result + [self._write_image(seasonData, season_banner_file_path)]
+            result += [self._write_image(seasonData, season_banner_file_path)]
 
         if result:
             return all(result)
@@ -696,12 +698,12 @@ class GenericMetadata(object):
             if not os.path.isdir(image_dir):
                 logger.log(u"Metadata dir didn't exist, creating it at " + image_dir, logger.DEBUG)
                 os.makedirs(image_dir)
-                helpers.chmodAsParent(image_dir)
+                helpers.chmod_as_parent(image_dir)
 
             outFile = io.open(image_path, 'wb')
             outFile.write(image_data)
             outFile.close()
-            helpers.chmodAsParent(image_path)
+            helpers.chmod_as_parent(image_path)
         except IOError as e:
             exception_handler.handle(e, u'Unable to write image to {location}', location=image_path)
             return False
@@ -719,32 +721,8 @@ class GenericMetadata(object):
         Returns: the binary image data if available, or else None
         """
         image_url = None
-        indexer_lang = show_obj.lang
 
-        try:
-            # There's gotta be a better way of doing this but we don't wanna
-            # change the language value elsewhere
-            lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
-
-            lINDEXER_API_PARMS['banners'] = True
-
-            if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                lINDEXER_API_PARMS['language'] = indexer_lang
-
-            if show_obj.dvdorder != 0:
-                lINDEXER_API_PARMS['dvdorder'] = True
-
-            # New feature, specify the image_type, which makes us do calls for only that image type.
-            lINDEXER_API_PARMS['image_type'] = image_type
-
-            t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
-            indexer_show_obj = t[show_obj.indexerid]
-        except (IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + indexerApi(
-                show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
-                       logger.DEBUG)
-            return None
+        indexer_show_obj = self._get_show_data(show_obj)
 
         if image_type not in ('fanart', 'poster', 'banner', 'poster_thumb', 'banner_thumb'):
             logger.log(u"Invalid image type " + str(image_type) + ", couldn't find it in the " + indexerApi(
@@ -784,31 +762,7 @@ class GenericMetadata(object):
         # This holds our resulting dictionary of season art
         result = {}
 
-        indexer_lang = show_obj.lang
-
-        try:
-            if not self.indexer_api:
-                # There's gotta be a better way of doing this but we don't wanna
-                # change the language value elsewhere
-                lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
-
-                lINDEXER_API_PARMS['banners'] = True
-
-                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    lINDEXER_API_PARMS['language'] = indexer_lang
-
-                if show_obj.dvdorder != 0:
-                    lINDEXER_API_PARMS['dvdorder'] = True
-
-                self.indexer_api = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
-
-            indexer_show_obj = self.indexer_api[show_obj.indexerid]
-        except (IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + indexerApi(
-                show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
-                       logger.DEBUG)
-            return result
+        indexer_show_obj = self._get_show_data(show_obj)
 
         # if we have no season banners then just finish
         if not getattr(indexer_show_obj, '_banners', None):
@@ -845,33 +799,7 @@ class GenericMetadata(object):
         # This holds our resulting dictionary of season art
         result = {}
 
-        indexer_lang = show_obj.lang
-
-        try:
-            if not self.indexer_api:
-                # There's gotta be a better way of doing this but we don't wanna
-                # change the language value elsewhere
-                lINDEXER_API_PARMS = indexerApi(show_obj.indexer).api_params.copy()
-
-                lINDEXER_API_PARMS['banners'] = True
-
-                if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                    lINDEXER_API_PARMS['language'] = indexer_lang
-
-                if show_obj.dvdorder != 0:
-                    lINDEXER_API_PARMS['dvdorder'] = True
-
-                t = indexerApi(show_obj.indexer).indexer(**lINDEXER_API_PARMS)
-            else:
-                # Try to reuse the current indexerApi object.
-                t = self.indexer_api
-            indexer_show_obj = t[show_obj.indexerid]
-        except (IndexerError, IOError) as e:
-            logger.log(u"Unable to look up show on " + indexerApi(
-                show_obj.indexer).name + ", not downloading images: " + ex(e), logger.WARNING)
-            logger.log(u"%s may be experiencing some problems. Try again later." % indexerApi(show_obj.indexer).name,
-                       logger.DEBUG)
-            return result
+        indexer_show_obj = self._get_show_data(show_obj)
 
         # if we have no seasonwide banners then just finish
         if not getattr(indexer_show_obj, '_banners', None):
@@ -896,6 +824,45 @@ class GenericMetadata(object):
             result[season][season_art_id] = season_art_obj['original'][season][season_art_id]['_bannerpath']
 
         return result
+
+    def _get_show_data(self, show_obj):
+        """Retrieve show data from the indexer.
+
+        Try to reuse the indexer_api class instance attribute.
+        As we are reusing the indexers results, we need to do a full index including actors and images.
+
+        :param show_obj: A TVshow object.
+        :return: A re-indexed show object.
+        """
+
+        show_id = show_obj.indexerid
+
+        try:
+            if not (show_obj.indexer_api and all([show_obj.indexer_api.config['banners_enabled'],
+                                                  show_obj.indexer_api.config['actors_enabled']])):
+                show_obj.create_indexer(banners=True, actors=True)
+
+            self.indexer_api = show_obj.indexer_api
+            my_show = self.indexer_api[int(show_id)]
+        except IndexerShowNotFound:
+            logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
+                       (indexer=indexerApi(show_obj.indexer).name,
+                        id=show_id), logger.WARNING)
+            return False
+
+        except (IndexerException, RequestException):
+            logger.log(u"{indexer} is down, can't use its data to add this show".format
+                       (indexer=indexerApi(show_obj.indexer).name), logger.WARNING)
+            return False
+
+        # check for title and id
+        if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
+            logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
+                       (indexer=indexerApi(show_obj.indexer).name,
+                        id=show_id), logger.WARNING)
+            return False
+
+        return my_show
 
     def retrieveShowMetadata(self, folder):
         """
@@ -960,7 +927,8 @@ class GenericMetadata(object):
 
         return indexer_id, name, indexer
 
-    def _retrieve_show_images_from_tmdb(self, show, img_type):
+    @staticmethod
+    def _retrieve_show_images_from_tmdb(show, img_type):
         types = {'poster': 'poster_path',
                  'banner': None,
                  'fanart': 'backdrop_path',
@@ -970,7 +938,12 @@ class GenericMetadata(object):
         # get TMDB configuration info
         tmdb.API_KEY = app.TMDB_API_KEY
         config = tmdb.Configuration()
-        response = config.info()
+        try:
+            response = config.info()
+        except RequestException as e:
+            logger.log('Indexer TMDB is unavailable at this time. Cause: {cause}'.format(cause=e), logger.WARNING)
+            return False
+
         base_url = response['images']['base_url']
         sizes = response['images']['poster_sizes']
 

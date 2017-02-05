@@ -1,8 +1,24 @@
 MEDUSA.home.snatchSelection = function() {
     if (MEDUSA.config.fanartBackground) {
-        $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
+        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
+        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+        $.backstretch(path);
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
+
+    // adjust the summary background position and size on page load and resize
+
+    function moveSummaryBackground() {
+        var height = $("#summary").height() + 10;
+        var top = $("#summary").offset().top + 5;
+        $("#summaryBackground").height(height);
+        $("#summaryBackground").offset({ top: top, left: 0});
+    }
+
+    $(window).resize(function() {
+        moveSummaryBackground();
+    });
+
     var spinner = $('#searchNotification');
     var updateSpinner = function(spinner, message, showSpinner) {
         if (showSpinner) {
@@ -145,9 +161,10 @@ MEDUSA.home.snatchSelection = function() {
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
                 initTableSorter('#showTable');
+                $('[datetime]').timeago();
             }
             if (data.result === 'error') {
-                // ep search is finished
+                // ep search is finished but with an error
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
@@ -204,6 +221,7 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $(function() {
+        moveSummaryBackground();
         $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Show History');
             $('#wrapper').prop('data-history-toggle', 'hide');

@@ -122,7 +122,11 @@ class MediaInfoProvider(Provider):
                     arch = 'x86_64' if is_64bits else 'i386'
                     lib = os.path.join(os_folder, arch)
                     logger.debug('Loading native mediainfo library from %s', lib)
-                    lib = windll.MediaInfo = windll.LoadLibrary(os.path.join(lib, 'MediaInfo.dll'))
+                    dll_filename = os.path.join(lib, 'MediaInfo.dll')
+                    if sys.version_info[:3] == (2, 7, 13):
+                        # http://bugs.python.org/issue29082
+                        dll_filename = str(dll_filename)
+                    lib = windll.MediaInfo = windll.LoadLibrary(dll_filename)
 
             lib.MediaInfo_Inform.restype = c_wchar_p
             lib.MediaInfo_New.argtypes = []

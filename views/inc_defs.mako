@@ -5,7 +5,7 @@
 <%def name="renderQualityPill(quality, showTitle=False, overrideClass=None)"><%
     # Build a string of quality names to use as title attribute
     if showTitle:
-        allowed_qualities, preferred_qualities = Quality.splitQuality(quality)
+        allowed_qualities, preferred_qualities = Quality.split_quality(quality)
         title = 'Allowed Quality:\n'
         if allowed_qualities:
             for curQual in allowed_qualities:

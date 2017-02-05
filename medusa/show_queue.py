@@ -31,7 +31,7 @@ from .helper.exceptions import (
     EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
 )
 from .helper.externals import check_existing_shows
-from .helpers import chmodAsParent, delete_empty_folders, get_showname_from_indexer, makeDir
+from .helpers import chmod_as_parent, delete_empty_folders, get_showname_from_indexer, make_dir
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
                                           IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
@@ -249,7 +249,7 @@ class ShowQueue(generic_queue.GenericQueue):
 
 class ShowQueueItem(generic_queue.QueueItem):
     """
-    Represents an item in the queue waiting to be executed
+    Represents an item in the queue waiting to be executed.
 
     Can be either:
     - show being added (may or may not be associated with a show object)
@@ -264,8 +264,8 @@ class ShowQueueItem(generic_queue.QueueItem):
         self.show = show
 
     def isInQueue(self):
-        return self in app.showQueueScheduler.action.queue + [
-            app.showQueueScheduler.action.currentItem]  # @UndefinedVariable
+        return self in app.show_queue_scheduler.action.queue + [
+            app.show_queue_scheduler.action.currentItem]  # @UndefinedVariable
 
     def _getName(self):
         return str(self.show.indexerid)
@@ -356,12 +356,12 @@ class QueueItemAdd(ShowQueueItem):
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
                 if show_name:
                     self.showDir = os.path.join(self.root_dir, sanitize_filename(show_name))
-                    dir_exists = makeDir(self.showDir)
+                    dir_exists = make_dir(self.showDir)
                     if not dir_exists:
                         logger.log(u"Unable to create the folder {0}, can't add the show".format(self.showDir))
                         return
 
-                    chmodAsParent(self.showDir)
+                    chmod_as_parent(self.showDir)
                 else:
                     logger.log(u"Unable to get a show {0}, can't add the show".format(self.showDir))
                     return
@@ -530,22 +530,21 @@ class QueueItemAdd(ShowQueueItem):
         # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
-            app.backlogSearchScheduler.action.searchBacklog([self.show])
+            app.backlog_search_scheduler.action.search_backlog([self.show])
 
         self.show.write_metadata()
         self.show.update_metadata()
         self.show.populate_cache()
-        self.show.create_next_season_update()
 
         self.show.flush_episodes()
 
         if app.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
-            app.traktCheckerScheduler.action.manage_new_show(self.show)
+            app.trakt_checker_scheduler.action.manage_new_show(self.show)
 
             # add show to trakt.tv library
             if app.TRAKT_SYNC:
-                app.traktCheckerScheduler.action.add_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.add_show_trakt_library(self.show)
 
             if app.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
@@ -567,7 +566,7 @@ class QueueItemAdd(ShowQueueItem):
 
     def _finishEarly(self):
         if self.show is not None:
-            app.showQueueScheduler.action.removeShow(self.show)
+            app.show_queue_scheduler.action.removeShow(self.show)
 
         self.finish()
 
@@ -680,6 +679,8 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
+            # Let's make sure we refresh the indexer_api object attached to the show object.
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
@@ -723,7 +724,13 @@ class QueueItemUpdate(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
-        episodes_from_db = self.show.load_episodes_from_db()
+        try:
+            episodes_from_db = self.show.load_episodes_from_db()
+        except IndexerException as e:
+            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        error_msg=e), logger.WARNING)
+            return
 
         # get episode list from the indexer
         try:
@@ -774,7 +781,7 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
         # Refresh show needs to be forced since current execution locks the queue
-        app.showQueueScheduler.action.refreshShow(self.show, True)
+        app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -798,12 +805,14 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     show=self.show.name,
                     season=u' with season(s) [{0}]'.
                     format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
-                    ), logger.DEBUG)
+                    ), logger.INFO)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
+            # Let's make sure we refresh the indexer_api object attached to the show object.
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
@@ -836,7 +845,13 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
-        episodes_from_db = self.show.load_episodes_from_db(self.seasons)
+        try:
+            episodes_from_db = self.show.load_episodes_from_db(self.seasons)
+        except IndexerException as e:
+            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        error_msg=e), logger.WARNING)
+            return
 
         # get episode list from the indexer
         try:
@@ -874,14 +889,6 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
-            # If this is a season limited update, let's update the cache season next_update
-            if self.seasons:
-                for season in self.seasons:
-                    self.show.create_next_season_update(season)
-            else:
-                # We did a show refresh, let's updated each next season update
-                self.show.create_next_season_update()
-
         # Save only after all changes were applied
         try:
             logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid), logger.DEBUG)
@@ -892,10 +899,8 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             logger.log(traceback.format_exc(), logger.ERROR)
 
         logger.log(u'{id}: Finished update of {show}'.format
-                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+                   (id=self.show.indexerid, show=self.show.name), logger.INFO)
 
-        # Refresh show needs to be forced since current execution locks the queue
-        app.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -917,7 +922,7 @@ class QueueItemRemove(ShowQueueItem):
         # Episodes from the db to know which eps to remove.
         if app.USE_TRAKT:
             try:
-                app.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.remove_show_trakt_library(self.show)
             except TraktException as e:
                 logger.log(u'{id}: Unable to delete show {show} from Trakt. '
                            u'Please remove manually otherwise it will be added again. Error: {error_msg}'.format

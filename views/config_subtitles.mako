@@ -67,6 +67,15 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                     </label>
                                 </div>
                                 <div class="field-pair">
+                                    <label class="clearfix" for="subtitles_erase_cache">
+                                        <span class="component-title">Erase subtitles cache on next boot</span>
+                                        <span class="component-desc">
+                                            <input type="checkbox" name="subtitles_erase_cache" id="subtitles_erase_cache" ${('', 'checked="checked"')[bool(app.SUBTITLES_ERASE_CACHE)]}/>
+                                            <p>Erases all subtitles cache files. May help fix some subtitles not being found</p>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair">
                                     <label>
                                         <span class="component-title">Subtitle Directory</span>
                                         <input type="text" value="${app.SUBTITLES_DIR}" id="subtitles_dir" name="subtitles_dir" class="form-control input-sm input350">
@@ -196,13 +205,12 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                         <h3>Subtitle Providers</h3>
                         <p>Check off and drag the plugins into the order you want them to be used.</p>
                         <p class="note">At least one plugin is required.</p>
-                        <p class="note"><span style="font-size: 16px;">*</span> Web-scraping plugin</p>
                     </div>
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <ul id="service_order_list">
                         % for curService in subtitles.sorted_service_list():
                             <li class="ui-state-default" id="${curService['name']}">
-                                <input type="checkbox" id="enable_${curService['name']}" class="service_enabler" ${('', 'checked="checked"')[curService['enabled'] is True]}/>
+                                <input type="checkbox" id="enable_${curService['name']}" class="service_enabler" ${'checked="checked"' if curService['enabled'] else ''}/>
                                 <a href="${anon_url(curService['url'])}" class="imgLink" target="_new">
                                     <img src="images/subtitles/${curService['image']}" alt="${curService['url']}" title="${curService['url']}" width="16" height="16" style="vertical-align:middle;"/>
                                 </a>
@@ -218,7 +226,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                 <div id="plugin-settings" class="component-group">
                     <div class="component-group-desc">
                         <h3>Provider Settings</h3>
-                        <p>Set user and password for each provider</p>
+                        <p>Set user and password for each provider.</p>
                     </div><!-- /component-group-desc //-->
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <%

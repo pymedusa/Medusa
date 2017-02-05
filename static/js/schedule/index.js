@@ -1,5 +1,5 @@
 MEDUSA.schedule.index = function() {
-    if ($.isMeta('comingEpsLayout', ['list'])) {
+    if ($.isMeta({'layout': 'schedule'}, ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
@@ -37,7 +37,7 @@ MEDUSA.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if ($.isMeta('comingEpsLayout', ['banner', 'poster'])) {
+    if ($.isMeta({'layout': 'schedule'}, ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
             loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
@@ -59,5 +59,18 @@ MEDUSA.schedule.index = function() {
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
         // call this function to copy the column selection code into the popover
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
+    });
+
+    $('.show-option select[name="layout"]').on('change', function(){
+        api.patch('config', {
+            layout: {
+                schedule: $(this).val()
+            }
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function (error) {
+            log.info(error);
+        });
     });
 };

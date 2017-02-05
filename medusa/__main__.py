@@ -61,12 +61,13 @@ import threading
 import time
 
 from configobj import ConfigObj
+
 from six import text_type
 
 from . import (
     app, auto_post_processor, cache, db, event_queue, exception_handler,
     helpers, logger as app_logger, metadata, name_cache, naming, network_timezones, providers,
-    scheduler, show_queue, show_updater, subtitles, trakt_checker, version_checker
+    scheduler, show_queue, show_updater, subtitles, torrent_checker, trakt_checker, version_checker
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
@@ -75,8 +76,9 @@ from .config import (
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events
-from .providers import NewznabProvider, TorrentRssProvider
 from .providers.generic_provider import GenericProvider
+from .providers.nzb.newznab import NewznabProvider
+from .providers.torrent.rss.rsstorrent import TorrentRssProvider
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
 from .search.daily import DailySearcher
 from .search.proper import ProperFinder
@@ -357,7 +359,7 @@ class Application(object):
         #     failed_history.trim_history()
 
         # # Check for metadata indexer updates for shows (Disabled until we use api)
-        # app.showUpdateScheduler.forceRun()
+        # app.show_update_scheduler.forceRun()
 
         # Launch browser
         if app.LAUNCH_BROWSER and not (self.no_launch or self.run_as_daemon):
@@ -385,7 +387,7 @@ class Application(object):
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
             # Need to be before any passwords
             app.ENCRYPTION_VERSION = check_setting_int(app.CFG, 'General', 'encryption_version', 0)
-            app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generateCookieSecret(), censor_log='low')
+            app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generate_cookie_secret(), censor_log='low')
 
             # git login info
             app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
@@ -403,7 +405,7 @@ class Application(object):
             app.LOG_NR = check_setting_int(app.CFG, 'General', 'log_nr', 5)  # Default to 5 backup file (application.log.x)
             app.LOG_SIZE = min(100, check_setting_float(app.CFG, 'General', 'log_size', 10.0))  # Default to max 10MB per logfile
 
-            if not helpers.makeDir(app.LOG_DIR):
+            if not helpers.make_dir(app.LOG_DIR):
                 sys.stderr.write('Unable to create log folder {folder}'.format(folder=app.LOG_DIR))
                 sys.exit(7)
 
@@ -450,7 +452,7 @@ class Application(object):
             else:
                 app.CACHE_DIR = app.ACTUAL_CACHE_DIR
 
-            if not helpers.makeDir(app.CACHE_DIR):
+            if not helpers.make_dir(app.CACHE_DIR):
                 logger.error(u'Creating local cache dir failed, using system default')
                 app.CACHE_DIR = None
 
@@ -480,9 +482,9 @@ class Application(object):
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
-            app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generateCookieSecret(), censor_log='low')
+            app.WEB_COOKIE_SECRET = check_setting_str(app.CFG, 'General', 'web_cookie_secret', helpers.generate_cookie_secret(), censor_log='low')
             if not app.WEB_COOKIE_SECRET:
-                app.WEB_COOKIE_SECRET = helpers.generateCookieSecret()
+                app.WEB_COOKIE_SECRET = helpers.generate_cookie_secret()
 
             app.WEB_USE_GZIP = bool(check_setting_int(app.CFG, 'General', 'web_use_gzip', 1))
             app.SUBLIMINAL_LOG = bool(check_setting_int(app.CFG, 'General', 'subliminal_log', 0))
@@ -549,6 +551,7 @@ class Application(object):
 
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
+            app.REMOVE_FROM_CLIENT = bool(check_setting_int(app.CFG, 'General', 'remove_from_client', 0))
             app.CHECK_PROPERS_INTERVAL = check_setting_str(app.CFG, 'General', 'check_propers_interval', 'daily',
                                                            valid_values=('15m', '45m', '90m', '4h', 'daily'))
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
@@ -562,9 +565,11 @@ class Application(object):
                                                   check_setting_int(app.CFG, 'General', 'autopostprocessor_frequency',
                                                                     app.DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY))
 
+            app.TORRENT_CHECKER_FREQUENCY = max(app.MIN_TORRENT_CHECKER_FREQUENCY,
+                                                check_setting_int(app.CFG, 'General', 'torrent_checker_frequency',
+                                                                  app.DEFAULT_TORRENT_CHECKER_FREQUENCY))
             app.DAILYSEARCH_FREQUENCY = max(app.MIN_DAILYSEARCH_FREQUENCY,
                                             check_setting_int(app.CFG, 'General', 'dailysearch_frequency', app.DEFAULT_DAILYSEARCH_FREQUENCY))
-
             app.MIN_BACKLOG_FREQUENCY = Application.get_backlog_cycle_time()
             app.BACKLOG_FREQUENCY = max(app.MIN_BACKLOG_FREQUENCY, check_setting_int(app.CFG, 'General', 'backlog_frequency', app.DEFAULT_BACKLOG_FREQUENCY))
             app.UPDATE_FREQUENCY = max(app.MIN_UPDATE_FREQUENCY, check_setting_int(app.CFG, 'General', 'update_frequency', app.DEFAULT_UPDATE_FREQUENCY))
@@ -815,6 +820,7 @@ class Application(object):
             app.EMAIL_SUBJECT = check_setting_str(app.CFG, 'Email', 'email_subject', '')
 
             app.USE_SUBTITLES = bool(check_setting_int(app.CFG, 'Subtitles', 'use_subtitles', 0))
+            app.SUBTITLES_ERASE_CACHE = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_erase_cache', 0))
             app.SUBTITLES_LANGUAGES = check_setting_str(app.CFG, 'Subtitles', 'subtitles_languages', '').split(',')
             if app.SUBTITLES_LANGUAGES[0] == '':
                 app.SUBTITLES_LANGUAGES = []
@@ -989,6 +995,18 @@ class Application(object):
                 logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
                 self.save_config()
 
+            if app.SUBTITLES_ERASE_CACHE:
+                try:
+                    for cache_file in ['application.dbm', 'subliminal.dbm']:
+                        file_path = os.path.join(app.CACHE_DIR, cache_file)
+                        if os.path.isfile(file_path):
+                            logger.info(u"Removing subtitles cache file: {cache_file}", cache_file=file_path)
+                            os.remove(file_path)
+                except OSError as e:
+                    logger.warning(u"Unable to remove subtitles cache files. Error: {error}", error=e)
+                # Disable flag to erase cache
+                app.SUBTITLES_ERASE_CACHE = 0
+
             # initialize the main SB database
             main_db_con = db.DBConnection()
             db.upgradeDatabase(main_db_con, main_db.InitialSchema)
@@ -1029,28 +1047,45 @@ class Application(object):
 
             # initialize schedulers
             # updaters
-            app.versionCheckScheduler = scheduler.Scheduler(version_checker.CheckVersion(),
-                                                            cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
-                                                            threadName="CHECKVERSION", silent=False)
+            app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
+                                                              cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
+                                                              threadName="CHECKVERSION", silent=False)
 
-            app.showQueueScheduler = scheduler.Scheduler(show_queue.ShowQueue(), cycleTime=datetime.timedelta(seconds=3), threadName="SHOWQUEUE")
+            app.show_queue_scheduler = scheduler.Scheduler(show_queue.ShowQueue(),
+                                                           cycleTime=datetime.timedelta(seconds=3),
+                                                           threadName="SHOWQUEUE")
 
-            app.showUpdateScheduler = scheduler.Scheduler(show_updater.ShowUpdater(), cycleTime=datetime.timedelta(hours=1), threadName="SHOWUPDATER",
-                                                          start_time=datetime.time(hour=app.SHOWUPDATE_HOUR, minute=random.randint(0, 59)))
+            app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
+                                                            cycleTime=datetime.timedelta(hours=1),
+                                                            threadName="SHOWUPDATER",
+                                                            start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
+                                                                                     minute=random.randint(0, 59)))
 
             # snatcher used for manual search, manual picked results
-            app.manualSnatchScheduler = scheduler.Scheduler(SnatchQueue(), cycleTime=datetime.timedelta(seconds=3), threadName="MANUALSNATCHQUEUE")
+            app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
+                                                              cycleTime=datetime.timedelta(seconds=3),
+                                                              threadName="MANUALSNATCHQUEUE")
             # searchers
-            app.searchQueueScheduler = scheduler.Scheduler(SearchQueue(), cycleTime=datetime.timedelta(seconds=3), threadName="SEARCHQUEUE")
+            app.search_queue_scheduler = scheduler.Scheduler(SearchQueue(),
+                                                             cycleTime=datetime.timedelta(seconds=3),
+                                                             threadName="SEARCHQUEUE")
 
-            app.forcedSearchQueueScheduler = scheduler.Scheduler(ForcedSearchQueue(), cycleTime=datetime.timedelta(seconds=3), threadName="FORCEDSEARCHQUEUE")
+            app.forced_search_queue_scheduler = scheduler.Scheduler(ForcedSearchQueue(),
+                                                                    cycleTime=datetime.timedelta(seconds=3),
+                                                                    threadName="FORCEDSEARCHQUEUE")
 
             # TODO: update_interval should take last daily/backlog times into account!
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
-            app.dailySearchScheduler = scheduler.Scheduler(DailySearcher(), cycleTime=update_interval, threadName="DAILYSEARCHER", run_delay=update_interval)
+            app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
+                                                             cycleTime=update_interval,
+                                                             threadName="DAILYSEARCHER",
+                                                             run_delay=update_interval)
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
-            app.backlogSearchScheduler = BacklogSearchScheduler(BacklogSearcher(), cycleTime=update_interval, threadName="BACKLOG", run_delay=update_interval)
+            app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
+                                                                  cycleTime=update_interval,
+                                                                  threadName="BACKLOG",
+                                                                  run_delay=update_interval)
 
             search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
             if app.CHECK_PROPERS_INTERVAL in search_intervals:
@@ -1060,20 +1095,38 @@ class Application(object):
                 update_interval = datetime.timedelta(hours=1)
                 run_at = datetime.time(hour=1)  # 1 AM
 
-            app.properFinderScheduler = scheduler.Scheduler(ProperFinder(), cycleTime=update_interval, threadName="FINDPROPERS",
-                                                            start_time=run_at, run_delay=update_interval)
+            app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
+                                                              cycleTime=update_interval,
+                                                              threadName="FINDPROPERS",
+                                                              start_time=run_at,
+                                                              run_delay=update_interval)
 
             # processors
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
-            app.autoPostProcessorScheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(), cycleTime=update_interval, threadName="POSTPROCESSOR",
-                                                                 silent=not app.PROCESS_AUTOMATICALLY, run_delay=update_interval)
+            app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
+                                                                    cycleTime=update_interval,
+                                                                    threadName="POSTPROCESSOR",
+                                                                    silent=not app.PROCESS_AUTOMATICALLY,
+                                                                    run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
-            app.traktCheckerScheduler = scheduler.Scheduler(trakt_checker.TraktChecker(), cycleTime=datetime.timedelta(hours=1), threadName="TRAKTCHECKER",
-                                                            run_delay=update_interval, silent=not app.USE_TRAKT)
+            app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
+                                                              cycleTime=datetime.timedelta(hours=1),
+                                                              threadName="TRAKTCHECKER",
+                                                              run_delay=update_interval,
+                                                              silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
-            app.subtitlesFinderScheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(), cycleTime=update_interval, threadName="FINDSUBTITLES",
-                                                               run_delay=update_interval, silent=not app.USE_SUBTITLES)
+            app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
+                                                                 cycleTime=update_interval,
+                                                                 threadName="FINDSUBTITLES",
+                                                                 run_delay=update_interval,
+                                                                 silent=not app.USE_SUBTITLES)
+
+            update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
+            app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
+                                                                cycleTime=update_interval,
+                                                                threadName="TORRENTCHECKER",
+                                                                run_delay=update_interval)
 
             app.__INITIALIZED__ = True
             return True
@@ -1129,72 +1182,77 @@ class Application(object):
             app.events.start()
 
             # start the daily search scheduler
-            app.dailySearchScheduler.enable = True
-            app.dailySearchScheduler.start()
+            app.daily_search_scheduler.enable = True
+            app.daily_search_scheduler.start()
 
             # start the backlog scheduler
-            app.backlogSearchScheduler.enable = True
-            app.backlogSearchScheduler.start()
+            app.backlog_search_scheduler.enable = True
+            app.backlog_search_scheduler.start()
 
             # start the show updater
-            app.showUpdateScheduler.enable = True
-            app.showUpdateScheduler.start()
+            app.show_update_scheduler.enable = True
+            app.show_update_scheduler.start()
 
             # start the version checker
-            app.versionCheckScheduler.enable = True
-            app.versionCheckScheduler.start()
+            app.version_check_scheduler.enable = True
+            app.version_check_scheduler.start()
 
             # start the queue checker
-            app.showQueueScheduler.enable = True
-            app.showQueueScheduler.start()
+            app.show_queue_scheduler.enable = True
+            app.show_queue_scheduler.start()
 
             # start the search queue checker
-            app.searchQueueScheduler.enable = True
-            app.searchQueueScheduler.start()
+            app.search_queue_scheduler.enable = True
+            app.search_queue_scheduler.start()
 
             # start the forced search queue checker
-            app.forcedSearchQueueScheduler.enable = True
-            app.forcedSearchQueueScheduler.start()
+            app.forced_search_queue_scheduler.enable = True
+            app.forced_search_queue_scheduler.start()
 
             # start the search queue checker
-            app.manualSnatchScheduler.enable = True
-            app.manualSnatchScheduler.start()
+            app.manual_snatch_scheduler.enable = True
+            app.manual_snatch_scheduler.start()
 
             # start the proper finder
             if app.DOWNLOAD_PROPERS:
-                app.properFinderScheduler.silent = False
-                app.properFinderScheduler.enable = True
+                app.proper_finder_scheduler.silent = False
+                app.proper_finder_scheduler.enable = True
             else:
-                app.properFinderScheduler.enable = False
-                app.properFinderScheduler.silent = True
-            app.properFinderScheduler.start()
+                app.proper_finder_scheduler.enable = False
+                app.proper_finder_scheduler.silent = True
+            app.proper_finder_scheduler.start()
 
             # start the post processor
             if app.PROCESS_AUTOMATICALLY:
-                app.autoPostProcessorScheduler.silent = False
-                app.autoPostProcessorScheduler.enable = True
+                app.auto_post_processor_scheduler.silent = False
+                app.auto_post_processor_scheduler.enable = True
             else:
-                app.autoPostProcessorScheduler.enable = False
-                app.autoPostProcessorScheduler.silent = True
-            app.autoPostProcessorScheduler.start()
+                app.auto_post_processor_scheduler.enable = False
+                app.auto_post_processor_scheduler.silent = True
+            app.auto_post_processor_scheduler.start()
 
             # start the subtitles finder
             if app.USE_SUBTITLES:
-                app.subtitlesFinderScheduler.silent = False
-                app.subtitlesFinderScheduler.enable = True
+                app.subtitles_finder_scheduler.silent = False
+                app.subtitles_finder_scheduler.enable = True
             else:
-                app.subtitlesFinderScheduler.enable = False
-                app.subtitlesFinderScheduler.silent = True
-            app.subtitlesFinderScheduler.start()
+                app.subtitles_finder_scheduler.enable = False
+                app.subtitles_finder_scheduler.silent = True
+            app.subtitles_finder_scheduler.start()
 
             # start the trakt checker
             if app.USE_TRAKT:
-                app.traktCheckerScheduler.silent = False
-                app.traktCheckerScheduler.enable = True
+                app.trakt_checker_scheduler.silent = False
+                app.trakt_checker_scheduler.enable = True
             else:
-                app.traktCheckerScheduler.enable = False
-                app.traktCheckerScheduler.silent = True
-            app.traktCheckerScheduler.start()
+                app.trakt_checker_scheduler.enable = False
+                app.trakt_checker_scheduler.silent = True
+            app.trakt_checker_scheduler.start()
+
+            if app.USE_TORRENTS and app.REMOVE_FROM_CLIENT:
+                app.torrent_checker_scheduler.enable = True
+            app.torrent_checker_scheduler.silent = False
+            app.torrent_checker_scheduler.start()
 
             app.started = True
 
@@ -1208,18 +1266,19 @@ class Application(object):
             logger.info(u'Aborting all threads')
 
             threads = [
-                app.dailySearchScheduler,
-                app.backlogSearchScheduler,
-                app.showUpdateScheduler,
-                app.versionCheckScheduler,
-                app.showQueueScheduler,
-                app.searchQueueScheduler,
-                app.forcedSearchQueueScheduler,
-                app.manualSnatchScheduler,
-                app.autoPostProcessorScheduler,
-                app.traktCheckerScheduler,
-                app.properFinderScheduler,
-                app.subtitlesFinderScheduler,
+                app.daily_search_scheduler,
+                app.backlog_search_scheduler,
+                app.show_update_scheduler,
+                app.version_check_scheduler,
+                app.show_queue_scheduler,
+                app.search_queue_scheduler,
+                app.forced_search_queue_scheduler,
+                app.manual_snatch_scheduler,
+                app.auto_post_processor_scheduler,
+                app.trakt_checker_scheduler,
+                app.proper_finder_scheduler,
+                app.subtitles_finder_scheduler,
+                app.torrent_checker_scheduler,
                 app.events
             ]
 
@@ -1315,12 +1374,14 @@ class Application(object):
         new_config['General']['cache_trimming'] = int(app.CACHE_TRIMMING)
         new_config['General']['max_cache_age'] = int(app.MAX_CACHE_AGE)
         new_config['General']['autopostprocessor_frequency'] = int(app.AUTOPOSTPROCESSOR_FREQUENCY)
+        new_config['General']['torrent_checker_frequency'] = int(app.TORRENT_CHECKER_FREQUENCY)
         new_config['General']['dailysearch_frequency'] = int(app.DAILYSEARCH_FREQUENCY)
         new_config['General']['backlog_frequency'] = int(app.BACKLOG_FREQUENCY)
         new_config['General']['update_frequency'] = int(app.UPDATE_FREQUENCY)
         new_config['General']['showupdate_hour'] = int(app.SHOWUPDATE_HOUR)
         new_config['General']['download_propers'] = int(app.DOWNLOAD_PROPERS)
         new_config['General']['propers_search_days'] = int(app.PROPERS_SEARCH_DAYS)
+        new_config['General']['remove_from_client'] = int(app.REMOVE_FROM_CLIENT)
         new_config['General']['randomize_providers'] = int(app.RANDOMIZE_PROVIDERS)
         new_config['General']['check_propers_interval'] = app.CHECK_PROPERS_INTERVAL
         new_config['General']['allow_high_priority'] = int(app.ALLOW_HIGH_PRIORITY)
@@ -1714,6 +1775,7 @@ class Application(object):
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
+        new_config['Subtitles']['subtitles_erase_cache'] = int(app.SUBTITLES_ERASE_CACHE)
         new_config['Subtitles']['subtitles_languages'] = ','.join(app.SUBTITLES_LANGUAGES)
         new_config['Subtitles']['SUBTITLES_SERVICES_LIST'] = ','.join(app.SUBTITLES_SERVICES_LIST)
         new_config['Subtitles']['SUBTITLES_SERVICES_ENABLED'] = '|'.join([str(x) for x in app.SUBTITLES_SERVICES_ENABLED])
@@ -1881,7 +1943,7 @@ class Application(object):
     @staticmethod
     def restart():
         """Restart application."""
-        install_type = app.versionCheckScheduler.action.install_type
+        install_type = app.version_check_scheduler.action.install_type
 
         popen_list = []
 

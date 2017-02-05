@@ -1,8 +1,6 @@
 # coding=utf-8
 
-"""
-Base handler for Config pages
-"""
+"""Base handler for Config pages."""
 
 from __future__ import unicode_literals
 
@@ -38,7 +36,7 @@ class Config(WebRoot):
             {'title': 'Anime', 'path': 'config/anime/', 'icon': 'menu-icon-anime'},
         ]
 
-        return menu
+        return menu[::-1]
 
     def index(self):
         """

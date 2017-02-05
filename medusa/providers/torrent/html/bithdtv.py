@@ -53,6 +53,7 @@ class BithdtvProvider(TorrentProvider):
         }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
 

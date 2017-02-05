@@ -14,7 +14,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-8 col-md-offset-2">
         <form name="processForm" method="post" action="home/postprocess/processEpisode" style="line-height: 40px;">
         <table>
             <input type="hidden" id="proc_type" name="type" value="manual">
@@ -23,7 +23,7 @@
                     <b>Enter the folder containing the episode:</b>
                 </td>
                 <td>
-                    <input type="text" name="proc_dir" id="episodeDir" class="form-control form-control-inline input-sm input350" style="margin-right: 5px;"/>
+                    <input type="text" name="proc_dir" id="episodeDir" class="form-control form-control-inline input-sm" style="margin-right: 5px;"/>
                 </td>
             </tr>
             <tr>
@@ -33,8 +33,8 @@
                 <td>
                     <select name="process_method" id="process_method" class="form-control form-control-inline input-sm" >
                     <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                    % for curAction in ('copy', 'move', 'hardlink', 'symlink'):
-                        <option value="${curAction}" ${'selected="selected"' if app.PROCESS_METHOD == curAction else ''}>${process_method_text[curAction]}</option>
+                    % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                        <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                     % endfor
                     </select>
                 </td>

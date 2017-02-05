@@ -157,7 +157,7 @@ class HoundDawgsProvider(TorrentProvider):
                         continue
 
                     title = all_as[2].string
-                    download_url = self.urls['base_url'] + all_as[0].attrs['href']
+                    download_url = urljoin(self.url, all_as[0].attrs['href'])
                     if not all([title, download_url]):
                         continue
 

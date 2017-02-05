@@ -50,7 +50,7 @@ def setEpisodeToWanted(show, s, e):
             ep_obj.save_to_db()
 
         cur_backlog_queue_item = BacklogQueueItem(show, [ep_obj])
-        app.searchQueueScheduler.action.add_item(cur_backlog_queue_item)
+        app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log('Starting backlog search for {show} {ep} because some episodes were set to wanted'.format
                    (show=show.name, ep=episode_num(s, e)))
@@ -124,7 +124,7 @@ class TraktChecker(object):
         return trakt_show if trakt_show else None
 
     def remove_show_trakt_library(self, show_obj):
-        """Remove Show from trakt collections"""
+        """Remove Show from trakt collections."""
         if self.find_show(show_obj.indexerid):
             trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
 
@@ -133,7 +133,7 @@ class TraktChecker(object):
                 'shows': [
                     {
                         'title': show_obj.name,
-                        'year': show_obj.startyear,
+                        'year': show_obj.start_year,
                         'ids': {}
                     }
                 ]
@@ -174,7 +174,7 @@ class TraktChecker(object):
                 'shows': [
                     {
                         'title': show_obj.name,
-                        'year': show_obj.startyear,
+                        'year': show_obj.start_year,
                         'ids': {}
                     }
                 ]
@@ -242,7 +242,7 @@ class TraktChecker(object):
                         logger.log('Could not connect to Trakt. Error: {0}'.format(ex(e)), logger.WARNING)
 
     def add_episode_trakt_collection(self):
-        """Add all episodes from local library to Trakt collections. Enabled through app.TRAKT_SYNC_WATCHLIST setting"""
+        """Add all episodes from local library to Trakt collections. Enabled in app.TRAKT_SYNC_WATCHLIST setting."""
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
@@ -365,7 +365,7 @@ class TraktChecker(object):
 
                     if not self._check_list(trakt_id, show_obj.indexerid, 0, 0, List='Show'):
                         logger.log('Adding Show {0} with ID: {1} to Trakt watchlist'.format(show_obj.name, show_obj.indexerid), logger.DEBUG)
-                        show_el = {'title': show_obj.name, 'year': show_obj.startyear, 'ids': {}}
+                        show_el = {'title': show_obj.name, 'year': show_obj.start_year, 'ids': {}}
                         if trakt_id == 'tvdb_id':
                             show_el['ids']['tvdb'] = show_obj.indexerid
                         else:
@@ -387,13 +387,13 @@ class TraktChecker(object):
             if app.showList:
                 for show in app.showList:
                     if show.status == 'Ended':
-                        if not show.imdbid:
+                        if not show.imdb_id:
                             logger.log('Could not check trakt progress for {0} because the imdb id is missing from tvdb data, skipping'.format
                                        (show.name), logger.WARNING)
                             continue
 
                         try:
-                            progress = self._request('shows/{0}/progress/watched'.format(show.imdbid)) or []
+                            progress = self._request('shows/{0}/progress/watched'.format(show.imdb_id)) or []
                         except TraktException as e:
                             logger.log('Could not connect to Trakt. Aborting removing show {0} from Medusa. Error: {1}'.format(show.name, repr(e)), logger.WARNING)
                             continue
@@ -402,7 +402,7 @@ class TraktChecker(object):
                             continue
 
                         if progress.get('aired', True) == progress.get('completed', False):
-                            app.showQueueScheduler.action.removeShow(show, full=True)
+                            app.show_queue_scheduler.action.removeShow(show, full=True)
                             logger.log('Show {0} has been removed from Medusa'.format(show.name), logger.DEBUG)
 
     def fetch_trakt_shows(self):
@@ -489,12 +489,12 @@ class TraktChecker(object):
             if location:
                 logger.log('Adding show {0} with ID: {1}'.format(show_name, indexer_id))
 
-                app.showQueueScheduler.action.addShow(indexer, indexer_id, None,
-                                                      default_status=status,
-                                                      quality=int(app.QUALITY_DEFAULT),
-                                                      flatten_folders=int(app.FLATTEN_FOLDERS_DEFAULT),
-                                                      paused=app.TRAKT_START_PAUSED,
-                                                      default_status_after=status, root_dir=location)
+                app.show_queue_scheduler.action.addShow(indexer, indexer_id, None,
+                                                        default_status=status,
+                                                        quality=int(app.QUALITY_DEFAULT),
+                                                        flatten_folders=int(app.FLATTEN_FOLDERS_DEFAULT),
+                                                        paused=app.TRAKT_START_PAUSED,
+                                                        default_status_after=status, root_dir=location)
             else:
                 logger.log('There was an error creating the show, no root directory setting found', logger.WARNING)
                 return
@@ -669,9 +669,9 @@ class TraktChecker(object):
         uniqueShows = {}
         uniqueSeasons = {}
 
-        for showid, indexerid, show_name, startyear, season, episode in data:
+        for showid, indexerid, show_name, start_year, season, episode in data:
             if showid not in uniqueShows:
-                uniqueShows[showid] = {'title': show_name, 'year': startyear, 'ids': {}, 'seasons': []}
+                uniqueShows[showid] = {'title': show_name, 'year': start_year, 'ids': {}, 'seasons': []}
                 trakt_id = indexerApi(indexerid).config['trakt_id']
 
                 if trakt_id == 'tvdb_id':
@@ -681,7 +681,7 @@ class TraktChecker(object):
                 uniqueSeasons[showid] = []
 
         # Get the unique seasons per Show
-        for showid, indexerid, show_name, startyear, season, episode in data:
+        for showid, indexerid, show_name, start_year, season, episode in data:
             if season not in uniqueSeasons[showid]:
                 uniqueSeasons[showid].append(season)
 
@@ -695,7 +695,7 @@ class TraktChecker(object):
             for searchedSeason in uniqueSeasons[searchedShow]:
                 episodesList = []
 
-                for showid, indexerid, show_name, startyear, season, episode in data:
+                for showid, indexerid, show_name, start_year, season, episode in data:
                     if season == searchedSeason and showid == searchedShow:
                         episodesList.append({'number': episode})
                 show = uniqueShows[searchedShow]

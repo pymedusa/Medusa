@@ -9,6 +9,7 @@
     from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
     from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_config import mappings
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
@@ -23,19 +24,19 @@
 <div class="clearfix"></div><!-- div.clearfix //-->
 
 <div class="row">
-    <div class="form-inline col-md-12">
+    <div class="form-inline col-lg-3 col-md-4 col-sm-6 col-xs-12">
         <label for="select-show">Change Show:</label>
         <div class="select-show-group">
             <div class="navShow"><img id="prevShow" src="images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>
             <select id="select-show" class="form-control input-sm">
-            % for curShowList in sortedShowLists:
-                <% curShowType = curShowList[0] %>
-                <% curShowList = curShowList[1] %>
+            % for cur_show_list in sortedShowLists:
+                <% cur_show_type = cur_show_list[0] %>
+                <% cur_show_list = cur_show_list[1] %>
                 % if len(sortedShowLists) > 1:
-                    <optgroup label="${curShowType}">
+                    <optgroup label="${cur_show_type}">
                 % endif
-                    % for curShow in curShowList:
-                    <option value="${curShow.indexerid}" ${'selected="selected"' if curShow == show else ''}>${curShow.name}</option>
+                    % for cur_show in cur_show_list:
+                    <option value="${cur_show.indexerid}" ${'selected="selected"' if cur_show == show else ''}>${cur_show.name}</option>
                     % endfor
                 % if len(sortedShowLists) > 1:
                     </optgroup>
@@ -58,9 +59,9 @@
         % if not app.USE_FAILED_DOWNLOADS:
         <% availableStatus.remove(FAILED) %>
         % endif
-        % for curStatus in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-            % if curStatus not in [DOWNLOADED, ARCHIVED]:
-            <option value="${curStatus}">${statusStrings[curStatus]}</option>
+        % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
+            % if cur_status not in [DOWNLOADED, ARCHIVED]:
+            <option value="${cur_status}">${statusStrings[cur_status]}</option>
             % endif
         % endfor
         </select>
@@ -77,7 +78,7 @@
 <div class="row">
     <div class="col-md-12">
         <table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if app.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
-            <% curSeason = -1 %>
+            <% cur_season = -1 %>
             <% odd = 0 %>
             <% epCount = 0 %>
             <% epSize = 0 %>
@@ -117,8 +118,8 @@
                 if epLoc and show._location and epLoc.lower().startswith(show._location.lower()):
                     epLoc = epLoc[len(show._location)+1:]
                 %>
-                % if int(epResult["season"]) != curSeason:
-                    % if curSeason == -1:
+                % if int(epResult["season"]) != cur_season:
+                    % if cur_season == -1:
             <thead>
                 <tr class="seasoncols" style="display:none;">
                         <th data-sorter="false" data-priority="critical" class="col-checkbox"><input type="checkbox" class="seasonCheck"/></th>
@@ -164,7 +165,7 @@
                     <th class="col-ep">Scene</th>
                     <th class="col-ep">Scene Absolute</th>
                     <th class="col-name hidden-xs">Name</th>
-                    <th class="col-name">File Name</th>
+                    <th class="col-name hidden-xs">File Name</th>
                     <th class="col-ep">Size</th>
                     <th class="col-airdate">Airdate</th>
                     <th class="col-ep">Download</th>
@@ -206,7 +207,7 @@
                     <th class="col-ep">Scene</th>
                     <th class="col-ep">Scene Absolute</th>
                     <th class="col-name hidden-xs">Name</th>
-                    <th class="col-name">File Name</th>
+                    <th class="col-name hidden-xs">File Name</th>
                     <th class="col-ep">Size</th>
                     <th class="col-airdate">Airdate</th>
                     <th class="col-ep">Download</th>
@@ -217,13 +218,13 @@
                     % endif
             </tbody>
                 % if app.DISPLAY_ALL_SEASONS is False:
-                <tbody class="toggle collapse${("", " in")[curSeason == -1]}" id="collapseSeason-${epResult['season']}">
+                <tbody class="toggle collapse${("", " in")[cur_season == -1]}" id="collapseSeason-${epResult['season']}">
                 % else:
                 <tbody>
                 % endif
-                <% curSeason = int(epResult["season"]) %>
+                <% cur_season = int(epResult["season"]) %>
                 % endif
-                <tr class="${Overview.overviewStrings[ep_cats[epStr]]} season-${curSeason} seasonstyle" id="${'S' + str(epResult["season"]) + 'E' + str(epResult["episode"])}">
+                <tr class="${Overview.overviewStrings[ep_cats[epStr]]} season-${cur_season} seasonstyle" id="${'S' + str(epResult["season"]) + 'E' + str(epResult["episode"])}">
                     <td class="col-checkbox">
                         % if int(epResult["status"]) != UNAIRED:
                             <input type="checkbox" class="epCheck" id="${str(epResult["season"])+'x'+str(epResult["episode"])}" name="${str(epResult["season"]) +"x"+str(epResult["episode"])}" />
@@ -270,15 +271,15 @@
                     </td>
                     <td class="col-name hidden-xs">
                     % if epResult["description"] != "" and epResult["description"] is not None:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${str(show.indexerid)}_${str(epResult["season"])}_${str(epResult["episode"])}" />
+                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${str(mappings.get(show.indexer).replace('_id', '')) + str(show.indexerid)}_${str(epResult["season"])}_${str(epResult["episode"])}" />
                     % else:
                         <img src="images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
                     % endif
                     ${epResult["name"]}
                     </td>
-                    <td class="col-name hidden-xs">${epLoc if Quality.splitCompositeStatus(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
+                    <td class="col-name hidden-xs">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
                     <td class="col-ep">
-                        % if epResult["file_size"] and Quality.splitCompositeStatus(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if epResult["file_size"] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             ${pretty_file_size(epResult["file_size"])}
                         % endif
                     </td>
@@ -296,7 +297,7 @@
                         % endif
                     </td>
                     <td>
-                        % if app.DOWNLOAD_URL and epResult['location'] and Quality.splitCompositeStatus(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if app.DOWNLOAD_URL and epResult['location'] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             <%
                                 filename = epResult['location']
                                 for rootDir in app.ROOT_DIRS.split('|'):
@@ -304,26 +305,27 @@
                                         filename = filename.replace(rootDir, "")
                                 filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
                             %>
-                            <center><a href="${filename}">Download</a></center>
+                            <a href="${filename}">Download</a>
                         % endif
                     </td>
                     <td class="col-subtitles" align="center">
                     % for flag in (epResult["subtitles"] or '').split(','):
-                        % if flag.strip() and Quality.splitCompositeStatus(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if flag.strip() and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             % if flag != 'und':
-                                <a class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}&amp;lang=${flag}">
-                                <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
+                                <a class=epRedownloadSubtitle href="home/searchEpisodeSubtitles?show=${show.indexerid}&amp;season=${epResult['season']}&amp;episode=${epResult['episode']}&amp;lang=${flag}">
+                                    <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${flag}" onError="this.onerror=null;this.src='images/flags/unknown.png';"/>
+                                </a>
                             % else:
                                 <img src="images/subtitles/flags/${flag}.png" width="16" height="11" alt="${subtitles.name_from_code(flag)}" onError="this.onerror=null;this.src='images/flags/unknown.png';" />
                             % endif
                         % endif
                     % endfor
                     </td>
-                        <% curStatus, curQuality = Quality.splitCompositeStatus(int(epResult["status"])) %>
-                        % if curQuality != Quality.NONE:
-                            <td class="col-status">${statusStrings[curStatus]} ${renderQualityPill(curQuality)}</td>
+                        <% cur_status, cur_quality = Quality.split_composite_status(int(epResult["status"])) %>
+                        % if cur_quality != Quality.NONE:
+                            <td class="col-status">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
                         % else:
-                            <td class="col-status">${statusStrings[curStatus]}</td>
+                            <td class="col-status">${statusStrings[cur_status]}</td>
                         % endif
                     <td class="col-search">
                         % if int(epResult["season"]) != 0:

@@ -29,7 +29,7 @@ import guessit
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 from ..helper.common import episode_num
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerException
 
 
 logger = logging.getLogger(__name__)
@@ -113,11 +113,14 @@ class NameParser(object):
                     logger.debug('Indexer info for show {name}: {ep}',
                                  name=result.show.name, ep=episode_num(season_number, episode_numbers[0]))
                 except IndexerEpisodeNotFound:
-                    logger.warn("Unable to find episode with date {date} for show '{name}'. Skipping",
-                                date=result.air_date, name=result.show.name)
+                    logger.warning("Unable to find episode with date {date} for show '{name}'. Skipping",
+                                   date=result.air_date, name=result.show.name)
                     episode_numbers = []
                 except IndexerError as e:
-                    logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    logger.warning('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    episode_numbers = []
+                except IndexerException as e:
+                    logger.warning('Indexer exception: {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
                     episode_numbers = []
 
             for episode_number in episode_numbers:
@@ -369,7 +372,7 @@ class ParseResult(object):
         quality = common.Quality.from_guessit(guess)
         if quality != common.Quality.UNKNOWN:
             return quality
-        return common.Quality.nameQuality(self.original_name, self.is_anime, extend)
+        return common.Quality.name_quality(self.original_name, self.is_anime, extend)
 
     @property
     def is_air_by_date(self):
@@ -411,8 +414,10 @@ class ParseResult(object):
 class NameParserCache(object):
     """Name parser cache."""
 
-    _previous_parsed = OrderedDict()
-    _cache_size = 1000
+    def __init__(self, max_size=1000):
+        """Initiate the cache with a maximum size."""
+        self.cache = OrderedDict()
+        self.max_size = max_size
 
     def add(self, name, parse_result):
         """Add the result to the parser cache.
@@ -422,9 +427,9 @@ class NameParserCache(object):
         :param parse_result:
         :type parse_result: ParseResult
         """
-        self._previous_parsed[name] = parse_result
-        while len(self._previous_parsed) > self._cache_size:
-            del self._previous_parsed[self._previous_parsed.keys()[0]]
+        while len(self.cache) >= self.max_size:
+            self.cache.popitem(last=False)
+        self.cache[name] = parse_result
 
     def get(self, name):
         """Return the cached parsed result.
@@ -434,9 +439,9 @@ class NameParserCache(object):
         :return:
         :rtype: ParseResult
         """
-        if name in self._previous_parsed:
+        if name in self.cache:
             logger.debug("Using cached parse result for '{name}'", name=name)
-            return self._previous_parsed[name]
+            return self.cache[name]
 
 
 name_parser_cache = NameParserCache()

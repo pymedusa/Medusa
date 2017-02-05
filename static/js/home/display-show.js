@@ -1,8 +1,27 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     if (MEDUSA.config.fanartBackground) {
-        $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
+        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
+        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+        $.backstretch(path);
+        $('.backstretch').css('top','50px');
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
+
+    // adjust the summary background position and size on page load and resize
+    function moveSummaryBackground() {
+        var height = $("#summary").height() + 10;
+        var top = $("#summary").offset().top + 5;
+        $("#summaryBackground").height(height);
+        $("#summaryBackground").offset({ top: top, left: 0});
+    }
+
+    $(window).resize(function() {
+        moveSummaryBackground();
+    });
+
+    $(function() {
+        moveSummaryBackground();
+    });
 
     $.ajaxEpSearch({
         colorRow: true
@@ -46,7 +65,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
+        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
     });
 
     $('.seasonCheck').on('click', function() {
@@ -113,7 +132,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         if (val === 0) {
             return;
         }
-        window.location.href = 'home/displayShow?show=' + val;
+        window.location.href = $('base').attr('href') + 'home/displayShow?show=' + val;
     });
 
     // show/hide different types of rows when the checkboxes are changed
@@ -293,32 +312,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
     });
 
-    $('.addQTip').each(function() {
-        $(this).css({
-            'cursor': 'help', // eslint-disable-line quote-props
-            'text-shadow': '0px 0px 0.5px #666'
-        });
-        $(this).qtip({
-            show: {
-                solo: true
-            },
-            position: {
-                my: 'left center',
-                adjust: {
-                    y: -10,
-                    x: 2
-                }
-            },
-            style: {
-                tip: {
-                    corner: true,
-                    method: 'polygon'
-                },
-                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
-            }
-        });
-    });
-
     $.fn.generateStars = function() {
         return this.each(function(i, e) {
             $(e).html($('<span/>').width($(e).text() * 12));
@@ -404,5 +397,21 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         indexer_id: $('input#showID').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
+    });
+
+    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
+    $('.display-specials a').on('click', function(){
+        api.patch('config', {
+            layout: {
+                show: {
+                    specials: $(this).text() === 'Hide' ? false : true
+                }
+            }
+        }).then(function(response) {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(function(response){
+            log.error(response.data);
+        });
     });
 };

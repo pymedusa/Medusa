@@ -45,12 +45,12 @@ class GenericQueue(object):
         self.amActive = False
 
     def pause(self):
-        """Pauses this queue"""
+        """Pauses this queue."""
         logger.log(u"Pausing queue")
         self.min_priority = 999999999999
 
     def unpause(self):
-        """Unpauses this queue"""
+        """Unpauses this queue."""
         logger.log(u"Unpausing queue")
         self.min_priority = 0
 
@@ -124,12 +124,12 @@ class QueueItem(threading.Thread):
         self.added = None
 
     def run(self):
-        """Implementing classes should call this"""
+        """Implementing classes should call this."""
 
         self.inProgress = True
 
     def finish(self):
-        """Implementing Classes should call this"""
+        """Implementing Classes should call this."""
 
         self.inProgress = False
 

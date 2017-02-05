@@ -24,7 +24,8 @@ LOG_FILENAME = 'application.log'
 CONFIG_INI = 'config.ini'
 GIT_ORG = 'pymedusa'
 GIT_REPO = 'Medusa'
-CHANGES_URL = 'https://cdn.pymedusa.com/news/CHANGES.md'
+BASE_PYMEDUSA_URL = 'https://cdn.pymedusa.com'
+CHANGES_URL = '{base_url}/news/CHANGES.md'.format(base_url=BASE_PYMEDUSA_URL)
 APPLICATION_URL = 'https://github.com/{org}/{repo}'.format(org=GIT_ORG, repo=GIT_REPO)
 DONATIONS_URL = '{0}/wiki/Donations'.format(APPLICATION_URL)
 WIKI_URL = '{0}/wiki'.format(APPLICATION_URL)
@@ -69,19 +70,19 @@ NO_RESIZE = False
 events = None
 
 # schedulers
-dailySearchScheduler = None
-backlogSearchScheduler = None
-showUpdateScheduler = None
-versionCheckScheduler = None
-showQueueScheduler = None
-searchQueueScheduler = None
-forcedSearchQueueScheduler = None
-manualSnatchScheduler = None
-properFinderScheduler = None
-autoPostProcessorScheduler = None
-subtitlesFinderScheduler = None
-traktCheckerScheduler = None
-
+daily_search_scheduler = None
+backlog_search_scheduler = None
+show_update_scheduler = None
+version_check_scheduler = None
+show_queue_scheduler = None
+search_queue_scheduler = None
+forced_search_queue_scheduler = None
+manual_snatch_scheduler = None
+proper_finder_scheduler = None
+auto_post_processor_scheduler = None
+subtitles_finder_scheduler = None
+trakt_checker_scheduler = None
+torrent_checker_scheduler = None
 
 showList = []
 
@@ -109,8 +110,8 @@ GIT_PASSWORD = None
 GIT_PATH = None
 DEVELOPER = False
 
-NEWS_URL = 'https://cdn.pymedusa.com/news/news.md'
-LOGO_URL = 'https://cdn.pymedusa.com/images/ico/favicon-64.png'
+NEWS_URL = '{base_url}/news/news.md'.format(base_url=BASE_PYMEDUSA_URL)
+LOGO_URL = '{base_url}/images/ico/favicon-64.png'.format(base_url=BASE_PYMEDUSA_URL)
 
 NEWS_LAST_READ = None
 NEWS_LATEST = None
@@ -225,6 +226,7 @@ TORRENT_DIR = None
 DOWNLOAD_PROPERS = False
 CHECK_PROPERS_INTERVAL = None
 PROPERS_SEARCH_DAYS = 2
+REMOVE_FROM_CLIENT = False
 ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
@@ -236,12 +238,14 @@ BACKLOG_FREQUENCY = None
 SHOWUPDATE_HOUR = None
 
 DEFAULT_AUTOPOSTPROCESSOR_FREQUENCY = 10
+DEFAULT_TORRENT_CHECKER_FREQUENCY = 60
 DEFAULT_DAILYSEARCH_FREQUENCY = 40
 DEFAULT_BACKLOG_FREQUENCY = 21
 DEFAULT_UPDATE_FREQUENCY = 1
 DEFAULT_SHOWUPDATE_HOUR = random.randint(2, 4)
 
 MIN_AUTOPOSTPROCESSOR_FREQUENCY = 1
+MIN_TORRENT_CHECKER_FREQUENCY = 30
 MIN_DAILYSEARCH_FREQUENCY = 10
 MIN_BACKLOG_FREQUENCY = 10
 MIN_UPDATE_FREQUENCY = 1
@@ -548,10 +552,16 @@ PREFERRED_WORDS = ""
 
 UNDESIRED_WORDS = ""
 
-TRACKERS_LIST = "udp://coppersurfer.tk:6969/announce,udp://open.demonii.com:1337,"
-TRACKERS_LIST += "udp://exodus.desync.com:6969,udp://9.rarbg.me:2710/announce,"
-TRACKERS_LIST += "udp://glotorrents.pw:6969/announce,udp://tracker.openbittorrent.com:80/announce,"
-TRACKERS_LIST += "udp://9.rarbg.to:2710/announce"
+TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
+    udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\
+    http://tracker.opentrackr.org:1337/announce,udp://p4p.arenabg.com:1337/announce,\
+    http://p4p.arenabg.com:1337/announce,udp://explodie.org:6969/announce,\
+    udp://9.rarbg.com:2710/announce,http://explodie.org:6969/announce,\
+    http://tracker.dler.org:6969/announce,udp://public.popcorn-tracker.org:6969/announce,\
+    udp://tracker.internetwarriors.net:1337/announce,udp://ipv4.tracker.harry.lu:80/announce,\
+    http://ipv4.tracker.harry.lu:80/announce,udp://mgtracker.org:2710/announce,\
+    http://mgtracker.org:6969/announce,udp://tracker.mg64.net:6969/announce,\
+    http://tracker.mg64.net:6881/announce,http://torrentsmd.com:8080/announce"
 
 REQUIRE_WORDS = ""
 IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
