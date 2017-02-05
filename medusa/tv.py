@@ -335,8 +335,8 @@ class TVShow(TVObject):
         :return:  Size of the show on disk.
         """
         warnings.warn(
+            u'Method show_size is deprecated.  Use size property instead.',
             DeprecationWarning,
-            u'Method show_size is deprecated.  Use size property instead.'
         )
         return pretty_file_size(self.size) if pretty else self.size
 
