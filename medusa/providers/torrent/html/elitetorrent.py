@@ -21,13 +21,16 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import urljoin
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....bs4_parser import BS4Parser
-from ....helper.common import try_int
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import try_int
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from requests.compat import urljoin
 
 
 class EliteTorrentProvider(TorrentProvider):

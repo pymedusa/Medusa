@@ -21,11 +21,14 @@ from bencode.BTL import BTFailure
 
 from feedparser.util import FeedParserDict
 
-from ..generic_provider import GenericProvider
-from ... import app, logger
-from ...classes import TorrentSearchResult
-from ...helper.common import try_int
-from ...helpers import remove_file_failed
+from medusa import (
+    app,
+    logger,
+)
+from medusa.classes import TorrentSearchResult
+from medusa.helper.common import try_int
+from medusa.helpers import remove_file_failed
+from medusa.providers.generic_provider import GenericProvider
 
 
 class TorrentProvider(GenericProvider):

@@ -20,14 +20,19 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.helper.exceptions import AuthException
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
-from ....helper.exceptions import AuthException
+from requests.compat import urljoin
 
 
 class TVChaosUKProvider(TorrentProvider):

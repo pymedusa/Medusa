@@ -27,7 +27,6 @@ from collections import (
 )
 
 import knowit
-import shutil_custom
 
 from medusa import (
     app,
@@ -88,16 +87,12 @@ from medusa.scene_numbering import (
 )
 from medusa.tv.base import TV
 
+import shutil_custom
+
 try:
     import xml.etree.cElementTree as ETree
 except ImportError:
     import xml.etree.ElementTree as ETree
-
-try:
-    from send2trash import send2trash
-except ImportError:
-    app.TRASH_REMOVE_SHOW = 0
-
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -108,20 +103,17 @@ class Episode(TV):
     """Represent a TV Show episode."""
 
     def __init__(self, show, season, episode, filepath=''):
-        """Instantiate a Episode with database information.
-
-        :param show:
-        :type show: Series
-        :param season:
-        :type season: int
-        :param episode:
-        :type episode: int
-        :param filepath:
-        :type filepath: str
-        """
-        super(Episode, self).__init__(int(show.indexer) if show else 0, 0,
-                                      {'show', 'scene_season', 'scene_episode', 'scene_absolute_number',
-                                         'related_episodes', 'wanted_quality'})
+        """Instantiate a Episode with database information."""
+        super(Episode, self).__init__(
+            int(show.indexer) if show else 0,
+            0,
+            {'show',
+             'scene_season',
+             'scene_episode',
+             'scene_absolute_number',
+             'related_episodes',
+             'wanted_quality'}
+        )
         self.show = show
         self.name = ''
         self.season = season

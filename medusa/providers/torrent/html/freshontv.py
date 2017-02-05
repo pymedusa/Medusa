@@ -22,15 +22,23 @@ import re
 import time
 import traceback
 
-from requests.compat import urljoin
-from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
-from six import text_type
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import logger
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
+from requests.compat import urljoin
+from requests.utils import (
+    add_dict_to_cookiejar,
+    dict_from_cookiejar,
+)
+from six import text_type
 
 
 class FreshOnTVProvider(TorrentProvider):

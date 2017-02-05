@@ -20,11 +20,13 @@ from __future__ import unicode_literals
 
 import re
 
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.providers.nzb.nzb_provider import NZBProvider
 
-from medusa import tv
-from .nzb_provider import NZBProvider
-from ... import logger
+from requests.compat import urljoin
 
 
 class BinSearchProvider(NZBProvider):

@@ -24,18 +24,30 @@ import re
 import time
 import traceback
 
-import validators
 from dateutil import parser
-from requests.compat import urljoin
 
-from medusa import tv
-from .nzb_provider import NZBProvider
-from ... import app, logger
-from ...bs4_parser import BS4Parser
-from ...common import cpu_presets
-from ...helper.common import convert_size, try_int
-from ...helper.encoding import ss
-from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
+from medusa import (
+    app,
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.common import cpu_presets
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.helper.encoding import ss
+from medusa.indexers.indexer_config import (
+    INDEXER_TMDB,
+    INDEXER_TVDBV2,
+    INDEXER_TVMAZE,
+    mappings,
+)
+from medusa.providers.nzb.nzb_provider import NZBProvider
+
+from requests.compat import urljoin
+import validators
 
 
 class NewznabProvider(NZBProvider):

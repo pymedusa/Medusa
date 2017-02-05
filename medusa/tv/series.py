@@ -20,8 +20,6 @@ from imdb._exceptions import (
     IMDbDataAccessError,
     IMDbParserError,
 )
-import shutil_custom
-from six import text_type
 
 from medusa import (
     app,
@@ -88,11 +86,8 @@ from medusa.show.show import Show
 from medusa.tv.base import TV
 from medusa.tv.episode import Episode
 
-
-try:
-    import xml.etree.cElementTree as ETree
-except ImportError:
-    import xml.etree.ElementTree as ETree
+import shutil_custom
+from six import text_type
 
 try:
     from send2trash import send2trash
@@ -108,7 +103,8 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 class Series(TV):
     """Represent a TV Show."""
 
-    def __init__(self, indexer, indexerid, lang='', quality=None, flatten_folders=None, enabled_subtitles=None):
+    def __init__(self, indexer, indexerid, lang='', quality=None,
+                 flatten_folders=None, enabled_subtitles=None):
         """Instantiate a Series with database information based on indexerid.
 
         :param indexer:

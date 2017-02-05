@@ -22,13 +22,16 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import urljoin
+from medusa import (
+    helpers,
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import helpers, logger
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size
+from requests.compat import urljoin
 
 
 class NewpctProvider(TorrentProvider):

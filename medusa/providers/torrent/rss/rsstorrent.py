@@ -24,10 +24,14 @@ import re
 
 from bencode import bdecode
 
-from medusa import tv
-from ..torrent_provider import TorrentProvider
-from .... import app, helpers, logger
-from ....helper.exceptions import ex
+from medusa import (
+    app,
+    helpers,
+    logger,
+    tv,
+)
+from medusa.helper.exceptions import ex
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 
 class TorrentRssProvider(TorrentProvider):
