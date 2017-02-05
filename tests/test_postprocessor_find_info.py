@@ -54,7 +54,7 @@ class TestPP(PostProcessor):
                                    'game.of.thrones.s02e10.1080p.bluray.x264-rovers.mkv',
                          nzb_name='Game.of.Thrones.S02.Season.2.1080p.BluRay.x264-PublicHD',
                          ),
-        'series_name': 'Game of Thrones',
+        'series_name': 'game of thrones',
         'season': 2,
         'episodes': [10],
         'quality': Quality.FULLHDBLURAY,

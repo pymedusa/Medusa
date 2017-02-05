@@ -532,7 +532,7 @@ class PostProcessor(object):
         """
         show = season = version = airdate = quality = None
         episodes = []
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
+        name_list = [self.file_name, self.rel_path, self.nzb_name]
 
         for counter, name in enumerate(name_list):
 
