@@ -25,6 +25,7 @@ from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
+from .scene_exceptions import refresh_exceptions_cache
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +45,10 @@ class ShowUpdater(object):
         update_max_weeks = 12
 
         network_timezones.update_network_dict()
+
+        # Refresh the exceptions_cache from db.
+        refresh_exceptions_cache()
+
         logger.info(u'Started periodic show updates')
 
         # Cache for the indexers list of updated show
