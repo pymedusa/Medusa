@@ -18,10 +18,9 @@
 """tv_cache code."""
 from __future__ import unicode_literals
 
-import datetime
 import itertools
-import time
 import traceback
+from time import time
 
 from medusa import (
     app,
@@ -92,8 +91,8 @@ class CacheDBConnection(db.DBConnection):
             )
             self.action(
                 b'CREATE UNIQUE INDEX '
-                b'IF NOT EXISTS idx_url_{0} '
-                b'ON [{1}] (url)'.format(provider_id, provider_id)
+                b'IF NOT EXISTS idx_url_{name} '
+                b'ON [{name}] (url)'.format(name=provider_id)
             )
 
             # add release_group column to table if missing
@@ -222,7 +221,7 @@ class Cache(object):
                 self._clear_cache()
 
                 # set updated
-                self.set_last_update()
+                self.updated = time()
 
                 # get last 5 rss cache results
                 recent_results = self.provider.recent_results
@@ -351,79 +350,60 @@ class Cache(object):
 
         return False
 
-    def _get_last_update(self):
+    @property
+    def updated(self):
+        """Timestamp of last update."""
+        return self._get_time(b'last_update')
+
+    @updated.setter
+    def updated(self, value):
+        self._set_time(b'last_update', value)
+
+    @property
+    def searched(self):
+        """Timestamp of last search."""
+        return self._get_time(b'lastSearch')
+
+    @searched.setter
+    def searched(self, value):
+        self._set_time(b'lastSearch', value)
+
+    def _get_time(self, table):
         """Get last provider update."""
         cache_db_con = self._get_db()
         sql_results = cache_db_con.select(
             b'SELECT time '
-            b'FROM lastUpdate '
-            b'WHERE provider = ?',
+            b'FROM {name} '
+            b'WHERE provider = ?'.format(name=table),
             [self.provider_id]
         )
 
         if sql_results:
             last_time = int(sql_results[0][b'time'])
-            if last_time > int(time.mktime(datetime.today().timetuple())):
+            if last_time > int(time()):
                 last_time = 0
         else:
             last_time = 0
 
-        return datetime.fromtimestamp(last_time)
+        return last_time
 
-    def _get_last_search(self):
-        """Get provider last search."""
-        cache_db_con = self._get_db()
-        sql_results = cache_db_con.select(
-            b'SELECT time '
-            b'FROM lastSearch '
-            b'WHERE provider = ?',
-            [self.provider_id]
-        )
-
-        if sql_results:
-            last_time = int(sql_results[0][b'time'])
-            if last_time > int(time.mktime(datetime.today().timetuple())):
-                last_time = 0
-        else:
-            last_time = 0
-
-        return datetime.fromtimestamp(last_time)
-
-    def set_last_update(self, to_date=None):
+    def _set_time(self, table, value):
         """Set provider last update."""
-        if not to_date:
-            to_date = datetime.today()
-
         cache_db_con = self._get_db()
         cache_db_con.upsert(
-            b'lastUpdate',
-            {b'time': int(time.mktime(to_date.timetuple()))},
+            table,
+            {b'time': int(value or 0)},
             {b'provider': self.provider_id}
         )
-
-    def set_last_search(self, to_date=None):
-        """Ser provider last search."""
-        if not to_date:
-            to_date = datetime.today()
-
-        cache_db_con = self._get_db()
-        cache_db_con.upsert(
-            b'lastSearch',
-            {b'time': int(time.mktime(to_date.timetuple()))},
-            {b'provider': self.provider_id}
-        )
-
-    lastUpdate = property(_get_last_update)
-    lastSearch = property(_get_last_search)
 
     def should_update(self):
         """Check if we should update provider cache."""
         # if we've updated recently then skip the update
-        if datetime.today() - self.lastUpdate < timedelta(minutes=self.minTime):
+        if time() - self.updated < self.minTime * 60:
             logger.log(
                 'Last update was too soon, using old cache: {0}.'
                 ' Updated less then {1} minutes ago'.format(
-                    self.lastUpdate,
+                    self.updated,
                     self.minTime,
                 ),
                 logger.DEBUG
@@ -458,7 +438,7 @@ class Cache(object):
             )
 
             # get the current timestamp
-            cur_timestamp = int(time.mktime(datetime.today().timetuple()))
+            cur_timestamp = int(time())
 
             # get quality of release
             quality = parse_result.quality
@@ -624,6 +604,6 @@ class Cache(object):
                 needed_eps[ep_obj].append(result)
 
         # datetime stamp this search so cache gets cleared
-        self.set_last_search()
+        self.searched = time()
 
         return needed_eps

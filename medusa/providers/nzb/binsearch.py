@@ -19,6 +19,7 @@
 from __future__ import unicode_literals
 
 import re
+from time import time
 
 from medusa import (
     logger,
@@ -112,7 +113,7 @@ class BinSearchCache(tv.Cache):
         self._clear_cache()
 
         # set updated
-        self.set_last_update()
+        self.updated = time()
 
         cl = []
         for group in ['alt.binaries.hdtv', 'alt.binaries.hdtv.x264', 'alt.binaries.tv', 'alt.binaries.tvseries']:
