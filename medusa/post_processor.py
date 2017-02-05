@@ -524,7 +524,7 @@ class PostProcessor(object):
             except Exception as e:
                 self._log(u'Exception message: {0!r}'.format(e))
 
-    def _find_info(self):
+    def _parse_info(self):
         """
         For a given file try to find the show, season, epsiodes, version and quality.
 
@@ -570,6 +570,12 @@ class PostProcessor(object):
 
             # We have all the information we need
             break
+
+        return show, season, episodes, quality, version, airdate
+
+    def _find_info(self):
+        show, season, episodes, quality, version, airdate = self._parse_info()
+        # TODO: Move logic below to a single place -> NameParser
 
         if airdate and show:
             # Ignore season 0 when searching for episode
