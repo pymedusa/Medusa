@@ -1411,7 +1411,9 @@ class Home(WebRoot):
                 log_level = logger.INFO
             finally:
                 indexer_lang = language
-                errors.append(msg.format(status=status))
+                msg = msg.format(satus=status)
+                if log_level >= logger.WARNING:
+                    errors.append(msg)
                 logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
