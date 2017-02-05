@@ -1316,9 +1316,7 @@ class Home(WebRoot):
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions = set()
-        if exceptions_list:
-            exceptions.update(exceptions_list)
+        exceptions = exceptions_list or set()
 
         anidb_failed = False
         errors = []
