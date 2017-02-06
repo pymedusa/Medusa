@@ -744,8 +744,8 @@ class PostProcessor(object):
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        # NZB name is the most reliable if it exists, followed by file name and lastly folder name
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
+        # Search quality in file name followed by relative path and lastly NZB name
+        name_list = [self.file_name, self.rel_path, self.nzb_name]
 
         for cur_name in name_list:
 
