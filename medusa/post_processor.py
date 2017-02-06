@@ -539,9 +539,9 @@ class PostProcessor(object):
         show = season = version = airdate = quality = None
         episodes = []
 
-        for counter, name in enumerate(self.item_resources.items()):
+        for counter, (resource, name) in enumerate(self.item_resources.items()):
 
-            cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name[1])
+            cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name)
 
             if not cur_show:
                 continue
@@ -574,7 +574,7 @@ class PostProcessor(object):
             quality = cur_quality
 
             # We have all the information we need
-            self._log(u'Show information parsed from {0}'.format(name[0]), logger.DEBUG)
+            self._log(u'Show information parsed from {0}'.format(resource), logger.DEBUG)
             break
 
         return show, season, episodes, quality, version, airdate
