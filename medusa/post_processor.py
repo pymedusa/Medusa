@@ -22,6 +22,8 @@ import re
 import stat
 import subprocess
 
+from collections import OrderedDict
+
 import adba
 
 from six import text_type
@@ -87,7 +89,9 @@ class PostProcessor(object):
 
         self.manually_searched = False
 
-        self.item_resources = {'file name': self.file_name, 'relative path': self.rel_path, 'nzb name': self.nzb_name}
+        self.item_resources = OrderedDict({'file name': self.file_name,
+                                           'relative path': self.rel_path,
+                                           'nzb name': self.nzb_name})
 
     def _log(self, message, level=logger.INFO):
         """
