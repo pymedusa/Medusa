@@ -87,7 +87,7 @@ class PostProcessor(object):
 
         self.manually_searched = False
 
-        self.name_list = [self.file_name, self.rel_path, self.nzb_name]
+        self.item_resources = {'file name': self.file_name, 'relative path': self.rel_path, 'nzb name': self.nzb_name}
 
     def _log(self, message, level=logger.INFO):
         """
@@ -535,7 +535,7 @@ class PostProcessor(object):
         show = season = version = airdate = quality = None
         episodes = []
 
-        for counter, name in enumerate(self.name_list):
+        for counter, name in enumerate(self.item_resources.values()):
 
             cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name)
 
@@ -564,12 +564,13 @@ class PostProcessor(object):
                     self._log(u"Couldn't convert to a valid airdate: {0}".format(episodes[0]), logger.DEBUG)
                     continue
 
-            if counter < (len(self.name_list) - 1):
+            if counter < (len(self.item_resources.values()) - 1):
                 if common.Quality.qualityStrings[cur_quality] == 'Unknown':
                     continue
             quality = cur_quality
 
             # We have all the information we need
+            self._log(u'Information got from {0}'.format(self.item_resources.keys()[counter]))
             break
 
         return show, season, episodes, quality, version, airdate
@@ -745,7 +746,7 @@ class PostProcessor(object):
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        for cur_name in self.name_list:
+        for counter, cur_name in enumerate(self.item_resources.values()):
 
             # Skip names that are falsey
             if not cur_name:
@@ -755,8 +756,9 @@ class PostProcessor(object):
             self._log(u"Looking up quality for '{0}', got {1}".format
                       (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             if ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Looks like '{0}' has quality {1}, using that".format
-                          (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+                self._log(u"Looks like {0} '{1}' has quality {2}, using that".format
+                          (self.item_resources.keys()[counter], cur_name, common.Quality.qualityStrings[ep_quality]),
+                          logger.DEBUG)
                 return ep_quality
 
         # Try using other methods to get the file quality
