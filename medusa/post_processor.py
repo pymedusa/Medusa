@@ -574,7 +574,7 @@ class PostProcessor(object):
             quality = cur_quality
 
             # We have all the information we need
-            self._log(u'Information got from {0}'.format(self.item_resources.keys()[counter]))
+            self._log(u'Show information parsed from {0}'.format(self.item_resources.keys()[counter]), logger.DEBUG)
             break
 
         return show, season, episodes, quality, version, airdate
