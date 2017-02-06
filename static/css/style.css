@@ -192,6 +192,8 @@ inc_top.mako
 #sub-menu {
     font-size: 12px;
     float: right;
+    padding-bottom: 5px;
+    padding-top: 5px;
 }
 
 #sub-menu > a {
@@ -1107,6 +1109,7 @@ div#container-display-show {
     overflow: hidden;
     display: table-cell;
     left:20px;
+    margin-top: 5px;
 }
 
 .show-info-container {
@@ -1136,9 +1139,9 @@ div#container-display-show {
     #sub-menu-container {
         position:fixed;
         width:100%;
-        margin-top: -15px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        margin-top: -9px;
+        /*padding-top: 5px;*/
+        /*padding-bottom: 5px;*/
         top: 60px;
     }
 }
@@ -1146,8 +1149,8 @@ div#container-display-show {
 @media (max-width: 1281px) {
     #sub-menu-container {
         position:relative;
-        margin-top: -15px;
-        padding-top: 10px;
+        margin-top: -24px;
+        /*padding-top: 10px;*/
         padding-bottom: 10px;
     }
 }
@@ -1176,6 +1179,7 @@ div#container-display-show {
 @media (max-width: 767px) {
     #showSelector {
         left:5px;
+        margin-bottom: 5px;
     }
 
     .pull-xs-left {
@@ -2950,7 +2954,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 #sub-menu-container {
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     z-index:550;
     border-width: 1px;
     border-style: none none solid none;
