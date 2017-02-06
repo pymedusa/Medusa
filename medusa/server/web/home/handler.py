@@ -1255,7 +1255,7 @@ class Home(WebRoot):
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=show_obj, provider_results=provider_results, episode=episode,
             sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
-            all_scene_exceptions=show_obj.exceptions,
+            all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexer_id, indexer),
             xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
