@@ -102,6 +102,16 @@ def tvepisode(tvshow, create_tvepisode):
 
 
 @pytest.fixture
+def parse_method(create_tvshow):
+    def parse(self, name):
+        """Parse the string and add a TVShow object with the parsed series name."""
+        result = self._parse_string(name)
+        result.show = create_tvshow(name=result.series_name)
+        return result
+    return parse
+
+
+@pytest.fixture
 def video():
     return Video.fromname('Show.Name.S03E04.mkv')
 
