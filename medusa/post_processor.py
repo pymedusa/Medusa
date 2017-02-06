@@ -87,6 +87,8 @@ class PostProcessor(object):
 
         self.manually_searched = False
 
+        self.name_list = [self.file_name, self.rel_path, self.nzb_name]
+
     def _log(self, message, level=logger.INFO):
         """
         A wrapper for the internal logger which also keeps track of messages and saves them to a string for later.
@@ -532,9 +534,8 @@ class PostProcessor(object):
         """
         show = season = version = airdate = quality = None
         episodes = []
-        name_list = [self.file_name, self.rel_path, self.nzb_name]
 
-        for counter, name in enumerate(name_list):
+        for counter, name in enumerate(self.name_list):
 
             cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name)
 
@@ -563,7 +564,7 @@ class PostProcessor(object):
                     self._log(u"Couldn't convert to a valid airdate: {0}".format(episodes[0]), logger.DEBUG)
                     continue
 
-            if counter < (len(name_list) - 1):
+            if counter < (len(self.name_list) - 1):
                 if common.Quality.qualityStrings[cur_quality] == 'Unknown':
                     continue
             quality = cur_quality
@@ -744,10 +745,7 @@ class PostProcessor(object):
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        # Search quality in file name followed by relative path and lastly NZB name
-        name_list = [self.file_name, self.rel_path, self.nzb_name]
-
-        for cur_name in name_list:
+        for cur_name in self.name_list:
 
             # Skip names that are falsey
             if not cur_name:
