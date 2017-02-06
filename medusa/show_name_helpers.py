@@ -101,7 +101,7 @@ def allPossibleShowNames(show, season=-1):
     Includes indexer name, and any scene exception names, and country code
     at the end of the name (e.g. "Show Name (AU)".
 
-    show: a TVShow object that we should get the names of
+    show: a Series object that we should get the names of
     Returns: all possible show names
     """
 

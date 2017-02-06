@@ -23,13 +23,23 @@ import itertools
 import time
 import traceback
 
+from medusa import (
+    app,
+    db,
+    logger,
+    show_name_helpers,
+)
+from medusa.helper.common import episode_num
+from medusa.helper.exceptions import AuthException
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException,
+    NameParser,
+)
+from medusa.rss_feeds import getFeed
+from medusa.show.show import Show
+
 from six import text_type
-from . import app, db, logger, show_name_helpers
-from .helper.common import episode_num
-from .helper.exceptions import AuthException
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .rss_feeds import getFeed
-from .show.show import Show
 
 
 class CacheDBConnection(db.DBConnection):
@@ -44,22 +54,42 @@ class CacheDBConnection(db.DBConnection):
             if not self.hasTable(provider_id):
                 logger.log('Creating cache table for provider {0}'.format(provider_id), logger.DEBUG)
                 self.action(
-                    b'CREATE TABLE [{provider_id}] (name TEXT, season NUMERIC, episodes TEXT, indexerid NUMERIC, '
-                    b'url TEXT, time NUMERIC, quality NUMERIC, release_group TEXT)'.format(provider_id=provider_id))
+                    b'CREATE TABLE [{provider_id}]'
+                    b' (name TEXT,'
+                    b'  season NUMERIC,'
+                    b'  episodes TEXT,'
+                    b'  indexerid NUMERIC,'
+                    b'  url TEXT,'
+                    b'  time NUMERIC,'
+                    b'  quality NUMERIC,'
+                    b'  release_group TEXT'
+                    b')'.format(provider_id=provider_id))
             else:
-                sql_results = self.select(b'SELECT url, COUNT(url) AS count FROM [{provider_id}] '
-                                          b'GROUP BY url HAVING count > 1'.format(provider_id=provider_id))
-
-                for cur_dupe in sql_results:
-                    self.action(b'DELETE FROM [{provider_id}] WHERE url = ?'.format(provider_id=provider_id), [cur_dupe[b'url']])
+                sql_results = self.select(
+                    b'SELECT url, COUNT(url) AS count '
+                    b'FROM [{provider_id}] '
+                    b'GROUP BY url '
+                    b'HAVING count > 1'.format(provider_id=provider_id)
+                )
+                for duplicate in sql_results:
+                    self.action(
+                        b'DELETE FROM [{provider_id}] '
+                        b'WHERE url = ?'.format(provider_id=provider_id),
+                        [duplicate[b'url']]
+                    )
 
             # remove wrong old index
             self.action(b'DROP INDEX IF EXISTS idx_url')
 
-            # add unique index to prevent further dupes from happening if one does not exist
-            logger.log('Creating UNIQUE URL index for {0}'.format(provider_id), logger.DEBUG)
-            self.action(b'CREATE UNIQUE INDEX IF NOT EXISTS idx_url_{0}  ON [{1}] (url)'.
-                        format(provider_id, provider_id))
+            # add unique index if one does not exist to prevent further dupes
+            logger.log(
+                'Creating UNIQUE URL index for {0}'.format(provider_id),
+                logger.DEBUG
+            )
+            self.action(
+                b'CREATE UNIQUE INDEX IF NOT EXISTS idx_url_{0}'
+                b'ON [{1}] (url)'.format(provider_id, provider_id)
+            )
 
             # add release_group column to table if missing
             if not self.hasColumn(provider_id, 'release_group'):
@@ -105,8 +135,8 @@ class CacheDBConnection(db.DBConnection):
                 raise
 
 
-class TVCache(object):
-    """TVCache class."""
+class Cache(object):
+    """Cache class."""
 
     def __init__(self, provider, **kwargs):
         """Initialize class."""

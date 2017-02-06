@@ -688,12 +688,12 @@ class PostProcessor(object):
 
     def _get_ep_obj(self, show, season, episodes):
         """
-        Retrieve the TVEpisode object requested.
+        Retrieve the Episode object requested.
 
         :param show: The show object belonging to the show we want to process
         :param season: The season of the episode (int)
         :param episodes: A list of episodes to find (list of ints)
-        :return: If the episode(s) can be found then a TVEpisode object with the correct related eps will
+        :return: If the episode(s) can be found then a Episode object with the correct related eps will
         be instantiated and returned. If the episode can't be found then None will be returned.
         """
         root_ep = None
@@ -722,10 +722,10 @@ class PostProcessor(object):
         """
         Determine the quality of the file that is being post processed.
 
-        First by checking if it is directly available in the TVEpisode's status or
+        First by checking if it is directly available in the Episode's status or
         otherwise by parsing through the data available.
 
-        :param ep_obj: The TVEpisode object related to the file we are post processing
+        :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
         ep_quality = common.Quality.UNKNOWN
@@ -989,7 +989,7 @@ class PostProcessor(object):
         elif season is None or not episodes:
             raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
-        # retrieve/create the corresponding TVEpisode objects
+        # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
         old_ep_status, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 

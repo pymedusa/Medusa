@@ -163,7 +163,7 @@ class TraktChecker(object):
         """
         Sends a request to trakt indicating that the given show and all its episodes is part of our library.
 
-        show_obj: The TVShow object to add to trakt
+        show_obj: The Series object to add to trakt
         """
         data = {}
 

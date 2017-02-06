@@ -20,10 +20,13 @@ from __future__ import unicode_literals
 
 import re
 
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.providers.nzb.nzb_provider import NZBProvider
 
-from .nzb_provider import NZBProvider
-from ... import logger, tv_cache
+from requests.compat import urljoin
 
 
 class BinSearchProvider(NZBProvider):
@@ -51,14 +54,14 @@ class BinSearchProvider(NZBProvider):
         self.cache = BinSearchCache(self, min_time=30)  # only poll Binsearch every 30 minutes max
 
 
-class BinSearchCache(tv_cache.TVCache):
+class BinSearchCache(tv.Cache):
     """BinSearch NZB provider."""
 
     def __init__(self, provider_obj, **kwargs):
         """Initialize the class."""
         kwargs.pop('search_params', None)  # does not use _get_rss_data so strip param from kwargs...
         search_params = None  # ...and pass None instead
-        tv_cache.TVCache.__init__(self, provider_obj, search_params=search_params, **kwargs)
+        tv.Cache.__init__(self, provider_obj, search_params=search_params, **kwargs)
 
         # compile and save our regular expressions
 

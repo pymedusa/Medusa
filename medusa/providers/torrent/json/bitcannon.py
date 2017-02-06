@@ -20,13 +20,18 @@ from __future__ import unicode_literals
 
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
-
 import validators
-
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....helper.common import convert_size, try_int
 
 
 class BitCannonProvider(TorrentProvider):
@@ -52,7 +57,7 @@ class BitCannonProvider(TorrentProvider):
 
         # Cache
         cache_params = {'RSS': ['tv', 'anime']}
-        self.cache = tv_cache.TVCache(self, search_params=cache_params)
+        self.cache = tv.Cache(self, search_params=cache_params)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

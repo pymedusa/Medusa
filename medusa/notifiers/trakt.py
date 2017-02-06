@@ -49,7 +49,7 @@ class Notifier(object):
         """
         Sends a request to trakt indicating that the given episode is part of our library.
 
-        ep_obj: The TVEpisode object to add to trakt
+        ep_obj: The Episode object to add to trakt
         """
 
         trakt_id = indexerApi(ep_obj.show.indexer).config['trakt_id']
@@ -105,7 +105,7 @@ class Notifier(object):
         """
         Sends a request to trakt indicating that the given episode is part of our library.
 
-        show_obj: The TVShow object to add to trakt
+        show_obj: The Series object to add to trakt
         s: season number
         e: episode number
         data_show: structured object of shows trakt type

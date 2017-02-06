@@ -122,7 +122,7 @@ class WDTVMetadata(generic.GenericMetadata):
         Returns the path where the episode thumbnail should be stored. Defaults to
         the same path as the episode file but with a .metathumb extension.
 
-        ep_obj: a TVEpisode instance for which to create the thumbnail
+        ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
             tbn_filename = replace_extension(ep_obj.location, 'metathumb')
@@ -176,7 +176,7 @@ class WDTVMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for a WDTV style episode.xml
         and returns the resulting data object.
 
-        ep_obj: a TVShow instance to create the NFO for
+        ep_obj: a Series instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
