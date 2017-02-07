@@ -97,6 +97,14 @@ class SearchQueue(generic_queue.GenericQueue):
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
 
+    def remove_item(self, item):
+        if isinstance(item, (DailySearchQueueItem, BacklogQueueItem, FailedQueueItem,
+                             ManualSnatchQueueItem, ForcedSearchQueueItem)) \
+                and self.is_in_queue(item.show, item.segment):
+            generic_queue.GenericQueue.remove(self, item)
+        else:
+            logger.log(u"Not removing item as it's not in the queue", logger.DEBUG)
+
     def force_daily(self):
         if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
             self.force = True
@@ -184,6 +192,14 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
             generic_queue.GenericQueue.add_item(self, item)
         else:
             logger.log(u"Not adding item, it's already in the queue", logger.DEBUG)
+
+    def remove_item(self, item):
+        """Remove a ForcedSearchQueueItem or FailedQueueItem from the ForcedSearchQueue."""
+        if isinstance(item, (ForcedSearchQueueItem, FailedQueueItem)) and self.is_ep_in_queue(item.segment):
+            # manual, snatch and failed searches
+            generic_queue.GenericQueue.remove_item(self, item)
+        else:
+            logger.log(u"Not remove item as it's not in the queue", logger.DEBUG)
 
 
 class SnatchQueue(generic_queue.GenericQueue):
