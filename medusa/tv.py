@@ -1135,7 +1135,7 @@ class TVShow(TVObject):
                                 filepath, should_refresh_reason), logger.DEBUG)
             else:
                 logger.log(u"{0}: Not changing current status '{1}' based on file: {2}. "
-                           u'Reason: {3}'.format(self.indexerid, statusStrings[old_ep_status],
+                           u'Reason: {3}'.format(self.indexerid, statusStrings[cur_ep.status],
                                                  filepath, should_refresh_reason), logger.DEBUG)
             with cur_ep.lock:
                 sql_l.append(cur_ep.get_sql())
