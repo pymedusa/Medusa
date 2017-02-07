@@ -1140,8 +1140,6 @@ div#container-display-show {
         position:fixed;
         width:100%;
         margin-top: -9px;
-        /*padding-top: 5px;*/
-        /*padding-bottom: 5px;*/
         top: 60px;
     }
 }
@@ -1150,7 +1148,6 @@ div#container-display-show {
     #sub-menu-container {
         position:relative;
         margin-top: -24px;
-        /*padding-top: 10px;*/
         padding-bottom: 10px;
     }
 }
