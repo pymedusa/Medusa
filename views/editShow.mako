@@ -19,6 +19,7 @@
 % endif
 </%block>
 <%block name="content">
+<input type="hidden" id="showID" value="${show.indexerid}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:

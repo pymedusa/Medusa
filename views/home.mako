@@ -5,25 +5,17 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
+    from random import choice
     import re
 %>
 <%block name="metas">
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
+<input type="hidden" id="showID" value="${choice(app.showList).indexerid}" />
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">
         <div class="pull-right">
-            % if app.HOME_LAYOUT != 'poster':
-                <span class="show-option">
-                    <button id="popover" type="button" class="btn btn-inline">
-                        Select Columns <b class="caret"></b>
-                    </button>
-                </span> <span class="show-option">
-                    <button type="button" class="resetsorting btn btn-inline">Clear
-                        Filter(s)</button>
-                </span>
-            % endif
             % if app.HOME_LAYOUT == 'poster':
                 <div class="show-option pull-right">
                     <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
@@ -63,6 +55,16 @@
         % endif
 
         <div class="show-option pull-right">
+            % if app.HOME_LAYOUT != 'poster':
+                <span class="show-option">
+                    <button id="popover" type="button" class="btn btn-inline">
+                        Select Columns <b class="caret"></b>
+                    </button>
+                </span> <span class="show-option">
+                    <button type="button" class="resetsorting btn btn-inline">Clear
+                        Filter(s)</button>
+                </span>&nbsp;
+            % endif
             Layout: <select name="layout"
                 class="form-control form-control-inline input-sm">
                 <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>

@@ -5,6 +5,7 @@
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.indexer_config import mappings
     from medusa import sbdatetime
+    from random import choice
     import datetime
     import time
     import re
@@ -13,14 +14,11 @@
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 </%block>
-<%block name="css">
-<style type="text/css">
-#sub-menu {display:none;}
-#contentWrapper {padding-top:30px;}
-</style>
-</%block>
+
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
+
+<input type="hidden" id="showID" value="${choice(results)['showid']}" />
 <div class="row">
     <div class="col-md-12">
         <h1 class="header">${header}</h1>
@@ -82,7 +80,7 @@
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
-<table id="showListTable" class="defaultTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th>Airdate (${('local', 'network')[app.TIMEZONE_DISPLAY == 'network']})</th>
@@ -170,7 +168,7 @@
 % endfor
     </tbody>
     <tfoot>
-        <tr>
+        <tr class="shadow border-bottom">
             <th rowspan="1" colspan="10" align="center">&nbsp</th>
         </tr>
     </tfoot>
@@ -205,7 +203,7 @@
         <% show_network = ('no network', cur_result['network'])[bool(cur_result['network'])] %>
         % if cur_segment != show_network:
             <div>
-                <h2 class="network">${show_network}</h2>
+                <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} network">${show_network}</h2>
             <% cur_segment = cur_result['network'] %>
         % endif
         % if cur_ep_enddate < today:
@@ -222,24 +220,24 @@
     % elif app.COMING_EPS_SORT == 'date':
         % if cur_segment != cur_ep_airdate:
             % if cur_ep_enddate < today and cur_ep_airdate != today.date() and not missed_header:
-                <h2 class="day">Missed</h2>
+                <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">Missed</h2>
                 <% missed_header = True %>
             % elif cur_ep_airdate >= next_week.date() and not too_late_header:
-                <h2 class="day">Later</h2>
+                <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">Later</h2>
                 <% too_late_header = True %>
             % elif cur_ep_enddate >= today and cur_ep_airdate < next_week.date():
                 % if cur_ep_airdate == today.date():
-                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
                     <% today_header = True %>
                 % else:
-                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
+                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
                 % endif
             % endif
             <% cur_segment = cur_ep_airdate %>
         % endif
         % if cur_ep_airdate == today.date() and not today_header:
             <div>
-            <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+            <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
             <% today_header = True %>
         % endif
         % if cur_ep_enddate < today:
@@ -266,7 +264,7 @@
             % endif
         % endif
     % endif
-<div class="${show_div}" id="listing-${cur_result['showid']}">
+<div class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} ${show_div}" id="listing-${cur_result['showid']}">
     <div class="tvshowDiv">
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr>
@@ -334,7 +332,7 @@
 <div class="calendarWrapper">
     % for day in dates:
     <% tbl_day += 1 %>
-        <table class="defaultTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
+        <table class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
         <thead><tr><th>${day.strftime('%A').decode(app.SYS_ENCODING).capitalize()}</th></tr></thead>
         <tbody>
         <% day_has_show = False %>

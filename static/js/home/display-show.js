@@ -1,12 +1,4 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
-    if (MEDUSA.config.fanartBackground) {
-        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
-        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-        $.backstretch(path);
-        $('.backstretch').css('top','50px');
-        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
-    }
-
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $("#summary").height() + 10;
@@ -324,7 +316,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
         widgetOptions: {
             columnSelector_saveColumns: true, // eslint-disable-line camelcase
-            columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
+            columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
             columnSelector_mediaquery: false, // eslint-disable-line camelcase
             columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
         }
@@ -345,11 +337,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Show Episodes');
+            $('#season-' + result[1] + '-cols').addClass('shadow');
         });
         $('.collapse.toggle').on('show.bs.collapse', function() {
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Hide Episodes');
+            $('#season-' + result[1] + '-cols').removeClass('shadow');
         });
     });
 

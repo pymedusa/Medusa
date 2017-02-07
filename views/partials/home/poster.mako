@@ -123,7 +123,7 @@
             % endif
                     </div>
                     <div class="show-details">
-                        <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                        <table class="show-details ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%" cellspacing="1" border="0" cellpadding="0">
                             <tr>
                                 <td class="show-table">
                                     <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>

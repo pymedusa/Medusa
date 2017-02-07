@@ -1,13 +1,5 @@
 MEDUSA.home.snatchSelection = function() {
-    if (MEDUSA.config.fanartBackground) {
-        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
-        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-        $.backstretch(path);
-        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
-    }
-
     // adjust the summary background position and size on page load and resize
-
     function moveSummaryBackground() {
         var height = $("#summary").height() + 10;
         var top = $("#summary").offset().top + 5;
@@ -71,14 +63,13 @@ MEDUSA.home.snatchSelection = function() {
     function initTableSorter(table) {
         // Nasty hack to re-initialize tablesorter after refresh
         $(table).tablesorter({
-            widthFixed: true,
             widgets: ['saveSort', 'stickyHeaders', 'columnSelector', 'filter'],
             widgetOptions: {
                 filter_columnFilters: true, // eslint-disable-line camelcase
                 filter_hideFilters: true, // eslint-disable-line camelcase
                 filter_saveFilters: true, // eslint-disable-line camelcase
                 columnSelector_saveColumns: true, // eslint-disable-line camelcase
-                columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
+                columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
                 columnSelector_mediaquery: false, // eslint-disable-line camelcase
                 columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
             }
@@ -139,28 +130,28 @@ MEDUSA.home.snatchSelection = function() {
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner(spinner, 'Refreshed results...', true);
-                initTableSorter('#showTable');
+                initTableSorter('#srchresults');
             }
             if (data.result === 'searching') {
                 // ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner(spinner, 'The episode is being searched, please wait......', true);
-                initTableSorter('#showTable');
+                initTableSorter('#srchresults');
             }
             if (data.result === 'queued') {
                 // ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
-                initTableSorter('#showTable');
+                initTableSorter('#srchresults');
             }
             if (data.result === 'finished') {
                 // ep search is finished
                 updateSpinner(spinner, 'Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
-                initTableSorter('#showTable');
+                initTableSorter('#srchresults');
                 $('[datetime]').timeago();
             }
             if (data.result === 'error') {
@@ -168,7 +159,7 @@ MEDUSA.home.snatchSelection = function() {
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
-                initTableSorter('#showTable');
+                initTableSorter('#srchresults');
             }
         });
     }
@@ -210,7 +201,7 @@ MEDUSA.home.snatchSelection = function() {
         html: true, // required if content has HTML
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', function() { // bootstrap popover event triggered when the popover opens
-        $.tablesorter.columnSelector.attachTo($('#showTable'), '#popover-target');
+        $.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
     });
 
     $('#btnReset').click(function() {

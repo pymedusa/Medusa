@@ -16,7 +16,7 @@
     % if cur_list_type == "Anime":
         <h1 class="header">Anime List</h1>
     % endif
-<table id="showListTable${cur_list_type}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable${cur_list_type}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th class="nowrap">Next Ep</th>

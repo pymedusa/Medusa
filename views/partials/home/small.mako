@@ -16,7 +16,7 @@
     % if curListType == "Anime":
         <h1 class="header">Anime List</h1>
     % endif
-<table id="showListTable${curListType}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable${curListType}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th class="min-cell-width nowrap">Next Ep</th>

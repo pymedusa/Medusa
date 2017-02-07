@@ -5,6 +5,7 @@
     from datetime import datetime
     import re
     import time
+    from random import choice
     from medusa import providers
     from medusa.sbdatetime import sbdatetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
@@ -14,19 +15,17 @@
 %>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<!-- Title -->
+
+<input type="hidden" id="showID" value="${choice(historyResults).show_id}" />
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-6"> <!-- Title -->
         % if not header is UNDEFINED:
             <h1 class="header">${header}</h1>
         % else:
             <h1 class="title">${title}</h1>
         % endif
-    </div>
-</div>
-<!-- Controls -->
-<div class="row">
-    <div class="col-md-12">
+    </div> <!-- layout title -->
+    <div class="col-md-6 pull-right"> <!-- Controls -->
         <div class="layout-controls pull-right">
             <div class="show-option">
                 <span>Limit:</span>
@@ -58,7 +57,7 @@
 <div class="row">
     <div class="col-md-12">
         % if app.HISTORY_LAYOUT == "detailed":
-            <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+            <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
                     <tr>
                         <th class="nowrap" width="15%">Time</th>
@@ -124,7 +123,7 @@
                 </tbody>
             </table>
         % else:
-            <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+            <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
                     <tr>
                         <th class="nowrap" width="18%">Time</th>
@@ -139,7 +138,7 @@
                 </thead>
                 <tfoot>
                     <tr>
-                        <th class="nowrap" colspan="6">&nbsp;</th>
+                        <th class="nowrap shadow" colspan="6">&nbsp;</th>
                     </tr>
                 </tfoot>
                 <tbody>
