@@ -72,11 +72,11 @@ def clear_cache(indexerid=0):
         "    indexer_id = ?",
         [indexerid]
     )
-    to_remove = (
+    to_remove = {
         key
         for key, value in iteritems(name_cache)
         if value in indexer_ids
-    )
+    }
     for key in to_remove:
         del name_cache[key]
 
