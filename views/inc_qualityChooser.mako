@@ -39,13 +39,13 @@ selected = None
             </select>
         </div>
     </div>
+    <div id="quality_explanation">
+        <h5><b>Quality setting explanation:</b></h5>
         % if preferred_qualities:
-            <h5>Downloads <b>any</b> of this qualities:
-                ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}.</h5>
-            <h5>But will <b>stop searching</b> when find <b>any</b> from: ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
-                <b>Note:</b> Status from Preferred quality will be SNATCHED BEST, else SNATCHED.
+            <h5>This will download any of these ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</h5>
+            <h5>But it will stop searching when one of these is downloaded ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
         % else:
-            <h5>Downloads <b>any</b> of this qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])} and stop searching.</h5>
-            <b>Note:</b> Status will be SNATCHED.
+            <h5>This will download <b>any</b> of these and then stop searching ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</h5>
         % endif
+    </div>
 </div>

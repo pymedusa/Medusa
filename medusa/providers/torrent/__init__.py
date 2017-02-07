@@ -30,7 +30,6 @@ from .html import (
     torrentbytes,
     torrentleech,
     torrentproject,
-    torrentshack,
     transmitthenet,
     tvchaosuk,
     xthor,
@@ -60,14 +59,10 @@ from .xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'bithdtv',
-    'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent', 'freshontv',
-    'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs',
-    'iptorrents', 'limetorrents', 'morethantv', 'newpct', 'pretome',
-    'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage',
-    'tokyotoshokan', 'torrentbytes', 'torrentleech', 'torrentshack',
-    'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon',
-    'btn', 'hd4free', 'hdbits', 'norbits', 'rarbg', 't411',
-    'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent',
-    'shazbat', 'bitsnoop', 'torrentz2', 'animetorrents'
+    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent',
+    'freshontv', 'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
+    'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
+    'torrentbytes', 'torrentleech', 'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
+    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
+    'bitsnoop', 'torrentz2', 'animetorrents'
 ]

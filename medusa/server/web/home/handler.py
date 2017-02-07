@@ -1316,7 +1316,7 @@ class Home(WebRoot):
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions_list = exceptions_list or []
+        exceptions = exceptions_list or set()
 
         anidb_failed = False
         errors = []
@@ -1411,7 +1411,9 @@ class Home(WebRoot):
                 log_level = logger.INFO
             finally:
                 indexer_lang = language
-                errors.append(msg.format(status=status))
+                msg = msg.format(satus=status)
+                if log_level >= logger.WARNING:
+                    errors.append(msg)
                 logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
@@ -1425,15 +1427,15 @@ class Home(WebRoot):
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
 
-        if not isinstance(exceptions_list, list):
-            exceptions_list = [exceptions_list]
+        if not isinstance(exceptions, set):
+            exceptions = {exceptions}
 
         # If directCall from mass_edit_update no scene exceptions handling or
         # blackandwhite list handling
         if directCall:
             do_update_exceptions = False
         else:
-            if set(exceptions_list) == set(show_obj.exceptions):
+            if exceptions == show_obj.exceptions:
                 do_update_exceptions = False
             else:
                 do_update_exceptions = True
@@ -1519,7 +1521,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')

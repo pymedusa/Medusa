@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Tests for medusa/test_should_search_replace.py."""
+"""Tests for medusa/test_should_search.py."""
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED,
                            SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED)
 from medusa.tv import TVShow
@@ -156,6 +156,14 @@ class TestTVShow(TVShow):
         'manually_searched': False,
         'expected': True
     },
+    {  # p17: ´SNATCHED BEST but this quality is no longer wanted: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
+                                                                 [Quality.HDBLURAY])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_search(p):
     """Run the test."""
@@ -166,8 +174,10 @@ def test_should_search(p):
     expected = p['expected']
 
     # When
-    replace = Quality.should_search(status, show_obj, manually_searched)
+    replace, msg = Quality.should_search(status, show_obj, manually_searched)
     actual = replace
 
     # Then
+    if expected != actual:
+        print msg
     assert expected == actual

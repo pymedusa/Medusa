@@ -524,7 +524,7 @@ class PostProcessor(object):
             except Exception as e:
                 self._log(u'Exception message: {0!r}'.format(e))
 
-    def _find_info(self):
+    def _parse_info(self):
         """
         For a given file try to find the show, season, epsiodes, version and quality.
 
@@ -532,7 +532,7 @@ class PostProcessor(object):
         """
         show = season = version = airdate = quality = None
         episodes = []
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
+        name_list = [self.file_name, self.rel_path, self.nzb_name]
 
         for counter, name in enumerate(name_list):
 
@@ -570,6 +570,12 @@ class PostProcessor(object):
 
             # We have all the information we need
             break
+
+        return show, season, episodes, quality, version, airdate
+
+    def _find_info(self):
+        show, season, episodes, quality, version, airdate = self._parse_info()
+        # TODO: Move logic below to a single place -> NameParser
 
         if airdate and show:
             # Ignore season 0 when searching for episode
@@ -738,8 +744,8 @@ class PostProcessor(object):
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        # NZB name is the most reliable if it exists, followed by file name and lastly folder name
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
+        # Search quality in file name followed by relative path and lastly NZB name
+        name_list = [self.file_name, self.rel_path, self.nzb_name]
 
         for cur_name in name_list:
 
@@ -883,11 +889,11 @@ class PostProcessor(object):
             elif current_quality not in allowed:
                 return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
             elif new_quality > current_quality:
-                return True, 'New quality is higher than current Preferred. Accepting quality'
+                return True, 'New quality is higher than current Allowed. Accepting quality'
             elif new_quality < current_quality:
-                return False, 'New quality is lower than current Preferred. Ignoring quality'
+                return False, 'New quality is lower than current Allowed. Ignoring quality'
             else:
-                return False, 'New quality is equal to current Preferred. Ignoring quality'
+                return False, 'New quality is equal to current Allowed. Ignoring quality'
         else:
             return False, 'New quality is not in Allowed|Preferred. Ignoring quality'
 
@@ -960,7 +966,7 @@ class PostProcessor(object):
 
         :return: True on success, False on failure
         """
-        self._log(u'Processing {0} ({1})'.format(self.file_path, self.nzb_name or 'Torrent'))
+        self._log(u'Processing {0}'.format(self.file_path))
 
         if os.path.isdir(self.file_path):
             self._log(u'File {0} seems to be a directory'.format(self.file_path))

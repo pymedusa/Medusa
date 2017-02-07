@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Tyler Fenby <tylerfenby@gmail.com>
-
 #
 # This file is part of Medusa.
 #
@@ -41,33 +40,35 @@ class FailedProcessor(object):
 
         :return: True
         """
-        self._log(u"Failed download detected: (" + str(self.nzb_name) + ", " + str(self.dir_name) + ")")
+        self._log(u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.nzb_name, dir=self.dir_name))
 
         releaseName = show_name_helpers.determineReleaseName(self.dir_name, self.nzb_name)
         if not releaseName:
-            self._log(u"Warning: unable to find a valid release name.", logger.WARNING)
+            self._log(u'Warning: unable to find a valid release name.', logger.WARNING)
             raise FailedPostProcessingFailedException()
 
         try:
             parsed = NameParser().parse(releaseName)
-        except (InvalidNameException, InvalidShowException) as error:
-            self._log(u"{}".format(error), logger.DEBUG)
+        except (InvalidNameException, InvalidShowException):
+            self._log(u'Not enough information to parse release name into a valid show. '
+                      u'Consider adding scene exceptions or improve naming for: {release}'.format
+                      (release=releaseName), logger.WARNING)
             raise FailedPostProcessingFailedException()
 
-        self._log(u"name_parser info: {result}".format(result=parsed), logger.DEBUG)
+        self._log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
 
         segment = []
         if not parsed.episode_numbers:
             # Get all episode objects from that season
-            self._log(u"Detected as season pack: {0}".format(releaseName), logger.DEBUG)
+            self._log(u'Detected as season pack: {release}'.format(release=releaseName), logger.DEBUG)
             segment.extend(parsed.show.get_all_episodes(parsed.season_number))
         else:
-            self._log(u"Detected as single/multi episode: {0}".format(releaseName), logger.DEBUG)
+            self._log(u'Detected as single/multi episode: {release}'.format(release=releaseName), logger.DEBUG)
             for episode in parsed.episode_numbers:
                 segment.append(parsed.show.get_episode(parsed.season_number, episode))
 
         if segment:
-            self._log(u"Adding this release to failed queue: {0}".format(releaseName), logger.DEBUG)
+            self._log(u'Adding this release to failed queue: {release}'.format(release=releaseName), logger.DEBUG)
             cur_failed_queue_item = FailedQueueItem(parsed.show, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
