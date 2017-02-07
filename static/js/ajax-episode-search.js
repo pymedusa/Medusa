@@ -37,8 +37,6 @@ function updateImages(data) {
                 img.prop('alt', 'Searching');
                 img.prop('src', 'images/' + loadingImage);
                 disableLink(el);
-                // Update Status and Quality
-                rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
                 // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
