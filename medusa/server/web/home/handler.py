@@ -1427,6 +1427,9 @@ class Home(WebRoot):
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
 
+        if isinstance(exceptions, list):
+            exceptions = set(exceptions)
+
         if not isinstance(exceptions, set):
             exceptions = {exceptions}
 
