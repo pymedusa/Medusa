@@ -20,6 +20,7 @@ import logging
 import threading
 import time
 import app
+import traceback
 
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
@@ -94,6 +95,12 @@ class ShowUpdater(object):
                                        u'issues while trying to get updates for show {show}. Cause: {cause}',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                         continue
+                    except Exception as e:
+                        logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                         u'issues while trying to get updates for show {show}. Cause: {cause}. '
+                                         u'Traceback: {trace}',
+                                         indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                        continue
 
                 # If the current show is not in the list, move on to the next.
                 # Only do this for shows, that's have been recently updated (the < 12 weeks).
@@ -130,6 +137,11 @@ class ShowUpdater(object):
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'issues while trying to get updates for show {show}. Cause: {cause}',
                                    indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                    continue
+                except Exception as e:
+                    logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                     u'issues while trying to get updates for show {show}. Cause: {cause}',
+                                     indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                     continue
 
                 if updated_seasons[show.indexerid]:
