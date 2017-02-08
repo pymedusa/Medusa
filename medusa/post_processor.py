@@ -226,6 +226,7 @@ class PostProcessor(object):
         # loop through all the files in the folder, and check if they are the same name
         # even when the cases don't match
         filelist = []
+        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list if f.rsplit('.', 1)[1].lower() == 'rar']
         for found_file in file_list:
 
             file_name = os.path.basename(found_file).lower()
@@ -239,6 +240,9 @@ class PostProcessor(object):
                     if not language:
                         continue
 
+                filelist.append(found_file)
+            # List associated files based on .RAR files like Show.101.720p-GROUP.nfo and Show.101.720p-GROUP.rar
+            elif any([file_name.startswith(r) for r in rar_file]):
                 filelist.append(found_file)
 
         file_path_list = []
@@ -365,6 +369,9 @@ class PostProcessor(object):
             changed_extension = None
             # file extension without leading dot (for example: de.srt)
             extension = cur_file_path[old_base_name_length + 1:]
+            # If basename is different, then is a RAR associated file.
+            if not extension:
+                helpers.get_extension(cur_file_path)
             # initally set current extension as new extension
             new_extension = extension
 
