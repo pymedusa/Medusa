@@ -20,7 +20,6 @@ import logging
 import threading
 import time
 import app
-import traceback
 
 from . import db, helpers, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
