@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """TVShow and TVEpisode classes."""
 
+import copy
 import datetime
 import glob
 import os.path
@@ -1932,6 +1933,24 @@ class TVShow(TVObject):
         else:
             logger.log(u'Could not parse episode status into a valid overview status: {status}'.format
                        (status=ep_status), logger.ERROR)
+
+    def get_backloged_episodes(self, allowed_qualities, preferred_qualities):
+        """Check how many episodes will be backloged when changing qualities."""
+        BackloggedEpisodes = namedtuple('backlogged_episodes', ['new_backlogged', 'existing_backlogged'])
+        new_backlogged = 0
+        existing_backlogged = 0
+        if allowed_qualities + preferred_qualities:
+            # We need to change show qualities without save it
+            show_obj = copy.copy(self)
+
+            show_obj.quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
+            ep_list = self.get_all_episodes()
+            for ep_obj in ep_list:
+                if Quality.should_search(ep_obj.status, show_obj, ep_obj.manually_searched)[0]:
+                    new_backlogged += 1
+                if Quality.should_search(ep_obj.status, self, ep_obj.manually_searched)[0]:
+                    existing_backlogged += 1
+        return BackloggedEpisodes(new_backlogged, existing_backlogged)
 
     def __getstate__(self):
         """Get threading lock state.

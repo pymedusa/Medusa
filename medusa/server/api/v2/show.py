@@ -185,3 +185,20 @@ class ShowHandler(BaseRequestHandler):
         """
         error, show = Show.delete(indexer_id=show_id, remove_files=self.get_argument('remove_files', default=False))
         return self.api_finish(error=error, data=show)
+
+    def backlogged_episodes(self, show_id, allowed_qualities, preferred_qualities):
+        """Get number of backlogged episodes for a show given new allowed and preferred qualities.
+
+        :param show_id:
+        :type show_id: str
+        :param allowed_qualities:
+        :type show_id: list
+        :param preferred_qualities:
+        :type show_id: list
+        """
+        backloged_episodes = None
+        if show_id is not None:
+            show_obj = Show.find(app.showList, show_id)
+            backloged_episodes = show_obj.get_backloged_episodes(allowed_qualities=allowed_qualities,
+                                                                 preferred_qualities=preferred_qualities)
+        return self.api_finish(data=backloged_episodes)
