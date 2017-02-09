@@ -17,6 +17,7 @@
 % endif
 <div id="summary2" class="align-left">
 <h3>Backlog Search:</h3>
+<h5>Note: Limited by backlog days setting: last ${app.BACKLOG_DAYS} days</h5>
 <a class="btn" href="manage/manageSearches/forceBacklog"><i class="icon-exclamation-sign"></i> Force</a>
 <a class="btn" href="manage/manageSearches/pauseBacklog?paused=${('1', '0')[bool(backlogPaused)]}"><i class="icon-${('paused', 'play')[bool(backlogPaused)]}"></i> ${('pause', 'Unpause')[bool(backlogPaused)]}</a>
 % if not backlogRunning:
