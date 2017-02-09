@@ -41,11 +41,8 @@ selected = None
     </div>
     <div id="quality_explanation">
         <h5><b>Quality setting explanation:</b></h5>
-        % if preferred_qualities:
-            <h5>Downloads <b>any</b> of these qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</h5>
-            <h5>But it will stop searching when one of these is downloaded: ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
-        % else:
-            <h5>This will download <b>any</b> of these qualities and then stops searching: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</h5>
-        % endif
+            <h5 class="${'' if preferred_qualities else 'hidden'}" id="preferred_text1">Downloads <b>any</b> of these qualities: <label id="allowed_preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
+            <h5 class="${'' if preferred_qualities else 'hidden'}" id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>
+            <h5 class="${'hidden' if preferred_qualities or not allowed_qualities else ''}" id="allowed_text1">This will download <b>any</b> of these qualities and then stops searching: <label id="allowed_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
     </div>
 </div>

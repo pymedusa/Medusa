@@ -42,14 +42,26 @@ $(document).ready(function() {
         var both = allowed.concat(preferred.filter(function (item) {
             return allowed.indexOf(item) < 0;
         }));
-        var html = '<h5><b>Quality setting explanation:</b></h5>'
+        var allowed_preferred_explanation =  both.join(', ');
+        var preferred_explanation = preferred.join(', ');
+        var allowed_explanation = allowed.join(', ');
         if (preferred.length) {
-            html += '<h5>Downloads <b>any</b> of these qualities: ' + both.join(', ') + '</h5>';
-            html += '<h5>But it will stop searching when one of these is downloaded: ' + preferred.join(', ') + '</h5>';
+            $('#allowed_text1').addClass('hidden')
+            $('#preferred_text1').removeClass('hidden')
+            $('#preferred_text2').removeClass('hidden')
+        } else if (allowed.length) {
+            $('#allowed_text1').removeClass('hidden')
+            $('#preferred_text1').addClass('hidden')
+            $('#preferred_text2').addClass('hidden')
         } else {
-            html += '<h5>This will download <b>any</b> of these qualities and then stops searching: ' + both.join(', ') + '</h5>';
+            $('#allowed_text1').addClass('hidden')
+            $('#preferred_text1').addClass('hidden')
+            $('#preferred_text2').addClass('hidden')
         }
-        $('#quality_explanation').html(html);
+
+        $('#allowed_preferred_explanation').text(allowed_preferred_explanation);
+        $('#preferred_explanation').text(preferred_explanation);
+        $('#allowed_explanation').text(allowed_explanation);
     });
 
     setFromPresets($('#qualityPreset :selected').val());
