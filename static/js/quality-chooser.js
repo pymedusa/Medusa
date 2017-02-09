@@ -28,7 +28,11 @@ $(document).ready(function() {
         return;
     }
 
-    $('#preferred_qualities, #allowed_qualities').on('change', function(){
+    $('#qualityPreset').on('change', function() {
+        setFromPresets($('#qualityPreset :selected').val());
+    });
+
+    $('#qualityPreset, #preferred_qualities, #allowed_qualities').on('change', function(){
         var preferred = $.map($('#preferred_qualities option:selected'), function(option) {
             return option.text;
         });
@@ -43,13 +47,9 @@ $(document).ready(function() {
             html += '<h5>Downloads <b>any</b> of these qualities ' + both.join(', ') + '</h5>';
             html += '<h5>But it will stop searching when one of these is downloaded ' + preferred.join(', ') + '</h5>';
         } else {
-            html += '<h5>This will download <b>any</b> of these and then stop searching ' + both.join(', ') + '</h5>';
+            html += '<h5>This will download <b>any</b> of these qualities and then stop searching ' + both.join(', ') + '</h5>';
         }
         $('#quality_explanation').html(html);
-    });
-
-    $('#qualityPreset').on('change', function() {
-        setFromPresets($('#qualityPreset :selected').val());
     });
 
     setFromPresets($('#qualityPreset :selected').val());
