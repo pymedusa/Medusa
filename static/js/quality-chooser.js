@@ -44,10 +44,10 @@ $(document).ready(function() {
         }));
         var html = '<h5><b>Quality setting explanation:</b></h5>'
         if (preferred.length) {
-            html += '<h5>Downloads <b>any</b> of these qualities ' + both.join(', ') + '</h5>';
-            html += '<h5>But it will stop searching when one of these is downloaded ' + preferred.join(', ') + '</h5>';
+            html += '<h5>Downloads <b>any</b> of these qualities: ' + both.join(', ') + '</h5>';
+            html += '<h5>But it will stop searching when one of these is downloaded: ' + preferred.join(', ') + '</h5>';
         } else {
-            html += '<h5>This will download <b>any</b> of these qualities and then stop searching ' + both.join(', ') + '</h5>';
+            html += '<h5>This will download <b>any</b> of these qualities and then stops searching: ' + both.join(', ') + '</h5>';
         }
         $('#quality_explanation').html(html);
     });
