@@ -206,8 +206,7 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         videoFiles = [x for x in files if helpers.is_media_file(x)]
         rarFiles = [x for x in files if helpers.is_rar_file(x)]
         rarContent = ""
-        if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
-            # Unpack only if video file was not already extracted by 'postpone if no subs' feature
+        if rarFiles:
             rarContent = unRAR(path, rarFiles, force, result)
             files += rarContent
             videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
@@ -227,6 +226,9 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         # Don't Link media when the media is extracted from a rar in the same path
         if process_method in (u'hardlink', u'symlink') and videoInRar:
             process_media(path, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
+            #  As is a hardlink/symlink we can't keep the extracted file in the folder
+            #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
+            #  That's why we don't check for app.DELRARCONTENTS here.
             delete_files(path, rarContent, result)
             for video in set(videoFiles) - set(videoInRar):
                 process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
@@ -262,14 +264,14 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                 videoFiles = [x for x in fileList if helpers.is_media_file(x)]
                 rarFiles = [x for x in fileList if helpers.is_rar_file(x)]
                 rarContent = ""
-                if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
-                    # Unpack only if video file was not already extracted by 'postpone if no subs' feature
+                if rarFiles:
                     rarContent = unRAR(processPath, rarFiles, force, result)
                     fileList = set(fileList + rarContent)
                     videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
 
                 videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
-                notwantedFiles = [x for x in fileList if x not in videoFiles]
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                notwantedFiles = [x for x in fileList if x not in videoFiles and x[-3:] not in allowed_extensions]
                 if notwantedFiles:
                     result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
 
@@ -278,6 +280,9 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
                                   is_priority, ignore_subs, result)
+                    #  As is a hardlink/symlink we can't keep the extracted file in the folder
+                    #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
+                    #  That's why we don't check for app.DELRARCONTENTS here.
                     delete_files(processPath, rarContent, result)
                 elif app.DELRARCONTENTS and videoInRar:
                     process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
@@ -451,7 +456,15 @@ def unRAR(path, rarFiles, force, result):
                                                    file_in_archive, logger.DEBUG)
                         skip_file = True
                         break
+                    if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
+                        result.output += logHelper(u"Archive file already extracted, extraction skipped: %s" %
+                                                   file_in_archive, logger.DEBUG)
 
+                        skip_file = True
+                        #  We need to return the media file inside the .RAR so we can move
+                        #  when method is hardlink/symlink
+                        unpacked_files.append(file_in_archive)
+                        break
                 if skip_file:
                     continue
 
