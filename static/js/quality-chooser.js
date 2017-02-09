@@ -28,6 +28,25 @@ $(document).ready(function() {
         return;
     }
 
+    function backloggedEpisodes() {
+        var selectedPreffered = [];
+        var selectedAllowed = [];
+        $('#preferred_qualities :selected').each(function(i, selected){
+            selectedPreffered[i] = $(selected).val();
+        });
+        $('#allowed_qualities :selected').each(function(i, selected){
+            selectedAllowed[i] = $(selected).val();
+        });
+        var url = '/api/v1/' + apiKey +
+              '/?cmd=show.backloggedepisodes' +
+              '&indexerid=' + $('#showID').attr('value') +
+             '&allowed=' + selectedAllowed.join('|') +
+              '&preferred=' + selectedPreffered.join('|')
+        $.getJSON(url, function(data) {
+            $('#backlogged_episodes').text('Currently you have ' + data.data[1] + ' backloged episodes. With this change you would have ' + data.data[0] + ' backlogged episodes');
+        });
+    }
+
     function setQualityText() {
         var preferred = $.map($('#preferred_qualities option:selected'), function(option) {
             return option.text;
@@ -68,6 +87,7 @@ $(document).ready(function() {
 
     $('#qualityPreset, #preferred_qualities, #allowed_qualities').on('change', function(){
         setQualityText();
+        backloggedEpisodes();
     });
 
     setFromPresets($('#qualityPreset :selected').val());
