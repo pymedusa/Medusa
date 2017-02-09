@@ -226,7 +226,8 @@ class PostProcessor(object):
         # loop through all the files in the folder, and check if they are the same name
         # even when the cases don't match
         filelist = []
-        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list if f.rsplit('.', 1)[1].lower() == 'rar']
+        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list
+                    if helpers.get_extension(f).lower() == 'rar']
         for found_file in file_list:
 
             file_name = os.path.basename(found_file).lower()
@@ -263,7 +264,7 @@ class PostProcessor(object):
             # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
             if app.MOVE_ASSOCIATED_FILES:
                 allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                found_extension = associated_file_path.rpartition('.')[2]
+                found_extension = helpers.get_extension(associated_file_path)
                 if found_extension and found_extension not in allowed_extensions:
                     self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
                               (found_extension.upper()), logger.DEBUG)
