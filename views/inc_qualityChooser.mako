@@ -41,8 +41,8 @@ selected = None
     </div>
     <div id="quality_explanation">
         <h5><b>Quality setting explanation:</b></h5>
-            <h5 id="allowed_text">This will download <b>any</b> of these qualities and then stops searching: <label id="allowed_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
-            <h5 id="preferred_text1">Downloads <b>any</b> of these qualities: <label id="allowed_preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
-            <h5 id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>   
+        <h5 id="allowed_text">This will download <b>any</b> of these qualities and then stops searching: <label id="allowed_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
+        <h5 id="preferred_text1">Downloads <b>any</b> of these qualities: <label id="allowed_preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
+        <h5 id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>   
     </div>
 </div>
