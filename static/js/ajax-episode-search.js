@@ -37,8 +37,6 @@ function updateImages(data) {
                 img.prop('alt', 'Searching');
                 img.prop('src', 'images/' + loadingImage);
                 disableLink(el);
-                // Update Status and Quality
-                rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
                 // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
@@ -56,8 +54,8 @@ function updateImages(data) {
                 enableLink(el);
 
                 // Update Status and Quality
-                rSearchTerm = /(\w+)\s\((.+?)\)/;
-                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$2" + '</span>'); // eslint-disable-line quotes, no-useless-concat
+                rSearchTerm = /(\w+(\s\(Best\))?)\s\((.+?)\)/;
+                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$3" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
             // update the status column if it exists
