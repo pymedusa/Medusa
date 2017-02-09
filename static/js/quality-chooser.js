@@ -29,37 +29,37 @@ $(document).ready(function() {
     }
 
     function setQualityText() {
-    	var preferred = $.map($('#preferred_qualities option:selected'), function(option) {
-    	    return option.text;
-    	});
-    	var allowed = $.map($('#allowed_qualities option:selected'), function(option) {
-    	    return option.text;
-    	});
-    	var both = allowed.concat(preferred.filter(function (item) {
-    	    return allowed.indexOf(item) < 0;
-    	}));
+        var preferred = $.map($('#preferred_qualities option:selected'), function(option) {
+            return option.text;
+        });
+        var allowed = $.map($('#allowed_qualities option:selected'), function(option) {
+            return option.text;
+        });
+        var both = allowed.concat(preferred.filter(function (item) {
+            return allowed.indexOf(item) < 0;
+        }));
 
-    	var allowed_preferred_explanation = both.join(', ');
-    	var preferred_explanation = preferred.join(', ');
-    	var allowed_explanation = allowed.join(', ');
+        var allowed_preferred_explanation = both.join(', ');
+        var preferred_explanation = preferred.join(', ');
+        var allowed_explanation = allowed.join(', ');
 
-    	$('#allowed_preferred_explanation').text(allowed_preferred_explanation);
-    	$('#preferred_explanation').text(preferred_explanation);
-    	$('#allowed_explanation').text(allowed_explanation);
+        $('#allowed_preferred_explanation').text(allowed_preferred_explanation);
+        $('#preferred_explanation').text(preferred_explanation);
+        $('#allowed_explanation').text(allowed_explanation);
 
-    	$('#allowed_text').hide();
-    	$('#preferred_text1').hide();
-    	$('#preferred_text2').hide();
-    	$('#quality_explanation').show();
+        $('#allowed_text').hide();
+        $('#preferred_text1').hide();
+        $('#preferred_text2').hide();
+        $('#quality_explanation').show();
 
-    	if (preferred.length) {
-    		$('#preferred_text1').show();
-    		$('#preferred_text2').show();
-    	} else if (allowed.length) {
-    		$('#allowed_text').show();
-    	} else {
-    		$('#quality_explanation').hide();
-    	}
+        if (preferred.length) {
+            $('#preferred_text1').show();
+            $('#preferred_text2').show();
+        } else if (allowed.length) {
+            $('#allowed_text').show();
+        } else {
+            $('#quality_explanation').hide();
+        }
     }
 
     $('#qualityPreset').on('change', function() {
