@@ -28,29 +28,48 @@ $(document).ready(function() {
         return;
     }
 
-    $('#preferred_qualities, #allowed_qualities').on('change', function(){
-        var preferred = $.map($('#preferred_qualities option:selected'), function(option) {
-            return option.text;
-        });
-        var allowed = $.map($('#allowed_qualities option:selected'), function(option) {
-            return option.text;
-        });
-        var both = allowed.concat(preferred.filter(function (item) {
-            return allowed.indexOf(item) < 0;
-        }));
-        var html = '<h5><b>Quality setting explanation:</b></h5>'
-        if (preferred.length) {
-            html += '<h5>Downloads <b>any</b> of these qualities ' + both.join(', ') + '</h5>';
-            html += '<h5>But it will stop searching when one of these is downloaded ' + preferred.join(', ') + '</h5>';
-        } else {
-            html += '<h5>This will download <b>any</b> of these and then stop searching ' + both.join(', ') + '</h5>';
-        }
-        $('#quality_explanation').html(html);
-    });
+    function setQualityText() {
+    	var preferred = $.map($('#preferred_qualities option:selected'), function(option) {
+    	    return option.text;
+    	});
+    	var allowed = $.map($('#allowed_qualities option:selected'), function(option) {
+    	    return option.text;
+    	});
+    	var both = allowed.concat(preferred.filter(function (item) {
+    	    return allowed.indexOf(item) < 0;
+    	}));
+
+    	var allowed_preferred_explanation = both.join(', ');
+    	var preferred_explanation = preferred.join(', ');
+    	var allowed_explanation = allowed.join(', ');
+
+    	$('#allowed_preferred_explanation').text(allowed_preferred_explanation);
+    	$('#preferred_explanation').text(preferred_explanation);
+    	$('#allowed_explanation').text(allowed_explanation);
+
+    	$('#allowed_text').hide();
+    	$('#preferred_text1').hide();
+    	$('#preferred_text2').hide();
+    	$('#quality_explanation').show();
+
+    	if (preferred.length) {
+    		$('#preferred_text1').show();
+    		$('#preferred_text2').show();
+    	} else if (allowed.length) {
+    		$('#allowed_text').show();
+    	} else {
+    		$('#quality_explanation').hide();
+    	}
+    }
 
     $('#qualityPreset').on('change', function() {
         setFromPresets($('#qualityPreset :selected').val());
     });
 
+    $('#qualityPreset, #preferred_qualities, #allowed_qualities').on('change', function(){
+        setQualityText();
+    });
+
     setFromPresets($('#qualityPreset :selected').val());
+    setQualityText();
 });
