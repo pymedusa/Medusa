@@ -161,7 +161,10 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root})
+             {'path': self.video_root}),
+
+            (r'{base}/vue/?(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['data_root'], 'vue'), 'default_filename': 'index.html'})
         ])
 
     def _get_webui_routes(self):
