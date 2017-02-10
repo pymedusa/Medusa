@@ -162,7 +162,7 @@ class BacklogSearcher(object):
                 continue
             logger.log(u"Found needed backlog episodes for: {show} {ep}. Reason: {reason}".format
                        (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"]),
-                        reason=shold_search_reason), logger.INFO)
+                        reason=shold_search_reason), logger.DEBUG)
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 
             if ep_obj.season not in wanted:
