@@ -37,13 +37,14 @@ $(document).ready(function() {
         $('#allowed_qualities :selected').each(function(i, selected){
             selectedAllowed[i] = $(selected).val();
         });
-        var url = '/api/v1/' + apiKey +
-              '/?cmd=show.backloggedepisodes' +
-              '&indexerid=' + $('#showID').attr('value') +
-             '&allowed=' + selectedAllowed.join('|') +
-              '&preferred=' + selectedPreffered.join('|')
+        var url = '/api/v2/' +
+                  'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
+                  '/backlogged' +
+                  '?api_key=' + apiKey +
+                  '&allowed=' + selectedAllowed +
+                  '&preferred=' + selectedPreffered
         $.getJSON(url, function(data) {
-            $('#backlogged_episodes').text('Currently you have ' + data.data[1] + ' backloged episodes. With this change you would have ' + data.data[0] + ' backlogged episodes');
+            $('#backlogged_episodes').text('Currently you have ' + data[1] + ' backloged episodes. With this change you would have ' + data[0] + ' backlogged episodes');
         });
     }
 
