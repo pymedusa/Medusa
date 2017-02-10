@@ -2,13 +2,12 @@
 <%!
     from medusa import app
     import datetime
-    from medusa.common import Overview, Quality
+    from medusa.common import ARCHIVED, DOWNLOADED,Overview, Quality
     from medusa.helper.common import episode_num
     from medusa import sbdatetime, network_timezones
 %>
 <%block name="scripts">
-<script type="text/javascript">
-</script>
+<script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <div id="content960">
@@ -46,7 +45,7 @@ Jump to Show:
         <% continue %>
     % endif
     <tr class="seasonheader" id="show-${cur_show.indexerid}">
-        <td colspan="3" class="align-left" style="position: relative;">
+        <td colspan="4" class="align-left" style="position: relative;">
             <h2 style="display: inline-block;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h2>
             <div style="position: absolute; bottom: 10px; right: 0;">
                 % if showCounts[cur_show.indexerid][Overview.WANTED] > 0:
@@ -56,15 +55,23 @@ Jump to Show:
                 <span class="listing-key qual">Quality: <b>${showCounts[cur_show.indexerid][Overview.QUAL]}</b></span>
                 % endif
                 <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexer_id=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
+                <a class="btn btn-inline editShow" href="manage/editShow?show=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
             </div>
         </td>
     </tr>
-    <tr class="seasoncols"><th>Episode</th><th>Name</th><th class="nowrap">Airdate</th></tr>
+    <tr class="seasoncols">
+        <th>Episode</th>
+        <th>Name</th>
+        <th class="nowrap">Airdate</th>
+        <th>Actions</th>
+    </tr>
     % for cur_result in showSQLResults[cur_show.indexerid]:
         <%
             whichStr = episode_num(cur_result['season'], cur_result['episode']) or episode_num(cur_result['season'], cur_result['episode'], numbering='absolute')
             if whichStr not in showCats[cur_show.indexerid] or showCats[cur_show.indexerid][whichStr] not in (Overview.QUAL, Overview.WANTED):
                 continue
+            old_status, old_quality = Quality.split_composite_status(cur_result['status'])
+            archived_status = Quality.composite_status(ARCHIVED, old_quality)
         %>
         <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][whichStr]]}">
             <td class="tableleft" align="center">${whichStr}</td>
@@ -84,6 +91,13 @@ Jump to Show:
                     <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
                 % else:
                     Never
+                % endif
+            </td>
+            <td>
+                <a class="epSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
+                <a class="epManualSearch"  id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                % if old_status == DOWNLOADED:
+                    <a class="archive_episode" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?show=${cur_show.indexerid}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
                 % endif
             </td>
         </tr>

@@ -353,7 +353,7 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 """
-                SELECT status, season, episode, name, airdate, manually_searched
+                SELECT status, season, episode, name, airdate, manually_searched, status
                 FROM tv_episodes
                 WHERE tv_episodes.season IS NOT NULL AND
                       tv_episodes.showid IN (SELECT tv_shows.indexer_id
