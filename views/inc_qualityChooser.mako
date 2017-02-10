@@ -45,4 +45,7 @@ selected = None
         <h5 id="preferred_text1">Downloads <b>any</b> of these qualities: <label id="allowed_preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
         <h5 id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>   
     </div>
+    <div>
+        <h5 class="red-text" id="backlogged_episodes"></h5>
+    </div>
 </div>

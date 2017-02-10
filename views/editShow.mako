@@ -6,6 +6,7 @@
     from medusa.common import statusStrings
     from medusa.helper import exceptions
     from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_config import mappings
     from medusa import scene_exceptions
 %>
 <%block name="metas">
@@ -20,6 +21,7 @@
 </%block>
 <%block name="content">
 <input type="hidden" id="showID" value="${show.indexerid}" />
+<input type="hidden" id="showIndexerName" value="${mappings.get(show.indexer).replace('_id', '')}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
