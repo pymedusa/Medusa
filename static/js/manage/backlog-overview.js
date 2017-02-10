@@ -5,4 +5,10 @@ MEDUSA.manage.backlogOverview = function() {
             $('html,body').animate({scrollTop: $('#show-' + id).offset().top - 25}, 'slow');
         }
     });
+
+    $('.forceBacklog').on('click', function(){
+        $.get($(this).attr('href'));
+        $(this).text('Searching...');
+        return false;
+    });
 };
