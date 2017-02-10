@@ -83,8 +83,8 @@ class ShowHandler(BaseRequestHandler):
                 allowed_qualities = map(int, allowed_qualities.split(',')) if allowed_qualities else []
                 preferred_qualities = self._parse(self.get_argument('preferred', default=None), str)
                 preferred_qualities = map(int, preferred_qualities.split(',')) if preferred_qualities else []
-                data = tv_show.get_backloged_episodes(allowed_qualities=allowed_qualities,
-                                                      preferred_qualities=preferred_qualities)
+                data = tv_show.get_backlogged_episodes(allowed_qualities=allowed_qualities,
+                                                       preferred_qualities=preferred_qualities)
             elif query == 'queue':
                 action, message = app.show_queue_scheduler.action.get_queue_action(tv_show)
                 data = {
@@ -192,20 +192,3 @@ class ShowHandler(BaseRequestHandler):
         """
         error, show = Show.delete(indexer_id=show_id, remove_files=self.get_argument('remove_files', default=False))
         return self.api_finish(error=error, data=show)
-
-    def backlogged_episodes(self, show_id, allowed_qualities, preferred_qualities):
-        """Get number of backlogged episodes for a show given new allowed and preferred qualities.
-
-        :param show_id:
-        :type show_id: str
-        :param allowed_qualities:
-        :type show_id: list
-        :param preferred_qualities:
-        :type show_id: list
-        """
-        backloged_episodes = None
-        if show_id is not None:
-            show_obj = Show.find(app.showList, show_id)
-            backloged_episodes = show_obj.get_backloged_episodes(allowed_qualities=allowed_qualities,
-                                                                 preferred_qualities=preferred_qualities)
-        return self.api_finish(data=backloged_episodes)

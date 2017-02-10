@@ -1934,8 +1934,8 @@ class TVShow(TVObject):
             logger.log(u'Could not parse episode status into a valid overview status: {status}'.format
                        (status=ep_status), logger.ERROR)
 
-    def get_backloged_episodes(self, allowed_qualities, preferred_qualities):
-        """Check how many episodes will be backloged when changing qualities."""
+    def get_backlogged_episodes(self, allowed_qualities, preferred_qualities):
+        """Check how many episodes will be backlogged when changing qualities."""
         BackloggedEpisodes = namedtuple('backlogged_episodes', ['new_backlogged', 'existing_backlogged'])
         new_backlogged = 0
         existing_backlogged = 0
