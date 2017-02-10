@@ -590,7 +590,7 @@ class Cache(object):
             result.leechers = cur_result[b'leechers']
             result.size = cur_result[b'size']
             result.pubdate = cur_result[b'pubdate']
-            result.proper_tags = cur_result[b'proper_tags']
+            result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
             result.name = title
             result.quality = cur_quality
             result.release_group = cur_release_group
