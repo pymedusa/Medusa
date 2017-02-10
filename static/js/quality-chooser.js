@@ -44,7 +44,7 @@ $(document).ready(function() {
                   '&allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered
         $.getJSON(url, function(data) {
-            $('#backlogged_episodes').text('Currently you have ' + data[1] + ' backloged episodes. With this change you would have ' + data[0] + ' backlogged episodes');
+            $('#backlogged_episodes').text('Currently you have ' + data[1] + ' backlogged episodes. With this change you would have ' + data[0] + ' backlogged episodes');
         });
     }
 
