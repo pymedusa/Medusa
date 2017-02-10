@@ -1411,7 +1411,7 @@ class Home(WebRoot):
                 log_level = logger.INFO
             finally:
                 indexer_lang = language
-                msg = msg.format(satus=status)
+                msg = msg.format(status=status)
                 if log_level >= logger.WARNING:
                     errors.append(msg)
                 logger.log(msg, log_level)
