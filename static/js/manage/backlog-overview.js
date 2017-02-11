@@ -27,6 +27,9 @@ MEDUSA.manage.backlogOverview = function() {
             // if they failed then just put the red X
             if (data.result.toLowerCase() === 'success') {
                 img.prop('src', 'images/yes16.png');
+                setTimeout(function() {
+                    img.parent().parent().parent().remove()
+                }, 3000)
             } else {
                 img.prop('src', 'images/no16.png');
             }
