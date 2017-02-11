@@ -371,7 +371,7 @@ def wanted_episodes(show, from_date):
         else:
             logger.log(u'Searching for {show} {ep}. Reason: {reason}'.format
                        (show=show.name, ep=episode_num(result['season'], result['episode']),
-                        reason=should_search_reason), logger.INFO)
+                        reason=should_search_reason), logger.DEBUG)
 
         ep_obj = show.get_episode(result['season'], result['episode'])
         ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
