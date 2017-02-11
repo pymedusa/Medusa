@@ -232,6 +232,10 @@ class BTNProvider(TorrentProvider):
             # BTN uses dots in dates, we just search for the date since that
             # combined with the series identifier should result in just one episode
             search_params['name'] = date_str.replace('-', '.')
+            to_return.append(search_params)
+            search_params = {'category': 'Episode'}
+            search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))
+            to_return.append(search_params)
         else:
             # Do a general name search for the episode, formatted like SXXEYY
             search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))
