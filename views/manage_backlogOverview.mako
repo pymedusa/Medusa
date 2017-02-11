@@ -2,7 +2,7 @@
 <%!
     from medusa import app
     import datetime
-    from medusa.common import ARCHIVED, DOWNLOADED,Overview, Quality
+    from medusa.common import ARCHIVED, DOWNLOADED,Overview, Quality, qualityPresets, statusStrings
     from medusa.helper.common import episode_num
     from medusa import sbdatetime, network_timezones
 %>
@@ -10,6 +10,7 @@
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 </%block>
 <%block name="content">
+<%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div id="content960">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
@@ -45,8 +46,21 @@ Jump to Show:
         <% continue %>
     % endif
     <tr class="seasonheader" id="show-${cur_show.indexerid}">
-        <td colspan="4" class="align-left" style="position: relative;">
+        <td colspan="5" class="align-left" style="position: relative;">
             <h2 style="display: inline-block;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h2>
+            <div >
+             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(cur_show.quality)) %>
+             % if cur_show.quality in qualityPresets:
+                 ${renderQualityPill(cur_show.quality)}
+             % else:
+                 % if allowed_qualities:
+                     <i>Allowed:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                 % endif
+                 % if preferred_qualities:
+                     <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                 % endif
+             % endif
+            </div>
             <div style="position: absolute; bottom: 10px; right: 0;">
                 % if showCounts[cur_show.indexerid][Overview.WANTED] > 0:
                 <span class="listing-key wanted">Wanted: <b>${showCounts[cur_show.indexerid][Overview.WANTED]}</b></span>
@@ -61,7 +75,8 @@ Jump to Show:
     </tr>
     <tr class="seasoncols">
         <th>Episode</th>
-        <th>Name</th>
+        <th>Quality</th>
+        <th>Status</th>
         <th class="nowrap">Airdate</th>
         <th>Actions</th>
     </tr>
@@ -75,6 +90,13 @@ Jump to Show:
         %>
         <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][whichStr]]}">
             <td class="tableleft" align="center">${whichStr}</td>
+            <td class="col-status">
+                % if old_quality != Quality.NONE:
+                    ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
+                % else:
+                    ${statusStrings[old_status]}
+                % endif
+            </td>
             <td class="tableright" align="center" class="nowrap">
                 ${cur_result["name"]}
             </td>
@@ -93,11 +115,11 @@ Jump to Show:
                     Never
                 % endif
             </td>
-            <td>
+            <td class="col-search">
                 <a class="epSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
-                <a class="epManualSearch"  id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
+                <a class="epManualSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % if old_status == DOWNLOADED:
-                    <a class="archive_episode" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?show=${cur_show.indexerid}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
+                    <a class="epArchive" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?show=${cur_show.indexerid}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
                 % endif
             </td>
         </tr>

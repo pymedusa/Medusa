@@ -7,7 +7,7 @@ MEDUSA.manage.backlogOverview = function() {
     });
 
     $.ajaxEpSearch({
-        colorRow: true
+        colorRow: False
     });
 
     $('.forceBacklog').on('click', function(){
