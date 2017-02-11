@@ -43,7 +43,10 @@ MEDUSA.manage.backlogOverview = function() {
                 } else if (ep.searchstatus.toLowerCase() === 'finished') {
                     // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     if (ep.status.indexOf('Snatched') > 0) {
-                        img.prop('src', 'images/loading16.gif');
+                        img.prop('src', 'images/yes16.png');
+                        setTimeout(function() {
+                            img.parent().parent().parent().remove()
+                        }, 3000)
                     } else {
                         img.prop('src', 'images/search16.png');
                     }
