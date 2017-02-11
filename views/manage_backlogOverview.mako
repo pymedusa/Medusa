@@ -7,7 +7,6 @@
     from medusa import sbdatetime, network_timezones
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/manage/backlog-overview.js?${sbPID}"></script>
 </%block>
 <%block name="content">
