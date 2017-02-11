@@ -8,6 +8,7 @@
 %>
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
+<script type="text/javascript" src="js/manage/backlog-overview.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
@@ -119,7 +120,7 @@ Jump to Show:
                 <a class="epSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/searchEpisode?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
                 <a class="epManualSearch" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/snatchSelection?show=${cur_show.indexerid}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                 % if old_status == DOWNLOADED:
-                    <a class="epArchive" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?show=${cur_show.indexerid}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
+                    <a class="epArchive" id="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" name="${str(cur_show.indexerid)}x${str(cur_result['season'])}x${str(cur_result['episode'])}" href="home/setStatus?show=${cur_show.indexerid}&eps=${cur_result['season']}x${cur_result['episode']}&status=${archived_status}&direct=1"><img data-ep-archive src="images/archive.png" width="16" height="16" alt="search" title="Archive episode" /></a>
                 % endif
             </td>
         </tr>
