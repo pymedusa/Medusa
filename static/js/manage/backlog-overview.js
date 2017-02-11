@@ -37,7 +37,7 @@ MEDUSA.manage.backlogOverview = function() {
             var img = el.children('img[data-ep-search]');
             var parent = el.parent();
             if (el) {
-                if (ep.searchstatus.toLowerCase() === 'searching') {
+                if (ep.searchstatus.toLowerCase() === 'searching' || ep.searchstatus.toLowerCase() === 'queued') {
                     // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.prop('src', 'images/loading16.gif');
                 } else if (ep.searchstatus.toLowerCase() === 'finished') {
