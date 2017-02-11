@@ -6,6 +6,10 @@ MEDUSA.manage.backlogOverview = function() {
         }
     });
 
+    $.ajaxEpSearch({
+        colorRow: true
+    });
+
     $('.forceBacklog').on('click', function(){
         $.get($(this).attr('href'));
         $(this).text('Searching...');
