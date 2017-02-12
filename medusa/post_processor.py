@@ -26,9 +26,9 @@ from collections import OrderedDict
 
 import adba
 
-from six import text_type
+import rarfile
 
-from unrar import rarfile
+from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension
