@@ -294,7 +294,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.priority = generic_queue.QueuePriorities.HIGH
         # SEARCHQUEUE-MANUAL-12345
         # SEARCHQUEUE-FORCED-12345
-        self.name = '{0}-{1}'.format(('FORCED','MANUAL')[bool(manual_search)], show.indexerid)
+        self.name = '{0}-{1}'.format(('FORCED', 'MANUAL')[bool(manual_search)], show.indexerid)
 
         self.success = None
         self.started = None
@@ -307,46 +307,49 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.manual_search_type = manual_search_type
 
     def run(self):
-        """
-        Run forced search thread
-        """
+        """Run forced search thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
         try:
-            logger.log(u"Beginning {0} {1}search for: [{2}]".
+            logger.log(u'Beginning {0} {1}search for: [{2}]'.
                        format(('forced', 'manual')[bool(self.manual_search)],
-                              ('', 'season pack ')[bool(self.manual_search_type == 'season')], self.segment[0].pretty_name()))
+                              ('', 'season pack ')[bool(self.manual_search_type == 'season')],
+                              self.segment[0].pretty_name()))
 
             search_result = search_providers(self.show, self.segment, True, self.down_cur_quality,
                                              self.manual_search, self.manual_search_type)
 
             if not self.manual_search and search_result:
-                # just use the first result for now
-                if search_result[0].seeders not in (-1, None) and search_result[0].leechers not in (-1, None):
-                    logger.log(u"Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
-                               (search_result[0].name, search_result[0].seeders, search_result[0].leechers,
-                                pretty_file_size(search_result[0].size), search_result[0].provider.name))
-                else:
-                    logger.log(u"Downloading {0} with size: {1} from {2}".format
-                               (search_result.name[0], pretty_file_size(search_result[0].size),
-                                search_result[0].provider.name))
-                self.success = snatch_episode(search_result[0])
+                for result in search_result:
+                    # Just use the first result for now
+                    if result.seeders not in (-1, None) and result.leechers not in (-1, None):
+                        logger.log(u'Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}'.format
+                                   (result.name, result.seeders, result.leechers,
+                                    pretty_file_size(result.size), result.provider.name))
+                    else:
+                        logger.log(u'Downloading {0} with size: {1} from {2}'.format
+                                   (result.name, pretty_file_size(result.size),
+                                    result.provider.name))
+                    self.success = snatch_episode(result)
 
-                # give the CPU a break
-                time.sleep(common.cpu_presets[app.CPU_PRESET])
+                    # Give the CPU a break
+                    time.sleep(common.cpu_presets[app.CPU_PRESET])
+
             elif self.manual_search and search_result:
                 self.results = search_result
                 self.success = True
+
                 if self.manual_search_type == 'season':
-                    ui.notifications.message("We have found season packs for {0}".format(self.show.name),
-                                             "These should become visible in the manual select page.")
+                    ui.notifications.message('We have found season packs for {0}'.format(self.show.name),
+                                             'These should become visible in the manual select page.')
                 else:
-                    ui.notifications.message("We have found results for {0}".format(self.segment[0].pretty_name()),
-                                             "These should become visible in the manual select page.")
+                    ui.notifications.message('We have found results for {0}'.format(self.segment[0].pretty_name()),
+                                             'These should become visible in the manual select page.')
+
             else:
                 ui.notifications.message('No results were found')
-                logger.log(u"Unable to find {0} {1}results for: [{2}]".
+                logger.log(u'Unable to find {0} {1}results for: [{2}]'.
                            format(('forced', 'manual')[bool(self.manual_search)],
                                   ('', 'season pack ')[bool(self.manual_search_type == 'season')],
                                   self.segment[0].pretty_name()))
@@ -355,7 +358,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
             self.success = False
             logger.log(traceback.format_exc(), logger.DEBUG)
 
-        # ## Keep a list with the 100 last executed searches
+        # Keep a list with the 100 last executed searches
         fifo(FORCED_SEARCH_HISTORY, self, FORCED_SEARCH_HISTORY_SIZE)
 
         if self.success is None:
