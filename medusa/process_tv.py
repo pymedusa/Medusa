@@ -270,10 +270,6 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                     videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
 
                 videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                notwantedFiles = [x for x in fileList if x not in videoFiles and x[-3:] not in allowed_extensions]
-                if notwantedFiles:
-                    result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
 
                 # Don't Link media when the media is extracted from a rar in the same path
                 if process_method in (u'hardlink', u'symlink') and videoInRar:
@@ -297,7 +293,12 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                         continue
 
                     delete_folder(os.path.join(processPath, u'@eaDir'))
-                    delete_files(processPath, notwantedFiles, result)
+                    allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                    notwantedFiles = [x for x in fileList
+                                      if x not in videoFiles and helpers.get_extension(x) not in allowed_extensions]
+                    if notwantedFiles:
+                        result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
+                        delete_files(processPath, notwantedFiles, result)
 
                     if all([not app.NO_DELETE or proc_type == u"manual",
                             process_method == u"move",
@@ -569,7 +570,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
                                                        u"Continuing the post-process of this file: %s" % cur_video_file)
                         else:
                             associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                            if not [f for f in associated_files if f[-3:] in subtitle_extensions]:
+                            if not [f for f in associated_files if helpers.get_extension(f) in subtitle_extensions]:
                                 result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
                                                            u" %s" % cur_video_file, logger.DEBUG)
                                 continue
