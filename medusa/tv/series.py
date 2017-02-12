@@ -37,11 +37,13 @@ from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
     ARCHIVED,
     DOWNLOADED,
+    FAILED,
     IGNORED,
     Overview,
     Quality,
     SKIPPED,
     SNATCHED,
+    SNATCHED_BEST,
     SNATCHED_PROPER,
     UNAIRED,
     UNKNOWN,
