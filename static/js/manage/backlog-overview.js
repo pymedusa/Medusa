@@ -1,8 +1,6 @@
 MEDUSA.manage.backlogOverview = function() {
 
-    $(document).ready(function() {
-        checkManualSearches();
-    });
+    checkManualSearches();
 
     function checkManualSearches() {
         var pollInterval = 5000;
