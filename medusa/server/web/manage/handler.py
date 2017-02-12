@@ -353,14 +353,14 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 """
-                SELECT status, season, episode, name, airdate, manually_searched
-                FROM tv_episodes
-                WHERE tv_episodes.season IS NOT NULL AND
-                      tv_episodes.showid IN (SELECT tv_shows.indexer_id
-                                             FROM tv_shows
-                                             WHERE tv_shows.indexer_id = ? AND
-                                                   paused = 0)
-                ORDER BY tv_episodes.season DESC, tv_episodes.episode DESC
+                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched, e.status, s.quality
+                FROM tv_episodes as e
+                JOIN tv_shows as s
+                WHERE e.season IS NOT NULL AND
+                      s.paused = 0 AND
+                      e.showid = s.indexer_id AND
+                      s.indexer_id = ?
+                ORDER BY e.season DESC, e.episode DESC
                 """,
                 [cur_show.indexerid]
             )
