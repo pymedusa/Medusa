@@ -7,7 +7,8 @@
     from medusa import sbdatetime, network_timezones
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/manage/backlog-overview.js?${sbPID}"></script>
+<script type="text/javascript">
+</script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
