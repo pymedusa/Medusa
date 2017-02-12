@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import socket
 import time
-from datetime import datetime
 
 import jsonrpclib
 
@@ -189,6 +188,7 @@ class BTNProvider(TorrentProvider):
 
         if not season_numbering and (air_by_date or sports):
             date_fmt = '%Y' if season else '%Y.%m.%d'
+            air_date = datetime.strptime(str(ep_obj.airdate), '%Y-%m-%d')
             search_name = ep_obj.airdate.strftime(date_fmt)
         else:
             search_name = '{type} {number}'.format(
