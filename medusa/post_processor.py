@@ -28,6 +28,8 @@ import adba
 
 from six import text_type
 
+from unrar import rarfile
+
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
@@ -218,21 +220,23 @@ class PostProcessor(object):
         :param subfolders: check subfolders while listing files
         :return: A list containing all files which are associated to the given file
         """
+        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
+
         # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
 
-        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
+        processed_names = (processed_file_name,)
+        processed_names += filter(None, (self.rar_basename(file_path, file_list),))
 
         # loop through all the files in the folder, and check if they are the same name
         # even when the cases don't match
         filelist = []
-        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list
-                    if helpers.get_extension(f).lower() == 'rar']
+
         for found_file in file_list:
 
             file_name = os.path.basename(found_file).lower()
 
-            if file_name.startswith(processed_file_name):
+            if file_name.startswith(processed_names):
 
                 # only add subtitles with valid languages to the list
                 if is_subtitle(found_file):
@@ -241,9 +245,6 @@ class PostProcessor(object):
                     if not language:
                         continue
 
-                filelist.append(found_file)
-            # List associated files based on .RAR files like Show.101.720p-GROUP.nfo and Show.101.720p-GROUP.rar
-            elif any([file_name.startswith(r) for r in rar_file]):
                 filelist.append(found_file)
 
         file_path_list = []
@@ -286,6 +287,16 @@ class PostProcessor(object):
             self._log(u'No associated files for {0} were found during this pass'.format(file_path), logger.DEBUG)
 
         return file_path_list
+
+    @staticmethod
+    def rar_basename(filepath, filelist):
+        videofile = os.path.basename(filepath)
+        rars = (x for x in filelist if rarfile.is_rarfile(x))
+
+        for rar in rars:
+            content = rarfile.RarFile(rar).namelist()
+            if videofile in content:
+                return os.path.basename(rar).rpartition('.')[0].lower()
 
     def _delete(self, file_path, associated_files=False):
         """
@@ -370,9 +381,6 @@ class PostProcessor(object):
             changed_extension = None
             # file extension without leading dot (for example: de.srt)
             extension = cur_file_path[old_base_name_length + 1:]
-            # If basename is different, then is a RAR associated file.
-            if not extension:
-                helpers.get_extension(cur_file_path)
             # initally set current extension as new extension
             new_extension = extension
 
