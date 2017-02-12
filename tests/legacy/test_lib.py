@@ -27,10 +27,11 @@ import shutil
 import unittest
 
 from configobj import ConfigObj
-from medusa import app, config, db, logger, providers, tv_cache
+
+from medusa import app, config, db, logger, providers
 from medusa.databases import cache_db, failed_db, main_db
 from medusa.providers.nzb.newznab import NewznabProvider
-from medusa.tv import TVEpisode
+from medusa.tv import Episode, cache
 
 # =================
 #  test globals
@@ -117,7 +118,7 @@ def _fake_specify_ep(self, season, episode):
     pass
 
 # the real one tries to contact TVDB just stop it from getting more info on the ep
-TVEpisode._specify_episode = _fake_specify_ep
+Episode._specify_episode = _fake_specify_ep
 
 
 # =================
@@ -184,7 +185,7 @@ class TestCacheDBConnection(TestDBConnection, object):
 
 # this will override the normal db connection
 db.DBConnection = TestDBConnection
-tv_cache.CacheDBConnection = TestCacheDBConnection
+cache.CacheDBConnection = TestCacheDBConnection
 
 
 # =================

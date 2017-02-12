@@ -3,7 +3,7 @@
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED,
                            SNATCHED_BEST, SNATCHED_PROPER, UNAIRED)
 
-from medusa.tv import TVShow
+from medusa.tv import Series
 
 import pytest
 
@@ -134,7 +134,7 @@ def test_should_refresh(p):
     expected = p['expected']
 
     # When
-    replace, msg = TVShow.should_refresh_file(cur_status, same_file, check_quality_again, anime, filepath)
+    replace, msg = Series.should_refresh_file(cur_status, same_file, check_quality_again, anime, filepath)
     actual = replace
 
     # Then

@@ -134,7 +134,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         ie If the episode name is foo.avi, the metadata name is foo.avi.txt
 
-        ep_obj: a TVEpisode object to get the path for
+        ep_obj: a Episode object to get the path for
         """
         if os.path.isfile(ep_obj.location):
             metadata_file_name = '{file}.{extension}'.format(
@@ -154,7 +154,7 @@ class TIVOMetadata(generic.GenericMetadata):
         Creates a key value structure for a Tivo episode metadata file and
         returns the resulting data object.
 
-        ep_obj: a TVEpisode instance to create the metadata file for.
+        ep_obj: a Episode instance to create the metadata file for.
 
         Lookup the show in http://thetvdb.com/ using the python library:
 
@@ -286,7 +286,7 @@ class TIVOMetadata(generic.GenericMetadata):
         given filename root. Uses the episode's name with the extension in
         _ep_nfo_extension.
 
-        ep_obj: TVEpisode object for which to create the metadata
+        ep_obj: Episode object for which to create the metadata
 
         file_name_path: The file name to use for this metadata. Note that the extension
                 will be automatically added based on _ep_nfo_extension. This should

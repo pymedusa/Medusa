@@ -24,7 +24,7 @@ from medusa import app
 from medusa.common import Quality
 from medusa.helper.exceptions import MultipleShowObjectsException
 from medusa.show.show import Show
-from medusa.tv import TVShow
+from medusa.tv import Series
 from six import iteritems
 
 
@@ -109,12 +109,12 @@ class ShowTests(unittest.TestCase):
             self.assertEqual(Show._validate_indexer_id(indexer_id), results_list[index])  # pylint: disable=protected-access
 
 
-class TestTVShow(TVShow):
-    """A test `TVShow` object that does not need DB access."""
+class TestTVShow(Series):
+    """A test `Series` object that does not need DB access."""
 
     def __init__(self, indexer, indexer_id):
         super(TestTVShow, self).__init__(indexer, indexer_id)
 
     def _load_from_db(self):
-        """Override TVShow._load_from_db to avoid DB access during testing."""
+        """Override Series._load_from_db to avoid DB access during testing."""
         pass

@@ -23,7 +23,7 @@ from __future__ import print_function, unicode_literals
 import re
 
 from medusa import app
-from medusa.tv import TVShow
+from medusa.tv import Series
 from . import test_lib as test
 
 
@@ -38,7 +38,7 @@ class XEMBasicTests(test.AppTestDBCase):
 
         for sql_show in sql_results:
             try:
-                cur_show = TVShow(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
+                cur_show = Series(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
                 app.showList.append(cur_show)
             except Exception:  # pylint: disable=broad-except
                 pass
@@ -51,7 +51,7 @@ class XEMBasicTests(test.AppTestDBCase):
 
         for sql_show in sql_results:
             try:
-                cur_show = TVShow(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
+                cur_show = Series(int(sql_show["indexer"]), int(sql_show["indexer_id"]))
                 app.showList.append(cur_show)
             except Exception as error:  # pylint: disable=broad-except
                 print("There was an error creating the show {}".format(error))
