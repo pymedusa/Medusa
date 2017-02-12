@@ -1,8 +1,8 @@
 MEDUSA.manage.backlogOverview = function() {
 
-    checkManualSearches();
+    checkForcedSearch();
 
-    function checkManualSearches() {
+    function checkForcedSearch() {
         var pollInterval = 5000;
         var searchStatusUrl = 'home/getManualSearchStatus';
         var showId = $('#showID').val();
@@ -15,7 +15,7 @@ MEDUSA.manage.backlogOverview = function() {
             type: 'GET',
             dataType: 'JSON',
             complete: function() {
-                setTimeout(checkManualSearches, pollInterval);
+                setTimeout(checkForcedSearch, pollInterval);
             },
             timeout: 15000 // timeout every 15 secs
         }).done(function(data) {
@@ -32,14 +32,15 @@ MEDUSA.manage.backlogOverview = function() {
         $.each(data.episodes, function(name, ep) {
             var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
             var img = el.children('img[data-ep-search]');
-            var parent = el.parent();
+            var episodeStatus = ep.status.toLowerCase();
+            var episodeSearchStatus = ep.searchstatus.toLowerCase();
             if (el) {
-                if (ep.searchstatus.toLowerCase() === 'searching' || ep.searchstatus.toLowerCase() === 'queued') {
+                if (episodeSearchStatus === 'searching' || episodeSearchStatus === 'queued') {
                     // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                     img.prop('src', 'images/loading16.gif');
-                } else if (ep.searchstatus.toLowerCase() === 'finished') {
+                } else if (episodeSearchStatus === 'finished') {
                     // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
-                    if (ep.status.toLowerCase().indexOf('snatched') >= 0) {
+                    if (episodeStatus.indexOf('snatched') >= 0) {
                         img.prop('src', 'images/yes16.png');
                         setTimeout(function() {
                             img.parent().parent().parent().remove()
