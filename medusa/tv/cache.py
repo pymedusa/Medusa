@@ -273,8 +273,8 @@ class Cache(object):
         # clear cache
         self._clear_cache()
 
+        results = []
         try:
-            results = []
             for item in manual_data:
                 logger.log(
                     'Adding to cache item found in'
@@ -296,7 +296,6 @@ class Cache(object):
                 logger.WARNING
             )
 
-        results = []
         cache_db_con = self._get_db()
         if results:
             logger.log(
@@ -304,9 +303,7 @@ class Cache(object):
                 ' for provider: {0}'.format(self.provider.name),
                 logger.DEBUG
             )
-            results = cache_db_con.mass_action(results)
-
-        return any(results)
+            return bool(cache_db_con.mass_action(results))
 
     def get_rss_feed(self, url, params=None):
         """Get rss feed entries."""
