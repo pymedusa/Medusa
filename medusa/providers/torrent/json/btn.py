@@ -189,8 +189,7 @@ class BTNProvider(TorrentProvider):
 
         if not season_numbering and (air_by_date or sports):
             date_fmt = '%Y' if season else '%Y.%m.%d'
-            air_date = datetime.strptime(ep_obj.airdate, '%Y-%m-%d')
-            search_name = air_date.strftime(date_fmt)
+            search_name = ep_obj.airdate.strftime(date_fmt)
         else:
             search_name = '{type} {number}'.format(
                 type=season,
