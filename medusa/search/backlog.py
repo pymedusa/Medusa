@@ -92,10 +92,10 @@ class BacklogSearcher(object):
         from_date = datetime.date.fromordinal(1)
 
         if not which_shows and self.force:
-            logger.log(u"Running limited backlog search on missed episodes from last {0} days".format(app.BACKLOG_DAYS))
+            logger.log(u'Running limited backlog search on missed episodes from last {0} days'.format(app.BACKLOG_DAYS))
             from_date = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
         else:
-            logger.log(u"Running full backlog search on missed episodes for selected shows")
+            logger.log(u'Running full backlog search on missed episodes for selected shows')
 
         # go through non air-by-date shows and see if they need any episodes
         for cur_show in show_list:
