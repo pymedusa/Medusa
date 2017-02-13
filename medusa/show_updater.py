@@ -102,12 +102,13 @@ class ShowUpdater(object):
                         continue
 
                 # If the current show is not in the list, move on to the next.
-                # Only do this for shows, that's have been recently updated (the < 12 weeks).
+                # Only do this for shows, if the indexer has had a successful update run withing the lasst 12 weeks.
                 if all([isinstance(indexer_updated_shows[show.indexer], list),
                         show.indexerid not in indexer_updated_shows.get(show.indexer)]):
-                    logger.debug(u'Skipping show {show}. As this indexer had a recent update but the show is not '
-                                 u'in the indexers {indexer_name} list with updated shows', show=show.name,
-                                 indexer_name=indexerApi(show.indexer).name)
+                    logger.debug(u'Skipping show update for {show}. As the show is not '
+                                 u'in the indexers {indexer_name} list with updated '
+                                 u'shows within the last {weeks} weeks.', show=show.name,
+                                 indexer_name=indexerApi(show.indexer).name, weeks=update_max_weeks)
                     continue
 
             # These are the criteria for performing a full show refresh.
