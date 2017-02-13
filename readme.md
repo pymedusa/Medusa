@@ -11,7 +11,7 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
  - Manual search for subtitles (useful when subtitle has low score because of typo in filename or alternative title)
  - Uses 'guessit' library to parse and enrich existing info (more precise than regexes)
  - Improved Anime shows support
- - Faster DailySearcher as we only process new items. Already processed items are discarded.
+ - Faster DailySearcher|Backlog|Find propers as we only process new items. Already processed items are discarded.
  - Option to clean Kodi library when replacing existing files
  - Better quality explanations and consistent quality code in all threads
  - See on the fly if your backlogged episodes will be increased/reduced while changing qualities
