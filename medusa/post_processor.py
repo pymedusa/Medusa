@@ -160,6 +160,83 @@ class PostProcessor(object):
                       (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
+    def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False, subfolders=False):
+        """
+        For a given file path search for files in the same directory and return their absolute paths.
+
+        :param filepath: The file to check for associated files
+        :param base_name_only: list only files with the same basename
+        :param subtitles_only: list only subtitles
+        :param subfolders: check subfolders while listing files
+        :return: A list containing all files which are associated to the given file
+        """
+        files = self._search_files(filepath, subfolders=subfolders, base_name_only=base_name_only)
+
+        # file path to the video file that is being processed (without extension)
+        processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
+
+        processed_names = (processed_file_name,)
+        processed_names += filter(None, (self._rar_basename(filepath, files),))
+
+        # loop through all the files in the folder, and check if they are the same name
+        # even when the cases don't match
+        filelist = []
+        for found_file in files:
+
+            file_name = os.path.basename(found_file).lower()
+
+            if file_name.startswith(processed_names):
+
+                # only add subtitles with valid languages to the list
+                if is_subtitle(found_file):
+                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
+                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+                    if not language:
+                        continue
+
+                filelist.append(found_file)
+
+        file_path_list = []
+        extensions_to_delete = []
+        for associated_file_path in filelist:
+            # Exclude the video file we are post-processing
+            if associated_file_path == filepath:
+                continue
+
+            # Exclude .rar files from associated list
+            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
+                continue
+
+            # Exlude non-subtitle files with the 'only subtitles' option
+            if subtitles_only and not is_subtitle(associated_file_path):
+                continue
+
+            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
+            if app.MOVE_ASSOCIATED_FILES:
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                found_extension = helpers.get_extension(associated_file_path)
+                if found_extension and found_extension not in allowed_extensions:
+                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
+                              (found_extension.upper()), logger.DEBUG)
+                    if os.path.isfile(associated_file_path):
+                        extensions_to_delete.append(associated_file_path)
+
+            if os.path.isfile(associated_file_path):
+                file_path_list.append(associated_file_path)
+
+        if file_path_list:
+            self._log(u'Found the following associated files for {0}: {1}'.format
+                      (filepath, file_path_list), logger.DEBUG)
+            if extensions_to_delete:
+                # Rebuild the 'file_path_list' list only with the extensions the user allows
+                file_path_list = [associated_file for associated_file in file_path_list
+                                  if associated_file not in extensions_to_delete]
+                self._delete(extensions_to_delete)
+        else:
+            self._log(u'No associated files for {0} were found during this pass'.format(filepath), logger.DEBUG)
+
+        return file_path_list
+
     @staticmethod
     def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=False):
         """
@@ -182,7 +259,7 @@ class PostProcessor(object):
 
         if base_name_only:
             if os.path.isfile(path):
-                new_pattern = os.path.basename(path).rpartition('.')[0]
+                new_pattern = os.path.splitext(os.path.basename(path))[0]
             elif os.path.isdir(path):
                 new_pattern = os.path.split(directory)[1]
             else:
@@ -210,93 +287,16 @@ class PostProcessor(object):
 
         return found_files
 
-    def list_associated_files(self, file_path, base_name_only=False, subtitles_only=False, subfolders=False):
-        """
-        For a given file path search for files in the same directory and return their absolute paths.
-
-        :param file_path: The file to check for associated files
-        :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
-        :param subtitles_only: list only subtitles
-        :param subfolders: check subfolders while listing files
-        :return: A list containing all files which are associated to the given file
-        """
-        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
-
-        # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
-
-        processed_names = (processed_file_name,)
-        processed_names += filter(None, (self.rar_basename(file_path, file_list),))
-
-        # loop through all the files in the folder, and check if they are the same name
-        # even when the cases don't match
-        filelist = []
-
-        for found_file in file_list:
-
-            file_name = os.path.basename(found_file).lower()
-
-            if file_name.startswith(processed_names):
-
-                # only add subtitles with valid languages to the list
-                if is_subtitle(found_file):
-                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
-                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
-                    if not language:
-                        continue
-
-                filelist.append(found_file)
-
-        file_path_list = []
-        extensions_to_delete = []
-        for associated_file_path in filelist:
-            # Exclude the video file we are post-processing
-            if associated_file_path == file_path:
-                continue
-
-            # Exlude non-subtitle files with the 'only subtitles' option
-            if subtitles_only and not is_subtitle(associated_file_path):
-                continue
-
-            # Exclude .rar files from associated list
-            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
-                continue
-
-            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
-            if app.MOVE_ASSOCIATED_FILES:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                found_extension = helpers.get_extension(associated_file_path)
-                if found_extension and found_extension not in allowed_extensions:
-                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
-                              (found_extension.upper()), logger.DEBUG)
-                    if os.path.isfile(associated_file_path):
-                        extensions_to_delete.append(associated_file_path)
-
-            if os.path.isfile(associated_file_path):
-                file_path_list.append(associated_file_path)
-
-        if file_path_list:
-            self._log(u'Found the following associated files for {0}: {1}'.format
-                      (file_path, file_path_list), logger.DEBUG)
-            if extensions_to_delete:
-                # Rebuild the 'file_path_list' list only with the extensions the user allows
-                file_path_list = [associated_file for associated_file in file_path_list
-                                  if associated_file not in extensions_to_delete]
-                self._delete(extensions_to_delete)
-        else:
-            self._log(u'No associated files for {0} were found during this pass'.format(file_path), logger.DEBUG)
-
-        return file_path_list
-
     @staticmethod
-    def rar_basename(filepath, filelist):
+    def _rar_basename(filepath, files):
+        """Return the basename of the source rar archive if found."""
         videofile = os.path.basename(filepath)
-        rars = (x for x in filelist if rarfile.is_rarfile(x))
+        rars = (x for x in files if rarfile.is_rarfile(x))
 
         for rar in rars:
             content = rarfile.RarFile(rar).namelist()
             if videofile in content:
-                return os.path.basename(rar).rpartition('.')[0].lower()
+                return os.path.splitext(os.path.basename(rar))[0]
 
     def _delete(self, file_path, associated_files=False):
         """
@@ -373,7 +373,7 @@ class PostProcessor(object):
             return
 
         # base name with file path (without extension and ending dot)
-        old_base_name = file_path.rpartition('.')[0]
+        old_base_name = os.path.splitext(file_path)[0]
         old_base_name_length = len(old_base_name)
 
         for cur_file_path in file_list:
