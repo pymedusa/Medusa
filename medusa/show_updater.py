@@ -201,7 +201,7 @@ class ShowUpdater(object):
             for indexer in set([show.indexer for show in refresh_shows] + [s[1].indexer for s in season_updates]):
                 indexer_api = indexerApi(indexer)
                 self.update_cache.set_last_indexer_update(indexer_api.name)
-                logger.info(u'Updated lastUpdate ts for {indexer_name}', indexer_name=indexer_api.name)
+                logger.info(u'Updated lastUpdate timestamp for {indexer_name}', indexer_name=indexer_api.name)
             logger.info(u'Completed scheduling updates on shows')
         else:
             logger.info(u'Completed but there was nothing to update')
