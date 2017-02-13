@@ -44,7 +44,22 @@ $(document).ready(function() {
                   '&allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered
         $.getJSON(url, function(data) {
-            $('#backlogged_episodes').text('Currently you have ' + data[1] + ' backlogged episodes. With this change you would have ' + data[0] + ' backlogged episodes');
+            var new_backlogged = parseInt(data[0])
+            var current_backlogged = parseInt(data[1])
+            var variation = Math.abs(new_backlogged - current_backlogged)
+            var html =  'Currently you have <b>' + current_backlogged + '</b> backlogged episodes.<br>'
+            if (new_backlogged == -1 || current_backlogged == -1) {
+                html = 'No qualities selected'
+            } else if (new_backlogged === current_backlogged) {
+                html += 'This change won\'t affect your backlogged episodes'
+            } else if (new_backlogged > current_backlogged) {
+                html += '<br><b>WARNING</b>: your backlogged episodes will increase in <b>' + variation + '</b>'
+                html+= '.<br> Total new backlogged: <font size="5">' + new_backlogged + '</font>'
+            } else {
+                html += 'Your backlogged episodes will decrease in <b>' + variation + '</b>'
+                html+= '.<br> Total new backlogged: <font size="5">' + new_backlogged + '</font>'
+            }
+            $('#backlogged_episodes').html(html);
         });
     }
 
