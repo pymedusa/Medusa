@@ -165,8 +165,8 @@
                                 <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
                             % endif
                             % endif
-                            % if 'plot' in show.imdb_info:
-                                <tr><td class="showLegend">Plot: </td><td>${str(show.imdb_info['plot'])}</td></tr>
+                            % if show.plot:
+                                <tr><td class="showLegend">Plot: </td><td>${str(show.plot)}</td></tr>
                             % endif
                             % if show.network and show.airs:
                                 <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>

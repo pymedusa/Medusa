@@ -1164,6 +1164,8 @@ class Series(TV):
             if self.is_anime:
                 self.release_groups = BlackAndWhiteList(self.indexerid)
 
+            self.plot = sql_results[0][b'plot']
+
             # Load external id's from indexer_mappings table.
             self._load_externals_from_db()
 
@@ -1231,6 +1233,8 @@ class Series(TV):
             self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
         self.status = getattr(indexed_show, 'status', 'Unknown')
+
+        self.plot = getattr(indexed_show, 'overview', '') or self.get_plot()
 
         self._save_externals_to_db()
 

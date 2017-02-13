@@ -528,4 +528,8 @@ class AddPlot(AddInfoHash):
         logger.log(u"Adding column plot in imdb_info")
         if not self.hasColumn("imdb_info", "plot"):
             self.addColumn("imdb_info", "plot", 'TEXT', None)
+
+        logger.log(u"Adding column plot in tv_show")
+        if not self.hasColumn("tv_shows", "plot"):
+            self.addColumn("tv_shows", "plot", 'TEXT', None)
         # self.inc_minor_version()
