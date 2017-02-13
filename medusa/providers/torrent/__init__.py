@@ -9,7 +9,6 @@ from .html import (
     cpasbien,
     danishbits,
     elitetorrent,
-    extratorrent,
     freshontv,
     gftracker,
     hdspace,
@@ -48,6 +47,7 @@ from .json import (
 )
 
 from .rss import (
+    extratorrent,
     nyaatorrents,
     rsstorrent,
     shazbat,
