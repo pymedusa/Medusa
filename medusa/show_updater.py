@@ -67,7 +67,7 @@ class ShowUpdater(object):
                 t = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
                 logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                               u'connectivity issues. While trying to look for showupdates on show: {show}',
+                               u'connectivity issues. While trying to look for show updates on show: {show}',
                                indexer_name=indexerApi(show.indexer).name, show=show.name)
                 continue
 
@@ -86,7 +86,7 @@ class ShowUpdater(object):
                                                                                         update_max_weeks)
                     except IndexerUnavailable:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                       u'connectivity issues while trying to look for showupdates on show: {show}',
+                                       u'connectivity issues while trying to look for show updates on show: {show}',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name)
                         continue
                     except IndexerException as e:
@@ -102,7 +102,7 @@ class ShowUpdater(object):
                         continue
 
                 # If the current show is not in the list, move on to the next.
-                # Only do this for shows, if the indexer has had a successful update run withing the lasst 12 weeks.
+                # Only do this for shows, if the indexer has had a successful update run within the last 12 weeks.
                 if all([isinstance(indexer_updated_shows[show.indexer], list),
                         show.indexerid not in indexer_updated_shows.get(show.indexer)]):
                     logger.debug(u'Skipping show update for {show}. As the show is not '
