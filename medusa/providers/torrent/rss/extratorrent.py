@@ -86,7 +86,7 @@ class ExtraTorrentProvider(TorrentProvider):
         # Search Params
         search_params = {
             'cid': 8,  # Category: TV
-            'type': 'last',
+            'type': 'today',
         }
 
         for mode in search_strings:
