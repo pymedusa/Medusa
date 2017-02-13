@@ -691,13 +691,16 @@ def save_subtitles(video, subtitles, single=False, directory=None, encoding=None
 
         # save content as is or in the specified encoding
         logger.info('Saving %r to %r', subtitle, subtitle_path)
-        if encoding is None:
-            with io.open(subtitle_path, 'wb') as f:
-                f.write(subtitle.content)
-        else:
-            with io.open(subtitle_path, 'w', encoding=encoding) as f:
-                f.write(subtitle.text)
-        saved_subtitles.append(subtitle)
+        try:
+            if encoding is None:
+                with io.open(subtitle_path, 'wb') as f:
+                       f.write(subtitle.content)
+            else:
+                with io.open(subtitle_path, 'w', encoding=encoding) as f:
+                    f.write(subtitle.text)
+            saved_subtitles.append(subtitle)
+        except OSError as error:
+            logger.warning('Can\'t save subtitle %r. Error: %r', subtitle, error)
 
         # check single
         if single:
