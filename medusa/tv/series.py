@@ -149,6 +149,7 @@ class Series(TV):
         self.exceptions = set()
         self.externals = {}
         self._cached_indexer_api = None
+        self.plot = None
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
@@ -1284,7 +1285,8 @@ class Series(TV):
             'country_codes': '|'.join(imdb_obj.get('country codes', '')),
             'rating': imdb_obj.get('rating', ''),
             'votes': imdb_obj.get('votes', ''),
-            'last_update': datetime.date.today().toordinal()
+            'last_update': datetime.date.today().toordinal(),
+            'plot': imdb_obj.get('plot', '')[0],
         }
 
         self.externals['imdb_id'] = self.imdb_id
@@ -1680,6 +1682,7 @@ class Series(TV):
             ('classification', self.imdb_info.get('certificates')),
             ('cache', OrderedDict([])),
             ('countries', self.get_countries()),
+            ('plot', self.get_plot()),
             ('config', OrderedDict([
                 ('location', self.raw_location),
                 ('qualities', OrderedDict([
@@ -1751,6 +1754,10 @@ class Series(TV):
     def get_countries(self):
         """Return country codes."""
         return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
+
+    def get_plot(self):
+        """Return show plot."""
+        return self.imdb_info.get('plot', '')
 
     def get_allowed_qualities(self):
         """Return allowed qualities."""
