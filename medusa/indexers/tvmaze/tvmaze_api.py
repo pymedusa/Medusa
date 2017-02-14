@@ -441,20 +441,20 @@ class TVmaze(BaseIndexer):
 
         return True
 
-    def _get_all_updates(self, tvmaze_id=None, start_date=None, end_date=None):
+    def _get_all_updates(self, start_date=None, end_date=None):
         """Retrieve all updates (show,season,episode) from TVMaze."""
         results = []
         try:
             updates = self.tvmaze_api.show_updates()
         except (ShowIndexError, UpdateNotFound):
-            return False
+            return results
         except BaseError as e:
             logger.warning('Getting show updates failed. Cause: %s', e)
-            return False
+            return results
 
         if getattr(updates, 'updates', None):
-            for show_id, update_ts in updates.updates.iteritems():
-                if start_date < update_ts < (end_date or time()):
+            for show_id, update_ts in updates.updates.items():
+                if start_date < update_ts.seconds_since_epoch < (end_date or int(time())):
                     results.append(int(show_id))
 
         return results

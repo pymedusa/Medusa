@@ -514,7 +514,7 @@ class Tmdb(BaseIndexer):
 
         return set(results)
 
-    def _get_all_updates(self, sid, start_date=None, end_date=None):
+    def _get_all_updates(self, start_date=None, end_date=None):
         """"Retrieve all updates (show,season,episode) from TMDB."""
         results = []
         page = 1
