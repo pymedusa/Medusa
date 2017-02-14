@@ -139,14 +139,14 @@ class NameParser(object):
 
         elif result.show.is_anime and result.is_anime:
             logger.debug("Scene numbering enabled show '{name}' is anime", name=result.show.name)
-            scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
+            result.scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
 
                 if result.show.is_scene:
                     a = scene_numbering.get_indexer_absolute_numbering(result.show.indexerid,
                                                                        result.show.indexer, absolute_episode,
-                                                                       True, scene_season)
+                                                                       True, result.scene_season)
 
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                 logger.debug("Scene numbering enabled show '{name}' using indexer for absolute {absolute}: {ep}",
@@ -317,6 +317,7 @@ class ParseResult(object):
         self.original_name = original_name
         self.series_name = series_name
         self.season_number = season_number
+        self.scene_season = None
         self.episode_numbers = episode_numbers if episode_numbers else []
         self.ab_episode_numbers = ab_episode_numbers if ab_episode_numbers else []
         self.quality = self.get_quality(guess)
