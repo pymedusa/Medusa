@@ -14,12 +14,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Provider code for Extratorrent."""
+"""Provider code for ExtraTorrent."""
 from __future__ import unicode_literals
 
 import traceback
 
 from medusa import (
+    app,
     logger,
     tv,
 )
@@ -31,6 +32,7 @@ from medusa.helper.common import (
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
 import validators
 
 
@@ -58,7 +60,7 @@ class ExtraTorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=30)  # Only poll ExtraTorrent every 30 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -73,21 +75,18 @@ class ExtraTorrentProvider(TorrentProvider):
 
         if self.custom_url:
             if not validators.url(self.custom_url):
-                logger.log('Invalid custom url: {0}'.format(self.custom_url), logger.WARNING)
+                logger.log('Invalid custom URL: {0}'.format(self.custom_url), logger.WARNING)
                 return results
             self.url = self.custom_url
 
         self.urls = {
-            'search': urljoin(self.url, 'search/'),
-            'rss': urljoin(self.url, 'view/today/TV.html'),
+            'rss': urljoin(self.url, 'rss.xml'),
         }
 
         # Search Params
         search_params = {
-            'search': '',
-            'new': 1,
-            'x': 0,
-            'y': 0,
+            'cid': 8,  # Category: TV
+            'type': 'today',
         }
 
         for mode in search_strings:
@@ -96,15 +95,12 @@ class ExtraTorrentProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
+                    search_params['type'] = 'search'
                     search_params['search'] = search_string
                     logger.log('Search string: {search}'.format
                                (search=search_string), logger.DEBUG)
-                    search_url = self.urls['search']
-                else:
-                    search_params = None
-                    search_url = self.urls['rss']
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.get_url(self.urls['rss'], params=search_params, returns='response')
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
@@ -123,44 +119,32 @@ class ExtraTorrentProvider(TorrentProvider):
         """
         items = []
 
-        with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='tl')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+        with BS4Parser(data, 'html.parser') as xml:
 
-            # Continue only if at least one release is found
-            if len(torrent_rows) < 3 or (torrent_rows == 3 and torrent_rows[2].get_text() == 'No torrents'):
+            elements = xml.find_all('item')
+            if not elements:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
-            # RSS search has one less column
-            decrease = 1
-
-            # Avoid parsing of 'related torrents'
-            if mode != 'RSS':
-                h2s = html.find_all('h2')
-                if len(h2s) > 2 and h2s[1].get_text() == 'Related torrents':
-                    logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
-                    return items
-
-                # Don't decrease column
-                decrease = 0
-
-            # Skip column headers
-            for result in torrent_rows[2:]:
+            for element in elements:
                 try:
-                    cells = result('td')
-
-                    torrent_info = cells[0].find('a')
-                    if not torrent_info:
+                    title = element.title.get_text()
+                    download_url = element.magneturi.get_text()
+                    if not all([title, download_url]):
                         continue
 
-                    # Removes 'Download ' in the beginning and ' torrent' in the end
-                    title = torrent_info.get('title')[9:-8]
-                    download_url = urljoin(self.url, torrent_info.get('href').replace
-                                           ('torrent_download', 'download'))
+                    # Add custom trackers to the magnet link
+                    download_url += self._custom_trackers
 
-                    seeders = try_int(cells[5 - decrease].get_text(), 1)
-                    leechers = try_int(cells[6 - decrease].get_text())
+                    # Use the torrent link extratorrent provides when the client
+                    # is set to "blackhole", to avoid relying on 3rd parties for
+                    # torrents. We want to use magnets instead if connecting
+                    # directly to clients so that proxies work.
+                    if app.TORRENT_METHOD == 'blackhole':
+                        download_url = element.enclosure.get('url')
+
+                    seeders = try_int(element.seeders.get_text())
+                    leechers = try_int(element.leechers.get_text())
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -170,8 +154,7 @@ class ExtraTorrentProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[4 - decrease].get_text().replace('\xa0', ' ')
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(element.size.get_text()) or -1
 
                     item = {
                         'title': title,
@@ -181,6 +164,7 @@ class ExtraTorrentProvider(TorrentProvider):
                         'leechers': leechers,
                         'pubdate': None,
                     }
+
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
                                    (title, seeders, leechers), logger.DEBUG)
