@@ -1211,8 +1211,9 @@ class PostProcessor(object):
         except Exception:
             logger.log(u'Could not create/update meta files. Continuing with post-processing...')
 
-        # log it to history
-        history.logDownload(ep_obj, self.file_path, new_ep_quality, self.release_group, new_ep_version)
+        # log it to history episode and related episodes (multi-episode for example)
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
+            history.logDownload(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
         # If any notification fails, don't stop post_processor
         try:
