@@ -44,7 +44,7 @@ class BacklogSearcher(object):
     def __init__(self):
 
         self._last_backlog = self._get_last_backlog()
-        self.cycleTime = app.BACKLOG_FREQUENCY / 60 / 24
+        self.cycleTime = app.BACKLOG_FREQUENCY / 60.0 / 24
         self.lock = threading.Lock()
         self.amActive = False
         self.amPaused = False
