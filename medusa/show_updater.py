@@ -118,7 +118,7 @@ class ShowUpdater(object):
                 # no entry in lastUpdate, or last update was too long ago,
                 # let's refresh the show for this indexer
                 logger.debug(u'Trying to update {show}. Your lastUpdate for {indexer_name} is older then {weeks} weeks,'
-                             u" or the indexer doesn't support per season updates. doing a full update.",
+                             u" or the indexer doesn't support per season updates. Doing a full update.",
                              show=show.name, indexer_name=indexerApi(show.indexer).name,
                              weeks=update_max_weeks)
                 refresh_shows.append(show)
