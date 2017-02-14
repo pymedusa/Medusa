@@ -164,6 +164,30 @@ class TestTVShow(Series):
         'manually_searched': False,
         'expected': True
     },
+    {  # p18: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred set: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV, Quality.SDTV],  # Allowed Qualities
+                                                                 [Quality.HDBLURAY])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
+    {  # p19: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred not set: no
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV, Quality.SDTV],  # Allowed Qualities
+                                                                 [])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': False
+    },
+    {  # p20: ´SNATCHED BEST but this quality is no longer wanted. Preferred not set: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
+                                                                 [])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_search(p):
     """Run the test."""
