@@ -242,7 +242,7 @@ class ShowQueue(generic_queue.GenericQueue):
         queue_item_obj = QueueItemRemove(show=show, full=full)
         self.add_item(queue_item_obj)
 
-        # Show removal has been queued, let's updaste the app.RECENTLY_DELETED global, to keep track of it
+        # Show removal has been queued, let's update the app.RECENTLY_DELETED global, to keep track of it
         app.RECENTLY_DELETED.update(['{0}{1}'.format(indexerConfig[show.indexer].get('identifier'), show.indexerid)])
 
         return queue_item_obj
