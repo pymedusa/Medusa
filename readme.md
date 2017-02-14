@@ -15,8 +15,8 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
  - Option to clean Kodi library when replacing existing files
  - Better quality explanations and consistent quality code in all threads
  - See on the fly if your backlogged episodes will be increased/reduced while changing qualities
- - Postpone PostProcessing until Medusa downloads wanted subtitle (usefull to only show media if subtitle available)
- - Clean any left overs files/folders if media file get deleted
+ - Postpone Post Processing until Medusa downloads wanted subtitle (useful to only show media if subtitle available)
+ - Clean up any leftover files/folders if media file is deleted
  - Nightly showupdater updates only the season of the show, which has been updated by the indexer, for tvdb and tmdb.
 
  #### Features
