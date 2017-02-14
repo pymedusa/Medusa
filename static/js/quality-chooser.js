@@ -54,10 +54,10 @@ $(document).ready(function() {
                 html += 'This change won\'t affect your backlogged episodes'
             } else if (new_backlogged > current_backlogged) {
                 html += '<br><b>WARNING</b>: your backlogged episodes will increase in <b>' + variation + '</b>'
-                html+= '.<br> Total new backlogged: <font size="5">' + new_backlogged + '</font>'
+                html+= '.<br> Total new backlogged: <b>' + new_backlogged + '</b>'
             } else {
                 html += 'Your backlogged episodes will decrease in <b>' + variation + '</b>'
-                html+= '.<br> Total new backlogged: <font size="5">' + new_backlogged + '</font>'
+                html+= '.<br> Total new backlogged: <b>' + new_backlogged + '</b>'
             }
             $('#backlogged_episodes').html(html);
         });
