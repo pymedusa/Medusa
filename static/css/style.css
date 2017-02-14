@@ -1376,9 +1376,9 @@ ul.tags {
 ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
-    padding: 3px 4px 3px 25px;
+    padding: 2px 4px 2px 25px;
     background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
-    border-radius: 3px;
+    border-radius: 1px;
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
@@ -2991,7 +2991,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-bottom-color: rgb(179, 179, 179);
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
-    border-radius: 4px;
+    border-radius: 1px;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
     filter: progid:dximagetransform.microsoft.gradient(enabled=false);
     *zoom: 1;
@@ -3066,7 +3066,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     line-height: normal;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
-    border-radius: 5px;
+    border-radius: 1px;
 }
 
 .btn-large [class^="icon-"] {
@@ -3298,7 +3298,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     padding: 1px 5px;
     font-size: 12px;
     line-height: 1.5;
-    border-radius: 3px;
+    border-radius: 1px;
 }
 
 @media (min-width: 768px) {
