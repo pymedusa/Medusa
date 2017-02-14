@@ -33,6 +33,7 @@ from .helper.exceptions import (
 from .helper.externals import check_existing_shows
 from .helpers import chmod_as_parent, delete_empty_folders, get_showname_from_indexer, make_dir
 from .indexers.indexer_api import indexerApi
+from .indexers.indexer_config import indexerConfig
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
                                           IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
                                           IndexerShowNotFoundInLanguage)
@@ -242,7 +243,7 @@ class ShowQueue(generic_queue.GenericQueue):
         self.add_item(queue_item_obj)
 
         # Show removal has been queued, let's updaste the app.RECENTLY_DELETED global, to keep track of it
-        app.RECENTLY_DELETED.update([show.indexerid])
+        app.RECENTLY_DELETED.update(['{0}{1}'.format(indexerConfig[show.indexer].get('identifier'), show.indexerid)])
 
         return queue_item_obj
 

@@ -214,9 +214,8 @@ class Series(TV):
         Can be used to suppress error messages such as attempting to use the
         show object just after being removed.
         """
-        # TODO: Fix for multi-indexer.
-        # https://github.com/pymedusa/Medusa/issues/2073
-        return self.indexerid in app.RECENTLY_DELETED
+        # Uses same pattern as API v2: tvdb1234 or tvmaze4567
+        return '{0}{1}'.format(indexerConfig[self.indexer].get('identifier'), self.indexerid) in app.RECENTLY_DELETED
 
     @property
     def is_scene(self):
