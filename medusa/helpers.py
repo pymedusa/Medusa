@@ -1734,21 +1734,21 @@ def is_info_hash_processed(info_hash):
 
 
 def title_to_imdb(title, start_year, imdb_api=None):
-    """Get the IMDb ID from a title."""
+    """Get the IMDb ID from a show title and its start year."""
     if imdb_api is None:
         imdb_api = imdbpie.Imdb()
 
-    imdb_results = imdb_api.search_for_title(title)
+    titles = imdb_api.search_for_title(title)
 
-    if len(imdb_results) == 1:
-        return imdb_results[0]['imdb_id']
+    if len(titles) == 1:
+        return titles[0]['imdb_id']
 
     title = title.lower()
     # ImdbPie returns the year as string
     start_year = str(start_year)
 
     title_matches = []
-    for candidate in imdb_results:
+    for candidate in titles:
         # This check should be made more reliable
         if candidate['title'].lower() == title:
             if candidate['year'] == start_year:
