@@ -6,6 +6,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 		} else {
 			$(this).html("..show less");
 		}
+		moveSummaryBackground();
 	});
 	
     // adjust the summary background position and size on page load and resize
