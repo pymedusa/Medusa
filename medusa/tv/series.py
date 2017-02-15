@@ -1899,4 +1899,6 @@ class Series(TV):
                     new_backlogged += 1
                 if Quality.should_search(ep_obj.status, self, ep_obj.manually_searched)[0]:
                     existing_backlogged += 1
+        else:
+            new_backlogged = existing_backlogged = -1
         return BackloggedEpisodes(new_backlogged, existing_backlogged)

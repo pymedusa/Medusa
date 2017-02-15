@@ -83,8 +83,9 @@ class ShowHandler(BaseRequestHandler):
                 allowed_qualities = map(int, allowed_qualities.split(',')) if allowed_qualities else []
                 preferred_qualities = self._parse(self.get_argument('preferred', default=None), str)
                 preferred_qualities = map(int, preferred_qualities.split(',')) if preferred_qualities else []
-                data = tv_show.get_backlogged_episodes(allowed_qualities=allowed_qualities,
-                                                       preferred_qualities=preferred_qualities)
+                new, existing = tv_show.get_backlogged_episodes(allowed_qualities=allowed_qualities,
+                                                                preferred_qualities=preferred_qualities)
+                data = {'new': new, 'existing': existing}
             elif query == 'queue':
                 action, message = app.show_queue_scheduler.action.get_queue_action(tv_show)
                 data = {

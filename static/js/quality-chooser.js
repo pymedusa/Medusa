@@ -37,14 +37,27 @@ $(document).ready(function() {
         $('#allowed_qualities :selected').each(function(i, selected){
             selectedAllowed[i] = $(selected).val();
         });
-        var url = '/api/v2/' +
-                  'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
+        var url = 'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
                   '/backlogged' +
-                  '?api_key=' + apiKey +
-                  '&allowed=' + selectedAllowed +
+                  '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered
-        $.getJSON(url, function(data) {
-            $('#backlogged_episodes').text('Currently you have ' + data[1] + ' backlogged episodes. With this change you would have ' + data[0] + ' backlogged episodes');
+        api.get(url).then(function(response) {
+            var newBacklogged = response.data.new
+            var existingBacklogged = response.data.existing
+            var variation = Math.abs(newBacklogged - existingBacklogged)
+            var html =  'Currently you have <b>' + existingBacklogged + '</b> backlogged episodes.<br>'
+            if (newBacklogged == -1 || existingBacklogged == -1) {
+                html = 'No qualities selected'
+            } else if (newBacklogged === existingBacklogged) {
+                html += 'This change won\'t affect your backlogged episodes'
+            } else if (newBacklogged > existingBacklogged) {
+                html += '<br><b>WARNING</b>: your backlogged episodes will increase in <b>' + variation + '</b>'
+                html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
+            } else {
+                html += 'Your backlogged episodes will decrease in <b>' + variation + '</b>'
+                html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
+            }
+            $('#backlogged_episodes').html(html);
         });
     }
 
