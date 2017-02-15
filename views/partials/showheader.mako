@@ -155,17 +155,17 @@
                         <table class="summaryTable pull-left">
 
 							% if show.plot:
-								<tr><td colspan=2>
-								<div style="padding-bottom:15px"><i>
+								<tr><td colspan=2 style="padding-bottom:15px"><i>
 								% if len(show.plot) < 250:
-									${str(show.plot)}
+									<div>${str(show.plot)}</div>
 								% else:
-									${str(show.plot)[0:250]}..<img src="images/info32.png" width="16" height="16" alt="" id="testa" />
+									<div>${str(show.plot[0:250])}<span style="display:none;">${str(show.plot[250:len(show.plot)])}</span>
+									<span class="imdbPlot" style="color:#6ae;cursor:pointer">show more..</span>
+									</div>
 								% endif
-								</i></div>
-							</td></tr>
-                            % endif
-					
+									</td></tr>
+							% endif
+							
 							<% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:

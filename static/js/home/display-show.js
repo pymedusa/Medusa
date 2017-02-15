@@ -1,4 +1,13 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
+	$('.imdbPlot').click(function() {
+		$(this).prev('span').toggle();
+		if ($(this).html() === "..show less") {
+			$(this).html("..show more");
+		} else {
+			$(this).html("..show less");
+		}
+	});
+	
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
         var height = $("#summary").height() + 10;
