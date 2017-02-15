@@ -160,7 +160,7 @@
 								% if len(show.plot) < 250:
 									${str(show.plot)}
 								% else:
-									${str(show.plot)}..<img src="images/info32.png" width="16" height="16" alt="" id="testa" />
+									${str(show.plot)[0:250]}..<img src="images/info32.png" width="16" height="16" alt="" id="testa" />
 								% endif
 								</i></div>
 							</td></tr>
