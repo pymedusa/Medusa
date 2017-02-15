@@ -5,7 +5,6 @@ import copy
 import datetime
 import glob
 import os.path
-import re
 import shutil
 import stat
 import traceback
@@ -86,6 +85,7 @@ from medusa.tv.base import TV
 from medusa.tv.episode import Episode
 
 import shutil_custom
+
 from six import text_type
 
 try:
