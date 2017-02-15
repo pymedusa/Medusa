@@ -37,27 +37,25 @@ $(document).ready(function() {
         $('#allowed_qualities :selected').each(function(i, selected){
             selectedAllowed[i] = $(selected).val();
         });
-        var url = '/api/v2/' +
-                  'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
+        var url = 'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
                   '/backlogged' +
-                  '?api_key=' + apiKey +
-                  '&allowed=' + selectedAllowed +
+                  '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered
-        $.getJSON(url, function(data) {
-            var new_backlogged = data[0]
-            var current_backlogged = data[1]
-            var variation = Math.abs(new_backlogged - current_backlogged)
-            var html =  'Currently you have <b>' + current_backlogged + '</b> backlogged episodes.<br>'
-            if (new_backlogged == -1 || current_backlogged == -1) {
+        api.get(url).then(function(response) {
+            var newBacklogged = response.data.new
+            var existingBacklogged = response.data.existing
+            var variation = Math.abs(newBacklogged - existingBacklogged)
+            var html =  'Currently you have <b>' + existingBacklogged + '</b> backlogged episodes.<br>'
+            if (newBacklogged == -1 || existingBacklogged == -1) {
                 html = 'No qualities selected'
-            } else if (new_backlogged === current_backlogged) {
+            } else if (newBacklogged === existingBacklogged) {
                 html += 'This change won\'t affect your backlogged episodes'
-            } else if (new_backlogged > current_backlogged) {
+            } else if (newBacklogged > existingBacklogged) {
                 html += '<br><b>WARNING</b>: your backlogged episodes will increase in <b>' + variation + '</b>'
-                html+= '.<br> Total new backlogged: <b>' + new_backlogged + '</b>'
+                html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
             } else {
                 html += 'Your backlogged episodes will decrease in <b>' + variation + '</b>'
-                html+= '.<br> Total new backlogged: <b>' + new_backlogged + '</b>'
+                html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
             }
             $('#backlogged_episodes').html(html);
         });
