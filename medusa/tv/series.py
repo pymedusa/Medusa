@@ -1886,7 +1886,7 @@ class Series(TV):
             logger.log(u'Could not parse episode status into a valid overview status: {status}'.format
                        (status=ep_status), logger.ERROR)
 
-    def get_backlogged_episodes(self, allowed_qualities, preferred_qualities):
+    def get_backlogged_episodes(self, allowed_qualities, preferred_qualities, include_wanted=False):
         """Check how many episodes will be backlogged when changing qualities."""
         BackloggedEpisodes = namedtuple('backlogged_episodes', ['new_backlogged', 'existing_backlogged'])
         new_backlogged = 0
@@ -1898,6 +1898,8 @@ class Series(TV):
             show_obj.quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
             ep_list = self.get_all_episodes()
             for ep_obj in ep_list:
+                if not include_wanted and ep_obj.status == WANTED:
+                    continue
                 if Quality.should_search(ep_obj.status, show_obj, ep_obj.manually_searched)[0]:
                     new_backlogged += 1
                 if Quality.should_search(ep_obj.status, self, ep_obj.manually_searched)[0]:
