@@ -687,7 +687,7 @@ class Home(WebRoot):
             'seasonExceptions': get_all_scene_exceptions(indexer_id),
             'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
                              for (tvdb_season_ep, anidb_season_ep)
-                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer))}
+                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False))}
         })
 
     def displayShow(self, show=None):
@@ -872,7 +872,7 @@ class Home(WebRoot):
             sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
             ep_cats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexerid, indexer, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=show_obj.name, controller='home', action='displayShow',
@@ -1258,7 +1258,7 @@ class Home(WebRoot):
             sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
             all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexer_id, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
             title=show_obj.name, controller='home', action='snatchSelection',
