@@ -90,6 +90,7 @@ from medusa.tv.base import TV
 from medusa.tv.episode import Episode
 
 import shutil_custom
+
 from six import text_type
 
 try:
@@ -214,8 +215,7 @@ class Series(TV):
         Can be used to suppress error messages such as attempting to use the
         show object just after being removed.
         """
-        # Uses same pattern as API v2: tvdb1234 or tvmaze4567
-        return '{0}{1}'.format(indexerConfig[self.indexer].get('identifier'), self.indexerid) in app.RECENTLY_DELETED
+        return self.slug in app.RECENTLY_DELETED
 
     @property
     def is_scene(self):
@@ -245,6 +245,16 @@ class Series(TV):
         if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
             return self._location
         raise ShowDirectoryNotFoundException(u'Show folder does not exist.')
+
+    @property
+    def indexer_name(self):
+        """Return the indexer name identifier. Example: tvdb."""
+        return indexerConfig[self.indexer].get('identifier')
+
+    @property
+    def slug(self):
+        """Return the slug name of the show. Example: tvdb1234."""
+        return '{name}{indexerid}'.format(name=self.indexer_name, indexerid=self.indexerid)
 
     @location.setter
     def location(self, value):
@@ -1659,7 +1669,7 @@ class Series(TV):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        indexer_name = indexerConfig[self.indexer]['identifier']
+        indexer_name = self.slug
         bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
         result = OrderedDict([
             ('id', OrderedDict([
