@@ -153,7 +153,20 @@
                 <div id="summary" class="col-md-12">
                     <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
                         <table class="summaryTable pull-left">
-                            <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
+
+							% if show.plot:
+								<tr><td colspan=2>
+								<div style="padding-bottom:15px"><i>
+								% if len(show.plot) < 250:
+									${str(show.plot)}
+								% else:
+									${str(show.plot)}..<img src="images/info32.png" width="16" height="16" alt="" id="testa" />
+								% endif
+								</i></div>
+							</td></tr>
+                            % endif
+					
+							<% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
                                 ${renderQualityPill(show.quality)}
@@ -164,9 +177,6 @@
                             % if preferred_qualities:
                                 <i>Preferred:</i> ${', '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
                             % endif
-                            % endif
-                            % if show.plot:
-                                <tr><td class="showLegend">Plot: </td><td>${str(show.plot)}</td></tr>
                             % endif
                             % if show.network and show.airs:
                                 <tr><td class="showLegend">Originally Airs: </td><td>${show.airs} ${"" if network_timezones.test_timeformat(show.airs) else "<font color='#FF0000'><b>(invalid Timeformat)</b></font>"} on ${show.network}</td></tr>
