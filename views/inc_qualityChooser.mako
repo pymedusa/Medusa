@@ -48,4 +48,9 @@ selected = None
     <div>
         <h5 class="red-text" id="backlogged_episodes"></h5>
     </div>
+    <div id="archive" style="display: none;">
+        <h5><b>Archive episodes with DOWNLOADED final status:</b></h5>
+        <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
+        <h5 id="archivedStatus"></h5>
+    </div>
 </div>

@@ -53,11 +53,33 @@ $(document).ready(function() {
             } else if (newBacklogged > existingBacklogged) {
                 html += '<br><b>WARNING</b>: your backlogged episodes will increase in <b>' + variation + '</b>'
                 html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
+                // Only show the archive action div if we have backlog increase
+                $('#archive').show();
             } else {
                 html += 'Your backlogged episodes will decrease in <b>' + variation + '</b>'
                 html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
             }
             $('#backlogged_episodes').html(html);
+        });
+    }
+
+    function archiveEpisodes() {
+        var url = 'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
+                  '/archiveEpisodes'
+        api.get(url).then(function(response) {
+            var archivedStatus = response.data.archived
+            var html = ''
+            if (archivedStatus) {
+                html = 'Successfuly archived episodes'
+                // Recalculate backlogged episodes after we archive it
+                backloggedEpisodes();
+            } else {
+                html = 'Not episodes needed to be archived'
+            }
+            $('#archivedStatus').html(html);
+            // Restore button text
+            $('#archiveEpisodes').val('Finished');
+            $('#archiveEpisodes').prop('disabled', true);
         });
     }
 
@@ -94,6 +116,13 @@ $(document).ready(function() {
             $('#quality_explanation').hide();
         }
     }
+
+    $('#archiveEpisodes').on('click', function(){
+        $.get($(this).attr('href'));
+        $(this).val('Archiving...');
+        archiveEpisodes();
+        return false;
+    });
 
     $('#qualityPreset').on('change', function() {
         setFromPresets($('#qualityPreset :selected').val());
