@@ -710,7 +710,7 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
         except Exception as e:
@@ -831,7 +831,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
         except Exception as e:
