@@ -232,7 +232,7 @@
                     </td>
                     <td class="col-name hidden-xs">
                     % if epResult["description"] != "" and epResult["description"] is not None:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${str(mappings.get(show.indexer).replace('_id', '')) + str(show.indexerid)}_${str(epResult["season"])}_${str(epResult["episode"])}" />
+                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${show.slug}_${str(epResult["season"])}_${str(epResult["episode"])}" />
                     % else:
                         <img src="images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
                     % endif
