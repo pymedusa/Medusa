@@ -1,10 +1,13 @@
 MEDUSA.common.init = function() {
     if (MEDUSA.config.fanartBackground) {
-        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
-        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-        $.backstretch(path);
-        $('.backstretch').css('top',backstretchOffset());
-        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+        var showID = $('#showID').attr('value');
+        if (showID) {
+            let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
+            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            $.backstretch(path);
+            $('.backstretch').css('top',backstretchOffset());
+            $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+        }
     }
 
     function backstretchOffset() {

@@ -16,7 +16,7 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
-<input type="hidden" id="showID" value="${choice(historyResults).show_id}" />
+<input type="hidden" id="showID" value="${choice(historyResults).show_id if historyResults else ''}" />
 <div class="row">
     <div class="col-md-6"> <!-- Title -->
         % if not header is UNDEFINED:

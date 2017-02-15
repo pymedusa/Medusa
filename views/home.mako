@@ -12,7 +12,7 @@
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
-<input type="hidden" id="showID" value="${choice(app.showList).indexerid}" />
+<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">
         <div class="pull-right">

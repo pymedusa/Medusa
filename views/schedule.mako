@@ -18,7 +18,7 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
-<input type="hidden" id="showID" value="${choice(results)['showid']}" />
+<input type="hidden" id="showID" value="${choice(results)['showid'] if results else ''}" />
 <div class="row">
     <div class="col-md-12">
         <h1 class="header">${header}</h1>
