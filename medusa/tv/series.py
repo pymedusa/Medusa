@@ -1254,7 +1254,7 @@ class Series(TV):
 
         imdb_obj = imdb_api.get_title_by_id(self.imdb_id)
 
-        # IMDb returned something we don't want
+        # If the show has no year, IMDb returned something we don't want
         if not imdb_obj.year:
             logger.log(u'{0}: IMDb returned invalid info for {1}, skipping update.'.format(
                 self.indexerid, self.imdbid), logger.DEBUG)
