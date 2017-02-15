@@ -19,9 +19,12 @@
 import os
 import traceback
 
-from imdb import _exceptions as imdb_exceptions
+from imdbpie.exceptions import HTTPError as IMDbHTTPError
+
 from six import binary_type, text_type
+
 from traktor import TraktException
+
 from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .black_and_white_list import BlackAndWhiteList
 from .common import WANTED
@@ -493,7 +496,7 @@ class QueueItemAdd(ShowQueueItem):
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
