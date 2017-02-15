@@ -412,7 +412,6 @@ class Cache(object):
 
     def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, parsed_result=None):
         """Add item into cache database."""
-
         try:
             # Use the already passed parsed_result of possible.
             parse_result = parsed_result or NameParser().parse(name)
