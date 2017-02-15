@@ -44,8 +44,8 @@ $(document).ready(function() {
                   '&allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered
         $.getJSON(url, function(data) {
-            var new_backlogged = parseInt(data[0])
-            var current_backlogged = parseInt(data[1])
+            var new_backlogged = data[0]
+            var current_backlogged = data[1]
             var variation = Math.abs(new_backlogged - current_backlogged)
             var html =  'Currently you have <b>' + current_backlogged + '</b> backlogged episodes.<br>'
             if (new_backlogged == -1 || current_backlogged == -1) {
