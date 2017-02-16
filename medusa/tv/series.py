@@ -5,7 +5,6 @@ import copy
 import datetime
 import glob
 import os.path
-import re
 import shutil
 import stat
 import traceback
@@ -16,11 +15,7 @@ from collections import (
 )
 from itertools import groupby
 
-from imdb import imdb
-from imdb._exceptions import (
-    IMDbDataAccessError,
-    IMDbParserError,
-)
+from imdbpie import imdbpie
 
 from medusa import (
     app,
@@ -90,6 +85,7 @@ from medusa.tv.base import TV
 from medusa.tv.episode import Episode
 
 import shutil_custom
+
 from six import text_type
 
 try:
@@ -1239,71 +1235,48 @@ class Series(TV):
         self._save_externals_to_db()
 
     def load_imdb_info(self):
-        """Load all required show information from IMDb with IMDbPY."""
-        imdb_api = imdb.IMDb()
+        """Load all required show information from IMDb with ImdbPie."""
+        imdb_api = imdbpie.Imdb()
 
-        try:
-            if not self.imdb_id:
-                # Somewhere title2imdbID started to return without 'tt'
-                self.imdb_id = imdb_api.title2imdbID(self.name, kind='tv series')
+        if not self.imdb_id:
+            self.imdb_id = helpers.title_to_imdb(self.name, self.start_year, imdb_api)
 
             if not self.imdb_id:
-                logger.log(u'{0}: Not loading show info from IMDb, '
-                           u"because we don't know its ID".format(self.indexerid))
+                logger.log(u"{0}: Not loading show info from IMDb, "
+                           u"because we don't know its ID.".format(self.indexerid))
                 return
 
-            # Make sure we only use one ID, and sanitize the imdb to include the tt.
-            self.imdb_id = self.imdb_id.split(',')[0]
-            if 'tt' not in self.imdb_id:
-                self.imdb_id = 'tt{imdb_id}'.format(imdb_id=self.imdb_id)
+        # Make sure we only use the first ID
+        self.imdb_id = self.imdb_id.split(',')[0]
 
-            logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
-                self.indexerid, self.imdb_id), logger.DEBUG)
+        logger.log(u'{0}: Loading show info from IMDb with ID: {1}'.format(
+            self.indexerid, self.imdb_id), logger.DEBUG)
 
-            # Remove first two chars from ID
-            imdb_obj = imdb_api.get_movie(self.imdb_id[2:])
+        imdb_obj = imdb_api.get_title_by_id(self.imdb_id)
 
-            # IMDb returned something we don't want
-            if not imdb_obj.get('year'):
-                logger.log(u'{0}: IMDb returned invalid info for {1}, skipping update.'.format(
-                    self.indexerid, self.imdb_id), logger.DEBUG)
-                return
-
-        except IMDbDataAccessError:
-            logger.log(u'{0}: Failed to obtain info from IMDb for: {1}'.format(
-                self.indexerid, self.name), logger.DEBUG)
-            return
-
-        except IMDbParserError:
-            logger.log(u'{0}: Failed to parse info from IMDb for: {1}'.format(
-                self.indexerid, self.name), logger.ERROR)
+        # If the show has no year, IMDb returned something we don't want
+        if not imdb_obj.year:
+            logger.log(u'{0}: IMDb returned invalid info for {1}, skipping update.'.format(
+                self.indexerid, self.imdbid), logger.DEBUG)
             return
 
         self.imdb_info = {
-            'imdb_id': self.imdb_id,
-            'title': imdb_obj.get('title', ''),
-            'year': imdb_obj.get('year', ''),
-            'akas': '|'.join(imdb_obj.get('akas', '')),
-            'genres': '|'.join(imdb_obj.get('genres', '')),
-            'countries': '|'.join(imdb_obj.get('countries', '')),
-            'country_codes': '|'.join(imdb_obj.get('country codes', '')),
-            'rating': imdb_obj.get('rating', ''),
-            'votes': imdb_obj.get('votes', ''),
+            'imdb_id': imdb_obj.imdb_id,
+            'title': imdb_obj.title,
+            'year': imdb_obj.year,
+            'akas': '',
+            'genres': '|'.join(imdb_obj.genres or ''),
+            'countries': '',
+            'country_codes': '',
+            'rating': imdb_obj.rating or '',
+            'votes': imdb_obj.votes or '',
+            'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
+            'certificates': imdb_obj.certification or '',
+            'plot': imdb_obj.plot_outline or imdb_obj.plots[0] if imdb_obj.plots else '',
             'last_update': datetime.date.today().toordinal(),
-            'plot': imdb_obj.get('plot', '')[0],
         }
 
         self.externals['imdb_id'] = self.imdb_id
-
-        if imdb_obj.get('runtimes'):
-            self.imdb_info['runtimes'] = re.search(r'\d+', imdb_obj['runtimes'][0]).group(0)
-
-        # Get only the production country certificate if any
-        if imdb_obj.get('certificates') and imdb_obj.get('countries'):
-            for certificate in imdb_obj['certificates']:
-                if certificate.split(':')[0] in imdb_obj['countries']:
-                    self.imdb_info['certificates'] = certificate.split(':')[1]
-                    break
 
         logger.log(u'{0}: Obtained info from IMDb: {1}'.format(
             self.indexerid, self.imdb_info), logger.DEBUG)
