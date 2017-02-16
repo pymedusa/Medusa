@@ -1831,6 +1831,8 @@ class Series(TV):
         :type ep_status: int
         :param backlog_mode: if we should return overview for backlogOverview
         :type backlog_mode: boolean
+        :param manually_searched: if episode was manually searched
+        :type manually_searched: boolean
         :return: an Overview status
         :rtype: int
         """
@@ -1868,7 +1870,7 @@ class Series(TV):
             logger.log(u'Could not parse episode status into a valid overview status: {status}'.format
                        (status=ep_status), logger.ERROR)
 
-    def get_backlogged_episodes(self, allowed_qualities, preferred_qualities):
+    def get_backlogged_episodes(self, allowed_qualities, preferred_qualities, include_wanted=False):
         """Check how many episodes will be backlogged when changing qualities."""
         BackloggedEpisodes = namedtuple('backlogged_episodes', ['new_backlogged', 'existing_backlogged'])
         new_backlogged = 0
@@ -1880,6 +1882,8 @@ class Series(TV):
             show_obj.quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
             ep_list = self.get_all_episodes()
             for ep_obj in ep_list:
+                if not include_wanted and ep_obj.status == WANTED:
+                    continue
                 if Quality.should_search(ep_obj.status, show_obj, ep_obj.manually_searched)[0]:
                     new_backlogged += 1
                 if Quality.should_search(ep_obj.status, self, ep_obj.manually_searched)[0]:
@@ -1887,3 +1891,32 @@ class Series(TV):
         else:
             new_backlogged = existing_backlogged = -1
         return BackloggedEpisodes(new_backlogged, existing_backlogged)
+
+    def set_all_episodes_archived(self, final_status_only=False):
+        """Set all episodes with final `downloaded` status to `archived`.
+
+        :param final_status_only: archive only episode with final status
+        :type final_status_only: boolean
+        :return: True if we archived at least one episode
+        :rtype: boolean
+        """
+        ep_list = self.get_all_episodes()
+        sql_list = []
+        for ep_obj in ep_list:
+            with ep_obj.lock:
+                if ep_obj.status in Quality.DOWNLOADED:
+                    if final_status_only and Quality.should_search(ep_obj.status, self,
+                                                                   ep_obj.manually_searched)[0]:
+                        continue
+                    _, old_quality = Quality.split_composite_status(ep_obj.status)
+                    ep_obj.status = Quality.composite_status(ARCHIVED, old_quality)
+                    sql_list.append(ep_obj.get_sql())
+        if sql_list:
+            main_db_con = db.DBConnection()
+            main_db_con.mass_action(sql_list)
+            logger.log(u'Change all DOWNLOADED episodes to ARCHIVED '
+                       u'for show ID: {show}'.format(show=self.name), logger.DEBUG)
+            return True
+        else:
+            logger.log(u'No DOWNLOADED episodes for show ID: {show}'.format(show=self.name), logger.DEBUG)
+            return False

@@ -16,7 +16,8 @@ from traktor import MissingTokenException, TokenExpiredException, TraktApi, Trak
 from ..core import PageTemplate, WebRoot
 from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....common import (DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED,
+                        SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings)
 from ....failed_history import prepare_failed_name
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex

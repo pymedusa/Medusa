@@ -86,6 +86,8 @@ class ShowHandler(BaseRequestHandler):
                 new, existing = tv_show.get_backlogged_episodes(allowed_qualities=allowed_qualities,
                                                                 preferred_qualities=preferred_qualities)
                 data = {'new': new, 'existing': existing}
+            elif query == 'archiveEpisodes':
+                data = {'archived': 'true' if tv_show.set_all_episodes_archived(final_status_only=True) else 'false'}
             elif query == 'queue':
                 action, message = app.show_queue_scheduler.action.get_queue_action(tv_show)
                 data = {
