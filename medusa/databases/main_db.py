@@ -30,7 +30,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 4
+CURRENT_MINOR_DB_VERSION = 5
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -532,4 +532,4 @@ class AddPlot(AddInfoHash):
         logger.log(u"Adding column plot in tv_show")
         if not self.hasColumn("tv_shows", "plot"):
             self.addColumn("tv_shows", "plot", 'TEXT', None)
-        # self.inc_minor_version()
+        self.inc_minor_version()
