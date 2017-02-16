@@ -309,7 +309,7 @@
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
             </tbody>
-            <tbody class="tablesorter-no-sort"><tr><td></td></tr></tbody>
+            <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=13></th></tr></tbody>
         </table>
     </div> <!-- end of col -->
 </div> <!-- row -->

@@ -68,7 +68,7 @@
                             <th class="tablesorter-no-sort" colspan=4></th>
                         </tr>
                     </tbody>
-                    <tbody class="tablesorter-no-sort"><tr><td></td></tr></tbody>
+                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=4></td></tr></tbody>
                 </table>
             % endif
             <!-- add provider meta data -->
@@ -141,7 +141,7 @@
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
                         <th class="tablesorter-no-sort" colspan=11></td>
                     </tr>
-                    <tr><td></td></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan=11></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->
