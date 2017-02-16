@@ -1587,7 +1587,8 @@ class Series(TV):
                           'last_update_indexer': self.last_update_indexer,
                           'rls_ignore_words': self.rls_ignore_words,
                           'rls_require_words': self.rls_require_words,
-                          'default_ep_status': self.default_ep_status}
+                          'default_ep_status': self.default_ep_status,
+                          'plot': self.plot}
 
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
