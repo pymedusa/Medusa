@@ -252,6 +252,9 @@ class NameParser(object):
             raise InvalidShowException('Unable to match {result.original_name} to a show in your database. '
                                        'Parser result: {result}'.format(result=result))
 
+        logger.debug("Matched release '{release}' to a show in your database: '{name}'",
+                     release=result.original_name, name=result.show.name)
+
         if result.season_number is None and not result.episode_numbers and \
                 result.air_date is None and not result.ab_episode_numbers and not result.series_name:
             raise InvalidNameException('Unable to parse {result.original_name}. No episode numbering info. '
