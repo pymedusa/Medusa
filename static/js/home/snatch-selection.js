@@ -11,13 +11,13 @@ MEDUSA.home.snatchSelection = function() {
         moveSummaryBackground();
     });
 
-    var spinner = $('#searchNotification');
-    var updateSpinner = function(spinner, message, showSpinner) {
+    var updateSpinner = function(message, showSpinner) {
+        // get spinner object as needed
+        var spinner = $('#searchNotification');
         if (showSpinner) {
-            $(spinner).html('<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message);
-        } else {
-            $(spinner).empty().html(message);
+            message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
         }
+        $(spinner).empty().append(message);
     };
 
     // Check the previous status of the history table, for hidden or shown, through the data attribute
@@ -29,10 +29,10 @@ MEDUSA.home.snatchSelection = function() {
     }
 
     $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
-        updateSpinner(spinner, loadingTxt);
+        updateSpinner(loadingTxt);
         $(this).load(path + ' #container', function(response, status) {
             if (status === 'error') {
-                updateSpinner(spinner, errorTxt, false);
+                updateSpinner(errorTxt, false);
             }
             if (typeof callback !== 'undefined') {
                 callback();
@@ -129,26 +129,26 @@ MEDUSA.home.snatchSelection = function() {
         }).done(function(data) {
             if (data.result === 'refresh') {
                 self.refreshResults();
-                updateSpinner(spinner, 'Refreshed results...', true);
+                updateSpinner('Refreshed results...', true);
                 initTableSorter('#srchresults');
             }
             if (data.result === 'searching') {
                 // ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
-                updateSpinner(spinner, 'The episode is being searched, please wait......', true);
+                updateSpinner('The episode is being searched, please wait......', true);
                 initTableSorter('#srchresults');
             }
             if (data.result === 'queued') {
                 // ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
-                updateSpinner(spinner, 'The episode has been queued, because another search is taking place. please wait..', true);
+                updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
                 initTableSorter('#srchresults');
             }
             if (data.result === 'finished') {
                 // ep search is finished
-                updateSpinner(spinner, 'Search finished', false);
+                updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
                 initTableSorter('#srchresults');
@@ -177,7 +177,7 @@ MEDUSA.home.snatchSelection = function() {
         var forceSearch = $(this).attr('data-force-search');
 
         if ($.isNumeric(show) && $.isNumeric(season) && $.isNumeric(episode)) {
-            updateSpinner(spinner, 'Started a forced manual search...', true);
+            updateSpinner('Started a forced manual search...', true);
             $.getJSON('home/snatchSelection', {
                 show: show,
                 season: season,
