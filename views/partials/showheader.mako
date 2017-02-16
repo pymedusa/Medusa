@@ -15,56 +15,60 @@
 <div class="row">
     <div id="showtitle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" data-showname="${show.name}">
         <div>
-        % if action == 'snatchSelection':
-            <%include file="/partials/seasonEpisode.mako"/>
-        % else:
-            <h1 class="title" id="scene_exception_${show.indexerid}">${show.name}</h1>
-        % endif
-
+            <h1 class="title" id="scene_exception_${show.indexerid}"><a href="home/displayShow?show=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
         </div>
-    % if season_results:
-        ##There is a special/season_0?##
-        % if int(season_results[-1]["season"]) == 0:
-            <% season_special = 1 %>
-        % else:
-            <% season_special = 0 %>
-        % endif
-        % if not app.DISPLAY_SHOW_SPECIALS and season_special:
-            <% lastSeason = season_results.pop(-1) %>
-        % endif
+
+    % if action == 'snatchSelection':
         <div id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
-                % if season_special:
-                Display Specials:
-                    <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
-                % endif
+                <%include file="/partials/seasonEpisode.mako"/>
             </span>
-
-            <div class="h2footer display-seasons clear">
-                <span>
-                % if (len(season_results) > 14):
-                    <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
-                        <option value="jump">Jump to Season</option>
-                    % for seasonNum in season_results:
-                        <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
-                    % endfor
-                    </select>
-                % else:
-                    Season:
-                    % for seasonNum in season_results:
-                        % if int(seasonNum["season"]) == 0:
-                            <a href="#season-${seasonNum["season"]}">Specials</a>
-                        % else:
-                            <a href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</a>
-                        % endif
-                        % if seasonNum != season_results[-1]:
-                            <span class="separator">|</span>
-                        % endif
-                    % endfor
-                % endif
-                </span>
-            </div>
         </div>
+    % else:
+        % if season_results:
+            ##There is a special/season_0?##
+            % if int(season_results[-1]["season"]) == 0:
+                <% season_special = 1 %>
+            % else:
+                <% season_special = 0 %>
+            % endif
+            % if not app.DISPLAY_SHOW_SPECIALS and season_special:
+                <% lastSeason = season_results.pop(-1) %>
+            % endif
+            <div id="show-specials-and-seasons" class="pull-right">
+                <span class="h2footer display-specials">
+                    % if season_special:
+                    Display Specials:
+                        <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                    % endif
+                </span>
+
+                <div class="h2footer display-seasons clear">
+                    <span>
+                    % if (len(season_results) > 14):
+                        <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
+                            <option value="jump">Jump to Season</option>
+                        % for seasonNum in season_results:
+                            <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
+                        % endfor
+                        </select>
+                    % else:
+                        Season:
+                        % for seasonNum in season_results:
+                            % if int(seasonNum["season"]) == 0:
+                                <a href="#season-${seasonNum["season"]}">Specials</a>
+                            % else:
+                                <a href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</a>
+                            % endif
+                            % if seasonNum != season_results[-1]:
+                                <span class="separator">|</span>
+                            % endif
+                        % endfor
+                    % endif
+                    </span>
+                </div>
+            </div>
+            % endif
         % endif
     </div> <!-- end show title -->
 </div> <!-- end row -->
