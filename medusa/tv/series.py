@@ -1272,8 +1272,8 @@ class Series(TV):
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
             'certificates': imdb_obj.certification or '',
+            'plot': imdb_obj.plot_outline or imdb_obj.plots[0] if imdb_obj.plots else '',
             'last_update': datetime.date.today().toordinal(),
-            'plot': imdb_obj.get('plot', '')[0],
         }
 
         self.externals['imdb_id'] = self.imdb_id
