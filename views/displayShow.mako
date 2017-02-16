@@ -336,6 +336,7 @@
         </table>
     </div> <!-- end of col -->
 </div> <!-- row -->
+</div><!-- content -->
 
 
 
