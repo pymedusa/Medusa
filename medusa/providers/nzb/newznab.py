@@ -173,6 +173,10 @@ class NewznabProvider(NZBProvider):
                     except AttributeError:
                         self.torznab = False
 
+                    if not html('item'):
+                        logger.log('No results returned from provider', logger.INFO)
+                        continue
+
                     for item in html('item'):
                         try:
                             title = item.title.get_text(strip=True)
