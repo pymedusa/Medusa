@@ -1383,7 +1383,7 @@ ul.tags {
 ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
-    padding: 2px 4px 2px 25px;
+    padding: 2px 7px 2px 25px;
     background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
     border-radius: 1px;
     border: 1px solid rgb(17, 17, 17);
