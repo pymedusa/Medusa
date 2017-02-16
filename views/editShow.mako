@@ -21,7 +21,7 @@
 </%block>
 <%block name="content">
 <input type="hidden" id="showID" value="${show.indexerid}" />
-<input type="hidden" id="showIndexerName" value="${mappings.get(show.indexer).replace('_id', '')}" />
+<input type="hidden" id="showIndexerSlug" value="${show.indexer_slug}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
