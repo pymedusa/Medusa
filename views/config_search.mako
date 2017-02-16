@@ -70,7 +70,7 @@
                             </div>
                             <div class="field-pair">
                                 <label>
-                                    <span class="component-title">Backlog search day(s)</span>
+                                    <span class="component-title">Forced backlog search day(s)</span>
                                     <span class="component-desc">
                                         <input type="number" min="1" step="1" name="backlog_days" value="${app.BACKLOG_DAYS}" class="form-control input-sm input75"/>
                                         <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>

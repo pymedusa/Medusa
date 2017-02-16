@@ -44,11 +44,12 @@ class BacklogSearcher(object):
     def __init__(self):
 
         self._last_backlog = self._get_last_backlog()
-        self.cycleTime = app.BACKLOG_FREQUENCY / 60 / 24
+        self.cycleTime = app.BACKLOG_FREQUENCY / 60.0 / 24
         self.lock = threading.Lock()
         self.amActive = False
         self.amPaused = False
         self.amWaiting = False
+        self.forced = False
         self.currentSearchInfo = {}
 
         self._resetPI()
@@ -90,9 +91,11 @@ class BacklogSearcher(object):
         curDate = datetime.date.today().toordinal()
         from_date = datetime.date.fromordinal(1)
 
-        if not which_shows and not ((curDate - self._last_backlog) >= self.cycleTime):
-            logger.log(u"Running limited backlog on missed episodes " + str(app.BACKLOG_DAYS) + " day(s) and older only")
+        if not which_shows and self.forced:
+            logger.log(u'Running limited backlog search on missed episodes from last {0} days'.format(app.BACKLOG_DAYS))
             from_date = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
+        else:
+            logger.log(u'Running full backlog search on missed episodes for selected shows')
 
         # go through non air-by-date shows and see if they need any episodes
         for cur_show in show_list:
@@ -186,6 +189,8 @@ class BacklogSearcher(object):
 
     def run(self, force=False):
         try:
+            if force:
+                self.forced = True
             self.search_backlog()
         except:
             self.amActive = False
