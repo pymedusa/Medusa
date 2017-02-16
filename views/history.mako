@@ -56,6 +56,7 @@
 <!-- Title -->
 <div class="row">
     <div class="col-md-12">
+        <div class="horizontal-scroll">
         % if app.HISTORY_LAYOUT == "detailed":
             <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
@@ -206,6 +207,7 @@
                 </tbody>
             </table>
             % endif
+            </div>
         </div>
     </div>
 </%block>
