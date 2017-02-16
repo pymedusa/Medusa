@@ -15,7 +15,7 @@ pre {
 </style>
 </%block>
 <%block name="content">
-<input type="hidden" id="showID" value="${choice(app.showList).indexerid}" />
+<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
 
 <div class="row wide">
     <div class="col-md-12">
