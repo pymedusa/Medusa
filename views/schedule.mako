@@ -77,6 +77,7 @@
     </div>
 </div>
 
+<div class="horizontal-scroll">
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
@@ -379,6 +380,7 @@
 <!-- end calender view //-->
 </div>
 % endif
+</div>
 <div class="clearfix"></div>
 </div>
 </div>
