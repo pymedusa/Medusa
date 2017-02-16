@@ -215,7 +215,7 @@ class Series(TV):
         Can be used to suppress error messages such as attempting to use the
         show object just after being removed.
         """
-        return self.slug in app.RECENTLY_DELETED
+        return self.indexer_slug in app.RECENTLY_DELETED
 
     @property
     def is_scene(self):
@@ -252,7 +252,7 @@ class Series(TV):
         return indexerConfig[self.indexer].get('identifier')
 
     @property
-    def slug(self):
+    def indexer_slug(self):
         """Return the slug name of the show. Example: tvdb1234."""
         return '{name}{indexerid}'.format(name=self.indexer_name, indexerid=self.indexerid)
 
@@ -1669,7 +1669,7 @@ class Series(TV):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        indexer_name = self.slug
+        indexer_name = self.indexer_slug
         bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
         result = OrderedDict([
             ('id', OrderedDict([

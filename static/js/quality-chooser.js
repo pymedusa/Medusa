@@ -37,7 +37,7 @@ $(document).ready(function() {
         $('#allowed_qualities :selected').each(function(i, selected){
             selectedAllowed[i] = $(selected).val();
         });
-        var url = 'show/' +  $('#showSlug').attr('value') +
+        var url = 'show/' +  $('#showIndexerSlug').attr('value') +
                   '/backlogged' +
                   '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered

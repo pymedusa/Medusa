@@ -242,7 +242,7 @@ class ShowQueue(generic_queue.GenericQueue):
         self.add_item(queue_item_obj)
 
         # Show removal has been queued, let's update the app.RECENTLY_DELETED global, to keep track of it
-        app.RECENTLY_DELETED.update([show.slug])
+        app.RECENTLY_DELETED.update([show.indexer_slug])
 
         return queue_item_obj
 
