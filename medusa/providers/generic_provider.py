@@ -238,8 +238,6 @@ class GenericProvider(object):
         search_results = []
         for item in items_list:
 
-            # search_result = EvaluateSearchResult(item=item, download_current_quality=download_current_quality,
-            #                                      provider=self)
             # Make sure we start with a TorrentSearchResult, NZBDataSearchResult or NZBSearchResult search result obj.
             search_result = self.get_result()
             search_results.append(search_result)
@@ -283,7 +281,8 @@ class GenericProvider(object):
                             search_result.result_wanted = False
                             continue
                         elif not [ep for ep in episodes if
-                                  search_result.parsed_result.season_number == (ep.season, ep.scene_season)[ep.show.is_scene]]:
+                                  search_result.parsed_result.season_number == (ep.season, ep.scene_season)
+                                  [ep.show.is_scene]]:
                             logger.log(
                                 'This season result %s is for a season we are not searching for, '
                                 'skipping it' % search_result.name,
@@ -315,7 +314,8 @@ class GenericProvider(object):
                         if not [searched_episode for searched_episode in episodes
                                 if searched_episode.season == search_result.parsed_result.season_number and
                                 (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.show.is_scene] in search_result.parsed_result.episode_numbers]:
+                                [searched_episode.show.is_scene] in
+                                search_result.parsed_result.episode_numbers]:
                             logger.log(
                                 "The result %s doesn't seem to match an episode that we are currently trying to "
                                 "snatch, skipping it" % search_result.name, logger.DEBUG
@@ -513,9 +513,9 @@ class GenericProvider(object):
             elif episode.show.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                    show_name in get_scene_exceptions(episode.show.indexerid,
-                                                      episode.show.indexer,
-                                                      episode.scene_season)):
+                            show_name in get_scene_exceptions(episode.show.indexerid,
+                                                              episode.show.indexer,
+                                                              episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:
