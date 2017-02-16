@@ -30,7 +30,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 4
+CURRENT_MINOR_DB_VERSION = 5
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -301,7 +301,7 @@ class InitialSchema(db.SchemaUpgrade):
             queries = [
                 "CREATE TABLE db_version(db_version INTEGER);",
                 "CREATE TABLE history(action NUMERIC, date NUMERIC, showid NUMERIC, season NUMERIC, episode NUMERIC, quality NUMERIC, resource TEXT, provider TEXT, version NUMERIC DEFAULT -1);",
-                "CREATE TABLE imdb_info(indexer_id INTEGER PRIMARY KEY, imdb_id TEXT, title TEXT, year NUMERIC, akas TEXT, runtimes NUMERIC, genres TEXT, countries TEXT, country_codes TEXT, certificates TEXT, rating TEXT, votes INTEGER, last_update NUMERIC);",
+                "CREATE TABLE imdb_info(indexer_id INTEGER PRIMARY KEY, imdb_id TEXT, title TEXT, year NUMERIC, akas TEXT, runtimes NUMERIC, genres TEXT, countries TEXT, country_codes TEXT, certificates TEXT, rating TEXT, votes INTEGER, last_update NUMERIC, plot TEXT);",
                 "CREATE TABLE info(last_backlog NUMERIC, last_indexer NUMERIC, last_proper_search NUMERIC);",
                 "CREATE TABLE scene_numbering(indexer TEXT, indexer_id INTEGER, season INTEGER, episode INTEGER, scene_season INTEGER, scene_episode INTEGER, absolute_number NUMERIC, scene_absolute_number NUMERIC, PRIMARY KEY(indexer_id, season, episode));",
                 "CREATE TABLE tv_shows(show_id INTEGER PRIMARY KEY, indexer_id NUMERIC, indexer NUMERIC, show_name TEXT, location TEXT, network TEXT, genre TEXT, classification TEXT, runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT, flatten_folders NUMERIC, paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC, lang TEXT, subtitles NUMERIC, notify_list TEXT, imdb_id TEXT, last_update_indexer NUMERIC, dvdorder NUMERIC, archive_firstmatch NUMERIC, rls_require_words TEXT, rls_ignore_words TEXT, sports NUMERIC, anime NUMERIC, scene NUMERIC, default_ep_status NUMERIC DEFAULT -1);",
@@ -510,4 +510,26 @@ class AddInfoHash(AddManualSearched):
         logger.log(u"Adding column info_hash in history")
         if not self.hasColumn("history", "info_hash"):
             self.addColumn("history", "info_hash", 'TEXT', None)
+        self.inc_minor_version()
+
+
+class AddPlot(AddInfoHash):
+    """Adds column plot to imdb_info table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.5
+        """
+        return self.connection.version >= (44, 5)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        logger.log(u"Adding column plot in imdb_info")
+        if not self.hasColumn("imdb_info", "plot"):
+            self.addColumn("imdb_info", "plot", 'TEXT', None)
+
+        logger.log(u"Adding column plot in tv_show")
+        if not self.hasColumn("tv_shows", "plot"):
+            self.addColumn("tv_shows", "plot", 'TEXT', None)
         self.inc_minor_version()

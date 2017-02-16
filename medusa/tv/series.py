@@ -149,6 +149,7 @@ class Series(TV):
         self.exceptions = set()
         self.externals = {}
         self._cached_indexer_api = None
+        self.plot = None
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
@@ -1163,6 +1164,8 @@ class Series(TV):
             if self.is_anime:
                 self.release_groups = BlackAndWhiteList(self.indexerid)
 
+            self.plot = sql_results[0][b'plot']
+
             # Load external id's from indexer_mappings table.
             self._load_externals_from_db()
 
@@ -1231,6 +1234,8 @@ class Series(TV):
 
         self.status = getattr(indexed_show, 'status', 'Unknown')
 
+        self.plot = getattr(indexed_show, 'overview', '') or self.get_plot()
+
         self._save_externals_to_db()
 
     def load_imdb_info(self):
@@ -1284,7 +1289,8 @@ class Series(TV):
             'country_codes': '|'.join(imdb_obj.get('country codes', '')),
             'rating': imdb_obj.get('rating', ''),
             'votes': imdb_obj.get('votes', ''),
-            'last_update': datetime.date.today().toordinal()
+            'last_update': datetime.date.today().toordinal(),
+            'plot': imdb_obj.get('plot', '')[0],
         }
 
         self.externals['imdb_id'] = self.imdb_id
@@ -1581,7 +1587,8 @@ class Series(TV):
                           'last_update_indexer': self.last_update_indexer,
                           'rls_ignore_words': self.rls_ignore_words,
                           'rls_require_words': self.rls_require_words,
-                          'default_ep_status': self.default_ep_status}
+                          'default_ep_status': self.default_ep_status,
+                          'plot': self.plot}
 
         main_db_con = db.DBConnection()
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
@@ -1680,6 +1687,7 @@ class Series(TV):
             ('classification', self.imdb_info.get('certificates')),
             ('cache', OrderedDict([])),
             ('countries', self.get_countries()),
+            ('plot', self.get_plot()),
             ('config', OrderedDict([
                 ('location', self.raw_location),
                 ('qualities', OrderedDict([
@@ -1751,6 +1759,10 @@ class Series(TV):
     def get_countries(self):
         """Return country codes."""
         return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
+
+    def get_plot(self):
+        """Return show plot."""
+        return self.imdb_info.get('plot', '')
 
     def get_allowed_qualities(self):
         """Return allowed qualities."""
