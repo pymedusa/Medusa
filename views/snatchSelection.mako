@@ -14,12 +14,6 @@
 <input type="hidden" id="showID" value="${show.indexerid}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
 
-% if show_message:
-    <div class="alert alert-info">
-        ${show_message}
-    </div><!-- .alert .alert-info //-->
-% endif
-
 <%include file="/partials/showheader.mako"/>
 
 <div class="row">
