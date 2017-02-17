@@ -119,9 +119,6 @@ class SearchResult(object):
         # The actual parsed episode.
         self.actual_episodes = None
 
-        # Flag for multi-epp search result.
-        self.multi_epp = False
-
     def __str__(self):
 
         if self.provider is None:
