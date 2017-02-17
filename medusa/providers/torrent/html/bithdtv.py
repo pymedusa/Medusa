@@ -116,9 +116,6 @@ class BithdtvProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html.parser') as html:  # Use html.parser, since html5parser has issues with this site.
@@ -147,8 +144,8 @@ class BithdtvProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[8].get_text(strip=True)) if len(cells) > 9 else 1
-                    leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 10 else 0
+                    seeders = try_int(cells[8].get_text(strip=True)) if len(cells) > 8 else 1
+                    leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 9 else 0
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -158,8 +155,8 @@ class BithdtvProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[6].get_text(' ') if len(cells) > 7 else -1
-                    size = convert_size(torrent_size, units=units) or -1
+                    torrent_size = cells[6].get_text(' ') if len(cells) > 6 else None
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,
