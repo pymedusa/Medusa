@@ -46,7 +46,6 @@ class MainSanityCheck(db.DBSanityCheck):
         #  self.fix_subtitles_codes()
         self.fix_show_nfo_lang()
         self.convert_archived_to_compound()
-        self.update_old_propers()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
 
@@ -60,6 +59,7 @@ class MainSanityCheck(db.DBSanityCheck):
             self.connection.action("DELETE FROM indexer_mapping WHERE mindexer_id = ''")
 
     def update_old_propers(self):
+        # This is called one when we create proper_tags columns
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
         query = "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
                 "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
@@ -460,6 +460,7 @@ class AddProperTags(TestIncreaseMajorVersion):
             logger.log(u'Adding column proper_tags to history')
             self.addColumn('history', 'proper_tags', 'TEXT', u'')
 
+        # Call the update old propers once
         MainSanityCheck(self.connection).update_old_propers()
         self.inc_minor_version()
 
