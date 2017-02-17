@@ -102,14 +102,12 @@
                         % endif
                         </h3>
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
-                        % if not app.DISPLAY_ALL_SEASONS:
-                            <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
-                        % endif
-                        <div class="row" style="float:right">
-                                <div class="pull-right col-md-4">
-                                    <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
-                                </div>
-                        </div>
+                        <div class="pull-right"> <!-- column select and hide/show episodes -->
+                            <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
+                            % if not app.DISPLAY_ALL_SEASONS:
+                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
+                            % endif
+                        </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>
             </tbody>
