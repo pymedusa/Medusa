@@ -59,7 +59,7 @@ class MainSanityCheck(db.DBSanityCheck):
             self.connection.action("DELETE FROM indexer_mapping WHERE mindexer_id = ''")
 
     def update_old_propers(self):
-        # This is called one when we create proper_tags columns
+        # This is called once when we create proper_tags columns
         logger.log(u'Checking for old propers without proper tags', logger.DEBUG)
         query = "SELECT resource FROM history WHERE (proper_tags is null or proper_tags is '') " + \
                 "AND (action LIKE '%2' OR action LIKE '%9') AND " + \
