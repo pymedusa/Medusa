@@ -147,8 +147,8 @@ class BithdtvProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[8].get_text(strip=True))
-                    leechers = try_int(cells[9].get_text(strip=True))
+                    seeders = try_int(cells[8].get_text(strip=True)) if len(cells) > 7 else 1
+                    leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 8 else 0
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -158,7 +158,7 @@ class BithdtvProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[6].get_text(' ')
+                    torrent_size = cells[6].get_text(' ') if len(cells) > 5 else -1
                     size = convert_size(torrent_size, units=units) or -1
 
                     item = {
