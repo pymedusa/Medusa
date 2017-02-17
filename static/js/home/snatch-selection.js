@@ -1,13 +1,13 @@
 MEDUSA.home.snatchSelection = function() {
-	$('.imdbPlot').on('click', function() {
-		$(this).prev('span').toggle();
-		if ($(this).html() === "..show less") {
-			$(this).html("..show more");
-		} else {
-			$(this).html("..show less");
-		}
-		moveSummaryBackground();
-	});
+    $('.imdbPlot').on('click', function() {
+        $(this).prev('span').toggle();
+        if ($(this).html() === "..show less") {
+            $(this).html("..show more");
+        } else {
+            $(this).html("..show less");
+        }
+        moveSummaryBackground();
+    });
 
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
