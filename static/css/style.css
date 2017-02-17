@@ -1772,7 +1772,7 @@ schedule.mako
 ========================================================================== */
 
 .key {
-    line-height: 40px;
+    line-height: 25px;
 }
 
 .listing-key {
@@ -2948,6 +2948,17 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .form-control-inline {
     display: inline;
     width: auto;
+}
+
+.input-sm-smallfont {
+    font-size: 11px;
+}
+
+.input-sm-custom {
+    padding: 1px 5px 1px 5px;
+    border-radius: 1px;
+    line-height: 1.5;
+    height: auto;
 }
 
 #sub-menu-container {

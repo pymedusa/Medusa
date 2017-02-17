@@ -2,7 +2,7 @@
     <div class="form-inline">
             <div>
                 <div class="select-show-group pull-left top-5 bottom-5">
-                    <select id="select-show" class="form-control input-sm">
+                    <select id="select-show" class="form-control input-sm-custom">
                         % for cur_show_list in sortedShowLists:
                             <% cur_show_type = cur_show_list[0] %>
                             <% cur_show_list = cur_show_list[1] %>
