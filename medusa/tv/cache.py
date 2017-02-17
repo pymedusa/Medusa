@@ -410,10 +410,11 @@ class Cache(object):
 
         return True
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate):
+    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, parsed_result=None):
         """Add item into cache database."""
         try:
-            parse_result = NameParser().parse(name)
+            # Use the already passed parsed_result of possible.
+            parse_result = parsed_result or NameParser().parse(name)
         except (InvalidNameException, InvalidShowException) as error:
             logger.log('{0}'.format(error), logger.DEBUG)
             return None

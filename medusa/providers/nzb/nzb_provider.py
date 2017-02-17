@@ -37,7 +37,7 @@ class NZBProvider(GenericProvider):
 
     def _get_result(self, episodes):
         """Return provider result."""
-        return NZBSearchResult(episodes)
+        return NZBSearchResult(episodes, provider=self)
 
     def _get_size(self, item):
         """Get result size."""
