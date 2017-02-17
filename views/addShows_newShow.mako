@@ -25,7 +25,7 @@
             <br>
             <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
-                    <legend class="legendStep">Find a show on theTVDB</legend>
+                    <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div class="stepDiv">
                         <input type="hidden" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" />
                         % if use_provided_info:
