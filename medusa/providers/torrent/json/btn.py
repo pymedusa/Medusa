@@ -82,7 +82,7 @@ class BTNProvider(TorrentProvider):
                 searches = [search_params]
 
             for search_params in searches:
-                if mode!= 'RSS':
+                if mode != 'RSS':
                     logger.log('Search string: {search}'.format
                                (search=search_params), logger.DEBUG)
 
