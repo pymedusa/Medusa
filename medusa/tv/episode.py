@@ -457,7 +457,7 @@ class Episode(TV):
 
         except (IndexerError, IOError) as e:
             logger.warning('{id}: {indexer} threw up an error: {error_msg}',
-                           id=self.show.indexerid, indexer=indexerApi(self.indexer).name, error_msg=ex(e)),
+                           id=self.show.indexerid, indexer=indexerApi(self.indexer).name, error_msg=ex(e))
 
             # if the episode is already valid just log it, if not throw it up
             if self.name:
@@ -751,8 +751,7 @@ class Episode(TV):
     def create_meta_files(self):
         """Create episode metadata files."""
         if not self.show.is_location_valid():
-            logger.warning('{id}: The show dir is missing, unable to create metadata', id=self.show.indexerid),
-
+            logger.warning('{id}: The show dir is missing, unable to create metadata', id=self.show.indexerid)
             return
 
         for metadata_provider in app.metadata_provider_dict.values():
