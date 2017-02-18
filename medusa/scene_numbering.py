@@ -21,15 +21,20 @@
 # @copyright: Dermot Buckley
 #
 
+from collections import defaultdict
 import datetime
 import time
 import traceback
+import warnings
 
 from . import app, db, helpers, logger
 from .helper.exceptions import ex
 from .indexers.indexer_api import indexerApi
 from .scene_exceptions import xem_session
 from .show.show import Show
+
+
+XEM_NUMBERING = None
 
 
 def get_scene_numbering(indexer_id, indexer, season, episode, fallback_to_xem=True):
@@ -75,7 +80,13 @@ def find_scene_numbering(indexer_id, indexer, season, episode):
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
-        "SELECT scene_season, scene_episode FROM scene_numbering WHERE indexer = ? and indexer_id = ? and season = ? and episode = ? and (scene_season or scene_episode) != 0",
+        "SELECT scene_season, scene_episode "
+        "FROM scene_numbering "
+        "WHERE indexer = ?"
+        " and indexer_id = ?"
+        " and season = ?"
+        " and episode = ?"
+        " and (scene_season or scene_episode) != 0",
         [indexer, indexer_id, season, episode])
 
     if rows:
@@ -367,36 +378,58 @@ def get_scene_numbering_for_show(indexer_id, indexer):
     return result
 
 
-def get_xem_numbering_for_show(indexer_id, indexer, refresh_data=True):
+def get_xem_numbering():
     """
-    Returns a dict of (season, episode) : (sceneSeason, sceneEpisode) mappings
-    for an entire show.  Both the keys and values of the dict are tuples.
+    Get xem numbering.
+    """
+    global XEM_NUMBERING
+    if XEM_NUMBERING is None:
+        main_db_con = db.DBConnection()
+        rows = main_db_con.select(
+            'SELECT indexer, indexerid, '
+            ' season, episode, '
+            ' scene_season, scene_episode '
+            'FROM tv_episodes '
+            'WHERE (scene_season or scene_episode) != 0 '
+            'ORDER BY indexer, indexerid, season, episode',
+        )
+
+        # Build the XEM_NUMBERING dict
+        result = defaultdict(dict)
+        for row in rows:
+            series = int(row[b'indexer']), int(row[b'indexerid'])
+            episode = int(row['season']), int(row['episode'])
+            scene = int(row['scene_season']), int(row['scene_episode'])
+            result[series][episode] = scene
+
+        XEM_NUMBERING = result
+
+    return XEM_NUMBERING
+
+
+def get_xem_numbering_for_show(indexer_id, indexer, **kwargs):
+    """
+    Returns a dict of (season, episode) : (scene season, scene episode)
+    mappings for an entire show.  Both the keys and values of the dict
+    are tuples.
+
     Will be empty if there are no scene numbers set in xem
     """
-    if indexer_id is None:
-        return {}
+    if 'refresh_data' in kwargs:
+        warnings.warn('refresh_data is deprecated!', DeprecationWarning)
 
-    indexer_id = int(indexer_id)
-    indexer = int(indexer)
-
-    if refresh_data:
-        xem_refresh(indexer_id, indexer)
-
-    main_db_con = db.DBConnection()
-    rows = main_db_con.select(
-        'SELECT season, episode, scene_season, scene_episode FROM tv_episodes WHERE indexer = ? and showid = ? and (scene_season or scene_episode) != 0 ORDER BY season, episode',
-        [indexer, indexer_id])
-
-    result = {}
-    for row in rows:
-        season = int(row['season'])
-        episode = int(row['episode'])
-        scene_season = int(row['scene_season'])
-        scene_episode = int(row['scene_episode'])
-
-        result[(season, episode)] = (scene_season, scene_episode)
-
-    return result
+    series = None, None
+    try:
+        series = int(indexer), int(indexer_id)
+    except TypeError:
+        logger.log(
+            'Unable to determine series. Indexer: {indexer}, ID: {id}'.format(
+                indexer=indexer, id=indexer_id,
+            ),
+            logger.WARNING
+        )
+    finally:
+        return get_xem_numbering()[series]
 
 
 def get_scene_absolute_numbering_for_show(indexer_id, indexer):
@@ -537,6 +570,8 @@ def xem_refresh(indexer_id, indexer, force=False):
             if cl:
                 main_db_con = db.DBConnection()
                 main_db_con.mass_action(cl)
+                global XEM_NUMBERING
+                XEM_NUMBERING = None
 
         except Exception as e:
             logger.log(u"Exception while refreshing XEM data for show ID {0} on {1}: {2}".format
