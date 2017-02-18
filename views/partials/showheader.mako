@@ -288,5 +288,7 @@
                 </div> <!-- end of key -->
             </div> <!-- checkboxControls -->
         </div> <!-- end of row -->
+    % else:
+        &nbsp;
     % endif
     </div> <!-- end of col -->
