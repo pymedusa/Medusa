@@ -7,6 +7,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             $(this).html("..show less");
         }
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     // adjust the summary background position and size on page load and resize
@@ -17,12 +18,21 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $("#summaryBackground").offset({ top: top, left: 0});
     }
 
+    function movecheckboxControlsBackground() {
+        var height = $("#checkboxControls").height() + 6;
+        var top = $("#checkboxControls").offset().top - 3;
+        $("#checkboxControlsBackground").height(height);
+        $("#checkboxControlsBackground").offset({ top: top, left: 0});
+    }
+
     $(window).resize(function() {
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     $(function() {
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     $.ajaxEpSearch({

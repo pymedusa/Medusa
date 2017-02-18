@@ -294,6 +294,10 @@ ul.tags li {
     background-color: rgb(61, 61, 61);
 }
 
+#checkboxControlsBackground {
+    background-color: rgb(41, 41, 41);
+}
+
 .defaultTable {
     table-layout: auto;
     width: 100%;
