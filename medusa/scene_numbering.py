@@ -21,11 +21,12 @@
 # @copyright: Dermot Buckley
 #
 
-from collections import defaultdict
 import datetime
 import time
 import traceback
 import warnings
+
+from collections import defaultdict
 
 from . import app, db, helpers, logger
 from .helper.exceptions import ex
