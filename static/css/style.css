@@ -4262,3 +4262,13 @@ css helper classes
     color: rgb(255, 255, 255);
     background-color: rgb(55, 55, 55);
 }
+
+#keyPadding {
+    margin-left: 215px;
+}
+
+@media (max-width: 1700px) {
+    #keyPadding {
+        margin-left: 0px;
+    }
+}
