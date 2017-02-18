@@ -559,19 +559,19 @@ body {
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(0, 50, 0);
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
     color: rgb(255, 255, 255);
-    background-color: rgb(0, 50, 0);
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-toggle:hover,
 .navbar-default .navbar-toggle:focus {
-    background-color: rgb(0, 50, 0);
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-toggle .icon-bar {
@@ -581,7 +581,7 @@ body {
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
-    background-color: rgb(0, 50, 0);
+    background-color: rgb(119, 119, 119);
     color: rgb(255, 255, 255);
 }
 
@@ -590,7 +590,7 @@ body {
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
         color: rgb(255, 255, 255);
-        background-color: rgb(0, 50, 0);
+        background-color: rgb(119, 119, 119);
     }
 }
 
@@ -598,7 +598,7 @@ body {
 .dropdown-menu > li > a:focus {
     color: rgb(255, 255, 255);
     text-decoration: none;
-    background-color: rgb(0, 50, 0);
+    background-color: rgb(119, 119, 119);
 }
 
 .dropdown-menu > li > a {
@@ -651,21 +651,21 @@ body {
 .btn.active,
 .btn.disabled,
 .btn[disabled] {
-    background-color: rgb(0, 50, 0);
-    *background-color: rgb(0, 50, 0);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
 .btn:active,
 .btn.active {
-    background-color: rgb(0, 50, 0);
+    background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
 .btn:hover {
     text-decoration: none;
-    background-color: rgb(0, 50, 0);
-    *background-color: rgb(0, 50, 0);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
     background-position: 0 -150px;
     -webkit-transition: background-position 0.0s linear;
@@ -684,8 +684,8 @@ body {
 
 .btn.active,
 .btn:active {
-    background-color: rgb(0, 50, 0);
-    *background-color: rgb(0, 50, 0);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
     outline: 0;
