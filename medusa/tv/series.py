@@ -453,12 +453,12 @@ class Series(TV):
                       b'WHERE showid = ? AND absolute_number = ? AND season != 0'
                 sql_args = [self.indexerid, absolute_number]
                 logger.debug(u'{id}: Season and episode lookup for {show} using absolute number {absolute}',
-                                 id=self.indexerid, absolute=absolute_number, show=self.name)
+                             id=self.indexerid, absolute=absolute_number, show=self.name)
             elif air_date:
                 sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?'
                 sql_args = [self.indexerid, air_date.toordinal()]
                 logger.debug(u'{id}: Season and episode lookup for {show} using air date {air_date}',
-                                 id=self.indexerid, air_date=air_date, show=self.name)
+                             id=self.indexerid, air_date=air_date, show=self.name)
 
             sql_results = main_db_con.select(sql, sql_args) if sql else []
             if len(sql_results) == 1:
@@ -823,10 +823,10 @@ class Series(TV):
             logger.warning(
                 u'{id}: {indexer} error, unable to update episodes.'
                 u' Message: {ex}',
-                    id=self.indexerid,
-                    indexer=indexerApi(self.indexer).name,
-                    ex=e
-                )
+                id=self.indexerid,
+                indexer=indexerApi(self.indexer).name,
+                ex=e
+            )
             raise
 
         logger.debug(
