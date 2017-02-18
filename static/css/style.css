@@ -2555,7 +2555,7 @@ span.path {
 }
 
 .align-left {
-    text-align: left;
+    text-align: left!important;
 }
 
 .h2footer {
@@ -4245,4 +4245,9 @@ css helper classes
 /* navbar padding, to make room for in-page scrollbars */
 .padding-right-15 {
     padding-right: 15px!important;
+}
+
+.backlog-quality {
+    color: rgb(255, 255, 255);
+    background-color: rgb(55, 55, 55);
 }

@@ -58,38 +58,18 @@
             % if not showCounts[cur_show.indexerid][Overview.WANTED] + showCounts[cur_show.indexerid][Overview.QUAL]:
                 <% continue %>
             % endif
+            <tr class="seasonheader"><td colspan="5">&nbsp;</td></tr>
             <tr class="seasonheader" id="show-${cur_show.indexerid}">
-                <td colspan="5" class="align-left">
+                <td class="row-seasonheader" colspan="5" style="vertical-align: bottom; width: auto;">
                     <div class="col-md-12">
-                        <div class="col-md-4 pull-left left-30">
-                            <h2 style="display: inline-block;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h2>
-                        </div>
-                        <div class="col-md-5">
-                         <% allowed_qualities, preferred_qualities = Quality.split_quality(int(cur_show.quality)) %>
-                         % if cur_show.quality in qualityPresets:
-                            <div class="col-md-12">&nbsp;</div>
-                            <div class="col-md-12">&nbsp;</div>
-                            <div class="col-md-12">
-                            ${renderQualityPill(cur_show.quality)}
-                            </div>
-                         % else:
-                             % if allowed_qualities:
-                                 <div class="col-md-12">
-                                    <i>Allowed:</i> ${' '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
-                                 </div>
+                        <div class="col-md-8 left-30">
+                            <h3 style="display: inline;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h3>
+                             % if cur_show.quality in qualityPresets:
+                                &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
                              % endif
-                             % if preferred_qualities:
-                                 <div class="col-md-12">
-                                    <i>Preferred:</i> ${' '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
-                                </div>
-                             % endif
-                         % endif
                         </div>
-                        <div class="col-md-3 pull-right">
-                            <div class="col-md-12">&nbsp;</div>
-                            <div class="col-md-12">&nbsp;</div>
-                            <div class="col-md-12">
-                            <div class="pull-right right-30">
+                        <div class="col-md-4 pull-right right-30">
+                            <div class="top-5 bottom-5 pull-right">
                                 % if showCounts[cur_show.indexerid][Overview.WANTED] > 0:
                                 <span class="listing-key wanted">Wanted: <b>${showCounts[cur_show.indexerid][Overview.WANTED]}</b></span>
                                 % endif
@@ -99,15 +79,33 @@
                                 <a class="btn btn-inline forceBacklog" href="manage/backlogShow?indexer_id=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Force Backlog</a>
                                 <a class="btn btn-inline editShow" href="manage/editShow?show=${cur_show.indexerid}"><i class="icon-play-circle icon-white"></i> Edit Show</a>
                             </div>
-                            </div>
                         </div>
                     </div>
                 </td>
             </tr>
+            % if not cur_show.quality in qualityPresets:
+            <% allowed_qualities, preferred_qualities = Quality.split_quality(int(cur_show.quality)) %>
+            <tr>
+                <td colspan="5" class="backlog-quality">
+                    <div class="col-md-12 left-30">
+                    % if allowed_qualities:
+                        <div class="col-md-12 align-left">
+                           <i>Allowed:</i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${' '.join([capture(renderQualityPill, x) for x in sorted(allowed_qualities)])}${'<br>' if preferred_qualities else ''}
+                        </div>
+                    % endif
+                    % if preferred_qualities:
+                        <div class="col-md-12 align-left">
+                           <i>Preferred:</i>&nbsp;&nbsp; ${' '.join([capture(renderQualityPill, x) for x in sorted(preferred_qualities)])}
+                       </div>
+                    % endif
+                    </div>
+                </td>
+            </tr>
+            % endif
             <tr class="seasoncols">
                 <th>Episode</th>
-                <th>Quality</th>
-                <th>Status</th>
+                <th>Status / Quality</th>
+                <th>Episode Title</th>
                 <th class="nowrap">Airdate</th>
                 <th>Actions</th>
             </tr>
