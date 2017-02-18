@@ -19,11 +19,12 @@
 
 from __future__ import unicode_literals
 
+import logging
 import threading
 import time
 import traceback
 
-from .. import app, common, failed_history, generic_queue, history, logger, providers, ui
+from .. import app, common, failed_history, generic_queue, history, providers, ui
 from ..helpers import pretty_file_size
 from ..search.core import (
     search_for_needed_episodes,
@@ -41,6 +42,8 @@ MANUAL_SEARCH = 50
 
 FORCED_SEARCH_HISTORY = []
 FORCED_SEARCH_HISTORY_SIZE = 100
+
+lagger = logging.getLogger(__name__)
 
 
 class SearchQueue(generic_queue.GenericQueue):
@@ -97,7 +100,7 @@ class SearchQueue(generic_queue.GenericQueue):
                 and not self.is_in_queue(item.show, item.segment):
             generic_queue.GenericQueue.add_item(self, item)
         else:
-            logger.log("Not adding item, it's already in the queue", logger.DEBUG)
+            lagger.debug("Not adding item, it's already in the queue")
 
     def force_daily(self):
         if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
@@ -185,7 +188,7 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
             # manual, snatch and failed searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
-            logger.log("Not adding item, it's already in the queue", logger.DEBUG)
+            lagger.debug("Not adding item, it's already in the queue")
 
 
 class SnatchQueue(generic_queue.GenericQueue):
@@ -232,7 +235,7 @@ class SnatchQueue(generic_queue.GenericQueue):
             # backlog searches
             generic_queue.GenericQueue.add_item(self, item)
         else:
-            logger.log("Not adding item, it's already in the queue", logger.DEBUG)
+            lagger.debug("Not adding item, it's already in the queue")
 
 
 class DailySearchQueueItem(generic_queue.QueueItem):
@@ -243,28 +246,27 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         self.started = None
 
     def run(self):
-        """
-        Run daily search thread
-        """
+        """Run daily search thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
         try:
-            logger.log("Beginning daily search for new episodes")
+            lagger.info('Beginning daily search for new episodes')
             found_results = search_for_needed_episodes()
 
             if not found_results:
-                logger.log("No needed episodes found")
+                lagger.info('No needed episodes found')
             else:
                 for result in found_results:
                     # just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        logger.log("Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
-                                   (result.name, result.seeders, result.leechers, pretty_file_size(result.size),
-                                    result.provider.name))
+                        lagger.info('Downloading {name} with {seeders} seeders and {leechers} leechers '
+                                    'and size {size} from {provider}',
+                                    name=result.name, seeders=result.seeders, leechers=result.leechers,
+                                    size=pretty_file_size(result.size), provider=result.provider.name)
                     else:
-                        logger.log("Downloading {0} with size: {1} from {2}".format
-                                   (result.name, pretty_file_size(result.size), result.provider.name))
+                        lagger.info('Downloading {name} with size: {size} from {provider}',
+                                    name=result.name, size=pretty_file_size(result.size), provider=result.provider.name)
                     self.success = snatch_episode(result)
 
                     # give the CPU a break
@@ -272,7 +274,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         except Exception:
             self.success = False
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            lagger.debug(traceback.format_exc())
 
         if self.success is None:
             self.success = False
@@ -296,7 +298,8 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.priority = generic_queue.QueuePriorities.HIGH
         # SEARCHQUEUE-MANUAL-12345
         # SEARCHQUEUE-FORCED-12345
-        self.name = '{0}-{1}'.format(('FORCED', 'MANUAL')[bool(manual_search)], show.indexerid)
+        self.name = '{search_type}-{indexerid}'\
+            .format(search_type=('FORCED', 'MANUAL')[bool(manual_search)], indexerid=show.indexerid)
 
         self.success = None
         self.started = None
@@ -314,10 +317,10 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            logger.log('Beginning {0} {1}search for: [{2}]'.
-                       format(('forced', 'manual')[bool(self.manual_search)],
-                              ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                              self.segment[0].pretty_name()))
+            lagger.info('Beginning {search_type} {season_pack}search for: [{ep}]',
+                        search_type=('forced', 'manual')[bool(self.manual_search)],
+                        season_pack=('', 'season pack ')[bool(self.manual_search_type == 'season')],
+                        ep=self.segment[0].pretty_name())
 
             search_result = search_providers(self.show, self.segment, True, self.down_cur_quality,
                                              self.manual_search, self.manual_search_type)
@@ -326,13 +329,14 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                 for result in search_result:
                     # Just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        logger.log('Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}'.format
-                                   (result.name, result.seeders, result.leechers,
-                                    pretty_file_size(result.size), result.provider.name))
+                        lagger.info('Downloading {name} with {seeders} seeders and {leechers} leechers '
+                                    'and size {size} from {provider}',
+                                    name=result.name, seeders=result.seeders, leechers=result.leechers,
+                                    size=pretty_file_size(result.size), provider=result.provider.name)
                     else:
-                        logger.log('Downloading {0} with size: {1} from {2}'.format
-                                   (result.name, pretty_file_size(result.size),
-                                    result.provider.name))
+                        lagger.info('Downloading {name} with size: {size} from {provider}',
+                                    name=result.name, size=pretty_file_size(result.size),
+                                    provider=result.provider.name)
                     self.success = snatch_episode(result)
 
                     # Give the CPU a break
@@ -343,22 +347,25 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                 self.success = True
 
                 if self.manual_search_type == 'season':
-                    ui.notifications.message('We have found season packs for {0}'.format(self.show.name),
+                    ui.notifications.message('We have found season packs for {show_name}'
+                                             .format(show_name=self.show.name),
                                              'These should become visible in the manual select page.')
                 else:
-                    ui.notifications.message('We have found results for {0}'.format(self.segment[0].pretty_name()),
+                    ui.notifications.message('We have found results for {ep}'
+                                             .format(ep=self.segment[0].pretty_name()),
                                              'These should become visible in the manual select page.')
 
             else:
                 ui.notifications.message('No results were found')
-                logger.log('Unable to find {0} {1}results for: [{2}]'.
-                           format(('forced', 'manual')[bool(self.manual_search)],
-                                  ('', 'season pack ')[bool(self.manual_search_type == 'season')],
-                                  self.segment[0].pretty_name()))
+                lagger.info('Unable to find {search_type} {season_pack}results for: [{ep}]',
+                            search_type=('forced', 'manual')[bool(self.manual_search)],
+                            season_pack=('', 'season pack ')[bool(self.manual_search_type == 'season')],
+                            ep=self.segment[0].pretty_name())
 
+        # TODO: Remove catch all exception.
         except Exception:
             self.success = False
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            lagger.debug(traceback.format_exc())
 
         # Keep a list with the 100 last executed searches
         fifo(FORCED_SEARCH_HISTORY, self, FORCED_SEARCH_HISTORY_SIZE)
@@ -415,28 +422,30 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         search_result.manually_searched = True
 
         try:
-            logger.log("Beginning to manual snatch release: {0}".format(search_result.name))
+            lagger.info('Beginning to manual snatch release: {name}', name=search_result.name)
 
             if search_result:
                 if search_result.seeders not in (-1, None) and search_result.leechers not in (-1, None):
-                    logger.log("Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
-                               (search_result.name, search_result.seeders, search_result.leechers,
-                                pretty_file_size(search_result.size), search_result.provider.name))
+                    lagger.info('Downloading {name} with {seeders} seeders and {leechers} leechers '
+                                'and size {size} from {provider}',
+                                name=search_result.name, seeders=search_result.seeders, leechers=search_result.leechers,
+                                size=pretty_file_size(search_result.size), provider=search_result.provider.name)
                 else:
-                    logger.log("Downloading {0} with size: {1} from {2}".format
-                               (search_result.name, pretty_file_size(search_result.size), search_result.provider.name))
+                    lagger.info('Downloading {name} with size: {size} from {provider}',
+                                name=search_result.name, size=pretty_file_size(search_result.size),
+                                provider=search_result.provider.name)
                 self.success = snatch_episode(search_result)
             else:
-                logger.log("Unable to snatch release: {0}".format(search_result.name))
+                lagger.info('Unable to snatch release: {name}', name=search_result.name)
 
             # give the CPU a break
             time.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception:
             self.success = False
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            lagger.debug(traceback.format_exc())
             ui.notifications.message('Error while snatching selected result',
-                                     "Couldn't snatch the result for <i>{0}</i>".format(search_result.name))
+                                     "Couldn't snatch the result for <i>{name}</i>".format(name=search_result.name))
 
         if self.success is None:
             self.success = False
@@ -465,29 +474,33 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
         if not self.show.paused:
             try:
-                logger.log("Beginning backlog search for: [" + self.show.name + "]")
+                lagger.info('Beginning backlog search for: [{show_name}]', show_name=self.show.name)
                 search_result = search_providers(self.show, self.segment)
 
                 if search_result:
                     for result in search_result:
                         # just use the first result for now
                         if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                            logger.log("Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
-                                       (result.name, result.seeders, result.leechers, pretty_file_size(result.size),
-                                        result.provider.name))
+                            lagger.info('Downloading {name} with {seeders} seeders and {leechers} leechers '
+                                        'and size {size} from {provider}',
+                                        name=result.name, seeders=result.seeders, leechers=result.leechers,
+                                        size=pretty_file_size(result.size), provider=result.provider.name)
                         else:
-                            logger.log("Downloading {0} with size: {1} from {2}".format
-                                       (result.name, pretty_file_size(result.size), result.provider.name))
+                            lagger.info('Downloading {name} with size: {size} from {provider}',
+                                        name=result.name, size=pretty_file_size(result.size),
+                                        provider=result.provider.name)
                         self.success = snatch_episode(result)
 
                         # give the CPU a break
                         time.sleep(common.cpu_presets[app.CPU_PRESET])
                 else:
-                    logger.log("No needed episodes found during backlog search for: [" + self.show.name + "]")
+                    lagger.info('No needed episodes found during backlog search for: [{show_name}]',
+                                show_name=self.show.name)
 
+            # TODO: Remove the catch all exception.
             except Exception:
                 self.success = False
-                logger.log(traceback.format_exc(), logger.DEBUG)
+                lagger.debug(traceback.format_exc())
 
         if self.success is None:
             self.success = False
@@ -518,7 +531,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         try:
             for ep_obj in self.segment:
 
-                logger.log("Marking episode as bad: [" + ep_obj.pretty_name() + "]")
+                lagger.info('Marking episode as bad: [{ep}}', ep=ep_obj.pretty_name())
 
                 failed_history.mark_failed(ep_obj)
 
@@ -528,7 +541,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                     history.log_failed(ep_obj, release, provider)
 
                 failed_history.revert_episode(ep_obj)
-                logger.log("Beginning failed download search for: [" + ep_obj.pretty_name() + "]")
+                lagger.info('Beginning failed download search for: [{ep}]', ep=ep_obj.pretty_name())
 
             # If it is wanted, self.down_cur_quality doesnt matter
             # if it isnt wanted, we need to make sure to not overwrite the existing ep that we reverted to!
@@ -538,22 +551,24 @@ class FailedQueueItem(generic_queue.QueueItem):
                 for result in search_result:
                     # just use the first result for now
                     if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        logger.log("Downloading {0} with {1} seeders and {2} leechers and size {3} from {4}".format
-                                   (result.name, result.seeders, result.leechers, pretty_file_size(result.size),
-                                    result.provider.name))
+                        lagger.info('Downloading {name} with {seeders} seeders and {leechers} leechers '
+                                    'and size {size} from {provider}',
+                                    name=result.name, seeders=result.seeders, leechers=result.leechers,
+                                    size=pretty_file_size(result.size), provider=result.provider.name)
                     else:
-                        logger.log("Downloading {0} with size: {1} from {2}".format
-                                   (result.name, pretty_file_size(result.size), result.provider.name))
+                        lagger.log('Downloading {name} with size: {size} from {provider}',
+                                   name=result.name, size=pretty_file_size(result.size), provider=result.provider.name)
                     self.success = snatch_episode(result)
 
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
             else:
-                logger.log("No needed episodes found during failed search for: [" + self.show.name + "]")
+                lagger.info('No needed episodes found during failed search for: [{name}]', name=self.show.name)
 
+        # TODO: Replace the catch all exception with a more specific one.
         except Exception:
             self.success = False
-            logger.log(traceback.format_exc(), logger.DEBUG)
+            lagger.info(traceback.format_exc())
 
         # ## Keep a list with the 100 last executed searches
         fifo(FORCED_SEARCH_HISTORY, self, FORCED_SEARCH_HISTORY_SIZE)
