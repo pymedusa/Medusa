@@ -1418,6 +1418,19 @@ ul.tags li a {
     border-color: rgb(136, 136, 136);
 }
 
+#checkboxControlsBackground {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    height: 0px;
+    background-color: #DDD;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
+    z-index: -2;
+}
+
 .summaryTable {
     overflow: hidden;
 }
