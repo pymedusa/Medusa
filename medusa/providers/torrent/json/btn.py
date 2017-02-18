@@ -77,16 +77,21 @@ class BTNProvider(TorrentProvider):
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             if mode != 'RSS':
-                search_params = self._search_params(ep_obj, mode)
-                logger.log('Search string: {search}'.format
-                           (search=search_params), logger.DEBUG)
+                searches = self._search_params(ep_obj, mode)
+            else:
+                searches = [search_params]
 
-            response = self._api_call(search_params)
-            if not response or response.get('results') == '0':
-                logger.log('No data returned from provider', logger.DEBUG)
-                continue
+            for search_params in searches:
+                if mode!= 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_params), logger.DEBUG)
 
-            results += self.parse(response.get('torrents', {}), mode)
+                response = self._api_call(search_params)
+                if not response or response.get('results') == '0':
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    continue
+
+                results += self.parse(response.get('torrents', {}), mode)
 
         return results
 
