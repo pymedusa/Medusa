@@ -1,5 +1,23 @@
 # coding=utf-8
-"""Series and Episode classes."""
+# Author: Nic Wolfe <nic@wolfeden.ca>
+#
+# This file is part of Medusa.
+#
+# Medusa is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Medusa is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Series classes."""
+
+from __future__ import unicode_literals
 
 import copy
 import datetime
@@ -328,7 +346,7 @@ class Series(TV):
         main_db_con = db.DBConnection()
         results = main_db_con.select(sql_selection, [self.indexerid])
 
-        return {int(x['season']): int(x['number_of_episodes']) for x in results}
+        return {int(x[b'season']): int(x[b'number_of_episodes']) for x in results}
 
     def get_all_episodes(self, season=None, has_location=False):
         """Retrieve all episodes for this show given the specified filter.
@@ -447,7 +465,7 @@ class Series(TV):
                 episode = int(sql_results[0][b'episode'])
                 season = int(sql_results[0][b'season'])
                 logger.debug(u'{id}: Found season and episode which is {show} {ep}',
-                                 id=self.indexerid, show=self.name, ep=episode_num(season, episode))
+                             id=self.indexerid, show=self.name, ep=episode_num(season, episode))
             elif len(sql_results) > 1:
                 logger.error(u'{id}: Multiple entries found in show: {show} ', id=self.indexerid, show=self.name)
 
@@ -780,8 +798,8 @@ class Series(TV):
                 scanned_eps[cur_season][cur_episode] = True
             except EpisodeDeletedException:
                 logger.debug(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
-                           u'skipping it', id=cur_show_id, show=cur_show_name,
-                                                 ep=episode_num(cur_season, cur_episode))
+                             u'skipping it', id=cur_show_id, show=cur_show_name,
+                             ep=episode_num(cur_season, cur_episode))
                 continue
 
         logger.debug(u'{id}: Finished loading all episodes for {show} from the DB', show=cur_show_name, id=cur_show_id)
@@ -898,8 +916,8 @@ class Series(TV):
         for external in self.externals:
             if external in reverse_mappings and self.externals[external]:
                 sql_l.append([b'INSERT OR IGNORE '
-                              'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
-                              'VALUES (?,?,?,?)',
+                              b'INTO indexer_mapping (indexer_id, indexer, mindexer_id, mindexer) '
+                              b'VALUES (?,?,?,?)',
                               [self.indexerid,
                                self.indexer,
                                self.externals[external],
@@ -987,7 +1005,7 @@ class Series(TV):
             return None
 
         logger.debug(u'{indexer_id}: Creating episode object from {filepath}',
-                         indexer_id=self.indexerid, filepath=filepath)
+                     indexer_id=self.indexerid, filepath=filepath)
 
         try:
             parse_result = NameParser(show=self, try_indexers=True, parse_method=(
@@ -999,9 +1017,9 @@ class Series(TV):
         episodes = [ep for ep in parse_result.episode_numbers if ep is not None]
         if not episodes:
             logger.debug(u'{indexerid}: parse_result: {parse_result}',
-                       indexerid=self.indexerid, parse_result=parse_result)
+                         indexerid=self.indexerid, parse_result=parse_result)
             logger.debug(u'{indexerid}: No episode number found in {filepath}, ignoring it',
-                       indexerid=self.indexerid, filepath=filepath)
+                         indexerid=self.indexerid, filepath=filepath)
             return None
 
         # for now lets assume that any episode in the show dir belongs to that show
@@ -1120,7 +1138,7 @@ class Series(TV):
             if self.status is None:
                 self.status = 'Unknown'
 
-            self.airs = sql_results[0]['airs']
+            self.airs = sql_results[0][b'airs']
             if self.airs is None or not network_timezones.test_timeformat(self.airs):
                 self.airs = ''
 
@@ -1468,15 +1486,14 @@ class Series(TV):
                         sql_l.append(cur_ep.get_sql())
 
                     logger.info(u'{id}: Looking for hanging associated files for: {show} {ep} in: {location}',
-                               id=self.indexerid, show=self.name, ep=episode_num(season, episode), location=cur_loc)
+                                id=self.indexerid, show=self.name, ep=episode_num(season, episode), location=cur_loc)
                     related_files = post_processor.PostProcessor(cur_loc).list_associated_files(
                         cur_loc, base_name_only=False, subfolders=True)
 
                     if related_files:
-                        logger.warning(u'{id}: Found hanging associated files for {show} {ep}, deleting: {files}'.format
-                                   (id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                                    files=related_files),
-                                   logger.WARNING)
+                        logger.warning(u'{id}: Found hanging associated files for {show} {ep}, deleting: {files}',
+                                       id=self.indexerid, show=self.name, ep=episode_num(season, episode),
+                                       files=related_files)
                         for related_file in related_files:
                             try:
                                 os.remove(related_file)
@@ -1512,6 +1529,7 @@ class Series(TV):
             for episode in episodes:
                 episode.download_subtitles()
 
+        # TODO: Change into a non catch all exception.
         except Exception:
             logger.warning(u'{id}: Error occurred when downloading subtitles for show {show}',
                            id=self.indexerid, show=self.name)
