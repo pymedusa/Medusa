@@ -1,4 +1,4 @@
-![medusa-name-logo-green-snakes](https://cloud.githubusercontent.com/assets/1867464/13375559/ede197ae-dd70-11e5-8cd0-b0eb239c977e.png)
+![medusa-name-logo-green-snakes](https://cloud.githubusercontent.com/assets/2620870/23092957/e2d5ee8e-f5b4-11e6-8984-00f4aa2d376b.png)
 
 [![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=develop)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open")  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ade58b4469dd4b38bbbd681913d97bfc)](https://www.codacy.com/app/pymedusa/Medusa?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pymedusa/Medusa&amp;utm_campaign=Badge_Grade)
 
