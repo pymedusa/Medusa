@@ -19,7 +19,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     }
 
     function movecheckboxControlsBackground() {
-        var height = $("#checkboxControls").height() + 2;
+        var height = $("#checkboxControls").height() + 6;
         var top = $("#checkboxControls").offset().top - 3;
         $("#checkboxControlsBackground").height(height);
         $("#checkboxControlsBackground").offset({ top: top, left: 0});
