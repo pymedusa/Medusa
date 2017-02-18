@@ -29,14 +29,6 @@
 <%include file="/partials/showheader.mako"/>
 
 <div class="row">
-    <div class="col-md-12" >
-        <div class="pull-right col-md-4">
-            <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
-        </div>
-    </div>
-</div>
-
-<div class="row">
     <div class="col-md-12">
         <table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if app.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
             <% cur_season = -1 %>
@@ -110,9 +102,12 @@
                         % endif
                         </h3>
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
-                        % if not app.DISPLAY_ALL_SEASONS:
-                            <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
-                        % endif
+                        <div class="pull-right"> <!-- column select and hide/show episodes -->
+                            % if not app.DISPLAY_ALL_SEASONS:
+                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
+                            % endif
+                            <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
+                        </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>
             </tbody>
@@ -152,9 +147,11 @@
                         </h3>
                         <!-- @TODO: port the season scene exceptions to angular -->
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
-                        % if not app.DISPLAY_ALL_SEASONS:
-                            <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
-                        % endif
+                        <div class="pull-right"> <!-- hide/show episodes -->
+                            % if not app.DISPLAY_ALL_SEASONS:
+                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
+                            % endif
+                        </div> <!-- end hide/show episodes -->
                     </th>
                 </tr>
             </tbody>

@@ -17,7 +17,7 @@
         <title>Medusa - ${title}</title>
         <base href="${base_url}">
         <%block name="metas" />
-        <link rel="shortcut icon" href="images/ico/favicon.ico">
+        <link rel="shortcut icon" href="images/ico/favicon.ico?v=2">
         <link rel="icon" sizes="16x16 32x32 64x64" href="images/ico/favicon.ico">
         <link rel="icon" type="image/png" sizes="196x196" href="images/ico/favicon-196.png">
         <link rel="icon" type="image/png" sizes="160x160" href="images/ico/favicon-160.png">
