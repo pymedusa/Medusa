@@ -27,7 +27,7 @@ from traktor import TraktException
 
 from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .black_and_white_list import BlackAndWhiteList
-from .common import WANTED
+from .common import WANTED, statusStrings
 from .helper.common import episode_num, sanitize_filename
 from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
@@ -449,7 +449,8 @@ class QueueItemAdd(ShowQueueItem):
             self.show.paused = self.paused if self.paused is not None else False
 
             # set up default new/missing episode status
-            logger.log(u"Setting all episodes to the specified default status: " + str(self.show.default_ep_status))
+            logger.log(u"Setting all previously aired episodes to the specified status: {status}".format
+                       (status=statusStrings[self.default_status]))
             self.show.default_ep_status = self.default_status
 
             if self.show.anime:
