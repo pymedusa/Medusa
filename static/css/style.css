@@ -196,8 +196,8 @@ inc_top.mako
 }
 
 #sub-menu > a {
-	float: right;
-	margin-left: 4px;
+    float: right;
+    margin-left: 4px;
 }
 
 .upgrade-notification {
@@ -548,7 +548,7 @@ div.xem {
 /* Show options */
 
 .show-option {
-	float: left;
+    float: left;
     margin-left: 10px;
     line-height: 40px;
 }
@@ -1139,22 +1139,21 @@ div#container-display-show {
     #sub-menu-container {
         position:fixed;
         width:100%;
-        margin-top: -9px;
-        top: 60px;
+        top: 51px;
     }
 }
 
 @media (max-width: 1281px) {
     #sub-menu-container {
-        position:relative;
+        position: relative;
         margin-top: -24px;
     }
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
     .select-show-group {
-        width: calc(100% - 10px);
-        margin: 0 auto;
+        width: 100%;
+        margin: 1em;
     }
 
     .container-navShow {
@@ -1173,6 +1172,7 @@ div#container-display-show {
 @media (max-width: 340px) {
     .select-show-group {
         width: 260px;
+        margin: 1em;
     }
 
     .container-navShow {
@@ -2769,7 +2769,7 @@ bootstrap Overrides
 ========================================================================== */
 
 #vue-wrap {
-        padding-top: 75px;
+    padding-top: 75px;
 }
 
 body {
@@ -2937,7 +2937,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 .dropdown-menu-custom > li > a {
-	padding: 15px 36px 15px 5px;
+    padding: 15px 36px 15px 5px;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: darkgrey;
@@ -2976,9 +2976,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 #sub-menu-container {
     z-index:550;
-    border-width: 1px;
-    border-style: none none solid none;
-    border-color: rgb(62, 63, 58);
 }
 
 .shadow {
@@ -4274,14 +4271,4 @@ css helper classes
 .backlog-quality {
     color: rgb(255, 255, 255);
     background-color: rgb(55, 55, 55);
-}
-
-#keyPadding {
-    margin-left: 215px;
-}
-
-@media (max-width: 1700px) {
-    #keyPadding {
-        margin-left: 0px;
-    }
 }
