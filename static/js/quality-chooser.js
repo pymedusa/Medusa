@@ -51,12 +51,12 @@ $(document).ready(function() {
             } else if (newBacklogged === existingBacklogged) {
                 html += 'This change won\'t affect your backlogged episodes'
             } else if (newBacklogged > existingBacklogged) {
-                html += '<br><b>WARNING</b>: your backlogged episodes will increase in <b>' + variation + '</b>'
+                html += '<br><b>WARNING</b>: your backlogged episodes will increase by <b>' + variation + '</b>'
                 html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
                 // Only show the archive action div if we have backlog increase
                 $('#archive').show();
             } else {
-                html += 'Your backlogged episodes will decrease in <b>' + variation + '</b>'
+                html += 'Your backlogged episodes will decrease by <b>' + variation + '</b>'
                 html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
             }
             $('#backlogged_episodes').html(html);
