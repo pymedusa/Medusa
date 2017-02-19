@@ -14,6 +14,10 @@ MEDUSA.home.index = function() {
         });
     }, 500));
 
+    $(function() {
+        $("img").unveil(200);
+    });
+
     function resizePosters(newSize) {
         var fontSize;
         var logoWidth;

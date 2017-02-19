@@ -6,6 +6,7 @@ MEDUSA.addShows.init = function() {
 
     $.initRemoteShowGrid = function() {
         // Set defaults on page load
+        $("img").unveil(200);
         $('#showsort').val('original');
         $('#showsortdirection').val('asc');
 
