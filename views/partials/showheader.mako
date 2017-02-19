@@ -254,7 +254,7 @@
             <div class="col-lg-12" id="checkboxControls">
                 <div class="key">
                     <div class="row">
-                        <div id="keyPadding" class="pull-left top-5">
+                        <div id="key-padding" class="pull-left top-5">
                             <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
                             <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${ep_counts[Overview.WANTED]}</b></span></label>
                             <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${ep_counts[Overview.QUAL]}</b></span></label>
@@ -264,25 +264,23 @@
                             <button class="btn seriesCheck">Select Episodes</button>
                             <button class="btn clearAll">Clear</button>
                         </div>
-                        <div class="pull-lg-right">
-                            <div class="pull-lg-right top-5">&nbsp;&nbsp;
-                                <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
-                                <option selected value="">Change selected to:</option>
-                                <option value=""">--------------------------------------------</option>
-                                <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-                                % if not app.USE_FAILED_DOWNLOADS:
-                                <% availableStatus.remove(FAILED) %>
+                        <div class="pull-lg-right top-5">
+                            <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                            <option selected value="">Change selected to:</option>
+                            <option value=""">--------------------------------------------</option>
+                            <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
+                            % if not app.USE_FAILED_DOWNLOADS:
+                            <% availableStatus.remove(FAILED) %>
+                            % endif
+                            % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
+                                % if cur_status not in [DOWNLOADED, ARCHIVED]:
+                                <option value="${cur_status}">${statusStrings[cur_status]}</option>
                                 % endif
-                                % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-                                    % if cur_status not in [DOWNLOADED, ARCHIVED]:
-                                    <option value="${cur_status}">${statusStrings[cur_status]}</option>
-                                    % endif
-                                % endfor
-                                </select>
-                                <input type="hidden" id="showID" value="${show.indexerid}" />
-                                <input type="hidden" id="indexer" value="${show.indexer}" />
-                                <input class="btn" type="button" id="changeStatus" value="Go" />
-                            </div>
+                            % endfor
+                            </select>
+                            <input type="hidden" id="showID" value="${show.indexerid}" />
+                            <input type="hidden" id="indexer" value="${show.indexer}" />
+                            <input class="btn" type="button" id="changeStatus" value="Go" />
                         </div>
                     </div> <!-- end of row -->
                 </div> <!-- end of key -->
