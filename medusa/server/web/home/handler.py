@@ -16,7 +16,8 @@ from traktor import MissingTokenException, TokenExpiredException, TraktApi, Trak
 from ..core import PageTemplate, WebRoot
 from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
 from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
+from ....common import (DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED,
+                        SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings)
 from ....failed_history import prepare_failed_name
 from ....helper.common import enabled_providers, try_int
 from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
@@ -412,8 +413,13 @@ class Home(WebRoot):
         trakt_settings = {"trakt_api_key": app.TRAKT_API_KEY,
                           "trakt_api_secret": app.TRAKT_API_SECRET}
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
+        response = None
         try:
             (access_token, refresh_token) = trakt_api.get_token(app.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+            if access_token and refresh_token:
+                app.TRAKT_ACCESS_TOKEN = access_token
+                app.TRAKT_REFRESH_TOKEN = refresh_token
+                response = trakt_api.validate_account()
         except MissingTokenException:
             ui.notifications.error('You need to get a PIN and authorize Medusa app')
             return 'You need to get a PIN and authorize Medusa app'
@@ -426,10 +432,6 @@ class Home(WebRoot):
         except TraktException:
             ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
             return "Connection error. Click 'Authorize Medusa' button again"
-        if access_token:
-            app.TRAKT_ACCESS_TOKEN = access_token
-            app.TRAKT_REFRESH_TOKEN = refresh_token
-        response = trakt_api.validate_account()
         if response:
             ui.notifications.message('Trakt Authorized')
             return "Trakt Authorized"
@@ -686,7 +688,7 @@ class Home(WebRoot):
             'seasonExceptions': get_all_scene_exceptions(indexer_id),
             'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
                              for (tvdb_season_ep, anidb_season_ep)
-                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer))}
+                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False))}
         })
 
     def displayShow(self, show=None):
@@ -871,7 +873,7 @@ class Home(WebRoot):
             sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
             ep_cats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexerid, indexer, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=show_obj.name, controller='home', action='displayShow',
@@ -1255,9 +1257,9 @@ class Home(WebRoot):
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=show_obj, provider_results=provider_results, episode=episode,
             sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
-            all_scene_exceptions=show_obj.exceptions,
+            all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexer_id, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
             title=show_obj.name, controller='home', action='snatchSelection',
@@ -1284,7 +1286,7 @@ class Home(WebRoot):
         """
         Request the show in a specific language from the indexer.
 
-        :param show_obj: (TVShow) Show object
+        :param show_obj: (Series) Show object
         :param language: Language two-letter country code. For ex: 'en'
         :returns: True if show is found in language else False
         """
@@ -1316,7 +1318,7 @@ class Home(WebRoot):
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions_list = exceptions_list or []
+        exceptions = exceptions_list or set()
 
         anidb_failed = False
         errors = []
@@ -1411,7 +1413,9 @@ class Home(WebRoot):
                 log_level = logger.INFO
             finally:
                 indexer_lang = language
-                errors.append(msg.format(status=status))
+                msg = msg.format(status=status)
+                if log_level >= logger.WARNING:
+                    errors.append(msg)
                 logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
@@ -1425,15 +1429,18 @@ class Home(WebRoot):
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
 
-        if not isinstance(exceptions_list, list):
-            exceptions_list = [exceptions_list]
+        if isinstance(exceptions, list):
+            exceptions = set(exceptions)
+
+        if not isinstance(exceptions, set):
+            exceptions = {exceptions}
 
         # If directCall from mass_edit_update no scene exceptions handling or
         # blackandwhite list handling
         if directCall:
             do_update_exceptions = False
         else:
-            if set(exceptions_list) == set(show_obj.exceptions):
+            if exceptions == show_obj.exceptions:
                 do_update_exceptions = False
             else:
                 do_update_exceptions = True
@@ -1519,7 +1526,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')

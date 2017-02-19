@@ -365,8 +365,13 @@ def wanted_episodes(show, from_date):
     # check through the list of statuses to see if we want any
     for result in sql_results:
         _, cur_quality = common.Quality.split_composite_status(int(result['status'] or UNKNOWN))
-        if not Quality.should_search(result['status'], show, result['manually_searched']):
+        should_search, should_search_reason = Quality.should_search(result['status'], show, result['manually_searched'])
+        if not should_search:
             continue
+        else:
+            logger.log(u'Searching for {show} {ep}. Reason: {reason}'.format
+                       (show=show.name, ep=episode_num(result['season'], result['episode']),
+                        reason=should_search_reason), logger.DEBUG)
 
         ep_obj = show.get_episode(result['season'], result['episode'])
         ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]

@@ -22,6 +22,8 @@ import re
 import stat
 import subprocess
 
+from collections import OrderedDict
+
 import adba
 
 from six import text_type
@@ -86,6 +88,10 @@ class PostProcessor(object):
         self.anidbEpisode = None
 
         self.manually_searched = False
+
+        self.item_resources = OrderedDict([('file name', self.file_name),
+                                           ('relative path', self.rel_path),
+                                           ('nzb name', self.nzb_name)])
 
     def _log(self, message, level=logger.INFO):
         """
@@ -220,6 +226,8 @@ class PostProcessor(object):
         # loop through all the files in the folder, and check if they are the same name
         # even when the cases don't match
         filelist = []
+        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list
+                    if helpers.get_extension(f).lower() == 'rar']
         for found_file in file_list:
 
             file_name = os.path.basename(found_file).lower()
@@ -233,6 +241,9 @@ class PostProcessor(object):
                     if not language:
                         continue
 
+                filelist.append(found_file)
+            # List associated files based on .RAR files like Show.101.720p-GROUP.nfo and Show.101.720p-GROUP.rar
+            elif any([file_name.startswith(r) for r in rar_file]):
                 filelist.append(found_file)
 
         file_path_list = []
@@ -253,7 +264,7 @@ class PostProcessor(object):
             # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
             if app.MOVE_ASSOCIATED_FILES:
                 allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                found_extension = associated_file_path.rpartition('.')[2]
+                found_extension = helpers.get_extension(associated_file_path)
                 if found_extension and found_extension not in allowed_extensions:
                     self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
                               (found_extension.upper()), logger.DEBUG)
@@ -322,7 +333,7 @@ class PostProcessor(object):
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
     def _combined_file_operation(self, file_path, new_path, new_base_name, associated_files=False,
-                                 action=None, subtitles=False):
+                                 action=None, subtitles=False, subtitle_action=None):
         """
         Perform a generic operation (move or copy) on a file.
 
@@ -359,6 +370,9 @@ class PostProcessor(object):
             changed_extension = None
             # file extension without leading dot (for example: de.srt)
             extension = cur_file_path[old_base_name_length + 1:]
+            # If basename is different, then is a RAR associated file.
+            if not extension:
+                helpers.get_extension(cur_file_path)
             # initally set current extension as new extension
             new_extension = extension
 
@@ -371,6 +385,11 @@ class PostProcessor(object):
                     sub_lang = 'pt-BR'
                 new_extension = sub_lang + split_extension[1]
                 changed_extension = True
+                #  If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
+                #  Otherwise when torrent+data gets removed the folder won't be deleted because of subtitle
+                if app.POSTPONE_IF_NO_SUBS:
+                    #  subtitle_action = move
+                    action = subtitle_action or action
 
             # replace nfo with nfo-orig to avoid conflicts
             if extension == 'nfo' and app.NFO_RENAME:
@@ -400,17 +419,16 @@ class PostProcessor(object):
 
             action(cur_file_path, new_file_path)
 
-    def _move(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
+    def post_process_action(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
         """
-        Move file and set proper permissions.
+        Run the given action on file and set proper permissions.
 
-        :param file_path: The full path of the media file to move
-        :param new_path: Destination path where we want to move the file to
-        :param new_base_name: The base filename (no extension) to use during the move. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should move similarly-named files too
+        :param file_path: The full path of the media file
+        :param new_path: Destination path where we want the file to
+        :param new_base_name: The base filename (no extension) to use. Use None to keep the same name.
+        :param associated_files: Boolean, whether we should run the action in similarly-named files too
         """
-        def _int_move(cur_file_path, new_file_path):
-
+        def move(cur_file_path, new_file_path):
             self._log(u'Moving file from {0} to {1} '.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.move_file(cur_file_path, new_file_path)
@@ -420,20 +438,7 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_move,
-                                      subtitles=subtitles)
-
-    def _copy(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
-        """
-        Copy file and set proper permissions.
-
-        :param file_path: The full path of the media file to copy
-        :param new_path: Destination path where we want to copy the file to
-        :param new_base_name: The base filename (no extension) to use during the copy. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should copy similarly-named files too
-        """
-        def _int_copy(cur_file_path, new_file_path):
-
+        def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.copy_file(cur_file_path, new_file_path)
@@ -443,20 +448,7 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files, action=_int_copy,
-                                      subtitles=subtitles)
-
-    def _hardlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
-        """
-        Hardlink file and set proper permissions.
-
-        :param file_path: The full path of the media file to move
-        :param new_path: Destination path where we want to create a hard linked file
-        :param new_base_name: The base filename (no extension) to use during the link. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should move similarly-named files too
-        """
-        def _int_hard_link(cur_file_path, new_file_path):
-
+        def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
             try:
                 helpers.hardlink_file(cur_file_path, new_file_path)
@@ -466,20 +458,7 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
-                                      action=_int_hard_link, subtitles=subtitles)
-
-    def _move_and_symlink(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
-        """
-        Move file, symlink source location back to destination, and set proper permissions.
-
-        :param file_path: The full path of the media file to move
-        :param new_path: Destination path where we want to move the file to create a symbolic link to
-        :param new_base_name: The base filename (no extension) to use during the link. Use None to keep the same name.
-        :param associated_files: Boolean, whether we should move similarly-named files too
-        """
-        def _int_move_and_sym_link(cur_file_path, new_file_path):
-
+        def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
                       (cur_file_path, new_file_path), logger.DEBUG)
             try:
@@ -490,8 +469,11 @@ class PostProcessor(object):
                           (cur_file_path, new_file_path, e), logger.ERROR)
                 raise
 
+        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
+        # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
+        subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move}.get(self.process_method)
         self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
-                                      action=_int_move_and_sym_link, subtitles=subtitles)
+                                      action=action, subtitle_action=subtitle_action, subtitles=subtitles)
 
     @staticmethod
     def _build_anidb_episode(connection, file_path):
@@ -524,7 +506,7 @@ class PostProcessor(object):
             except Exception as e:
                 self._log(u'Exception message: {0!r}'.format(e))
 
-    def _find_info(self):
+    def _parse_info(self):
         """
         For a given file try to find the show, season, epsiodes, version and quality.
 
@@ -532,9 +514,8 @@ class PostProcessor(object):
         """
         show = season = version = airdate = quality = None
         episodes = []
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
 
-        for counter, name in enumerate(name_list):
+        for counter, (resource, name) in enumerate(self.item_resources.items()):
 
             cur_show, cur_season, cur_episodes, cur_quality, cur_version = self._analyze_name(name)
 
@@ -563,13 +544,20 @@ class PostProcessor(object):
                     self._log(u"Couldn't convert to a valid airdate: {0}".format(episodes[0]), logger.DEBUG)
                     continue
 
-            if counter < (len(name_list) - 1):
+            if counter < (len(self.item_resources) - 1):
                 if common.Quality.qualityStrings[cur_quality] == 'Unknown':
                     continue
             quality = cur_quality
 
             # We have all the information we need
+            self._log(u'Show information parsed from {0}'.format(resource), logger.DEBUG)
             break
+
+        return show, season, episodes, quality, version, airdate
+
+    def _find_info(self):
+        show, season, episodes, quality, version, airdate = self._parse_info()
+        # TODO: Move logic below to a single place -> NameParser
 
         if airdate and show:
             # Ignore season 0 when searching for episode
@@ -688,12 +676,12 @@ class PostProcessor(object):
 
     def _get_ep_obj(self, show, season, episodes):
         """
-        Retrieve the TVEpisode object requested.
+        Retrieve the Episode object requested.
 
         :param show: The show object belonging to the show we want to process
         :param season: The season of the episode (int)
         :param episodes: A list of episodes to find (list of ints)
-        :return: If the episode(s) can be found then a TVEpisode object with the correct related eps will
+        :return: If the episode(s) can be found then a Episode object with the correct related eps will
         be instantiated and returned. If the episode can't be found then None will be returned.
         """
         root_ep = None
@@ -722,10 +710,10 @@ class PostProcessor(object):
         """
         Determine the quality of the file that is being post processed.
 
-        First by checking if it is directly available in the TVEpisode's status or
+        First by checking if it is directly available in the Episode's status or
         otherwise by parsing through the data available.
 
-        :param ep_obj: The TVEpisode object related to the file we are post processing
+        :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
         ep_quality = common.Quality.UNKNOWN
@@ -738,10 +726,7 @@ class PostProcessor(object):
                           (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
-        # NZB name is the most reliable if it exists, followed by file name and lastly folder name
-        name_list = [self.nzb_name, self.file_name, self.rel_path]
-
-        for cur_name in name_list:
+        for resource_name, cur_name in self.item_resources.items():
 
             # Skip names that are falsey
             if not cur_name:
@@ -751,8 +736,8 @@ class PostProcessor(object):
             self._log(u"Looking up quality for '{0}', got {1}".format
                       (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             if ep_quality != common.Quality.UNKNOWN:
-                self._log(u"Looks like '{0}' has quality {1}, using that".format
-                          (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
+                self._log(u"Looks like {0} '{1}' has quality {2}, using that".format
+                          (resource_name, cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
                 return ep_quality
 
         # Try using other methods to get the file quality
@@ -989,7 +974,7 @@ class PostProcessor(object):
         elif season is None or not episodes:
             raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
 
-        # retrieve/create the corresponding TVEpisode objects
+        # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
         old_ep_status, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 
@@ -1179,25 +1164,13 @@ class PostProcessor(object):
             self._add_to_anidb_mylist(self.file_path)
 
         try:
-            # move the episode and associated files to the show dir
-            if self.process_method == 'copy':
-                if helpers.is_file_locked(self.file_path, False):
-                    raise EpisodePostProcessingFailedException('File is locked for reading')
-                self._copy(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                           app.USE_SUBTITLES and ep_obj.show.subtitles)
-            elif self.process_method == 'move':
-                if helpers.is_file_locked(self.file_path, True):
-                    raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._move(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                           app.USE_SUBTITLES and ep_obj.show.subtitles)
-            elif self.process_method == "hardlink":
-                self._hardlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                               app.USE_SUBTITLES and ep_obj.show.subtitles)
-            elif self.process_method == "symlink":
-                if helpers.is_file_locked(self.file_path, True):
-                    raise EpisodePostProcessingFailedException('File is locked for reading/writing')
-                self._move_and_symlink(self.file_path, dest_path, new_base_name, app.MOVE_ASSOCIATED_FILES,
-                                       app.USE_SUBTITLES and ep_obj.show.subtitles)
+            # do the action to the episode and associated files to the show dir
+            if self.process_method in ['copy', 'hardlink', 'move', 'symlink']:
+                if not self.process_method == 'hardlink':
+                    if helpers.is_file_locked(self.file_path, False):
+                        raise EpisodePostProcessingFailedException('File is locked for reading')
+                self.post_process_action(self.file_path, dest_path, new_base_name,
+                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
@@ -1238,8 +1211,9 @@ class PostProcessor(object):
         except Exception:
             logger.log(u'Could not create/update meta files. Continuing with post-processing...')
 
-        # log it to history
-        history.logDownload(ep_obj, self.file_path, new_ep_quality, self.release_group, new_ep_version)
+        # log it to history episode and related episodes (multi-episode for example)
+        for cur_ep in [ep_obj] + ep_obj.related_episodes:
+            history.logDownload(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
         # If any notification fails, don't stop post_processor
         try:

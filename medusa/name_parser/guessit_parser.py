@@ -82,13 +82,13 @@ def get_expected_titles(show_list):
     (since they can confuse guessit).
 
     :param show_list:
-    :type show_list: list of medusa.tv.TVShow
+    :type show_list: list of medusa.tv.Series
     :return:
     :rtype: list of str
     """
     expected_titles = []
     for show in show_list:
-        names = [show.name] + show.exceptions
+        names = {show.name}.union(show.exceptions)
         for name in names:
             if name.isdigit():
                 # do not add numbers to expected titles.

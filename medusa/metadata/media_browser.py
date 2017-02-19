@@ -108,7 +108,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Returns a full show dir/metadata/episode.xml path for MediaBrowser
         episode metadata files
 
-        ep_obj: a TVEpisode object to get the path for
+        ep_obj: a Episode object to get the path for
         """
 
         if os.path.isfile(ep_obj.location):
@@ -128,7 +128,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Returns a full show dir/metadata/episode.jpg path for MediaBrowser
         episode thumbs.
 
-        ep_obj: a TVEpisode object to get the path from
+        ep_obj: a Episode object to get the path from
         """
 
         if os.path.isfile(ep_obj.location):
@@ -231,7 +231,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for a MediaBrowser-style series.xml
         returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
         my_show = self._get_show_data(show_obj)
 
@@ -369,7 +369,7 @@ class MediaBrowserMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for a MediaBrowser style episode.xml
         and returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes

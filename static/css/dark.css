@@ -275,9 +275,9 @@ h1.title {
 ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
-    padding: 3px 4px 3px 25px;
+    padding: 2px 7px 2px 25px;
     background: url(../images/tag.png) no-repeat scroll 5px 4px rgb(21, 82, 143);
-    border-radius: 3px;
+    border-radius: 1px;
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
@@ -294,6 +294,10 @@ ul.tags li {
     background-color: rgb(61, 61, 61);
 }
 
+#checkboxControlsBackground {
+    background-color: rgb(41, 41, 41);
+}
+
 .defaultTable {
     table-layout: auto;
     width: 100%;
@@ -308,7 +312,7 @@ ul.tags li {
 .defaultTable th {
     color: rgb(255, 255, 255);
     text-align: center;
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(55, 55, 55);
     white-space: nowrap;
 }
 
@@ -359,7 +363,7 @@ h2.network {
     color: rgb(255, 255, 255);
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(51, 51, 51);
 }
 
 .tvshowDiv {
@@ -465,7 +469,7 @@ config_postProcessing.mako
     margin: 0;
     color: rgb(255, 255, 255);
     text-align: center;
-    background: rgb(21, 82, 143);
+    background: rgb(55, 55, 55);
 }
 
 .Key tr {
@@ -540,38 +544,48 @@ body {
 
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(21, 82, 143);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#297AB8', endColorstr='#15528F');
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(41, 122, 184)), to(rgb(21, 82, 143)));
-    background: -moz-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
+    background-color: rgb(35, 35, 35);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(51, 51, 51)), to(rgb(35, 35, 35)));
+    background: -moz-linear-gradient(top, rgb(51, 51, 51), rgb(35, 35, 35));
+    border-color: rgb(62, 63, 58);
+}
+
+.navbar-default .navbar-collapse,
+.navbar-default .navbar-form {
     border-color: rgb(62, 63, 58);
 }
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(18, 68, 119);
+    background-color: rgb(35, 35, 35);
+}
+
+.navbar-default .navbar-nav > li > a:hover,
+.navbar-default .navbar-nav > li > a:focus {
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-nav > .active > a,
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
     color: rgb(255, 255, 255);
-    background-color: rgb(18, 68, 119);
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-toggle:hover,
 .navbar-default .navbar-toggle:focus {
-    background-color: rgb(18, 68, 119);
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-toggle .icon-bar {
-    background-color: rgb(18, 68, 119);
+    background-color: rgb(119, 119, 119);
 }
 
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
-    background-color: rgb(18, 68, 119);
+    background-color: rgb(119, 119, 119);
     color: rgb(255, 255, 255);
 }
 
@@ -580,7 +594,7 @@ body {
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
     .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
         color: rgb(255, 255, 255);
-        background-color: rgb(18, 68, 119);
+        background-color: rgb(119, 119, 119);
     }
 }
 
@@ -588,7 +602,7 @@ body {
 .dropdown-menu > li > a:focus {
     color: rgb(255, 255, 255);
     text-decoration: none;
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(119, 119, 119);
 }
 
 .dropdown-menu > li > a {
@@ -597,45 +611,40 @@ body {
 }
 
 .dropdown-menu {
-    background-color: rgb(51, 51, 51);
+    background-color: rgb(41, 41, 41);
     border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
+/* submenu styling */
+#sub-menu-container {
+    background-color: rgb(41, 41, 41);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#414141', endColorstr='#292929');
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(65, 65, 65)), to(rgb(41, 41, 41)));
+    background: -moz-linear-gradient(top, rgb(65, 65, 65), rgb(41, 41, 41));
+    border-color: rgb(62, 63, 58);
+}
+
 .btn {
-    display: inline-block;
-    *display: inline;
-    padding: 4px 10px 4px;
-    margin-bottom: 0;
-    *margin-left: .3em;
-    font-size: 12px;
-    line-height: 16px;
-    *line-height: 20px;
     color: rgb(255, 255, 255);
-    text-align: center;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
-    vertical-align: middle;
-    cursor: pointer;
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
-    background-image: -ms-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(41, 122, 184)), to(rgb(21, 82, 143)));
-    background-image: -webkit-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -o-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
-    background-image: -moz-linear-gradient(top, rgb(41, 122, 184), rgb(21, 82, 143));
+    background-color: rgb(97, 97, 97);
+    *background-color: rgb(97, 97, 97);
+    background-image: -ms-linear-gradient(top, rgb(51, 51, 51), rgb(85, 85, 85));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(51, 51, 51)), to(rgb(85, 85, 85)));
+    background-image: -webkit-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: -o-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
     background-repeat: repeat-x;
     border: 1px solid rgb(17, 17, 17);
     *border: 0;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
     border-color: rgb(17, 17, 17) rgb(17, 17, 17) rgb(17, 17, 17);
     border-bottom-color: rgb(17, 17, 17);
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-    border-radius: 4px;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#297AB8', endColorstr='#15528F', GradientType=0);
     filter: progid:dximagetransform.microsoft.gradient(enabled=false);
-    *zoom: 1;
+    /**zoom: 1;*/
     -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.0), 0 1px 2px rgba(0, 0, 0, 0.05);
     -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.0), 0 1px 2px rgba(0, 0, 0, 0.05);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.0), 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -646,22 +655,22 @@ body {
 .btn.active,
 .btn.disabled,
 .btn[disabled] {
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
 .btn:active,
 .btn.active {
-    background-color: rgb(204, 204, 204) \9;
+    background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
 .btn:hover {
-    color: rgb(255, 255, 255);
     text-decoration: none;
-    background-color: rgb(38, 114, 182);
-    *background-color: rgb(38, 114, 182);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
+    color: rgb(255, 255, 255);
     background-position: 0 -150px;
     -webkit-transition: background-position 0.0s linear;
     -moz-transition: background-position 0.0s linear;
@@ -679,8 +688,8 @@ body {
 
 .btn.active,
 .btn:active {
-    background-color: rgb(38, 114, 182);
-    background-color: rgb(38, 114, 182) \9;
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
     outline: 0;
@@ -692,7 +701,8 @@ body {
 .btn.disabled,
 .btn[disabled] {
     cursor: default;
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(97, 97, 97);
+    color: rgb(255, 255, 255);
     background-image: none;
     opacity: 0.65;
     filter: alpha(opacity=65);
@@ -760,7 +770,7 @@ div.formpaginate .next {
     color: rgb(255, 255, 255);
     cursor: hand;
     cursor: pointer;
-    background: rgb(34, 101, 161);
+    background: rgb(95,95,95);
     -webkit-border-radius: 6px;
         -moz-border-radius: 6px;
             border-radius: 6px;
@@ -818,19 +828,19 @@ tablesorter.css
     color: rgb(255, 255, 255);
     text-align: center;
     text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(85, 85, 85);
     border-collapse: collapse;
     font-weight: normal;
 }
 
 .tablesorter thead .tablesorter-headerDesc {
-    background-color: rgb(41, 122, 184);
+    background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
     /* background-image: url(../images/tablesorter/asc.gif); */
 }
 
 .tablesorter thead .tablesorter-headerAsc {
-    background-color: rgb(41, 122, 184);
+    background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
     /* background-image: url(../images/tablesorter/desc.gif); */
 }
@@ -913,7 +923,7 @@ jquery.confirm.css
 }
 
 #confirmBox h1 {
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(55, 55, 55);
     border-bottom: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     margin: 0;
@@ -942,7 +952,7 @@ bootstrap modal
 .modal-header {
     padding: 9px 15px;
     border-bottom: 1px solid rgb(238, 238, 238);
-    background-color: rgb(21, 82, 143);
+    background-color: rgb(55, 55, 55);
     -webkit-border-top-left-radius: 5px;
     -webkit-border-top-right-radius: 5px;
     -moz-border-radius-topleft: 5px;
@@ -1051,5 +1061,5 @@ new #confirmBox
 /* Christmas edition*/
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(21, 82, 143)!important;
+    background-color: rgb(51, 51, 51)!important;
 }

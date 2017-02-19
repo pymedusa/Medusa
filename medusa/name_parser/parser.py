@@ -43,7 +43,7 @@ class NameParser(object):
         """The NameParser constructor.
 
         :param show:
-        :type show: medusa.tv.TVShow
+        :type show: medusa.tv.Series
         :param try_indexers:
         :type try_indexers: bool
         :param naming_pattern:
@@ -148,6 +148,7 @@ class NameParser(object):
                                                                        result.show.indexer, absolute_episode,
                                                                        True, scene_season)
 
+                # Translate the absolute episode number, back to the indexers season and episode.
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                 logger.debug("Scene numbering enabled show '{name}' using indexer for absolute {absolute}: {ep}",
                              name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
@@ -203,6 +204,13 @@ class NameParser(object):
             result.episode_numbers = new_episode_numbers
             result.season_number = new_season_numbers[0]
 
+        # For anime that we still couldn't get a season, let's assume we should use 1.
+        if result.show.is_anime and result.season_number is None and result.episode_numbers:
+            result.season_number = 1
+            logger.warn("For this anime show {name}, we couldn't parse a season number, "
+                        "let's assume it's an absolute numbered anime show with season 1",
+                        name=result.show.name)
+
         if result.show.is_scene:
             logger.debug('Converted parsed result {original} into {result}', original=result.original_name,
                          result=result)
@@ -251,6 +259,9 @@ class NameParser(object):
         if not result.show:
             raise InvalidShowException('Unable to match {result.original_name} to a show in your database. '
                                        'Parser result: {result}'.format(result=result))
+
+        logger.debug("Matched release '{release}' to a show in your database: '{name}'",
+                     release=result.original_name, name=result.show.name)
 
         if result.season_number is None and not result.episode_numbers and \
                 result.air_date is None and not result.ab_episode_numbers and not result.series_name:

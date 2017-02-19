@@ -15,15 +15,15 @@
 </div>
 <div class="row">
     <div class="col-md-8 col-md-offset-2">
-        <form name="processForm" method="post" action="home/postprocess/processEpisode" style="line-height: 40px;">
-        <table>
+        <form name="processForm" class="lineH-40" method="post" action="home/postprocess/processEpisode">
+        <table id="process" class="col-md-12">
             <input type="hidden" id="proc_type" name="type" value="manual">
             <tr>
-                <td style="padding-right:10px;">
+                <td>
                     <b>Enter the folder containing the episode:</b>
                 </td>
                 <td>
-                    <input type="text" name="proc_dir" id="episodeDir" class="form-control form-control-inline input-sm" style="margin-right: 5px;"/>
+                    <input type="text" name="proc_dir" id="episodeDir" class="form-control form-control-inline input-sm"/>
                 </td>
             </tr>
             <tr>
@@ -45,7 +45,7 @@
                 </td>
                 <td>
                     <input id="force" name="force" type="checkbox">
-                    <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to post-process files that were already post-processed)</i></span>
+                    <span class="smallhelp"><i>&nbsp;(Check this to post-process files that were already post-processed)</i></span>
                 </td>
             </tr>
             <tr>
@@ -54,7 +54,7 @@
                 </td>
                 <td>
                     <input id="is_priority" name="is_priority" type="checkbox">
-                    <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to replace the file even if it exists at higher quality)</i></span>
+                    <span class="smallhelp"><i>&nbsp;(Check this to replace the file even if it exists at higher quality)</i></span>
                 </td>
             </tr>
             <tr>
@@ -63,7 +63,7 @@
                 </td>
                 <td>
                     <input id="delete_on" name="delete_on" type="checkbox" ${'' if app.NO_DELETE else 'checked="checked"'}>
-                    <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to delete files and folders like auto processing)</i></span>
+                    <span class="smallhelp"><i>&nbsp;(Check this to delete files and folders like auto processing)</i></span>
                 </td>
             </tr>
             % if app.USE_FAILED_DOWNLOADS:
@@ -73,7 +73,7 @@
                 </td>
                 <td>
                     <input id="failed" name="failed" type="checkbox">
-                    <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to mark download as failed)</i></span>
+                    <span class="smallhelp"><i>&nbsp;(Check this to mark download as failed)</i></span>
                 </td>
             </tr>
             % endif
@@ -84,14 +84,14 @@
                 </td>
                 <td>
                     <input id="ignore_subs" name="ignore_subs" type="checkbox">
-                    <span style="line-height: 0; font-size: 12px;"><i>&nbsp;(Check this to post-process when no subtitles available)</i></span>
+                    <span class="smallhelp"><i>&nbsp;(Check this to post-process when no subtitles available)</i></span>
                 </td>
             </tr>
             <tr>
                 <td>
                 </td>
                 <td>
-            <span style="line-height: 0; font-size: 12px;"><i>* Create a new folder in PP folder and move only the files you want to ignore subtitles for</i></span>
+            <span class="smallhelp"><i>* Create a new folder in PP folder and move only the files you want to ignore subtitles for</i></span>
                 </td>
             </tr>
             % endif

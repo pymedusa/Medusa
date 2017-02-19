@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width">
     <!-- These values come from css/dark.css and css/light.css -->
     % if sbThemeName == "dark":
-    <meta name="theme-color" content="#15528F">
+    <meta name="theme-color" content="#333333">
     % elif sbThemeName == "light":
     <meta name="theme-color" content="#333333">
     % endif

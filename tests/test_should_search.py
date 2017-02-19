@@ -1,21 +1,21 @@
 # coding=utf-8
-"""Tests for medusa/test_should_search_replace.py."""
+"""Tests for medusa/test_should_search.py."""
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED,
                            SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED)
-from medusa.tv import TVShow
+from medusa.tv import Series
 
 import pytest
 
 
-class TestTVShow(TVShow):
-    """A test `TVShow` object that does not need DB access."""
+class TestTVShow(Series):
+    """A test `Series` object that does not need DB access."""
 
     def __init__(self, indexer, indexer_id, lang, quality):
         """Initialize the object."""
         super(TestTVShow, self).__init__(indexer, indexer_id, lang, quality)
 
     def _load_from_db(self):
-        """Override TVShow._load_from_db to avoid DB access during testing."""
+        """Override Series._load_from_db to avoid DB access during testing."""
         pass
 
 
@@ -156,6 +156,38 @@ class TestTVShow(TVShow):
         'manually_searched': False,
         'expected': True
     },
+    {  # p17: ´SNATCHED BEST but this quality is no longer wanted: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
+                                                                 [Quality.HDBLURAY])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
+    {  # p18: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred set: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV, Quality.SDTV],  # Allowed Qualities
+                                                                 [Quality.HDBLURAY])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
+    {  # p19: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred not set: no
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV, Quality.SDTV],  # Allowed Qualities
+                                                                 [])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': False
+    },
+    {  # p20: ´SNATCHED BEST but this quality is no longer wanted. Preferred not set: yes
+        'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
+        'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
+                               quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
+                                                                 [])),  # Preferred Qualities
+        'manually_searched': False,
+        'expected': True
+    },
 ])
 def test_should_search(p):
     """Run the test."""
@@ -166,8 +198,10 @@ def test_should_search(p):
     expected = p['expected']
 
     # When
-    replace = Quality.should_search(status, show_obj, manually_searched)
+    replace, msg = Quality.should_search(status, show_obj, manually_searched)
     actual = replace
 
     # Then
+    if expected != actual:
+        print msg
     assert expected == actual

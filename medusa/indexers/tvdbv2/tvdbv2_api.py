@@ -156,7 +156,7 @@ class TVDBv2(BaseIndexer):
             raise IndexerShowNotFound(
                 'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
             )
-        except Exception as e:
+        except (MaxRetryError, RequestError) as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)
 
         if results:
@@ -264,6 +264,8 @@ class TVDBv2(BaseIndexer):
                 'could not get any episodes. Did a {search_type} search. Exception: {ex}'.format
                 (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), ex=e)
             )
+        except (MaxRetryError, RequestError) as e:
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
 
         if not results:
             logger.debug('Series results incomplete')
@@ -560,7 +562,7 @@ class TVDBv2(BaseIndexer):
                 from_time = last_update_ts
                 total_updates += [int(_.id) for _ in updates]
                 count += 1
-        except RequestError as e:
+        except (ApiException, MaxRetryError, RequestError) as e:
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
 
         if total_updates and filter_show_list:

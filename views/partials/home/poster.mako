@@ -92,7 +92,7 @@
                     <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
                     <div class="show-title">
                         <div class="ellipsis">${cur_show.name}</div>
-                        % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer):
+                        % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
                             <div class="xem">
                                 <img src="images/xem.png" width="16" height="16" />
                             </div>
@@ -123,7 +123,7 @@
             % endif
                     </div>
                     <div class="show-details">
-                        <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                        <table class="show-details ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%" cellspacing="1" border="0" cellpadding="0">
                             <tr>
                                 <td class="show-table">
                                     <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>

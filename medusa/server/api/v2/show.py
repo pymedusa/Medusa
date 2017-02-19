@@ -77,19 +77,29 @@ class ShowHandler(BaseRequestHandler):
         return tv_show and (paused is None or tv_show.paused == paused)
 
     def _handle_detailed_show(self, tv_show, query):
-        data = tv_show.to_json()
         if query:
-            if query == 'queue':
+            if query == 'backlogged':
+                allowed_qualities = self._parse(self.get_argument('allowed', default=None), str)
+                allowed_qualities = map(int, allowed_qualities.split(',')) if allowed_qualities else []
+                preferred_qualities = self._parse(self.get_argument('preferred', default=None), str)
+                preferred_qualities = map(int, preferred_qualities.split(',')) if preferred_qualities else []
+                new, existing = tv_show.get_backlogged_episodes(allowed_qualities=allowed_qualities,
+                                                                preferred_qualities=preferred_qualities)
+                data = {'new': new, 'existing': existing}
+            elif query == 'archiveEpisodes':
+                data = {'archived': 'true' if tv_show.set_all_episodes_archived(final_status_only=True) else 'false'}
+            elif query == 'queue':
                 action, message = app.show_queue_scheduler.action.get_queue_action(tv_show)
                 data = {
                     'action': ShowQueueActions.names[action],
                     'message': message,
                 } if action is not None else dict()
-            elif query in data:
+            elif query in tv_show.to_json():
                 data = data[query]
             else:
                 return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
-
+        else:
+            data = tv_show.to_json()
         self.api_finish(data=data)
 
     def _handle_episode(self, tv_show, ep_id, query):
@@ -106,12 +116,12 @@ class ShowHandler(BaseRequestHandler):
 
     @staticmethod
     def _find_tv_episode(tv_show, ep_id):
-        """Find TVEpisode based on specified criteria.
+        """Find Episode based on specified criteria.
 
         :param tv_show:
         :param ep_id:
         :return:
-        :rtype: medusa.tv.TVEpisode or tuple(int, string)
+        :rtype: medusa.tv.Episode or tuple(int, string)
         """
         if ep_id.season is not None and ep_id.episode is not None:
             tv_episode = tv_show.get_episode(season=ep_id.season, episode=ep_id.episode, should_cache=False)

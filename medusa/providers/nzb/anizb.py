@@ -20,12 +20,15 @@ from __future__ import unicode_literals
 
 import traceback
 
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import try_int
+from medusa.providers.nzb.nzb_provider import NZBProvider
 
-from .nzb_provider import NZBProvider
-from ... import logger, tv_cache
-from ...bs4_parser import BS4Parser
-from ...helper.common import try_int
+from requests.compat import urljoin
 
 
 class Anizb(NZBProvider):
@@ -55,7 +58,7 @@ class Anizb(NZBProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = tv_cache.TVCache(self)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """Start searching for anime using the provided search_strings. Used for backlog and daily."""

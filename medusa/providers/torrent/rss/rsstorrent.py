@@ -24,9 +24,14 @@ import re
 
 from bencode import bdecode
 
-from ..torrent_provider import TorrentProvider
-from .... import app, helpers, logger, tv_cache
-from ....helper.exceptions import ex
+from medusa import (
+    app,
+    helpers,
+    logger,
+    tv,
+)
+from medusa.helper.exceptions import ex
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 
 class TorrentRssProvider(TorrentProvider):
@@ -216,7 +221,7 @@ class TorrentRssProvider(TorrentProvider):
         return True
 
 
-class TorrentRssCache(tv_cache.TVCache):
+class TorrentRssCache(tv.Cache):
     """RSS torrent cache class."""
 
     def _get_rss_data(self):

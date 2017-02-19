@@ -96,44 +96,44 @@ def filterBadReleases(name, parse=True):
 
 def allPossibleShowNames(show, season=-1):
     """
-    Figures out every possible variation of the name for a particular show. Includes TVDB name, TVRage name,
-    country codes on the end, eg. "Show Name (AU)", and any scene exception names.
+    Figures out every possible variation of the name for a particular show.
 
-    show: a TVShow object that we should get the names of
+    Includes indexer name, and any scene exception names, and country code
+    at the end of the name (e.g. "Show Name (AU)".
 
-    Returns: a list of all the possible show names
+    show: a Series object that we should get the names of
+    Returns: all possible show names
     """
 
-    showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
-    if not showNames:  # if we dont have any season specific exceptions fallback to generic exceptions
-        season = -1
-        showNames = get_scene_exceptions(show.indexerid, show.indexer, season=season)
+    show_names = get_scene_exceptions(show.indexerid, show.indexer, season)
+    show_names.add(show.name)
 
-    showNames.append(show.name)
+    new_show_names = set()
 
     if not show.is_anime:
-        newShowNames = []
-        country_list = common.countryList
-        country_list.update(dict(zip(common.countryList.values(), common.countryList.keys())))
-        for curName in set(showNames):
-            if not curName:
+        country_list = {}
+        # add the country list
+        country_list.update(common.countryList)
+        # add the reversed mapping of the country list
+        country_list.update({v: k for k, v in common.countryList.items()})
+
+        for name in show_names:
+            if not name:
                 continue
 
-            # if we have "Show Name Australia" or "Show Name (Australia)" this will add "Show Name (AU)" for
-            # any countries defined in common.countryList
-            # (and vice versa)
-            for curCountry in country_list:
-                if curName.endswith(' ' + curCountry):
-                    newShowNames.append(curName.replace(' ' + curCountry, ' (' + country_list[curCountry] + ')'))
-                elif curName.endswith(' (' + curCountry + ')'):
-                    newShowNames.append(curName.replace(' (' + curCountry + ')', ' (' + country_list[curCountry] + ')'))
+            # if we have "Show Name Australia" or "Show Name (Australia)"
+            # this will add "Show Name (AU)" for any countries defined in
+            # common.countryList (and vice versa)
+            for country in country_list:
+                pattern_1 = ' {0}'.format(country)
+                pattern_2 = ' ({0})'.format(country)
+                replacement = ' ({0})'.format(country_list[country])
+                if name.endswith(pattern_1):
+                    new_show_names.add(name.replace(pattern_1, replacement))
+                elif name.endswith(pattern_2):
+                    new_show_names.add(name.replace(pattern_2, replacement))
 
-            # # if we have "Show Name (2013)" this will strip the (2013) show year from the show name
-            # newShowNames.append(re.sub('\(\d{4}\)', '', curName))
-
-        showNames += newShowNames
-
-    return set(showNames)
+    return show_names.union(new_show_names)
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):

@@ -22,58 +22,11 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="showID" value="${show.indexerid}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
-
-<div class="row">
-    <div class="form-inline col-lg-3 col-md-4 col-sm-6 col-xs-12">
-        <label for="select-show">Change Show:</label>
-        <div class="select-show-group">
-            <div class="navShow"><img id="prevShow" src="images/prev.png" alt="&lt;&lt;" title="Prev Show" /></div>
-            <select id="select-show" class="form-control input-sm">
-            % for cur_show_list in sortedShowLists:
-                <% cur_show_type = cur_show_list[0] %>
-                <% cur_show_list = cur_show_list[1] %>
-                % if len(sortedShowLists) > 1:
-                    <optgroup label="${cur_show_type}">
-                % endif
-                    % for cur_show in cur_show_list:
-                    <option value="${cur_show.indexerid}" ${'selected="selected"' if cur_show == show else ''}>${cur_show.name}</option>
-                    % endfor
-                % if len(sortedShowLists) > 1:
-                    </optgroup>
-                % endif
-            % endfor
-            </select>
-            <div class="navShow"><img id="nextShow" src="images/next.png" alt="&gt;&gt;" title="Next Show" /></div>
-        </div>
-    </div>
 </div>
 <div class="clearfix"></div>
+<div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
 
 <%include file="/partials/showheader.mako"/>
-
-<div class="row">
-    <div class="col-md-12" >
-        Change selected episodes to:<br>
-        <select id="statusSelect" class="form-control form-control-inline input-sm">
-        <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
-        % if not app.USE_FAILED_DOWNLOADS:
-        <% availableStatus.remove(FAILED) %>
-        % endif
-        % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
-            % if cur_status not in [DOWNLOADED, ARCHIVED]:
-            <option value="${cur_status}">${statusStrings[cur_status]}</option>
-            % endif
-        % endfor
-        </select>
-        <input type="hidden" id="showID" value="${show.indexerid}" />
-        <input type="hidden" id="indexer" value="${show.indexer}" />
-        <input class="btn btn-inline" type="button" id="changeStatus" value="Go" />
-
-        <div class="pull-right">
-            <button id="popover" type="button" class="btn top-5 bottom-5">Select Columns <b class="caret"></b></button>
-        </div>
-    </div>
-</div>
 
 <div class="row">
     <div class="col-md-12">
@@ -149,9 +102,12 @@
                         % endif
                         </h3>
                         <div class="season-scene-exception" data-season=${str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}></div>
-                        % if app.DISPLAY_ALL_SEASONS is False:
-                            <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
-                        % endif
+                        <div class="pull-right"> <!-- column select and hide/show episodes -->
+                            % if not app.DISPLAY_ALL_SEASONS:
+                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
+                            % endif
+                            <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
+                        </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>
             </tbody>
@@ -174,7 +130,7 @@
                     <th class="col-search">Search</th>
                 </tr>
                     % else:
-                <tr id="season-${epResult["season"]}-footer" class="seasoncols">
+                <tr id="season-${epResult["season"]}-footer" class="seasoncols border-bottom shadow">
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
                 <% epCount = 0 %>
@@ -191,14 +147,16 @@
                         </h3>
                         <!-- @TODO: port the season scene exceptions to angular -->
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
-                        % if app.DISPLAY_ALL_SEASONS is False:
-                            <button id="showseason-${epResult['season']}" type="button" class="btn top-5 bottom-5 pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
-                        % endif
+                        <div class="pull-right"> <!-- hide/show episodes -->
+                            % if not app.DISPLAY_ALL_SEASONS:
+                                <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Show Episodes</button>
+                            % endif
+                        </div> <!-- end hide/show episodes -->
                     </th>
                 </tr>
             </tbody>
             <tbody class="tablesorter-no-sort">
-                <tr id="season-${epResult["season"]}-cols" class="seasoncols">
+                <tr id="season-${epResult["season"]}-cols" class="seasoncols ${'' if app.DISPLAY_ALL_SEASONS else 'shadow'}">
                     <th class="col-checkbox"><input type="checkbox" class="seasonCheck" id="${epResult["season"]}" /></th>
                     <th class="col-metadata">NFO</th>
                     <th class="col-metadata">TBN</th>
@@ -217,7 +175,7 @@
                 </tr>
                     % endif
             </tbody>
-                % if app.DISPLAY_ALL_SEASONS is False:
+                % if not app.DISPLAY_ALL_SEASONS:
                 <tbody class="toggle collapse${("", " in")[cur_season == -1]}" id="collapseSeason-${epResult['season']}">
                 % else:
                 <tbody>
@@ -271,7 +229,7 @@
                     </td>
                     <td class="col-name hidden-xs">
                     % if epResult["description"] != "" and epResult["description"] is not None:
-                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${str(mappings.get(show.indexer).replace('_id', '')) + str(show.indexerid)}_${str(epResult["season"])}_${str(epResult["episode"])}" />
+                        <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${show.indexer_slug}_${str(epResult["season"])}_${str(epResult["episode"])}" />
                     % else:
                         <img src="images/info32.png" width="16" height="16" class="plotInfoNone" alt="" />
                     % endif
@@ -344,10 +302,11 @@
                     </td>
                 </tr>
             % endfor
-                <tr id="season-${epResult["season"]}-footer" class="seasoncols">
+                <tr id="season-${epResult["season"]}-footer" class="seasoncols border-bottom shadow">
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
             </tbody>
+            <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=13></th></tr></tbody>
         </table>
     </div> <!-- end of col -->
 </div> <!-- row -->

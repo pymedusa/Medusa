@@ -220,7 +220,7 @@ class ImageCache(object):
         """
         Retrieve an image of the type specified from the indexer and save it to the cache folder.
 
-        :param show_obj: TVShow object that we want to cache an image for
+        :param show_obj: Series object that we want to cache an image for
         :param img_type: BANNER or POSTER or FANART
         :return: bool representing success
         """
@@ -258,7 +258,7 @@ class ImageCache(object):
 
         Copies them from the show dir if possible, or downloads them from indexer if they aren't in the show dir.
 
-        :param show_obj: TVShow object to cache images for
+        :param show_obj: Series object to cache images for
         """
         logger.log('Checking if we need any cache images for show: {0}'.format(show_obj.name), logger.DEBUG)
 

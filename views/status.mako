@@ -4,13 +4,9 @@
     from medusa import helpers
     from medusa.show_queue import ShowQueueActions
     from medusa.helper.common import dateTimeFormat
+    from random import choice
 %>
 <%block name="content">
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
 <%
     schedulerList = {
         'Daily Search': 'daily_search_scheduler',
@@ -26,9 +22,10 @@
         'Torrent Checker': 'torrent_checker_scheduler',
     }
 %>
+<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
 <div id="config-content">
     <h2 class="header">Scheduler</h2>
-    <table id="schedulerStatusTable" class="tablesorter" width="100%">
+    <table id="schedulerStatusTable" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%">
         <thead>
             <tr>
                 <th>Scheduler</th>
@@ -107,7 +104,7 @@
        </tbody>
     </table>
     <h2 class="header">Show Queue</h2>
-    <table id="queueStatusTable" class="tablesorter" width="100%">
+    <table id="queueStatusTable" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%">
         <thead>
             <tr>
                 <th>Show id</th>
@@ -186,7 +183,7 @@
         </tbody>
     </table>
     <h2 class="header">Disk Space</h2>
-    <table id="DFStatusTable" class="tablesorter" width="50%">
+    <table id="DFStatusTable" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="50%">
         <thead>
             <tr>
                 <th>Type</th>

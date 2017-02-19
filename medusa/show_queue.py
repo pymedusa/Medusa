@@ -19,12 +19,15 @@
 import os
 import traceback
 
-from imdb import _exceptions as imdb_exceptions
+from imdbpie.exceptions import HTTPError as IMDbHTTPError
+
 from six import binary_type, text_type
+
 from traktor import TraktException
+
 from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
 from .black_and_white_list import BlackAndWhiteList
-from .common import WANTED
+from .common import WANTED, statusStrings
 from .helper.common import episode_num, sanitize_filename
 from .helper.exceptions import (
     CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
@@ -36,7 +39,7 @@ from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
                                           IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
                                           IndexerShowNotFoundInLanguage)
-from .tv import TVShow
+from .tv import Series
 
 
 class ShowQueueActions(object):
@@ -241,8 +244,8 @@ class ShowQueue(generic_queue.GenericQueue):
         queue_item_obj = QueueItemRemove(show=show, full=full)
         self.add_item(queue_item_obj)
 
-        # Show removal has been queued, let's updaste the app.RECENTLY_DELETED global, to keep track of it
-        app.RECENTLY_DELETED.update([show.indexerid])
+        # Show removal has been queued, let's update the app.RECENTLY_DELETED global, to keep track of it
+        app.RECENTLY_DELETED.update([show.indexer_slug])
 
         return queue_item_obj
 
@@ -430,7 +433,7 @@ class QueueItemAdd(ShowQueueItem):
             return
 
         try:
-            newShow = TVShow(self.indexer, self.indexer_id, self.lang)
+            newShow = Series(self.indexer, self.indexer_id, self.lang)
             newShow.load_from_indexer(t)
 
             self.show = newShow
@@ -446,7 +449,8 @@ class QueueItemAdd(ShowQueueItem):
             self.show.paused = self.paused if self.paused is not None else False
 
             # set up default new/missing episode status
-            logger.log(u"Setting all episodes to the specified default status: " + str(self.show.default_ep_status))
+            logger.log(u"Setting all previously aired episodes to the specified status: {status}".format
+                       (status=statusStrings[self.default_status]))
             self.show.default_ep_status = self.default_status
 
             if self.show.anime:
@@ -493,7 +497,7 @@ class QueueItemAdd(ShowQueueItem):
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
         except Exception as e:
             logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
@@ -707,7 +711,7 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
         except Exception as e:
@@ -828,7 +832,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
                        (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
         except Exception as e:

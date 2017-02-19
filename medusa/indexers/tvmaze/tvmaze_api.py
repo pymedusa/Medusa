@@ -23,7 +23,7 @@ from collections import OrderedDict
 from time import time
 
 from pytvmaze import TVMaze
-from pytvmaze.exceptions import CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
+from pytvmaze.exceptions import BaseError, CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowNotFound
@@ -178,7 +178,7 @@ class TVmaze(BaseIndexer):
             raise IndexerShowNotFound(
                 'Show search failed in getting a result with reason: %s' % e
             )
-        except Exception as e:
+        except BaseError as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)
 
         if results:
@@ -238,6 +238,8 @@ class TVmaze(BaseIndexer):
         except IDNotFound:
             logger.debug('Episode search did not return any results.')
             return False
+        except BaseError as e:
+            raise IndexerException('Show episodes search failed in getting a result with error: {0!r}'.format(e))
 
         episodes = self._map_results(results, self.series_map)
 
@@ -321,7 +323,10 @@ class TVmaze(BaseIndexer):
         seasons = {}
         if tvmaze_id:
             logger.debug('Getting all show data for %s', [tvmaze_id])
-            seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
+            try:
+                seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
+            except BaseError as e:
+                logger.warning('Getting show seasons for the season images failed. Cause: %s', e)
 
         _images = {'season': {'original': {}}}
         # Get the season posters
@@ -364,6 +369,9 @@ class TVmaze(BaseIndexer):
             actors = self.tvmaze_api.show_cast(tvmaze_id)
         except CastNotFound:
             logger.debug('Actors result returned zero')
+            return
+        except BaseError as e:
+            logger.warning('Getting actors failed. Cause: %s', e)
             return
 
         cur_actors = Actors()
@@ -433,17 +441,20 @@ class TVmaze(BaseIndexer):
 
         return True
 
-    def _get_all_updates(self, tvmaze_id=None, start_date=None, end_date=None):
+    def _get_all_updates(self, start_date=None, end_date=None):
         """Retrieve all updates (show,season,episode) from TVMaze."""
         results = []
         try:
             updates = self.tvmaze_api.show_updates()
         except (ShowIndexError, UpdateNotFound):
-            return False
+            return results
+        except BaseError as e:
+            logger.warning('Getting show updates failed. Cause: %s', e)
+            return results
 
         if getattr(updates, 'updates', None):
-            for show_id, update_ts in updates.updates.iteritems():
-                if start_date < update_ts < (end_date or time()):
+            for show_id, update_ts in updates.updates.items():
+                if start_date < update_ts.seconds_since_epoch < (end_date or int(time())):
                     results.append(int(show_id))
 
         return results
@@ -493,5 +504,8 @@ class TVmaze(BaseIndexer):
                 except ShowNotFound:
                     logger.debug('Could not get tvmaze externals using external key %s and id %s',
                                  external_id, kwargs.get(external_id))
+                    continue
+                except BaseError as e:
+                    logger.warning('Could not get tvmaze externals. Cause: %s', e)
                     continue
         return externals

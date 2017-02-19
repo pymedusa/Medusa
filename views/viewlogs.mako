@@ -3,6 +3,7 @@
     from medusa import app
     from medusa import classes
     from medusa.logger import LOGGING_LEVELS
+    from random import choice
 %>
 <%block name="css">
 <style>
@@ -14,18 +15,18 @@ pre {
 </style>
 </%block>
 <%block name="content">
+<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
+
 <div class="row wide">
     <div class="col-md-12">
-        % if not header is UNDEFINED:
-            <h1 class="header">${header}</h1>
-        % else:
-            <h1 class="title">${title}</h1>
-        % endif
-    </div>
-</div>
-<div class="row wide">
-    <div class="col-md-12">
-        <div class="logging-filter-controll pull-right">
+        <div class="col-md-3">
+            % if not header is UNDEFINED:
+                <h1 class="header">${header}</h1>
+            % else:
+                <h1 class="title">${title}</h1>
+            % endif
+        </div>
+        <div class="logging-filter-controll pull-right col-md-9">
             <div class="show-option pull-right">
                 <!-- Search Log -->
                 <span>Search log by:
@@ -75,7 +76,7 @@ pre {
     </div> <!-- End form group -->
 </div> <!-- row -->
 <div class="row wide">
-    <div class="col-md-12">
+    <div class="col-md-12 ${'fanartOpacity' if app.FANART_BACKGROUND else ''}">
         <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div>${log_lines}</pre>
     </div>
 </div>

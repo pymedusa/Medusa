@@ -84,7 +84,7 @@ class TVShow(object):  # pylint: disable=too-few-public-methods
     is_scene = property(_is_scene)
 
 
-class TVEpisode(tv.TVEpisode):  # pylint: disable=too-many-instance-attributes
+class TVEpisode(tv.Episode):  # pylint: disable=too-many-instance-attributes
     def __init__(self, season, episode, absolute_number, name):  # pylint: disable=super-init-not-called
         super(TVEpisode, self).__init__(None, season, episode)
         self.related_episodes = []

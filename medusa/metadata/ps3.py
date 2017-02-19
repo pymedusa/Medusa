@@ -114,7 +114,7 @@ class PS3Metadata(generic.GenericMetadata):
         Returns the path where the episode thumbnail should be stored. Defaults to
         the same path as the episode file but with a .cover.jpg extension.
 
-        ep_obj: a TVEpisode instance for which to create the thumbnail
+        ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
             tbn_filename = ep_obj.location + ".cover.jpg"

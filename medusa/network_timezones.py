@@ -57,8 +57,10 @@ def update_network_dict():
             if key is None or val is None:
                 continue
             d[key] = val
-    except (IOError, OSError):
-        pass
+    except (IOError, OSError) as error:
+        logger.log('Unable to build the network dictionary. Aborting update. Error: {error}'.format
+                   (error=error), logger.WARNING)
+        return
 
     cache_db_con = db.DBConnection('cache.db')
 

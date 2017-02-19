@@ -91,7 +91,7 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
         Returns the path where the episode thumbnail should be stored. Defaults to
         the same path as the episode file but with a .tbn extension.
 
-        ep_obj: a TVEpisode instance for which to create the thumbnail
+        ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
             tbn_filename = replace_extension(ep_obj.location, 'tbn')
@@ -105,7 +105,7 @@ class KODIMetadata(kodi_12plus.KODI_12PlusMetadata):
         """
         Returns the full path to the file for a given season poster.
 
-        show_obj: a TVShow instance for which to generate the path
+        show_obj: a Series instance for which to generate the path
         season: a season number to be used for the path. Note that season 0
                 means specials.
         """

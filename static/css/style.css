@@ -9,7 +9,6 @@ inc_top.mako
 .header {
     display: block;
     clear: right;
-    margin-top: 15px;
 }
 
 .navbaricon {
@@ -193,6 +192,7 @@ inc_top.mako
 #sub-menu {
     font-size: 12px;
     float: right;
+    padding-top: 2px;
 }
 
 #sub-menu > a {
@@ -425,6 +425,18 @@ inc_rootDirs.mako
 
 .rootdir-controls {
     text-align: center;
+}
+
+/* =======================================================================
+history.mako
+========================================================================== */
+.layout-controls {
+    padding-top:24px;
+}
+
+.fanartOpacity
+{
+    opacity: 0.9;
 }
 
 /* =======================================================================
@@ -786,7 +798,7 @@ td.tvShow a:hover {
 }
 
 #popover-target label {
-    margin: 0 5px;
+    margin: 2px 4px 2px 0;
     display: block;
 }
 
@@ -1039,6 +1051,25 @@ home_postprocess.mako
     margin-left: auto;
 }
 
+.lineH-40 {
+    line-height: 40px;
+}
+
+#episodeDir {
+    width: 70%;
+    margin-right: 5px;
+}
+
+.smallhelp {
+    line-height: 0;
+    font-size: 12px;
+}
+
+#process td:nth-child(1) {
+    padding-right: 10px;
+    width: 290px;
+}
+
 /* =======================================================================
 displayShow.mako
 ========================================================================== */
@@ -1072,9 +1103,28 @@ div#container-display-show {
     margin-bottom: 15px;
 }
 
+#showSelector {
+    height:31px;
+    overflow: hidden;
+    display: table-cell;
+    left:20px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 .show-info-container {
     overflow:hidden;
     display: table-cell;
+}
+
+.select-show-group {
+    width: 300px;
+}
+
+.container-navShow {
+    margin-top: -2px;
+    margin-left: 305px;
+    z-index:10;
 }
 
 .tvshowImg {
@@ -1084,7 +1134,58 @@ div#container-display-show {
     width: auto;
     float: left;
 }
+
+@media (min-width: 1281px) {
+    #sub-menu-container {
+        position:fixed;
+        width:100%;
+        margin-top: -9px;
+        top: 60px;
+    }
+}
+
+@media (max-width: 1281px) {
+    #sub-menu-container {
+        position:relative;
+        margin-top: -24px;
+    }
+}
+
+@media (max-width: 767px) and (min-width: 341px) {
+    .select-show-group {
+        width: calc(100% - 10px);
+        margin: 0 auto;
+    }
+
+    .container-navShow {
+        margin-left: 305px;
+    }
+
+    .showSelector {
+        width: 100%;
+    }
+
+    .container-navShow {
+        display: none;
+    }
+}
+
+@media (max-width: 340px) {
+    .select-show-group {
+        width: 260px;
+    }
+
+    .container-navShow {
+        margin-left: 265px;
+    }
+}
+
 @media (max-width: 767px) {
+    #showSelector {
+        left:5px;
+        margin-bottom: 5px;
+    }
+
     .pull-xs-left {
         float: left;
     }
@@ -1126,17 +1227,11 @@ div#container-display-show {
         margin: 0 -13px;
     }
 
-    .select-show-group {
-        width: 100%;
-        margin: 0 auto;
-    }
-
     .show-info-container {
-    display: block;
-    padding-top: 5px;
-    width: 100%;
-}
-
+        display: block;
+        padding-top: 5px;
+        width: 100%;
+    }
 
 }
 
@@ -1211,7 +1306,9 @@ div#container-display-show {
 }
 
 .navShow {
-    display: inline;
+    width:18px;
+    max-height:15px;
+    display: -webkit-box;
     cursor: pointer;
 }
 
@@ -1286,9 +1383,9 @@ ul.tags {
 ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
-    padding: 3px 4px 3px 25px;
+    padding: 2px 7px 2px 25px;
     background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
-    border-radius: 3px;
+    border-radius: 1px;
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
@@ -1321,19 +1418,31 @@ ul.tags li a {
     border-color: rgb(136, 136, 136);
 }
 
+#checkboxControlsBackground {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    height: 0px;
+    background-color: #DDD;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
+    z-index: -2;
+}
+
 .summaryTable {
     overflow: hidden;
 }
 
 #checkboxControls {
-    padding-top: 5px;
+    padding-top: 1px;
 }
 
 #checkboxControls span {
-    padding: 5px;
-    font-size: 13px;
+    padding: 2px 5px 2px 5px;
+    font-size: 11px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 #checkboxControls label {
@@ -1379,32 +1488,26 @@ background-color: rgb(255, 153, 153);
 
 span.unaired {
     color: rgb(88, 75, 32);
-    border: 1px solid rgb(88, 75, 32);
 }
 
 span.skipped {
     color: rgb(29, 80, 104);
-    border: 1px solid rgb(29, 80, 104);
 }
 
 span.good {
     color: rgb(41, 87, 48);
-    border: 1px solid rgb(41, 87, 48);
 }
 
 span.qual {
     color: rgb(118, 81, 0);
-    border: 1px solid rgb(118, 81, 0);
 }
 
 span.wanted {
     color: rgb(137, 0, 0);
-    border: 1px solid rgb(137, 0, 0);
 }
 
 span.snatched {
     color: rgb(101, 33, 100);
-    border: 1px solid rgb(101, 33, 100);
 }
 
 span.unaired b,
@@ -1671,8 +1774,9 @@ div.season-scene-exception {
 }
 
 select#select-show {
+    padding-top:5px;
     display: inline-block;
-    width: calc(100% - 40px);
+    width: 100%;
 }
 
 
@@ -1681,7 +1785,7 @@ schedule.mako
 ========================================================================== */
 
 .key {
-    line-height: 40px;
+    line-height: 25px;
 }
 
 .listing-key {
@@ -2453,6 +2557,10 @@ a.whitelink {
 Global
 ========================================================================== */
 
+.logging-filter-controll {
+    padding-top: 24px;
+}
+
 span.path {
     padding: 3px 6px;
     color: rgb(139, 0, 0);
@@ -2460,7 +2568,7 @@ span.path {
 }
 
 .align-left {
-    text-align: left;
+    text-align: left!important;
 }
 
 .h2footer {
@@ -2661,7 +2769,7 @@ bootstrap Overrides
 ========================================================================== */
 
 #vue-wrap {
-        padding-top: 60px;
+        padding-top: 75px;
 }
 
 body {
@@ -2855,6 +2963,34 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     width: auto;
 }
 
+.input-sm-smallfont {
+    font-size: 11px;
+}
+
+.input-sm-custom {
+    padding: 1px 5px 1px 5px;
+    border-radius: 1px;
+    line-height: 1.5;
+    height: auto;
+}
+
+#sub-menu-container {
+    z-index:550;
+    border-width: 1px;
+    border-style: none none solid none;
+    border-color: rgb(62, 63, 58);
+}
+
+.shadow {
+    box-shadow: 3px 3px 3px rgba(17,17,17,0.5);
+}
+
+.border-bottom {
+    border-width: 1px;
+    border-style: none none solid none;
+    border-color: rgb(62, 63, 58);
+}
+
 .btn {
     display: inline-block;
     *display: inline;
@@ -2885,7 +3021,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-bottom-color: rgb(179, 179, 179);
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
-    border-radius: 4px;
+    border-radius: 1px;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
     filter: progid:dximagetransform.microsoft.gradient(enabled=false);
     *zoom: 1;
@@ -2960,7 +3096,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     line-height: normal;
     -webkit-border-radius: 5px;
     -moz-border-radius: 5px;
-    border-radius: 5px;
+    border-radius: 1px;
 }
 
 .btn-large [class^="icon-"] {
@@ -3192,7 +3328,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     padding: 1px 5px;
     font-size: 12px;
     line-height: 1.5;
-    border-radius: 3px;
+    border-radius: 1px;
 }
 
 @media (min-width: 768px) {
@@ -3904,6 +4040,91 @@ div#searchNotification {
     display: inline-block;
 }
 
+.left-30 {
+    margin-left:-30px;
+}
+
+.right-30 {
+    margin-right:-30px;
+}
+
+.vMiddle {
+    vertical-align: middle;
+}
+
+.curHelp {
+    cursor: help;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(1) tr:nth-child(1) {
+    height: 60px;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(4) tr:nth-child(1) {
+    height: 30px;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) tr:nth-child(2) {
+    height: 30px;
+}
+
+#snatchhistory th.row-seasonheader {
+    vertical-align: bottom;
+    width: auto;
+}
+
+#snatchhistory th.row-seasonheader h3 {
+    display: inline;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(1) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(2) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(3) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(4) {
+    width: 52%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter td:nth-child(1) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter td:nth-child(2) {
+    width: 18%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter td:nth-child(3) {
+    width: 15%;
+    text-align: center!important;
+}
+
+#snatchhistory.tablesorter td:nth-child(4) {
+    width: 52%;
+}
+
+#srchresults.tablesorter td:nth-child(1) {
+    width: 56%;
+}
+
+#srchresults.tablesorter td:nth-child(n+2) {
+    width: 4%;
+    text-align:center;
+}
+
 .summaryTable tr td {
     word-break: break-all;
 }
@@ -4008,6 +4229,16 @@ css helper classes
     margin-bottom: 25px;
 }
 
+.horizontal-scroll {
+    overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+    .col-md-12 > .horizontal-scroll {
+        margin: 0 -13px;
+    }
+}
+
 /* sub-menu */
 
 @media screen and (min-width: 0px) and (max-width: 768px) {
@@ -4038,4 +4269,19 @@ css helper classes
 /* navbar padding, to make room for in-page scrollbars */
 .padding-right-15 {
     padding-right: 15px!important;
+}
+
+.backlog-quality {
+    color: rgb(255, 255, 255);
+    background-color: rgb(55, 55, 55);
+}
+
+#keyPadding {
+    margin-left: 215px;
+}
+
+@media (max-width: 1700px) {
+    #keyPadding {
+        margin-left: 0px;
+    }
 }
