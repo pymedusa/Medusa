@@ -39,7 +39,7 @@ class BTNProvider(TorrentProvider):
         # URLs
         self.url = 'https://broadcasthe.net'
         self.urls = {
-            'base_url': 'https://api.btnapps.net',
+            'base_url': 'https://api.broadcasthe.net',
         }
 
         # Proper Strings
