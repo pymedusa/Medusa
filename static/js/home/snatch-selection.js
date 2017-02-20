@@ -1,4 +1,15 @@
 MEDUSA.home.snatchSelection = function() {
+    var allCells = $(".triggerhighlight");
+    allCells
+    .on("mouseover", function() {
+        var el = $(this),
+          pos = el.index();
+        el.parent().find(".triggerhighlight").addClass("triggerhighlight_style");
+    })
+    .on("mouseout", function() {
+        allCells.removeClass("triggerhighlight_style");
+    });
+
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
         if ($(this).html() === "..show less") {

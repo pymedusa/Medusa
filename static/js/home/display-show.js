@@ -10,7 +10,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         allCells.removeClass("triggerhighlight_style");
     });
 
-      $('.imdbPlot').on('click', function() {
+    $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
         if ($(this).html() === "..show less") {
             $(this).html("..show more");
