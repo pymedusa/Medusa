@@ -4287,12 +4287,3 @@ css helper classes
         margin-right: 5px;
     }
 }
-
-/* =======================================================================
-row highlighter style on mouseover
-========================================================================== */
-
-.triggerhighlight_style {
-    background-color: #777;
-    color: #eee;
-}
