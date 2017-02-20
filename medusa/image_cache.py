@@ -259,6 +259,7 @@ class ImageCache(object):
             img_type_name = 'fanart'
             dest_path = self.fanart_path(show_obj.indexerid)
         elif img_type == self.TRAKT:
+            img_type_name = 'poster_thumb'
             dest_path = self.trakt_path(show_obj.indexerid)
         else:
             logger.log('Invalid cache image type: {0}'.format(img_type), logger.ERROR)
