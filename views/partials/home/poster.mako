@@ -84,7 +84,7 @@
                     <img src="images/poster-back-dark.png"/>
                 </div>
                 <div class="poster-overlay">
-                    <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" asset="show/${cur_show.indexerid}?type=posterThumb"/></a>
+                    <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" data-src="api/v2/asset/show/${cur_show.indexerid}?type=posterThumb&api_key=${app.API_KEY}"/></a>
                 </div>
             </div>
             <div class="show-poster-footer row">
@@ -130,7 +130,7 @@
                                 </td>
                                 <td class="show-table">
                                 % if cur_show.network:
-                                    <span title="${cur_show.network}"><img class="show-network-image" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                                    <span title="${cur_show.network}"><img class="show-network-image" src="images/network/nonetwork.png" data-src="api/v2/asset/show/${cur_show.indexerid}?type=network&api_key=${app.API_KEY}" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                                 % else:
                                     <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                                 % endif

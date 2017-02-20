@@ -4,6 +4,13 @@ MEDUSA.addShows.init = function() {
         selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
+    $.loadVisible = function($els, trigger) {
+        $els.filter(function () {
+            var rect = this.getBoundingClientRect();
+            return rect.top >= 0 && rect.top <= window.innerHeight;
+        }).trigger(trigger);
+    }
+
     $.initRemoteShowGrid = function() {
         // Set defaults on page load
         $("img").unveil(200);
@@ -55,6 +62,8 @@ MEDUSA.addShows.init = function() {
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'
             }
+        }).on('layoutComplete arrangeComplete removeComplete', function () {
+            $.loadVisible($('img'), 'unveil');
         });
     };
 
@@ -65,6 +74,7 @@ MEDUSA.addShows.init = function() {
                 $(this).empty().html(errorTxt);
             } else {
                 $.initRemoteShowGrid();
+                $.loadVisible($('img'), 'unveil');
             }
         });
     };
