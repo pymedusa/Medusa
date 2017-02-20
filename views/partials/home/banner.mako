@@ -1,4 +1,4 @@
-layz<%!
+<%!
     from medusa import app
     import calendar
     from medusa import sbdatetime
