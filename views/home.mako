@@ -69,9 +69,9 @@
         <div class="pull-left">
             <select name="showRootDir" id="showRootDir"
                 class="form-control form-control-inline input-sm">
-                <option value="-1">All Folders</option>
+                <option value="-1" ${'selected="selected"' if app.SHOWS_ROOT =='-1' else ''}>All Folders</option>
                 % for index, cur_dir in enumerate(backend_dirs):
-                    <option value="${index}">${cur_dir}</option>
+                    <option value="${index}" ${'selected="selected"' if app.SHOWS_ROOT == index else ''}>${cur_dir}</option>
                 % endfor
             </select>
         </div>
