@@ -137,7 +137,7 @@
             <td align="center" class="nowrap triggerhighlight"></td>
         % endif
             <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
-            <td class="triggerhighlight">asdf
+            <td class="triggerhighlight">
                 <span title="${cur_show.network}">${cur_show.network}</span>
             </td>
             <td align="center" class="triggerhighlight">
