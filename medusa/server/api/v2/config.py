@@ -240,6 +240,11 @@ class ConfigHandler(BaseRequestHandler):
                 # if 'host' in data['torrents']:
                 # if 'rpcurl' in data['torrents']:
                 # if 'authType' in data['torrents']:
+            if key == 'showsRoot':
+                root_id = int(data['showsRoot']['id'])
+                app.SHOWS_ROOT = root_id
+                done_data.setdefault('showsRoot', {})
+                done_data['showsRoot'].setdefault('id', root_id)
             if key == 'layout':
                 done_data.setdefault('layout', {})
                 if 'schedule' in data['layout']:
