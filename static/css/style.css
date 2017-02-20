@@ -4287,3 +4287,7 @@ css helper classes
         margin-right: 5px;
     }
 }
+
+.triggerhighlight {
+    cursor: default;
+}
