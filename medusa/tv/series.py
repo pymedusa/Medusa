@@ -1470,10 +1470,12 @@ class Series(TV):
                             else:
                                 new_status = app.EP_DEFAULT_DELETED_STATUS
 
-                            logger.debug(u"{id}: Location for {show} {ep} doesn't exist, "
+                            logger.debug(u"{id}: Location for {show} {ep} doesn't exist and status is {old_status}, "
                                          u"removing it and changing our status to '{status}'",
                                          id=self.indexerid, show=self.name, ep=episode_num(season, episode),
+                                         old_status=statusStrings[cur_ep.status].upper(),
                                          status=statusStrings[new_status].upper())
+
                             cur_ep.status = new_status
                             cur_ep.subtitles = ''
                             cur_ep.subtitles_searchcount = 0
