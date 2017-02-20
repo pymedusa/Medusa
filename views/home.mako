@@ -61,7 +61,22 @@
         % else:
         <h1 class="title pull-left" style="margin: 0;">${title}</h1>
         % endif
+    </div>
+</div>
 
+<br>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="pull-left">
+            <select name="showRootDir" id="showRootDir"
+                class="form-control form-control-inline input-sm">
+                <option value="-1">All Folders</option>
+                % for index, cur_dir in enumerate(backend_dirs):
+                    <option value="${index}">${cur_dir}</option>
+                % endfor
+            </select>
+        </div>
         <div class="show-option pull-right">
             % if app.HOME_LAYOUT != 'poster':
                 <span class="show-option">
@@ -79,15 +94,6 @@
                 <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
                 <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
                 <option value="simple" ${'selected="selected"' if app.HOME_LAYOUT=='simple' else ''}>Simple</option>
-            </select>
-        </div>
-        <div class="pull-right">
-            Folder: <select name="showRootDir" id="showRootDir"
-                class="form-control form-control-inline input-sm">
-                <option value="-1">All</option>
-                % for index, cur_dir in enumerate(backend_dirs):
-                    <option value="${index}">${cur_dir}</option>
-                % endfor
             </select>
         </div>
     </div>
