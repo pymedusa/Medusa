@@ -37,7 +37,7 @@ var UTIL = {
             let asset = $(this).attr('asset');
             let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
-                if ($(this).attr('layz') === 'on') {
+                if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
                 }
                 else {
