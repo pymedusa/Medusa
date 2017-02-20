@@ -36,8 +36,7 @@
                     </select>
                 </div>
                 <div class="show-option pull-right"> Sort By:
-                  <select id="postersort"
-                    class="form-control form-control-inline input-sm">
+                  <select id="postersort" class="form-control form-control-inline input-sm">
                         <option value="name" data-sort="setPosterSortBy/?sort=name" ${'selected="selected" ' if app.POSTER_SORTBY=='name' else ''}>Name</option>
                         <option value="date" data-sort="setPosterSortBy/?sort=date"    ${'selected="selected" ' if app.POSTER_SORTBY=='date' else ''}>Next Episode</option>
                         <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected" ' if app.POSTER_SORTBY=='network' else ''}>Network</option>
