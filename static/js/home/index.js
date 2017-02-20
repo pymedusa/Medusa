@@ -14,16 +14,10 @@ MEDUSA.home.index = function() {
         });
     }, 500));
 
-    $(function() {
-        $("img").unveil(200);
+    var imgLazyLoad = new LazyLoad({
+        // example of options object -> see options section
+        threshold: 500
     });
-
-    function loadVisible($els, trigger) {
-        $els.filter(function () {
-            var rect = this.getBoundingClientRect();
-            return rect.top >= 0 && rect.top <= window.innerHeight;
-        }).trigger(trigger);
-    }
 
     function resizePosters(newSize) {
         var fontSize;
@@ -196,14 +190,13 @@ MEDUSA.home.index = function() {
         sortAppend: [[2, 0]]
     })
     .bind("sortEnd",function(e, t){
-        loadVisible($('img'), 'unveil');
+        imgLazyLoad.handleScroll();
     })
     .bind("filterEnd",function(e, t){
-        loadVisible($('img'), 'unveil');
+        imgLazyLoad.handleScroll();
     });
 
     $('.show-grid').imagesLoaded(function() {
-        loadVisible($('img'), 'unveil');
         $('.loading-spinner').hide();
         $('.show-grid').show().isotope({
             itemSelector: '.show-container',
@@ -236,7 +229,8 @@ MEDUSA.home.index = function() {
                 }
             }
         }).on('layoutComplete arrangeComplete removeComplete', function () {
-            loadVisible($('img'), 'unveil');
+            imgLazyLoad.update();
+            imgLazyLoad.handleScroll();
         });
 
         // When posters are small enough to not display the .show-details
@@ -304,6 +298,8 @@ MEDUSA.home.index = function() {
                 clearTimeout(posterHoverTimer);
             }
         });
+        imgLazyLoad.update();
+        imgLazyLoad.handleScroll();
     });
 
     $('#postersort').on('change', function() {

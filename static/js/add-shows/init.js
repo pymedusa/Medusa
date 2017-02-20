@@ -4,16 +4,15 @@ MEDUSA.addShows.init = function() {
         selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
-    $.loadVisible = function($els, trigger) {
-        $els.filter(function () {
-            var rect = this.getBoundingClientRect();
-            return rect.top >= 0 && rect.top <= window.innerHeight;
-        }).trigger(trigger);
-    }
+    var imgLazyLoad = new LazyLoad({
+        // example of options object -> see options section
+        threshold: 500
+    });
 
     $.initRemoteShowGrid = function() {
         // Set defaults on page load
-        $("img").unveil(200);
+        imgLazyLoad.update();
+        imgLazyLoad.handleScroll();
         $('#showsort').val('original');
         $('#showsortdirection').val('asc');
 
@@ -63,7 +62,8 @@ MEDUSA.addShows.init = function() {
                 votes: '[data-votes] parseInt'
             }
         }).on('layoutComplete arrangeComplete removeComplete', function () {
-            $.loadVisible($('img'), 'unveil');
+            imgLazyLoad.update();
+            imgLazyLoad.handleScroll();
         });
     };
 
@@ -74,7 +74,8 @@ MEDUSA.addShows.init = function() {
                 $(this).empty().html(errorTxt);
             } else {
                 $.initRemoteShowGrid();
-                $.loadVisible($('img'), 'unveil');
+                imgLazyLoad.update();
+                imgLazyLoad.handleScroll();
             }
         });
     };

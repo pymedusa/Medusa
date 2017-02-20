@@ -33,6 +33,21 @@ var UTIL = {
         }
 
         var body = document.body;
+        $('[asset]').each(function(){
+            let asset = $(this).attr('asset');
+            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            if (this.tagName.toLowerCase() === 'img') {
+                if ($(this).attr('layz') === 'on') {
+                    $(this).attr('data-original', path);
+                }
+                else {
+                    $(this).attr('src', path);
+                }
+            }
+            if (this.tagName.toLowerCase() === 'a') {
+                $(this).attr('href', path);
+            }
+        });
         var controller = body.getAttribute('data-controller');
         var action = body.getAttribute('data-action');
 
@@ -74,17 +89,6 @@ if (!document.location.pathname.endsWith('/login/')) {
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
-
-        $('[asset]').each(function(){
-            let asset = $(this).attr('asset');
-            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-            if (this.tagName.toLowerCase() === 'img') {
-                $(this).attr('src', path);
-            }
-            if (this.tagName.toLowerCase() === 'a') {
-                $(this).attr('href', path);
-            }
-        });
 
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);

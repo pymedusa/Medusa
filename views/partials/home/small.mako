@@ -138,14 +138,14 @@
             <td class="tvShow">
                 <div class="imgsmallposter small">
                     <a href="home/displayShow?show=${cur_show.indexerid}" title="${cur_show.name}">
-                        <img src="images/poster.png" data-src="api/v2/asset/show/${cur_show.indexerid}?type=posterThumb&api_key=${app.API_KEY}" class="small" alt="${cur_show.indexerid}"/>
+                        <img src="images/poster.png" layz="on" asset="show/${cur_show.indexerid}?type=posterThumb&api_key=${app.API_KEY}" class="small" alt="${cur_show.indexerid}"/>
                     </a>
                     <a href="home/displayShow?show=${cur_show.indexerid}" style="vertical-align: middle;">${cur_show.name}</a>
                 </div>
             </td>
             <td align="center">
             % if cur_show.network:
-                <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" data-src="api/v2/asset/show/${cur_show.indexerid}?type=network&api_key=${app.API_KEY}" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" asset="show/${cur_show.indexerid}?typelayz="on" asset="k&api_key=${app.API_KEY}" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                 <span class="visible-print-inline">${cur_show.network}</span>
             % else:
                 <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
