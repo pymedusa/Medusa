@@ -65,6 +65,7 @@ class RecommendedShow(object):
 
         self.image_href = show_attr.get('image_href')
         self.image_src = show_attr.get('image_src')
+        self.asset_src = show_attr.get('asset_src')
         self.ids = show_attr.get('ids', {})
         self.is_anime = False
 

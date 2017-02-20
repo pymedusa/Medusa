@@ -77,13 +77,16 @@ class TraktPopular(object):
 
         use_default = None
         image = None
-        try:
-            image = self.tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
-        except Exception:
-            use_default = self.default_img_src
-            logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.DEBUG)
-
+        use_default = self.default_img_src
         rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        rec_show.asset_src="show/"+ str(show_obj['show']['ids']['tvdb']) +"?type=trakt"
+        #try:
+        #    image = self.tvdb_api_v2.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+        #except Exception:
+        #    use_default = self.default_img_src
+        #    logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.DEBUG)
+
+        #rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used

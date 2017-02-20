@@ -6,6 +6,7 @@ from ....media.banner import ShowBanner
 from ....media.fan_art import ShowFanArt
 from ....media.network_logo import ShowNetworkLogo
 from ....media.poster import ShowPoster
+from ....media.trakt import ShowTrakt
 
 
 class AssetHandler(BaseRequestHandler):
@@ -28,6 +29,8 @@ class AssetHandler(BaseRequestHandler):
                 media = ShowPoster(show_id, media_format)
             elif asset_type.lower().startswith('network'):
                 media = ShowNetworkLogo(show_id, media_format)
+            elif asset_type.lower().startswith('trakt'):
+                media = ShowTrakt(show_id, media_format)
 
             if media is not None:
                 self.set_header('Content-Type', media.get_media_type())

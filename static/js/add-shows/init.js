@@ -4,6 +4,19 @@ MEDUSA.addShows.init = function() {
         selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
+    $.remapAssets = function() {
+        $('[asset]').each(function(){
+            let asset = $(this).attr('asset');
+            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            if (this.tagName.toLowerCase() === 'img') {
+                $(this).attr('src', path);
+            }
+            if (this.tagName.toLowerCase() === 'a') {
+                $(this).attr('href', path);
+            }
+        });
+    }
+
     $.initRemoteShowGrid = function() {
         // Set defaults on page load
         $('#showsort').val('original');
@@ -64,6 +77,7 @@ MEDUSA.addShows.init = function() {
                 $(this).empty().html(errorTxt);
             } else {
                 $.initRemoteShowGrid();
+                $.remapAssets();
             }
         });
     };
