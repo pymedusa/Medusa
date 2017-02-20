@@ -227,7 +227,7 @@ MEDUSA.common.init = function() {
         var el = $(this),
           pos = el.index();
         revert_background_color = rgb2hex($(this).parent().css("background-color")); // fetch the original background-color to revert back to
-        var highlight_background_color = ColorLuminance(revert_background_color, +0.18); // change highlight color based on original color
+        var highlight_background_color = ColorLuminance(revert_background_color, -0.15); // change highlight color based on original color
         el.parent().find(".triggerhighlight").css("background-color", highlight_background_color); // setting highlight background-color
     })
     .on("mouseout", function() {
