@@ -549,8 +549,8 @@ div.xem {
 
 .show-option {
     float: left;
-    margin-left: 10px;
-    line-height: 40px;
+    line-height: 2em;
+    padding: 0 5px 10px 5px;
 }
 
 .show-grid {
@@ -816,6 +816,10 @@ td.tvShow a:hover {
 
 .nowrap {
     white-space: nowrap;
+}
+
+#showRootDir {
+    width: 100%;
 }
 
 /* =======================================================================
@@ -1170,6 +1174,10 @@ div#container-display-show {
     #key-padding {
         padding-bottom: 4px;
     }
+
+    #showRootSelect {
+        width: 45%;
+    }
 }
 
 @media (max-width: 340px) {
@@ -1180,6 +1188,10 @@ div#container-display-show {
 
     .container-navShow {
         margin-left: 265px;
+    }
+
+    #showRootSelect {
+        width: 35%;
     }
 }
 
@@ -1795,7 +1807,6 @@ schedule.mako
     padding: 2px 5px 2px 5px;
     font-size: 13px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 .listing-default {
