@@ -47,12 +47,16 @@ logger = logging.getLogger(__name__)
 
 
 class SearchQueue(generic_queue.GenericQueue):
+    """Search queue class."""
+
     def __init__(self):
+        """Initialize the class."""
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SEARCHQUEUE"
         self.force = False
 
     def is_in_queue(self, show, segment):
+        """Check if item is in queue."""
         for cur_item in self.queue:
             if isinstance(cur_item, (BacklogQueueItem, FailedQueueItem,
                                      ForcedSearchQueueItem, ManualSnatchQueueItem)) \
@@ -61,28 +65,34 @@ class SearchQueue(generic_queue.GenericQueue):
         return False
 
     def pause_backlog(self):
+        """Pause the backlog."""
         self.min_priority = generic_queue.QueuePriorities.HIGH
 
     def unpause_backlog(self):
+        """Unpause the backlog."""
         self.min_priority = 0
 
     def is_backlog_paused(self):
+        """Check if backlog is paused."""
         # backlog priorities are NORMAL, this should be done properly somewhere
         return self.min_priority >= generic_queue.QueuePriorities.NORMAL
 
     def is_backlog_in_progress(self):
+        """Check is backlog is in progress."""
         for cur_item in self.queue + [self.currentItem]:
             if isinstance(cur_item, BacklogQueueItem):
                 return True
         return False
 
     def is_dailysearch_in_progress(self):
+        """Check if daily search is in progress."""
         for cur_item in self.queue + [self.currentItem]:
             if isinstance(cur_item, DailySearchQueueItem):
                 return True
         return False
 
     def queue_length(self):
+        """Get queue lenght."""
         length = {'backlog': 0, 'daily': 0}
         for cur_item in self.queue:
             if isinstance(cur_item, DailySearchQueueItem):
@@ -92,6 +102,7 @@ class SearchQueue(generic_queue.GenericQueue):
         return length
 
     def add_item(self, item):
+        """Add item to queue."""
         if isinstance(item, DailySearchQueueItem):
             # daily searches
             generic_queue.GenericQueue.add_item(self, item)
@@ -103,6 +114,7 @@ class SearchQueue(generic_queue.GenericQueue):
             logger.debug("Not adding item, it's already in the queue")
 
     def force_daily(self):
+        """Force daily searched."""
         if not self.is_dailysearch_in_progress and not self.currentItem.amActive:
             self.force = True
             return True
@@ -110,26 +122,22 @@ class SearchQueue(generic_queue.GenericQueue):
 
 
 class ForcedSearchQueue(generic_queue.GenericQueue):
-    """Search Queueu used for Forced Search, Failed Search and """
+    """Search Queueu used for Forced Search, Failed Search."""
+
     def __init__(self):
         """Initialize ForcedSearch Queue."""
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SEARCHQUEUE"
 
     def is_in_queue(self, show, segment):
-        """
-        Verify if the show and segment (episode or number of episodes) are scheduled.
-        """
+        """Verify if the show and segment (episode or number of episodes) are scheduled."""
         for cur_item in self.queue:
             if cur_item.show == show and cur_item.segment == segment:
                 return True
         return False
 
     def is_ep_in_queue(self, segment):
-        """
-        Verify if the show and segment (episode or number of episodes) are scheduled in a
-        ForcedSearchQueueItem or FailedQueueItem.
-        """
+        """Verify if the show and segment (episode or number of episodes) are scheduled."""
         for cur_item in self.queue:
             if isinstance(cur_item, (ForcedSearchQueueItem, FailedQueueItem)) and cur_item.segment == segment:
                 return True
@@ -143,8 +151,8 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return False
 
     def get_all_ep_from_queue(self, show):
-        """
-        Get QueueItems from the queue if the queue item is scheduled to search for the passed Show.
+        """Get QueueItems from the queue if the queue item is scheduled to search for the passed Show.
+
         @param show: Show indexer_id
 
         @return: A list of ForcedSearchQueueItem or FailedQueueItem items
@@ -158,20 +166,21 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
         return ep_obj_list
 
     def is_backlog_paused(self):
-        """
-        Verify if the ForcedSearchQueue's min_priority has been changed. This indicates that the
-        queue has been paused.
+        """Verify if the ForcedSearchQueue's min_priority has been changed.
+
+        This indicates that the queue has been paused.
         # backlog priorities are NORMAL, this should be done properly somewhere
         """
         return self.min_priority >= generic_queue.QueuePriorities.NORMAL
 
     def is_forced_search_in_progress(self):
-        """Tests of a forced search is currently running, it doesn't check what's in queue."""
+        """Test of a forced search is currently running, it doesn't check what's in queue."""
         if isinstance(self.currentItem, (ForcedSearchQueueItem, FailedQueueItem)):
             return True
         return False
 
     def queue_length(self):
+        """Get queue length."""
         length = {'forced_search': 0, 'manual_search': 0, 'failed': 0}
         for cur_item in self.queue:
             if isinstance(cur_item, FailedQueueItem):
@@ -192,14 +201,16 @@ class ForcedSearchQueue(generic_queue.GenericQueue):
 
 
 class SnatchQueue(generic_queue.GenericQueue):
-    """Queue for queuing ManualSnatchQueueItem objects (snatch jobs)"""
+    """Queue for queuing ManualSnatchQueueItem objects (snatch jobs)."""
+
     def __init__(self):
         """Initialize the SnatchQueue object."""
         generic_queue.GenericQueue.__init__(self)
         self.queue_name = "SNATCHQUEUE"
 
     def is_in_queue(self, show, segment):
-        """Check if the passed show and segment (episode of list of episodes) is in the queue
+        """Check if the passed show and segment (episode of list of episodes) is in the queue.
+
         @param show: show object
         @param segment: list of episode objects
 
@@ -211,7 +222,8 @@ class SnatchQueue(generic_queue.GenericQueue):
         return False
 
     def is_ep_in_queue(self, segment):
-        """Check if the passed segment (episode of list of episodes) is in the queue
+        """Check if the passed segment (episode of list of episodes) is in the queue.
+
         @param segment: list of episode objects
 
         @return: True or False
@@ -222,13 +234,15 @@ class SnatchQueue(generic_queue.GenericQueue):
         return False
 
     def queue_length(self):
-        """Get the length of the current queue
+        """Get the length of the current queue.
+
         @return: length of queue
         """
         return {'manual_snatch': len(self.queue)}
 
     def add_item(self, item):
-        """Add a ManualSnatchQueueItem queue item
+        """Add a ManualSnatchQueueItem queue item.
+
         @param item: ManualSnatchQueueItem gueue object
         """
         if not self.is_in_queue(item.show, item.segment):
@@ -239,7 +253,10 @@ class SnatchQueue(generic_queue.GenericQueue):
 
 
 class DailySearchQueueItem(generic_queue.QueueItem):
+    """Daily searche queue item class."""
+
     def __init__(self):
+        """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Daily Search', DAILY_SEARCH)
 
         self.success = None
@@ -283,8 +300,11 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
 
 class ForcedSearchQueueItem(generic_queue.QueueItem):
+    """Forced search queue item class."""
+
     def __init__(self, show, segment, down_cur_quality=False, manual_search=False, manual_search_type='episode'):
-        """A Queueitem used to queue Forced Searches and Manual Searches
+        """A Queueitem used to queue Forced Searches and Manual Searches.
+
         @param show: A show object
         @param segment: A list of episode objects. Needs to be passed as list!
         @param down_cur_quality: Not sure what it's used for. Maybe legacy.
@@ -379,6 +399,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 class ManualSnatchQueueItem(generic_queue.QueueItem):
     """
     A queue item that can be used to queue the snatch of a search result.
+
     Currently used for the snatchSelection feature.
 
     @param show: A show object
@@ -388,7 +409,9 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 
     @return: The run() methods snatches the episode(s) if possible.
     """
+
     def __init__(self, show, segment, provider, cached_result):
+        """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Manual Search', MANUAL_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'MANUALSNATCH-' + str(show.indexerid)
@@ -401,9 +424,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         self.cached_result = cached_result
 
     def run(self):
-        """
-        Run manual snatch job
-        """
+        """Run manual snatch job."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
@@ -454,7 +475,10 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 
 
 class BacklogQueueItem(generic_queue.QueueItem):
+    """Backlog queue item class."""
+
     def __init__(self, show, segment):
+        """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Backlog', BACKLOG_SEARCH)
         self.priority = generic_queue.QueuePriorities.LOW
         self.name = 'BACKLOG-' + str(show.indexerid)
@@ -466,9 +490,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
         self.segment = segment
 
     def run(self):
-        """
-        Run backlog search thread
-        """
+        """Run backlog search thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
@@ -509,7 +531,10 @@ class BacklogQueueItem(generic_queue.QueueItem):
 
 
 class FailedQueueItem(generic_queue.QueueItem):
+    """Failed queue item class."""
+
     def __init__(self, show, segment, down_cur_quality=False):
+        """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Retry', FAILED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
         self.name = 'RETRY-' + str(show.indexerid)
@@ -522,9 +547,7 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.down_cur_quality = down_cur_quality
 
     def run(self):
-        """
-        Run failed thread
-        """
+        """Run failed thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
@@ -579,7 +602,8 @@ class FailedQueueItem(generic_queue.QueueItem):
         self.finish()
 
 
-def fifo(myList, item, max_size=100):
-    if len(myList) >= max_size:
-        myList.pop(0)
-    myList.append(item)
+def fifo(my_list, item, max_size=100):
+    """Append item to queue and limit it to 100 items."""
+    if len(my_list) >= max_size:
+        my_list.pop(0)
+    my_list.append(item)

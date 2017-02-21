@@ -976,7 +976,7 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
-        old_ep_status, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
+        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 
         # get the quality of the episode we're processing
         if quality and common.Quality.qualityStrings[quality] != 'Unknown':
