@@ -18,20 +18,18 @@
 
 import os
 import time
-import json
 from shutil import copyfile
-import requests
-import certifi
 
 from .generic import GenericMedia
-from ..image_cache import ImageCache
-from ..helper.common import try_int
-from .. import app, logger
 from medusa.helpers import (download_file, make_session)
+from .. import app
+from ..helper.common import try_int
+from ..image_cache import ImageCache
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
 
 def get_tvdbv2_api():
     """Initiate the tvdb api v2."""
+
     api_base_url = 'https://api.thetvdb.com'
 
     # client_id = 'username'  # (optional! Only required for the /user routes)
@@ -49,7 +47,10 @@ def get_tvdbv2_api():
 
 class ShowTrakt(GenericMedia):
     """Get the poster of a show."""
+
     def __init__(self, indexer_id, media_format='normal'):
+        """Initialize Class"""
+
         self.indexer_id = try_int(indexer_id, 0)
 
         if media_format in ('normal', 'thumb'):
@@ -60,9 +61,13 @@ class ShowTrakt(GenericMedia):
         self.session = make_session()
 
     def get_default_media_name(self):
+        """Default Image"""
+
         return 'trakt-default.png'
 
     def get_media_path(self):
+        """Media Path"""
+
         if self.media_format == 'normal':
             if ImageCache().has_trakt(self.indexer_id):
                 return ImageCache().trakt_path(self.indexer_id)
