@@ -275,6 +275,10 @@ class ConfigHandler(BaseRequestHandler):
                     if 'specials' in data['layout']['show'] and str(data['layout']['show']['specials']).lower() in ['true', 'false']:
                         app.DISPLAY_SHOW_SPECIALS = int(data['layout']['show']['specials'])
                         done_data['layout']['show'].setdefault('specials', bool(app.DISPLAY_SHOW_SPECIALS))
+            if key == 'theme':
+                theme_name = data['theme']['name']
+                app.THEME_NAME = theme_name
+                done_data['themeName'] = theme_name
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
         if len(done_errors):
