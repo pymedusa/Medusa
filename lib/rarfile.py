@@ -1999,3 +1999,4 @@ except RarCannotExec:
     except RarCannotExec:
         # no usable tool, only uncompressed archives work
         pass
+
