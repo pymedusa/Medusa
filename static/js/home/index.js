@@ -93,7 +93,7 @@ MEDUSA.home.index = function() {
     });
 
     $('#showListTableShows:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
-        debug: true,
+        debug: false,
         sortList: [[7, 1], [2, 0]],
         textExtraction: (function() {
             return {
@@ -320,4 +320,18 @@ MEDUSA.home.index = function() {
             log.info(error);
         });
     });
+
+    $('#showRootDir').on('change', function(){
+        api.patch('config', {
+            showsRoot: {
+                id: $(this).val()
+            }
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function (error) {
+            log.info(error);
+        });
+    });
+
 };
