@@ -74,7 +74,6 @@ class ShowTrakt(GenericMedia):
 
                 if ImageCache().has_trakt_dummy(self.indexer_id):
                     one_month_old = time.time() - 2592000
-                    logger.log('{0} < {1}'.format(os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)),one_month_old ), logger.DEBUG)
                     if os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)) < one_month_old:
                         os.unlink(somefile)
                     else:
