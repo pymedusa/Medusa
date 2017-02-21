@@ -15,15 +15,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Custom tvdb Asset Handler"""
 import os
 import time
 from shutil import copyfile
 
 from medusa.helpers import (download_file, make_session)
 from .generic import GenericMedia
-from .. import app
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
+from .. import app
 from ..helper.common import try_int
 from ..image_cache import ImageCache
 
