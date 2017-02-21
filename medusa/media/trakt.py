@@ -20,16 +20,15 @@ import os
 import time
 from shutil import copyfile
 
-from .generic import GenericMedia
 from medusa.helpers import (download_file, make_session)
+from .generic import GenericMedia
 from .. import app
 from ..helper.common import try_int
-from ..image_cache import ImageCache
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
+from ..image_cache import ImageCache
 
 def get_tvdbv2_api():
     """Initiate the tvdb api v2."""
-
     api_base_url = 'https://api.thetvdb.com'
 
     # client_id = 'username'  # (optional! Only required for the /user routes)
@@ -50,7 +49,6 @@ class ShowTrakt(GenericMedia):
 
     def __init__(self, indexer_id, media_format='normal'):
         """Initialize Class"""
-
         self.indexer_id = try_int(indexer_id, 0)
 
         if media_format in ('normal', 'thumb'):
@@ -62,12 +60,10 @@ class ShowTrakt(GenericMedia):
 
     def get_default_media_name(self):
         """Default Image"""
-
         return 'trakt-default.png'
 
     def get_media_path(self):
         """Media Path"""
-
         if self.media_format == 'normal':
             if ImageCache().has_trakt(self.indexer_id):
                 return ImageCache().trakt_path(self.indexer_id)
@@ -80,7 +76,7 @@ class ShowTrakt(GenericMedia):
                 if ImageCache().has_trakt_dummy(self.indexer_id):
                     one_month_old = time.time() - 2592000
                     if os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)) < one_month_old:
-                        os.unlink(somefile)
+                        os.unlink(ImageCache().trakt_dummy_path(self.indexer_id))
                     else:
                         return ImageCache().trakt_dummy_path(self.indexer_id)
 
@@ -88,7 +84,7 @@ class ShowTrakt(GenericMedia):
                     image = self.tvdb_api_v2.series_id_images_query_get(self.indexer_id, key_type='poster_thumb').data[0].file_name
                     download_file('http://thetvdb.com/banners/{0}'.format(image), ImageCache().trakt_path(self.indexer_id), session=self.session)
                 except Exception:
-                    copyfile(image_path,ImageCache().trakt_dummy_path(self.indexer_id))
+                    copyfile(image_path, ImageCache().trakt_dummy_path(self.indexer_id))
                     return ImageCache().trakt_dummy_path(self.indexer_id)
 
                 return ImageCache().trakt_path(self.indexer_id)
@@ -98,7 +94,6 @@ class ShowTrakt(GenericMedia):
         """
         :return: The full path to the media
         """
-
         media_path = self.get_media_path()
 
         if os.path.isfile(media_path):
