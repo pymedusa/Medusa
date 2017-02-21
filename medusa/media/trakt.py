@@ -73,7 +73,6 @@ class ShowTrakt(GenericMedia):
                     os.makedirs(path)
 
                 if ImageCache().has_trakt_dummy(self.indexer_id):
-                    logger.log('Has Dummy: {0}'.format(self.indexer_id), logger.DEBUG)
                     one_month_old = time.time() - 2592000
                     logger.log('{0} < {1}'.format(os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)),one_month_old ), logger.DEBUG)
                     if os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)) < one_month_old:
@@ -83,7 +82,6 @@ class ShowTrakt(GenericMedia):
 
                 try:
                     image = self.tvdb_api_v2.series_id_images_query_get(self.indexer_id, key_type='poster_thumb').data[0].file_name
-                    #logger.log('Found Image:  http://thetvdb.com/banners/{0}'.format(image), logger.DEBUG)
                     download_file('http://thetvdb.com/banners/{0}'.format(image), ImageCache().trakt_path(self.indexer_id), session=self.session)
                 except Exception:
                     copyfile(image_path,ImageCache().trakt_dummy_path(self.indexer_id))
