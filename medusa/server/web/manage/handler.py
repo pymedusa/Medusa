@@ -354,6 +354,9 @@ class Manage(Home, WebRoot):
         main_db_con = db.DBConnection()
         for cur_show in app.showList:
 
+            if cur_show.paused:
+                continue
+
             ep_counts = {
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
@@ -363,14 +366,10 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 """
-                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched,
-                       e.status, s.quality,s.network, s.airs
+                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
-                JOIN tv_shows as s
                 WHERE e.season IS NOT NULL AND
-                      s.paused = 0 AND
-                      e.showid = s.indexer_id AND
-                      s.indexer_id = ?
+                      e.showid = ?
                 ORDER BY e.season DESC, e.episode DESC
                 """,
                 [cur_show.indexerid]
@@ -385,11 +384,11 @@ class Manage(Home, WebRoot):
                     ep_counts[cur_ep_cat] += 1
                     if cur_result[b'airdate'] != 1:
                         air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
-                        if air_date.year >= 1970 or cur_result[b'network']:
+                        if air_date.year >= 1970 or cur_show.network:
                             air_date = sbdatetime.sbdatetime.convert_to_setting(
                                 network_timezones.parse_date_time(cur_result[b'airdate'],
-                                                                  cur_result[b'airs'],
-                                                                  cur_result[b'network']))
+                                                                  cur_show.airs,
+                                                                  cur_show.network))
                             if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
                                 continue
                         else:

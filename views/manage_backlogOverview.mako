@@ -25,7 +25,7 @@
     </div>
 <%
     totalWanted = totalQual = 0
-    backLogShows = sorted([x for x in app.showList if showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED]], key=lambda x: x.name)
+    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED]], key=lambda x: x.name)
     for cur_show in backLogShows:
         totalWanted += showCounts[cur_show.indexerid][Overview.WANTED]
         totalQual += showCounts[cur_show.indexerid][Overview.QUAL]
