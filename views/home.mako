@@ -66,7 +66,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        <div class="pull-left">
+        <div id="showRootSelect" class="pull-left">
             <select name="showRootDir" id="showRootDir"
                 class="form-control form-control-inline input-sm">
                 <option value="-1" ${'selected="selected"' if app.SHOWS_ROOT =='-1' else ''}>All Folders</option>
