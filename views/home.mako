@@ -74,8 +74,15 @@
                     <option value="${index}" ${'selected="selected"' if app.SHOWS_ROOT == index else ''}>${cur_dir}</option>
                 % endfor
             </select>
+            &nbsp;<select name="layout"
+                class="form-control form-control-inline input-sm">
+                <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
+                <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
+                <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
+                <option value="simple" ${'selected="selected"' if app.HOME_LAYOUT=='simple' else ''}>Simple</option>
+            </select>
         </div>
-        <div class="show-option pull-right">
+        <div class="pull-right">
             % if app.HOME_LAYOUT != 'poster':
                 <span class="show-option">
                     <button id="popover" type="button" class="btn btn-inline">
@@ -86,13 +93,6 @@
                         Filter(s)</button>
                 </span>&nbsp;
             % endif
-            Layout: <select name="layout"
-                class="form-control form-control-inline input-sm">
-                <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
-                <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
-                <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
-                <option value="simple" ${'selected="selected"' if app.HOME_LAYOUT=='simple' else ''}>Simple</option>
-            </select>
         </div>
     </div>
 </div><!-- end row -->
