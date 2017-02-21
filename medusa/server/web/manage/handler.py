@@ -360,7 +360,6 @@ class Manage(Home, WebRoot):
             ep_counts = {
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
-                Overview.GOOD: 0,
             }
             ep_cats = {}
 
@@ -380,9 +379,7 @@ class Manage(Home, WebRoot):
                 cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
-                    ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
-                    ep_counts[cur_ep_cat] += 1
-                    if cur_result[b'airdate'] != 1:
+                    if cur_ep_cat in [Overview.WANTED, Overview.QUAL] and cur_result[b'airdate'] != 1:
                         air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
                         if air_date.year >= 1970 or cur_show.network:
                             air_date = sbdatetime.sbdatetime.convert_to_setting(
@@ -393,6 +390,9 @@ class Manage(Home, WebRoot):
                                 continue
                         else:
                             air_date = None
+                        ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'],
+                                                              cur_result[b'episode']))] = cur_ep_cat
+                        ep_counts[cur_ep_cat] += 1
                         cur_result[b'airdate'] = air_date
                         filtered_episodes.append(cur_result)
 
