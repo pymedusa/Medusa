@@ -4,7 +4,7 @@
     import datetime
     from medusa.common import ARCHIVED, DOWNLOADED,Overview, Quality, qualityPresets, statusStrings
     from medusa.helper.common import episode_num
-    from medusa import sbdatetime, network_timezones
+    from medusa import sbdatetime
 %>
 <%block name="scripts">
 <script type="text/javascript">
@@ -32,11 +32,21 @@
 %>
     <div class="clearfix"></div>
     <div class="row col-md-12">
-        <div class="col-md-6">
-            <div class="col-md-12">Jump to Show: <select id="pickShow" class="form-control-inline input-sm-custom">
+        <div class="col-md-12">
+            <div class="pull-left">Jump to Show:
+                <select id="pickShow" class="form-control-inline input-sm-custom">
                 % for cur_show in backLogShows:
                     <option value="${cur_show.indexerid}">${cur_show.name}</option>
                 % endfor
+                </select>
+            </div>
+            <div class="pull-left">Period:
+                <select id="backlog_period" class="form-control-inline input-sm-custom">
+                    <option value="all" ${'selected="selected"' if app.BACKLOG_PERIOD == 'all' else ''}>All</option>
+                    <option value="one_day" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_day' else ''}>Last 24h</option>
+                    <option value="three_days" ${'selected="selected"' if app.BACKLOG_PERIOD == 'three_days' else ''}>Last 3 days</option>
+                    <option value="one_week" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_week' else ''}>Last 7 days</option>
+                    <option value="one_month" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_month' else ''}>Last 30 days</option>
                 </select>
             </div>
         </div>
@@ -130,16 +140,9 @@
                         ${cur_result["name"]}
                     </td>
                     <td>
-                        <% epResult = cur_result %>
                         <% show = cur_show %>
-                        % if int(epResult['airdate']) != 1:
-                            ## Lets do this exactly like ComingEpisodes and History
-                            ## Avoid issues with dateutil's _isdst on Windows but still provide air dates
-                            <% airDate = datetime.datetime.fromordinal(epResult['airdate']) %>
-                            % if airDate.year >= 1970 or show.network:
-                                <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
-                            % endif
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
+                        % if cur_result['airdate']:
+                            <time datetime="${cur_result['airdate'].isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(cur_result['airdate'])}</time>
                         % else:
                             Never
                         % endif

@@ -11,7 +11,7 @@ from tornroutes import route
 
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import app, db, helpers, logger, post_processor, subtitles, ui
+from .... import app, db, helpers, logger, network_timezones, post_processor, sbdatetime, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -23,6 +23,7 @@ from ....helper.exceptions import (
     CantUpdateShowException,
 )
 from ....helpers import is_media_file
+from ....network_timezones import app_timezone
 from ....show.show import Show
 from ....tv import Episode
 
@@ -341,6 +342,15 @@ class Manage(Home, WebRoot):
         show_cats = {}
         show_sql_results = {}
 
+        backlog_periods = {
+            'all': None,
+            'one_day': datetime.timedelta(days=1),
+            'three_days': datetime.timedelta(days=3),
+            'one_week': datetime.timedelta(days=7),
+            'one_month': datetime.timedelta(days=30),
+        }
+        backlog_period = backlog_periods.get(app.BACKLOG_PERIOD)
+
         main_db_con = db.DBConnection()
         for cur_show in app.showList:
 
@@ -353,7 +363,8 @@ class Manage(Home, WebRoot):
 
             sql_results = main_db_con.select(
                 """
-                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched, e.status, s.quality
+                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched,
+                       e.status, s.quality,s.network, s.airs
                 FROM tv_episodes as e
                 JOIN tv_shows as s
                 WHERE e.season IS NOT NULL AND
@@ -364,17 +375,31 @@ class Manage(Home, WebRoot):
                 """,
                 [cur_show.indexerid]
             )
-
-            for cur_result in sql_results:
+            filtered_episodes = []
+            backlogged_episodes = [dict(row) for row in sql_results]
+            for cur_result in backlogged_episodes:
                 cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
                     ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
                     ep_counts[cur_ep_cat] += 1
+                    if cur_result[b'airdate'] != 1:
+                        air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
+                        if air_date.year >= 1970 or cur_result[b'network']:
+                            air_date = sbdatetime.sbdatetime.convert_to_setting(
+                                network_timezones.parse_date_time(cur_result[b'airdate'],
+                                                                  cur_result[b'airs'],
+                                                                  cur_result[b'network']))
+                            if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
+                                continue
+                        else:
+                            air_date = None
+                        cur_result[b'airdate'] = air_date
+                        filtered_episodes.append(cur_result)
 
             show_counts[cur_show.indexerid] = ep_counts
             show_cats[cur_show.indexerid] = ep_cats
-            show_sql_results[cur_show.indexerid] = sql_results
+            show_sql_results[cur_show.indexerid] = filtered_episodes
 
         return t.render(
             showCounts=show_counts, showCats=show_cats,

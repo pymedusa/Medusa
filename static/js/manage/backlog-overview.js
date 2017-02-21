@@ -59,6 +59,17 @@ MEDUSA.manage.backlogOverview = function() {
         }
     });
 
+    $('#backlog_period').on('change', function() {
+        api.patch('config', {
+            backlogPeriod: $(this).val()
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function (error) {
+            log.info(error);
+        });
+    });
+
     $('.forceBacklog').on('click', function() {
         $.get($(this).attr('href'));
         $(this).text('Searching...');
