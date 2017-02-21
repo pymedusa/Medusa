@@ -23,9 +23,10 @@ from shutil import copyfile
 from medusa.helpers import (download_file, make_session)
 from .generic import GenericMedia
 from .. import app
-from ..helper.common import try_int
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
+from ..helper.common import try_int
 from ..image_cache import ImageCache
+
 
 def get_tvdbv2_api():
     """Initiate the tvdb api v2."""
@@ -44,11 +45,12 @@ def get_tvdbv2_api():
 
     return series_api
 
+
 class ShowTrakt(GenericMedia):
     """Get the poster of a show."""
 
     def __init__(self, indexer_id, media_format='normal'):
-        """Initialize Class"""
+        """Initialize Class."""
         self.indexer_id = try_int(indexer_id, 0)
 
         if media_format in ('normal', 'thumb'):
@@ -59,11 +61,11 @@ class ShowTrakt(GenericMedia):
         self.session = make_session()
 
     def get_default_media_name(self):
-        """Default Image"""
+        """Default Image."""
         return 'trakt-default.png'
 
     def get_media_path(self):
-        """Media Path"""
+        """Media Path."""
         if self.media_format == 'normal':
             if ImageCache().has_trakt(self.indexer_id):
                 return ImageCache().trakt_path(self.indexer_id)
@@ -91,9 +93,7 @@ class ShowTrakt(GenericMedia):
         return ''
 
     def get_static_media_path(self):
-        """
-        :return: The full path to the media
-        """
+        """:return: The full path to the media."""
         media_path = self.get_media_path()
 
         if os.path.isfile(media_path):
