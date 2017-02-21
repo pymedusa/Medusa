@@ -78,6 +78,16 @@ class ImageCache(object):
         trakt_file_name = '{0}.jpg'.format(indexer_id)
         return os.path.join(self._cache_dir(),'trakt',trakt_file_name)
 
+    def trakt_dummy_path(self, indexer_id):
+        """
+        Build up the path to a banner cache for a given Indexer ID.
+
+        :param indexer_id: ID of the show to use in the file name
+        :return: a full path to the cached banner file for the given Indexer ID
+        """
+        trakt_file_name = '{0}.dummy.jpg'.format(indexer_id)
+        return os.path.join(self._cache_dir(),'trakt',trakt_file_name)
+
     def fanart_path(self, indexer_id):
         """
         Build up the path to a fanart cache for a given Indexer ID.
@@ -133,7 +143,14 @@ class ImageCache(object):
         """Return true if a cached fanart exists for the given Indexer ID."""
         trakt_path = self.trakt_path(indexer_id)
         bool_result = os.path.isfile(trakt_path)
-        logger.log('Checking if file {0} exists: {1}'.format(trakt_path, bool_result), logger.DEBUG)
+        #logger.log('Checking if file {0} exists: {1}'.format(trakt_path, bool_result), logger.DEBUG)
+        return bool_result
+
+    def has_trakt_dummy(self, indexer_id):
+        """Return true if a cached fanart exists for the given Indexer ID."""
+        trakt_path = self.trakt_dummy_path(indexer_id)
+        bool_result = os.path.isfile(trakt_path)
+        #logger.log('Checking if file {0} exists: {1}'.format(trakt_path, bool_result), logger.DEBUG)
         return bool_result
 
     def has_poster_thumbnail(self, indexer_id):

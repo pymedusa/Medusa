@@ -17,6 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import time
+import json
+from shutil import copyfile
+import requests
+import certifi
 
 from .generic import GenericMedia
 from ..image_cache import ImageCache
@@ -63,15 +68,26 @@ class ShowTrakt(GenericMedia):
                 return ImageCache().trakt_path(self.indexer_id)
             else:
                 path = os.path.abspath(os.path.join(app.CACHE_DIR, 'images', 'trakt'))
-
+                image_path = os.path.join(self.get_media_root(), 'images', self.get_default_media_name())
                 if not os.path.exists(path):
                     os.makedirs(path)
+
+                if ImageCache().has_trakt_dummy(self.indexer_id):
+                    logger.log('Has Dummy: {0}'.format(self.indexer_id), logger.DEBUG)
+                    one_month_old = time.time() - 2592000
+                    logger.log('{0} < {1}'.format(os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)),one_month_old ), logger.DEBUG)
+                    if os.path.getmtime(ImageCache().trakt_dummy_path(self.indexer_id)) < one_month_old:
+                        os.unlink(somefile)
+                    else:
+                        return ImageCache().trakt_dummy_path(self.indexer_id)
+
                 try:
                     image = self.tvdb_api_v2.series_id_images_query_get(self.indexer_id, key_type='poster_thumb').data[0].file_name
+                    #logger.log('Found Image:  http://thetvdb.com/banners/{0}'.format(image), logger.DEBUG)
                     download_file('http://thetvdb.com/banners/{0}'.format(image), ImageCache().trakt_path(self.indexer_id), session=self.session)
                 except Exception:
-                    image_path = os.path.join(self.get_media_root(), 'images', self.get_default_media_name())
-                    return image_path.replace('\\', '/')
+                    copyfile(image_path,ImageCache().trakt_dummy_path(self.indexer_id))
+                    return ImageCache().trakt_dummy_path(self.indexer_id)
 
                 return ImageCache().trakt_path(self.indexer_id)
         return ''
