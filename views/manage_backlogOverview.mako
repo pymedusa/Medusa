@@ -1,9 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    import datetime
-    from medusa.common import ARCHIVED, DOWNLOADED,Overview, Quality, qualityPresets, statusStrings
-    from medusa.helper.common import episode_num
+    from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
     from medusa import sbdatetime
 %>
 <%block name="scripts">
@@ -121,14 +119,11 @@
             </tr>
             % for cur_result in showSQLResults[cur_show.indexerid]:
                 <%
-                    whichStr = episode_num(cur_result['season'], cur_result['episode']) or episode_num(cur_result['season'], cur_result['episode'], numbering='absolute')
-                    if whichStr not in showCats[cur_show.indexerid] or showCats[cur_show.indexerid][whichStr] not in (Overview.QUAL, Overview.WANTED):
-                        continue
                     old_status, old_quality = Quality.split_composite_status(cur_result['status'])
                     archived_status = Quality.composite_status(ARCHIVED, old_quality)
                 %>
-                <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][whichStr]]}">
-                    <td class="tableleft" align="center">${whichStr}</td>
+                <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][cur_result["episode_string"]]]}">
+                    <td class="tableleft" align="center">${cur_result["episode_string"]}</td>
                     <td class="col-status">
                         % if old_quality != Quality.NONE:
                             ${statusStrings[old_status]} ${renderQualityPill(old_quality)}

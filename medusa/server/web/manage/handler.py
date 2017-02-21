@@ -390,10 +390,15 @@ class Manage(Home, WebRoot):
                                 continue
                         else:
                             air_date = None
-                        ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'],
-                                                              cur_result[b'episode']))] = cur_ep_cat
+                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result[b'season'],
+                                                                        cur_result[b'episode']) or
+                                                            episode_num(cur_result[b'season'],
+                                                                        cur_result[b'episode'],
+                                                                        numbering='absolute')))
+                        ep_cats[episode_string] = cur_ep_cat
                         ep_counts[cur_ep_cat] += 1
                         cur_result[b'airdate'] = air_date
+                        cur_result[b'episode_string'] = episode_string
                         filtered_episodes.append(cur_result)
 
             show_counts[cur_show.indexerid] = ep_counts
