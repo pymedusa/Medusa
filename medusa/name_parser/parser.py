@@ -93,6 +93,13 @@ class NameParser(object):
             if sql_result:
                 season_number = int(sql_result[0][0])
                 episode_numbers = [int(sql_result[0][1])]
+
+                # Use the next query item if we have multiple results
+                # and the current one is a special episode (season 0)
+                if season_number == 0 and len(sql_result) > 1:
+                    season_number = int(sql_result[1][0])
+                    episode_numbers = [int(sql_result[1][1])]
+
                 logger.debug('Database info for show {name}: Season: {season} Episode(s): {episodes}',
                              name=result.show.name, season=season_number, episodes=episode_numbers)
 
