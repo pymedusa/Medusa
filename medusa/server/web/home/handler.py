@@ -697,7 +697,8 @@ class Home(WebRoot):
         :return: A json with the scene exceptions per season.
         """
         return json.dumps({
-            'seasonExceptions': get_all_scene_exceptions(indexer_id),
+            'seasonExceptions': {season: list(exception_name) for season, exception_name
+                                 in iteritems(get_all_scene_exceptions(indexer_id))},
             'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
                              for (tvdb_season_ep, anidb_season_ep)
                              in iteritems(get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False))}

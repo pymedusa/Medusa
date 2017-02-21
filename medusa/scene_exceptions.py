@@ -124,7 +124,7 @@ def get_all_scene_exceptions(indexer_id):
     :param indexer_id: ID to check
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
-    return exceptions_cache.get(indexer_id, defaultdict(set))
+    return exceptions_cache.get(int(indexer_id), defaultdict(set))
 
 
 def get_scene_seasons(indexer_id):
@@ -135,7 +135,7 @@ def get_scene_seasons(indexer_id):
     :return: list of seasons.
     """
     warnings.warn('Use dict.keys() directly instead.', DeprecationWarning)
-    return exceptions_cache[indexer_id].keys()
+    return exceptions_cache[int(indexer_id)].keys()
 
 
 def get_scene_exception_by_name(show_name):
