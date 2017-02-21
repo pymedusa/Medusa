@@ -520,15 +520,12 @@ class Cache(object):
                 sql_results = list(itertools.chain(*sql_results))
             else:
                 sql_results = []
-                logger.log(
-                    "No cached results in {provider} for show '{show_name}'"
-                    " episode '{ep}'".format(
-                        provider=self.provider_id,
-                        show_name=ep_obj.show.name,
-                        ep=episode_num(ep_obj.season, ep_obj.episode)
-                    ),
-                    logger.DEBUG
-                )
+                logger.log("{id}: No cached results in {provider} for show '{show_name}' episode '{ep}'".format
+                           (id=ep_obj.show.indexerid,
+                            provider=self.provider.name,
+                            show_name=ep_obj.show.name,
+                            ep=episode_num(ep_obj.season, ep_obj.episode)),
+                           logger.DEBUG)
 
         # for each cache entry
         for cur_result in sql_results:
@@ -579,7 +576,12 @@ class Cache(object):
             title = cur_result[b'name']
             url = cur_result[b'url']
 
-            logger.log('Found result {0} at {1}'.format(title, url))
+            logger.log("{id}: Using cached results from {provider} for show '{show_name}' episode '{ep}'".format
+                       (id=ep_obj.show.indexerid,
+                        provider=self.provider.name,
+                        show_name=ep_obj.show.name,
+                        ep=episode_num(ep_obj.season, ep_obj.episode)),
+                       logger.DEBUG)
 
             result = self.provider.get_result([ep_obj])
             result.show = show_obj

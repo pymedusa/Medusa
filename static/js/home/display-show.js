@@ -1,13 +1,14 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
-	$('.imdbPlot').on('click', function() {
-		$(this).prev('span').toggle();
-		if ($(this).html() === "..show less") {
-			$(this).html("..show more");
-		} else {
-			$(this).html("..show less");
-		}
-		moveSummaryBackground();
-	});
+    $('.imdbPlot').on('click', function() {
+        $(this).prev('span').toggle();
+        if ($(this).html() === "..show less") {
+            $(this).html("..show more");
+        } else {
+            $(this).html("..show less");
+        }
+        moveSummaryBackground();
+        movecheckboxControlsBackground();
+    });
 
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
@@ -17,12 +18,21 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         $("#summaryBackground").offset({ top: top, left: 0});
     }
 
+    function movecheckboxControlsBackground() {
+        var height = $("#checkboxControls").height() + 10;
+        var top = $("#checkboxControls").offset().top - 3;
+        $("#checkboxControlsBackground").height(height);
+        $("#checkboxControlsBackground").offset({ top: top, left: 0});
+    }
+
     $(window).resize(function() {
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     $(function() {
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     $.ajaxEpSearch({

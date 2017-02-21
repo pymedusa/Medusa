@@ -196,8 +196,8 @@ inc_top.mako
 }
 
 #sub-menu > a {
-	float: right;
-	margin-left: 4px;
+    float: right;
+    margin-left: 4px;
 }
 
 .upgrade-notification {
@@ -548,7 +548,7 @@ div.xem {
 /* Show options */
 
 .show-option {
-	float: left;
+    float: left;
     margin-left: 10px;
     line-height: 40px;
 }
@@ -798,7 +798,7 @@ td.tvShow a:hover {
 }
 
 #popover-target label {
-    margin: 0 5px;
+    margin: 2px 4px 2px 0;
     display: block;
 }
 
@@ -1105,7 +1105,6 @@ div#container-display-show {
 
 #showSelector {
     height:31px;
-    overflow: hidden;
     display: table-cell;
     left:20px;
     margin-top: 5px;
@@ -1139,22 +1138,21 @@ div#container-display-show {
     #sub-menu-container {
         position:fixed;
         width:100%;
-        margin-top: -9px;
-        top: 60px;
+        top: 51px;
     }
 }
 
 @media (max-width: 1281px) {
     #sub-menu-container {
-        position:relative;
+        position: relative;
         margin-top: -24px;
     }
 }
 
 @media (max-width: 767px) and (min-width: 341px) {
     .select-show-group {
-        width: calc(100% - 10px);
-        margin: 0 auto;
+        width: 100%;
+        margin: 1em;
     }
 
     .container-navShow {
@@ -1168,11 +1166,16 @@ div#container-display-show {
     .container-navShow {
         display: none;
     }
+
+    #key-padding {
+        padding-bottom: 4px;
+    }
 }
 
 @media (max-width: 340px) {
     .select-show-group {
         width: 260px;
+        margin: 1em;
     }
 
     .container-navShow {
@@ -1418,16 +1421,29 @@ ul.tags li a {
     border-color: rgb(136, 136, 136);
 }
 
+#checkboxControlsBackground {
+    position: absolute;
+    top: 0px;
+    width: 100%;
+    height: 0px;
+    background-color: #DDD;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none solid none;
+    border-color: rgb(136, 136, 136);
+    z-index: -2;
+}
+
 .summaryTable {
     overflow: hidden;
 }
 
 #checkboxControls {
-    padding-top: 1px;
+    padding-top: 2px;
 }
 
 #checkboxControls span {
-    padding: 2px 5px 2px 5px;
+    padding: 3px 10px 5px;
     font-size: 11px;
     font-weight: bold;
 }
@@ -1772,7 +1788,7 @@ schedule.mako
 ========================================================================== */
 
 .key {
-    line-height: 40px;
+    line-height: 25px;
 }
 
 .listing-key {
@@ -2555,7 +2571,7 @@ span.path {
 }
 
 .align-left {
-    text-align: left;
+    text-align: left!important;
 }
 
 .h2footer {
@@ -2756,7 +2772,7 @@ bootstrap Overrides
 ========================================================================== */
 
 #vue-wrap {
-        padding-top: 75px;
+    padding-top: 75px;
 }
 
 body {
@@ -2924,7 +2940,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 .dropdown-menu-custom > li > a {
-	padding: 15px 36px 15px 5px;
+    padding: 15px 36px 15px 5px;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: darkgrey;
@@ -2950,11 +2966,20 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     width: auto;
 }
 
+.input-sm-smallfont {
+    font-size: 11px;
+}
+
+.input-sm-custom {
+    padding: 2px 5px 3px;
+    border-radius: 1px;
+    line-height: 1.5;
+    height: auto;
+}
+
 #sub-menu-container {
     z-index:550;
-    border-width: 1px;
-    border-style: none none solid none;
-    border-color: rgb(62, 63, 58);
+    min-height: 41px;
 }
 
 .shadow {
@@ -4245,4 +4270,24 @@ css helper classes
 /* navbar padding, to make room for in-page scrollbars */
 .padding-right-15 {
     padding-right: 15px!important;
+}
+
+.backlog-quality {
+    color: rgb(255, 255, 255);
+    background-color: rgb(55, 55, 55);
+}
+
+#key-padding {
+    margin-left: 215px;
+}
+
+@media (max-width: 1700px) {
+    #key-padding {
+        margin-left: 0px;
+        margin-right: 5px;
+    }
+}
+
+.triggerhighlight {
+    cursor: default;
 }

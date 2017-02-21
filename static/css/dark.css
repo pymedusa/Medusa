@@ -294,6 +294,10 @@ ul.tags li {
     background-color: rgb(61, 61, 61);
 }
 
+#checkboxControlsBackground {
+    background-color: rgb(41, 41, 41);
+}
+
 .defaultTable {
     table-layout: auto;
     width: 100%;
@@ -540,10 +544,10 @@ body {
 
 /* navbar styling */
 .navbar-default {
-    background-color: rgb(51, 51, 51);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(51, 51, 51)));
-    background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-color: rgb(35, 35, 35);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(51, 51, 51)), to(rgb(35, 35, 35)));
+    background: -moz-linear-gradient(top, rgb(51, 51, 51), rgb(35, 35, 35));
     border-color: rgb(62, 63, 58);
 }
 
@@ -554,7 +558,7 @@ body {
 
 .navbar-default .navbar-nav > li > a:hover,
 .navbar-default .navbar-nav > li > a:focus {
-    background-color: rgb(51, 51, 51);
+    background-color: rgb(35, 35, 35);
 }
 
 .navbar-default .navbar-nav > li > a:hover,
@@ -598,7 +602,7 @@ body {
 .dropdown-menu > li > a:focus {
     color: rgb(255, 255, 255);
     text-decoration: none;
-    background-color: rgb(143, 143, 143);
+    background-color: rgb(119, 119, 119);
 }
 
 .dropdown-menu > li > a {
@@ -607,17 +611,17 @@ body {
 }
 
 .dropdown-menu {
-    background-color: rgb(51, 51, 51);
+    background-color: rgb(41, 41, 41);
     border: 1px solid rgba(0, 0, 0, 0.15);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.176);
 }
 
 /* submenu styling */
 #sub-menu-container {
-    background-color: rgb(51, 51, 51);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(85, 85, 85)));
-    background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-color: rgb(41, 41, 41);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#414141', endColorstr='#292929');
+    background: -webkit-gradient(linear, left top, left bottom, from(rgb(65, 65, 65)), to(rgb(41, 41, 41)));
+    background: -moz-linear-gradient(top, rgb(65, 65, 65), rgb(41, 41, 41));
     border-color: rgb(62, 63, 58);
 }
 
@@ -651,22 +655,22 @@ body {
 .btn.active,
 .btn.disabled,
 .btn[disabled] {
-    background-color: rgb(204, 204, 204);
-    *background-color: rgb(204, 204, 204);
-    color: rgb(55, 55, 55);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
+    color: rgb(255, 255, 255);
 }
 
 .btn:active,
 .btn.active {
-    background-color: rgb(204, 204, 204);
-    color: rgb(55, 55, 55);
+    background-color: rgb(30, 30, 30);
+    color: rgb(255, 255, 255);
 }
 
 .btn:hover {
-    color: rgb(55, 55, 55);
     text-decoration: none;
-    background-color: rgb(204, 204, 204);
-    *background-color: rgb(204, 204, 204);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
+    color: rgb(255, 255, 255);
     background-position: 0 -150px;
     -webkit-transition: background-position 0.0s linear;
     -moz-transition: background-position 0.0s linear;
@@ -684,8 +688,8 @@ body {
 
 .btn.active,
 .btn:active {
-    background-color: rgb(204, 204, 204);
-    *background-color: rgb(204, 204, 204);
+    background-color: rgb(30, 30, 30);
+    *background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
     outline: 0;
@@ -697,7 +701,8 @@ body {
 .btn.disabled,
 .btn[disabled] {
     cursor: default;
-    background-color: rgb(204, 204, 204);
+    background-color: rgb(97, 97, 97);
+    color: rgb(255, 255, 255);
     background-image: none;
     opacity: 0.65;
     filter: alpha(opacity=65);

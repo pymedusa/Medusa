@@ -220,7 +220,6 @@
                                         <option value="dark" ${'selected="selected"' if app.THEME_NAME == 'dark' else ''}>Dark</option>
                                         <option value="light" ${'selected="selected"' if app.THEME_NAME == 'light' else ''}>Light</option>
                                     </select>
-                                    <span class="red-text">for appearance to take effect, save then refresh your browser</span>
                                 </span>
                             </label>
                         </div>
