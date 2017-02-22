@@ -73,7 +73,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         newznabProviders[id] = newData;
 
         $('#editANewznabProvider').addOption(id, name);
-        $("select#editANewznabProvider").prop("selectedIndex", 0)
+        $('select#editANewznabProvider').prop('selectedIndex', 0);
 
         if ($('#provider_order_list > #' + id).length === 0 && showProvider !== false) {
             var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'; // eslint-disable-line no-undef

@@ -5,24 +5,24 @@ MEDUSA.common.init = function() {
             let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
             let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
             $.backstretch(path);
-            $('.backstretch').css('top',backstretchOffset());
+            $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
         }
     }
 
     function backstretchOffset() {
         var offset = '90px';
-        if($("#sub-menu-container").length == 0) {
+        if ($('#sub-menu-container').length === 0) {
             offset = '50px';
         }
-        if ($(window).width() < 1281) {
+        if ($(window).width() < 1280) {
             offset = '50px';
         }
         return offset;
     }
 
     $(window).resize(function() {
-        $('.backstretch').css('top',backstretchOffset());
+        $('.backstretch').css('top', backstretchOffset());
     });
 
     $.confirm.options = {
@@ -182,7 +182,7 @@ MEDUSA.common.init = function() {
             },
             position: {
                 my: my,
-                at: at,
+                at: at
             },
             style: {
                 tip: {
@@ -195,42 +195,41 @@ MEDUSA.common.init = function() {
     });
 };
 
-    // function to change luminance of #000000 color - used in triggerhighlighting
-    function ColorLuminance(hex, lum) {
-        hex = String(hex).replace(/[^0-9a-f]/gi, '');
-        if (hex.length < 6) {
-            hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-        }
-        lum = lum || 0;
-        var rgb = "#", c, i;
-        for (i = 0; i < 3; i++) {
-            c = parseInt(hex.substr(i*2,2), 16);
-            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-            rgb += ("00"+c).substr(c.length);
-        }
-        return rgb;
+// function to change luminance of #000000 color - used in triggerhighlighting
+function colorLuminance(hex, lum) {
+    hex = String(hex).replace(/[^0-9a-f]/gi, '');
+    if (hex.length < 6) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
     }
+    lum = lum || 0;
+    var rgb = '#';
+    var c;
+    var i;
+    for (i = 0; i < 3; i++) {
+        c = parseInt(hex.substr(i * 2, 2), 16);
+        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+        rgb += ('00' + c).substr(c.length);
+    }
+    return rgb;
+}
 
     // function to convert rgb(0,0,0) into #000000
-    function rgb2hex(rgb) {
-        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-        function hex(x) {
-            return ("0" + parseInt(x).toString(16)).slice(-2);
-        }
-        return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+function rgb2hex(rgb) {
+    rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    function hex(x) {
+        return ('0' + parseInt(x).toString(16)).slice(-2);
     }
+    return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+}
 
-    var revert_background_color; // used to revert back to original background-color after highlight
-    var allCells = $(".triggerhighlight");
-    allCells
-    .on("mouseover", function() {
-        var el = $(this),
-          pos = el.index();
-        revert_background_color = rgb2hex($(this).parent().css("background-color")); // fetch the original background-color to revert back to
-        var highlight_background_color = ColorLuminance(revert_background_color, -0.15); // change highlight color based on original color
-        el.parent().find(".triggerhighlight").css("background-color", highlight_background_color); // setting highlight background-color
-    })
-    .on("mouseout", function() {
-        $(this).parent().find(".triggerhighlight").css("background-color", revert_background_color); // reverting back to original background-color
-    });
-
+var revertBackgroundColor; // used to revert back to original background-color after highlight
+var allCells = $('.triggerhighlight');
+allCells.on('mouseover', function() {
+    var el = $(this);
+    var pos = el.index();
+    var revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
+    var highlightBackgroundColor = colorLuminance(revertBackgroundColor, -0.15); // change highlight color based on original color
+    el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
+}).on('mouseout', function() {
+    $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
+});
