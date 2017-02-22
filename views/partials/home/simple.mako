@@ -10,6 +10,8 @@
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
+<div class="row">
+<div class="col-md-12 horizontal-scroll">
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
@@ -182,3 +184,5 @@
     </tbody>
 </table>
 % endfor
+</div> <!-- table -->
+</div> <!-- row -->
