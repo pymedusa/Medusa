@@ -15,7 +15,7 @@ MEDUSA.common.init = function() {
         if ($('#sub-menu-container').length === 0) {
             offset = '50px';
         }
-        if ($(window).width() < 1281) {
+        if ($(window).width() < 1280) {
             offset = '50px';
         }
         return offset;
