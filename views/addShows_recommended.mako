@@ -115,7 +115,11 @@
                     <div class="recommended-container default-poster ${('', 'show-in-list')[cur_result.show_in_list or cur_result.indexer_id in removed_from_medusa]}">
                         <div class="recommended-image">
                             <a href="${anon_url(cur_result.image_href)}" target="_blank">
+                                % if cur_result.asset_src:
+                                <img alt="" class="recommended-image" src="${cur_result.image_src}" asset="${cur_result.asset_src}" height="273px" width="186px"/>
+                                % else:
                                 <img alt="" class="recommended-image" src="${cur_result.image_src}" height="273px" width="186px"/>
+                                % endif
                             </a>
                         </div>
                         <div id="check-overlay"></div>
