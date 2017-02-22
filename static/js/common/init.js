@@ -20,9 +20,48 @@ MEDUSA.common.init = function() {
         }
         return offset;
     }
-
+    
     $(window).resize(function() {
         $('.backstretch').css('top', backstretchOffset());
+    });
+
+    // function to change luminance of #000000 color - used in triggerhighlighting
+    function colorLuminance(hex, lum) {
+        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        if (hex.length < 6) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        lum = lum || 0;
+        var rgb = '#';
+        var c;
+        var i;
+        for (i = 0; i < 3; i++) {
+            c = parseInt(hex.substr(i * 2, 2), 16);
+            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+            rgb += ('00' + c).substr(c.length);
+        }
+        return rgb;
+    }
+
+        // function to convert rgb(0,0,0) into #000000
+    function rgb2hex(rgb) {
+        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        function hex(x) {
+            return ('0' + parseInt(x).toString(16)).slice(-2);
+        }
+        return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+    }
+
+    var revertBackgroundColor; // used to revert back to original background-color after highlight
+    var allCells = $('.triggerhighlight');
+    allCells.on('mouseover', function() {
+        var el = $(this);
+        var pos = el.index();
+        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
+        var highlightBackgroundColor = colorLuminance(revertBackgroundColor, -0.15); // change highlight color based on original color
+        el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
+    }).on('mouseout', function() {
+        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
     });
 
     $.confirm.options = {
@@ -194,42 +233,3 @@ MEDUSA.common.init = function() {
         });
     });
 };
-
-// function to change luminance of #000000 color - used in triggerhighlighting
-function colorLuminance(hex, lum) {
-    hex = String(hex).replace(/[^0-9a-f]/gi, '');
-    if (hex.length < 6) {
-        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    }
-    lum = lum || 0;
-    var rgb = '#';
-    var c;
-    var i;
-    for (i = 0; i < 3; i++) {
-        c = parseInt(hex.substr(i * 2, 2), 16);
-        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-        rgb += ('00' + c).substr(c.length);
-    }
-    return rgb;
-}
-
-    // function to convert rgb(0,0,0) into #000000
-function rgb2hex(rgb) {
-    rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-    function hex(x) {
-        return ('0' + parseInt(x).toString(16)).slice(-2);
-    }
-    return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
-}
-
-var revertBackgroundColor; // used to revert back to original background-color after highlight
-var allCells = $('.triggerhighlight');
-allCells.on('mouseover', function() {
-    var el = $(this);
-    var pos = el.index();
-    var revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
-    var highlightBackgroundColor = colorLuminance(revertBackgroundColor, -0.15); // change highlight color based on original color
-    el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
-}).on('mouseout', function() {
-    $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
-});
