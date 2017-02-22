@@ -187,14 +187,6 @@ class PostProcessor(object):
             file_name = os.path.basename(found_file).lower()
 
             if file_name.startswith(processed_names):
-
-                # only add subtitles with valid languages to the list
-                if is_subtitle(found_file):
-                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
-                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
-                    if not language:
-                        continue
-
                 filelist.append(found_file)
 
         file_path_list = []
@@ -363,35 +355,31 @@ class PostProcessor(object):
                       (file_path), logger.DEBUG)
             return
 
-        # base name with file path (without extension and ending dot)
-        old_base_name = os.path.splitext(file_path)[0]
-        old_base_name_length = len(old_base_name)
-
         for cur_file_path in file_list:
             # remember if the extension changed
             changed_extension = None
-            # file extension without leading dot (for example: de.srt)
-            extension = cur_file_path[old_base_name_length + 1:]
+            # file extension without leading dot
+            extension = helpers.get_extension(cur_file_path)
             # initally set current extension as new extension
             new_extension = extension
 
-            # split the extension in two parts. E.g.: ('de', '.srt')
-            split_extension = os.path.splitext(extension)
-            # check if it's a subtitle and also has a subtitle language
-            if is_subtitle(cur_file_path) and all(split_extension):
-                sub_lang = split_extension[0].lower()
-                if sub_lang == 'pt-br':
-                    sub_lang = 'pt-BR'
-                new_extension = sub_lang + split_extension[1]
-                changed_extension = True
-                #  If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
-                #  Otherwise when torrent+data gets removed the folder won't be deleted because of subtitle
+            if is_subtitle(cur_file_path):
+                # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
+                # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
                 if app.POSTPONE_IF_NO_SUBS:
-                    #  subtitle_action = move
+                    # subtitle_action = move
                     action = subtitle_action or action
 
+                code = cur_file_path.rsplit('.', 2)[1].lower().replace('_', '-')
+                if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                    if code == 'pt-br':
+                        code = 'pt-BR'
+
+                    new_extension = code + '.' + extension
+                    changed_extension = True
+
             # replace nfo with nfo-orig to avoid conflicts
-            if extension == 'nfo' and app.NFO_RENAME:
+            elif extension == 'nfo' and app.NFO_RENAME:
                 new_extension = 'nfo-orig'
                 changed_extension = True
 
