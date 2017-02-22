@@ -63,11 +63,6 @@ MEDUSA.common.init = function() {
         $(this).parent().find(".triggerhighlight").css("background-color", revert_background_color); // reverting back to original background-color
     });
 
-    function notifyModal(message){
-        $('#site-notification-modal .modal-body').html(message);
-        $('#site-notification-modal').modal();
-    }
-
     $(window).resize(function() {
         $('.backstretch').css('top', backstretchOffset());
     });

@@ -139,7 +139,7 @@ MEDUSA.config.init = function() {
     $("#create_access_token").on('click', function() {
         notifyModal(
             '<p>Copy the generated token and paste it in the token input box.</p>' +
-            '<p><a href="' + MEDUSA.config.anon_redirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
+            '<p><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
             '<input class="btn" type="button" value="Continue to Github..."></a></p>');
         $('#git_token').select();
     });

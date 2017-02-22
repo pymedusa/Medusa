@@ -51,7 +51,7 @@ def token_authenticate(token):
     except github.BadCredentialsException:
         logger.warning('Invalid Github credentials. Please check your Github credentials in Medusa settings.')
     except github.TwoFactorException:
-        logger.warning('Invalid Github token. Please check your Github token in Medusa settings.')    
+        logger.warning('Invalid Github token. Please check your Github token in Medusa settings.')
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
         raise
