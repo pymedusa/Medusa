@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Post processor module."""
-import fnmatch
 import os
 import re
 import stat
@@ -25,6 +24,11 @@ import subprocess
 from collections import OrderedDict
 
 import adba
+
+from pathlib2 import Path
+
+import rarfile
+from rarfile import Error as RarError
 
 from six import text_type
 
@@ -158,8 +162,77 @@ class PostProcessor(object):
                       (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
+    def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False, subfolders=False):
+        """
+        For a given file path search for files in the same directory and return their absolute paths.
+
+        :param filepath: The file to check for associated files
+        :param base_name_only: list only files with the same basename
+        :param subtitles_only: list only subtitles
+        :param subfolders: check subfolders while listing files
+        :return: A list containing all files which are associated to the given file
+        """
+        files = self._search_files(filepath, subfolders=subfolders, base_name_only=base_name_only)
+
+        # file path to the video file that is being processed (without extension)
+        processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
+
+        processed_names = (processed_file_name,)
+        processed_names += filter(None, (self._rar_basename(filepath, files),))
+
+        # loop through all the files in the folder, and check if they are the same name
+        # even when the cases don't match
+        filelist = []
+        for found_file in files:
+
+            file_name = os.path.basename(found_file).lower()
+
+            if file_name.startswith(processed_names):
+                filelist.append(found_file)
+
+        file_path_list = []
+        extensions_to_delete = []
+        for associated_file_path in filelist:
+            # Exclude the video file we are post-processing
+            if associated_file_path == filepath:
+                continue
+
+            # Exclude .rar files from associated list
+            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
+                continue
+
+            # Exlude non-subtitle files with the 'only subtitles' option
+            if subtitles_only and not is_subtitle(associated_file_path):
+                continue
+
+            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
+            if app.MOVE_ASSOCIATED_FILES:
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                found_extension = helpers.get_extension(associated_file_path)
+                if found_extension and found_extension not in allowed_extensions:
+                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
+                              (found_extension.upper()), logger.DEBUG)
+                    if os.path.isfile(associated_file_path):
+                        extensions_to_delete.append(associated_file_path)
+
+            if os.path.isfile(associated_file_path):
+                file_path_list.append(associated_file_path)
+
+        if file_path_list:
+            self._log(u'Found the following associated files for {0}: {1}'.format
+                      (filepath, file_path_list), logger.DEBUG)
+            if extensions_to_delete:
+                # Rebuild the 'file_path_list' list only with the extensions the user allows
+                file_path_list = [associated_file for associated_file in file_path_list
+                                  if associated_file not in extensions_to_delete]
+                self._delete(extensions_to_delete)
+        else:
+            self._log(u'No associated files for {0} were found during this pass'.format(filepath), logger.DEBUG)
+
+        return file_path_list
+
     @staticmethod
-    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=False):
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=None):
         """
         Search for files in a given path.
 
@@ -180,112 +253,39 @@ class PostProcessor(object):
 
         if base_name_only:
             if os.path.isfile(path):
-                new_pattern = os.path.basename(path).rpartition('.')[0]
+                new_pattern = os.path.splitext(os.path.basename(path))[0]
             elif os.path.isdir(path):
                 new_pattern = os.path.split(directory)[1]
             else:
                 return []
 
-            if any(char in new_pattern for char in ['[', '?', '*']):
-                # Escaping is done by wrapping any of "*?[" between square brackets.
-                # Modified from: https://hg.python.org/cpython/file/tip/Lib/glob.py#l161
-                if isinstance(new_pattern, bytes):
-                    new_pattern = re.compile(b'([*?[])').sub(br'[\1]', new_pattern)
-                else:
-                    new_pattern = re.compile('([*?[])').sub(r'[\1]', new_pattern)
-
             pattern = new_pattern + pattern
 
-        found_files = []
-        for root, __, filenames in os.walk(directory):
-            for filename in fnmatch.filter(filenames, pattern):
-                found_files.append(os.path.join(root, filename))
-            if not subfolders:
-                break
+        path = Path(directory)
+        glob = path.rglob(pattern) if subfolders else path.glob(pattern)
+
+        files = [text_type(match) for match in glob]
 
         if sort:
-            found_files = sorted(found_files, key=os.path.getsize, reverse=True)
+            files = sorted(files, key=os.path.getsize, reverse=True)
 
-        return found_files
+        return files
 
-    def list_associated_files(self, file_path, base_name_only=False, subtitles_only=False, subfolders=False):
-        """
-        For a given file path search for files in the same directory and return their absolute paths.
+    @staticmethod
+    def _rar_basename(filepath, files):
+        """Return the basename of the source rar archive if found."""
+        videofile = os.path.basename(filepath)
+        rars = (x for x in files if rarfile.is_rarfile(x))
 
-        :param file_path: The file to check for associated files
-        :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
-        :param subtitles_only: list only subtitles
-        :param subfolders: check subfolders while listing files
-        :return: A list containing all files which are associated to the given file
-        """
-        # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
-
-        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
-
-        # loop through all the files in the folder, and check if they are the same name
-        # even when the cases don't match
-        filelist = []
-        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list
-                    if helpers.get_extension(f).lower() == 'rar']
-        for found_file in file_list:
-
-            file_name = os.path.basename(found_file).lower()
-
-            if file_name.startswith(processed_file_name):
-
-                # only add subtitles with valid languages to the list
-                if is_subtitle(found_file):
-                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
-                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
-                    if not language:
-                        continue
-
-                filelist.append(found_file)
-            # List associated files based on .RAR files like Show.101.720p-GROUP.nfo and Show.101.720p-GROUP.rar
-            elif any([file_name.startswith(r) for r in rar_file]):
-                filelist.append(found_file)
-
-        file_path_list = []
-        extensions_to_delete = []
-        for associated_file_path in filelist:
-            # Exclude the video file we are post-processing
-            if associated_file_path == file_path:
+        for rar in rars:
+            try:
+                content = rarfile.RarFile(rar).namelist()
+            except RarError as e:
+                logger.log(u'An error occurred while reading the following RAR file: {name}. '
+                           u'Error: {message}'.format(name=rar, message=e), logger.WARNING)
                 continue
-
-            # Exlude non-subtitle files with the 'only subtitles' option
-            if subtitles_only and not is_subtitle(associated_file_path):
-                continue
-
-            # Exclude .rar files from associated list
-            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
-                continue
-
-            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
-            if app.MOVE_ASSOCIATED_FILES:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                found_extension = helpers.get_extension(associated_file_path)
-                if found_extension and found_extension not in allowed_extensions:
-                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
-                              (found_extension.upper()), logger.DEBUG)
-                    if os.path.isfile(associated_file_path):
-                        extensions_to_delete.append(associated_file_path)
-
-            if os.path.isfile(associated_file_path):
-                file_path_list.append(associated_file_path)
-
-        if file_path_list:
-            self._log(u'Found the following associated files for {0}: {1}'.format
-                      (file_path, file_path_list), logger.DEBUG)
-            if extensions_to_delete:
-                # Rebuild the 'file_path_list' list only with the extensions the user allows
-                file_path_list = [associated_file for associated_file in file_path_list
-                                  if associated_file not in extensions_to_delete]
-                self._delete(extensions_to_delete)
-        else:
-            self._log(u'No associated files for {0} were found during this pass'.format(file_path), logger.DEBUG)
-
-        return file_path_list
+            if videofile in content:
+                return os.path.splitext(os.path.basename(rar))[0]
 
     def _delete(self, file_path, associated_files=False):
         """
@@ -361,38 +361,31 @@ class PostProcessor(object):
                       (file_path), logger.DEBUG)
             return
 
-        # base name with file path (without extension and ending dot)
-        old_base_name = file_path.rpartition('.')[0]
-        old_base_name_length = len(old_base_name)
-
         for cur_file_path in file_list:
             # remember if the extension changed
             changed_extension = None
-            # file extension without leading dot (for example: de.srt)
-            extension = cur_file_path[old_base_name_length + 1:]
-            # If basename is different, then is a RAR associated file.
-            if not extension:
-                helpers.get_extension(cur_file_path)
+            # file extension without leading dot
+            extension = helpers.get_extension(cur_file_path)
             # initally set current extension as new extension
             new_extension = extension
 
-            # split the extension in two parts. E.g.: ('de', '.srt')
-            split_extension = os.path.splitext(extension)
-            # check if it's a subtitle and also has a subtitle language
-            if is_subtitle(cur_file_path) and all(split_extension):
-                sub_lang = split_extension[0].lower()
-                if sub_lang == 'pt-br':
-                    sub_lang = 'pt-BR'
-                new_extension = sub_lang + split_extension[1]
-                changed_extension = True
-                #  If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
-                #  Otherwise when torrent+data gets removed the folder won't be deleted because of subtitle
+            if is_subtitle(cur_file_path):
+                # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
+                # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
                 if app.POSTPONE_IF_NO_SUBS:
-                    #  subtitle_action = move
+                    # subtitle_action = move
                     action = subtitle_action or action
 
+                code = cur_file_path.rsplit('.', 2)[1].lower().replace('_', '-')
+                if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                    if code == 'pt-br':
+                        code = 'pt-BR'
+
+                    new_extension = code + '.' + extension
+                    changed_extension = True
+
             # replace nfo with nfo-orig to avoid conflicts
-            if extension == 'nfo' and app.NFO_RENAME:
+            elif extension == 'nfo' and app.NFO_RENAME:
                 new_extension = 'nfo-orig'
                 changed_extension = True
 
