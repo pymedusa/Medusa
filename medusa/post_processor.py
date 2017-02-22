@@ -28,6 +28,7 @@ import adba
 from pathlib2 import Path
 
 import rarfile
+from rarfile import Error as RarError
 
 from six import text_type
 
@@ -277,7 +278,12 @@ class PostProcessor(object):
         rars = (x for x in files if rarfile.is_rarfile(x))
 
         for rar in rars:
-            content = rarfile.RarFile(rar).namelist()
+            try:
+                content = rarfile.RarFile(rar).namelist()
+            except RarError as e:
+                logger.log(u'An error occurred while reading the following RAR file: {name}. '
+                           u'Error: {message}'.format(name=rar, message=e), logger.WARNING)
+                continue
             if videofile in content:
                 return os.path.splitext(os.path.basename(rar))[0]
 
