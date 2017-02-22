@@ -189,10 +189,10 @@ MEDUSA.home.index = function() {
         sortStable: true,
         sortAppend: [[2, 0]]
     })
-    .bind("sortEnd",function(e, t){
+    .bind('sortEnd',function(e, t){
         imgLazyLoad.handleScroll();
     })
-    .bind("filterEnd",function(e, t){
+    .bind('filterEnd',function(e, t){
         imgLazyLoad.handleScroll();
     });
 
