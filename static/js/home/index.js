@@ -245,7 +245,7 @@ MEDUSA.home.index = function() {
                 popup.on('mouseleave', function() {
                     $(this).remove();
                 });
-                popup.css({zIndex: '9999'})
+                popup.css({zIndex: '9999'});
                 popup.appendTo('body');
 
                 var height = 438;
@@ -308,7 +308,7 @@ MEDUSA.home.index = function() {
         }
     });
 
-    $('.show-option select').on('change', function(){
+    $('.show-option select').on('change', function() {
         api.patch('config', {
             layout: {
                 home: $(this).val()
@@ -316,12 +316,12 @@ MEDUSA.home.index = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
 
-    $('#showRootDir').on('change', function(){
+    $('#showRootDir').on('change', function() {
         api.patch('config', {
             showsRoot: {
                 id: $(this).val()
@@ -329,9 +329,8 @@ MEDUSA.home.index = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
-
 };

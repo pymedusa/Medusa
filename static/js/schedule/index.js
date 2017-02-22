@@ -61,7 +61,7 @@ MEDUSA.schedule.index = function() {
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
 
-    $('.show-option select[name="layout"]').on('change', function(){
+    $('.show-option select[name="layout"]').on('change', function() {
         api.patch('config', {
             layout: {
                 schedule: $(this).val()
@@ -69,8 +69,8 @@ MEDUSA.schedule.index = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
 };

@@ -35,7 +35,7 @@ MEDUSA.history.index = function() {
         window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
     });
 
-    $('.show-option select[name="layout"]').on('change', function(){
+    $('.show-option select[name="layout"]').on('change', function() {
         api.patch('config', {
             layout: {
                 history: $(this).val()
@@ -43,8 +43,8 @@ MEDUSA.history.index = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
 };

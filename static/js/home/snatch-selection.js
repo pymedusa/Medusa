@@ -1,20 +1,20 @@
 MEDUSA.home.snatchSelection = function() {
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
-        if ($(this).html() === "..show less") {
-            $(this).html("..show more");
+        if ($(this).html() === '..show less') {
+            $(this).html('..show more');
         } else {
-            $(this).html("..show less");
+            $(this).html('..show less');
         }
         moveSummaryBackground();
     });
 
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
-        var height = $("#summary").height() + 10;
-        var top = $("#summary").offset().top + 5;
-        $("#summaryBackground").height(height);
-        $("#summaryBackground").offset({ top: top, left: 0});
+        var height = $('#summary').height() + 10;
+        var top = $('#summary').offset().top + 5;
+        $('#summaryBackground').height(height);
+        $('#summaryBackground').offset({top: top, left: 0});
     }
 
     $(window).resize(function() {
@@ -99,10 +99,10 @@ MEDUSA.home.snatchSelection = function() {
         var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
         var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        var urlParams =  show + '&season=' + season + '&episode=' + episode;
+        var urlParams = show + '&season=' + season + '&episode=' + episode;
 
-        if (manualSearchType == 'season') {
-            urlParams += '&manual_search_type=' + manualSearchType
+        if (manualSearchType === 'season') {
+            urlParams += '&manual_search_type=' + manualSearchType;
         }
 
         if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {

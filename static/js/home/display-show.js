@@ -1,10 +1,10 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
-        if ($(this).html() === "..show less") {
-            $(this).html("..show more");
+        if ($(this).html() === '..show less') {
+            $(this).html('..show more');
         } else {
-            $(this).html("..show less");
+            $(this).html('..show less');
         }
         moveSummaryBackground();
         movecheckboxControlsBackground();
@@ -12,17 +12,17 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
-        var height = $("#summary").height() + 10;
-        var top = $("#summary").offset().top + 5;
-        $("#summaryBackground").height(height);
-        $("#summaryBackground").offset({ top: top, left: 0});
+        var height = $('#summary').height() + 10;
+        var top = $('#summary').offset().top + 5;
+        $('#summaryBackground').height(height);
+        $('#summaryBackground').offset({top: top, left: 0});
     }
 
     function movecheckboxControlsBackground() {
-        var height = $("#checkboxControls").height() + 10;
-        var top = $("#checkboxControls").offset().top - 3;
-        $("#checkboxControlsBackground").height(height);
-        $("#checkboxControlsBackground").offset({ top: top, left: 0});
+        var height = $('#checkboxControls').height() + 10;
+        var top = $('#checkboxControls').offset().top - 3;
+        $('#checkboxControlsBackground').height(height);
+        $('#checkboxControlsBackground').offset({top: top, left: 0});
     }
 
     $(window).resize(function() {
@@ -414,7 +414,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
-    $('.display-specials a').on('click', function(){
+    $('.display-specials a').on('click', function() {
         api.patch('config', {
             layout: {
                 show: {
@@ -424,8 +424,8 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         }).then(function(response) {
             log.info(response.data);
             window.location.reload();
-        }).catch(function(response){
-            log.error(response.data);
+        }).catch(function(err) {
+            log.error(err.data);
         });
     });
 };
