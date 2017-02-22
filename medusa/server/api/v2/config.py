@@ -129,6 +129,9 @@ class ConfigHandler(BaseRequestHandler):
                     'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
                     'specials': bool(app.DISPLAY_SHOW_SPECIALS)
                 }
+            },
+            'showsRoot': {
+                'id': int(app.SHOWS_ROOT) if app.SHOWS_ROOT else None
             }
         }
 

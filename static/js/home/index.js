@@ -347,4 +347,27 @@ MEDUSA.home.index = function() {
             log.info(err);
         });
     });
+
+    var rootDir = MEDUSA.config.rootDirs
+    var rootDirIndex = MEDUSA.config.showsRoot.id
+    if (rootDir) {
+        backend_pieces = rootDir.split('|')
+        backend_default = 'rd-' + backend_pieces[0]
+        backend_dirs = backend_pieces.slice(1)
+    }
+    if (backend_dirs.length > 1) {
+        $('#showRoot').show()
+        var item = ['All Folders'];
+        rootDirOptions = item.concat(backend_dirs);
+        $.each(rootDirOptions, function (i, item) {
+            $('#showRootDir').append($('<option>', {
+                value: i - 1,
+                text : item,
+            }));
+        $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
+        });
+    } else {
+        $('#showRoot').hide()
+    }
+
 };

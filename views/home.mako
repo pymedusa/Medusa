@@ -7,14 +7,6 @@
     from medusa.helper.common import pretty_file_size
     from random import choice
     import re
-
-    if app.ROOT_DIRS:
-        backend_pieces = app.ROOT_DIRS.split('|')
-        backend_default = 'rd-' + backend_pieces[0]
-        backend_dirs = backend_pieces[1:]
-    else:
-        backend_default = ''
-        backend_dirs = []
 %>
 <%block name="metas">
 <meta data-var="max_download_count" data-content="${max_download_count}">
@@ -66,13 +58,9 @@
 
 <div class="row">
     <div class="col-md-12">
-        <div class="pull-left">
+        <div class="pull-left" id="showRoot" style="display: none;">
             <select name="showRootDir" id="showRootDir"
                 class="form-control form-control-inline input-sm">
-                <option value="-1" ${'selected="selected"' if app.SHOWS_ROOT =='-1' else ''}>All Folders</option>
-                % for index, cur_dir in enumerate(backend_dirs):
-                    <option value="${index}" ${'selected="selected"' if app.SHOWS_ROOT == index else ''}>${cur_dir}</option>
-                % endfor
             </select>
         </div>
         <div class="show-option pull-right">
