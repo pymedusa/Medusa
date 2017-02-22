@@ -20,6 +20,10 @@ MEDUSA.common.init = function() {
         }
         return offset;
     }
+    
+    $(window).resize(function() {
+        $('.backstretch').css('top', backstretchOffset());
+    });
 
     // function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
@@ -58,10 +62,6 @@ MEDUSA.common.init = function() {
         el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
     }).on('mouseout', function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
-    });
-
-    $(window).resize(function() {
-        $('.backstretch').css('top', backstretchOffset());
     });
 
     $.confirm.options = {
