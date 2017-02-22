@@ -4,8 +4,15 @@ MEDUSA.addShows.init = function() {
         selected: (MEDUSA.config.sortArticle ? -1 : 0)
     });
 
+    var imgLazyLoad = new LazyLoad({
+        // example of options object -> see options section
+        threshold: 500
+    });
+
     $.initRemoteShowGrid = function() {
         // Set defaults on page load
+        imgLazyLoad.update();
+        imgLazyLoad.handleScroll();
         $('#showsort').val('original');
         $('#showsortdirection').val('asc');
 
@@ -54,6 +61,9 @@ MEDUSA.addShows.init = function() {
                 rating: '[data-rating] parseInt',
                 votes: '[data-votes] parseInt'
             }
+        }).on('layoutComplete arrangeComplete removeComplete', function () {
+            imgLazyLoad.update();
+            imgLazyLoad.handleScroll();
         });
     };
 
@@ -64,6 +74,8 @@ MEDUSA.addShows.init = function() {
                 $(this).empty().html(errorTxt);
             } else {
                 $.initRemoteShowGrid();
+                imgLazyLoad.update();
+                imgLazyLoad.handleScroll();
             }
         });
     };

@@ -87,7 +87,7 @@
                 </span>&nbsp;
             % endif
             Layout: <select name="layout"
-                class="form-control form-control-inline input-sm">
+                class="form-control form-control-inline input-sm show-layout">
                 <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
                 <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
                 <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>
