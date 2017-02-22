@@ -332,6 +332,57 @@ class PostProcessor(object):
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
+    @staticmethod
+    def rename_associated_files(new_path, new_base_name, cur_file_path):
+        """Rename associated file using media basename.
+
+        :param new_path: destination path where we want the file to
+        :param new_base_name: the media base filename (no extension) to use during the action
+        :param cur_file_path: full path of the associated file
+        :return: renamed full file path
+        """
+        # remember if the extension changed
+        changed_extension = None
+        # file extension without leading dot
+        extension = helpers.get_extension(cur_file_path)
+        # initally set current extension as new extension
+        new_extension = extension
+
+        if is_subtitle(cur_file_path):
+            code = cur_file_path.rsplit('.', 2)[1].lower().replace('_', '-')
+            if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                if code == 'pt-br':
+                    code = 'pt-BR'
+                new_extension = code + '.' + extension
+                changed_extension = True
+        # replace nfo with nfo-orig to avoid conflicts
+        elif extension == 'nfo' and app.NFO_RENAME:
+            new_extension = 'nfo-orig'
+            changed_extension = True
+
+        # rename file with new base name
+        if new_base_name:
+            new_file_name = new_base_name + '.' + new_extension
+        else:
+            # current file name including extension
+            new_file_name = os.path.basename(cur_file_path)
+            # if we're not renaming we still need to change the extension sometimes
+            if changed_extension:
+                new_file_name = new_file_name.replace(extension, new_extension)
+
+        if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
+            subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
+            dir_exists = helpers.make_dir(subs_new_path)
+            if not dir_exists:
+                logger.log(u'Unable to create subtitles folder {0}'.format(subs_new_path), logger.ERROR)
+            else:
+                helpers.chmod_as_parent(subs_new_path)
+            new_file_path = os.path.join(subs_new_path, new_file_name)
+        else:
+            new_file_path = os.path.join(new_path, new_file_name)
+
+        return new_file_path
+
     def _combined_file_operation(self, file_path, new_path, new_base_name, associated_files=False,
                                  action=None, subtitles=False, subtitle_action=None):
         """
@@ -340,10 +391,10 @@ class PostProcessor(object):
         Can rename the file as well as change its location, and optionally move associated files too.
 
         :param file_path: The full path of the media file to act on
-        :param new_path: Destination path where we want to move/copy the file to
-        :param new_base_name: The base filename (no extension) to use during the copy. Use None to keep the same name.
+        :param new_path: Destination path where we want to the file to
+        :param new_base_name: The base filename (no extension) to use during the action. Use None to keep the same name.
         :param associated_files: Boolean, whether we should copy similarly-named files too
-        :param action: function that takes an old path and new path and does an operation with them (move/copy)
+        :param action: function that takes an old path and new path and does an operation with them (move/copy/)
         :param subtitles: Boolean, whether we should process subtitles too
         """
         if not action:
@@ -361,56 +412,14 @@ class PostProcessor(object):
                       (file_path), logger.DEBUG)
             return
 
-        for cur_file_path in file_list:
-            # remember if the extension changed
-            changed_extension = None
-            # file extension without leading dot
-            extension = helpers.get_extension(cur_file_path)
-            # initally set current extension as new extension
-            new_extension = extension
-
-            if is_subtitle(cur_file_path):
-                # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
-                # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
-                if app.POSTPONE_IF_NO_SUBS:
-                    # subtitle_action = move
-                    action = subtitle_action or action
-
-                code = cur_file_path.rsplit('.', 2)[1].lower().replace('_', '-')
-                if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
-                    if code == 'pt-br':
-                        code = 'pt-BR'
-
-                    new_extension = code + '.' + extension
-                    changed_extension = True
-
-            # replace nfo with nfo-orig to avoid conflicts
-            elif extension == 'nfo' and app.NFO_RENAME:
-                new_extension = 'nfo-orig'
-                changed_extension = True
-
-            # rename file with new base name
-            if new_base_name:
-                new_file_name = new_base_name + '.' + new_extension
-            else:
-                # current file name including extension
-                new_file_name = os.path.basename(cur_file_path)
-                # if we're not renaming we still need to change the extension sometimes
-                if changed_extension:
-                    new_file_name = new_file_name.replace(extension, new_extension)
-
-            if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
-                subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
-                dir_exists = helpers.make_dir(subs_new_path)
-                if not dir_exists:
-                    logger.log(u'Unable to create subtitles folder {0}'.format(subs_new_path), logger.ERROR)
-                else:
-                    helpers.chmod_as_parent(subs_new_path)
-                new_file_path = os.path.join(subs_new_path, new_file_name)
-            else:
-                new_file_path = os.path.join(new_path, new_file_name)
-
-            action(cur_file_path, new_file_path)
+        for cur_associated_file in file_list:
+            new_file_path = self.rename_associated_files(new_path, new_base_name, cur_associated_file)
+            # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
+            # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
+            if app.POSTPONE_IF_NO_SUBS and is_subtitle(cur_associated_file):
+                # subtitle_action = move
+                action = subtitle_action or action
+            action(cur_associated_file, new_file_path)
 
     def post_process_action(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
         """
