@@ -51,8 +51,8 @@ selected = None
     <div id="archive" style="display: none;">
         <h5>
             <b>
-                Archive all currently downloaded episodes to avoid increasing
-                your backlog unnecessarily:
+                Archive downloaded episodes to avoid unnecessarily increasing
+                your backlog:
             </b>
         </h5>
         <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
