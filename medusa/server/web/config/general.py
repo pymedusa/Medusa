@@ -64,8 +64,9 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_reset_branches=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
-                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None, dbdebug=None):
+                    git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
+                    display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
+                    dbdebug=None):
         results = []
 
         # Misc
@@ -91,8 +92,10 @@ class ConfigGeneral(Config):
         app.ANON_REDIRECT = anon_redirect
         app.PROXY_SETTING = proxy_setting
         app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
+        app.GIT_AUTH_TYPE= try_int(git_auth_type)
         app.GIT_USERNAME = git_username
         app.GIT_PASSWORD = git_password
+        app.GIT_TOKEN = git_token
         app.GIT_RESET = config.checkbox_to_value(git_reset)
         app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
         app.GIT_PATH = git_path
