@@ -224,14 +224,12 @@ function rgb2hex(rgb) {
 
 var revertBackgroundColor; // used to revert back to original background-color after highlight
 var allCells = $('.triggerhighlight');
-allCells
-.on('mouseover', function() {
+allCells.on('mouseover', function() {
     var el = $(this);
     var pos = el.index();
     var revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
     var highlightBackgroundColor = colorLuminance(revertBackgroundColor, -0.15); // change highlight color based on original color
     el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
-})
-.on('mouseout', function() {
+}).on('mouseout', function() {
     $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
 });
