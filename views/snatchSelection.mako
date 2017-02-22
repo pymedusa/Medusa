@@ -105,35 +105,35 @@
                     <tbody aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
-                            <td class="release-name-ellipses">
+                            <td class="release-name-ellipses triggerhighlight">
                                 <span data-qtip-my="top left" data-qtip-at="bottom left" title='${hItem["name"]}' class="break-word ${hItem['name_highlight']} addQTip">${hItem["name"]}</span>
                             </td>
-                            <td class="col-group break-word">
+                            <td class="col-group break-word triggerhighlight">
                                 <span class="break-word ${hItem['rg_highlight']}">${hItem['release_group']}</span>
                             </td>
-                            <td class="col-provider">
+                            <td class="col-provider triggerhighlight">
                                 <span title="${hItem["provider"]}" class="addQTip">
                                     <img src="${hItem["provider_img_link"]}" width="16" height="16" class="vMiddle curHelp" alt="${hItem["provider"]}" title="${hItem["provider"]}"/>
                                 </span>
                             </td>
-                            <td>${renderQualityPill(int(hItem["quality"]))}
+                            <td class="triggerhighlight">${renderQualityPill(int(hItem["quality"]))}
                             % if hItem["proper_tags"]:
                                 <img src="images/info32.png" width="16" height="16" class="vMmiddle" title="${hItem["proper_tags"]}"/>
                             % endif
                             </td>
-                            <td>
+                            <td class="triggerhighlight">
                                 <span class="${hItem['seed_highlight']}">${hItem["seeders"]}</span>
                             </td>
-                            <td>
+                            <td class="triggerhighlight">
                                 <span class="${hItem['leech_highlight']}">${hItem["leechers"]}</span>
                             </td>
-                            <td class="col-size">${hItem["pretty_size"]}</td>
-                            <td>${hItem["provider_type"]}</td>
-                            <td class="col-date">
+                            <td class="col-size triggerhighlight">${hItem["pretty_size"]}</td>
+                            <td class="triggerhighlight">${hItem["provider_type"]}</tdclass>
+                            <td class="col-date triggerhighlight">
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
-                            <td class="col-date">${hItem["pubdate"]}</td>
-                            <td class="col-search"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
+                            <td class="col-date triggerhighlight">${hItem["pubdate"]}</td>
+                            <td class="col-search triggerhighlight"><a class="epManualSearch" id="${str(show.indexerid)}x${season}x${episode}" name="${str(show.indexerid)}x${season}x${episode}" href='home/pickManualSearch?provider=${hItem["provider_id"]}&amp;rowid=${hItem["rowid"]}&amp;manual_search_type=${manual_search_type}'><img src="images/download.png" width="16" height="16" alt="search" title="Download selected episode" /></a></td>
                         </tr>
                     % endfor
                     </tbody>

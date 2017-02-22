@@ -58,17 +58,29 @@ class Home(WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
+        shows_root = int(app.SHOWS_ROOT)
+        if shows_root is not None and app.ROOT_DIRS:
+            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_dirs = backend_pieces[1:]
+            shows_dir = backend_dirs[shows_root] if shows_root != -1 else None
+
+        shows = []
         if app.ANIME_SPLIT_HOME:
-            shows = []
             anime = []
             for show in app.showList:
+                if shows_dir and not show._location.startswith(shows_dir):
+                    continue
                 if show.is_anime:
                     anime.append(show)
                 else:
                     shows.append(show)
             show_lists = [['Shows', shows], ['Anime', anime]]
         else:
-            show_lists = [['Shows', app.showList]]
+            for show in app.showList:
+                if shows_dir and not show._location.startswith(shows_dir):
+                    continue
+                shows.append(show)
+            show_lists = [['Shows', shows]]
 
         stats = self.show_statistics()
         return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
@@ -685,7 +697,8 @@ class Home(WebRoot):
         :return: A json with the scene exceptions per season.
         """
         return json.dumps({
-            'seasonExceptions': get_all_scene_exceptions(indexer_id),
+            'seasonExceptions': {season: list(exception_name) for season, exception_name
+                                 in iteritems(get_all_scene_exceptions(indexer_id))},
             'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
                              for (tvdb_season_ep, anidb_season_ep)
                              in iteritems(get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False))}
