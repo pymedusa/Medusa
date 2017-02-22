@@ -24,6 +24,21 @@
             mem_usage = 'resource'
 %>
 <!-- BEGIN FOOTER -->
+<div class="modal fade" id="site-notification-modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                <h4 class="modal-title">Notice</h4>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 % if loggedIn:
     <%
         stats = Show.overall_stats()

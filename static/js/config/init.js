@@ -112,4 +112,40 @@ MEDUSA.config.init = function() {
             $('#branchForceUpdate').prop('disabled', false);
         });
     });
+
+    // GitHub Auth Types
+    setupGithubAuthTypes();
+
+    $('input[name="git_auth_type"]').on('click', function(){
+        setupGithubAuthTypes();
+    });
+
+    function setupGithubAuthTypes() {
+        var selected = $('input[name="git_auth_type"]').filter(':checked').val();
+
+        $('div[name="content_github_auth_type"]').each(function(index) {
+            if (index == selected) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+
+    $('#git_token').on('click', function() {
+        $('#git_token').select();
+    });
+
+    $("#create_access_token").on('click', function() {
+        notifyModal(
+            '<p>Copy the generated token and paste it in the token input box.</p>' +
+            '<p><a href="' + MEDUSA.config.anon_redirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
+            '<input class="btn" type="button" value="Continue to Github..."></a></p>');
+        $('#git_token').select();
+    });
+
+    $("#manage_tokens").on('click', function() {
+        window.open(anonURL + 'https://github.com/settings/tokens', '_blank');
+    });
+
 };
