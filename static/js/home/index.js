@@ -337,9 +337,7 @@ MEDUSA.home.index = function() {
 
     $('#showRootDir').on('change', function() {
         api.patch('config', {
-            showsRoot: {
-                id: $(this).val()
-            }
+            selectedRootIndex: $(this).val()
         }).then(function(response) {
             log.info(response);
             window.location.reload();
@@ -347,4 +345,26 @@ MEDUSA.home.index = function() {
             log.info(err);
         });
     });
+
+    var rootDir = MEDUSA.config.rootDirs;
+    var rootDirIndex = MEDUSA.config.selectedRootIndex;
+    if (rootDir) {
+        backendPieces = rootDir.split('|');
+        backendDirs = backendPieces.slice(1);
+    }
+    if (backendDirs.length >= 2) {
+        $('#showRoot').show();
+        var item = ['All Folders'];
+        rootDirOptions = item.concat(backendDirs);
+        $.each(rootDirOptions, function (i, item) {
+            $('#showRootDir').append($('<option>', {
+                value: i - 1,
+                text : item,
+            }));
+        $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
+        });
+    } else {
+        $('#showRoot').hide();
+    }
+
 };

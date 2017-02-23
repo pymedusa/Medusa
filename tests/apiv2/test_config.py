@@ -122,7 +122,8 @@ def config(monkeypatch, app_config):
                 'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
                 'specials': bool(app.DISPLAY_SHOW_SPECIALS)
             }
-        }
+        },
+        'selectedRootIndex': app.SELECTED_ROOT
     }
 
 
