@@ -550,7 +550,7 @@ div.xem {
 .show-option {
     float: left;
     line-height: 2em;
-    padding: 0 5px 10px 5px;
+    padding: 5px 5px 10px;
 }
 
 .show-grid {
@@ -1176,7 +1176,7 @@ div#container-display-show {
     }
 
     #showRoot {
-        width: 45%;
+        width: 49%;
     }
 }
 
@@ -1191,7 +1191,7 @@ div#container-display-show {
     }
 
     #showRoot {
-        width: 35%;
+        width: 39%;
     }
 }
 
