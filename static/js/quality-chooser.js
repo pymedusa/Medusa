@@ -107,10 +107,10 @@ $(document).ready(function() {
         $('#preferred_text2').hide();
         $('#quality_explanation').show();
 
-        if (preferred.length) {
+        if (preferred.length >= 1) {
             $('#preferred_text1').show();
             $('#preferred_text2').show();
-        } else if (allowed.length) {
+        } else if (allowed.length >= 1) {
             $('#allowed_text').show();
         } else {
             $('#quality_explanation').hide();

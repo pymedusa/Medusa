@@ -137,6 +137,7 @@ MEDUSA.home.snatchSelection = function() {
             },
             timeout: 15000 // timeout after 15s
         }).done(function(data) {
+            // @TODO: Combine the lower if statements
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);

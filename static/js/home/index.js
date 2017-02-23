@@ -188,11 +188,9 @@ MEDUSA.home.index = function() {
         },
         sortStable: true,
         sortAppend: [[2, 0]]
-    })
-    .bind('sortEnd',function(e, t){
+    }).bind('sortEnd', function() {
         imgLazyLoad.handleScroll();
-    })
-    .bind('filterEnd',function(e, t){
+    }).bind('filterEnd', function() {
         imgLazyLoad.handleScroll();
     });
 
@@ -228,7 +226,7 @@ MEDUSA.home.index = function() {
                     return (indexer.length && parseInt(indexer, 10)) || Number.NEGATIVE_INFINITY;
                 }
             }
-        }).on('layoutComplete arrangeComplete removeComplete', function () {
+        }).on('layoutComplete arrangeComplete removeComplete', function() {
             imgLazyLoad.update();
             imgLazyLoad.handleScroll();
         });

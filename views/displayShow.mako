@@ -96,7 +96,6 @@
                 <tr>
                     <th class="row-seasonheader ${'displayShowTable' if app.FANART_BACKGROUND else 'displayShowTableFanArt'}" colspan="15" style="vertical-align: bottom; width: auto;">
                         <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}
-                        <!-- @TODO: port the season scene exceptions to angular -->
                         % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                         <a class="epManualSearch" href="home/snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                         % endif
@@ -145,7 +144,6 @@
                         <a class="epManualSearch" href="home/snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                         % endif
                         </h3>
-                        <!-- @TODO: port the season scene exceptions to angular -->
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
                         <div class="pull-right"> <!-- hide/show episodes -->
                             % if not app.DISPLAY_ALL_SEASONS:
