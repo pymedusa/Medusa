@@ -38,6 +38,7 @@
                 % endfor
                 </select>
             </div>
+            <div class="pull-left">&nbsp;</div>
             <div class="pull-left">Period:
                 <select id="backlog_period" class="form-control-inline input-sm-custom">
                     <option value="all" ${'selected="selected"' if app.BACKLOG_PERIOD == 'all' else ''}>All</option>
