@@ -423,8 +423,8 @@ class QueueItemAdd(ShowQueueItem):
         except IndexerShowNotFoundInLanguage as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (language=e.language, id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        language=e.language, error_msg=ex(e)), logger.WARNING)
             ui.notifications.error('Error adding show!',
                                    'Unable to add show {show_name} on {indexer} with this language: {language}'.
                                    format(show_name=self.show.name,
@@ -711,8 +711,8 @@ class QueueItemUpdate(ShowQueueItem):
         except IndexerShowNotFoundInLanguage as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (language=e.language, id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        language=e.language, error_msg=ex(e)), logger.WARNING)
             ui.notifications.error('Error changing language show!',
                                    'Unable to change language for show {show_name} on {indexer} to language: {language}'.
                                    format(show_name=self.show.name,
