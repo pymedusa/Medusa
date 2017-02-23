@@ -65,8 +65,8 @@ MEDUSA.manage.backlogOverview = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
 
