@@ -42,22 +42,27 @@ $(document).ready(function() {
                   '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered;
         api.get(url).then(function(response) {
-            var newBacklogged = response.data.new;
-            var existingBacklogged = response.data.existing;
-            var variation = Math.abs(newBacklogged - existingBacklogged);
-            var html = 'Currently you have <b>' + existingBacklogged + '</b> backlogged episodes.<br>';
-            if (newBacklogged === -1 || existingBacklogged === -1) {
-                html = 'No qualities selected';
+            var newBacklogged = response.data.new
+            var existingBacklogged = response.data.existing
+            var variation = Math.abs(newBacklogged - existingBacklogged)
+            var html =  'Current backlog: <b>' + existingBacklogged + '</b> episodes<br>'
+            if (newBacklogged == -1 || existingBacklogged == -1) {
+                html = 'No qualities selected'
             } else if (newBacklogged === existingBacklogged) {
-                html += 'This change won\'t affect your backlogged episodes';
-            } else if (newBacklogged > existingBacklogged) {
-                html += '<br><b>WARNING</b>: your backlogged episodes will increase by <b>' + variation + '</b>';
-                html += '.<br> Total new backlogged: <b>' + newBacklogged + '</b>';
-                // Only show the archive action div if we have backlog increase
-                $('#archive').show();
+                html += 'This change won\'t affect your backlogged episodes'
             } else {
-                html += 'Your backlogged episodes will decrease by <b>' + variation + '</b>';
-                html += '.<br> Total new backlogged: <b>' + newBacklogged + '</b>';
+                html += '<br />New backlog: <b>' + newBacklogged + '</b> episodes'
+                html += '<br /><br />'
+                if (newBacklogged > existingBacklogged) {
+                    html += '<b>WARNING</b>: '
+                    change = 'increase'
+                    // Only show the archive action div if we have backlog increase
+                    $('#archive').show();
+                }
+                else {
+                    change = 'decrease'
+                }
+                html += 'Backlog will ' + change + ' by <b>' + variation + '</b> episodes.'
             }
             $('#backlogged_episodes').html(html);
         });

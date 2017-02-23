@@ -43,13 +43,19 @@ selected = None
         <h5><b>Quality setting explanation:</b></h5>
         <h5 id="allowed_text">This will download <b>any</b> of these qualities and then stops searching: <label id="allowed_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
         <h5 id="preferred_text1">Downloads <b>any</b> of these qualities: <label id="allowed_preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
-        <h5 id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>   
+        <h5 id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>
     </div>
     <div>
         <h5 class="red-text" id="backlogged_episodes"></h5>
     </div>
     <div id="archive" style="display: none;">
-        <h5><b>You can archive episodes with 'downloaded' final status to avoid creating backlog:</b></h5>
+        <h5>
+            <b>
+                Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
+            </b>
+                <br />Avoids unnecessarily increasing your backlog
+            </br>
+        </h5>
         <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
         <h5 id="archivedStatus"></h5>
     </div>
