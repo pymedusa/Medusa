@@ -1175,7 +1175,7 @@ div#container-display-show {
         padding-bottom: 4px;
     }
 
-    #showRootSelect {
+    #showRoot {
         width: 45%;
     }
 }
@@ -1190,7 +1190,7 @@ div#container-display-show {
         margin-left: 265px;
     }
 
-    #showRootSelect {
+    #showRoot {
         width: 35%;
     }
 }
