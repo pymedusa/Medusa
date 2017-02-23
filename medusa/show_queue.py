@@ -423,12 +423,12 @@ class QueueItemAdd(ShowQueueItem):
         except IndexerShowNotFoundInLanguage as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                       (id=self.indexer_id, indexer=indexerApi(self.indexer).name,
                         language=e.language, error_msg=ex(e)), logger.WARNING)
             ui.notifications.error('Error adding show!',
-                                   'Unable to add show {show_name} on {indexer} with this language: {language}'.
-                                   format(show_name=self.show.name,
-                                          indexer=indexerApi(self.show.indexer).name,
+                                   'Unable to add show {indexer_id} on {indexer} with this language: {language}'.
+                                   format(indexer_id=self.indexer_id,
+                                          indexer=indexerApi(self.indexer).name,
                                           language=e.language))
             self._finishEarly()
             return
