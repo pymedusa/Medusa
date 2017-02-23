@@ -123,7 +123,8 @@ def config(monkeypatch, app_config):
                 'specials': bool(app.DISPLAY_SHOW_SPECIALS)
             }
         },
-        'selectedRootIndex': app.SELECTED_ROOT
+        'selectedRootIndex': app.SELECTED_ROOT,
+        'backlogPeriod': app.BACKLOG_PERIOD
     }
 
 
