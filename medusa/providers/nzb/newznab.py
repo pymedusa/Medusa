@@ -174,7 +174,7 @@ class NewznabProvider(NZBProvider):
                         self.torznab = False
 
                     if not html('item'):
-                        logger.log('No results returned from provider', logger.INFO)
+                        logger.log('No results returned from provider', logger.DEBUG)
                         continue
 
                     for item in html('item'):
