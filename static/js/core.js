@@ -33,14 +33,13 @@ var UTIL = {
         }
 
         var body = document.body;
-        $('[asset]').each(function(){
+        $('[asset]').each(function() {
             let asset = $(this).attr('asset');
             let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
-                }
-                else {
+                } else {
                     $(this).attr('src', path);
                 }
             }
@@ -93,6 +92,7 @@ if (!document.location.pathname.endsWith('/login/')) {
             $(document).ready(UTIL.init);
         }
     }).catch(function(err) {
+        log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }

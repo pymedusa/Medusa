@@ -4,8 +4,7 @@ MEDUSA.config.index = function() {
         $('label[for="proxy_indexers"]').hide();
     }
 
-
-    $('#theme_name').on('change', function(){
+    $('#theme_name').on('change', function() {
         api.patch('config', {
             theme: {
                 name: $(this).val()
@@ -13,8 +12,8 @@ MEDUSA.config.index = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.error(err);
         });
     });
 

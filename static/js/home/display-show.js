@@ -418,7 +418,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         api.patch('config', {
             layout: {
                 show: {
-                    specials: $(this).text() === 'Hide' ? false : true
+                    specials: $(this).text() !== 'Hide'
                 }
             }
         }).then(function(response) {

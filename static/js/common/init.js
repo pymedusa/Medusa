@@ -20,7 +20,7 @@ MEDUSA.common.init = function() {
         }
         return offset;
     }
-    
+
     $(window).resize(function() {
         $('.backstretch').css('top', backstretchOffset());
     });
@@ -43,11 +43,11 @@ MEDUSA.common.init = function() {
         return rgb;
     }
 
-        // function to convert rgb(0,0,0) into #000000
+    // function to convert rgb(0,0,0) into #000000
     function rgb2hex(rgb) {
         rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         function hex(x) {
-            return ('0' + parseInt(x).toString(16)).slice(-2);
+            return ('0' + parseInt(x, 10).toString(16)).slice(-2);
         }
         return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
     }
@@ -56,7 +56,6 @@ MEDUSA.common.init = function() {
     var allCells = $('.triggerhighlight');
     allCells.on('mouseover', function() {
         var el = $(this);
-        var pos = el.index();
         revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
         var highlightBackgroundColor = colorLuminance(revertBackgroundColor, -0.15); // change highlight color based on original color
         el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
