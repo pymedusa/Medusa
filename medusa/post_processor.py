@@ -351,6 +351,7 @@ class PostProcessor(object):
         if is_subtitle(cur_file_path):
             code = cur_file_path.rsplit('.', 2)[1].lower().replace('_', '-')
             if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                # TODO remove this hardcoded language
                 if code == 'pt-br':
                     code = 'pt-BR'
                 new_extension = code + '.' + extension
