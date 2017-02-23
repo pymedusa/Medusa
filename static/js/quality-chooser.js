@@ -64,7 +64,7 @@ $(document).ready(function() {
                 }
                 html += 'Backlog will ' + change + ' by <b>' + variation + '</b> episodes.'
             }
-            $('#backlogged_episodes').html(html);
+            $('#backloggedEpisodes').html(html);
         });
     }
 
@@ -103,22 +103,22 @@ $(document).ready(function() {
         var preferredExplanation = preferred.join(', ');
         var allowedExplanation = allowed.join(', ');
 
-        $('#allowed_preferred_explanation').text(allowedPreferredExplanation);
-        $('#preferred_explanation').text(preferredExplanation);
-        $('#allowed_explanation').text(allowedExplanation);
+        $('#allowedPreferredExplanation').text(allowedPreferredExplanation);
+        $('#preferredExplanation').text(preferredExplanation);
+        $('#allowedExplanation').text(allowedExplanation);
 
-        $('#allowed_text').hide();
-        $('#preferred_text1').hide();
-        $('#preferred_text2').hide();
-        $('#quality_explanation').show();
+        $('#allowedText').hide();
+        $('#preferredText1').hide();
+        $('#preferredText2').hide();
+        $('#qualityExplanation').show();
 
         if (preferred.length >= 1) {
-            $('#preferred_text1').show();
-            $('#preferred_text2').show();
+            $('#preferredText1').show();
+            $('#preferredText2').show();
         } else if (allowed.length >= 1) {
-            $('#allowed_text').show();
+            $('#allowedText').show();
         } else {
-            $('#quality_explanation').hide();
+            $('#qualityExplanation').hide();
         }
     }
 
