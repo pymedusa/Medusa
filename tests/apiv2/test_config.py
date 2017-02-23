@@ -123,9 +123,7 @@ def config(monkeypatch, app_config):
                 'specials': bool(app.DISPLAY_SHOW_SPECIALS)
             }
         },
-        'showsRoot': {
-            'id': app.SHOWS_ROOT
-        },
+        'selectedRootIndex': app.SELECTED_ROOT
     }
 
 
