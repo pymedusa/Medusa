@@ -16,7 +16,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Daily searcher module."""
 from __future__ import unicode_literals
 
 import threading
@@ -35,12 +35,12 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
     """Daily search class."""
 
     def __init__(self):
+        """Initialize the class."""
         self.lock = threading.Lock()
         self.amActive = False
 
     def run(self, force=False):  # pylint:disable=too-many-branches
-        """
-        Runs the daily searcher, queuing selected episodes for search
+        """Run the daily searcher, queuing selected episodes for search.
 
         :param force: Force search
         """

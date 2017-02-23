@@ -31,50 +31,50 @@ $(document).ready(function() {
     function backloggedEpisodes() {
         var selectedPreffered = [];
         var selectedAllowed = [];
-        $('#preferred_qualities :selected').each(function(i, selected){
+        $('#preferred_qualities :selected').each(function(i, selected) {
             selectedPreffered[i] = $(selected).val();
         });
-        $('#allowed_qualities :selected').each(function(i, selected){
+        $('#allowed_qualities :selected').each(function(i, selected) {
             selectedAllowed[i] = $(selected).val();
         });
-        var url = 'show/' +  $('#showIndexerSlug').attr('value') +
+        var url = 'show/' + $('#showIndexerSlug').attr('value') +
                   '/backlogged' +
                   '?allowed=' + selectedAllowed +
-                  '&preferred=' + selectedPreffered
+                  '&preferred=' + selectedPreffered;
         api.get(url).then(function(response) {
-            var newBacklogged = response.data.new
-            var existingBacklogged = response.data.existing
-            var variation = Math.abs(newBacklogged - existingBacklogged)
-            var html =  'Currently you have <b>' + existingBacklogged + '</b> backlogged episodes.<br>'
-            if (newBacklogged == -1 || existingBacklogged == -1) {
-                html = 'No qualities selected'
+            var newBacklogged = response.data.new;
+            var existingBacklogged = response.data.existing;
+            var variation = Math.abs(newBacklogged - existingBacklogged);
+            var html = 'Currently you have <b>' + existingBacklogged + '</b> backlogged episodes.<br>';
+            if (newBacklogged === -1 || existingBacklogged === -1) {
+                html = 'No qualities selected';
             } else if (newBacklogged === existingBacklogged) {
-                html += 'This change won\'t affect your backlogged episodes'
+                html += 'This change won\'t affect your backlogged episodes';
             } else if (newBacklogged > existingBacklogged) {
-                html += '<br><b>WARNING</b>: your backlogged episodes will increase by <b>' + variation + '</b>'
-                html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
+                html += '<br><b>WARNING</b>: your backlogged episodes will increase by <b>' + variation + '</b>';
+                html += '.<br> Total new backlogged: <b>' + newBacklogged + '</b>';
                 // Only show the archive action div if we have backlog increase
                 $('#archive').show();
             } else {
-                html += 'Your backlogged episodes will decrease by <b>' + variation + '</b>'
-                html+= '.<br> Total new backlogged: <b>' + newBacklogged + '</b>'
+                html += 'Your backlogged episodes will decrease by <b>' + variation + '</b>';
+                html += '.<br> Total new backlogged: <b>' + newBacklogged + '</b>';
             }
             $('#backlogged_episodes').html(html);
         });
     }
 
     function archiveEpisodes() {
-        var url = 'show/' +  $('#showIndexerName').attr('value') + $('#showID').attr('value') +
-                  '/archiveEpisodes'
+        var url = 'show/' + $('#showIndexerName').attr('value') + $('#showID').attr('value') +
+                  '/archiveEpisodes';
         api.get(url).then(function(response) {
-            var archivedStatus = response.data.archived
-            var html = ''
+            var archivedStatus = response.data.archived;
+            var html = '';
             if (archivedStatus) {
-                html = 'Successfuly archived episodes'
+                html = 'Successfuly archived episodes';
                 // Recalculate backlogged episodes after we archive it
                 backloggedEpisodes();
             } else {
-                html = 'Not episodes needed to be archived'
+                html = 'Not episodes needed to be archived';
             }
             $('#archivedStatus').html(html);
             // Restore button text
@@ -90,34 +90,34 @@ $(document).ready(function() {
         var allowed = $.map($('#allowed_qualities option:selected'), function(option) {
             return option.text;
         });
-        var both = allowed.concat(preferred.filter(function (item) {
+        var both = allowed.concat(preferred.filter(function(item) {
             return allowed.indexOf(item) < 0;
         }));
 
-        var allowed_preferred_explanation = both.join(', ');
-        var preferred_explanation = preferred.join(', ');
-        var allowed_explanation = allowed.join(', ');
+        var allowedPreferredExplanation = both.join(', ');
+        var preferredExplanation = preferred.join(', ');
+        var allowedExplanation = allowed.join(', ');
 
-        $('#allowed_preferred_explanation').text(allowed_preferred_explanation);
-        $('#preferred_explanation').text(preferred_explanation);
-        $('#allowed_explanation').text(allowed_explanation);
+        $('#allowed_preferred_explanation').text(allowedPreferredExplanation);
+        $('#preferred_explanation').text(preferredExplanation);
+        $('#allowed_explanation').text(allowedExplanation);
 
         $('#allowed_text').hide();
         $('#preferred_text1').hide();
         $('#preferred_text2').hide();
         $('#quality_explanation').show();
 
-        if (preferred.length) {
+        if (preferred.length >= 1) {
             $('#preferred_text1').show();
             $('#preferred_text2').show();
-        } else if (allowed.length) {
+        } else if (allowed.length >= 1) {
             $('#allowed_text').show();
         } else {
             $('#quality_explanation').hide();
         }
     }
 
-    $('#archiveEpisodes').on('click', function(){
+    $('#archiveEpisodes').on('click', function() {
         $.get($(this).attr('href'));
         $(this).val('Archiving...');
         archiveEpisodes();
@@ -128,7 +128,7 @@ $(document).ready(function() {
         setFromPresets($('#qualityPreset :selected').val());
     });
 
-    $('#qualityPreset, #preferred_qualities, #allowed_qualities').on('change', function(){
+    $('#qualityPreset, #preferred_qualities, #allowed_qualities').on('change', function() {
         setQualityText();
         backloggedEpisodes();
     });

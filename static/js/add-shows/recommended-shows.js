@@ -10,4 +10,6 @@ MEDUSA.addShows.recommendedShows = function() {
     $.initAddShowById();
     $.initBlackListShowById();
     $.initRemoteShowGrid();
+    $.imgLazyLoad.update();
+    $.imgLazyLoad.handleScroll();
 };

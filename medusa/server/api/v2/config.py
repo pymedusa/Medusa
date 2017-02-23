@@ -129,7 +129,9 @@ class ConfigHandler(BaseRequestHandler):
                     'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
                     'specials': bool(app.DISPLAY_SHOW_SPECIALS)
                 }
-            }
+            },
+            'selectedRootIndex': int(app.SELECTED_ROOT) if app.SELECTED_ROOT else None,
+            'backlogPeriod': app.BACKLOG_PERIOD
         }
 
         if query and query not in config_data:
@@ -240,11 +242,10 @@ class ConfigHandler(BaseRequestHandler):
                 # if 'host' in data['torrents']:
                 # if 'rpcurl' in data['torrents']:
                 # if 'authType' in data['torrents']:
-            if key == 'showsRoot':
-                root_id = int(data['showsRoot']['id'])
-                app.SHOWS_ROOT = root_id
-                done_data.setdefault('showsRoot', {})
-                done_data['showsRoot'].setdefault('id', root_id)
+            if key == 'selectedRootIndex':
+                root_id = int(data['selectedRootIndex'])
+                app.SELECTED_ROOT = root_id
+                done_data['selectedRootIndex'] = root_id
             if key == 'layout':
                 done_data.setdefault('layout', {})
                 if 'schedule' in data['layout']:
@@ -279,6 +280,10 @@ class ConfigHandler(BaseRequestHandler):
                 theme_name = data['theme']['name']
                 app.THEME_NAME = theme_name
                 done_data['themeName'] = theme_name
+            if key == 'backlogPeriod':
+                backlog_period = data['backlogPeriod']
+                app.BACKLOG_PERIOD = backlog_period
+                done_data['backlogPeriod'] = backlog_period
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
         if len(done_errors):

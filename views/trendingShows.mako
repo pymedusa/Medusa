@@ -27,7 +27,7 @@
         <div class="traktContainer">
             <div class="trakt-image">
                 <a class="trakt-image" href="${anon_url(show_url)}" target="_blank">
-                    <img alt="" class="trakt-image" src="${poster_url}" height="273px" width="186px" />
+                    <img alt="" class="trakt-image" src="images/poster.png" data-src="${poster_url}" height="273px" width="186px" />
                 </a>
             </div>
             <div class="show-title">
