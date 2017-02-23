@@ -29,6 +29,12 @@ class TestStandardLoggingApi(object):
             'kwargs': dict(),
             'expected': "{'type': 'episode', 'season': 5}"
         },
+        {  # p3: regression test: https://github.com/pymedusa/Medusa/issues/876
+            'message': "This {0} {a} {b} {1}",
+            'args': ['zero', 'one', dict(a='a', b='b')],
+            'kwargs': dict(),
+            'expected': "This zero a b one"
+        },
     ])
     def test_logger__various_messages(self, logger, read_loglines, p):
         # Given

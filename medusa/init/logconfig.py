@@ -44,14 +44,70 @@ class StyleAdapter(logging.LoggerAdapter):
         """
         self.__dict__[key] = value
 
-    def process(self, msg, kwargs):
+    def debug(self, msg, *args, **kwargs):
+        """
+        Delegate a debug call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).debug(msg, *(), **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        """
+        Delegate an info call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).info(msg, *(), **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """
+        Delegate a warning call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).warning(msg, *(), **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """
+        Delegate an error call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).error(msg, *(), **kwargs)
+
+    def exception(self, msg, *args, **kwargs):
+        """
+        Delegate an exception call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).exception(msg, *(), **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        """
+        Delegate a critical call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).critical(msg, *(), **kwargs)
+
+    def log(self, level, msg, *args, **kwargs):
+        """
+        Delegate a log call to the underlying logger, after adding
+        contextual information from this adapter instance.
+        """
+        msg, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).log(level, msg, *(), **kwargs)
+
+    def wrap_message(self, msg, args, kwargs):
         """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
 
         :param msg:
         :param kwargs:
         :return:
         """
-        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
+        return BraceMessage(msg, args, kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
 
 
 class BraceMessage(object):
@@ -76,6 +132,11 @@ class BraceMessage(object):
         :rtype: str
         """
         result = text_type(self.fmt)
+        kwargs = [a for a in self.args if isinstance(a, dict)]
+        assert len(kwargs) < 2
+        if kwargs:
+            return result.format(*self.args, **kwargs[0])
+
         return result.format(*self.args, **self.kwargs) if self.args or self.kwargs else result
 
 
