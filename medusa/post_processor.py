@@ -333,11 +333,11 @@ class PostProcessor(object):
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
     @staticmethod
-    def rename_associated_files(new_path, new_base_name, cur_file_path):
+    def rename_associated_file(new_path, new_base_name, cur_file_path):
         """Rename associated file using media basename.
 
-        :param new_path: destination path where we want the file to
-        :param new_base_name: the media base filename (no extension) to use during the action
+        :param new_path: full show folder path were the file will be moved|copied|linked
+        :param new_base_name: the media base filename (no extension) to use during the rename
         :param cur_file_path: full path of the associated file
         :return: renamed full file path
         """
@@ -391,8 +391,8 @@ class PostProcessor(object):
 
         Can rename the file as well as change its location, and optionally move associated files too.
 
-        :param file_path: The full path of the media file to act on
-        :param new_path: Destination path where we want to the file to
+        :param file_path: The full path of the file to act on
+        :param new_path: full show folder path were the file will be moved|copied|linked
         :param new_base_name: The base filename (no extension) to use during the action. Use None to keep the same name.
         :param associated_files: Boolean, whether we should copy similarly-named files too
         :param action: function that takes an old path and new path and does an operation with them (move/copy/)
@@ -414,7 +414,7 @@ class PostProcessor(object):
             return
 
         for cur_associated_file in file_list:
-            new_file_path = self.rename_associated_files(new_path, new_base_name, cur_associated_file)
+            new_file_path = self.rename_associated_file(new_path, new_base_name, cur_associated_file)
             # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
             # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
             if app.POSTPONE_IF_NO_SUBS and is_subtitle(cur_associated_file):
@@ -426,8 +426,8 @@ class PostProcessor(object):
         """
         Run the given action on file and set proper permissions.
 
-        :param file_path: The full path of the media file
-        :param new_path: Destination path where we want the file to
+        :param file_path: The full path of the file to act on
+        :param new_path: full show folder path were the file will be moved|copied|linked
         :param new_base_name: The base filename (no extension) to use. Use None to keep the same name.
         :param associated_files: Boolean, whether we should run the action in similarly-named files too
         """
