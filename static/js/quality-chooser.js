@@ -56,13 +56,13 @@ $(document).ready(function() {
                 if (newBacklogged > existingBacklogged) {
                     html += '<b>WARNING</b>: '
                     change = 'increase'
+                    // Only show the archive action div if we have backlog increase
+                    $('#archive').show();
                 }
                 else {
                     change = 'decrease'
                 }
                 html += 'Backlog will ' + change + ' by <b>' + variation + '</b> episodes.'
-                // Only show the archive action div if we have backlog increase
-                $('#archive').show();
             }
             $('#backlogged_episodes').html(html);
         });

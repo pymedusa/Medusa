@@ -51,16 +51,12 @@ selected = None
     <div id="archive" style="display: none;">
         <h5>
             <b>
-                Archive downloaded episodes to avoid unnecessarily increasing
-                your backlog:
+                Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
             </b>
+                <br />Avoids unnecessarily increasing your backlog
+            </br>
         </h5>
         <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
-        <br />
-        <h5>
-            Or manually archive episodes with
-            <b><a href="manage/episodeStatuses/">Episode Status Management</a></b>
-        </h5>
         <h5 id="archivedStatus"></h5>
     </div>
 </div>
