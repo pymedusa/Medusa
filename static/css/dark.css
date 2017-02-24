@@ -545,7 +545,7 @@ body {
 /* navbar styling */
 .navbar-default {
     background-color: rgb(35, 35, 35);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(51, 51, 51)), to(rgb(35, 35, 35)));
     background: -moz-linear-gradient(top, rgb(51, 51, 51), rgb(35, 35, 35));
     border-color: rgb(62, 63, 58);
@@ -644,10 +644,9 @@ body {
     border-bottom-color: rgb(17, 17, 17);
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#297AB8', endColorstr='#15528F', GradientType=0);
     filter: progid:dximagetransform.microsoft.gradient(enabled=false);
-    /**zoom: 1;*/
-    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.0), 0 1px 2px rgba(0, 0, 0, 0.05);
-    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.0), 0 1px 2px rgba(0, 0, 0, 0.05);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.0), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0), 0 1px 2px rgba(0, 0, 0, 0.05);
+    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0), 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .btn:hover,
@@ -672,11 +671,11 @@ body {
     *background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
     background-position: 0 -150px;
-    -webkit-transition: background-position 0.0s linear;
-    -moz-transition: background-position 0.0s linear;
-    -ms-transition: background-position 0.0s linear;
-    -o-transition: background-position 0.0s linear;
-    transition: background-position 0.0s linear;
+    -webkit-transition: background-position 0s linear;
+    -moz-transition: background-position 0s linear;
+    -ms-transition: background-position 0s linear;
+    -o-transition: background-position 0s linear;
+    transition: background-position 0s linear;
 }
 
 .btn:focus {
@@ -711,7 +710,7 @@ body {
     box-shadow: none;
 }
 
-@media (min-width:768px) {
+@media (min-width: 768px) {
     .navbar .nav > li > .dropdown-menu::after {
         position: absolute;
         top: -6px;
@@ -770,7 +769,7 @@ div.formpaginate .next {
     color: rgb(255, 255, 255);
     cursor: hand;
     cursor: pointer;
-    background: rgb(95,95,95);
+    background: rgb(95, 95, 95);
     -webkit-border-radius: 6px;
         -moz-border-radius: 6px;
             border-radius: 6px;
@@ -786,8 +785,8 @@ pnotify.css
     background-image: linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
     background-image: -webkit-linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
     background-image: -o-linear-gradient(rgb(51, 51, 51), rgb(61, 61, 61)) !important;
-    filter: progid:dximagetransform.microsoft.gradient(startColorstr=rgb(51, 51, 51), endColorstr=rgb(61, 61, 61)) !important;
-    -ms-filter: progid:dximagetransform.microsoft.gradient(startColorstr=rgb(51, 51, 51), endColorstr=rgb(61, 61, 61)) !important;
+    filter: progid:dximagetransform.microsoft.gradient(startcolorstr=rgb(51, 51, 51), endcolorstr=rgb(61, 61, 61)) !important;
+    -ms-filter: progid:dximagetransform.microsoft.gradient(startcolorstr=rgb(51, 51, 51), endcolorstr=rgb(61, 61, 61)) !important;
     -moz-box-shadow: 0 0 2px rgb(0, 0, 0);
     -webkit-box-shadow: 0 0 2px rgb(0, 0, 0);
     -o-box-shadow: 0 0 2px rgb(0, 0, 0);
@@ -827,7 +826,7 @@ tablesorter.css
 .tablesorter th {
     color: rgb(255, 255, 255);
     text-align: center;
-    text-shadow: -1px -1px 0 rgba(0,0,0,0.3);
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
     background-color: rgb(85, 85, 85);
     border-collapse: collapse;
     font-weight: normal;
@@ -836,13 +835,11 @@ tablesorter.css
 .tablesorter thead .tablesorter-headerDesc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjB+gC+jP2ptn0WskLQA7);
-    /* background-image: url(../images/tablesorter/asc.gif); */
 }
 
 .tablesorter thead .tablesorter-headerAsc {
     background-color: rgb(85, 85, 85);
     background-image: url(data:image/gif;base64,R0lGODlhFQAEAIAAAP///////yH5BAEAAAEALAAAAAAVAAQAAAINjI8Bya2wnINUMopZAQA7);
-    /* background-image: url(../images/tablesorter/desc.gif); */
 }
 
 thead.tablesorter-stickyHeader {
@@ -870,11 +867,8 @@ thead.tablesorter-stickyHeader {
 
 /* hidden filter row */
 .tablesorter-filter-row.hideme td {
-    /*** *********************************************** ***/
-    /*** change this padding to modify the thickness     ***/
-    /*** of the closed filter row (height = padding x 2) ***/
+    /* Change the padding to modify the thickness of the closed filter row (height = padding x 2) */
     padding: 2px;
-    /*** *********************************************** ***/
     margin: 0;
     line-height: 0;
     cursor: pointer;
@@ -886,8 +880,7 @@ thead.tablesorter-stickyHeader {
     border: 0;
     padding: 0;
     margin: 0;
-    /* don't use visibility: hidden because it disables tabbing */
-    opacity: 0;
+    opacity: 0; /* Don't use visibility: hidden because it disables tabbing */
     filter: alpha(opacity=0);
 }
 
@@ -998,7 +991,7 @@ new #confirmBox
 }
 
 .modal-body,
-.modal-content{
+.modal-content {
     background: rgb(34, 34, 34);
 }
 
@@ -1007,8 +1000,8 @@ new #confirmBox
 }
 
 .confirmation-modal {
-    background: -moz-linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)) repeat-x rgba(0,0,0,0.5);
-    background:-webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0,0,0,0.5)), to(rgba(0,0,0,0.5))) repeat-x rgba(0,0,0,0.5);
+    background: -moz-linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)) repeat-x rgba(0, 0, 0, 0.5);
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgba(0, 0, 0, 0.5)), to(rgba(0, 0, 0, 0.5))) repeat-x rgba(0, 0, 0, 0.5);
 }
 
 .modal-footer {
@@ -1021,7 +1014,7 @@ new #confirmBox
     text-decoration: none;
     display: inline-block;
     color: rgb(255, 255, 255);
-    text-align:center;
+    text-align: center;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-clip: padding-box;
     border: 1px solid rgb(17, 17, 17);
@@ -1030,12 +1023,12 @@ new #confirmBox
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: -moz-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: -o-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    -webkit-box-shadow: inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
-    box-shadow: inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    -webkit-box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .modal-footer button:last-child {
@@ -1058,8 +1051,7 @@ new #confirmBox
     background-color: rgb(161, 51, 49);
 }
 
-/* Christmas edition*/
-/* navbar styling */
+/* Christmas edition */
 .navbar-default {
-    background-color: rgb(51, 51, 51)!important;
+    background-color: rgb(51, 51, 51) !important;
 }
