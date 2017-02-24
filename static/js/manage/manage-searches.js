@@ -39,9 +39,10 @@ MEDUSA.manage.manageSearches = function() {
                     .text(response.data.result)
             );
             updateExceptionTable(response);
+            $('.forceSceneExceptionRefresh').addClass('disabled');
         })
         .catch(function(err) {
-            console.log('Trying to udpate scene exceptions failed with error: ' + err);
+            console.log('Trying to update scene exceptions failed with error: ' + err);
         });
     });
 };
