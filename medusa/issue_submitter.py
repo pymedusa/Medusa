@@ -13,7 +13,7 @@ from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
 from . import app, db
 from .classes import ErrorViewer
-from .github_client import authenticate, token_authenticate, get_github_repo
+from .github_client import authenticate, get_github_repo, token_authenticate
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,6 @@ class IssueSubmitter(object):
         :return: user message and issue number
         :rtype: list of tuple(str, str)
         """
-
         if app.GIT_AUTH_TYPE == 0:
             if not app.DEBUG or not app.GIT_USERNAME or not app.GIT_PASSWORD:
                 logger.warning(IssueSubmitter.INVALID_CONFIG)

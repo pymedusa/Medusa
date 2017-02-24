@@ -92,7 +92,7 @@ class ConfigGeneral(Config):
         app.ANON_REDIRECT = anon_redirect
         app.PROXY_SETTING = proxy_setting
         app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
-        app.GIT_AUTH_TYPE= try_int(git_auth_type)
+        app.GIT_AUTH_TYPE = try_int(git_auth_type)
         app.GIT_USERNAME = git_username
         app.GIT_PASSWORD = git_password
         app.GIT_TOKEN = git_token

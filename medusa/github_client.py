@@ -32,6 +32,7 @@ def authenticate(username, password):
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
         raise
 
+
 def token_authenticate(token):
     """Github authentication.
 
@@ -56,6 +57,7 @@ def token_authenticate(token):
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
         raise
 
+
 def get_user(gh=None):
     """Return the github repository.
 
@@ -74,6 +76,7 @@ def get_user(gh=None):
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
         raise
+
 
 def get_github_repo(organization, repo, gh=None):
     """Return the github repository.

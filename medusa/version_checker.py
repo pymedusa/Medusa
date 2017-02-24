@@ -741,13 +741,16 @@ class GitUpdateManager(UpdateManager):
                 if app.DEVELOPER:
                     self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
                 else:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
+                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
         else:
             if app.GIT_TOKEN:
                 if app.DEVELOPER:
                     self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
                 else:
-                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
+                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+
 
 class SourceUpdateManager(UpdateManager):
     def __init__(self):
