@@ -1,12 +1,13 @@
 MEDUSA.errorlogs.viewlogs = function() {
-    var params = $.param({
-        min_level: $('select[name=min_level]').val(), // eslint-disable-line camelcase
-        log_filter: $('select[name=log_filter]').val(), // eslint-disable-line camelcase
-        log_period: $('select[name=log_period]').val(), // eslint-disable-line camelcase
-        log_search: $('#log_search').val() // eslint-disable-line camelcase
-    });
-
     $('#min_level,#log_filter,#log_search,#log_period').on('keyup change', _.debounce(function() {
+
+        var params = $.param({
+            min_level: $('select[name=min_level]').val(), // eslint-disable-line camelcase
+            log_filter: $('select[name=log_filter]').val(), // eslint-disable-line camelcase
+            log_period: $('select[name=log_period]').val(), // eslint-disable-line camelcase
+            log_search: $('#log_search').val() // eslint-disable-line camelcase
+        });
+
         $('#min_level').prop('disabled', true);
         $('#log_filter').prop('disabled', true);
         $('#log_period').prop('disabled', true);
