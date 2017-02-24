@@ -5,11 +5,14 @@ MEDUSA.manage.manageSearches = function() {
         var status = $('#sceneExceptionStatus');
 
         var table = $('<ul></ul>').append('<li>' +
-            '<a href=' + MEDUSA.config.anonRedirect +
+            '<a href="' + MEDUSA.config.anonRedirect +
             'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">' +
             "Last updated medusa's exceptions</a> " +
             new Date(exceptions.data.last_update.custom_exceptions * 1000)
-                .toLocaleDateString()).append('<li>Last updated xem exceptions ' +
+                .toLocaleDateString()).append('<li>' +
+            '<a href="' + MEDUSA.config.anonRedirect +
+            'http://thexem.de">' +
+            'Last updated xem exceptions</a> ' +
             new Date(exceptions.data.last_update.xem * 1000)
                 .toLocaleDateString()).append('<li>Last updated anidb exceptions ' +
             new Date(exceptions.data.last_update.anidb * 1000)
