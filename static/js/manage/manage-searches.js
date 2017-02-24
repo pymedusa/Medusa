@@ -7,7 +7,7 @@ MEDUSA.manage.manageSearches = function() {
         var table = $('<ul></ul>').append('<li>' +
             '<a href="' + MEDUSA.config.anonRedirect +
             'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">' +
-            "Last updated medusa's exceptions</a> " +
+            'Last updated medusa\'s exceptions</a> ' +
             new Date(exceptions.data.last_update.custom_exceptions * 1000)
                 .toLocaleDateString()).append('<li>' +
             '<a href="' + MEDUSA.config.anonRedirect +
