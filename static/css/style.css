@@ -2547,6 +2547,14 @@ a.whitelink {
     color: rgb(255, 255, 255);
 }
 
+#sceneExceptionStatus ul {
+    padding-left: 0px;
+}
+
+#sceneExceptionStatus li {
+    list-style-type: none;
+}
+
 /* =======================================================================
 Global
 ========================================================================== */

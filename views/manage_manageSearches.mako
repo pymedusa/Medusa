@@ -51,6 +51,12 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
     In Progress<br>
 % endif
 <br>
+
+<h3>Scene Exceptions:</h3>
+<a class="btn disabled forceSceneExceptionRefresh"><i class="icon-exclamation-sign"></i> Force</a>
+<span id="sceneExceptionStatus"></span>
+<br>
+
 <h3>Search Queue:</h3>
 Backlog: <i>${searchQueueLength['backlog']} pending items</i><br>
 Daily: <i>${searchQueueLength['daily']} pending items</i><br>

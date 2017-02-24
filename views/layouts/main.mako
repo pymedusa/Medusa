@@ -106,6 +106,7 @@
         <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
         <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>

@@ -42,7 +42,7 @@ def get_apiv2_handlers(base):
         (r'{base}/authenticate(/?)'.format(base=base), AuthHandler),
         (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
                                                                  query=query_extended), AssetHandler),
-        (r'{base}/sceneexception/retrieve'.format(base=base), SceneExceptionRetrieveHandler),
+        (r'{base}/manage/searches/sceneexception/retrieve'.format(base=base), SceneExceptionRetrieveHandler),
         # Always keep this last!
         (r'{base}(/?.*)'.format(base=base), NotFoundHandler),
     ]
