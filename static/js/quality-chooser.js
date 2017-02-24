@@ -42,27 +42,27 @@ $(document).ready(function() {
                   '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered;
         api.get(url).then(function(response) {
-            var newBacklogged = response.data.new
-            var existingBacklogged = response.data.existing
-            var variation = Math.abs(newBacklogged - existingBacklogged)
-            var html =  'Current backlog: <b>' + existingBacklogged + '</b> episodes<br>'
-            if (newBacklogged == -1 || existingBacklogged == -1) {
-                html = 'No qualities selected'
+            var newBacklogged = response.data.new;
+            var existingBacklogged = response.data.existing;
+            var variation = Math.abs(newBacklogged - existingBacklogged);
+            var html = 'Current backlog: <b>' + existingBacklogged + '</b> episodes<br>';
+            if (newBacklogged === -1 || existingBacklogged === -1) {
+                html = 'No qualities selected';
             } else if (newBacklogged === existingBacklogged) {
-                html += 'This change won\'t affect your backlogged episodes'
+                html += 'This change won\'t affect your backlogged episodes';
             } else {
-                html += '<br />New backlog: <b>' + newBacklogged + '</b> episodes'
-                html += '<br /><br />'
+                html += '<br />New backlog: <b>' + newBacklogged + '</b> episodes';
+                html += '<br /><br />';
+                var change = '';
                 if (newBacklogged > existingBacklogged) {
-                    html += '<b>WARNING</b>: '
-                    change = 'increase'
+                    html += '<b>WARNING</b>: ';
+                    change = 'increase';
                     // Only show the archive action div if we have backlog increase
                     $('#archive').show();
+                } else {
+                    change = 'decrease';
                 }
-                else {
-                    change = 'decrease'
-                }
-                html += 'Backlog will ' + change + ' by <b>' + variation + '</b> episodes.'
+                html += 'Backlog will ' + change + ' by <b>' + variation + '</b> episodes.';
             }
             $('#backloggedEpisodes').html(html);
         });

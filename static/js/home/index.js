@@ -349,22 +349,21 @@ MEDUSA.home.index = function() {
     var rootDir = MEDUSA.config.rootDirs;
     var rootDirIndex = MEDUSA.config.selectedRootIndex;
     if (rootDir) {
-        backendPieces = rootDir.split('|');
-        backendDirs = backendPieces.slice(1);
+        var backendPieces = rootDir.split('|');
+        var backendDirs = backendPieces.slice(1);
+        if (backendDirs.length >= 2) {
+            $('#showRoot').show();
+            var item = ['All Folders'];
+            var rootDirOptions = item.concat(backendDirs);
+            $.each(rootDirOptions, function(i, item) {
+                $('#showRootDir').append($('<option>', {
+                    value: i - 1,
+                    text: item
+                }));
+            });
+            $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
+        } else {
+            $('#showRoot').hide();
+        }
     }
-    if (backendDirs.length >= 2) {
-        $('#showRoot').show();
-        var item = ['All Folders'];
-        rootDirOptions = item.concat(backendDirs);
-        $.each(rootDirOptions, function (i, item) {
-            $('#showRootDir').append($('<option>', {
-                value: i - 1,
-                text : item,
-            }));
-        $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
-        });
-    } else {
-        $('#showRoot').hide();
-    }
-
 };
