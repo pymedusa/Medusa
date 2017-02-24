@@ -135,9 +135,9 @@ class ConfigGeneral(Config):
             if app.GIT_AUTH_TYPE == 0:
                 github_client.authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
             else:
-                github_client.token_authenticate(app.TOKEN)
-                if app.GIT_USERNAME and app.GIT_USERNAME != github_client.get_user().login:
-                    app.GIT_USERNAME = github_client.get_user().login()
+                github = github_client.token_authenticate(app.GIT_TOKEN)
+                if app.GIT_USERNAME and app.GIT_USERNAME != github_client.get_user(gh=github):
+                    app.GIT_USERNAME = github_client.get_user(gh=github)
         except (GithubException, IOError):
             logger.log('Error while validating your Github credentials.', logger.WARNING)
 

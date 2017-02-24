@@ -4297,7 +4297,7 @@ Modal Dialog
 }
 
 .modal-body, .modal-content {
-    background: #222222;
+    background: #FEFEFE;
 }
 
 .modal-footer {
@@ -4322,7 +4322,7 @@ Modal Dialog
     padding: 2px 15px;
     text-decoration: none;
     display: inline-block;
-    color: #FFFFFF;
+    color: rgb(51, 51, 51);
     text-align: center;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-clip: padding-box;
@@ -4332,10 +4332,12 @@ Modal Dialog
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
-    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
-    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
-    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -ms-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(255, 255, 255)), to(rgb(230, 230, 230)));
+    background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -o-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
     -webkit-box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
     box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
 }
@@ -4345,17 +4347,37 @@ Modal Dialog
 }
 
 .modal-footer button.confirm {
-    background-color: #3F7636;
+    background-color: rgb(245, 245, 245);
+    *background-color: rgb(230, 230, 230);
 }
 
 .modal-footer button.confirm:hover {
-    background-color: #48873E;
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+    background-color: rgb(230, 230, 230);
+    *background-color: rgb(217, 217, 217);
+    background-position: 0 -15px;
+    -webkit-transition: background-position 0.1s linear;
+    -moz-transition: background-position 0.1s linear;
+    -ms-transition: background-position 0.1s linear;
+    -o-transition: background-position 0.1s linear;
+    transition: background-position 0.1s linear;
 }
 
 .modal-footer button.cancel {
-    background-color: #8D2D2B;
+    background-color: rgb(245, 245, 245);
+    *background-color: rgb(230, 230, 230);
 }
 
 .modal-footer button.cancel:hover {
-    background-color: #A13331;
+    color: rgb(51, 51, 51);
+    text-decoration: none;
+    background-color: rgb(230, 230, 230);
+    *background-color: rgb(217, 217, 217);
+    background-position: 0 -15px;
+    -webkit-transition: background-position 0.1s linear;
+    -moz-transition: background-position 0.1s linear;
+    -ms-transition: background-position 0.1s linear;
+    -o-transition: background-position 0.1s linear;
+    transition: background-position 0.1s linear;
 }

@@ -42,7 +42,7 @@ def token_authenticate(token):
     """
     try:
         if token:
-            gh = github.MainClass.Github(login_or_token=token, password=password, user_agent='Medusa')
+            gh = github.MainClass.Github(login_or_token=token, user_agent='Medusa')
 
             # Make a simple request to validate username and password
             gh.get_rate_limit()
@@ -52,6 +52,25 @@ def token_authenticate(token):
         logger.warning('Invalid Github credentials. Please check your Github credentials in Medusa settings.')
     except github.TwoFactorException:
         logger.warning('Invalid Github token. Please check your Github token in Medusa settings.')
+    except github.GithubException as e:
+        logger.debug('Unable to contact Github: {ex!r}', ex=e)
+        raise
+
+def get_user(gh=None):
+    """Return the github repository.
+
+    :param organization:
+    :type organization: string
+    :param repo:
+    :type repo: string
+    :param gh:
+    :type gh: Github
+    :return:
+    :rtype github.Repository.Repository
+    """
+    try:
+        gh = gh or github.MainClass.Github(user_agent='Medusa')
+        return gh.get_user().login
     except github.GithubException as e:
         logger.debug('Unable to contact Github: {ex!r}', ex=e)
         raise
