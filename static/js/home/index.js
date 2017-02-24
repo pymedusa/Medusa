@@ -113,7 +113,7 @@ MEDUSA.home.index = function() {
                 10: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
             };
         })(),
-        widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
+        widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector', 'reflow'],
         headers: {
             0: {sorter: 'realISODate'},
             1: {sorter: 'realISODate'},
@@ -184,7 +184,8 @@ MEDUSA.home.index = function() {
                     return test;
                 }
             },
-            columnSelector_mediaquery: false // eslint-disable-line camelcase
+            columnSelector_mediaquery: false, // eslint-disable-line camelcase
+            reflow_headerAttrib: 'data-name' // eslint-disable-line camelcase
         },
         sortStable: true,
         sortAppend: [[2, 0]]
@@ -349,21 +350,21 @@ MEDUSA.home.index = function() {
     var rootDir = MEDUSA.config.rootDirs;
     var rootDirIndex = MEDUSA.config.selectedRootIndex;
     if (rootDir) {
-        var backendPieces = rootDir.split('|');
-        var backendDirs = backendPieces.slice(1);
-        if (backendDirs.length >= 2) {
-            $('#showRoot').show();
-            var item = ['All Folders'];
-            var rootDirOptions = item.concat(backendDirs);
-            $.each(rootDirOptions, function(i, item) {
+        backendPieces = rootDir.split('|');
+        backendDirs = backendPieces.slice(1);
+    }
+    if (backendDirs.length >= 2) {
+        $('#showRoot').show();
+        var item = ['All Folders'];
+        rootDirOptions = item.concat(backendDirs);
+        $.each(rootDirOptions, function(i, item) {
                 $('#showRootDir').append($('<option>', {
                     value: i - 1,
-                    text: item
+                text: item
                 }));
-            });
             $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
-        } else {
-            $('#showRoot').hide();
-        }
+        });
+    } else {
+        $('#showRoot').hide();
     }
 };
