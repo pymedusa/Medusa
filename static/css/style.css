@@ -201,7 +201,6 @@ inc_top.mako
 }
 
 .upgrade-notification {
-    /*width: 600px;*/
     text-align: center;
     margin-top: 20px;
     display: inline-block;
@@ -431,11 +430,10 @@ inc_rootDirs.mako
 history.mako
 ========================================================================== */
 .layout-controls {
-    padding-top:24px;
+    padding-top: 24px;
 }
 
-.fanartOpacity
-{
+.fanartOpacity {
     opacity: 0.9;
 }
 
@@ -536,7 +534,7 @@ div.ellipsis {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    width: 85%
+    width: 85%;
 }
 
 div.xem {
@@ -582,7 +580,7 @@ div.xem {
   align-items: center;
 }
 
-/*FF hack*/
+/* FF hack */
 @-moz-document url-prefix() {
     .aligner {
         flex-flow: column-reverse;
@@ -590,10 +588,10 @@ div.xem {
     }
 }
 
-/*IE 11 hack*/
-@media all and (-ms-high-contrast:none) {
+/* IE 11 hack */
+@media all and (-ms-high-contrast: none) {
     .poster-overlay {
-        left: 0px;
+        left: 0;
         top: 0;
         width: 100%;
     }
@@ -609,7 +607,6 @@ div.xem {
     max-width: 100%;
     overflow: hidden;
     border: 1px solid rgb(136, 136, 136);
-
 }
 
 /* Used by the displayShow and snatchSelection show header posters */
@@ -1078,10 +1075,11 @@ displayShow.mako
   width: 90%;
 }
 
-.modal-dialog{
-    overflow-y: initial !important
+.modal-dialog {
+    overflow-y: initial !important;
 }
-.modal-body{
+
+.modal-body {
     overflow-y: auto;
 }
 
@@ -1104,15 +1102,15 @@ div#container-display-show {
 }
 
 #showSelector {
-    height:31px;
+    height: 31px;
     display: table-cell;
-    left:20px;
+    left: 20px;
     margin-top: 5px;
     margin-bottom: 5px;
 }
 
 .show-info-container {
-    overflow:hidden;
+    overflow: hidden;
     display: table-cell;
 }
 
@@ -1123,7 +1121,7 @@ div#container-display-show {
 .container-navShow {
     margin-top: -2px;
     margin-left: 305px;
-    z-index:10;
+    z-index: 10;
 }
 
 .tvshowImg {
@@ -1136,8 +1134,8 @@ div#container-display-show {
 
 @media (min-width: 1281px) {
     #sub-menu-container {
-        position:fixed;
-        width:100%;
+        position: fixed;
+        width: 100%;
         top: 51px;
     }
 }
@@ -1185,7 +1183,7 @@ div#container-display-show {
 
 @media (max-width: 767px) {
     #showSelector {
-        left:5px;
+        left: 5px;
         margin-bottom: 5px;
     }
 
@@ -1219,7 +1217,7 @@ div#container-display-show {
     .show-poster-container img {
         display: block;
         margin: 0 auto;
-        max-width: 280px!important;
+        max-width: 280px !important;
     }
 
     .tvshowImg {
@@ -1235,11 +1233,11 @@ div#container-display-show {
         padding-top: 5px;
         width: 100%;
     }
-
 }
 
 @media (min-width: 768px) {
-    .display-specials, .display-seasons {
+    .display-specials,
+    .display-seasons {
         top: -60px;
     }
 
@@ -1252,7 +1250,6 @@ div#container-display-show {
     .tvshowImg {
         max-height: 245px;
     }
-
 }
 
 @media (min-width: 992px) {
@@ -1309,8 +1306,8 @@ div#container-display-show {
 }
 
 .navShow {
-    width:18px;
-    max-height:15px;
+    width: 18px;
+    max-height: 15px;
     display: -webkit-box;
     cursor: pointer;
 }
@@ -1403,7 +1400,6 @@ ul.tags li a {
 #summary {
     margin-top: 5px;
     padding: 10px;
-    /*border: 1px solid #DFDEDE;*/
     width: 100%;
     overflow: auto;
     cursor: default;
@@ -1411,25 +1407,25 @@ ul.tags li a {
 
 #summaryBackground {
     position: absolute;
-    top:305px;
+    top: 305px;
     width: 100%;
-    height:200px;
-    background-color: #EFEFEF;
+    height: 200px;
+    background-color: #efefef;
     opacity: 0.8;
     border-width: 1px;
-    border-style: solid none solid none;
+    border-style: solid none;
     border-color: rgb(136, 136, 136);
 }
 
 #checkboxControlsBackground {
     position: absolute;
-    top: 0px;
+    top: 0;
     width: 100%;
-    height: 0px;
-    background-color: #DDD;
+    height: 0;
+    background-color: #ddd;
     opacity: 0.8;
     border-width: 1px;
-    border-style: solid none solid none;
+    border-style: solid none;
     border-color: rgb(136, 136, 136);
     z-index: -2;
 }
@@ -1777,11 +1773,10 @@ div.season-scene-exception {
 }
 
 select#select-show {
-    padding-top:5px;
+    padding-top: 5px;
     display: inline-block;
     width: 100%;
 }
-
 
 /* =======================================================================
 schedule.mako
@@ -1792,7 +1787,7 @@ schedule.mako
 }
 
 .listing-key {
-    padding: 2px 5px 2px 5px;
+    padding: 2px 5px;
     font-size: 13px;
     font-weight: bold;
     border-radius: 5px;
@@ -1854,7 +1849,6 @@ h2.network {
     margin: auto;
     padding: 0;
     text-align: left;
-    /*width: 750px;*/
     border-radius: 5px;
     background: rgb(255, 255, 255);
     cursor: default;
@@ -1984,7 +1978,6 @@ config*.mako
 
 #config-content {
     display: block;
-    /*width: 960px;*/
     padding: 0 0 40px;
     margin: 0 auto;
     clear: both;
@@ -2571,23 +2564,22 @@ span.path {
 }
 
 .align-left {
-    text-align: left!important;
+    text-align: left !important;
 }
 
 .h2footer {
-    /*margin: -45px 0 8px;*/
     line-height: 18px;
     clear: both;
 }
 
 span.quality {
     font: 12px/13px "Open Sans", verdana, sans-serif;
-    background-image:-webkit-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    background-image:-moz-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    background-image:-o-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    background-image:linear-gradient(to bottom, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    -webkit-box-shadow:inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
-    box-shadow:inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    -webkit-box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
     text-shadow: 0 1px rgba(0, 0, 0, 0.8);
     color: rgb(255, 255, 255);
     display: inline-block;
@@ -2602,7 +2594,8 @@ span.quality {
 
 span.any-hd {
     background-color: rgb(38, 114, 182);
-    background: repeating-linear-gradient(
+    background:
+        repeating-linear-gradient(
         -45deg,
         rgb(38, 114, 182),
         rgb(38, 114, 182) 10px,
@@ -2978,12 +2971,12 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 }
 
 #sub-menu-container {
-    z-index:550;
+    z-index: 550;
     min-height: 41px;
 }
 
 .shadow {
-    box-shadow: 3px 3px 3px rgba(17,17,17,0.5);
+    box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
 }
 
 .border-bottom {
@@ -2995,9 +2988,9 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 .btn {
     display: inline-block;
     *display: inline;
-    padding: 4px 10px 4px;
+    padding: 4px 10px;
     margin-bottom: 0;
-    *margin-left: .3em;
+    *margin-left: 0.3em;
     font-size: 12px;
     line-height: 16px;
     *line-height: 20px;
@@ -3498,7 +3491,6 @@ div.formpaginate .next {
     font-size: 12px;
     font-weight: normal;
     display: block;
-    /*width: 475px;*/
     margin-left: 182px;
 }
 
@@ -3860,12 +3852,12 @@ jquery.confirm.css
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: -moz-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: -o-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    -webkit-box-shadow: inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
-    box-shadow: inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    -webkit-box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 #confirmBox .button:last-child {
@@ -4042,11 +4034,11 @@ div#searchNotification {
 }
 
 .left-30 {
-    margin-left:-30px;
+    margin-left: -30px;
 }
 
 .right-30 {
-    margin-right:-30px;
+    margin-right: -30px;
 }
 
 .vMiddle {
@@ -4080,37 +4072,37 @@ div#searchNotification {
 
 #snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(1) {
     width: 15%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(2) {
     width: 15%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(3) {
     width: 15%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(4) {
     width: 52%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter td:nth-child(1) {
     width: 15%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter td:nth-child(2) {
     width: 18%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter td:nth-child(3) {
     width: 15%;
-    text-align: center!important;
+    text-align: center !important;
 }
 
 #snatchhistory.tablesorter td:nth-child(4) {
@@ -4123,7 +4115,7 @@ div#searchNotification {
 
 #srchresults.tablesorter td:nth-child(n+2) {
     width: 4%;
-    text-align:center;
+    text-align: center;
 }
 
 .summaryTable tr td {
@@ -4186,9 +4178,8 @@ div.notepad img {
 }
 
 /* ========================================================================
-css helper classes
-===========================================================================*/
-/* Some css helper classes */
+CSS helper classes
+=========================================================================== */
 
 .top-5 {
     margin-top: 5px;
@@ -4242,20 +4233,23 @@ css helper classes
 
 /* sub-menu */
 
-@media screen and (min-width: 0px) and (max-width: 768px) {
+@media screen and (min-width: 0) and (max-width: 768px) {
   .full-width { display: none; }  /* show it on small screens */
-  .mobile { display: block;}
-  .mobile .ui-icon {display: inline-block;}
+  .mobile { display: block; }
+  .mobile .ui-icon { display: inline-block; }
+
   .dropdown-menu-custom > li > a {
       padding: 15px 36px 15px 5px;
       border-bottom-style: solid;
       border-bottom-width: 1px;
   }
+
   .mobile > ul > li > a {
       padding-top: 15px;
       padding-bottom: 15px;
       padding-left: 8px;
   }
+
   .mobile .img-align {
       width: 25px;
       float: left;
@@ -4263,13 +4257,13 @@ css helper classes
 }
 
 @media screen and (min-width: 769px) {
-  .full-width {display: block; }  /* show it on small screens */
-  .mobile {display: none;}
+  .full-width { display: block; }  /* show it on small screens */
+  .mobile { display: none; }
 }
 
 /* navbar padding, to make room for in-page scrollbars */
 .padding-right-15 {
-    padding-right: 15px!important;
+    padding-right: 15px !important;
 }
 
 .backlog-quality {
@@ -4283,7 +4277,7 @@ css helper classes
 
 @media (max-width: 1700px) {
     #key-padding {
-        margin-left: 0px;
+        margin-left: 0;
         margin-right: 5px;
     }
 }
