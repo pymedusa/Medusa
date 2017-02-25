@@ -1,4 +1,7 @@
 MEDUSA.common.init = function() {
+    // Import underscore.string using it's mixin export.
+    _.mixin(s.exports());
+
     if (MEDUSA.config.fanartBackground) {
         var showID = $('#showID').attr('value');
         if (showID) {
