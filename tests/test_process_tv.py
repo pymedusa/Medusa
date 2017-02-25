@@ -9,11 +9,11 @@ import pytest
 
 @pytest.mark.parametrize('p', [
     {
-        'path': '/media/postprocess/',
+        'path': 'media/postprocess/',
         'dirName': 'main show dir',
         'nzbNameOriginal': None,
         'failed': False,
-        'expected': False,
+        'expected': True,
         'structure': (
             'bow.514.hdtv-lol[ettv].mkv',
             'bow.514.hdtv-lol.srt',
@@ -24,11 +24,11 @@ import pytest
         )
     },
     {
-        'path': '/media/postprocess/',
+        'path': 'media/postprocess/',
         'dirName': 'main show dir',
         'nzbNameOriginal': None,
         'failed': False,
-        'expected': False,
+        'expected': True,
         'structure': (
             'bow.514.hdtv-lol[ettv].mkv',
             {'samples': (
@@ -39,15 +39,26 @@ import pytest
             )}
         )
     },
+    {
+        'path': 'media/postprocess/',
+        'dirName': 'main show dir',
+        'nzbNameOriginal': None,
+        'failed': False,
+        'expected': False,
+        'structure': (
+            'bow.514.hdtv-lol.srt',
+        )
+    },
 ])
 def test_validate_dir(p, create_structure):
     """Run the test."""
     # Given
     sut = ProcessResult()
-    create_structure(path=os.path.join(p['path'], p['dirName']), structure=p['structure'])
+    path = create_structure(path=os.path.join(p['path'], p['dirName']), structure=p['structure'])
+    test_path = os.path.join(path, os.path.normcase(p['path']))
 
     # When
-    result = sut.validateDir(p['path'], p['dirName'], p['nzbNameOriginal'], p['failed'])
+    result = sut.validateDir(test_path, p['dirName'], p['nzbNameOriginal'], p['failed'])
 
     # Then
     assert p['expected'] == result

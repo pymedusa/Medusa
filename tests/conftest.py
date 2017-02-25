@@ -168,7 +168,7 @@ def create_dir(tmpdir):
 
 
 @pytest.fixture
-def create_structure(create_file, create_dir):
+def create_structure(tmpdir, create_file, create_dir):
     def create(path, structure):
         for element in structure:
             if isinstance(element, dict):
@@ -178,6 +178,7 @@ def create_structure(create_file, create_dir):
                     create(path, values)
             else:
                 create_file(os.path.join(path, element))
+        return str(tmpdir)
 
     return create
 
