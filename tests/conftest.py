@@ -152,8 +152,7 @@ def create_tvepisode(monkeypatch):
 def create_file(tmpdir):
     def create(filename, lines=None, **kwargs):
         f = tmpdir.ensure(filename)
-        size = kwargs.get('size', 1)
-        f.write_binary('\n'.join(lines or []) * size)
+        f.write_binary('\n'.join(lines or []))
         return str(f)
 
     return create
@@ -170,15 +169,15 @@ def create_dir(tmpdir):
 
 @pytest.fixture
 def create_structure(create_file, create_dir):
-    def create(path, structure, size=1024):
+    def create(path, structure):
         for element in structure:
             if isinstance(element, dict):
                 for name, values in element.iteritems():
                     path = os.path.join(path, name)
                     create_dir(path)
-                    create(path, values, size)
+                    create(path, values)
             else:
-                create_file(os.path.join(path, element), lines='a', size=size)
+                create_file(os.path.join(path, element))
 
     return create
 
