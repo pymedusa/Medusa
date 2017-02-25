@@ -65,7 +65,7 @@
         4,
         {
           "ignore": [
-            "block"
+            "inside-parens"
           ],
           "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
           "severity": "error"
