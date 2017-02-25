@@ -112,8 +112,10 @@ bootstrap Overrides
 .navbar-default {
     background-color: rgb(51, 51, 51);
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(51, 51, 51)));
     background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    /* stylelint-enable */
     border-color: rgb(62, 63, 58);
 }
 
@@ -131,8 +133,10 @@ bootstrap Overrides
 #sub-menu-container {
     background-color: rgb(85, 85, 85);
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(85, 85, 85)));
     background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(85, 85, 85));
+    /* stylelint-enable */
     border-color: rgb(62, 63, 58);
 }
 
