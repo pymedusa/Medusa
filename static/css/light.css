@@ -7,8 +7,6 @@ home.mako
     background-image: linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
     background-image: -webkit-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
     background-image: -o-linear-gradient(rgb(166, 207, 65), rgb(91, 153, 13)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
     border-radius: 3px;
 }
 
@@ -17,8 +15,6 @@ home.mako
     background-image: linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
     background-image: -webkit-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
     background-image: -o-linear-gradient(rgb(225, 255, 151), rgb(157, 178, 105)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
     border-radius: 3px;
 }
 
@@ -27,8 +23,6 @@ home.mako
     background-image: linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
     background-image: -webkit-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
     background-image: -o-linear-gradient(rgb(250, 212, 64), rgb(242, 167, 13)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
     border-radius: 3px;
 }
 
@@ -37,8 +31,6 @@ home.mako
     background-image: linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
     background-image: -webkit-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
     background-image: -o-linear-gradient(rgb(250, 181, 67), rgb(242, 112, 13)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
     border-radius: 3px;
 }
 
@@ -47,8 +39,6 @@ home.mako
     background-image: linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
     background-image: -webkit-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
     background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
-    -moz-border-radius: 3px;
-    -webkit-border-radius: 3px;
     border-radius: 3px;
 }
 
@@ -206,10 +196,6 @@ bootstrap modal
     padding: 9px 15px;
     border-bottom: 1px solid rgb(238, 238, 238);
     background-color: rgb(245, 241, 228);
-    -webkit-border-top-left-radius: 5px;
-    -webkit-border-top-right-radius: 5px;
-    -moz-border-radius-topleft: 5px;
-    -moz-border-radius-topright: 5px;
-     border-top-left-radius: 5px;
-     border-top-right-radius: 5px;
- }
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
