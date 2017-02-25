@@ -334,11 +334,9 @@ class ProcessResult(object):
         :param result: Previous results
         :return: True if dir is valid for processing, False if not
         """
-        dirName = ss(dirName)
-
-        IGNORED_FOLDERS = [u'.AppleDouble', u'.@__thumb', u'@eaDir']
+        ignored_folders = [u'.AppleDouble', u'.@__thumb', u'@eaDir']
         folder_name = os.path.basename(dirName)
-        if folder_name in IGNORED_FOLDERS:
+        if folder_name in ignored_folders:
             return False
 
         self._log(u'Processing folder {0}'.format(dirName), logger.DEBUG)
@@ -366,53 +364,10 @@ class ProcessResult(object):
             self.missedfiles.append(u'{0}: Hidden folder'.format(dirName))
             return False
 
-        # make sure the dir isn't inside a show dir
-        main_db_con = db.DBConnection()
-        sql_results = main_db_con.select('SELECT location FROM tv_shows')
-
-        for sqlShow in sql_results:
-            if dirName.lower().startswith(os.path.realpath(sqlShow['location']).lower() + os.sep) or \
-                    dirName.lower() == os.path.realpath(sqlShow['location']).lower():
-
-                self._log(u"Cannot process an episode that's already been moved to its show dir, "
-                          u"skipping: {0}".format(dirName), logger.WARNING)
-                return False
-
-        # Get the videofile list for the next checks
-        allFiles = []
-        allDirs = []
-        for _, processdir, fileList in os.walk(os.path.join(path, dirName), topdown=False):
-            allDirs += processdir
-            allFiles += fileList
-
-        videoFiles = [x for x in allFiles if helpers.is_media_file(x)]
-        allDirs.append(dirName)
-
-        # check if the dir have at least one tv video file
-        for video in videoFiles:
-            try:
-                NameParser().parse(video, cache_result=False)
-                return True
-            except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u'{0}'.format(error), logger.DEBUG)
-
-        for proc_dir in allDirs:
-            try:
-                NameParser().parse(proc_dir, cache_result=False)
-                return True
-            except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u'{0}'.format(error), logger.DEBUG)
-
-        if app.UNPACK:
-            # Search for packed release
-            packedFiles = [x for x in allFiles if helpers.is_rar_file(x)]
-
-            for packed in packedFiles:
-                try:
-                    NameParser().parse(packed, cache_result=False)
+        for __, __, files in os.walk(os.path.join(path, dirName), topdown=False):
+            for f in files:
+                if helpers.is_media_file(f):
                     return True
-                except (InvalidNameException, InvalidShowException) as error:
-                    logger.log(u'{0}'.format(error), logger.DEBUG)
 
         self._log(u'{0}: No processable items found in the folder'.format(dirName), logger.DEBUG)
         return False
