@@ -111,7 +111,7 @@ bootstrap Overrides
 /* navbar styling */
 .navbar-default {
     background-color: rgb(51, 51, 51);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#333333');
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(51, 51, 51)));
     background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
     border-color: rgb(62, 63, 58);
@@ -130,12 +130,11 @@ bootstrap Overrides
 /* ssubmenu styling */
 #sub-menu-container {
     background-color: rgb(85, 85, 85);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#555555', endColorstr='#555555');
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(85, 85, 85)), to(rgb(85, 85, 85)));
     background: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(85, 85, 85));
     border-color: rgb(62, 63, 58);
 }
-
 
 .dropdown-menu > li > a:hover,
 .dropdown-menu > li > a:focus {
@@ -166,11 +165,8 @@ tablesorter.css
 
 /* hidden filter row */
 .tablesorter-filter-row.hideme td {
-    /*** *********************************************** ***/
-    /*** change this padding to modify the thickness     ***/
-    /*** of the closed filter row (height = padding x 2) ***/
+    /* Change the padding to modify the thickness of the closed filter row (height = padding x 2) */
     padding: 2px;
-    /*** *********************************************** ***/
     margin: 0;
     line-height: 0;
     cursor: pointer;
@@ -182,8 +178,7 @@ tablesorter.css
     border: 0;
     padding: 0;
     margin: 0;
-    /* don't use visibility: hidden because it disables tabbing */
-    opacity: 0;
+    opacity: 0; /* Don't use visibility: hidden because it disables tabbing */
     filter: alpha(opacity=0);
 }
 
