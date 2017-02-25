@@ -1,6 +1,7 @@
 # coding=utf-8
 """Configuration for pytest."""
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
 from babelfish.language import Language
@@ -151,8 +152,33 @@ def create_tvepisode(monkeypatch):
 def create_file(tmpdir):
     def create(filename, lines=None, **kwargs):
         f = tmpdir.ensure(filename)
-        f.write_binary('\n'.join(lines or []))
+        size = kwargs.get('size', 1)
+        f.write_binary('\n'.join(lines or []) * size)
         return str(f)
+
+    return create
+
+
+@pytest.fixture
+def create_dir(tmpdir):
+    def create(dirname):
+        f = tmpdir.ensure_dir(dirname)
+        return str(f)
+
+    return create
+
+
+@pytest.fixture
+def create_structure(create_file, create_dir):
+    def create(path, structure, size=1024):
+        for element in structure:
+            if isinstance(element, dict):
+                for name, values in element.iteritems():
+                    path = os.path.join(path, name)
+                    create_dir(path)
+                    create(path, values, size)
+            else:
+                create_file(os.path.join(path, element), lines='a', size=size)
 
     return create
 
