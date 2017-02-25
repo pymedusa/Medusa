@@ -47,6 +47,13 @@
                     <option value="one_month" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_month' else ''}>Last 30 days</option>
                 </select>
             </div>
+            <div class="pull-left">Status:
+                <select id="backlog_status" class="form-control-inline input-sm-custom">
+                    <option value="all" ${'selected="selected"' if app.BACKLOG_STATUS == 'all' else ''}>All</option>
+                    <option value="quality" ${'selected="selected"' if app.BACKLOG_STATUS == 'quality' else ''}>Quality</option>
+                    <option value="wanted" ${'selected="selected"' if app.BACKLOG_STATUS == 'wanted' else ''}>Wanted</option>
+                </select>
+            </div>
         </div>
         <div class="col-md-6 pull-right">
             <div class="h2footer pull-right">

@@ -351,6 +351,13 @@ class Manage(Home, WebRoot):
         }
         backlog_period = backlog_periods.get(app.BACKLOG_PERIOD)
 
+        backlog_status = {
+            'all': [Overview.QUAL, Overview.WANTED],
+            'quality': [Overview.QUAL],
+            'wanted': [Overview.WANTED]
+        }
+        selected_backlog_status = backlog_status.get(app.BACKLOG_STATUS)
+
         main_db_con = db.DBConnection()
         for cur_show in app.showList:
 
@@ -379,7 +386,7 @@ class Manage(Home, WebRoot):
                 cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
-                    if cur_ep_cat in [Overview.WANTED, Overview.QUAL] and cur_result[b'airdate'] != 1:
+                    if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:
                         air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
                         if air_date.year >= 1970 or cur_show.network:
                             air_date = sbdatetime.sbdatetime.convert_to_setting(
