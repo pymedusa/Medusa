@@ -249,6 +249,11 @@ class PostProcessor(object):
         :return: list with found files or empty list
         :rtype: list
         """
+        def filter_files(it):
+            for item in it:
+                if os.path.isfile(item):
+                    yield item
+
         directory = os.path.dirname(path)
 
         if base_name_only:
@@ -264,7 +269,9 @@ class PostProcessor(object):
         path = Path(directory)
         glob = path.rglob(pattern) if subfolders else path.glob(pattern)
 
-        files = [text_type(match) for match in glob]
+        found_items = (text_type(match) for match in glob)
+        # We should only returns files and not folders.
+        files = filter_files(found_items)
 
         if sort:
             files = sorted(files, key=os.path.getsize, reverse=True)
