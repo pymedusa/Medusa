@@ -462,6 +462,7 @@ class HomeAddShows(Home):
         if not location:
             logger.log(u'There was an error creating the show, '
                        u'no root directory setting found', logger.WARNING)
+            ui.notifications.message('Error', 'No root directories setup, please go back and add one.')
             return 'No root directories setup, please go back and add one.'
 
         show_name = get_showname_from_indexer(1, indexer_id)
@@ -472,7 +473,7 @@ class HomeAddShows(Home):
                                                 flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
                                                 whitelist, int(default_status_after), root_dir=location)
 
-        ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
+        ui.notifications.message('Adding show', 'Adding the specified show {0}'.format(show_name))
 
         # done adding show
         return self.redirect('/home/')
@@ -589,7 +590,7 @@ class HomeAddShows(Home):
         app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
                                                 flatten_folders, indexer_lang, subtitles, anime,
                                                 scene, None, blacklist, whitelist, int(defaultStatusAfter))
-        ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
+        ui.notifications.message('Adding show', 'Adding the specified show into {path}'.format(path=show_dir))
 
         return finishAddShow()
 
