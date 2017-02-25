@@ -546,8 +546,10 @@ body {
 .navbar-default {
     background-color: rgb(35, 35, 35);
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#333333', endColorstr='#232323');
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(51, 51, 51)), to(rgb(35, 35, 35)));
     background: -moz-linear-gradient(top, rgb(51, 51, 51), rgb(35, 35, 35));
+    /* stylelint-enable */
     border-color: rgb(62, 63, 58);
 }
 
@@ -619,9 +621,11 @@ body {
 /* submenu styling */
 #sub-menu-container {
     background-color: rgb(41, 41, 41);
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#414141', endColorstr='#292929');
+    filter: progid:dximagetransform.microsoft.gradient(startColorstr='#414141', endColorstr='#292929');
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(65, 65, 65)), to(rgb(41, 41, 41)));
     background: -moz-linear-gradient(top, rgb(65, 65, 65), rgb(41, 41, 41));
+    /* stylelint-enable */
     border-color: rgb(62, 63, 58);
 }
 
@@ -629,12 +633,11 @@ body {
     color: rgb(255, 255, 255);
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.75);
     background-color: rgb(97, 97, 97);
-    *background-color: rgb(97, 97, 97);
     background-image: -ms-linear-gradient(top, rgb(51, 51, 51), rgb(85, 85, 85));
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(51, 51, 51)), to(rgb(85, 85, 85)));
     background-image: -webkit-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
     background-image: -o-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
-    background-image: linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
+    background-image: linear-gradient(to top, rgb(85, 85, 85), rgb(51, 51, 51));
     background-image: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(51, 51, 51));
     background-repeat: repeat-x;
     border: 1px solid rgb(17, 17, 17);
@@ -655,7 +658,6 @@ body {
 .btn.disabled,
 .btn[disabled] {
     background-color: rgb(30, 30, 30);
-    *background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
 }
 
@@ -668,7 +670,6 @@ body {
 .btn:hover {
     text-decoration: none;
     background-color: rgb(30, 30, 30);
-    *background-color: rgb(30, 30, 30);
     color: rgb(255, 255, 255);
     background-position: 0 -150px;
     -webkit-transition: background-position 0s linear;
@@ -688,7 +689,6 @@ body {
 .btn.active,
 .btn:active {
     background-color: rgb(30, 30, 30);
-    *background-color: rgb(30, 30, 30);
     background-image: none;
     color: rgb(255, 255, 255);
     outline: 0;
