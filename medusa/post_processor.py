@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Post processor module."""
+
+import fnmatch
 import os
 import re
 import stat
@@ -24,8 +26,6 @@ import subprocess
 from collections import OrderedDict
 
 import adba
-
-from pathlib2 import Path
 
 import rarfile
 from rarfile import Error as RarError
@@ -259,12 +259,22 @@ class PostProcessor(object):
             else:
                 return []
 
+            if any(char in new_pattern for char in ['[', '?', '*']):
+                # Escaping is done by wrapping any of "*?[" between square brackets.
+                # Modified from: https://hg.python.org/cpython/file/tip/Lib/glob.py#l161
+                if isinstance(new_pattern, bytes):
+                    new_pattern = re.compile(b'([*?[])').sub(br'[\1]', new_pattern)
+                else:
+                    new_pattern = re.compile('([*?[])').sub(r'[\1]', new_pattern)
+
             pattern = new_pattern + pattern
 
-        path = Path(directory)
-        glob = path.rglob(pattern) if subfolders else path.glob(pattern)
-
-        files = [text_type(match) for match in glob]
+        files = []
+        for root, __, filenames in os.walk(directory):
+            for filename in fnmatch.filter(filenames, pattern):
+                files.append(os.path.join(root, filename))
+            if not subfolders:
+                break
 
         if sort:
             files = sorted(files, key=os.path.getsize, reverse=True)
