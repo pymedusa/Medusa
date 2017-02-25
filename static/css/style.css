@@ -2594,6 +2594,7 @@ span.quality {
 
 span.any-hd {
     background-color: rgb(38, 114, 182);
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     background:
         repeating-linear-gradient(
         -45deg,
@@ -2602,6 +2603,7 @@ span.any-hd {
         rgb(91, 153, 13) 10px,
         rgb(91, 153, 13) 20px
     );
+    /* stylelint-enable */
 }
 
 span.Custom {
@@ -2934,9 +2936,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 .dropdown-menu-custom > li > a {
     padding: 15px 36px 15px 5px;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-bottom-color: darkgrey;
+    border-bottom: 1px solid darkgrey;
 }
 
 .dropdown-menu-custom > li:last-child > a {
@@ -2981,7 +2981,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
 
 .border-bottom {
     border-width: 1px;
-    border-style: none none solid none;
+    border-style: none none solid;
     border-color: rgb(62, 63, 58);
 }
 
@@ -3005,7 +3005,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(255, 255, 255)), to(rgb(230, 230, 230)));
     background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
     background-image: -o-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
-    background-image: linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: linear-gradient(to top, rgb(255, 255, 255), rgb(230, 230, 230));
     background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
     background-repeat: repeat-x;
     border: 1px solid rgb(204, 204, 204);
@@ -3146,7 +3146,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
     background-image: -o-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
     background-image: -moz-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
-    background-image: linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-image: linear-gradient(to top, rgb(0, 136, 204), rgb(0, 85, 204));
     background-repeat: repeat-x;
     border-color: rgb(0, 85, 204) rgb(0, 85, 204) rgb(0, 53, 128);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -3176,7 +3176,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
     background-image: -o-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
     background-image: -moz-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
-    background-image: linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-image: linear-gradient(to top, rgb(251, 180, 80), rgb(248, 148, 6));
     background-repeat: repeat-x;
     border-color: rgb(248, 148, 6) rgb(248, 148, 6) rgb(173, 103, 4);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -3206,7 +3206,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
     background-image: -o-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
     background-image: -moz-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
-    background-image: linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-image: linear-gradient(to top, rgb(238, 95, 91), rgb(189, 54, 47));
     background-repeat: repeat-x;
     border-color: rgb(189, 54, 47) rgb(189, 54, 47) rgb(128, 36, 32);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -3236,7 +3236,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
     background-image: -o-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
     background-image: -moz-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
-    background-image: linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-image: linear-gradient(to top, rgb(98, 196, 98), rgb(81, 163, 81));
     background-repeat: repeat-x;
     border-color: rgb(81, 163, 81) rgb(81, 163, 81) rgb(56, 112, 56);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -3266,7 +3266,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
     background-image: -o-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
     background-image: -moz-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
-    background-image: linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-image: linear-gradient(to top, rgb(91, 192, 222), rgb(47, 150, 180));
     background-repeat: repeat-x;
     border-color: rgb(47, 150, 180) rgb(47, 150, 180) rgb(31, 99, 119);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -3296,7 +3296,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
     background-image: -o-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
     background-image: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
-    background-image: linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-image: linear-gradient(to top, rgb(85, 85, 85), rgb(34, 34, 34));
     background-repeat: repeat-x;
     border-color: rgb(34, 34, 34) rgb(34, 34, 34) rgb(0, 0, 0);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
