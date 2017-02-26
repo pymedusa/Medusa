@@ -99,6 +99,7 @@ $(document).ready(function() {
         $('#rootDirText').change();
         console.log('rootDirText: ' + $('#rootDirText').val());
     }
+
     function addRootDir(path) {
         if (path.length === 0) {
             return;
