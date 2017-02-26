@@ -151,7 +151,7 @@
   season: 4
   episode: 8
   format: HDTV
-  language: es
+  language: ca
   type: episode
 
 # newpct (SpanishNewpctReleaseName)
@@ -756,8 +756,8 @@
 # anime_WarB3asT
 ? 003-005. Show Name - Ep Name.mkv
 : title: Show Name
-  absolute_episode: [3, 5, 4] # to be fixed
-  episode: [3, 5, 4] # to be fixed
+  absolute_episode: [3, 4, 5]
+  episode: [3, 4, 5]
   episode_title: Ep Name
   container: mkv
   mimetype: video/x-matroska
@@ -2147,7 +2147,7 @@
   format: HDTV
   season: 1
   episode: 5
-  language: es
+  language: ca
   type: episode
 
 # SpanishNewpctReleaseName
@@ -2440,8 +2440,7 @@
 : title: Show Name
   season: 2
   episode: 1
-  other: Multi Language
-  language: [fr, en]
+  language: [mul, fr, en]
   subtitle_language: fr
   screen_size: 1080p
   format: WEB-DL
@@ -2668,7 +2667,7 @@
 : title: Show Name
   season: 6
   episode: 16
-  other: Hardcoded subtitles
+  other: Hardcoded Subtitles
   format: HDTV
   video_codec: h264
   video_encoder: x264
@@ -2766,11 +2765,8 @@
 
 # Subtitulado (it seems regex with ñ doesn't work with rebulk)
 ? - Show.Name.S01E03.HDTV.Subtitulado.Esp.SC
-  - Show.Name.S01E03.HDTV.Subtitulado.Esp.Spanish.SC
   - Show.Name.S01E03.HDTV.Subtitulado.Espanol.SC
-  - Show.Name.S01E03.HDTV.Subtitulado.Espanol.Spanish.SC
-#  - Show.Name.S01E03.HDTV.Subtitulado.Español.SC
-#  - Show.Name.S01E03.HDTV.Subtitulado.Español.Spanish.SC
+  - Show.Name.S01E03.HDTV.Subtitulado.Español.SC
 : title: Show Name
   season: 1
   episode: 3
@@ -2835,7 +2831,8 @@
 : title: Show Name
   season: 1
   episode: 6
-  screen_size: 2160p
+  streaming_service: Netflix
+  other: UltraHD
   type: episode
 
 # Corner case for size
@@ -3201,11 +3198,11 @@
   type: episode
 
 # Regression test for #1088
-# episode title has s1 that might lead to season detection issues
 ? Show.Name.S02E06.eps2.4.m4ster-s1ave.aes.1080p.AMZN.WEBRip.DD5.1.x264-GROUP
 : title: Show Name
   season: 2
   episode: 6
+  episode_title: eps2 4 m4ster-s1ave aes
   screen_size: 1080p
   format: WEBRip
   streaming_service: Amazon Prime
@@ -4134,4 +4131,17 @@
   video_codec: h264
   video_encoder: x264
   audio_codec: AAC
+  type: episode
+
+? "[MK-Pn8].Dimension.W.-.05.[720p][Hi10][Dual][TV-Dub][EDA6E7F1]"
+: release_group: MK-Pn8
+  title: Dimension W
+  episode: 5
+  absolute_episode: 5
+  screen_size: 720p
+  video_profile: 10bit
+  other: DualAudio
+  format: TV
+  language: und
+  crc32: EDA6E7F1
   type: episode
