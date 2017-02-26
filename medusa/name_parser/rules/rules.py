@@ -42,7 +42,6 @@ logger = logging.getLogger(__name__)
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
-episode_range_separator = range_separator + ('_-_e', '-e', '.to.e', '_to_e')
 
 
 class BlacklistedReleaseGroup(Rule):
@@ -609,7 +608,7 @@ class AnimeWithSeasonAbsoluteEpisodeNumbers(Rule):
         :type context: dict
         :return:
         """
-        if context.get('show_type') == 'normal' or not matches.tagged('anime') or matches.tagged('newpct'):
+        if context.get('show_type') == 'normal' or not matches.tagged('anime'):
             return
 
         fileparts = matches.markers.named('path')
@@ -707,7 +706,7 @@ class AnimeAbsoluteEpisodeNumbers(Rule):
         """
         weak_duplicate = matches.tagged('weak-duplicate', index=0)
         # only for shows that seems to be animes
-        if context.get('show_type') == 'normal' or not weak_duplicate or matches.tagged('newpct'):
+        if context.get('show_type') == 'normal' or not weak_duplicate:
             return
 
         # if it's not detected as anime and season (weak_duplicate) is not 0, then skip.
@@ -821,7 +820,7 @@ class AbsoluteEpisodeNumbers(Rule):
         :return:
         """
         # if it seems to be anime and it doesn't have season
-        if context.get('show_type') != 'normal' and not matches.named('season') and not matches.tagged('newpct'):
+        if context.get('show_type') != 'normal' and not matches.named('season'):
             episodes = matches.named('episode')
             to_remove = []
             to_append = []
