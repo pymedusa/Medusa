@@ -106,7 +106,7 @@ logger = logging.getLogger(__name__)
 class Episode(TV):
     """Represent a TV Show episode."""
 
-    def __init__(self, show, season, episode, filepath=''):
+    def __init__(self, show, season, episode, filepath='', status=UNKNOWN):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
             int(show.indexer) if show else 0,
@@ -130,7 +130,7 @@ class Episode(TV):
         self.airdate = datetime.date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
-        self.status = UNKNOWN
+        self.status = status
         self.file_size = 0
         self.release_name = ''
         self.is_proper = False
