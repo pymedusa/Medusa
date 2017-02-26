@@ -67,7 +67,7 @@ MEDUSA.manage.backlogOverview = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(function() {
             log.error();
         });
     });
@@ -80,7 +80,7 @@ MEDUSA.manage.backlogOverview = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(function() {
             log.error();
         });
     });
