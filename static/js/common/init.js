@@ -57,10 +57,8 @@ MEDUSA.common.init = function() {
 
     var revertBackgroundColor; // used to revert back to original background-color after highlight
     $('.triggerhighlight').on('mouseover', function() {
-        var el = $(this);
         revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
-        var highlightBackgroundColor = colorLuminance(revertBackgroundColor, -0.15); // change highlight color based on original color
-        el.parent().find('.triggerhighlight').css('background-color', highlightBackgroundColor); // setting highlight background-color
+        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // setting highlight background-color
     }).on('mouseout', function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
     });
