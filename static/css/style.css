@@ -1070,7 +1070,7 @@ displayShow.mako
 ========================================================================== */
 
 .modal-wide .modal-dialog {
-  width: 90%;
+    width: 90%;
 }
 
 .modal-dialog {
@@ -4218,31 +4218,31 @@ CSS helper classes
 /* sub-menu */
 
 @media screen and (min-width: 0) and (max-width: 768px) {
-  .full-width { display: none; }  /* show it on small screens */
-  .mobile { display: block; }
-  .mobile .ui-icon { display: inline-block; }
+    .full-width { display: none; }  /* show it on small screens */
+    .mobile { display: block; }
+    .mobile .ui-icon { display: inline-block; }
 
-  .dropdown-menu-custom > li > a {
-      padding: 15px 36px 15px 5px;
-      border-bottom-style: solid;
-      border-bottom-width: 1px;
-  }
+    .dropdown-menu-custom > li > a {
+        padding: 15px 36px 15px 5px;
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+    }
 
-  .mobile > ul > li > a {
-      padding-top: 15px;
-      padding-bottom: 15px;
-      padding-left: 8px;
-  }
+    .mobile > ul > li > a {
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 8px;
+    }
 
-  .mobile .img-align {
-      width: 25px;
-      float: left;
-  }
+    .mobile .img-align {
+        width: 25px;
+        float: left;
+    }
 }
 
 @media screen and (min-width: 769px) {
-  .full-width { display: block; }  /* show it on small screens */
-  .mobile { display: none; }
+    .full-width { display: block; }  /* show it on small screens */
+    .mobile { display: none; }
 }
 
 /* navbar padding, to make room for in-page scrollbars */
@@ -4272,61 +4272,62 @@ CSS helper classes
 
 /* ========================================================================
 reflow widget
-===========================================================================*/
+=========================================================================== */
+
 /* REQUIRED CSS: change your reflow breakpoint here (35em below) */
-@media ( max-width: 35em ) {
+@media (max-width: 35em) {
+    /* uncomment out the line below if you don't want the sortable headers to show */
+    table.ui-table-reflow thead { display: none; }
 
-  /* uncomment out the line below if you don't want the sortable headers to show */
-  table.ui-table-reflow thead { display: none; }
+    /* css for reflow & reflow2 widgets */
+    .ui-table-reflow td,
+    .ui-table-reflow th {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        float: right;
 
-  /* css for reflow & reflow2 widgets */
-  .ui-table-reflow td,
-  .ui-table-reflow th {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    float: right;
-    /* if not using the stickyHeaders widget (not the css3 version)
-     * the "!important" flag, and "height: auto" can be removed */
-    width: 100% !important;
-    height: auto !important;
-  }
+        /* if not using the stickyHeaders widget (not the css3 version)
+        * the "!important" flag, and "height: auto" can be removed */
+        width: 100% !important;
+        height: auto !important;
+    }
 
-  /* reflow widget only */
-  .ui-table-reflow tbody td[data-title]:before {
-    color: #469;
-    font-size: .9em;
-    font-weight: bold;
-    content: attr(data-title);
-    float: left;
-    width: 50%;
-    white-space: pre-wrap;
-    text-align: bottom;
-    display: inline-block;
-    color: rgb(255, 255, 255);
-    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
-    background-color: rgb(51, 51, 51);
-  }
+    /* reflow widget only */
+    .ui-table-reflow tbody td[data-title]::before {
+        font-size: 0.9em;
+        font-weight: bold;
+        content: attr(data-title);
+        float: left;
+        width: 50%;
+        white-space: pre-wrap;
+        vertical-align: middle;
+        text-align: center;
+        display: inline-block;
+        color: rgb(255, 255, 255);
+        text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+        background-color: rgb(51, 51, 51);
+    }
 
-  /* reflow2 widget only */
-  table.ui-table-reflow .ui-table-cell-label.ui-table-cell-label-top {
-    display: block;
-    padding: .4em 0;
-    margin: .4em 0;
-    text-transform: uppercase;
-    font-size: .9em;
-    font-weight: 400;
-  }
-  table.ui-table-reflow .ui-table-cell-label {
-    padding: .4em;
-    min-width: 30%;
-    display: inline-block;
-    margin: -.4em 1em -.4em -.4em;
-  }
+    /* reflow2 widget only */
+    table.ui-table-reflow .ui-table-cell-label.ui-table-cell-label-top {
+        display: block;
+        padding: 0.4em 0;
+        margin: 0.4em 0;
+        text-transform: uppercase;
+        font-size: 0.9em;
+        font-weight: 400;
+    }
 
+    table.ui-table-reflow .ui-table-cell-label {
+        padding: 0.4em;
+        min-width: 30%;
+        display: inline-block;
+        margin: -0.4em 1em -0.4em -0.4em;
+    }
 } /* end media query */
 
 /* reflow2 widget */
 .ui-table-reflow .ui-table-cell-label {
-  display: none;
+    display: none;
 }
