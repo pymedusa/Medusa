@@ -124,8 +124,10 @@ def config(monkeypatch, app_config):
             }
         },
         'selectedRootIndex': app.SELECTED_ROOT,
-        'backlogPeriod': app.BACKLOG_PERIOD,
-        'backlogStatus': app.BACKLOG_STATUS
+        'backlogbacklogOverview': {
+            'period': app.BACKLOG_PERIOD,
+            'status': app.BACKLOG_STATUS
+        }
     }
 
 
