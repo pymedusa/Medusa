@@ -11,8 +11,9 @@ install:
   - nvm install 6.9.1
   - nvm use 6.9.1
   - curl -o- -L https://yarnpkg.com/install.sh | bash
+  - export PATH="$HOME/.yarn/bin:$PATH" && yarn install
 script:
-  - export PATH="$HOME/.yarn/bin:$PATH" && yarn install && yarn test-js
+  - yarn test-js
   - tox -v --recreate
 cache:
   yarn: true
