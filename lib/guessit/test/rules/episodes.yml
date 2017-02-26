@@ -116,8 +116,13 @@
 ? -A very special movie
 : episode_details: Special
 
-? A very special episode
+? -A very special episode
 : options: -t episode
+  episode_details: Special
+
+? A very special episode s06 special
+: options: -t episode
+  title: A very special episode
   episode_details: Special
 
 ? 12 Monkeys\Season 01\Episode 05\12 Monkeys - S01E05 - The Night Room.mkv

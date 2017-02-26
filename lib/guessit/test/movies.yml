@@ -856,3 +856,49 @@
 ? Mad Max Beyond Thunderdome ()
 : title: Mad Max Beyond Thunderdome
   type: movie
+
+? Hacksaw Ridge 2016 Multi 2160p UHD BluRay Hevc10 HDR10 DTSHD & ATMOS 7.1 -DDR.mkv
+: title: Hacksaw Ridge
+  year: 2016
+  language: mul
+  screen_size: 4K
+  other: UltraHD
+  format: BluRay
+  video_codec: h265
+  video_profile: 10bit
+  audio_codec: [DTS, DolbyAtmos]
+  audio_profile: HD
+  audio_channels: '7.1'
+  release_group: DDR
+  container: mkv
+  type: movie
+
+? Special.Correspondents.2016.iTA.ENG.4K.2160p.NetflixUHD.TeamPremium.mp4
+: title: Special Correspondents
+  year: 2016
+  language: [it, en]
+  screen_size: 4K
+  streaming_service: Netflix
+  other: UltraHD
+  release_group: TeamPremium
+  container: mp4
+  type: movie
+
+? -Special.Correspondents.2016.iTA.ENG.4K.2160p.NetflixUHD.TeamPremium.mp4
+: alternative_title: 4K
+
+? -Special.Correspondents.2016.iTA.ENG.4K.2160p.NetflixUHD.TeamPremium.mp4
+: alternative_title: 2160p
+
+? Suicide Squad EXTENDED (2016) 2160p 4K UltraHD Blu-Ray x265 (HEVC 10bit BT709) Dolby Atmos 7.1 -DDR
+: title: Suicide Squad
+  other: [Extended, UltraHD]
+  year: 2016
+  screen_size: 4K
+  format: BluRay
+  video_codec: h265
+  video_profile: 10bit
+  audio_codec: DolbyAtmos
+  audio_channels: '7.1'
+  release_group: DDR
+  type: movie
