@@ -31,20 +31,27 @@
     <div class="clearfix"></div>
     <div class="row col-md-12">
         <div class="col-md-12">
-            <div class="pull-left">Jump to Show:
+            <div class="show-option pull-left">Jump to Show:
                 <select id="pickShow" class="form-control-inline input-sm-custom">
                 % for cur_show in backLogShows:
                     <option value="${cur_show.indexerid}">${cur_show.name}</option>
                 % endfor
                 </select>
             </div>
-            <div class="pull-left">Period:
+            <div class="show-option pull-left">Period:
                 <select id="backlog_period" class="form-control-inline input-sm-custom">
                     <option value="all" ${'selected="selected"' if app.BACKLOG_PERIOD == 'all' else ''}>All</option>
                     <option value="one_day" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_day' else ''}>Last 24h</option>
                     <option value="three_days" ${'selected="selected"' if app.BACKLOG_PERIOD == 'three_days' else ''}>Last 3 days</option>
                     <option value="one_week" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_week' else ''}>Last 7 days</option>
                     <option value="one_month" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_month' else ''}>Last 30 days</option>
+                </select>
+            </div>
+            <div class="show-option pull-left">Status:
+                <select id="backlog_status" class="form-control-inline input-sm-custom">
+                    <option value="all" ${'selected="selected"' if app.BACKLOG_STATUS == 'all' else ''}>All</option>
+                    <option value="quality" ${'selected="selected"' if app.BACKLOG_STATUS == 'quality' else ''}>Quality</option>
+                    <option value="wanted" ${'selected="selected"' if app.BACKLOG_STATUS == 'wanted' else ''}>Wanted</option>
                 </select>
             </div>
         </div>

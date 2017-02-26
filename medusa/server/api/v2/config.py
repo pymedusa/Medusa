@@ -131,7 +131,10 @@ class ConfigHandler(BaseRequestHandler):
                 }
             },
             'selectedRootIndex': int(app.SELECTED_ROOT) if app.SELECTED_ROOT else None,
-            'backlogPeriod': app.BACKLOG_PERIOD
+            'backlogOverview': {
+                'period': app.BACKLOG_PERIOD,
+                'status': app.BACKLOG_STATUS
+            }
         }
 
         if query and query not in config_data:
@@ -280,10 +283,14 @@ class ConfigHandler(BaseRequestHandler):
                 theme_name = data['theme']['name']
                 app.THEME_NAME = theme_name
                 done_data['themeName'] = theme_name
-            if key == 'backlogPeriod':
-                backlog_period = data['backlogPeriod']
-                app.BACKLOG_PERIOD = backlog_period
-                done_data['backlogPeriod'] = backlog_period
+            if key == 'backlogOverview':
+                done_data.setdefault('backlogOverview', {})
+                if 'period' in data['backlogOverview']:
+                    app.BACKLOG_PERIOD = data['backlogOverview']['period']
+                    done_data['backlogOverview'].setdefault('period', app.BACKLOG_PERIOD)
+                if 'status' in data['backlogOverview']:
+                    app.BACKLOG_STATUS = data['backlogOverview']['status']
+                    done_data['backlogOverview'].setdefault('status', app.BACKLOG_STATUS)
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
         if len(done_errors):
