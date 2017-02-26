@@ -204,12 +204,29 @@ td.tvShow a:hover {
     background-color: rgb(51, 51, 51);
 }
 
+.popover-title {
+    background-color: rgb(35, 35, 35);
+    border-bottom-color: #111;
+}
+
 .popover-content {
     background-color: rgb(51, 51, 51);
 }
 
+.popover.top .arrow::after {
+    border-top-color: rgb(51, 51, 51);
+}
+
 .popover.bottom .arrow::after {
     border-bottom-color: rgb(51, 51, 51);
+}
+
+.popover.right .arrow::after {
+    border-right-color: rgb(51, 51, 51);
+}
+
+.popover.left .arrow::after {
+    border-left-color: rgb(51, 51, 51);
 }
 
 /* =======================================================================
@@ -940,8 +957,8 @@ bootstrap modal
     -webkit-border-top-right-radius: 5px;
     -moz-border-radius-topleft: 5px;
     -moz-border-radius-topright: 5px;
-     border-top-left-radius: 5px;
-     border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 
 /* =======================================================================

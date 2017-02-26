@@ -390,8 +390,10 @@ class Application(object):
             app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generate_cookie_secret(), censor_log='low')
 
             # git login info
+            app.GIT_AUTH_TYPE = check_setting_int(app.CFG, 'General', 'git_auth_type', 0)
             app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
+            app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low')
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
 
             # debugging
@@ -1327,8 +1329,10 @@ class Application(object):
         # For passwords you must include the word `password` in the item_name
         # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
         new_config['General'] = {}
+        new_config['General']['git_auth_type'] = app.GIT_AUTH_TYPE
         new_config['General']['git_username'] = app.GIT_USERNAME
         new_config['General']['git_password'] = helpers.encrypt(app.GIT_PASSWORD, app.ENCRYPTION_VERSION)
+        new_config['General']['git_token'] = helpers.encrypt(app.GIT_TOKEN, app.ENCRYPTION_VERSION)
         new_config['General']['git_reset'] = int(app.GIT_RESET)
         new_config['General']['git_reset_branches'] = ','.join(app.GIT_RESET_BRANCHES)
         new_config['General']['branch'] = app.BRANCH
