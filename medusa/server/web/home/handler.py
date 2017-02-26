@@ -59,6 +59,7 @@ class Home(WebRoot):
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
         selected_root = int(app.SELECTED_ROOT)
+        shows_dir = None
         if selected_root is not None and app.ROOT_DIRS:
             backend_pieces = app.ROOT_DIRS.split('|')
             backend_dirs = backend_pieces[1:]
