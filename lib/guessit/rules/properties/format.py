@@ -17,7 +17,7 @@ def format_():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name="format", tags='video-codec-prefix')
+    rebulk.defaults(name="format", tags=['video-codec-prefix', 'streaming_service.suffix'])
 
     rebulk.regex("VHS", "VHS-?Rip", value="VHS")
     rebulk.regex("CAM", "CAM-?Rip", "HD-?CAM", value="Cam")
@@ -26,18 +26,21 @@ def format_():
     rebulk.regex("TELECINE", "TC", value="Telecine")
     rebulk.regex("PPV", "PPV-?Rip", value="PPV")  # Pay Per View
     rebulk.regex("SD-?TV", "SD-?TV-?Rip", "Rip-?SD-?TV", "TV-?Rip",
-                 "Rip-?TV", value="TV")  # TV is too common to allow matching
+                 "Rip-?TV", "TV-?(?=Dub)", value="TV")  # TV is too common to allow matching
     rebulk.regex("DVB-?Rip", "DVB", "PD-?TV", value="DVB")
     rebulk.regex("DVD", "DVD-?Rip", "VIDEO-?TS", "DVD-?R(?:$|(?!E))",  # "DVD-?R(?:$|^E)" => DVD-Real ...
                  "DVD-?9", "DVD-?5", value="DVD")
 
-    rebulk.regex("HD-?TV", "TV-?RIP-?HD", "HD-?TV-?RIP", "HD-?RIP", value="HDTV")
+    rebulk.regex("HD-?TV", "TV-?RIP-?HD", "HD-?TV-?RIP", "HD-?RIP", value="HDTV",
+                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
     rebulk.regex("VOD", "VOD-?Rip", value="VOD")
     rebulk.regex("WEB-?Rip", "WEB-?DL-?Rip", "WEB-?Cap", value="WEBRip")
     rebulk.regex("WEB-?DL", "WEB-?HD", "WEB", "DL-?WEB", "DL(?=-?Mux)", value="WEB-DL")
     rebulk.regex("HD-?DVD-?Rip", "HD-?DVD", value="HD-DVD")
     rebulk.regex("Blu-?ray(?:-?Rip)?", "B[DR]", "B[DR]-?Rip", "BD[59]", "BD25", "BD50", value="BluRay")
     rebulk.regex("AHDTV", value="AHDTV")
+    rebulk.regex('UHD-?TV', 'UHD-?Rip', value='UHDTV',
+                 conflict_solver=lambda match, other: other if other.name == 'other' else '__default__')
     rebulk.regex("HDTC", value="HDTC")
     rebulk.regex("DSR", "DSR?-?Rip", "SAT-?Rip", "DTH", "DTH-?Rip", value="SATRip")
 

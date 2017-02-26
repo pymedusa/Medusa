@@ -2902,6 +2902,53 @@
   release_group: CasStudio
   type: episode
 
+? Proof.2015.S01E10.1080p.WEB-DL.DD5.1.H.264-KINGS.mkv
+: title: Proof
+  season: 1
+  episode: 10
+  screen_size: 1080p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: KINGS
+  container: mkv
+  type: episode
+
+# Hardcoded subtitles
+? Show.Name.S06E16.HC.SWESUB.HDTV.x264
+: title: Show Name
+  season: 6
+  episode: 16
+  other: Hardcoded Subtitles
+  format: HDTV
+  video_codec: h264
+  subtitle_language: sv
+  type: episode
+
+? From [ WWW.TORRENTING.COM ] - White.Rabbit.Project.S01E08.1080p.NF.WEBRip.DD5.1.x264-ViSUM/White.Rabbit.Project.S01E08.1080p.NF.WEBRip.DD5.1.x264-ViSUM.mkv
+: title: White Rabbit Project
+  website: WWW.TORRENTING.COM
+  season: 1
+  episode: 8
+  screen_size: 1080p
+  streaming_service: Netflix
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: ViSUM
+  container: mkv
+  type: episode
+
+? /tv/Daniel Tiger's Neighborhood/S02E06 - Playtime Is Different.mp4
+: season: 2
+  episode: 6
+  title: Daniel Tiger's Neighborhood
+  episode_title: Playtime Is Different
+  container: mp4
+  type: episode
+
 ? Zoo.S02E05.1080p.WEB-DL.DD5.1.H.264.HKD/160725_02.mkv
 : title: Zoo
   season: 2
@@ -2957,19 +3004,6 @@
   container: mkv
   type: episode
 
-? Proof.2015.S01E10.1080p.WEB-DL.DD5.1.H.264-KINGS.mkv
-: title: Proof
-  season: 1
-  episode: 10
-  screen_size: 1080p
-  format: WEB-DL
-  audio_codec: DolbyDigital
-  audio_channels: '5.1'
-  video_codec: h264
-  release_group: KINGS
-  container: mkv
-  type: episode
-
 ? The.Messengers.2015.S01E07.1080p.WEB-DL.DD5.1.H264.Nlsubs-Q/QoQ-sbuSLN.462.H.1.5DD.LD-BEW.p0801.70E10S.5102.sregnesseM.ehT.mkv
 : title: The Messengers
   year: 2015
@@ -3010,26 +3044,608 @@
   release_group: Het.Robot.Team.OYM
   type: episode
 
-? /tv/Daniel Tiger's Neighborhood/S02E06 - Playtime Is Different.mp4
-: season: 2
-  episode: 6
-  title: Daniel Tiger's Neighborhood
-  episode_title: Playtime Is Different
-  container: mp4
+? Show.Name.-.Temporada.1.720p.HDTV.x264[Cap.102]SPANISH.AUDIO-NEWPCT
+? /Show Name/Season 01/Show.Name.-.Temporada.1.720p.HDTV.x264[Cap.102]SPANISH.AUDIO-NEWPCT
+? /Show Name/Temporada 01/Show.Name.-.Temporada.1.720p.HDTV.x264[Cap.102]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 1
+  episode: 2
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
   type: episode
 
-? From [ WWW.TORRENTING.COM ] - White.Rabbit.Project.S01E08.1080p.NF.WEBRip.DD5.1.x264-ViSUM/White.Rabbit.Project.S01E08.1080p.NF.WEBRip.DD5.1.x264-ViSUM.mkv
-: title: White Rabbit Project
-  website: WWW.TORRENTING.COM
-  season: 1
+# newpct
+? Show Name - Temporada 4 [HDTV][Cap.408][Espanol Castellano]
+? Show Name - Temporada 4 [HDTV][Cap.408][Español Castellano]
+: title: Show Name
+  season: 4
   episode: 8
+  format: HDTV
+  language: ca
+  type: episode
+
+# newpct
+? -Show Name - Temporada 4 [HDTV][Cap.408][Espanol Castellano]
+? -Show Name - Temporada 4 [HDTV][Cap.408][Español Castellano]
+: release_group: Castellano
+
+# newpct
+? Show.Name.-.Temporada1.[HDTV][Cap.105][Español.Castellano]
+: title: Show Name
+  format: HDTV
+  season: 1
+  episode: 5
+  language: ca
+  type: episode
+
+# newpct
+? Show.Name.-.Temporada1.[HDTV][Cap.105][Español]
+: title: Show Name
+  format: HDTV
+  season: 1
+  episode: 5
+  language: es
+  type: episode
+
+# newpct - season and episode with range:
+? Show.Name.-.Temporada.1.720p.HDTV.x264[Cap.102_104]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 1
+  episode: [2, 3, 4]
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
+  type: episode
+
+# newpct - season and episode (2 digit season)
+? Show.Name.-.Temporada.15.720p.HDTV.x264[Cap.1503]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 15
+  episode: 3
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
+  type: episode
+
+# newpct - season and episode (2 digit season with range)
+? Show.Name.-.Temporada.15.720p.HDTV.x264[Cap.1503_1506]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 15
+  episode: [3, 4, 5, 6]
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
+  type: episode
+
+# newpct - season and episode:
+? Show.Name.-.Temp.1.720p.HDTV.x264[Cap.102]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 1
+  episode: 2
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
+  type: episode
+
+# newpct - season and episode:
+? Show.Name.-.Tem.1.720p.HDTV.x264[Cap.102]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 1
+  episode: 2
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
+  type: episode
+
+# newpct - season and episode:
+? Show.Name.-.Tem.1.720p.HDTV.x264[Cap.112_114.Final]SPANISH.AUDIO-NEWPCT
+: title: Show Name
+  season: 1
+  episode: [12, 13, 14]
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  language: es
+  release_group: NEWPCT
+  other: FINAL
+  type: episode
+
+? Mastercook Italia - Stagione 6 (2016) 720p ep13 spyro.mkv
+: title: Mastercook Italia
+  season: 6
+  episode: 13
+  year: 2016
+  screen_size: 720p
+  episode_title: spyro
+  container: mkv
+  type: episode
+
+? Mastercook Italia - Stagione 6 (2016) 720p Episodio 13 spyro.mkv
+: title: Mastercook Italia
+  season: 6
+  year: 2016
+  screen_size: 720p
+  episode: 13
+  episode_title: spyro
+  container: mkv
+  type: episode
+
+# Italian releases
+? Show Name 3x18 Un Tuffo Nel Passato ITA HDTVMux x264 NovaRip
+: title: Show Name
+  season: 3
+  episode: 18
+  episode_title: Un Tuffo Nel Passato
+  language: it
+  format: HDTV
+  other: Mux
+  video_codec: h264
+  release_group: NovaRip
+  type: episode
+
+# Italian releases
+? Show Name 3x18 Un Tuffo Nel Passato ITA HDTVMux x264 NovaRip
+: options: --allowed-languages it
+  title: Show Name
+  season: 3
+  episode: 18
+  episode_title: Un Tuffo Nel Passato
+  language: it
+  format: HDTV
+  other: Mux
+  video_codec: h264
+  release_group: NovaRip
+  type: episode
+
+# Subbed: No language hint
+? Show.Name.S06E03.1080p.HDTV.Legendado
+: subtitle_language: und
+
+# Subbed: No language hint
+? Show.Name.S01E09.Subbed.1080p.BluRay.x264-RRH
+: title: Show Name
+  season: 1
+  episode: 9
+  subtitle_language: und
   screen_size: 1080p
-  streaming_service: Netflix
+  format: BluRay
+  video_codec: h264
+  release_group: RRH
+  type: episode
+
+# Legendado PT-BR
+? Show.Name.S06E05.1080p.WEBRip.Legendado.PT-BR
+? Show.Name.S06E05.1080p.WEBRip.Legendas.PT-BR
+? Show.Name.S06E05.1080p.WEBRip.Legenda.PT-BR
+: title: Show Name
+  season: 6
+  episode: 5
+  screen_size: 1080p
+  format: WEBRip
+  subtitle_language: pt-BR
+  type: episode
+
+? Show.Name.S01E07.Super, Title.WEB-DL 720p.br.srt
+: title: Show Name
+  season: 1
+  episode: 7
+  episode_title: Super, Title
+  format: WEB-DL
+  screen_size: 720p
+  subtitle_language: pt-BR
+  container: srt
+  type: episode
+
+? -Show.Name.S01E07.Super, Title.WEB-DL 720p.br.srt
+: language: pt-BR
+
+# Legendado PT
+? Show.Name.S06E05.1080p.WEBRip.Legendado.PT
+: title: Show Name
+  season: 6
+  episode: 5
+  screen_size: 1080p
+  format: WEBRip
+  subtitle_language: pt
+  type: episode
+
+? Show.Name.S05E01.SPANISH.SUBBED.720p.HDTV.x264-sPHD
+: title: Show Name
+  season: 5
+  episode: 1
+  subtitle_language: spa
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: sPHD
+  type: episode
+
+? Show.Name.S01E01.German.Subbed.HDTV.XviD-ASAP
+: title: Show Name
+  season: 1
+  episode: 1
+  subtitle_language: deu
+  format: HDTV
+  video_codec: XviD
+  release_group: ASAP
+  type: episode
+
+? Show.Name.S04E21.Aint.Nothing.Like.the.Real.Thing.German.Custom.Subbed.720p.HDTV.x264.iNTERNAL-BaCKToRG
+: title: Show Name
+  season: 4
+  episode: 21
+  episode_title: Aint Nothing Like the Real Thing
+  subtitle_language: deu
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  type: episode
+
+? Show.Name.S01.Season.Complet.WEBRiP.Ro.Subbed.TM
+: title: Show Name
+  season: 1
+  other: Complete
+  format: WEBRip
+  subtitle_language: ro
+  type: episode
+
+? Show.Name.(2013).Season.3.-.Eng.Soft.Subtitles.720p.WEBRip.x264.[MKV,AC3,5.1].Ehhhh
+: title: Show Name
+  year: 2013
+  season: 3
+  subtitle_language: en
+  screen_size: 720p
+  format: WEBRip
+  video_codec: h264
+  container: MKV
+  audio_codec: AC3
+  audio_channels: '5.1'
+  release_group: Ehhhh
+  type: episode
+
+# Dublado
+? Show.Name.S02E03.720p.HDTV.x264-Belex.-.Dual.Audio.-.Dublado
+: title: Show Name
+  season: 2
+  episode: 3
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: Belex
+  other: DualAudio
+  language: und
+  type: episode
+
+? Show.Name.S06E10.1080p.WEB-DL.DUAL.[Dublado].RK
+: title: Show Name
+  season: 6
+  episode: 10
+  screen_size: 1080p
+  format: WEB-DL
+  other: DualAudio
+  language: und
+  release_group: RK
+  type: episode
+
+? Show.Name.S06E12.720p.WEB-DL.Dual.Audio.Dublado
+: title: Show Name
+  season: 6
+  episode: 12
+  screen_size: 720p
+  format: WEB-DL
+  other: DualAudio
+  language: und
+  type: episode
+
+? Show.Name.S05E07.720p.DUBLADO.HDTV.x264-0SEC-pia.mkv
+: title: Show Name
+  season: 5
+  episode: 7
+  screen_size: 720p
+  language: und
+  format: HDTV
+  video_codec: h264
+  release_group: 0SEC-pia
+  container: mkv
+  type: episode
+
+? Show.Name.S02E07.Shiva.AC3.Dubbed.WEBRip.x264
+: title: Show Name
+  season: 2
+  episode: 7
+  episode_title: Shiva
+  audio_codec: AC3
+  language: und
+  format: WEBRip
+  video_codec: h264
+  type: episode
+
+# Legendas
+? Show.Name.S05.1080p.BluRay.x264-Belex.-.Dual.Audio.+.Legendas
+: title: Show Name
+  season: 5
+  screen_size: 1080p
+  format: BluRay
+  video_codec: h264
+  release_group: Belex
+  other: DualAudio
+  subtitle_language: und
+  type: episode
+
+# Legendas
+? Show.Name.S05.1080p.BluRay.x264-Belex.-.Dual.Audio.+.Legendas
+: options: --allowed-languages und
+  title: Show Name
+  season: 5
+  screen_size: 1080p
+  format: BluRay
+  video_codec: h264
+  release_group: Belex
+  other: DualAudio
+  subtitle_language: und
+  type: episode
+
+# Subtitulado
+? Show.Name.S01E03.HDTV.Subtitulado.Esp.SC
+? Show.Name.S01E03.HDTV.Subtitulado.Espanol.SC
+? Show.Name.S01E03.HDTV.Subtitulado.Español.SC
+# SC is a release group, not a language. To be addressed in #296
+: options: --allowed-languages spa --allowed-countries ESP
+  title: Show Name
+  season: 1
+  episode: 3
+  format: HDTV
+  subtitle_language: es
+  release_group: SC
+  type: episode
+
+# Subtitles/Subbed
+? Show.Name.S02E08.720p.WEB-DL.Subtitles
+? Show.Name.S02E08.Subbed.720p.WEB-DL
+: title: Show Name
+  season: 2
+  episode: 8
+  screen_size: 720p
+  format: WEB-DL
+  subtitle_language: und
+  type: episode
+
+# Dubbed
+? Show.Name.s01e01.german.Dubbed
+: title: Show Name
+  season: 1
+  episode: 1
+  language: de
+  type: episode
+
+? Show.Name.S06E05.Das.Toor.German.AC3.Dubbed.HDTV.German
+: title: Show Name
+  season: 6
+  episode: 5
+  language: de
+  audio_codec: AC3
+  format: HDTV
+  type: episode
+
+? Show.Name.S01E01.Savage.Season.GERMAN.DUBBED.WS.HDTVRip.x264-TVP
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: Savage Season
+  language: de
+  other: WideScreen
+  format: HDTV
+  video_codec: h264
+  release_group: TVP
+  type: episode
+
+# Dubbed
+? "[AnimeRG].Show.Name.-.03.[Eng.Dubbed].[720p].[WEB-DL].[JRR]"
+: title: Show Name
+  episode: 3
+  language: en
+  screen_size: 720p
+  format: WEB-DL
+  release_group: JRR
+  type: episode
+
+# Dubbed
+? "[RH].Show.Name.-.03.[English.Dubbed].[1080p]"
+: title: Show Name
+  episode: 3
+  language: en
+  screen_size: 1080p
+  release_group: RH
+  type: episode
+
+# Hebsubs
+? Show.Name.S05E05.HDTV.XviD-AFG.HebSubs
+: title: Show Name
+  season: 5
+  episode: 5
+  format: HDTV
+  video_codec: XviD
+  release_group: AFG
+  subtitle_language: he
+  type: episode
+
+? Show Name - S02E31 - Episode 55 (720p.HDTV)
+: title: Show Name
+  season: 2
+  episode: 31
+  episode_title: Episode 55
+  screen_size: 720p
+  format: HDTV
+  type: episode
+
+# Scenario: Removing invalid season and episode matches. Correct episode_title match
+? Show.Name.S02E06.eps2.4.m4ster-s1ave.aes.1080p.AMZN.WEBRip.DD5.1.x264-GROUP
+: title: Show Name
+  season: 2
+  episode: 6
+  episode_title: eps2 4 m4ster-s1ave aes
+  screen_size: 1080p
+  streaming_service: Amazon Prime
   format: WEBRip
   audio_codec: DolbyDigital
   audio_channels: '5.1'
   video_codec: h264
-  release_group: ViSUM
+  release_group: GROUP
+  type: episode
+
+? Show.Name.S01E05.3xpl0its.wmv.720p.WEBdl.EN-SUB.x264-[MULVAcoded].mkv
+: title: Show Name
+  season: 1
+  episode: 5
+  episode_title: 3xpl0its
+  screen_size: 720p
+  format: WEB-DL
+  subtitle_language: en
+  video_codec: h264
+  type: episode
+
+# Regression: S4L release group detected as season 4
+# https://github.com/guessit-io/guessit/issues/352
+? Show Name S01E06 DVD-RIP x264-S4L
+: title: Show Name
+  season: 1
+  episode: 6
+  format: DVD
+  video_codec: h264
+  release_group: S4L
+  type: episode
+
+# Corner case with only date and 720p
+? The.Show.Name.2016.05.18.720.HDTV.x264-GROUP.VTV
+: title: The Show Name
+  date: 2016-05-18
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: GROUP.VTV
+  type: episode
+
+# Corner case with only date and 720p
+? -The.Show.Name.2016.05.18.720.HDTV.x264-GROUP.VTV
+: season: 7
+  episode: 20
+
+# https://github.com/guessit-io/guessit/issues/308 (conflict with screen size)
+? "[SuperGroup].Show.Name.-.06.[720.Hi10p][1F5578AC]"
+: title: Show Name
+  episode: 6
+  screen_size: 720p
+  video_profile: 10bit
+  crc32: 1F5578AC
+  release_group: SuperGroup
+  type: episode
+
+# https://github.com/guessit-io/guessit/issues/308 (conflict with screen size)
+? "[SuperGroup].Show.Name.-.06.[1080.Hi10p][1F5578AC]"
+: title: Show Name
+  episode: 6
+  screen_size: 1080p
+  video_profile: 10bit
+  crc32: 1F5578AC
+  release_group: SuperGroup
+  type: episode
+
+? "[MK-Pn8].Dimension.W.-.05.[720p][Hi10][Dual][TV-Dub][EDA6E7F1]"
+: options: -C us -L und
+  release_group: MK-Pn8
+  title: Dimension W
+  episode: 5
+  screen_size: 720p
+  video_profile: 10bit
+  other: DualAudio
+  format: TV
+  language: und
+  crc32: EDA6E7F1
+  type: episode
+
+# NetflixUHD
+? Show.Name.S01E06.NetflixUHD
+: title: Show Name
+  season: 1
+  episode: 6
+  streaming_service: Netflix
+  other: UltraHD
+  type: episode
+
+? Show.Name.S04E13.FINAL.MULTI.DD51.2160p.NetflixUHDRip.x265-TVS
+: title: Show Name
+  season: 4
+  episode: 13
+  other: FINAL
+  language: mul
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  screen_size: 4K
+  streaming_service: Netflix
+  format: UHDTV
+  video_codec: h265
+  release_group: TVS
+  type: episode
+
+? Show.Name.S06E11.Of.Late.I.Think.of.Rosewood.iTunesHD.x264
+: title: Show Name
+  season: 6
+  episode: 11
+  episode_title: Of Late I Think of Rosewood
+  streaming_service: iTunes
+  other: HD
+  video_codec: h264
+  type: episode
+
+? Show.Name.S01.720p.iTunes.h264-Group
+: title: Show Name
+  season: 1
+  screen_size: 720p
+  streaming_service: iTunes
+  video_codec: h264
+  release_group: Group
+  type: episode
+
+? Show.Name.1x01.eps1.0.hellofriend.(HDiTunes.Ac3.Esp).(2015).By.Malaguita.avi
+: title: Show Name
+  season: 1
+  episode: 1
+  episode_title: eps1 0 hellofriend
+  other: HD
+  streaming_service: iTunes
+  audio_codec: AC3
+  language: spa
+  year: 2015
+  container: avi
+  type: episode
+
+? "[Hanamaru&LoliHouse] The Dragon Dentist - 01 [WebRip 1920x1080 HEVC-yuv420p10 AAC].mkv"
+: release_group: Hanamaru&LoliHouse
+  title: The Dragon Dentist
+  episode: 1
+  format: WEBRip
+  screen_size: 1080p
+  video_codec: h265
+  video_profile: 10bit
+  audio_codec: AAC
   container: mkv
   type: episode
 
+? Show Name - Season 1 Episode 50
+: title: Show Name
+  season: 1
+  episode: 50
+  type: episode
