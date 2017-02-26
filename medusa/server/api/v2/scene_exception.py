@@ -29,7 +29,7 @@ class SceneExceptionOperationHandler(BaseRequestHandler):
 
         if json_body.get('type', '') == 'REFRESH':
             retrieve_exceptions(force=True)
-            return self.api_finish(status=204)
+            return self.api_finish(status=201)
         return self.api_finish(status=400)
 
 
@@ -118,7 +118,7 @@ class SceneExceptionHandler(BaseRequestHandler):
                              data.get('season'),
                              exception_id])
         if cache_db_con.connection.total_changes - last_changes == 1:
-            return self.api_finish(status=204)
+            return self.api_finish(status=201)
         return self.api_finish(status=400, error="Could not update.")
 
     def post(self, *args, **kwargs):
