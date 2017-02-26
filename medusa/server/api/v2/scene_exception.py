@@ -144,8 +144,6 @@ class SceneExceptionHandler(BaseRequestHandler):
             return self.api_finish(status=204)
         return self.api_finish(status=400, error="Could not update.")
 
-        return self.api_finish()
-
     def delete(self, *args, **kwargs):
         """Delete a show.
 
