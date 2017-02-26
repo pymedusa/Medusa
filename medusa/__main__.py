@@ -290,7 +290,7 @@ class Application(object):
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
 
-        app.CFG = ConfigObj(app.CONFIG_FILE)
+        app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
         # Initialize the config and our threads
         self.initialize(console_logging=self.console_logging)
