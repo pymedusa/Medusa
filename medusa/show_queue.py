@@ -21,25 +21,47 @@ import traceback
 
 from imdbpie.exceptions import HTTPError as IMDbHTTPError
 
+from medusa import (
+    app,
+    generic_queue,
+    logger,
+    name_cache,
+    notifiers,
+    scene_numbering,
+    ui,
+)
+from medusa.black_and_white_list import BlackAndWhiteList
+from medusa.common import WANTED, statusStrings
+from medusa.helper.common import episode_num, sanitize_filename
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantRemoveShowException,
+    CantUpdateShowException,
+    EpisodeDeletedException,
+    MultipleShowObjectsException,
+    ShowDirectoryNotFoundException, ex
+)
+from medusa.helpers import (
+    chmod_as_parent,
+    delete_empty_folders,
+    get_showname_from_indexer,
+    make_dir,
+)
+from medusa.helpers.externals import check_existing_shows
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_exceptions import (
+    IndexerAttributeNotFound,
+    IndexerError,
+    IndexerException,
+    IndexerShowAllreadyInLibrary,
+    IndexerShowIncomplete,
+    IndexerShowNotFoundInLanguage,
+)
+from medusa.tv import Series
+
 from six import binary_type, text_type
 
 from traktor import TraktException
-
-from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
-from .black_and_white_list import BlackAndWhiteList
-from .common import WANTED, statusStrings
-from .helper.common import episode_num, sanitize_filename
-from .helper.exceptions import (
-    CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
-    EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
-)
-from .helper.externals import check_existing_shows
-from .helpers import chmod_as_parent, delete_empty_folders, get_showname_from_indexer, make_dir
-from .indexers.indexer_api import indexerApi
-from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
-                                          IndexerShowAllreadyInLibrary, IndexerShowIncomplete,
-                                          IndexerShowNotFoundInLanguage)
-from .tv import Series
 
 
 class ShowQueueActions(object):

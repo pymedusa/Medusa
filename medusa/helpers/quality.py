@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from ..common import Quality, qualityPresetStrings
+from medusa.common import Quality, qualityPresetStrings
 
 
 def get_quality_string(quality):

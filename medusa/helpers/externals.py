@@ -19,12 +19,11 @@
 """Externals helper functions."""
 
 import logging
+from medusa import app
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import indexerConfig
+from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 from traktor import TokenExpiredException, TraktApi, TraktException
-from .. import app
-from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_config import indexerConfig
-from ..indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
-
 
 logger = logging.getLogger(__name__)
 
