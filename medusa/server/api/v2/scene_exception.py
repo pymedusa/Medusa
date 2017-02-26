@@ -158,5 +158,3 @@ class SceneExceptionHandler(BaseRequestHandler):
         if cache_db_con.connection.total_changes - last_changes > 0:
             return self.api_finish(status=204)
         return self.api_finish(status=400, error="Failed to delete.")
-
-        return self.api_finish()
