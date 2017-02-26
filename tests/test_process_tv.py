@@ -58,7 +58,7 @@ def test_validate_dir(p, create_structure):
     test_path = os.path.join(path, os.path.normcase(p['path']))
 
     # When
-    result = sut.validateDir(test_path, p['dirName'], p['nzbNameOriginal'], p['failed'])
+    result = sut.validate_dir(test_path, p['dirName'], p['nzbNameOriginal'], p['failed'])
 
     # Then
     assert p['expected'] == result
