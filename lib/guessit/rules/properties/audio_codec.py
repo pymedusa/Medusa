@@ -55,9 +55,9 @@ def audio_codec():
     rebulk.string("HQ", value="HQ", tags="AC3")
 
     rebulk.defaults(name="audio_channels")
-    rebulk.regex(r'(7[\W_][01](?:ch)?)(?:[^\d]|$)', r'(?<=[^\d]{2})(?:\W)?(7[01]\b)', value='7.1', children=True)
-    rebulk.regex(r'(5[\W_][01](?:ch)?)(?:[^\d]|$)', r'(?<=[^\d]{2})(?:\W)?(5[01]\b)', value='5.1', children=True)
-    rebulk.regex(r'(2[\W_]0(?:ch)?)(?:[^\d]|$)', r'(?<=[^\d]{2})(?:\W)?(20\b)', value='2.0', children=True)
+    rebulk.regex(r'(7[\W_][01](?:ch)?)(?:[^\d]|$)', r'(?<=[^\d\W]{2})(7[01]\b)', value='7.1', children=True)
+    rebulk.regex(r'(5[\W_][01](?:ch)?)(?:[^\d]|$)', r'(?<=[^\d\W]{2})(5[01]\b)', value='5.1', children=True)
+    rebulk.regex(r'(2[\W_]0(?:ch)?)(?:[^\d]|$)', r'(?<=[^\d\W]{2})(20\b)', value='2.0', children=True)
     rebulk.string('7ch', '8ch', value='7.1')
     rebulk.string('5ch', '6ch', value='5.1')
     rebulk.string('2ch', 'stereo', value='2.0')

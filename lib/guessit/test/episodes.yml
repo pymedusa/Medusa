@@ -3643,3 +3643,9 @@
   audio_codec: AAC
   container: mkv
   type: episode
+
+? Show Name - Season 1 Episode 50
+: title: Show Name
+  season: 1
+  episode: 50
+  type: episode
