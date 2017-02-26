@@ -1,48 +1,61 @@
 MEDUSA.manage.manageSearches = function() {
     // Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
-    var url = 'manage/searches/sceneexception/retrieve';
     var updateExceptionTable = function(exceptions) {
         var status = $('#sceneExceptionStatus');
+        var cusExceptionDate = new Date(exceptions.data.last_updates.custom_exceptions * 1000).toLocaleDateString();
+        var XemExceptionDate = new Date(exceptions.data.last_updates.xem * 1000).toLocaleDateString();
+        var anidbExceptionDate = new Date(exceptions.data.last_updates.anidb * 1000).toLocaleDateString();
 
-        var table = $('<ul></ul>').append('<li>' +
-            '<a href="' + MEDUSA.config.anonRedirect +
-            'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">' +
-            'Last updated medusa\'s exceptions</a> ' +
-            new Date(exceptions.data.last_update.custom_exceptions * 1000)
-                .toLocaleDateString()).append('<li>' +
-            '<a href="' + MEDUSA.config.anonRedirect +
-            'http://thexem.de">' +
-            'Last updated xem exceptions</a> ' +
-            new Date(exceptions.data.last_update.xem * 1000)
-                .toLocaleDateString()).append('<li>Last updated anidb exceptions ' +
-            new Date(exceptions.data.last_update.anidb * 1000)
-                .toLocaleDateString());
+        var table = $('<ul></ul>')
+            .append(
+                '<li>' +
+                '<a href="' + MEDUSA.config.anonRedirect +
+                'https://github.com/pymedusa/Medusa/wiki/Scene-exceptions-and-numbering">' +
+                'Last updated medusa\'s exceptions</a> ' +
+                    cusExceptionDate
+            )
+            .append(
+                '<li>' +
+                '<a href="' + MEDUSA.config.anonRedirect +
+                'http://thexem.de">' +
+                'Last updated xem exceptions</a> ' +
+                    XemExceptionDate
+            )
+            .append(
+                '<li>Last updated anidb exceptions ' +
+                    anidbExceptionDate
+            );
+
         status.append(table);
-
         $('.forceSceneExceptionRefresh').removeClass('disabled');
     };
 
-    api.get(url).then(function(response) {
+    api.get('sceneexception?detailed=false').then(function(response) {
         updateExceptionTable(response);
     }).catch(function(err) {
-        console.log('Trying to get scene exceptions failed with error: ' + err);
+        log.error('Trying to get scene exceptions failed with error: ' + err);
     });
 
     $('.forceSceneExceptionRefresh').on('click', function() {
         var status = $('#sceneExceptionStatus');
         status[0].innerHTML = 'Retrieving scene exceptions...';
 
-        api.post(url, {}, {
+        api.put('sceneexception/operation', {type: 'REFRESH'}, {
             timeout: 60000
         }).then(function(response) {
             status[0].innerHTML = '';
             status.append(
                 $('<span></span>').text(response.data.result)
             );
-            updateExceptionTable(response);
-            $('.forceSceneExceptionRefresh').addClass('disabled');
+
+            api.get('sceneexception?detailed=false').then(function(response) {
+                updateExceptionTable(response);
+                $('.forceSceneExceptionRefresh').addClass('disabled');
+            }).catch(function(err) {
+                log.error('Trying to get scene exceptions failed with error: ' + err);
+            });
         }).catch(function(err) {
-            console.log('Trying to update scene exceptions failed with error: ' + err);
+            log.error('Trying to update scene exceptions failed with error: ' + err);
         });
     });
 };
