@@ -3,10 +3,9 @@
 """Properties: This section contains additional properties to be guessed by guessit."""
 import re
 
-import babelfish
 from guessit.reutils import build_or_pattern
-from guessit.rules.common import alt_dash, dash
-from guessit.rules.common.validators import seps, seps_surround
+from guessit.rules.common import dash
+from guessit.rules.common.validators import seps_surround
 from rebulk.processors import POST_PROCESS
 from rebulk.rebulk import Rebulk
 from rebulk.rules import RemoveMatch, Rule
