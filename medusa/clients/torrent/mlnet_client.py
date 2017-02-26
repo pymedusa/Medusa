@@ -20,7 +20,7 @@
 
 from __future__ import unicode_literals
 
-from .generic import GenericClient
+from medusa.clients.torrent.generic import GenericClient
 
 
 class MLNetAPI(GenericClient):

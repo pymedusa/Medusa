@@ -28,9 +28,9 @@ from base64 import b64encode
 
 from requests.compat import urljoin
 
-from .generic import GenericClient
-from .. import app
-from ..helpers import is_already_processed_media, is_info_hash_in_history, is_info_hash_processed
+from medusa import app
+from medusa.clients.torrent.generic import GenericClient
+from medusa.helpers import is_already_processed_media, is_info_hash_in_history, is_info_hash_processed
 
 
 logger = logging.getLogger(__name__)

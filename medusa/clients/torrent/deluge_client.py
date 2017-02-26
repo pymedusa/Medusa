@@ -23,9 +23,10 @@ import json
 import logging
 from base64 import b64encode
 
+from medusa import app
+from medusa.clients.torrent.generic import GenericClient
+
 from requests.exceptions import RequestException
-from .generic import GenericClient
-from .. import app
 
 logger = logging.getLogger(__name__)
 

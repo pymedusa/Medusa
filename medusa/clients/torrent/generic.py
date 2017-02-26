@@ -11,10 +11,12 @@ from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
+
+from medusa import app, db, helpers, logger
+from medusa.helper.common import http_code_description
+
 import requests
 from six.moves.http_cookiejar import CookieJar
-from .. import app, db, helpers, logger
-from ..helper.common import http_code_description
 
 
 class GenericClient(object):
