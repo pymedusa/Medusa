@@ -1,4 +1,4 @@
-"""Dredd hoook."""
+"""Dredd hook."""
 import ConfigParser
 
 import dredd_hooks as hooks
