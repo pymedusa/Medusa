@@ -16,11 +16,6 @@ var MEDUSA = {
     addShows: {}
 };
 
-var notifyModal = function(message){
-    $('#site-notification-modal .modal-body').html(message);
-    $('#site-notification-modal').modal();
-}
-
 var UTIL = {
     exec: function(controller, action) {
         var ns = MEDUSA;
