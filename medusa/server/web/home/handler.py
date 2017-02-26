@@ -17,9 +17,7 @@ from medusa import (
     helpers,
     logger,
     notifiers,
-    nzbget,
     providers,
-    sab,
     subtitles,
     ui,
 )
@@ -28,6 +26,10 @@ from medusa.black_and_white_list import (
     short_group_names,
 )
 from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
 from medusa.common import (
     DOWNLOADED,
     FAILED,

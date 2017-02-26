@@ -35,12 +35,14 @@ from medusa import (
     name_cache,
     notifiers,
     nzb_splitter,
-    nzbget,
-    sab,
     show_name_helpers,
     ui,
 )
 from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
