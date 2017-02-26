@@ -8,8 +8,8 @@ MEDUSA.common.init = function() {
             let asset = 'show/' + showID + '?type=fanart';
             let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
             $.backstretch(path);
-            $('.backstretch')
-                .css('top', backstretchOffset()).css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+            $('.backstretch').css('top', backstretchOffset())
+                             .css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
         }
     }
 
@@ -191,12 +191,10 @@ MEDUSA.common.init = function() {
         });
     });
 
-    $('.enabler')
-        .each(function() {
-            if (!$(this).prop('checked')) {
-                $('#content_' + $(this).attr('id')).hide();
-        }})
-        .on('click', function() {
+    $('.enabler').each(function() {
+        if ($(this).prop('checked') == false) {
+            $('#content_' + $(this).attr('id')).hide();
+        }}).on('click', function() {
             if ($(this).prop('checked')) {
                 $('#content_' + $(this).attr('id')).fadeIn('fast', 'linear');
             } else {
