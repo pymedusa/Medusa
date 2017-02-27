@@ -17,19 +17,13 @@ class TestStandardLoggingApi(object):
             'kwargs': dict(arg1='hello', arg2='world'),
             'expected': 'This is an example: hello world'
         },
-        {  # p1: legacy formatter
-            'message': 'This is an example: %s %s',
-            'args': ['hello', 'world'],
-            'kwargs': dict(),
-            'expected': 'This is an example: hello world'
-        },
-        {  # p2: regression test: https://github.com/pymedusa/Medusa/issues/876
+        {  # p1: regression test: https://github.com/pymedusa/Medusa/issues/876
             'message': "{'type': 'episode', 'season': 5}",
             'args': [],
             'kwargs': dict(),
             'expected': "{'type': 'episode', 'season': 5}"
         },
-        {  # p3: regression test: https://github.com/pymedusa/Medusa/issues/876
+        {  # p2: regression test: https://github.com/pymedusa/Medusa/issues/876
             'message': "This {0} {a} {b} {1}",
             'args': ['zero', 'one', dict(a='a', b='b')],
             'kwargs': dict(),
