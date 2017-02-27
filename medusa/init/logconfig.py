@@ -46,38 +46,38 @@ class StyleAdapter(logging.LoggerAdapter):
 
     def debug(self, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).debug(msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).debug(msg, *args, **kwargs)
 
     def info(self, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).info(msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).warning(msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).error(msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).exception(msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).exception(msg, *args, **kwargs)
 
     def critical(self, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).critical(msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).critical(msg, *args, **kwargs)
 
     def log(self, level, msg, *args, **kwargs):
         """Delegate a debug call to the underlying logger."""
-        msg, kwargs = self.wrap_message(msg, args, kwargs)
-        super(StyleAdapter, self).log(level, msg, *(), **kwargs)
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).log(level, msg, *args, **kwargs)
 
     def wrap_message(self, msg, args, kwargs):
         """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
@@ -86,7 +86,14 @@ class StyleAdapter(logging.LoggerAdapter):
         :param kwargs:
         :return:
         """
-        return BraceMessage(msg, args, kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
+        if '%s' in msg or '%r' in msg:
+            # TODO: Remove when all loggers get migrated to new style: No more log.debug('message %s', 'arg')
+            return msg, args, kwargs
+
+        return (BraceMessage(msg, args, kwargs),
+                (),
+                # TODO: Remove when all loggers get migrated to new style: No more log.debug('message {arg}', arg='arg')
+                {k: kwargs[k] for k in self.reserved_keywords if k in kwargs})
 
 
 class BraceMessage(object):
@@ -112,7 +119,8 @@ class BraceMessage(object):
         """
         result = text_type(self.fmt)
         kwargs = [a for a in self.args if isinstance(a, dict)]
-        assert len(kwargs) < 2
+        if len(kwargs) > 1:
+            raise ValueError('Only one dict can be used as logger argument. Found {0}'.format(len(kwargs)))
         if kwargs:
             return result.format(*self.args, **kwargs[0])
 
