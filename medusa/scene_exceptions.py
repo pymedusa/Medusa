@@ -286,7 +286,7 @@ def combine_exceptions(*scene_exceptions):
 def _get_custom_exceptions(force):
     custom_exceptions = defaultdict(dict)
 
-    if should_refresh('custom_exceptions') or force:
+    if force or should_refresh('custom_exceptions'):
         for indexer in indexerApi().indexers:
             try:
                 location = indexerApi(indexer).config['scene_loc']
@@ -337,7 +337,7 @@ def _get_xem_exceptions(force):
     xem_exceptions = defaultdict(dict)
     xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'
 
-    if should_refresh('xem') or force:
+    if force or should_refresh('xem'):
         for indexer in indexerApi().indexers:
             indexer_api = indexerApi(indexer)
 
@@ -398,7 +398,7 @@ def _get_anidb_exceptions(force):
     # AniDB exceptions use TVDB as indexer
     exceptions = anidb_exceptions[INDEXER_TVDBV2]
 
-    if should_refresh('anidb') or force:
+    if force or should_refresh('anidb'):
         logger.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:
