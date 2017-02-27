@@ -60,7 +60,6 @@ class Person(object):
 class Title(object):
 
     def __init__(self, data):
-        # print(data)
         self.imdb_id = data.get('tconst')
         self.title = data.get('title')
         self.type = data.get('type')
