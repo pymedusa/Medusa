@@ -153,7 +153,7 @@ class IssueSubmitter(object):
                 logger.warning(IssueSubmitter.INVALID_CONFIG)
                 return [(IssueSubmitter.INVALID_CONFIG, None)]
         else:
-            if not app.DEBUG or not app.TOKEN:
+            if not app.DEBUG or not app.GIT_TOKEN:
                 logger.warning(IssueSubmitter.INVALID_CONFIG)
                 return [(IssueSubmitter.INVALID_CONFIG, None)]
         if not ErrorViewer.errors:
