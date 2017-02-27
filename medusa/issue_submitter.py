@@ -153,7 +153,7 @@ class IssueSubmitter(object):
                 logger.warning(IssueSubmitter.INVALID_CONFIG)
                 return [(IssueSubmitter.INVALID_CONFIG, None)]
         else:
-            if not app.DEBUG or not app.TOKEN:
+            if not app.DEBUG or not app.GIT_TOKEN:
                 logger.warning(IssueSubmitter.INVALID_CONFIG)
                 return [(IssueSubmitter.INVALID_CONFIG, None)]
         if not ErrorViewer.errors:
@@ -173,7 +173,7 @@ class IssueSubmitter(object):
             if app.GIT_AUTH_TYPE == 0:
                 github = authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
             else:
-                github = token_authenticate(app.GIT_USERNAME)
+                github = token_authenticate(app.GIT_TOKEN)
             if not github:
                 return [(IssueSubmitter.BAD_CREDENTIALS, None)]
 
