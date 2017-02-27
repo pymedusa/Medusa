@@ -554,7 +554,8 @@ class FailedQueueItem(generic_queue.QueueItem):
         try:
             for ep_obj in self.segment:
 
-                logger.info('Marking episode as bad: [{ep}}', ep=ep_obj.pretty_name())
+                logger.info('Marking episode as bad: [{ep}]',
+                            ep=ep_obj.pretty_name())
 
                 failed_history.mark_failed(ep_obj)
 
