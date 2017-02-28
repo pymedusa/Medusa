@@ -301,7 +301,7 @@ class TVDBv2(BaseIndexer):
 
             if seasnum is None or epno is None:
                 logger.warning('This episode has incomplete information. The season or episode number '
-                               '(season: %r, episode: %r) is missing. '
+                               '(season: %s, episode: %s) is missing. '
                                'to get rid of this warning, you will have to contact tvdb through their forums '
                                'and have them fix the specific episode.',
                                seasnum, epno)
@@ -598,7 +598,7 @@ class TVDBv2(BaseIndexer):
             for episode in episodes['episode']:
                 if episode.get('seasonnumber') is None or episode.get('episodenumber') is None:
                     logger.warning('This episode has incomplete information. The season or episode number '
-                                   '(season: %r, episode: %r) is missing. '
+                                   '(season: %s, episode: %s) is missing. '
                                    'to get rid of this warning, you will have to contact tvdb through their forums '
                                    'and have them fix the specific episode.',
                                    episode.get('seasonnumber'), episode.get('episodenumber'))
