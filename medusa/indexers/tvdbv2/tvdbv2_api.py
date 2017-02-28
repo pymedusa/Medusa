@@ -300,7 +300,11 @@ class TVDBv2(BaseIndexer):
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
+                logger.warning('This episode has incomplete information. The season or episode number '
+                               '(season: %r, episode: %r) is missing. '
+                               'to get rid of this warning, you will have to contact tvdb through their forums '
+                               'and have them fix the specific episode.',
+                               seasnum, epno)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
@@ -592,6 +596,14 @@ class TVDBv2(BaseIndexer):
             episodes = self._download_episodes(show_id)
 
             for episode in episodes['episode']:
+                if episode.get('seasonnumber') is None or episode.get('episodenumber') is None:
+                    logger.warning('This episode has incomplete information. The season or episode number '
+                                   '(season: %r, episode: %r) is missing. '
+                                   'to get rid of this warning, you will have to contact tvdb through their forums '
+                                   'and have them fix the specific episode.',
+                                   episode.get('seasonnumber'), episode.get('episodenumber'))
+                    continue
+
                 if int(episode['lastupdated']) > from_time:
                     total_updates.append(int(episode['seasonnumber']))
 
