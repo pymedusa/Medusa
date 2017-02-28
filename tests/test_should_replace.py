@@ -39,7 +39,7 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p3: Snatched 720p HDTV and found 720p BluRay: yes
+    {  # p3: Snatched 720p HDTV and found 720p BluRay: no
         'ep_status': SNATCHED,
         'cur_quality': Quality.HDTV,
         'new_quality': Quality.HDBLURAY,
@@ -48,7 +48,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
     {  # p4: Snatched Proper 720p HDTV and found 720p BluRay, but 720p HDTV is preferred: no
         'ep_status': SNATCHED_PROPER,
@@ -413,7 +413,7 @@ import pytest
         'manually_searched': False,
         'expected': False
     },
-    {  # p37: Current quality is NONE: yes
+    {  # p37: Current quality is NONE: no
         'ep_status': SNATCHED,
         'cur_quality': Quality.NONE,
         'new_quality': Quality.HDTV,
@@ -422,7 +422,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
     {  # p38: Downloaded UNKNOWN and its on Allowed: no
         'ep_status': DOWNLOADED,
