@@ -41,10 +41,9 @@ class HomePostProcess(Home):
         else:
             nzb_name = ss(nzb_name) if nzb_name else nzb_name
 
-            result = process_tv.ProcessResult(proc_dir).process_dir(
-                nzb_name, process_method=process_method, force=argToBool(force),
-                is_priority=argToBool(is_priority), delete_on=argToBool(delete_on), failed=argToBool(failed),
-                proc_type=type, ignore_subs=argToBool(ignore_subs)
+            result = process_tv.ProcessResult(proc_dir, process_method=process_method).process_dir(
+                nzb_name, force=argToBool(force), is_priority=argToBool(is_priority), delete_on=argToBool(delete_on),
+                failed=argToBool(failed), proc_type=type, ignore_subs=argToBool(ignore_subs)
             )
 
             if quiet is not None and int(quiet) == 1:

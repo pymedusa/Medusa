@@ -1,5 +1,4 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
 #
 # This file is part of Medusa.
 #
@@ -19,6 +18,7 @@
 import os
 import shutil
 import stat
+from collections import OrderedDict
 
 import shutil_custom
 
@@ -36,32 +36,62 @@ shutil.copyfile = shutil_custom.copyfile_custom
 
 class ProcessResult(object):
 
-    def __init__(self, directory):
-        self.directory = directory
+    IGNORED_FOLDERS = (u'.AppleDouble', u'.@__thumb', u'@eaDir')
+
+    def __init__(self, path, process_method=None):
+
+        self._output = []
+        self._directory = self.get_root_dir(path)
+        self._process_method = process_method
+        self._video_files = []
 
         self.result = True
-        self.output = u''
-        self.missedfiles = []
         self.succeeded = True
+        self.missedfiles = []
 
         self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-        self.video_files = []
         self.rar_content = []
         self.video_in_rar = []
         self.unwanted_files = []
 
+    @property
+    def directory(self):
+        return self._directory
+
+    @directory.setter
+    def directory(self, path):
+        self._directory = self.get_root_dir(path)
+
+    @property
+    def process_method(self):
+        return self._process_method
+
+    @process_method.setter
+    def process_method(self, value):
+        self._process_method = value
+
+    @property
+    def video_files(self):
+        return self._video_files
+
+    @video_files.setter
+    def video_files(self, value):
+        self._video_files = value
+
+    @property
+    def output(self):
+        return '\n'.join(self._output)
+
     def _log(self, message, level=logger.INFO):
         logger.log(message, level)
-        self.output += message + u'\n'
+        self._output.append(message)
 
-    def process_dir(self, nzb_name=None, process_method=None, force=False, is_priority=None,
-                    delete_on=False, failed=False, proc_type=u'auto', ignore_subs=False):
+    def process_dir(self, nzb_name=None, force=False, is_priority=None, delete_on=False, failed=False,
+                    proc_type=u'auto', ignore_subs=False):
         """
         Scan through the files in dir_name and process whatever media files are found.
 
-        :param dir_name: The folder name to look in
         :param nzb_name: The NZB name which resulted in this folder being downloaded
-        :param process_method: Process methodo: hardlink, move, softlink, etc.
         :param force: True to postprocess already postprocessed files
         :param is_priority: Boolean for whether or not is a priority download
         :param delete_on: Boolean for whether or not it should delete files
@@ -69,57 +99,53 @@ class ProcessResult(object):
         :param proc_type: Type of postprocessing auto or manual
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
-        root_path = self._get_pp_dir(self.directory)
-        if not root_path:
+        if not self.directory:
             return self.output
 
-        original_nzb_name = nzb_name
-
         if app.POSTPONE_IF_NO_SUBS:
-            self._log(u"Feature 'postpone post-processing if no subtitle available' is enabled")
+            self._log(u"Feature 'postpone post-processing if no subtitle available' is enabled.")
 
-        paths = self._get_paths(root_path)
-
-        for dir_path in paths:
-            if not self.validate_dir(dir_path, original_nzb_name, failed):
-                continue
+        paths = self.get_paths()
+        for path in paths:
 
             self.result = True
+            files = self._files_from_path(path)
 
-            topdown = True if dir_path == root_path else False
-            files = self._files_from_path(dir_path, topdown)
+            for dir_path, filelist in files.iteritems():
 
-            for cur_dir, file_list in files.iteritems():
-                sync_files = [x for x in file_list if is_sync_file(x)]
-
+                sync_files = (x for x in filelist if is_sync_file(x))
                 # Don't process files if they are still being synced
-                postpone = app.POSTPONE_IF_SYNC_FILES and sync_files
+                postpone = app.POSTPONE_IF_SYNC_FILES and any(sync_files)
 
                 if not postpone:
 
-                    self.prepare_files(cur_dir, file_list, force)
+                    self._log(u'\n')
+                    self._log(u'Processing folder: {0}'.format(dir_path), logger.DEBUG)
 
-                    self.process_files(cur_dir, process_method, nzb_name=nzb_name, force=force,
-                                       is_priority=is_priority, ignore_subs=ignore_subs)
+                    self.prepare_files(dir_path, filelist, force)
+
+                    self.process_files(dir_path, nzb_name=nzb_name, force=force, is_priority=is_priority,
+                                       ignore_subs=ignore_subs)
 
                     # Always delete files if they are being moved or if it's explicitly wanted
-                    if not process_method == u'move' or (proc_type == u'manual' and not delete_on):
+                    if not self.process_method == u'move' or (proc_type == u'manual' and not delete_on):
                         continue
 
-                    self.delete_folder(os.path.join(cur_dir, u'@eaDir'))
+                    self.delete_folder(os.path.join(dir_path, u'@eaDir'))
                     if self.unwanted_files:
-                        self.delete_files(cur_dir, self.unwanted_files)
+                        self.delete_files(dir_path, self.unwanted_files)
 
-                    if all([not app.NO_DELETE or proc_type == u'manual', process_method == u'move',
-                            os.path.normpath(cur_dir) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+                    if all([not app.NO_DELETE or proc_type == u'manual', self.process_method == u'move',
+                            os.path.normpath(dir_path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
 
-                        if self.delete_folder(cur_dir, check_empty=True):
-                            self._log(u'Deleted folder: {0}'.format(cur_dir), logger.DEBUG)
+                        if self.delete_folder(dir_path, check_empty=True):
+                            self._log(u'Deleted folder: {0}'.format(dir_path), logger.DEBUG)
 
                 else:
-                    self._log(u'Found temporary sync files: {0} in path: {1}'.format(sync_files, cur_dir))
-                    self._log(u'Skipping post processing for folder: {0}'.format(cur_dir))
-                    self.missedfiles.append(u'{0}: Sync files found'.format(cur_dir))
+                    self._log(u'\n')
+                    self._log(u'Found temporary sync files in folder: {0}'.format(dir_path))
+                    self._log(u'Skipping post processing for folder: {0}'.format(dir_path))
+                    self.missedfiles.append(u'{0}: Sync files found'.format(dir_path))
 
         self._log(u'\n')
         if self.succeeded:
@@ -140,38 +166,86 @@ class ProcessResult(object):
 
         return self.output
 
-    def _get_pp_dir(self, dir_name):
-        # if they passed us a real dir then assume it's the one we want
-        if os.path.isdir(dir_name):
-            pp_dir = os.path.realpath(dir_name)
-            self._log(u'Processing path: {0}'.format(pp_dir), logger.DEBUG)
-            return pp_dir
+    def get_root_dir(self, path):
+        if os.path.isdir(path):
+            root_dir = os.path.realpath(path)
+            self._log(u'Processing path: {0}'.format(path), logger.DEBUG)
+            return root_dir
 
-        # if the client and the application are not on the same machine,
+        # If the client and the application are not on the same machine,
         # translate the directory into a network directory
         elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),
-                  os.path.normpath(dir_name) == os.path.normpath(app.TV_DOWNLOAD_DIR)]):
-            pp_dir = os.path.join(app.TV_DOWNLOAD_DIR, os.path.abspath(dir_name).split(os.path.sep)[-1])
-            self._log(u'Trying to use folder: {0}'.format(pp_dir), logger.DEBUG)
-            return pp_dir
+                  os.path.normpath(path) == os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+            root_dir = os.path.join(app.TV_DOWNLOAD_DIR, os.path.abspath(path).split(os.path.sep)[-1])
+            self._log(u'Trying to use folder: {0}'.format(root_dir), logger.DEBUG)
+            return root_dir
 
-        self._log(u"Unable to figure out what folder to process. If your downloader and Medusa aren't on "
-                  u"the same PC, make sure you fill out your TV download dir in the config.", logger.DEBUG)
+        self._log(u"Unable to figure out what folder to process. If your download client and Medusa aren't on the "
+                  u"same machine, make sure to fill out the Post Processing Dir field in the config.", logger.WARNING)
 
-    @staticmethod
-    def _get_paths(path):
-        paths = []
-        for root, dirs, __ in os.walk(path):
-            paths.append(root)
+    def get_paths(self, nzb_name=None, failed=False):
+        if not self.directory:
+            return []
+
+        paths = [self.directory]
+        for root, dirs, __ in os.walk(self.directory):
             for folder in dirs:
-                paths.append(os.path.join(root, folder))
+                path = os.path.join(root, folder)
+                if self.is_valid(path, nzb_name, failed):
+                    paths.append(path)
             break
 
         return paths
 
-    @staticmethod
-    def _files_from_path(path, topdown):
-        files = {}
+    def is_valid(self, path, nzb_name=None, failed=False):
+        """
+        Determine if a directory is valid for processing.
+
+        :param path: Path we want to verify
+        :param nzb_name: (optional) Name of the NZB file we are processing
+        :param failed: (optional) Mark the directory as failed
+        :return: True if the directory is valid for processing, otherwise False
+        :rtype: Boolean
+        """
+        folder = os.path.basename(path)
+        if folder in self.IGNORED_FOLDERS:
+            return False
+
+        if folder.startswith(u'_FAILED_'):
+            self._log(u'The directory name indicates it failed to extract.', logger.DEBUG)
+            failed = True
+        elif folder.startswith(u'_UNDERSIZED_'):
+            self._log(u'The directory name indicates that it was previously rejected for being undersized.',
+                      logger.DEBUG)
+            failed = True
+        elif folder.upper().startswith(u'_UNPACK'):
+            self._log(u'The directory name indicates that this release is in the process of being unpacked.',
+                      logger.DEBUG)
+            self.missedfiles.append(u'{0}: Being unpacked'.format(folder))
+            return False
+
+        if failed:
+            self.process_failed(path, nzb_name)
+            self.missedfiles.append(u'{0}: Failed download'.format(folder))
+            return False
+
+        if helpers.is_hidden_folder(path):
+            self._log(u'Ignoring hidden folder: {0}'.format(folder), logger.DEBUG)
+            self.missedfiles.append(u'{0}: Hidden folder'.format(folder))
+            return False
+
+        for __, __, files in os.walk(path):
+            for f in files:
+                if helpers.is_media_file(f):
+                    return True
+
+        self._log(u'\n')
+        self._log(u'{0}: No processable items found in the folder'.format(path), logger.DEBUG)
+        return False
+
+    def _files_from_path(self, path):
+        files = OrderedDict()
+        topdown = True if self.directory == path else False
         for root, __, filelist in os.walk(path, topdown=topdown):
             if filelist:
                 files[root] = filelist
@@ -181,58 +255,57 @@ class ProcessResult(object):
         return files
 
     def prepare_files(self, path, files, force=False):
-        video_files = [x for x in files if helpers.is_media_file(x)]
-        rar_files = [x for x in files if helpers.is_rar_file(x)]
+        video_files = []
+        rar_files = []
+        for f in files:
+            if helpers.is_media_file(f):
+                video_files.append(f)
+            elif helpers.is_rar_file(f):
+                rar_files.append(f)
+
         rar_content = []
-
         if rar_files:
-            # Unpack only if video file was not already extracted by 'postpone if no subs' feature
             rar_content = self.unRAR(path, rar_files, force)
-            files += rar_content
-            video_files += [x for x in rar_content if helpers.is_media_file(x)]
-
-        video_in_rar = [x for x in rar_content if helpers.is_media_file(x)]
-        unwanted_files = [x for x in files if x not in video_files and helpers.get_extension(x)
-                          not in self.allowed_extensions]
+            files.extend(rar_content)
+            video_in_rar = [f for f in rar_content if helpers.is_media_file(f)]
+            video_files.extend(video_in_rar)
 
         self._log(u'PostProcessing Files: {0}'.format(files), logger.DEBUG)
         self._log(u'PostProcessing VideoFiles: {0}'.format(video_files), logger.DEBUG)
-        self._log(u'PostProcessing RarContent: {0}'.format(rar_content), logger.DEBUG)
-        self._log(u'PostProcessing VideoInRar: {0}'.format(video_in_rar), logger.DEBUG)
+        self.video_files = video_files
 
+        if rar_content:
+            self._log(u'PostProcessing RarContent: {0}'.format(rar_content), logger.DEBUG)
+            self._log(u'PostProcessing VideoInRar: {0}'.format(video_in_rar), logger.DEBUG)
+            self.rar_content = rar_content
+            self.video_in_rar = video_in_rar
+
+        unwanted_files = [x for x in files if x not in video_files and helpers.get_extension(x)
+                          not in self.allowed_extensions]
         if unwanted_files:
             self._log(u'Found unwanted files: {0}'.format(unwanted_files), logger.DEBUG)
+            self.unwanted_files = unwanted_files
 
-        self.video_files = video_files
-        self.rar_content = rar_content
-        self.video_in_rar = video_in_rar
-        self.unwanted_files = unwanted_files
-
-    def process_files(self, path, process_method, **kwargs):
-        nzb_name = kwargs.get('nzb_name')
-        force = kwargs.get('force')
-        is_priority = kwargs.get('is_priority')
-        ignore_subs = kwargs.get('ignore_subs')
-
+    def process_files(self, path, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
         # Don't Link media when the media is extracted from a rar in the same path
-        if process_method in (u'hardlink', u'symlink') and self.video_in_rar:
+        if self.process_method in (u'hardlink', u'symlink') and self.video_in_rar:
             self.process_media(path, self.video_in_rar, nzb_name, u'move', force, is_priority, ignore_subs)
 
-            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, process_method,
-                               force, is_priority, ignore_subs)
+            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, force,
+                               is_priority, ignore_subs)
 
             self.delete_files(path, self.rar_content)
 
         elif app.DELRARCONTENTS and self.video_in_rar:
-            self.process_media(path, self.video_in_rar, nzb_name, process_method, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
 
-            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, process_method,
+            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name,
                                force, is_priority, ignore_subs)
 
             self.delete_files(path, self.rar_content, force=True)
 
         else:
-            self.process_media(path, self.video_files, nzb_name, process_method, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_files, nzb_name, force, is_priority, ignore_subs)
 
     @staticmethod
     def delete_folder(folder, check_empty=True):
@@ -276,27 +349,27 @@ class ProcessResult(object):
 
         return True
 
-    def delete_files(self, processPath, notwantedFiles, force=False):
+    def delete_files(self, path, files, force=False):
         """
         Remove files from filesystem.
 
-        :param processPath: path to process
-        :param notwantedFiles: files we do not want
+        :param path: path to process
+        :param files: files we want to delete
         :param result: Processor results
         :param force: Boolean, force deletion, defaults to false
         """
-        if not notwantedFiles:
+        if not files:
             return
 
         if not self.result and force:
-            self._log(u'Forcing deletion of files, even though last result was not successful', logger.DEBUG)
+            self._log(u'Forcing deletion of files, even though last result was not successful.', logger.DEBUG)
         elif not self.result:
             return
 
         # Delete all file not needed
-        for cur_file in notwantedFiles:
+        for cur_file in files:
 
-            cur_file_path = os.path.join(processPath, cur_file)
+            cur_file_path = os.path.join(path, cur_file)
 
             if not os.path.isfile(cur_file_path):
                 continue  # Prevent error when a notwantedfiles is an associated files
@@ -317,57 +390,7 @@ class ProcessResult(object):
             except OSError as e:
                 self._log(u'Unable to delete file {0}: {1}'.format(cur_file, e.strerror), logger.DEBUG)
 
-    def validate_dir(self, path, nzbNameOriginal, failed):
-        """
-        Check if directory is valid for processing.
-
-        :param path: Path to use
-        :param dirName: Directory to check
-        :param nzbNameOriginal: Original NZB name
-        :param failed: Previously failed objects
-        :param result: Previous results
-        :return: True if dir is valid for processing, False if not
-        """
-        ignored_folders = [u'.AppleDouble', u'.@__thumb', u'@eaDir']
-        folder_name = os.path.basename(path)
-        if folder_name in ignored_folders:
-            return False
-
-        self._log(u'\n')
-        self._log(u'Processing folder: {0}'.format(path), logger.DEBUG)
-
-        if folder_name.startswith(u'_FAILED_'):
-            self._log(u'The directory name indicates it failed to extract.', logger.DEBUG)
-            failed = True
-        elif folder_name.startswith(u'_UNDERSIZED_'):
-            self._log(u'The directory name indicates that it was previously rejected for being undersized.',
-                      logger.DEBUG)
-            failed = True
-        elif folder_name.upper().startswith(u'_UNPACK'):
-            self._log(u'The directory name indicates that this release is in the process of being unpacked.',
-                      logger.DEBUG)
-            self.missedfiles.append(u'{0}: Being unpacked'.format(folder_name))
-            return False
-
-        if failed:
-            self.process_failed(path, nzbNameOriginal)
-            self.missedfiles.append(u'{0}: Failed download'.format(folder_name))
-            return False
-
-        if helpers.is_hidden_folder(path):
-            self._log(u'Ignoring hidden folder: {0}'.format(folder_name), logger.DEBUG)
-            self.missedfiles.append(u'{0}: Hidden folder'.format(folder_name))
-            return False
-
-        for __, __, files in os.walk(path, topdown=False):
-            for f in files:
-                if helpers.is_media_file(f):
-                    return True
-
-        self._log(u'{0}: No processable items found in the folder'.format(path), logger.DEBUG)
-        return False
-
-    def unRAR(self, path, rarFiles, force):
+    def unRAR(self, path, rar_files, force=False):
         """
         Extract RAR files.
 
@@ -379,11 +402,11 @@ class ProcessResult(object):
         """
         unpacked_files = []
 
-        if app.UNPACK and rarFiles:
+        if app.UNPACK and rar_files:
 
-            self._log(u"Packed releases detected: %s" % rarFiles, logger.DEBUG)
+            self._log(u"Packed releases detected: %s" % rar_files, logger.DEBUG)
 
-            for archive in rarFiles:
+            for archive in rar_files:
 
                 self._log(u"Unpacking archive: %s" % archive, logger.DEBUG)
 
@@ -394,15 +417,15 @@ class ProcessResult(object):
                     # Skip extraction if any file in archive has previously been extracted
                     skip_file = False
                     for file_in_archive in [os.path.basename(x.filename) for x in rar_handle.infolist() if not x.isdir]:
-                        if self.already_postprocessed(path, file_in_archive, force):
-                            self._log(u'Archive file already post-processed, extraction skipped: %s' %
-                                      file_in_archive, logger.DEBUG)
+                        if self.already_postprocessed(file_in_archive):
+                            self._log(u'Archive file already post-processed, extraction skipped: {0}'.format
+                                      (file_in_archive, logger.DEBUG))
                             skip_file = True
                             break
 
                         if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
-                            self._log(u'Archive file already extracted, extraction skipped: %s' %
-                                      file_in_archive, logger.DEBUG)
+                            self._log(u'Archive file already extracted, extraction skipped: {0}'.format
+                                      (file_in_archive, logger.DEBUG))
 
                             skip_file = True
                             # We need to return the media file inside the .RAR so we can move
@@ -436,8 +459,8 @@ class ProcessResult(object):
                     failure = (ex(e), u'Unpacking failed for an unknown reason')
 
                 if failure is not None:
-                    self._log(u'Failed Unrar archive {}: {}'.format(archive, failure[0]), logger.WARNING)
-                    self.missedfiles.append(u'{} : Unpacking failed: {}'.format(archive, failure[1]))
+                    self._log(u'Failed Unrar archive {0}: {1}'.format(archive, failure[0]), logger.WARNING)
+                    self.missedfiles.append(u'{0}: Unpacking failed: {1}'.format(archive, failure[1]))
                     self.result = False
                     continue
 
@@ -445,19 +468,14 @@ class ProcessResult(object):
 
         return unpacked_files
 
-    def already_postprocessed(self, dir_name, video_file, force):
+    def already_postprocessed(self, video_file):
         """
         Check if we already post processed a file.
 
-        :param dir_name: Directory a file resides in
         :param video_file: File name
-        :param force: Force checking when already checking (currently unused)
-        :param result: True if file is already postprocessed, False if not
+        :param result: True if file is already postprocessed
         :return:
         """
-        if force:
-            return False
-
         main_db_con = db.DBConnection()
         history_result = main_db_con.select(
             'SELECT * FROM history '
@@ -470,61 +488,58 @@ class ProcessResult(object):
                       u"been processed, skipping: {0}".format(video_file), logger.DEBUG)
             return True
 
-        return False
-
-    def process_media(self, processPath, videoFiles, nzbName, process_method, force, is_priority, ignore_subs):
+    def process_media(self, path, video_files, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
         """
         Postprocess mediafiles.
 
         :param processPath: Path to postprocess in
         :param videoFiles: Filenames to look for and postprocess
         :param nzbName: Name of NZB file related
-        :param process_method: auto/manual
         :param force: Postprocess currently postprocessing file
         :param is_priority: Boolean, is this a priority download
         :param result: Previous results
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
         processor = None
-        for cur_video_file in videoFiles:
-            cur_video_file_path = os.path.join(processPath, cur_video_file)
+        for video_file in video_files:
+            video_file_path = os.path.join(path, video_file)
 
-            if self.already_postprocessed(processPath, cur_video_file, force):
-                self._log(u"Skipping already processed file: %s" % cur_video_file, logger.DEBUG)
-                self._log(u"Skipping already processed dir: %s" % processPath, logger.DEBUG)
+            if self.already_postprocessed(video_file):
+                self._log(u'Skipping already processed file: {0}'.format(video_file), logger.DEBUG)
+                self._log(u'Skipping already processed dir: {0}'.format(path), logger.DEBUG)
                 continue
 
             try:
-                processor = post_processor.PostProcessor(cur_video_file_path, nzbName, process_method, is_priority)
+                processor = post_processor.PostProcessor(video_file_path, nzb_name, self.process_method, is_priority)
 
                 # This feature prevents PP for files that do not have subtitle associated with the video file
                 if app.POSTPONE_IF_NO_SUBS:
                     if not ignore_subs:
-                        if self.subtitles_enabled(cur_video_file_path, nzbName):
-                            embedded_subs = set() if app.IGNORE_EMBEDDED_SUBS else get_embedded_subtitles(cur_video_file_path)
+                        if self.subtitles_enabled(video_file_path, nzb_name):
+                            embedded_subs = set() if app.IGNORE_EMBEDDED_SUBS else get_embedded_subtitles(video_file_path)
 
                             # If user don't want to ignore embedded subtitles and video has at least one, don't postpone PP
                             if accept_unknown(embedded_subs):
                                 self._log(u"Found embedded unknown subtitles and we don't want to ignore them. "
-                                          u"Continuing the post-process of this file: %s" % cur_video_file)
+                                          u"Continuing the post-processing of this file: {0}".format(video_file))
                             elif accept_any(embedded_subs):
-                                self._log(u"Found wanted embedded subtitles. "
-                                          u"Continuing the post-process of this file: %s" % cur_video_file)
+                                self._log(u'Found wanted embedded subtitles. '
+                                          u'Continuing the post-processing of this file: {0}'.format(video_file))
                             else:
-                                associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
+                                associated_files = processor.list_associated_files(video_file_path, subtitles_only=True)
                                 if not [f for f in associated_files if helpers.get_extension(f) in subtitle_extensions]:
-                                    self._log(u"No subtitles associated. Postponing the post-process of this file:"
-                                              u" %s" % cur_video_file, logger.DEBUG)
+                                    self._log(u'No subtitles associated. Postponing the post-process of this file: '
+                                              u'{0}'.format(video_file), logger.DEBUG)
                                     continue
                                 else:
                                     self._log(u"Found subtitles associated. "
-                                              u"Continuing the post-process of this file: %s" % cur_video_file)
+                                              u"Continuing the post-process of this file: %s" % video_file)
                         else:
                             self._log(u"Subtitles disabled for this show. "
-                                      u"Continuing the post-process of this file: %s" % cur_video_file)
+                                      u"Continuing the post-process of this file: %s" % video_file)
                     else:
                         self._log(u"Subtitles check was disabled for this episode in Manual PP. "
-                                  u"Continuing the post-process of this file: %s" % cur_video_file)
+                                  u"Continuing the post-process of this file: %s" % video_file)
 
                 self.result = processor.process()
                 process_fail_message = u''
@@ -533,22 +548,22 @@ class ProcessResult(object):
                 process_fail_message = ex(e)
 
             if processor:
-                self.output += processor.log
+                self._output.append(processor.log)
 
             if self.result:
-                self._log(u'Processing succeeded for %s' % cur_video_file_path)
+                self._log(u'Processing succeeded for %s' % video_file_path)
             else:
-                self._log(u'Processing failed for %s: %s' % (cur_video_file_path, process_fail_message), logger.WARNING)
-                self.missedfiles.append(u'%s : Processing failed: %s' % (cur_video_file_path, process_fail_message))
+                self._log(u'Processing failed for %s: %s' % (video_file_path, process_fail_message), logger.WARNING)
+                self.missedfiles.append(u'%s : Processing failed: %s' % (video_file_path, process_fail_message))
                 self.succeeded = False
 
-    def process_failed(self, dirName, nzbName):
+    def process_failed(self, path, nzb_name=None):
         """Process a download that did not complete correctly."""
         if app.USE_FAILED_DOWNLOADS:
             processor = None
 
             try:
-                processor = failed_processor.FailedProcessor(dirName, nzbName)
+                processor = failed_processor.FailedProcessor(path, nzb_name)
                 self.result = processor.process()
                 process_fail_message = u''
             except FailedPostProcessingFailedException as e:
@@ -556,17 +571,17 @@ class ProcessResult(object):
                 process_fail_message = ex(e)
 
             if processor:
-                self.output += processor.log
+                self._output.append(processor.log)
 
             if app.DELETE_FAILED and self.result:
-                if self.delete_folder(dirName, check_empty=False):
-                    self._log(u'Deleted folder: %s' % dirName, logger.DEBUG)
+                if self.delete_folder(path, check_empty=False):
+                    self._log(u'Deleted folder: {0}'.format(path), logger.DEBUG)
 
             if self.result:
-                self._log(u'Failed Download Processing succeeded: (%s, %s)' % (nzbName, dirName))
+                self._log(u'Failed Download Processing succeeded: {0}, {1}'.format(nzb_name, path))
             else:
-                self._log(u'Failed Download Processing failed: (%s, %s): %s' %
-                          (nzbName, dirName, process_fail_message), logger.WARNING)
+                self._log(u'Failed Download Processing failed: {0}, {1}: {2}'.format
+                          (nzb_name, path, process_fail_message), logger.WARNING)
 
     @staticmethod
     def subtitles_enabled(*args):

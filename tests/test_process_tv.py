@@ -53,12 +53,12 @@ import pytest
 def test_validate_dir(p, create_structure):
     """Run the test."""
     # Given
-    sut = ProcessResult()
     path = create_structure(path=os.path.join(p['path'], p['dirName']), structure=p['structure'])
     test_path = os.path.join(path, os.path.normcase(p['path']))
+    sut = ProcessResult(test_path)
 
     # When
-    result = sut.validate_dir(test_path, p['dirName'], p['nzbNameOriginal'], p['failed'])
+    result = sut.is_valid(os.path.join(test_path, p['dirName']), p['nzbNameOriginal'], p['failed'])
 
     # Then
     assert p['expected'] == result
