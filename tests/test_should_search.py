@@ -52,21 +52,21 @@ class TestTVShow(Series):
         'manually_searched': False,
         'expected': False
     },
-    {  # p4: Current status is SNATCHED: yes
+    {  # p4: Current status is SNATCHED: no
         'status': Quality.composite_status(SNATCHED, Quality.HDTV),
         'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
                                quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
                                                                  [Quality.HDWEBDL])),  # Preferred Qualities
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
-    {  # p5: Current status is SNATCHED_PROPER: yes
+    {  # p5: Current status is SNATCHED_PROPER: no
         'status': Quality.composite_status(SNATCHED_PROPER, Quality.HDTV),
         'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
                                quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
                                                                  [Quality.HDWEBDL])),  # Preferred Qualities
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
     {  # p6: Status is DOWNLOADED: yes
         'status': Quality.composite_status(DOWNLOADED, Quality.HDTV),
@@ -156,21 +156,21 @@ class TestTVShow(Series):
         'manually_searched': False,
         'expected': True
     },
-    {  # p17: ´SNATCHED BEST but this quality is no longer wanted: yes
+    {  # p17: ´SNATCHED BEST but this quality is no longer wanted: no
         'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
         'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
                                quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
                                                                  [Quality.HDBLURAY])),  # Preferred Qualities
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
-    {  # p18: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred set: yes
+    {  # p18: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred set: no
         'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
         'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
                                quality=Quality.combine_qualities([Quality.HDTV, Quality.SDTV],  # Allowed Qualities
                                                                  [Quality.HDBLURAY])),  # Preferred Qualities
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
     {  # p19: ´SNATCHED BEST but this quality is no longer in preferred but in allowed. Preferred not set: no
         'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
@@ -180,13 +180,13 @@ class TestTVShow(Series):
         'manually_searched': False,
         'expected': False
     },
-    {  # p20: ´SNATCHED BEST but this quality is no longer wanted. Preferred not set: yes
+    {  # p20: ´SNATCHED BEST but this quality is no longer wanted. Preferred not set: no
         'status': Quality.composite_status(SNATCHED_BEST, Quality.SDTV),
         'show_obj': TestTVShow(indexer=1, indexer_id=1, lang='',
                                quality=Quality.combine_qualities([Quality.HDTV],  # Allowed Qualities
                                                                  [])),  # Preferred Qualities
         'manually_searched': False,
-        'expected': True
+        'expected': False
     },
 ])
 def test_should_search(p):

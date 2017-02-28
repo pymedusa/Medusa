@@ -613,7 +613,7 @@ class Quality(object):
 
         #  Can't be SNATCHED_BEST because the quality is already final (unless user changes qualities).
         #  All other status will return false: IGNORED, SKIPPED, FAILED.
-        if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+        if cur_status not in (WANTED, DOWNLOADED):
             return False, 'Status is not allowed: {0}. Skipping episode'.format(statusStrings[cur_status])
 
         # If current status is WANTED, we must always search
