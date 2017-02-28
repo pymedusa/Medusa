@@ -28,11 +28,12 @@ import logging
 import os
 import re
 
+from medusa import app
+from medusa.clients.torrent.generic import GenericClient
+from medusa.helpers import handle_requests_exception
+
 from requests.compat import urljoin
 from requests.exceptions import RequestException
-from .generic import GenericClient
-from .. import app
-from ..helpers import handle_requests_exception
 
 logger = logging.getLogger(__name__)
 

@@ -9,42 +9,113 @@ import time
 from datetime import date, datetime
 
 import adba
-from requests.compat import quote_plus, unquote_plus
+
+from medusa import (
+    app,
+    config,
+    db,
+    helpers,
+    logger,
+    notifiers,
+    providers,
+    subtitles,
+    ui,
+)
+from medusa.black_and_white_list import (
+    BlackAndWhiteList,
+    short_group_names,
+)
+from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
+from medusa.common import (
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    WANTED,
+    cpu_presets,
+    statusStrings,
+)
+from medusa.failed_history import prepare_failed_name
+from medusa.helper.common import (
+    enabled_providers,
+    try_int,
+)
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+    ex,
+)
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import (
+    IndexerException,
+    IndexerShowNotFoundInLanguage,
+)
+from medusa.providers.generic_provider import GenericProvider
+from medusa.sbdatetime import sbdatetime
+from medusa.scene_exceptions import (
+    get_all_scene_exceptions,
+    get_scene_exceptions,
+    update_scene_exceptions,
+)
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering,
+    get_scene_absolute_numbering_for_show,
+    get_scene_numbering,
+    get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show,
+    get_xem_numbering_for_show,
+    set_scene_numbering,
+    xem_refresh,
+)
+from medusa.search.manual import (
+    SEARCH_STATUS_FINISHED,
+    SEARCH_STATUS_QUEUED,
+    SEARCH_STATUS_SEARCHING,
+    collect_episodes_from_search_thread,
+    get_episode,
+    get_provider_cache_results,
+    update_finished_search_queue_item,
+)
+from medusa.search.queue import (
+    BacklogQueueItem,
+    FailedQueueItem,
+    ForcedSearchQueueItem,
+    ManualSnatchQueueItem,
+)
+from medusa.server.web.core import (
+    PageTemplate,
+    WebRoot,
+)
+from medusa.show.history import History
+from medusa.show.show import Show
+from medusa.system.restart import Restart
+from medusa.system.shutdown import Shutdown
+from medusa.version_checker import CheckVersion
+
+from requests.compat import (
+    quote_plus,
+    unquote_plus,
+)
 from six import iteritems
 from tornroutes import route
-from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
-from ..core import PageTemplate, WebRoot
-from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
-from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import (DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED,
-                        SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings)
-from ....failed_history import prepare_failed_name
-from ....helper.common import enabled_providers, try_int
-from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException, IndexerShowNotFoundInLanguage
-from ....providers.generic_provider import GenericProvider
-from ....sbdatetime import sbdatetime
-from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
-from ....scene_numbering import (
-    get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
-    get_scene_numbering, get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
-    set_scene_numbering, xem_refresh
+from traktor import (
+    MissingTokenException,
+    TokenExpiredException,
+    TraktApi,
+    TraktException,
 )
-from ....search.manual import (
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collect_episodes_from_search_thread,
-    get_episode, get_provider_cache_results, update_finished_search_queue_item
-)
-from ....search.queue import (
-    BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
-)
-from ....show.history import History
-from ....show.show import Show
-from ....system.restart import Restart
-from ....system.shutdown import Shutdown
-from ....version_checker import CheckVersion
 
 
 @route('/home(/?.*)')
@@ -226,7 +297,7 @@ class Home(WebRoot):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
-        client = clients.get_client_class(torrent_method)
+        client = torrent.get_client_class(torrent_method)
 
         _, acces_msg = client(host, username, password).test_authentication()
 

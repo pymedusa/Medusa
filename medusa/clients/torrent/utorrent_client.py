@@ -23,10 +23,11 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from medusa import app
+from medusa.clients.torrent.generic import GenericClient
+
 from requests.compat import urljoin
 from six import iteritems
-from .generic import GenericClient
-from .. import app
 
 
 logger = logging.getLogger(__name__)

@@ -22,11 +22,15 @@ from __future__ import unicode_literals
 import datetime
 from base64 import standard_b64encode
 
+from medusa import (
+    app,
+    logger,
+)
+from medusa.common import Quality
+from medusa.helper.common import try_int
+
 from six.moves.http_client import socket
 from six.moves.xmlrpc_client import ProtocolError, ServerProxy
-from . import app, logger
-from .common import Quality
-from .helper.common import try_int
 
 
 def NZBConnection(url):

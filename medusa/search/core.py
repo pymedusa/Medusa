@@ -22,20 +22,48 @@ import errno
 import os
 import threading
 import traceback
-
 from socket import timeout as socket_timeout
 
-import requests
-
-from .. import (
-    app, clients, common, db, failed_history, helpers, history, logger,
-    name_cache, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
+from medusa import (
+    app,
+    common,
+    db,
+    failed_history,
+    helpers,
+    history,
+    logger,
+    name_cache,
+    notifiers,
+    nzb_splitter,
+    show_name_helpers,
+    ui,
 )
-from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNKNOWN
-from ..helper.common import enabled_providers, episode_num
-from ..helper.exceptions import AuthException, ex
-from ..providers import sorted_provider_list
-from ..providers.generic_provider import GenericProvider
+from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
+from medusa.common import (
+    MULTI_EP_RESULT,
+    Quality,
+    SEASON_RESULT,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNKNOWN,
+)
+from medusa.helper.common import (
+    enabled_providers,
+    episode_num,
+)
+from medusa.helper.exceptions import (
+    AuthException,
+    ex,
+)
+from medusa.providers import sorted_provider_list
+from medusa.providers.generic_provider import GenericProvider
+
+import requests
 
 
 def _download_result(result):
@@ -132,7 +160,7 @@ def snatch_episode(result):
                     result.content = result.provider.get_url(result.url, returns='content')
 
             if result.content or result.url.startswith('magnet'):
-                client = clients.get_client_class(app.TORRENT_METHOD)()
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
                 logger.log(u"Torrent file content is empty", logger.WARNING)
