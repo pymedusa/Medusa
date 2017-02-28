@@ -149,11 +149,13 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     title_url = title_anchors[0].get('href')
                     title = title_anchors[1].get_text(strip=True)
-                    regex_result = id_regex.search(title_anchors[1].get('href'))
+                    torrent_url = title_anchors[1].get('href')
+                    regex_result = id_regex.search(torrent_url)
 
                     alt_title = regex_result.group(1)
                     if len(title) < len(alt_title):
                         title = alt_title.replace('-', ' ')
+                    detail_url = urljoin(self.url, torrent_url)
 
                     torrent_id = regex_result.group(2)
                     info_hash = hash_regex.search(title_url).group(2)
@@ -162,7 +164,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     with suppress(RequestsConnectionError, Timeout):
                         # Suppress the timeout since we are not interested in actually getting the results
-                        self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
+                        self.session.get(self.urls['update'], timeout=0.2, params={'torrent_id': torrent_id,
                                                                                    'infohash': info_hash})
 
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
@@ -187,6 +189,7 @@ class LimeTorrentsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
+                        'detail_url': detail_url
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
