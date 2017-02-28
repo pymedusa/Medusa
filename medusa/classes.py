@@ -71,6 +71,9 @@ class SearchResult(object):
         # release publish date
         self.pubdate = None
 
+        # release detail url
+        self.detail_url = None
+
         # release group
         self.release_group = u''
 
@@ -147,8 +150,8 @@ class SearchResult(object):
         """Cache the item if needed."""
         if self.add_cache_entry:
             logger.debug('Adding item from search to cache: {release_name}', release_name=self.name)
-            return cache.add_cache_entry(self.name, self.url, self.seeders,
-                                         self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
+            return cache.add_cache_entry(self.name, self.url, self.seeders, self.leechers, self.size, self.pubdate,
+                                         self.detail_url, parsed_result=self.parsed_result)
         return None
 
     def check_episodes_for_quality(self, forced_search, download_current_quality):
@@ -283,7 +286,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, proper_tags):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, proper_tags, detail_url):
         self.name = name
         self.url = url
         self.date = date
@@ -296,6 +299,7 @@ class Proper(object):
         self.size = size
         self.pubdate = pubdate
         self.proper_tags = proper_tags
+        self.detail_url = detail_url
         self.hash = None
         self.show = show
         self.indexer = None

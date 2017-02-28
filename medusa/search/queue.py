@@ -440,6 +440,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         search_result.version = int(self.cached_result[b'version'])
         search_result.proper_tags = self.cached_result[b'proper_tags'].split('|') \
             if self.cached_result[b'proper_tags'] else ''
+        search_result.detail_url = self.cached_result[b'detail_url']
         search_result.manually_searched = True
 
         try:

@@ -171,12 +171,13 @@ class GenericProvider(object):
                         seeders, leechers = self._get_result_info(item)
                         size = self._get_size(item)
                         pubdate = self._get_pubdate(item)
+                        detail_url = self._get_detail_url(item)
 
                         # This will be retrived from the parser
                         proper_tags = ''
 
                         results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
-                                              proper_tags))
+                                              proper_tags, detail_url))
 
         return results
 
@@ -249,6 +250,7 @@ class GenericProvider(object):
 
             search_result.size = self._get_size(item)
             search_result.pubdate = self._get_pubdate(item)
+            search_result.detail_url = self._get_detail_url(item)
 
             search_result.result_wanted = True
 
@@ -578,6 +580,13 @@ class GenericProvider(object):
         """Return publish date of the item.
 
         If provider doesnt have _get_pubdate function this will be used
+        """
+        return None
+
+    def _get_detail_url(self, item):
+        """Return detail_url of the item.
+
+        If provider doesnt have _get_detail_url function this will be used
         """
         return None
 
