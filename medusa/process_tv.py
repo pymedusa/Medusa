@@ -18,7 +18,6 @@
 import os
 import shutil
 import stat
-from collections import OrderedDict
 
 import shutil_custom
 
@@ -63,6 +62,10 @@ class ProcessResult(object):
         self._directory = self.get_root_dir(path)
 
     @property
+    def paths(self):
+        return [p for p in self._get_paths() if self.is_valid(p)]
+
+    @property
     def process_method(self):
         return self._process_method
 
@@ -105,13 +108,14 @@ class ProcessResult(object):
         if app.POSTPONE_IF_NO_SUBS:
             self._log(u"Feature 'postpone post-processing if no subtitle available' is enabled.")
 
-        paths = self.get_paths()
-        for path in paths:
+        for path in self._get_paths():
+
+            if not self.is_valid(path, nzb_name, failed):
+                continue
 
             self.result = True
-            files = self._files_from_path(path)
 
-            for dir_path, filelist in files.iteritems():
+            for dir_path, filelist in self._get_files(path):
 
                 sync_files = (x for x in filelist if is_sync_file(x))
                 # Don't process files if they are still being synced
@@ -183,19 +187,17 @@ class ProcessResult(object):
         self._log(u"Unable to figure out what folder to process. If your download client and Medusa aren't on the "
                   u"same machine, make sure to fill out the Post Processing Dir field in the config.", logger.WARNING)
 
-    def get_paths(self, nzb_name=None, failed=False):
+    def _get_paths(self):
         if not self.directory:
-            return []
+            return
 
-        paths = [self.directory]
         for root, dirs, __ in os.walk(self.directory):
+            if self.directory == root:
+                yield root
             for folder in dirs:
                 path = os.path.join(root, folder)
-                if self.is_valid(path, nzb_name, failed):
-                    paths.append(path)
+                yield path
             break
-
-        return paths
 
     def is_valid(self, path, nzb_name=None, failed=False):
         """
@@ -243,16 +245,13 @@ class ProcessResult(object):
         self._log(u'{0}: No processable items found in the folder'.format(path), logger.DEBUG)
         return False
 
-    def _files_from_path(self, path):
-        files = OrderedDict()
+    def _get_files(self, path):
         topdown = True if self.directory == path else False
         for root, __, filelist in os.walk(path, topdown=topdown):
             if filelist:
-                files[root] = filelist
+                yield root, filelist
             if topdown:
                 break
-
-        return files
 
     def prepare_files(self, path, files, force=False):
         video_files = []
@@ -289,7 +288,7 @@ class ProcessResult(object):
     def process_files(self, path, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
         # Don't Link media when the media is extracted from a rar in the same path
         if self.process_method in (u'hardlink', u'symlink') and self.video_in_rar:
-            self.process_media(path, self.video_in_rar, nzb_name, u'move', force, is_priority, ignore_subs)
+            self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
 
             self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, force,
                                is_priority, ignore_subs)
@@ -419,13 +418,13 @@ class ProcessResult(object):
                     for file_in_archive in [os.path.basename(x.filename) for x in rar_handle.infolist() if not x.isdir]:
                         if self.already_postprocessed(file_in_archive):
                             self._log(u'Archive file already post-processed, extraction skipped: {0}'.format
-                                      (file_in_archive, logger.DEBUG))
+                                      (file_in_archive), logger.DEBUG)
                             skip_file = True
                             break
 
                         if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
                             self._log(u'Archive file already extracted, extraction skipped: {0}'.format
-                                      (file_in_archive, logger.DEBUG))
+                                      (file_in_archive), logger.DEBUG)
 
                             skip_file = True
                             # We need to return the media file inside the .RAR so we can move
