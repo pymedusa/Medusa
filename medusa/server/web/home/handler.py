@@ -1582,26 +1582,28 @@ class Home(WebRoot):
             old_location = os.path.normpath(show_obj._location)
             new_location = os.path.normpath(location)
             if old_location != new_location:
-                logger.log('{old} != {new}'.format(old=old_location, new=new_location), logger.DEBUG)  # pylint: disable=protected-access
-                if not os.path.isdir(location) and not app.CREATE_MISSING_SHOW_DIRS:
-                    errors.append('New location <tt>{location}</tt> does not exist'.format(location=location))
-
-                # don't bother if we're going to update anyway
-                elif not do_update:
-                    # change it
+                logger.log('Changing show location to: {new}'.format(new=new_location), logger.DEBUG)
+                if not os.path.isdir(show_obj._location) and app.CREATE_MISSING_SHOW_DIRS:
+                    logger.log(u"Show directory doesn't exist, creating it", logger.DEBUG)
                     try:
+                        os.mkdir(new_location)
+                        helpers.chmod_as_parent(show_obj._location)
                         show_obj.location = location
+                    except (OSError, IOError) as e:
+                        log_message = u"Unable to create the show directory '{location}. " \
+                                      u"Error: {error}".format(location=new_location, error=ex(e))
+                        logger.log(log_message, logger.DEBUG)
+                        errors.append(log_message)
+
+                    if do_update and os.path.isdir(show_obj._location):
                         try:
                             app.show_queue_scheduler.action.refreshShow(show_obj)
                         except CantRefreshShowException as msg:
-                            errors.append('Unable to refresh this show:{error}'.format(error=msg))
-                            # grab updated info from TVDB
-                            # show_obj.load_episodes_from_indexer()
-                            # rescan the episodes in the new folder
-                    except ShowDirectoryNotFoundException:
-                        errors.append('The folder at <tt>{location}</tt> doesn\'t contain a tvshow.nfo - '
-                                      'copy your files to that folder before you change the directory in Medusa.'.format
-                                      (location=location))
+                            errors.append('Unable to refresh {show}: {error}'.format(show_obj.name, error=msg))
+                else:
+                    log_message = u"New location '{location}' does not exist. Enable setting 'Create missing show dirs'"
+                    logger.log(log_message, logger.WARNING)
+                    errors.append(log_message)
 
             # save it to the DB
             show_obj.save_to_db()
