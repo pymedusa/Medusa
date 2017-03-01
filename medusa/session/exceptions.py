@@ -10,10 +10,6 @@ class PolicedRequestScoreExceeded(PolicedRequestException):
     """Police Request Score Exception."""
 
 
-class PolicedRequestScoreExceeded(PolicedRequestException):
-    """Police Request Score Exception."""
-
-
 class PolicedRequestDailyExceeded(PolicedRequestException):
     """Police Request Exception for exceeding the reserved daily search limit."""
 

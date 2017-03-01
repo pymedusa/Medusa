@@ -212,7 +212,7 @@ class CheckVersion(object):
 
             check_url = 'http://cdn.rawgit.com/{org}/{repo}/{commit}/medusa/databases/main_db.py'.format(
                 org=app.GIT_ORG, repo=app.GIT_REPO, commit=cur_hash)
-            response = self.session(check_url)
+            response = self.session.get(check_url)
 
             # Get remote DB version
             match_max_db = re.search(r'MAX_DB_VERSION\s*=\s*(?P<version>\d{2,3})', response.text)

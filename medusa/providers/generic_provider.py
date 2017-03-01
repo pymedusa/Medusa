@@ -33,7 +33,7 @@ from ..db import DBConnection
 from ..helper.common import replace_extension, sanitize_filename
 from ..helper.exceptions import ex
 from ..session.custom import PolicedSession
-from ..session.hooks import cloudflare, log_url
+from ..session.hooks import cloudflare
 from ..helpers import download_file
 from ..indexers.indexer_config import INDEXER_TVDBV2
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
