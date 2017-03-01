@@ -23,7 +23,7 @@ import re
 from six import iteritems
 from .. import app, common, logger
 from ..helper.exceptions import ex
-from ..session.core import Session
+from ..session.core import MedusaSession
 
 try:
     import xml.etree.cElementTree as etree
@@ -39,7 +39,7 @@ class Notifier(object):
             'X-Plex-Client-Identifier': common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
-        self.session = Session()
+        self.session = MedusaSession()
 
     @staticmethod
     def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments

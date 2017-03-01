@@ -28,14 +28,14 @@ from medusa.indexers.indexer_api import indexerApi
 from six import iteritems, text_type
 from . import app, db, helpers, logger
 from .indexers.indexer_config import INDEXER_TVDBV2
-from .session.core import Session
+from .session.core import MedusaSession
 
 exceptionsCache = {}
 exceptionsSeasonCache = {}
 
 exceptionLock = threading.Lock()
 
-xem_session = Session()
+xem_session = MedusaSession()
 
 
 def should_refresh(ex_list):

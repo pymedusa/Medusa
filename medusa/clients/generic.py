@@ -15,7 +15,7 @@ import requests
 from six.moves.http_cookiejar import CookieJar
 from .. import app, db, helpers, logger
 from ..helper.common import http_code_description
-from ..session.core import Session
+from ..session.core import MedusaSession
 
 
 
@@ -43,7 +43,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = Session()
+        self.session = MedusaSession()
         self.session.auth = (self.username, self.password)
         self.session.cookies = CookieJar()
 

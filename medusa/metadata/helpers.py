@@ -18,9 +18,9 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from .. import logger
-from ..session.core import Session
+from ..session.core import MedusaSession
 
-meta_session = Session()
+meta_session = MedusaSession()
 
 
 def getShowImage(url, imgNum=None):

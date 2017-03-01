@@ -25,7 +25,7 @@ from . import classes, helpers, logger
 from .helper.encoding import ss
 from .helper.exceptions import ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .session.core import Session
+from .session.core import MedusaSession
 
 try:
     import xml.etree.cElementTree as ETree
@@ -33,7 +33,7 @@ except ImportError:
     import xml.etree.ElementTree as ETree
 
 
-session = Session()
+session = MedusaSession()
 
 
 def get_season_nzbs(name, url_data, season):

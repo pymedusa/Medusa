@@ -70,7 +70,7 @@ from .helper.exceptions import ex
 
 from .indexers.indexer_exceptions import IndexerException
 from .show.show import Show
-from .session.core import Session
+from .session.core import MedusaSession
 
 logger = logging.getLogger(__name__)
 
@@ -1444,7 +1444,7 @@ def get_disk_space_usage(disk_path=None, pretty=True):
 
 def get_tvdb_from_id(indexer_id, indexer):
 
-    session = Session()
+    session = MedusaSession()
     tvdb_id = ''
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
@@ -1654,7 +1654,7 @@ def get_broken_providers():
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
-    response = get_url(url, session=Session(), returns='json')
+    response = get_url(url, session=MedusaSession(), returns='json')
     if response is None:
         logger.warning('Unable to update the list with broken providers. '
                        'This list is used to disable broken providers. '

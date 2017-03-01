@@ -25,7 +25,7 @@ from . import db, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
-from .session.core import Session
+from .session.core import MedusaSession
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class ShowUpdater(object):
     def __init__(self):
         self.lock = threading.Lock()
         self.amActive = False
-        self.session = Session()
+        self.session = MedusaSession()
         self.update_cache = UpdateCache()
 
     def run(self, force=False):

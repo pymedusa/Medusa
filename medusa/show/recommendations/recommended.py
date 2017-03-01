@@ -21,7 +21,7 @@ import os
 import posixpath
 
 from ... import app, helpers
-from ...session.core import Session
+from ...session.core import MedusaSession
 
 
 class MissingTvdbMapping(Exception):
@@ -71,7 +71,7 @@ class RecommendedShow(object):
 
         # Check if the show is currently already in the db
         self.show_in_list = self.indexer_id in {show.indexerid for show in app.showList if show.indexerid}
-        self.session = Session()
+        self.session = MedusaSession()
 
     def cache_image(self, image_url, default=None):
         """Store cache of image in cache dir

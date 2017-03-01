@@ -7,7 +7,7 @@ from tornroutes import route
 from .handler import Home
 from ..core import PageTemplate
 from .... import app, logger
-from ....session.core import Session
+from ....session.core import MedusaSession
 
 
 @route('/changes(/?.*)')
@@ -18,7 +18,7 @@ class HomeChangeLog(Home):
     def index(self):
         try:
             # TODO: SESSION: Check if this needs some more explicit exception handling.
-            changes = Session().get(app.CHANGES_URL).text
+            changes = MedusaSession().get(app.CHANGES_URL).text
         except Exception:
             logger.log('Could not load changes from repo, giving a link!', logger.DEBUG)
             changes = 'Could not load changes from the repo. [Click here for CHANGES.md]({url})'.format(url=app.CHANGES_URL)

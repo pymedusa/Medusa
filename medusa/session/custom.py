@@ -5,14 +5,14 @@ from __future__ import unicode_literals
 import datetime
 import logging
 from ..bs4_parser import BS4Parser
-from core import Session
+from core import MedusaSession
 from exceptions import (PolicedRequestDailyExceeded, PolicedRequestException, PolicedRequestInvalidConfiguration,
                         PolicedRequestScoreExceeded)
 
 logger = logging.getLogger(__name__)
 
 
-class PolicedSession(Session):
+class PolicedSession(MedusaSession):
     """Policed Session class."""
 
     def __init__(self, *args, **kwargs):
@@ -152,7 +152,7 @@ class PolicedSession(Session):
             self.daily_request_count += 1
 
 
-class RateLimitedSession(Session):
+class RateLimitedSession(MedusaSession):
     """Rate limited Session class."""
 
     def __init__(self, max_requests, request_period, **kwargs):
@@ -174,7 +174,7 @@ class RateLimitedSession(Session):
         return super(RateLimitedSession, self).request(*args, **kwargs)
 
 
-class ThrottledSession(Session):
+class ThrottledSession(MedusaSession):
     """
     A Throttled Session that rate limits requests.
     """

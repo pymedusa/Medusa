@@ -22,7 +22,7 @@
 from __future__ import unicode_literals
 
 from .. import app, common, logger
-from ..session.core import Session
+from ..session.core import MedusaSession
 
 
 class Notifier(object):
@@ -30,7 +30,7 @@ class Notifier(object):
 
     def __init__(self):
         """Initialize the class."""
-        self.session = Session()
+        self.session = MedusaSession()
         self.url = 'https://new.boxcar.io/api/notifications'
 
     def test_notify(self, accesstoken, title='Medusa: Test'):

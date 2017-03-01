@@ -21,12 +21,12 @@
 from __future__ import unicode_literals
 
 from .. import app, common, helpers, logger
-from ..session.core import Session
+from ..session.core import MedusaSession
 
 
 class Notifier(object):
     def __init__(self):
-        self.session = Session()
+        self.session = MedusaSession()
 
     def test_notify(self, pushalot_authorizationtoken):
         return self._sendPushalot(
