@@ -637,6 +637,16 @@
                                         </span>
                                     </label>
                                 </div>
+                                <div class="field-pair" id="torrent_seed_location_option">
+                                    <label>
+                                        <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
+                                            <div class="clear-left"><p>where Transmission will move Torrents after Post-Processing)</p>
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
                                 <div class="field-pair" id="torrent_seed_time_option">
                                     <label>
                                         <span class="component-title" id="torrent_seed_time_label">Minimum seeding time is</span>

@@ -45,7 +45,8 @@ class ConfigSearch(Config):
                    torrent_seed_time=None, torrent_paused=None, torrent_high_bandwidth=None,
                    torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, torrent_checker_frequency=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
-                   ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None):
+                   ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
+                   torrent_seed_location=None):
         """
         Save Search related settings
         """
@@ -125,6 +126,7 @@ class ConfigSearch(Config):
         app.TORRENT_HOST = config.clean_url(torrent_host)
         app.TORRENT_RPCURL = torrent_rpcurl
         app.TORRENT_AUTH_TYPE = torrent_auth_type
+        app.TORRENT_SEED_LOCATION = torrent_seed_location.rstrip('/\\')
 
         app.instance.save_config()
 

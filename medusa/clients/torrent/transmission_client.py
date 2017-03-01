@@ -218,6 +218,32 @@ class TransmissionAPI(GenericClient):
 
         return self.response.json()['result'] == 'success'
 
+    def move_torrent(self, info_hash):
+        """Set new torrent location given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        if not app.TORRENT_SEED_LOCATION:
+            return
+
+        arguments = {
+            'ids': [info_hash],
+            'location': app.TORRENT_SEED_LOCATION,
+            'move': 'true'
+        }
+
+        post_data = json.dumps({
+            'arguments': arguments,
+            'method': 'torrent-set-location',
+        })
+
+        self._request(method='post', data=post_data)
+
+        return self.response.json()['result'] == 'success'
+
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
 
