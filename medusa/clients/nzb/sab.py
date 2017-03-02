@@ -74,11 +74,11 @@ def send_nzb(nzb):
 
     log.debug('Result text from SAB: {0}'.format(jdata))
 
-    result, _ = _checkSabResponse(jdata)
+    result, _ = _check_sab_response(jdata)
     return result
 
 
-def _checkSabResponse(jdata):
+def _check_sab_response(jdata):
     """
     Check response from SAB
 
@@ -108,7 +108,7 @@ def getSabAccesMethod(host=None):
     if not data:
         return False, data
 
-    return _checkSabResponse(data)
+    return _check_sab_response(data)
 
 
 def testAuthentication(host=None, username=None, password=None, apikey=None):
@@ -138,7 +138,7 @@ def testAuthentication(host=None, username=None, password=None, apikey=None):
         return False, data
 
     # check the result and determine if it's good or not
-    result, sabText = _checkSabResponse(data)
+    result, sabText = _check_sab_response(data)
     if not result:
         return False, sabText
 
