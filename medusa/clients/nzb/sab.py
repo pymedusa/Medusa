@@ -66,8 +66,8 @@ def send_nzb(nzb):
         jdata = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
     elif nzb.resultType == 'nzbdata':
         params['mode'] = 'addfile'
-        multiPartParams = {'nzbfile': (nzb.name + '.nzb', nzb.extraInfo[0])}
-        jdata = helpers.get_url(url, params=params, file=multiPartParams, session=session, returns='json', verify=False)
+        multi_part_params = {'nzbfile': (nzb.name + '.nzb', nzb.extraInfo[0])}
+        jdata = helpers.get_url(url, params=params, file=multi_part_params, session=session, returns='json', verify=False)
 
     if not jdata:
         log.info('Error connecting to sab, no data returned')
