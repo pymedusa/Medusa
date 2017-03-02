@@ -229,7 +229,8 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
             #  As is a hardlink/symlink we can't keep the extracted file in the folder
             #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
             #  That's why we don't check for app.DELRARCONTENTS here.
-            delete_files(path, rarContent, result)
+            # Don't delete extracted video file if it was Postponed by missing subtitles
+            delete_files(path, set(rarContent) - set(videoInRar), result)
             for video in set(videoFiles) - set(videoInRar):
                 process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
         elif app.DELRARCONTENTS and videoInRar:
