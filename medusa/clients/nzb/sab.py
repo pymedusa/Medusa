@@ -17,12 +17,13 @@ from medusa import (
     helpers,
 )
 
+import requests
 from requests.compat import urljoin
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
-session = helpers.make_session()
+session = requests.Session()
 
 
 def send_nzb(nzb):
