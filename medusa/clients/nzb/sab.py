@@ -19,8 +19,8 @@ from medusa import (
 
 from requests.compat import urljoin
 
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 session = helpers.make_session()
 
@@ -56,7 +56,7 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
     if nzb.priority:
         params['priority'] = 2 if app.SAB_FORCED else 1
 
-    logger.info('Sending NZB to SABnzbd')
+    log.info('Sending NZB to SABnzbd')
     url = urljoin(app.SAB_HOST, 'api')
 
     if nzb.resultType == 'nzb':
@@ -69,10 +69,10 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
         jdata = helpers.get_url(url, params=params, file=multiPartParams, session=session, returns='json', verify=False)
 
     if not jdata:
-        logger.info('Error connecting to sab, no data returned')
+        log.info('Error connecting to sab, no data returned')
         return False
 
-    logger.debug('Result text from SAB: {0}'.format(jdata))
+    log.debug('Result text from SAB: {0}'.format(jdata))
 
     result, _ = _checkSabResponse(jdata)
     return result
@@ -87,9 +87,9 @@ def _checkSabResponse(jdata):
     """
     if 'error' in jdata:
         if jdata['error'] == 'API Key Incorrect':
-            logger.warning("Sabnzbd's API key is incorrect")
+            log.warning("Sabnzbd's API key is incorrect")
         else:
-            logger.error('Sabnzbd encountered an error: {0}'.format(jdata['error']))
+            log.error('Sabnzbd encountered an error: {0}'.format(jdata['error']))
         return False, jdata['error']
     else:
         return True, jdata
