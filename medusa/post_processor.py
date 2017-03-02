@@ -28,7 +28,7 @@ from collections import OrderedDict
 import adba
 
 import rarfile
-from rarfile import Error as RarError
+from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
 
@@ -290,6 +290,8 @@ class PostProcessor(object):
         for rar in rars:
             try:
                 content = rarfile.RarFile(rar).namelist()
+            except NeedFirstVolume:
+                continue
             except RarError as e:
                 logger.log(u'An error occurred while reading the following RAR file: {name}. '
                            u'Error: {message}'.format(name=rar, message=e), logger.WARNING)
