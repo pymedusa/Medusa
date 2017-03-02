@@ -275,7 +275,7 @@ class Home(WebRoot):
 
         connection, acces_msg = sab.get_sab_acces_method(host)
         if connection:
-            authed, auth_msg = sab.testAuthentication(host, username, password, apikey)  # @UnusedVariable
+            authed, auth_msg = sab.test_authentication(host, username, password, apikey)  # @UnusedVariable
             if authed:
                 return 'Success. Connected and authenticated'
             else:

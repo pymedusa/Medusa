@@ -111,7 +111,7 @@ def get_sab_acces_method(host=None):
     return _check_sab_response(data)
 
 
-def testAuthentication(host=None, username=None, password=None, apikey=None):
+def test_authentication(host=None, username=None, password=None, apikey=None):
     """
     Sends a simple API request to SAB to determine if the given connection information is connect
 
