@@ -95,7 +95,7 @@ def _check_sab_response(jdata):
         return True, jdata
 
 
-def getSabAccesMethod(host=None):
+def get_sab_acces_method(host=None):
     """
     Find out how we should connect to SAB
 
