@@ -139,8 +139,8 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
         return False, data
 
     # check the result and determine if it's good or not
-    result, sabText = _check_sab_response(data)
+    result, sab_text = _check_sab_response(data)
     if not result:
-        return False, sabText
+        return False, sab_text
 
     return True, 'Success'
