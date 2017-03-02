@@ -25,7 +25,7 @@ log.addHandler(logging.NullHandler())
 session = helpers.make_session()
 
 
-def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branches, too-many-statements
+def send_nzb(nzb):
     """
     Sends an NZB to SABnzbd via the API.
 
