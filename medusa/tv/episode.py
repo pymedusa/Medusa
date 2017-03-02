@@ -711,7 +711,7 @@ class Episode(TV):
                 self.show.airs,
                 self.show.network
             )
-        ).isoformat('T')
+        ).isoformat(b'T')
         data = OrderedDict([
             ('identifier', self.identifier),
             ('id', OrderedDict([
