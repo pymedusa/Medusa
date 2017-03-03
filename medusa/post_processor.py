@@ -1151,11 +1151,11 @@ class PostProcessor(object):
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if release_name is not None:
-            failed_history.log_success(release_name)
+        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        if nzb_release_name is not None:
+            failed_history.log_success(nzb_release_name)
         else:
-            self._log(u"Couldn't determine release name, aborting", logger.WARNING)
+            self._log(u"Couldn't determine NZB release name, aborting", logger.WARNING)
 
         # find the destination folder
         try:
@@ -1269,18 +1269,21 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        if app.USE_TORRENTS and app.TORRENT_SEED_LOCATION:
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
             logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
             try:
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 if self.info_hash and client.move_torrent(self.info_hash):
-                    logger.log('Moved torrent with hash: {hash} to: {path}'.format
-                               (hash=self.info_hash, path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
+                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
+                               logger.WARNING)
                 else:
-                    logger.log('Could not move torrent with hash: {hash} to: {path}. Check logs.'.format
-                               (hash=self.info_hash, path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                    logger.log("Could not move from '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
+                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
             except Exception as e:
-                logger.log('Failed to move torrent with hash: {hash} to: {path}. Error: {error}'.format
-                           (hash=self.info_hash, path=app.TORRENT_SEED_LOCATION, error=e), logger.DEBUG)
+                logger.log("Failed to move from '{release}' torrent with hash: {hash} to: '{path}'."
+                           "Error: {error}".format(release=self.release_name, hash=self.info_hash,
+                                                   path=app.TORRENT_SEED_LOCATION, error=e), logger.DEBUG)
 
         return True
