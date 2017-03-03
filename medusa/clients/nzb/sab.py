@@ -12,10 +12,7 @@ from __future__ import unicode_literals
 import datetime
 import logging
 
-from medusa import (
-    app,
-    helpers,
-)
+from medusa import app
 
 import requests
 from requests.compat import urljoin
@@ -24,6 +21,12 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 session = requests.Session()
+session.params.update({
+    'output': 'json',
+    'ma_username': app.SAB_USERNAME,
+    'ma_password': app.SAB_PASSWORD,
+    'apikey': app.SAB_APIKEY,
+})
 
 
 def send_nzb(nzb):
@@ -43,16 +46,11 @@ def send_nzb(nzb):
             category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.show.is_anime else app.SAB_CATEGORY_BACKLOG
 
     # set up a dict with the URL params in it
-    params = {'output': 'json'}
-    if app.SAB_USERNAME:
-        params['ma_username'] = app.SAB_USERNAME
-    if app.SAB_PASSWORD:
-        params['ma_password'] = app.SAB_PASSWORD
-    if app.SAB_APIKEY:
-        params['apikey'] = app.SAB_APIKEY
-
-    if category:
-        params['cat'] = category
+    params = {
+        'cat': category,
+        'mode': 'addurl',
+        'name': nzb.url,
+    }
 
     if nzb.priority:
         params['priority'] = 2 if app.SAB_FORCED else 1
@@ -60,23 +58,17 @@ def send_nzb(nzb):
     log.info('Sending NZB to SABnzbd')
     url = urljoin(app.SAB_HOST, 'api')
 
-    if nzb.resultType == 'nzb':
-        params['mode'] = 'addurl'
-        params['name'] = nzb.url
-        jdata = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
-    elif nzb.resultType == 'nzbdata':
-        params['mode'] = 'addfile'
-        multi_part_params = {'nzbfile': (nzb.name + '.nzb', nzb.extraInfo[0])}
-        jdata = helpers.get_url(url, params=params, file=multi_part_params, session=session, returns='json', verify=False)
+    response = session.get(url, params=params, verify=False)
 
-    if not jdata:
+    try:
+        data = response.json()
+    except ValueError:
         log.info('Error connecting to sab, no data returned')
-        return False
-
-    log.debug('Result text from SAB: {0}'.format(jdata))
-
-    result, _ = _check_sab_response(jdata)
-    return result
+    else:
+        log.debug('Result text from SAB: {0}'.format(data))
+        result, text = _check_sab_response(data)
+        del text
+        return result
 
 
 def _check_sab_response(jdata):
@@ -86,14 +78,14 @@ def _check_sab_response(jdata):
     :param jdata: Response from requests api call
     :return: a list of (Boolean, string) which is True if SAB is not reporting an error
     """
-    if 'error' in jdata:
-        if jdata['error'] == 'API Key Incorrect':
-            log.warning("Sabnzbd's API key is incorrect")
-        else:
-            log.error('Sabnzbd encountered an error: {0}'.format(jdata['error']))
-        return False, jdata['error']
-    else:
-        return True, jdata
+    error = jdata.get('error')
+
+    if error == 'API Key Incorrect':
+        log.warning("Sabnzbd's API key is incorrect")
+    elif error:
+        log.error('Sabnzbd encountered an error: {0}'.format(error))
+
+    return not error, error or jdata
 
 
 def get_sab_access_method(host=None):
@@ -103,13 +95,15 @@ def get_sab_access_method(host=None):
     :param host: hostname where SAB lives
     :return: (boolean, string) with True if method was successful
     """
-    params = {'mode': 'auth', 'output': 'json'}
     url = urljoin(host, 'api')
-    data = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
-    if not data:
-        return False, data
+    response = session.get(url, params={'mode': 'auth'}, verify=False)
 
-    return _check_sab_response(data)
+    try:
+        data = response.json()
+    except ValueError:
+        return False, response
+    else:
+        return _check_sab_response(data)
 
 
 def test_authentication(host=None, username=None, password=None, apikey=None):
@@ -122,25 +116,19 @@ def test_authentication(host=None, username=None, password=None, apikey=None):
     :param apikey: The API key to provide to SAB
     :return: A tuple containing the success boolean and a message
     """
-
-    # build up the URL parameters
-    params = {
-        'mode': 'queue',
-        'output': 'json',
+    session.params.update({
         'ma_username': username,
         'ma_password': password,
-        'apikey': apikey
-    }
-
+        'apikey': apikey,
+    })
     url = urljoin(host, 'api')
 
-    data = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
-    if not data:
-        return False, data
-
-    # check the result and determine if it's good or not
-    result, sab_text = _check_sab_response(data)
-    if not result:
-        return False, sab_text
-
-    return True, 'Success'
+    response = session.get(url, params={'mode': 'queue'}, verify=False)
+    try:
+        data = response.json()
+    except ValueError:
+        return False, response
+    else:
+        # check the result and determine if it's good or not
+        result, sab_text = _check_sab_response(data)
+        return result, 'success' if result else sab_text
