@@ -1,26 +1,11 @@
 # coding=utf-8
-# Authors:
-# Pedro Jose Pereira Vieito <pvieito@gmail.com> (Twitter: @pvieito)
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-#
 
-# Uses the Synology Download Station API:
-# http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf
-"""Synology Download Station Client."""
+"""
+Synology Download Station Client.
+
+Uses the Synology Download Station API:
+http://download.synology.com/download/Document/DeveloperGuide/Synology_Download_Station_Web_API.pdf
+"""
 
 from __future__ import unicode_literals
 
@@ -31,11 +16,13 @@ import re
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.helpers import handle_requests_exception
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class DownloadStationAPI(GenericClient):
@@ -87,7 +74,7 @@ class DownloadStationAPI(GenericClient):
             self.auth = jdata.get('success')
             if not self.auth:
                 error_code = jdata.get('error', {}).get('code')
-                logger.info(self.error_map.get(error_code, jdata))
+                log.info(self.error_map.get(error_code, jdata))
                 self.session.cookies.clear()
 
             return self.auth
@@ -190,7 +177,8 @@ class DownloadStationAPI(GenericClient):
             jdata = self.response.json()
             version_string = jdata.get('data', {}).get('version_string')
             if not version_string:
-                logger.warning('Could not get the version string from DSM: {response}', response=jdata)
+                log.warning('Could not get the version string from DSM:'
+                            ' {response}', {'response': jdata})
                 return False
 
             if version_string.startswith('DSM 6'):
@@ -221,12 +209,15 @@ class DownloadStationAPI(GenericClient):
                         if destination and os.path.isabs(destination):
                             torrent_path = re.sub(r'^/volume\d/', '', destination).lstrip('/')
                         else:
-                            logger.info('Default destination could not be determined for DSM6: {response}',
-                                        response=jdata)
+                            log.info('Default destination could not be'
+                                     ' determined for DSM6: {response}',
+                                     {'response': jdata})
+
                             return False
 
         if destination or torrent_path:
-            logger.info('Destination is now {path}', path=torrent_path or destination)
+            log.info('Destination is now {path}',
+                     {'path': torrent_path or destination})
 
         self.checked_destination = True
         self.destination = torrent_path
