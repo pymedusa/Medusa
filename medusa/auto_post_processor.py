@@ -54,6 +54,6 @@ class PostProcessor(object):
                              folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            process_tv.processDir(app.TV_DOWNLOAD_DIR, force=force)
+            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).process(force=force)
         finally:
             self.amActive = False
