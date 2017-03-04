@@ -65,7 +65,6 @@
         <script type="text/javascript" src="js/lib/loglevel.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/timeago.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
