@@ -52,6 +52,13 @@ MEDUSA.common.init = function() {
         scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
     });
 
+    // Hover Dropdown for Nav
+    $('ul.nav li.dropdown').hover(function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+    }, function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
+    });
+
     // function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
         hex = String(hex).replace(/[^0-9a-f]/gi, '');

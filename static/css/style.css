@@ -4310,3 +4310,9 @@ CSS helper classes
 .scroll-top-wrapper i.fa {
     line-height: inherit;
 }
+
+/* CSS for Nav dropdown hover
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+*/
