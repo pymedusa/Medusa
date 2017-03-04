@@ -64,7 +64,6 @@
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/loglevel.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
