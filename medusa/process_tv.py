@@ -43,7 +43,7 @@ class ProcessResult(object):
 
         self._output = []
         self.directory = path
-        self._process_method = process_method
+        self.process_method = process_method
         self._video_files = []
 
         self.result = True
@@ -83,14 +83,6 @@ class ProcessResult(object):
     @property
     def paths(self):
         return [p for p in self._get_paths() if self.should_process(p)]
-
-    @property
-    def process_method(self):
-        return self._process_method
-
-    @process_method.setter
-    def process_method(self, value):
-        self._process_method = value
 
     @property
     def video_files(self):
