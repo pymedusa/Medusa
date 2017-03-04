@@ -82,7 +82,16 @@ class ProcessResult(object):
 
     @property
     def paths(self):
-        return [p for p in self._get_paths() if self.should_process(p)]
+        """Return the paths we are going to try to process."""
+        if self.directory:
+            for root, dirs, files in os.walk(self.directory):
+                del files  # unused variable
+                if self.directory == root:
+                    yield root
+                for folder in dirs:
+                    path = os.path.join(root, folder)
+                    yield path
+                break
 
     @property
     def video_files(self):
@@ -119,7 +128,7 @@ class ProcessResult(object):
         if app.POSTPONE_IF_NO_SUBS:
             self._log("Feature 'postpone post-processing if no subtitle available' is enabled.")
 
-        for path in self._get_paths():
+        for path in self.paths:
 
             if not self.should_process(path, nzb_name, failed):
                 continue
@@ -179,20 +188,6 @@ class ProcessResult(object):
                 self._log('{0}'.format(missedfile), logger.WARNING)
 
         return self.output
-
-    def _get_paths(self):
-        """Return the paths we are going to try to process."""
-        if not self.directory:
-            return
-
-        for root, dirs, files in os.walk(self.directory):
-            del files  # unused variable
-            if self.directory == root:
-                yield root
-            for folder in dirs:
-                path = os.path.join(root, folder)
-                yield path
-            break
 
     def should_process(self, path, nzb_name=None, failed=False):
         """
