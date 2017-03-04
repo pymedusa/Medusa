@@ -13,12 +13,13 @@ import datetime
 import logging
 
 from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 
 import requests
 from requests.compat import urljoin
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 session = requests.Session()
 session.params.update({
@@ -65,7 +66,7 @@ def send_nzb(nzb):
     except ValueError:
         log.info('Error connecting to sab, no data returned')
     else:
-        log.debug('Result text from SAB: {0}'.format(data))
+        log.debug('Result text from SAB: {0}', data)
         result, text = _check_sab_response(data)
         del text
         return result
@@ -83,7 +84,7 @@ def _check_sab_response(jdata):
     if error == 'API Key Incorrect':
         log.warning("Sabnzbd's API key is incorrect")
     elif error:
-        log.error('Sabnzbd encountered an error: {0}'.format(error))
+        log.error('Sabnzbd encountered an error: {0}', error)
 
     return not error, error or jdata
 
