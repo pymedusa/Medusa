@@ -1,21 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-# pylint:disable=too-many-lines
+
 """Various helper methods."""
 
 import base64
@@ -63,6 +47,7 @@ from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_exceptions import IndexerException
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
 
 import requests
@@ -71,7 +56,8 @@ from requests.compat import urlparse
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 try:
@@ -125,7 +111,8 @@ def is_media_file(filename):
 
         return sep_file[2].lower() in media_extensions
     except TypeError as error:  # Not a string
-        logger.debug('Invalid filename. Filename must be a string. {error}', error=error)
+        log.debug(u'Invalid filename. Filename must be a string. {error}',
+                  {'error': error})
         return False
 
 
@@ -221,7 +208,8 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
         t = indexer_api.indexer(**indexer_api_params)
 
         for name in show_names:
-            logger.debug(u'Trying to find {name} on {api_name}', name=name, api_name=indexer_api.name)
+            log.debug(u'Trying to find {name} on {indexer}',
+                      {'name': name, 'indexer': indexer_api.name})
 
             try:
                 search = t[indexer_id] if indexer_id else t[name]
@@ -241,7 +229,8 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
             if not (seriesname and series_id):
                 continue
             show = Show.find(app.showList, int(series_id))
-            # Check if we can find the show in our list (if not, it's not the right show)
+            # Check if we can find the show in our list
+            # if not, it's not the right show
             if (indexer_id is None) and (show is not None) and (show.indexerid == int(series_id)):
                 return seriesname, i, int(series_id)
             elif (indexer_id is not None) and (int(indexer_id) == int(series_id)):
@@ -295,12 +284,12 @@ def copy_file(src_file, dest_file):
     try:
         shutil.copyfile(src_file, dest_file)
     except (SpecialFileError, Error) as error:
-        logger.warning(u'{error}', error=error)
+        log.warning(error)
     except OSError as error:
         if 'No space left on device' in error:
-            logger.warning(u'{error}', error=error)
+            log.warning(error)
         else:
-            logger.error(u'{error}', error=error)
+            log.error(error)
     else:
         try:
             shutil.copymode(src_file, dest_file)
@@ -352,13 +341,26 @@ def hardlink_file(src_file, dest_file):
     try:
         link(src_file, dest_file)
         fix_set_group_id(dest_file)
-    except OSError as e:
-        if hasattr(e, 'errno') and e.errno == 17:  # File exists. Don't fallback to copy
-            logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}',
-                           source=src_file, dest=dest_file, error=e)
+    except OSError as msg:
+        if hasattr(msg, 'errno') and msg.errno == 17:
+            # File exists. Don't fallback to copy
+            log.warning(
+                u'Failed to create hardlink of {source} at {destination}.'
+                u' Error: {error!r}', {
+                    'source': src_file,
+                    'destination': dest_file,
+                    'error': msg
+                }
+            )
         else:
-            logger.warning(u'Failed to create hardlink of {source} at {dest}. Error: {error!r}. Copying instead',
-                           source=src_file, dest=dest_file, error=e)
+            log.warning(
+                u'Failed to create hardlink of {source} at {destination}.'
+                u' Error: {error!r}. Copying instead', {
+                    'source': src_file,
+                    'dest': dest_file,
+                    'error': msg,
+                }
+            )
             copy_file(src_file, dest_file)
 
 
@@ -392,13 +394,26 @@ def move_and_symlink_file(src_file, dest_file):
         shutil.move(src_file, dest_file)
         fix_set_group_id(dest_file)
         symlink(dest_file, src_file)
-    except OSError as e:
-        if hasattr(e, 'errno') and e.errno == 17:  # File exists. Don't fallback to copy
-            logger.warning(u'Failed to create symlink of {source} at {dest}. Error: {error!r}',
-                           source=src_file, dest=dest_file, error=e)
+    except OSError as msg:
+        if hasattr(msg, 'errno') and msg.errno == 17:
+            # File exists. Don't fallback to copy
+            log.warning(
+                u'Failed to create symlink of {source} at {destination}.'
+                u' Error: {error!r}', {
+                    'source': src_file,
+                    'dest': dest_file,
+                    'error': msg,
+                }
+            )
         else:
-            logger.warning(u'Failed to create symlink of {source} at {dest}. Error: {error!r}. Copying instead',
-                           source=src_file, dest=dest_file, error=e)
+            log.warning(
+                u'Failed to create symlink of {source} at {destination}.'
+                u' Error: {error!r}. Copying instead', {
+                    'source': src_file,
+                    'dest': dest_file,
+                    'error': msg,
+                }
+            )
             copy_file(src_file, dest_file)
 
 
@@ -408,16 +423,18 @@ def make_dirs(path):
     :param path:
     :rtype path: str
     """
-    logger.debug(u'Checking if the path {path} already exists', path=path)
+    log.debug(u'Checking if the path {path} already exists', {'path': path})
 
     if not os.path.isdir(path):
         # Windows, create all missing folders
         if os.name == 'nt' or os.name == 'ce':
             try:
-                logger.debug(u"Folder {path} didn't exist, creating it", path=path)
+                log.debug(u"Folder {path} didn't exist, creating it",
+                          {'path': path})
                 os.makedirs(path)
-            except (OSError, IOError) as e:
-                logger.error(u"Failed creating {path} : {error!r}", path=path, error=e)
+            except (OSError, IOError) as msg:
+                log.error(u"Failed creating {path} : {error!r}",
+                          {'path': path, 'error': msg})
                 return False
 
         # not Windows, create all missing folders and set permissions
@@ -434,16 +451,19 @@ def make_dirs(path):
                     continue
 
                 try:
-                    logger.debug(u"Folder {path} didn't exist, creating it", path=sofar)
+                    log.debug(u"Folder {path} didn't exist, creating it",
+                              {'path': sofar})
                     os.mkdir(sofar)
-                    # use normpath to remove end separator, otherwise checks permissions against itself
+                    # use normpath to remove end separator,
+                    # otherwise checks permissions against itself
                     chmod_as_parent(os.path.normpath(sofar))
 
                     # do the library update for synoindex
                     from medusa import notifiers
                     notifiers.synoindex_notifier.addFolder(sofar)
-                except (OSError, IOError) as e:
-                    logger.error(u'Failed creating {path} : {error!r}', path=sofar, error=e)
+                except (OSError, IOError) as msg:
+                    log.error(u'Failed creating {path} : {error!r}',
+                              {'path': sofar, 'error': msg})
                     return False
 
     return True
@@ -489,10 +509,12 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
 
     # move the file
     try:
-        logger.info(u"Renaming file from '{old}' to '{new}'", old=cur_path, new=new_path)
+        log.info(u"Renaming file from '{old}' to '{new}'",
+                 {'old': cur_path, 'new': new_path})
         shutil.move(cur_path, new_path)
-    except (OSError, IOError) as e:
-        logger.error(u"Failed renaming '{old}' to '{new}' : {error!r}", old=cur_path, new=new_path, error=e)
+    except (OSError, IOError) as msg:
+        log.error(u"Failed renaming '{old}' to '{new}' : {error!r}",
+                  {'old': cur_path, 'new': new_path, 'error': msg})
         return False
 
     # clean up any old folders that are empty
@@ -512,7 +534,8 @@ def delete_empty_folders(top_dir, keep_dir=None):
     if not top_dir or not os.path.isdir(top_dir):
         return
 
-    logger.info(u'Trying to clean any empty folder under {path}'.format(path=top_dir))
+    log.info(u'Trying to clean any empty folder under {path}',
+             {'path': top_dir})
 
     for directory in os.walk(top_dir, topdown=False):
         dirpath = directory[0]
@@ -522,16 +545,19 @@ def delete_empty_folders(top_dir, keep_dir=None):
 
         if dirpath != keep_dir and not os.listdir(dirpath):
             try:
-                logger.info(u'Deleting empty folder: {folder}'.format(folder=dirpath))
+                log.info(u'Deleting empty folder: {folder}',
+                         {'folder': dirpath})
                 os.rmdir(dirpath)
 
                 # Do the library update for synoindex
                 from medusa import notifiers
                 notifiers.synoindex_notifier.deleteFolder(dirpath)
-            except OSError as e:
-                logger.warning(u'Unable to delete {folder}. Error: {error!r}'.format(folder=dirpath, error=e))
+            except OSError as msg:
+                log.warning(u'Unable to delete {folder}. Error: {error!r}',
+                            {'folder': dirpath, 'error': msg})
         else:
-            logger.debug(u'Not deleting {folder}. The folder is not empty or should be kept.'.format(folder=dirpath))
+            log.debug(u'Not deleting {folder}. The folder is not empty'
+                      u' or should be kept.', {'folder': dirpath})
 
 
 def file_bit_filter(mode):
@@ -560,7 +586,8 @@ def chmod_as_parent(child_path):
     parent_path = os.path.dirname(child_path)
 
     if not parent_path:
-        logger.debug(u'No parent path provided in {path}, unable to get permissions from it', path=child_path)
+        log.debug(u'No parent path provided in {path}, unable to get'
+                  u' permissions from it', {'path': child_path})
         return
 
     child_path = os.path.join(parent_path, os.path.basename(child_path))
@@ -586,15 +613,23 @@ def chmod_as_parent(child_path):
     user_id = os.geteuid()
 
     if user_id not in (0, child_path_owner):
-        logger.debug(u'Not running as root or owner of {path}, not trying to set permissions', path=child_path)
+        log.debug(u'Not running as root or owner of {path}, not trying to set'
+                  u' permissions', {'path': child_path})
         return
 
     try:
         os.chmod(child_path, child_mode)
-        logger.debug(u'Setting permissions for {path} to {mode} as parent directory has {parent_mode}',
-                     path=child_path, mode=child_mode, parent_mode=parent_mode)
+        log.debug(
+            u'Setting permissions for {path} to {mode} as parent directory'
+            u' has {parent_mode}', {
+                'path': child_path,
+                'mode': child_mode,
+                'parent_mode': parent_mode
+            }
+        )
     except OSError:
-        logger.debug(u'Failed to set permission for {path} to {mode}', path=child_path, mode=child_mode)
+        log.debug(u'Failed to set permission for {path} to {mode}',
+                  {'path': child_path, 'mode': child_mode})
 
 
 def fix_set_group_id(child_path):
@@ -626,16 +661,19 @@ def fix_set_group_id(child_path):
         user_id = os.geteuid()
 
         if user_id not in (0, child_path_owner):
-            logger.debug(u'Not running as root or owner of {path}, not trying to set the set-group-ID', path=child_path)
+            log.debug(u'Not running as root or owner of {path}, not trying to'
+                      u' set the set-group-ID', {'path': child_path})
             return
 
         try:
             os.chown(child_path, -1, parent_gid)
-            logger.debug(u'Respecting the set-group-ID bit on the parent directory for {path}', path=child_path)
+            log.debug(u'Respecting the set-group-ID bit on the parent'
+                      u' directory for {path}', {'path': child_path})
         except OSError:
-            logger.error(
-                u'Failed to respect the set-group-ID bit on the parent directory for {path} (setting group ID {gid})',
-                path=child_path, gid=parent_gid)
+            log.error(
+                u'Failed to respect the set-group-ID bit on the parent'
+                u' directory for {path} (setting group ID {gid})',
+                {'path': child_path, 'gid': parent_gid})
 
 
 def is_anime_in_show_list():
@@ -672,11 +710,16 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
 
         if len(sql_results) == 1:
             absolute_number = int(sql_results[0][b'absolute_number'])
-            logger.debug(u'Found absolute number {absolute} for show {show} {ep}',
-                         absolute=absolute_number, show=show.name, ep=episode_num(season, episode))
+            log.debug(
+                u'Found absolute number {absolute} for show {show} {ep}', {
+                    'absolute': absolute_number,
+                    'show': show.name,
+                    'ep': episode_num(season, episode),
+                }
+            )
         else:
-            logger.debug(u'No entries for absolute number for show {show} {ep}',
-                         show=show.name, ep=episode_num(season, episode))
+            log.debug(u'No entries for absolute number for show {show} {ep}',
+                      {'show': show.name, 'ep': episode_num(season, episode)})
 
     return absolute_number
 
@@ -693,7 +736,8 @@ def get_all_episodes_from_absolute_number(show, absolute_numbers, indexer_id=Non
             ep = show.get_episode(None, None, absolute_number=absolute_number)
             if ep:
                 episodes.append(ep.episode)
-                # this will always take the last found season so eps that cross the season border are not handeled well
+                # this will always take the last found season so eps that cross
+                # the season border are not handled well
                 season = ep.season
 
     return season, episodes
@@ -739,7 +783,8 @@ def create_https_certificates(ssl_cert, ssl_key):
         from OpenSSL import crypto
         from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA, serial
     except Exception:
-        logger.warning(u'pyopenssl module missing, please install for https access')
+        log.warning(u'pyopenssl module missing, please install for'
+                    u' https access')
         return False
 
     # Create the CA Certificate
@@ -757,7 +802,7 @@ def create_https_certificates(ssl_cert, ssl_key):
         io.open(ssl_key, 'wb').write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
         io.open(ssl_cert, 'wb').write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
     except Exception:
-        logger.error(u'Error creating SSL key and certificate')
+        log.error(u'Error creating SSL key and certificate')
         return False
 
     return True
@@ -779,24 +824,27 @@ def backup_versioned_file(old_file, version):
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.debug(u"Not creating backup, {old_file} doesn't exist", old_file=old_file)
+            log.debug(u"Not creating backup, {old_file} doesn't exist",
+                      {'old_file': old_file})
             break
 
         try:
-            logger.debug(u'Trying to back up {old} to new', old=old_file, new=new_file)
+            log.debug(u'Trying to back up {old} to new',
+                      {'old': old_file, 'new': new_file})
             shutil.copy(old_file, new_file)
-            logger.debug(u"Backup done")
+            log.debug(u"Backup done")
             break
-        except Exception as e:
-            logger.warning(u'Error while trying to back up {old} to {new} : {error!r}',
-                           old=old_file, new=new_file, error=e)
+        except Exception as msg:
+            log.warning(u'Error while trying to back up {old} to {new}:'
+                        u' {error!r}',
+                        {'old': old_file, 'new': new_file, 'error': msg})
             num_tries += 1
             time.sleep(1)
-            logger.debug(u'Trying again.')
+            log.debug(u'Trying again.')
 
         if num_tries >= 10:
-            logger.error(u'Unable to back up {old} to {new} please do it manually.',
-                         old=old_file, new=new_file)
+            log.error(u'Unable to back up {old} to {new}, please do it'
+                      u' manually.', {'old': old_file, 'new': new_file})
             return False
 
     return True
@@ -821,36 +869,43 @@ def restore_versioned_file(backup_file, version):
     restore_file = backup_file
 
     if not os.path.isfile(new_file):
-        logger.debug(u"Not restoring, %s doesn't exist" % new_file)
+        log.debug(u"Not restoring, {file} doesn't exist", {'file': new_file})
         return False
 
     try:
-        logger.debug(u"Trying to backup %s to %s.r%s before restoring backup" % (new_file, new_file, version))
+        log.debug(u'Trying to backup {file} to {file}.r{version} before '
+                  u'restoring backup', {'file': new_file, 'version': version})
 
         shutil.move(new_file, new_file + '.' + 'r' + str(version))
     except Exception as e:
-        logger.warning(u"Error while trying to backup DB file %s before proceeding with restore: %r" %
-                       (restore_file, ex(e)))
+        log.warning(u'Error while trying to backup DB file {name} before'
+                    u' proceeding with restore: {error!r}',
+                    {'name': restore_file, 'error': ex(e)})
         return False
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(restore_file):
-            logger.debug(u"Not restoring, %s doesn't exist" % restore_file)
+            log.debug(u'Not restoring, {file} does not exist',
+                      {'file': restore_file})
             break
 
         try:
-            logger.debug(u"Trying to restore file %s to %s" % (restore_file, new_file))
+            log.debug(u'Trying to restore file {old} to {new}',
+                      {'old': restore_file, 'new': new_file})
             shutil.copy(restore_file, new_file)
-            logger.debug(u"Restore done")
+            log.debug(u"Restore done")
             break
         except Exception as e:
-            logger.warning(u"Error while trying to restore file %s. Error: %r" % (restore_file, ex(e)))
+            log.warning(u'Error while trying to restore file {name}.'
+                        u' Error: {msg!r}',
+                        {'name': restore_file, 'msg': ex(e)})
             num_tries += 1
             time.sleep(1)
-            logger.debug(u"Trying again. Attempt #: %s" % num_tries)
+            log.debug(u'Trying again. Attempt #: {0}', num_tries)
 
         if num_tries >= 10:
-            logger.warning(u"Unable to restore file %s to %s" % (restore_file, new_file))
+            log.warning(u'Unable to restore file {old} to {new}',
+                        {'old': restore_file, 'new': new_file})
             return False
 
     return True
@@ -968,8 +1023,9 @@ def get_show(name, try_indexers=False):
         # add show to cache
         if show and not from_cache:
             name_cache.addNameToCache(name, show.indexerid)
-    except Exception as e:
-        logger.debug(u"Error when attempting to find show: %s. Error: %r " % (name, repr(e)))
+    except Exception as msg:
+        log.debug(u'Error when attempting to find show: {name}.'
+                  u' Error: {msg!r}', {'name': name, 'msg': msg})
 
     return show
 
@@ -1034,21 +1090,22 @@ def validate_show(show, season=None, episode=None):
 def set_up_anidb_connection():
     """Connect to anidb."""
     if not app.USE_ANIDB:
-        logger.debug(u"Usage of anidb disabled. Skiping")
+        log.debug(u'Usage of anidb disabled. Skipping')
         return False
 
     if not app.ANIDB_USERNAME and not app.ANIDB_PASSWORD:
-        logger.debug(u"anidb username and/or password are not set. Aborting anidb lookup.")
+        log.debug(u'anidb username and/or password are not set.'
+                  u' Aborting anidb lookup.')
         return False
 
     if not app.ADBA_CONNECTION:
         def anidb_logger(msg):
-            return logger.debug(u"anidb: %s " % msg)
+            return log.debug(u'anidb: {0}', msg)
 
         try:
             app.ADBA_CONNECTION = adba.Connection(keepAlive=True, log=anidb_logger)
-        except Exception as e:
-            logger.warning(u"anidb exception msg: %r " % repr(e))
+        except Exception as error:
+            log.warning(u'anidb exception msg: {0!r}', error)
             return False
 
     try:
@@ -1056,8 +1113,8 @@ def set_up_anidb_connection():
             app.ADBA_CONNECTION.auth(app.ANIDB_USERNAME, app.ANIDB_PASSWORD)
         else:
             return True
-    except Exception as e:
-        logger.warning(u"anidb exception msg: %r " % repr(e))
+    except Exception as error:
+        log.warning(u'anidb exception msg: {0!r}', error)
         return False
 
     return app.ADBA_CONNECTION.authed()
@@ -1077,8 +1134,8 @@ def backup_config_zip(file_list, archive, arcname=None):
             a.write(f, os.path.relpath(f, arcname))
         a.close()
         return True
-    except Exception as e:
-        logger.error(u'Zip creation error: {error!r} ', error=e)
+    except Exception as error:
+        log.error(u'Zip creation error: {0!r} ', error)
         return False
 
 
@@ -1104,8 +1161,8 @@ def restore_config_zip(archive, target_dir):
             zip_file.extract(member, target_dir)
         zip_file.close()
         return True
-    except Exception as e:
-        logger.error(u'Zip extraction error: {error!r}', error=e)
+    except Exception as error:
+        log.error(u'Zip extraction error: {0!r}', error)
         shutil.rmtree(target_dir)
         return False
 
@@ -1151,7 +1208,7 @@ def request_defaults(kwargs):
 
     # request session proxies
     if app.PROXY_SETTING:
-        logger.debug(u"Using global proxy: " + app.PROXY_SETTING)
+        log.debug(u'Using global proxy: {0}', app.PROXY_SETTING)
         scheme, address = splittype(app.PROXY_SETTING)
         address = app.PROXY_SETTING if scheme else 'http://' + app.PROXY_SETTING
         proxies = {
@@ -1165,7 +1222,7 @@ def request_defaults(kwargs):
 
 
 def prepare_cf_req(session, request):
-    logger.debug(u'CloudFlare protection detected, trying to bypass it.')
+    log.debug(u'CloudFlare protection detected, trying to bypass it.')
 
     try:
         tokens, user_agent = cfscrape.get_tokens(request.url)
@@ -1177,10 +1234,11 @@ def prepare_cf_req(session, request):
             request.headers.update({u'User-Agent': user_agent})
         else:
             request.headers = {u'User-Agent': user_agent}
-        logger.debug(u'CloudFlare protection successfully bypassed.')
+        log.debug(u'CloudFlare protection successfully bypassed.')
         return session.prepare_request(request)
     except (ValueError, AttributeError) as error:
-        logger.warning(u"Couldn't bypass CloudFlare's anti-bot protection. Error: {err_msg}", err_msg=error)
+        log.warning(u'Could not bypass CloudFlare anti-bot protection.'
+                    u' Error: {0}', error)
 
 
 def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
@@ -1207,28 +1265,38 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
                     if cf_resp.ok:
                         return cf_resp
 
-            logger.debug(u'Requested url {url} returned status code {status}: {desc}'.format
-                         (url=resp.url, status=resp.status_code, desc=http_code_description(resp.status_code)))
+            log.debug(
+                u'Requested url {url} returned status code {status}:'
+                u' {description}', {
+                    'url': resp.url,
+                    'status': resp.status_code,
+                    'description': http_code_description(resp.status_code),
+                }
+            )
 
             if response_type and response_type != u'response':
                 return None
 
-    except requests.exceptions.RequestException as e:
-        logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
+    except requests.exceptions.RequestException as error:
+        log.debug(u'Error requesting url {url}. Error: {msg}',
+                  {'url': url, 'err_msg': error})
         return None
-    except Exception as e:
-        if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
-            logger.warning(u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=e))
+    except Exception as error:
+        if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
+            log.warning(u'Connection reset by peer accessing url {url}.'
+                        u' Error: {msg}', {'url': url, 'msg': error})
         else:
-            logger.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
-            logger.debug(traceback.format_exc())
+            log.info(u'Unknown exception in url {url}.'
+                     u' Error: {msg}', {'url': url, 'msg': error})
+            log.debug(traceback.format_exc())
         return None
 
     if not response_type or response_type == u'response':
         return resp
     else:
-        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the near future!'.format
-                      (response_type, 'response'), PendingDeprecationWarning)
+        warnings.warn(u'Returning {0} instead of {1} will be deprecated in the'
+                      u' near future!'.format(response_type, 'response'),
+                      PendingDeprecationWarning)
         if response_type == u'json':
             try:
                 return resp.json()
@@ -1255,8 +1323,14 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                                  hooks=hooks, proxies=proxies)) as resp:
 
             if not resp.ok:
-                logger.debug(u'Requested download URL {url} returned status code is {code}: {description}'.format
-                             (url=url, code=resp.status_code, description=http_code_description(resp.status_code)))
+                log.debug(
+                    u'Requested download URL {url} returned'
+                    u' status code {code}: {description}', {
+                        'url': url,
+                        'code': resp.status_code,
+                        'description': http_code_description(resp.status_code),
+                    }
+                )
                 return False
 
             try:
@@ -1267,25 +1341,33 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
                             fp.flush()
 
                 chmod_as_parent(filename)
-            except OSError as e:
+            except OSError as msg:
                 remove_file_failed(filename)
-                logger.warning(u'Problem setting permissions or writing file to: {location}. Error: {error}'.format
-                               (location=filename, error=e))
+                log.warning(
+                    u'Problem setting permissions or writing file'
+                    u' to: {location}. Error: {msg}', {
+                        'location': filename,
+                        'msg': msg,
+                    }
+                )
                 return False
 
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as msg:
         remove_file_failed(filename)
-        logger.warning(u'Error requesting download URL: {url}. Error: {error}'.format(url=url, error=e))
+        log.warning(u'Error requesting download URL: {url}. Error: {error}',
+                    {'url': url, 'error': msg})
         return False
-    except EnvironmentError as e:
+    except EnvironmentError as msg:
         remove_file_failed(filename)
-        logger.warning(u'Unable to save the file: {name}. Error: {error}'.format(name=filename, error=e))
+        log.warning(u'Unable to save the file: {name}. Error: {error}',
+                    {'name': filename, 'error': msg})
         return False
-    except Exception as e:
+    except Exception as msg:
         remove_file_failed(filename)
-        logger.error(u'Unknown exception while downloading file {name} from URL: {url}. Error: {error}'.format
-                     (name=filename, url=url, error=e))
-        logger.debug(traceback.format_exc())
+        log.error(u'Unknown exception while downloading file {name}'
+                  u' from URL: {url}. Error: {error}',
+                  {'name': filename, 'url': url, 'error': msg})
+        log.debug(traceback.format_exc())
         return False
 
     return True
@@ -1297,19 +1379,24 @@ def handle_requests_exception(requests_exception):
         raise requests_exception
     except requests.exceptions.SSLError as error:
         if ssl.OPENSSL_VERSION_INFO < (1, 0, 1, 5):
-            logger.info("SSL Error requesting url: '{0}' You have {1}, try upgrading OpenSSL to 1.0.1e+".format(
-                error.request.url, ssl.OPENSSL_VERSION))
+            log.info(
+                u'SSL Error requesting: {url} You have {version},'
+                u' try upgrading OpenSSL to 1.0.1e+',
+                {'url': error.request.url, 'version': ssl.OPENSSL_VERSION})
         if app.SSL_VERIFY:
-            logger.info(
-                "SSL Error requesting url: '{0}'. Disable Cert Verification on the advanced tab of /config/general")
-        logger.debug(default.format(error))
-        logger.debug(traceback.format_exc())
+            log.info(
+                u'SSL Error requesting url: {url}. Disable Cert Verification'
+                u' on the advanced tab of /config/general',
+                {'url': error.request.url}
+            )
+        log.debug(default.format(error))
+        log.debug(traceback.format_exc())
 
     except requests.exceptions.RequestException as error:
-        logger.info(default.format(error))
+        log.info(default.format(error))
     except Exception as error:
-        logger.error(default.format(error))
-        logger.debug(traceback.format_exc())
+        log.error(default.format(error))
+        log.debug(traceback.format_exc())
 
 
 def get_size(start_path='.'):
@@ -1327,15 +1414,16 @@ def get_size(start_path='.'):
             fp = os.path.join(dirpath, f)
             try:
                 total_size += os.path.getsize(fp)
-            except OSError as e:
-                logger.error(u"Unable to get size for file %s Error: %r" % (fp, ex(e)))
-                logger.debug(traceback.format_exc())
+            except OSError as error:
+                log.error(u'Unable to get size for file {name} Error: {msg!r}',
+                          {'name': fp, 'msg': ex(error)})
+                log.debug(traceback.format_exc())
     return total_size
 
 
 def generate_api_key():
     """Return a new randomized API_KEY."""
-    logger.info(u"Generating New API key")
+    log.info(u'Generating New API key')
     secure_hash = hashlib.sha512(str(time.time()))
     secure_hash.update(str(random.SystemRandom().getrandbits(4096)))
     return secure_hash.hexdigest()[:32]
@@ -1363,25 +1451,28 @@ def verify_freespace(src, dest, oldfile=None):
     if not isinstance(oldfile, list):
         oldfile = [oldfile]
 
-    logger.debug(u"Trying to determine free space on destination drive")
+    log.debug(u'Trying to determine free space on destination drive')
 
     if not os.path.isfile(src):
-        logger.warning("A path to a file is required for the source. {0} is not a file.".format(src))
+        log.warning(u'A path to a file is required for the source.'
+                    u' {source} is not a file.', {'source': src})
         return True
 
     try:
         diskfree = get_disk_space_usage(dest, None)
         if not diskfree:
-            logger.warning(u"Unable to determine the free space on your OS.")
+            log.warning(u'Unable to determine the free space on your OS.')
             return True
     except Exception:
-        logger.warning(u"Unable to determine free space, so I will assume there is enough.")
+        log.warning(u'Unable to determine free space, assuming there is '
+                    u'enough.')
         return True
 
     try:
         neededspace = os.path.getsize(src)
-    except OSError as e:
-        logger.warning(u'Unable to determine needed space. Aborting. Error: {error_msg}'.format(error_msg=e))
+    except OSError as error:
+        log.warning(u'Unable to determine needed space. Aborting.'
+                    u' Error: {msg}', {'msg': error})
         return False
 
     if oldfile:
@@ -1392,8 +1483,13 @@ def verify_freespace(src, dest, oldfile=None):
     if diskfree > neededspace:
         return True
     else:
-        logger.warning(u"Not enough free space. Needed: {0} bytes ({1}), found: {2} bytes ({3})".format
-                       (neededspace, pretty_file_size(neededspace), diskfree, pretty_file_size(diskfree)))
+        log.warning(
+            u'Not enough free space.'
+            u' Needed: {0} bytes ({1}),'
+            u' found: {2} bytes ({3})',
+            neededspace, pretty_file_size(neededspace),
+            diskfree, pretty_file_size(diskfree)
+        )
         return False
 
 
@@ -1513,7 +1609,8 @@ def get_tvdb_from_id(indexer_id, indexer):
         tvdb_id = data['externals']['thetvdb']
         return tvdb_id
 
-    # If indexer is IMDB and we've still not returned a tvdb_id, let's try to use tvmaze's api, to get the tvdbid
+    # If indexer is IMDB and we've still not returned a tvdb_id,
+    # let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
         url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
         data = get_url(url, session=session, returns='json')
@@ -1531,20 +1628,25 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
     if lang:
         indexer_api_params['language'] = lang
 
-    logger.info(u"{indexer_name}:{params!r}", indexer_name=indexerApi(indexer).name, params=indexer_api_params)
+    log.info(u'{0}: {1!r}', indexerApi(indexer).name, indexer_api_params)
 
+    s = None
     try:
         t = indexerApi(indexer).indexer(**indexer_api_params)
         s = t[int(indexer_id)]
-    except IndexerException as e:
-        logger.warning("Can't get showname for indexer {indexer_name} and indexer_id {indexer_id} in language {lang} "
-                       "with cause: {cause}",
-                       indexer_name=indexerApi(indexer).name, indexer_id=indexer_id, lang=lang, cause=e)
+    except IndexerException as msg:
+        log.warning(
+            'Show name unavailable for {name} id {id} in {language}:'
+            ' {reason}', {
+                'name': indexerApi(indexer).name,
+                'id': indexer_id,
+                'language': lang,
+                'reason': msg,
+            }
+        )
 
-    if hasattr(s, 'data'):
-        return s.data.get('seriesname')
-
-    return None
+    data = getattr(s, 'data', {})
+    return data.get('seriesname')
 
 
 # http://stackoverflow.com/a/20380514
@@ -1588,8 +1690,9 @@ def remove_folder(folder_path, level=logging.WARNING):
     if os.path.exists(folder_path):
         try:
             shutil.rmtree(folder_path)
-        except OSError as e:
-            logger.log(level, u'Unable to remove directory {folder}: {cause!r}', folder=folder_path, cause=e)
+        except OSError as error:
+            log.log(level, u'Unable to remove directory {folder}: {reason!r}',
+                    {'folder': folder_path, 'reason': error})
 
 
 def is_ip_private(ip):
@@ -1679,7 +1782,7 @@ def get_broken_providers():
     # Check if last broken providers update happened less than 60 minutes ago
     if app.BROKEN_PROVIDERS_UPDATE and isinstance(app.BROKEN_PROVIDERS_UPDATE, datetime.datetime) and \
             (datetime.datetime.now() - app.BROKEN_PROVIDERS_UPDATE).seconds < 3600:
-        logger.debug('Broken providers already updated in the last hour')
+        log.debug('Broken providers already updated in the last hour')
         return
 
     # Update last broken providers update-timestamp to avoid updating again in less than 60 minutes
@@ -1688,12 +1791,13 @@ def get_broken_providers():
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
     response = get_url(url, session=make_session(), returns='json')
     if response is None:
-        logger.warning('Unable to update the list with broken providers. '
-                       'This list is used to disable broken providers. '
-                       'You may encounter errors in the logfiles if you are using a broken provider.')
+        log.warning('Unable to update the list with broken providers.'
+                    ' This list is used to disable broken providers.'
+                    ' You may encounter errors in the log files if you are'
+                    ' using a broken provider.')
         return []
 
-    logger.info('Broken providers found: {0}'.format(response))
+    log.info('Broken providers found: {0}', response)
     return ','.join(response)
 
 
