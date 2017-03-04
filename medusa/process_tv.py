@@ -44,8 +44,6 @@ class ProcessResult(object):
         self._output = []
         self.directory = path
         self.process_method = process_method
-        self._video_files = []
-
         self.result = True
         self.succeeded = True
         self.missedfiles = []
@@ -95,11 +93,11 @@ class ProcessResult(object):
 
     @property
     def video_files(self):
-        return self._video_files
+        return getattr(self, '_video_files', [])
 
     @video_files.setter
     def video_files(self, value):
-        self._video_files = value
+        setattr(self, '_video_files', value)
 
     @property
     def output(self):
