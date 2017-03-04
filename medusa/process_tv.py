@@ -42,7 +42,7 @@ class ProcessResult(object):
     def __init__(self, path, process_method=None):
 
         self._output = []
-        self._directory = self._get_root_dir(path)
+        self.directory = path
         self._process_method = process_method
         self._video_files = []
 
@@ -53,11 +53,32 @@ class ProcessResult(object):
 
     @property
     def directory(self):
-        return self._directory
+        return getattr(self, '_directory')
 
     @directory.setter
     def directory(self, path):
-        self._directory = self._get_root_dir(path)
+        """Return the root directory we are going to process."""
+        directory = None
+        if os.path.isdir(path):
+            self._log('Processing path: {0}'.format(path), logger.DEBUG)
+            directory = os.path.realpath(path)
+
+        # If the client and the application are not on the same machine,
+        # translate the directory into a network directory
+        elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),
+                  os.path.normpath(path) == os.path.normpath(app.TV_DOWNLOAD_DIR)]):
+            directory = os.path.join(
+                app.TV_DOWNLOAD_DIR,
+                os.path.abspath(path).split(os.path.sep)[-1]
+            )
+            self._log('Trying to use folder: {0}'.format(directory),
+                      logger.DEBUG)
+
+        self._log(u"Unable to figure out what folder to process."
+                  u" If your download client and Medusa aren't on the same"
+                  u" machine, make sure to fill out the Post Processing Dir"
+                  u" field in the config.", logger.WARNING)
+        setattr(self, '_directory', directory)
 
     @property
     def paths(self):
@@ -166,24 +187,6 @@ class ProcessResult(object):
                 self._log('{0}'.format(missedfile), logger.WARNING)
 
         return self.output
-
-    def _get_root_dir(self, path):
-        """Return the root directory we are going to process."""
-        if os.path.isdir(path):
-            root_dir = os.path.realpath(path)
-            self._log('Processing path: {0}'.format(path), logger.DEBUG)
-            return root_dir
-
-        # If the client and the application are not on the same machine,
-        # translate the directory into a network directory
-        elif all([app.TV_DOWNLOAD_DIR, os.path.isdir(app.TV_DOWNLOAD_DIR),
-                  os.path.normpath(path) == os.path.normpath(app.TV_DOWNLOAD_DIR)]):
-            root_dir = os.path.join(app.TV_DOWNLOAD_DIR, os.path.abspath(path).split(os.path.sep)[-1])
-            self._log('Trying to use folder: {0}'.format(root_dir), logger.DEBUG)
-            return root_dir
-
-        self._log(u"Unable to figure out what folder to process. If your download client and Medusa aren't on the "
-                  u"same machine, make sure to fill out the Post Processing Dir field in the config.", logger.WARNING)
 
     def _get_paths(self):
         """Return the paths we are going to try to process."""
