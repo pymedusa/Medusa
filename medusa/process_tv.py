@@ -49,11 +49,7 @@ class ProcessResult(object):
         self.result = True
         self.succeeded = True
         self.missedfiles = []
-
         self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-        self.rar_content = []
-        self.video_in_rar = []
-        self.unwanted_files = []
 
     @property
     def directory(self):
@@ -91,10 +87,10 @@ class ProcessResult(object):
         logger.log(message, level)
         self._output.append(message)
 
-    def process_dir(self, nzb_name=None, force=False, is_priority=None, delete_on=False, failed=False,
-                    proc_type='auto', ignore_subs=False):
+    def process(self, nzb_name=None, force=False, is_priority=None, delete_on=False, failed=False,
+                proc_type='auto', ignore_subs=False):
         """
-        Scan through the files in dir_name and process whatever media files are found.
+        Scan through the files in the root directory and process whatever media files are found.
 
         :param nzb_name: The NZB name which resulted in this folder being downloaded
         :param force: True to postprocess already postprocessed files
@@ -147,7 +143,7 @@ class ProcessResult(object):
                             self._log('Deleted folder: {0}'.format(dir_path), logger.DEBUG)
 
                 else:
-                    self._log('Found temporary sync files in folder: {0}'.format(dir_path))
+                    self._log('\nFound temporary sync files in folder: {0}'.format(dir_path))
                     self._log('Skipping post processing for folder: {0}'.format(dir_path))
                     self.missedfiles.append('{0}: Sync files found'.format(dir_path))
 
@@ -161,11 +157,11 @@ class ProcessResult(object):
             if self.missedfiles:
                 self._log('\nI did encounter some unprocessable items: ')
                 for missedfile in self.missedfiles:
-                    self._log('[{0}]'.format(missedfile))
+                    self._log('{0}'.format(missedfile))
         else:
             self._log('\nProblem(s) during processing, failed for the following files/folders: ', logger.WARNING)
             for missedfile in self.missedfiles:
-                self._log('[{0}]'.format(missedfile), logger.WARNING)
+                self._log('{0}'.format(missedfile), logger.WARNING)
 
         return self.output
 
@@ -188,6 +184,7 @@ class ProcessResult(object):
                   u"same machine, make sure to fill out the Post Processing Dir field in the config.", logger.WARNING)
 
     def _get_paths(self):
+        """Return the paths we are going to try to process."""
         if not self.directory:
             return
 
@@ -241,10 +238,11 @@ class ProcessResult(object):
                 if helpers.is_media_file(f) or helpers.is_rar_file(f):
                     return True
 
-        self._log('\n{0}: No processable items found in the folder'.format(path), logger.DEBUG)
+        self._log('\nNo processable items found in folder: {0}'.format(path), logger.DEBUG)
         return False
 
     def _get_files(self, path):
+        """Return the path to a folder and its contents as a tuple."""
         topdown = True if self.directory == path else False
         for root, __, filelist in os.walk(path, topdown=topdown):
             if filelist:
@@ -263,27 +261,29 @@ class ProcessResult(object):
                 rar_files.append(f)
 
         rar_content = []
+        video_in_rar = []
         if rar_files:
-            rar_content = self.unRAR(path, rar_files, force)
+            rar_content = self.unrar(path, rar_files, force)
             files.extend(rar_content)
             video_in_rar = [f for f in rar_content if helpers.is_media_file(f)]
             video_files.extend(video_in_rar)
 
         self._log('Post-processing files: {0}'.format(files), logger.DEBUG)
         self._log('Post-processing video files: {0}'.format(video_files), logger.DEBUG)
-        self.video_files = video_files
 
         if rar_content:
             self._log('Post-processing rar content: {0}'.format(rar_content), logger.DEBUG)
             self._log('Post-processing video in rar: {0}'.format(video_in_rar), logger.DEBUG)
-            self.rar_content = rar_content
-            self.video_in_rar = video_in_rar
 
         unwanted_files = [x for x in files if x not in video_files and helpers.get_extension(x)
                           not in self.allowed_extensions]
         if unwanted_files:
             self._log('Found unwanted files: {0}'.format(unwanted_files), logger.DEBUG)
-            self.unwanted_files = unwanted_files
+
+        self.video_files = video_files
+        self.rar_content = rar_content
+        self.video_in_rar = video_in_rar
+        self.unwanted_files = unwanted_files
 
     def process_files(self, path, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
         """Post-process and delete the files in a given path."""
@@ -380,7 +380,7 @@ class ProcessResult(object):
             file_attribute = os.stat(cur_file_path)[0]
             if not file_attribute & stat.S_IWRITE:
                 # File is read-only, so make it writeable
-                self._log('Changing ReadOnly Flag for file: {0}'.format(cur_file), logger.DEBUG)
+                self._log('Changing read-only flag for file: {0}'.format(cur_file), logger.DEBUG)
                 try:
                     os.chmod(cur_file_path, stat.S_IWRITE)
                 except OSError as e:
