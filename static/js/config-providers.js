@@ -72,7 +72,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var newData = [isDefault, [name, url, key, cat]];
         newznabProviders[id] = newData;
 
-        $('#editANewznabProvider').prepend('<option value=' + id + '>' + name + '</option>');
+        $('#editANewznabProvider').append('<option value=' + id + '>' + name + '</option>');
         $('select#editANewznabProvider').prop('selectedIndex', 0);
 
         if ($('#provider_order_list > #' + id).length === 0 && showProvider !== false) {
@@ -89,7 +89,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var newData = [name, url, cookies, titleTag];
         torrentRssProviders[id] = newData;
 
-        $('#editATorrentRssProvider').prepend('<option value=' + id + '>' + name + '</option>');
+        $('#editATorrentRssProvider').append('<option value=' + id + '>' + name + '</option>');
         $(this).populateTorrentRssSection();
 
         if ($('#provider_order_list > #' + id).length === 0) {
