@@ -37,7 +37,7 @@ pre {
 <pre>
 % if errors:
 % for logline in errors[:500]:
-<span>${logline}</span>
+<span><%block filter="h">${logline}</%block></span>
 % endfor
 % else:
 <span>There are no events to display.</span>
