@@ -10,8 +10,7 @@ import pytest
 @pytest.mark.parametrize('p', [
     {
         'path': 'media/postprocess/',
-        'dirName': 'main show dir',
-        'nzbNameOriginal': None,
+        'nzb_name': None,
         'failed': False,
         'expected': True,
         'structure': (
@@ -25,8 +24,7 @@ import pytest
     },
     {
         'path': 'media/postprocess/',
-        'dirName': 'main show dir',
-        'nzbNameOriginal': None,
+        'nzb_name': None,
         'failed': False,
         'expected': True,
         'structure': (
@@ -41,8 +39,7 @@ import pytest
     },
     {
         'path': 'media/postprocess/',
-        'dirName': 'main show dir',
-        'nzbNameOriginal': None,
+        'nzb_name': None,
         'failed': False,
         'expected': False,
         'structure': (
@@ -50,15 +47,15 @@ import pytest
         )
     },
 ])
-def test_validate_dir(p, create_structure):
+def test_should_process(p, create_structure):
     """Run the test."""
     # Given
-    path = create_structure(path=os.path.join(p['path'], p['dirName']), structure=p['structure'])
-    test_path = os.path.join(path, os.path.normcase(p['path']))
-    sut = ProcessResult(test_path)
+    test_path = create_structure(p['path'], structure=p['structure'])
+    path = os.path.join(test_path, os.path.normcase(p['path']))
+    sut = ProcessResult(path)
 
     # When
-    result = sut.is_valid(os.path.join(test_path, p['dirName']), p['nzbNameOriginal'], p['failed'])
+    result = sut.should_process(path, p['nzb_name'], p['failed'])
 
     # Then
     assert p['expected'] == result
