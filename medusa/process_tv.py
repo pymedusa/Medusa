@@ -115,7 +115,9 @@ class ProcessResult(object):
 
             for dir_path, filelist in self._get_files(path):
 
-                sync_files = (x for x in filelist if is_sync_file(x))
+                sync_files = (filename
+                              for filename in filelist
+                              if is_sync_file(filename))
                 # Don't process files if they are still being synced
                 postpone = app.POSTPONE_IF_SYNC_FILES and any(sync_files)
 
@@ -188,7 +190,8 @@ class ProcessResult(object):
         if not self.directory:
             return
 
-        for root, dirs, __ in os.walk(self.directory):
+        for root, dirs, files in os.walk(self.directory):
+            del files  # unused variable
             if self.directory == root:
                 yield root
             for folder in dirs:
@@ -233,10 +236,12 @@ class ProcessResult(object):
             self.missedfiles.append('{0}: Hidden folder'.format(folder))
             return False
 
-        for __, __, files in os.walk(path):
-            for f in files:
-                if helpers.is_media_file(f) or helpers.is_rar_file(f):
+        for root, dirs, files in os.walk(path):
+            for each_file in files:
+                if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
                     return True
+            del root  # unused variable
+            del dirs  # unused variable
 
         self._log('\nNo processable items found in folder: {0}'.format(path), logger.DEBUG)
         return False
@@ -244,28 +249,29 @@ class ProcessResult(object):
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
         topdown = True if self.directory == path else False
-        for root, __, filelist in os.walk(path, topdown=topdown):
-            if filelist:
-                yield root, filelist
+        for root, dirs, files in os.walk(path, topdown=topdown):
+            if files:
+                yield root, files
             if topdown:
                 break
+            del dirs  # unused variable
 
     def prepare_files(self, path, files, force=False):
         """Prepare files for post-processing."""
         video_files = []
         rar_files = []
-        for f in files:
-            if helpers.is_media_file(f):
-                video_files.append(f)
-            elif helpers.is_rar_file(f):
-                rar_files.append(f)
+        for each_file in files:
+            if helpers.is_media_file(each_file):
+                video_files.append(each_file)
+            elif helpers.is_rar_file(each_file):
+                rar_files.append(each_file)
 
         rar_content = []
         video_in_rar = []
         if rar_files:
             rar_content = self.unrar(path, rar_files, force)
             files.extend(rar_content)
-            video_in_rar = [f for f in rar_content if helpers.is_media_file(f)]
+            video_in_rar = [each_file for each_file in rar_content if helpers.is_media_file(each_file)]
             video_files.extend(video_in_rar)
 
         self._log('Post-processing files: {0}'.format(files), logger.DEBUG)
@@ -275,8 +281,11 @@ class ProcessResult(object):
             self._log('Post-processing rar content: {0}'.format(rar_content), logger.DEBUG)
             self._log('Post-processing video in rar: {0}'.format(video_in_rar), logger.DEBUG)
 
-        unwanted_files = [x for x in files if x not in video_files and helpers.get_extension(x)
-                          not in self.allowed_extensions]
+        unwanted_files = [filename
+                          for filename in files
+                          if filename not in video_files and
+                          helpers.get_extension(filename) not in
+                          self.allowed_extensions]
         if unwanted_files:
             self._log('Found unwanted files: {0}'.format(unwanted_files), logger.DEBUG)
 
@@ -336,15 +345,15 @@ class ProcessResult(object):
             try:
                 logger.log("Deleting folder (if it's empty): {0}".format(folder))
                 os.rmdir(folder)
-            except (OSError, IOError) as e:
-                logger.log('Unable to delete folder: {0}: {1}'.format(folder, ex(e)), logger.WARNING)
+            except (OSError, IOError) as error:
+                logger.log('Unable to delete folder: {0}: {1}'.format(folder, ex(error)), logger.WARNING)
                 return False
         else:
             try:
                 logger.log('Deleting folder: {0}'.format(folder))
                 shutil.rmtree(folder)
-            except (OSError, IOError) as e:
-                logger.log('Unable to delete folder: {0}: {1}'.format(folder, ex(e)), logger.WARNING)
+            except (OSError, IOError) as error:
+                logger.log('Unable to delete folder: {0}: {1}'.format(folder, ex(error)), logger.WARNING)
                 return False
 
         return True
@@ -383,12 +392,12 @@ class ProcessResult(object):
                 self._log('Changing read-only flag for file: {0}'.format(cur_file), logger.DEBUG)
                 try:
                     os.chmod(cur_file_path, stat.S_IWRITE)
-                except OSError as e:
-                    self._log('Cannot change permissions of {0}: {1}'.format(cur_file_path, ex(e)), logger.DEBUG)
+                except OSError as error:
+                    self._log('Cannot change permissions of {0}: {1}'.format(cur_file_path, ex(error)), logger.DEBUG)
             try:
                 os.remove(cur_file_path)
-            except OSError as e:
-                self._log('Unable to delete file {0}: {1}'.format(cur_file, e.strerror), logger.DEBUG)
+            except OSError as error:
+                self._log('Unable to delete file {0}: {1}'.format(cur_file, error.strerror), logger.DEBUG)
 
     def unrar(self, path, rar_files, force=False):
         """
@@ -416,7 +425,9 @@ class ProcessResult(object):
 
                     # Skip extraction if any file in archive has previously been extracted
                     skip_file = False
-                    for file_in_archive in [os.path.basename(x.filename) for x in rar_handle.infolist() if not x.isdir]:
+                    for file_in_archive in [os.path.basename(each.filename)
+                                            for each in rar_handle.infolist()
+                                            if not each.isdir]:
                         if self.already_postprocessed(file_in_archive):
                             self._log('Archive file already post-processed, extraction skipped: {0}'.format
                                       (file_in_archive), logger.DEBUG)
@@ -436,9 +447,9 @@ class ProcessResult(object):
                         continue
 
                     rar_handle.extract(path=path, withSubpath=False, overwrite=False)
-                    for x in rar_handle.infolist():
-                        if not x.isdir:
-                            basename = os.path.basename(x.filename)
+                    for each in rar_handle.infolist():
+                        if not each.isdir:
+                            basename = os.path.basename(each.filename)
                             if basename not in unpacked_files:
                                 unpacked_files.append(basename)
                     del rar_handle
@@ -454,8 +465,8 @@ class ProcessResult(object):
                     failure = ('Invalid Rar Archive Usage', 'Unpacking Failed with Invalid Rar Archive Usage')
                 except InvalidRARArchive:
                     failure = ('Invalid Rar Archive', 'Unpacking Failed with an Invalid Rar Archive Error')
-                except Exception as e:
-                    failure = (ex(e), 'Unpacking failed for an unknown reason')
+                except Exception as error:
+                    failure = (ex(error), 'Unpacking failed for an unknown reason')
 
                 if failure is not None:
                     self._log('Failed Unrar archive {0}: {1}'.format(archive, failure[0]), logger.WARNING)
@@ -525,7 +536,10 @@ class ProcessResult(object):
                                           'Continuing the post-processing of this file: {0}'.format(video_file))
                             else:
                                 associated_files = processor.list_associated_files(file_path, subtitles_only=True)
-                                if not [f for f in associated_files if helpers.get_extension(f) in subtitle_extensions]:
+                                if not [filename
+                                        for filename in associated_files
+                                        if helpers.get_extension(filename)
+                                        in subtitle_extensions]:
                                     self._log('No subtitles associated. Postponing the post-process of this file: '
                                               '{0}'.format(video_file), logger.DEBUG)
                                     continue
@@ -541,9 +555,9 @@ class ProcessResult(object):
 
                 self.result = processor.process()
                 process_fail_message = ''
-            except EpisodePostProcessingFailedException as e:
+            except EpisodePostProcessingFailedException as error:
                 self.result = False
-                process_fail_message = ex(e)
+                process_fail_message = ex(error)
 
             if processor:
                 self._output.append(processor.log)
@@ -564,9 +578,9 @@ class ProcessResult(object):
                 processor = failed_processor.FailedProcessor(path, nzb_name)
                 self.result = processor.process()
                 process_fail_message = ''
-            except FailedPostProcessingFailedException as e:
+            except FailedPostProcessingFailedException as error:
                 self.result = False
-                process_fail_message = ex(e)
+                process_fail_message = ex(error)
 
             if processor:
                 self._output.append(processor.log)
