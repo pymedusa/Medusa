@@ -1,10 +1,11 @@
 # coding=utf-8
-# Author: Paul Wollaston
-# Contributions: Luke Mullan
-#
-# This client script allows connection to Deluge Daemon directly, completely
-# circumventing the requirement to use the WebUI.
-"""Deluge Daemon Client."""
+
+"""
+Deluge Daemon Client.
+
+This client script allows connection to Deluge Daemon directly, completely
+circumventing the requirement to use the WebUI.
+"""
 
 from __future__ import unicode_literals
 
@@ -13,11 +14,13 @@ from base64 import b64encode
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.logger.adapters.style import BraceAdapter
 
 from synchronousdeluge import DelugeClient
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class DelugeDAPI(GenericClient):
@@ -100,7 +103,8 @@ class DelugeDAPI(GenericClient):
         if result.show.is_anime:
             label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
+            log.error('{name}: Invalid label. Label must not contain a space',
+                      {'name': self.name})
             return False
 
         return self.drpc.set_torrent_label(result.hash, label) if label else True
@@ -340,7 +344,7 @@ class DelugeRPC(object):
     def _check_torrent(self, info_hash):
         torrent_id = self.client.core.get_torrent_status(info_hash, {}).get()
         if torrent_id['hash']:
-            logger.debug('DelugeD: Torrent already exists in Deluge')
+            log.debug('DelugeD: Torrent already exists in Deluge')
             return info_hash
         return False
 
