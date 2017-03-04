@@ -60,3 +60,8 @@
     </footer>
 % endif
 <!-- END FOOTER -->
+<div class="scroll-top-wrapper ">
+	<span class="scroll-top-inner">
+		<i class="glyphicon glyphicon-circle-arrow-up"></i>
+	</span>
+</div>

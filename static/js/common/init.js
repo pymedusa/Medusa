@@ -28,6 +28,20 @@ MEDUSA.common.init = function() {
         $('.backstretch').css('top', backstretchOffset());
     });
 
+    function scrollToTop() {
+        $('html, body').animate({scrollTop: $('body').offset().top}, 500, 'linear');
+    }
+
+    $(document).on('scroll', function() {
+        if ($(window).scrollTop() > 100) {
+            $('.scroll-top-wrapper').addClass('show');
+        } else {
+            $('.scroll-top-wrapper').removeClass('show');
+        }
+    });
+
+    $('.scroll-top-wrapper').on('click', scrollToTop);
+
     // function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
