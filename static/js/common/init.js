@@ -2,6 +2,7 @@ MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
 
+    // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
         var showID = $('#showID').attr('value');
         if (showID) {
@@ -28,8 +29,9 @@ MEDUSA.common.init = function() {
         $('.backstretch').css('top', backstretchOffset());
     });
 
-    function scrollToTop() {
-        $('html, body').animate({scrollTop: $('body').offset().top}, 500, 'linear');
+    // Scroll Functions
+    function scrollTo(dest) {
+        $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
     }
 
     $(document).on('scroll', function() {
@@ -40,7 +42,15 @@ MEDUSA.common.init = function() {
         }
     });
 
-    $('.scroll-top-wrapper').on('click', scrollToTop);
+    $('.scroll-top-wrapper').on('click', function() {
+        scrollTo($('body'));
+    });
+
+    // Scroll to Anchor
+    $('a[href^="#season"]').on('click', function(e) {
+        e.preventDefault();
+        scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
+    });
 
     // function to change luminance of #000000 color - used in triggerhighlighting
     function colorLuminance(hex, lum) {
