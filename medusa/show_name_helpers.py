@@ -106,31 +106,30 @@ def determineReleaseName(dir_name=None, nzb_name=None):
     if dir_name is None:
         return None
 
-    # try to get the release name from nzb/nfo
-    file_types = ["*.nzb", "*.nfo"]
-
-    for search in file_types:
-
-        reg_expr = re.compile(fnmatch.translate(search), re.IGNORECASE)
-        files = [file_name for file_name in os.listdir(dir_name) if
-                 os.path.isfile(os.path.join(dir_name, file_name))]
-
-        results = [f for f in files if reg_expr.search(f)]
-
-        if len(results) == 1:
-            found_file = os.path.basename(results[0])
-            found_file = found_file.rpartition('.')[0]
-            if filterBadReleases(found_file):
-                logger.log(u"Release name (" + found_file + ") found from file (" + results[0] + ")")
-                return found_file.rpartition('.')[0]
-
-    # If that fails, we try the folder
+    # If no NZB name, we try the folder
     folder = os.path.basename(dir_name)
     if filterBadReleases(folder):
         # NOTE: Multiple failed downloads will change the folder name.
         # (e.g., appending #s)
         # Should we handle that?
-        logger.log(u"Folder name (" + folder + ") appears to be a valid release name. Using it.", logger.DEBUG)
+        logger.log(u"Folder name {folder} appears to be a valid release name. Using it.".format
+                   (folder=folder), logger.DEBUG)
         return folder
+
+    # try to get the release name from nzb/nfo
+    file_types = ["*.nzb"]
+    for search in file_types:
+        reg_expr = re.compile(fnmatch.translate(search), re.IGNORECASE)
+        files = [file_name for file_name in os.listdir(dir_name) if
+                 os.path.isfile(os.path.join(dir_name, file_name))]
+        results = [f for f in files if reg_expr.search(f)]
+
+        if results:
+            found_file = os.path.basename(results[0])
+            file_name = found_file.rpartition('.')[0]
+            if filterBadReleases(file_name):
+                logger.log(u"Release name '{release}' found from file: {file}".format
+                           (release=found_file, file=results[0]))
+                return file_name
 
     return None
