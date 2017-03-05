@@ -1,6 +1,7 @@
 # coding=utf-8
 """Request handler for scene_exceptions."""
 
+from medusa.indexers.indexer_config import indexer_id_to_slug, slug_to_indexer_id
 from medusa.scene_exceptions import get_last_refresh, retrieve_exceptions
 from tornado.escape import json_decode
 from .base import BaseRequestHandler
@@ -49,48 +50,56 @@ class SceneExceptionHandler(BaseRequestHandler):
         :type show_indexer_id: str
         :param season:
         """
-        exception_id = self._parse(kwargs.pop('row_id'))
-        indexer = self.get_query_argument('indexer', None)
-        indexer_id = self.get_query_argument('indexerId', None)
+        exception_id = self._parse(kwargs.pop('id', None))
+        slug = self.get_query_argument('indexer', None)
+        indexer, indexer_id = slug_to_indexer_id(slug)
         season = self.get_query_argument('season', None)
         detailed = self._parse_boolean('detailed')
+        exception_type = bool(self.get_query_argument('type', None) == 'custom')
 
         if not detailed:
             return self.api_finish(data={"lastUpdates": get_last_updates()})
 
         cache_db_con = db.DBConnection('cache.db')
-        if indexer and indexer_id and season:
-            sql_base = b'SELECT * FROM scene_exceptions WHERE indexer = ? AND indexer_id = ?'
-            params = [indexer, indexer_id]
-            if season:
-                sql_base += b' AND season = ?'
-                params.append(season)
-        else:
-            sql_base = b'SELECT * FROM scene_exceptions'
-            params = []
-            if exception_id:
-                sql_base += ' WHERE exception_id = ?'
-                params.append(exception_id)
+        sql_base = b'SELECT * FROM scene_exceptions'
+        sql_where = []
+        params = []
+
+        if exception_id:
+            sql_where.append(b'exception_id')
+            params += [exception_id]
+
+        if indexer and indexer_id:
+            sql_where.append(b'indexer')
+            params += [indexer]
+
+        if indexer_id:
+            sql_where.append(b'indexer_id')
+            params += [indexer_id]
+
+        if season:
+            sql_where.append(b'season')
+            params += [season]
+
+        if exception_type:
+            sql_where.append(b'custom')
+            params += [exception_type]
+
+        if sql_where:
+            sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])
 
         exceptions = cache_db_con.select(sql_base, params)
         if not exceptions:
             self.api_finish(status=404, error='SceneException(s) not found.')
 
         exceptions = [{'id': row[0],
-                       # TODO: move to 'indexer': 'tvdb1234'
-                       # instead of indexer and indexer id
-                       'indexer': row[1],
-                       'indexerId': row[2],
-                       'indexerId': row[2],
+                       'indexer': indexer_id_to_slug(row[1], row[2]),
                        'showName': row[3],
                        'season': row[4] if row[4] >= 0 else None,
                        'type': 'custom' if row[5] else None}
                       for row in exceptions]
 
-        # TODO: return a list of scene exceptions:
-        # return self._paginate(exceptions, 'id')
-        self.api_finish(data={"exceptions": exceptions, "lastUpdates": get_last_updates()})
-
+        return self._paginate(exceptions, 'id')
 
     def put(self, *args, **kwargs):
         """Update show information.

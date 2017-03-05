@@ -5,10 +5,12 @@ import base64
 import json
 import operator
 import traceback
+import re
 
 from datetime import datetime
 from babelfish.language import Language
 import jwt
+from medusa.indexers.indexer_config import mappings, reverse_mappings
 from six import text_type
 from tornado.web import RequestHandler
 

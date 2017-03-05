@@ -4,7 +4,7 @@
 from tornado.escape import json_decode
 from .base import BaseRequestHandler
 from .... import app
-from ....indexers.indexer_config import indexerConfig, reverse_mappings
+from ....indexers.indexer_config import indexer_name_to_id
 from ....show.show import Show
 from ....show_queue import ShowQueueActions
 
@@ -47,8 +47,9 @@ class ShowHandler(BaseRequestHandler):
         :param query:
         """
         # @TODO: This should be completely replaced with show_id
-        indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
-        show_indexer = indexer_cfg['id'] if indexer_cfg else None
+        # indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
+        # show_indexer = indexer_cfg['id'] if indexer_cfg else None
+        show_indexer = indexer_name_to_id(show_indexer) if show_indexer else None
         indexerid = self._parse(show_id)
         season = self._parse(season)
         episode = self._parse(episode)
@@ -167,8 +168,9 @@ class ShowHandler(BaseRequestHandler):
     def patch(self, show_indexer, show_id, *args, **kwargs):
         """Update show object."""
         # @TODO: This should be completely replaced with show_id
-        indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
-        show_indexer = indexer_cfg['id'] if indexer_cfg else None
+        # indexer_cfg = indexerConfig.get(reverse_mappings.get('{0}_id'.format(show_indexer))) if show_indexer else None
+        # show_indexer = indexer_cfg['id'] if indexer_cfg else None
+        show_indexer = indexer_name_to_id(show_indexer)
         indexerid = self._parse(show_id)
 
         if show_id is not None:
