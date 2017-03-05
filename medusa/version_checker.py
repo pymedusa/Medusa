@@ -595,7 +595,7 @@ class GitUpdateManager(UpdateManager):
     def set_newest_text(self):
 
         # if we're up to date then don't set this
-        app.NEWEST_VERSION_STRING = None
+        newest_text = None
 
         if self._num_commits_behind > 0 or self._is_hard_reset_allowed():
 

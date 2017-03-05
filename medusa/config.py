@@ -24,7 +24,8 @@ import re
 from requests.compat import urlsplit
 from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
-from . import app, common, db, helpers, logger, naming
+from . import app, common, db, helpers, logger, naming, scheduler
+from . version_checker import CheckVersion
 from .helper.common import try_int
 
 # Address poor support for scgi over unix domain sockets
@@ -283,6 +284,7 @@ def change_VERSION_NOTIFY(version_notify):
 
     :param version_notify: New frequency
     """
+
     oldSetting = app.VERSION_NOTIFY
 
     app.VERSION_NOTIFY = version_notify
@@ -293,6 +295,18 @@ def change_VERSION_NOTIFY(version_notify):
     if oldSetting is False and version_notify is True:
         app.version_check_scheduler.forceRun()
 
+def change_GIT_PATH():
+    """
+    Recreate the version_check scheduler when GIT_PATH is changed.
+    Force a run to clear or set any error messages.
+    """
+    app.version_check_scheduler = None
+    app.version_check_scheduler = scheduler.Scheduler(CheckVersion(),
+                                                                cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
+                                                                threadName="CHECKVERSION", silent=False)
+    app.version_check_scheduler.enable = True
+    app.version_check_scheduler.start()
+    app.version_check_scheduler.forceRun()
 
 def change_DOWNLOAD_PROPERS(download_propers):
     """
