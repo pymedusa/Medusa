@@ -113,7 +113,7 @@ MEDUSA.home.index = function() {
                 10: function(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
             };
         })(),
-        widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
+        widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector', 'reflow'],
         headers: {
             0: {sorter: 'realISODate'},
             1: {sorter: 'realISODate'},
@@ -184,7 +184,8 @@ MEDUSA.home.index = function() {
                     return test;
                 }
             },
-            columnSelector_mediaquery: false // eslint-disable-line camelcase
+            columnSelector_mediaquery: false, // eslint-disable-line camelcase
+            reflow_headerAttrib: 'data-name' // eslint-disable-line camelcase
         },
         sortStable: true,
         sortAppend: [[2, 0]]
