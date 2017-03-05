@@ -2,9 +2,9 @@ MEDUSA.manage.manageSearches = function() {
     // Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
     var updateExceptionTable = function(exceptions) {
         var status = $('#sceneExceptionStatus');
-        var cusExceptionDate = new Date(exceptions.data.last_updates.custom_exceptions * 1000).toLocaleDateString();
-        var XemExceptionDate = new Date(exceptions.data.last_updates.xem * 1000).toLocaleDateString();
-        var anidbExceptionDate = new Date(exceptions.data.last_updates.anidb * 1000).toLocaleDateString();
+        var cusExceptionDate = new Date(exceptions.data.lastUpdates.custom_exceptions * 1000).toLocaleDateString();
+        var XemExceptionDate = new Date(exceptions.data.lastUpdates.xem * 1000).toLocaleDateString();
+        var anidbExceptionDate = new Date(exceptions.data.lastUpdates.anidb * 1000).toLocaleDateString();
 
         var table = $('<ul></ul>')
             .append(
@@ -40,7 +40,7 @@ MEDUSA.manage.manageSearches = function() {
         var status = $('#sceneExceptionStatus');
         status[0].innerHTML = 'Retrieving scene exceptions...';
 
-        api.put('sceneexception/operation', {type: 'REFRESH'}, {
+        api.post('sceneexception/operation', {type: 'REFRESH'}, {
             timeout: 60000
         }).then(function(response) {
             status[0].innerHTML = '';

@@ -16,14 +16,14 @@ def get_last_updates():
 
 
 class SceneExceptionOperationHandler(BaseRequestHandler):
-    """Scene Exception request handler."""
+    """Scene Exception operation request handler."""
 
     def set_default_headers(self):
         """Set default CORS headers."""
         super(SceneExceptionOperationHandler, self).set_default_headers()
         self.set_header('Access-Control-Allow-Methods', 'PUT')
 
-    def put(self):
+    def post(self):
         """Start fetch retrieving scene name exceptions."""
         json_body = json_decode(self.request.body)
 
@@ -34,7 +34,7 @@ class SceneExceptionOperationHandler(BaseRequestHandler):
 
 
 class SceneExceptionHandler(BaseRequestHandler):
-    """Shows request handler."""
+    """Scene Exception request handler."""
 
     def set_default_headers(self):
         """Set default CORS headers."""
@@ -51,12 +51,12 @@ class SceneExceptionHandler(BaseRequestHandler):
         """
         exception_id = self._parse(kwargs.pop('row_id'))
         indexer = self.get_query_argument('indexer', None)
-        indexer_id = self.get_query_argument('indexer_id', None)
+        indexer_id = self.get_query_argument('indexerId', None)
         season = self.get_query_argument('season', None)
         detailed = self._parse_boolean('detailed')
 
         if not detailed:
-            return self.api_finish(data={"last_updates": get_last_updates()})
+            return self.api_finish(data={"lastUpdates": get_last_updates()})
 
         cache_db_con = db.DBConnection('cache.db')
         if indexer and indexer_id and season:
@@ -72,25 +72,25 @@ class SceneExceptionHandler(BaseRequestHandler):
                 sql_base += ' WHERE exception_id = ?'
                 params.append(exception_id)
 
-        if sql_base:
-            exceptions = cache_db_con.select(sql_base, params)
-        else:
-            self.api_finish(status=400, error='bad request')
+        exceptions = cache_db_con.select(sql_base, params)
+        if not exceptions:
+            self.api_finish(status=404, error='SceneException(s) not found.')
 
         exceptions = [{'id': row[0],
                        # TODO: move to 'indexer': 'tvdb1234'
                        # instead of indexer and indexer id
                        'indexer': row[1],
-                       'indexer_id': row[2],
-                       'show_name': row[3],
+                       'indexerId': row[2],
+                       'indexerId': row[2],
+                       'showName': row[3],
                        'season': row[4] if row[4] >= 0 else None,
                        'type': 'custom' if row[5] else None}
                       for row in exceptions]
 
         # TODO: return a list of scene exceptions:
         # return self._paginate(exceptions, 'id')
+        self.api_finish(data={"exceptions": exceptions, "lastUpdates": get_last_updates()})
 
-        self.api_finish(data={"exceptions": exceptions, "last_updates": get_last_updates()})
 
     def put(self, *args, **kwargs):
         """Update show information.
@@ -102,9 +102,9 @@ class SceneExceptionHandler(BaseRequestHandler):
 
         data = json_decode(self.request.body)
 
-        if not all([data.get('indexer_id'),
+        if not all([data.get('indexerId'),
                     data.get('season'),
-                    data.get('show_name'),
+                    data.get('showName'),
                     data.get('indexer')]):
             return self.api_finish(status=400, error="Invalid post body, can't update")
 
@@ -118,21 +118,21 @@ class SceneExceptionHandler(BaseRequestHandler):
                             b', custom = 1'
                             b' WHERE exception_id = ?',
                             [data.get('indexer'),
-                             data.get('indexer_id'),
-                             data.get('show_name'),
+                             data.get('indexerId'),
+                             data.get('showName'),
                              data.get('season'),
                              exception_id])
         if cache_db_con.connection.total_changes - last_changes == 1:
-            return self.api_finish(status=201)
-        return self.api_finish(status=400, error="Could not update.")
+            return self.api_finish(status=204)
+        return self.api_finish(status=404, error="Could not update resource.")
 
     def post(self, *args, **kwargs):
         """Add a show."""
         data = json_decode(self.request.body)
 
-        if not all([data.get('indexer_id'),
+        if not all([data.get('indexerId'),
                     data.get('season'),
-                    data.get('show_name'),
+                    data.get('showName'),
                     data.get('indexer')]):
             return self.api_finish(status=400, error="Invalid post body, can't update")
 
@@ -142,11 +142,14 @@ class SceneExceptionHandler(BaseRequestHandler):
                             b' (indexer, indexer_id, show_name, season, custom) '
                             b' values (?,?,?,?,1)',
                             [data.get('indexer'),
-                             data.get('indexer_id'),
-                             data.get('show_name'),
+                             data.get('indexerId'),
+                             data.get('showName'),
                              data.get('season')])
         if cache_db_con.connection.total_changes - last_changes > 0:
-            return self.api_finish(status=204)
+            return self.api_finish(status=200, data={"indexer": data.get('indexer'),
+                                                     "indexerId": data.get('indexerId'),
+                                                     "showName": data.get('showName'),
+                                                     "season": data.get('season')})
         return self.api_finish(status=400, error="Could not update.")
 
     def delete(self, *args, **kwargs):
@@ -162,4 +165,4 @@ class SceneExceptionHandler(BaseRequestHandler):
         cache_db_con.action(b'DELETE FROM scene_exceptions WHERE exception_id = ?', [exception_id])
         if cache_db_con.connection.total_changes - last_changes > 0:
             return self.api_finish(status=204)
-        return self.api_finish(status=400, error="Failed to delete.")
+        return self.api_finish(status=404, error="Resource not found, Failed to delete.")
