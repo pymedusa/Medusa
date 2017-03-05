@@ -53,9 +53,9 @@ class SceneExceptionHandler(BaseRequestHandler):
         indexer = self.get_query_argument('indexer', None)
         indexer_id = self.get_query_argument('indexer_id', None)
         season = self.get_query_argument('season', None)
-        detailed = self.get_query_argument('detailed', 'true').lower()
+        detailed = self._parse_boolean('detailed')
 
-        if detailed == 'false':
+        if not detailed:
             return self.api_finish(data={"last_updates": get_last_updates()})
 
         cache_db_con = db.DBConnection('cache.db')
@@ -77,13 +77,18 @@ class SceneExceptionHandler(BaseRequestHandler):
         else:
             self.api_finish(status=400, error='bad request')
 
-        exceptions = [{'exception_id': row[0],
+        exceptions = [{'id': row[0],
+                       # TODO: move to 'indexer': 'tvdb1234'
+                       # instead of indexer and indexer id
                        'indexer': row[1],
                        'indexer_id': row[2],
                        'show_name': row[3],
-                       'season': row[4],
-                       'custom': row[5]}
+                       'season': row[4] if row[4] >= 0 else None,
+                       'type': 'custom' if row[5] else None}
                       for row in exceptions]
+
+        # TODO: return a list of scene exceptions:
+        # return self._paginate(exceptions, 'id')
 
         self.api_finish(data={"exceptions": exceptions, "last_updates": get_last_updates()})
 
