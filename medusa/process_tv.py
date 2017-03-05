@@ -71,11 +71,11 @@ class ProcessResult(object):
             )
             self._log('Trying to use folder: {0}'.format(directory),
                       logger.DEBUG)
-
-        self._log(u"Unable to figure out what folder to process."
-                  u" If your download client and Medusa aren't on the same"
-                  u" machine, make sure to fill out the Post Processing Dir"
-                  u" field in the config.", logger.WARNING)
+        else:
+            self._log("Unable to figure out what folder to process."
+                      " If your download client and Medusa aren't on the same"
+                      " machine, make sure to fill out the Post Processing Dir"
+                      " field in the config.", logger.WARNING)
         setattr(self, '_directory', directory)
 
     @property
@@ -385,7 +385,7 @@ class ProcessResult(object):
             try:
                 os.remove(cur_file_path)
             except OSError as error:
-                self._log('Unable to delete file {0}: {1}'.format(cur_file, error.strerror), logger.DEBUG)
+                self._log('Unable to delete file {0}: {1}'.format(cur_file, ex(error)), logger.DEBUG)
 
     def unrar(self, path, rar_files, force=False):
         """
