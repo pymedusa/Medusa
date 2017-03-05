@@ -79,6 +79,7 @@ class ShowHandler(BaseRequestHandler):
     def _handle_detailed_show(self, tv_show, query):
         if query:
             if query == 'backlogged':
+                # TODO: revisit
                 allowed_qualities = self._parse(self.get_argument('allowed', default=None), str)
                 allowed_qualities = map(int, allowed_qualities.split(',')) if allowed_qualities else []
                 preferred_qualities = self._parse(self.get_argument('preferred', default=None), str)
@@ -87,17 +88,22 @@ class ShowHandler(BaseRequestHandler):
                                                                 preferred_qualities=preferred_qualities)
                 data = {'new': new, 'existing': existing}
             elif query == 'archiveEpisodes':
+                # TODO: GET should never change data and the return should always be an episode,
+                # not this funny dict
                 data = {'archived': 'true' if tv_show.set_all_episodes_archived(final_status_only=True) else 'false'}
             elif query == 'queue':
+                # TODO: revisit
                 action, message = app.show_queue_scheduler.action.get_queue_action(tv_show)
                 data = {
                     'action': ShowQueueActions.names[action],
                     'message': message,
                 } if action is not None else dict()
-            elif query in tv_show.to_json():
-                data = data[query]
             else:
-                return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
+                data = tv_show.to_json()
+                if query in data:
+                    data = data[query]
+                else:
+                    return self.api_finish(status=400, error="Invalid resource path '{0}'".format(query))
         else:
             data = tv_show.to_json()
         self.api_finish(data=data)
@@ -133,7 +139,9 @@ class ShowHandler(BaseRequestHandler):
             # if this happens then it's a bug!
             raise ValueError
 
-        if tv_episode and tv_episode.loaded:
+        if tv_episode:
+            if not tv_episode.loaded:
+                tv_episode.load_from_db(tv_episode.season, tv_episode.episode)
             return tv_episode
 
     def _handle_detailed_episode(self, tv_episode, query):
