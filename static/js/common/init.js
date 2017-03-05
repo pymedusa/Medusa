@@ -2,6 +2,7 @@ MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
 
+    // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
         var showID = $('#showID').attr('value');
         if (showID) {
@@ -26,6 +27,36 @@ MEDUSA.common.init = function() {
 
     $(window).resize(function() {
         $('.backstretch').css('top', backstretchOffset());
+    });
+
+    // Scroll Functions
+    function scrollTo(dest) {
+        $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
+    }
+
+    $(document).on('scroll', function() {
+        if ($(window).scrollTop() > 100) {
+            $('.scroll-top-wrapper').addClass('show');
+        } else {
+            $('.scroll-top-wrapper').removeClass('show');
+        }
+    });
+
+    $('.scroll-top-wrapper').on('click', function() {
+        scrollTo($('body'));
+    });
+
+    // Scroll to Anchor
+    $('a[href^="#season"]').on('click', function(e) {
+        e.preventDefault();
+        scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
+    });
+
+    // Hover Dropdown for Nav
+    $('ul.nav li.dropdown').hover(function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+    }, function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
     });
 
     // function to change luminance of #000000 color - used in triggerhighlighting
