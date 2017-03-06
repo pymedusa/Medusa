@@ -1587,13 +1587,14 @@ class Home(WebRoot):
                     logger.log(u"Show directory doesn't exist, creating it", logger.DEBUG)
                     try:
                         os.mkdir(new_location)
-                        helpers.chmod_as_parent(show_obj._location)
-                        show_obj.location = location
-                    except (OSError, IOError) as e:
+                    except OSError as e:
                         log_message = u"Unable to create the show directory '{location}. " \
                                       u"Error: {error}".format(location=new_location, error=ex(e))
                         logger.log(log_message, logger.DEBUG)
                         errors.append(log_message)
+                    else:
+                        helpers.chmod_as_parent(show_obj._location)
+                        show_obj.location = location
 
                     if do_update and os.path.isdir(show_obj._location):
                         try:

@@ -557,7 +557,7 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        show_ids = toEdit.split('|') if toEdit else None
+        show_ids = toEdit.split('|') if toEdit else []
         errors = []
         for cur_show in show_ids:
             cur_errors = []
