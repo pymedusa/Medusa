@@ -223,7 +223,7 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
             )
 
 
-def retrieve_exceptions(force=False):
+def retrieve_exceptions(force=False, exception_type=None):
     """
     Look up the exceptions from all sources.
 
@@ -231,15 +231,20 @@ def retrieve_exceptions(force=False):
     scene_exceptions table in cache.db. Also clears the scene name cache.
     :param force: If enabled this will force the refresh of scene exceptions using the medusa exceptions,
     xem exceptions and anidb exceptions.
+    :param exception_type: Only refresh a specific exception_type. Options are: 'medusa', 'anidb', 'xem'
     """
+    custom_exceptions = _get_custom_exceptions(force) if exception_type in ['custom_exceptions', None] else defaultdict(dict)
+    xem_exceptions = _get_xem_exceptions(force) if exception_type in ['xem', None] else defaultdict(dict)
+    anidb_exceptions = _get_anidb_exceptions(force) if exception_type in ['anidb', None] else defaultdict(dict)
+
     # Combined scene exceptions from all sources
     combined_exceptions = combine_exceptions(
         # Custom scene exceptions
-        _get_custom_exceptions(force),
+        custom_exceptions,
         # XEM scene exceptions
-        _get_xem_exceptions(force),
+        xem_exceptions,
         # AniDB scene exceptions
-        _get_anidb_exceptions(force),
+        anidb_exceptions,
     )
 
     queries = []
