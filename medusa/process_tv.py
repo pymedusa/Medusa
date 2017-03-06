@@ -416,7 +416,7 @@ class ProcessResult(object):
                     for file_in_archive in [os.path.basename(each.filename)
                                             for each in rar_handle.infolist()
                                             if not each.isdir]:
-                        if self.already_postprocessed(file_in_archive):
+                        if force or self.already_postprocessed(file_in_archive):
                             self._log('Archive file already post-processed, extraction skipped: {0}'.format
                                       (file_in_archive), logger.DEBUG)
                             skip_file = True
@@ -502,7 +502,7 @@ class ProcessResult(object):
         for video_file in video_files:
             file_path = os.path.join(path, video_file)
 
-            if self.already_postprocessed(video_file):
+            if force or self.already_postprocessed(video_file):
                 self._log('Skipping already processed file: {0}'.format(video_file), logger.DEBUG)
                 self._log('Skipping already processed directory: {0}'.format(path), logger.DEBUG)
                 continue
