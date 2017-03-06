@@ -98,7 +98,9 @@ class ConfigGeneral(Config):
         app.GIT_TOKEN = git_token
         app.GIT_RESET = config.checkbox_to_value(git_reset)
         app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
-        app.GIT_PATH = git_path
+        if app.GIT_PATH != git_path:
+            app.GIT_PATH = git_path
+            config.change_GIT_PATH()
         app.GIT_REMOTE = git_remote
         app.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         app.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
