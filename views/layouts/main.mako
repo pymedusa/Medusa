@@ -38,6 +38,7 @@
         }
         </style>
         <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/bootstrap-formhelpers.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
@@ -62,6 +63,7 @@
             <%include file="/partials/footer.mako" />
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
