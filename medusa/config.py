@@ -302,7 +302,9 @@ def change_GIT_PATH():
     Force a run to clear or set any error messages.
     """
     app.version_check_scheduler = None
-    app.version_check_scheduler = scheduler.Scheduler(CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName="CHECKVERSION", silent=False)
+    app.version_check_scheduler = scheduler.Scheduler(CheckVersion(),
+            cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
+            threadName="CHECKVERSION", silent=False)
     app.version_check_scheduler.enable = True
     app.version_check_scheduler.start()
     app.version_check_scheduler.forceRun()
