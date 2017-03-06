@@ -250,3 +250,23 @@
 ? epi
 : options: -t episode
   title: epi
+
+? Episode20
+? Episode 20
+: episode: 20
+
+? Episode50
+? Episode 50
+: episode: 50
+
+? Episode51
+? Episode 51
+: episode: 51
+
+? Episode70
+? Episode 70
+: episode: 70
+
+? Episode71
+? Episode 71
+: episode: 71

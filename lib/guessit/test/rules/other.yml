@@ -144,3 +144,12 @@
 ? re-encoded
 ? reencoded
 : other: ReEncoded
+
+? Super Movie Alternate XViD
+? Super Movie Alternative XViD
+? Super Movie Alternate Cut XViD
+? Super Movie Alternative Cut XViD
+: other: Alternative Cut
+
+? CONVERT XViD
+: other: Converted
