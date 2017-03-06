@@ -89,7 +89,7 @@ class SceneExceptionHandler(BaseRequestHandler):
         super(SceneExceptionHandler, self).set_default_headers()
         self.set_header('Access-Control-Allow-Methods', 'GET, OPTIONS, PUT, POST')
 
-    def get(self, *args, **kwargs):
+    def get(self, exception_id, **kwargs):
         """Query scene_exception information.
 
         :param show_indexer_id: The indexer id. Like 1 for tmdb and 3 for tvmaze.
@@ -97,15 +97,10 @@ class SceneExceptionHandler(BaseRequestHandler):
         :type show_indexer_id: str
         :param season:
         """
-        exception_id = self._parse(kwargs.pop('id', None))
         slug = self.get_query_argument('indexer', None)
         indexer, indexer_id = slug_to_indexer_id(slug)
         season = self.get_query_argument('season', None)
-        detailed = self._parse_boolean('detailed')
         exception_type = bool(self.get_query_argument('type', None) == 'custom')
-
-        if not detailed:
-            return self.api_finish(data={"lastUpdates": get_last_updates()})
 
         cache_db_con = db.DBConnection('cache.db')
         sql_base = b'SELECT * FROM scene_exceptions'
@@ -136,8 +131,6 @@ class SceneExceptionHandler(BaseRequestHandler):
             sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])
 
         exceptions = cache_db_con.select(sql_base, params)
-        if not exceptions:
-            self.api_finish(status=404, error='SceneException(s) not found.')
 
         exceptions = [{'id': row[0],
                        'indexer': indexer_id_to_slug(row[1], row[2]),
@@ -146,6 +139,8 @@ class SceneExceptionHandler(BaseRequestHandler):
                        'type': 'custom' if row[5] else None}
                       for row in exceptions]
 
+        if exception_id:
+            return self.api_finish(data=exceptions[0]) if exceptions else self.api_finish(status=404)
         return self._paginate(exceptions, 'id')
 
     def put(self, *args, **kwargs):

@@ -48,7 +48,7 @@ def get_apiv2_handlers(base):
         (r'{base}/authenticate(/?)'.format(base=base), AuthHandler),
         (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
                                                                  query=query_extended), AssetHandler),
-        (r'{base}/sceneexception(?:/(?P<row_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
+        (r'{base}/sceneexception(?:/(?P<exception_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
         (r'{base}/exceptiontype(?:/(?P<exception_type>[a-z]+)?)?/?'.format(base=base), SceneExceptionTypeHandler),
 
         # Always keep this last!
