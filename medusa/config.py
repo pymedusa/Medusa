@@ -26,7 +26,7 @@ from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 from . import app, common, db, helpers, logger, naming, scheduler
 from .helper.common import try_int
-from . version_checker import CheckVersion
+from .version_checker import CheckVersion
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
