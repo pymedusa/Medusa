@@ -2,9 +2,12 @@ MEDUSA.manage.manageSearches = function() {
     // Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
     var updateExceptionTable = function(exceptions) {
         var status = $('#sceneExceptionStatus');
-        var cusExceptionDate = new Date(exceptions.data.lastUpdates.custom_exceptions * 1000).toLocaleDateString();
-        var XemExceptionDate = new Date(exceptions.data.lastUpdates.xem * 1000).toLocaleDateString();
-        var anidbExceptionDate = new Date(exceptions.data.lastUpdates.anidb * 1000).toLocaleDateString();
+        var medusaException = _.find(exceptions.data, function(obj) { return obj.id === 'medusa' })
+        var cusExceptionDate = new Date(medusaException.lastUpdate * 1000).toLocaleDateString();
+        var xemException = _.find(exceptions.data, function(obj) { return obj.id === 'xem' })
+        var xemExceptionDate = new Date(xemException.lastUpdate * 1000).toLocaleDateString();
+        var anidbException = _.find(exceptions.data, function(obj) { return obj.id === 'anidb' })
+        var anidbExceptionDate = new Date(anidbException.lastUpdate * 1000).toLocaleDateString();
 
         var table = $('<ul></ul>')
             .append(
@@ -19,7 +22,7 @@ MEDUSA.manage.manageSearches = function() {
                 '<a href="' + MEDUSA.config.anonRedirect +
                 'http://thexem.de">' +
                 'Last updated xem exceptions</a> ' +
-                    XemExceptionDate
+                    xemExceptionDate
             )
             .append(
                 '<li>Last updated anidb exceptions ' +
@@ -30,7 +33,7 @@ MEDUSA.manage.manageSearches = function() {
         $('.forceSceneExceptionRefresh').removeClass('disabled');
     };
 
-    api.get('sceneexception?detailed=false').then(function(response) {
+    api.get('exceptiontype').then(function(response) {
         updateExceptionTable(response);
     }).catch(function(err) {
         log.error('Trying to get scene exceptions failed with error: ' + err);
@@ -40,7 +43,7 @@ MEDUSA.manage.manageSearches = function() {
         var status = $('#sceneExceptionStatus');
         status[0].innerHTML = 'Retrieving scene exceptions...';
 
-        api.post('sceneexception/operation', {type: 'REFRESH'}, {
+        api.post('exceptiontype/operation', {type: 'REFRESH'}, {
             timeout: 60000
         }).then(function(response) {
             status[0].innerHTML = '';
@@ -48,7 +51,7 @@ MEDUSA.manage.manageSearches = function() {
                 $('<span></span>').text(response.data.result)
             );
 
-            api.get('sceneexception?detailed=false').then(function(response) {
+            api.get('exceptiontype').then(function(response) {
                 updateExceptionTable(response);
                 $('.forceSceneExceptionRefresh').addClass('disabled');
             }).catch(function(err) {

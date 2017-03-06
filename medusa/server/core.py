@@ -23,7 +23,8 @@ def get_apiv2_handlers(base):
     from .api.v2.auth import AuthHandler
     from .api.v2.asset import AssetHandler
     from .api.v2.base import NotFoundHandler
-    from .api.v2.scene_exception import SceneExceptionHandler, SceneExceptionOperationHandler
+    from .api.v2.scene_exception import (SceneExceptionHandler, SceneExceptionTypeHandler,
+                                         SceneExceptionAllTypeOperationHandler, SceneExceptionTypeOperationHandler)
 
     show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
     # This has to accept season of 1-4 as some seasons are years. For example Formula 1
@@ -36,7 +37,8 @@ def get_apiv2_handlers(base):
 
     return [
         # All operations endpoints should be defined first.
-        (r'{base}/sceneexception/operation'.format(base=base), SceneExceptionOperationHandler),
+        (r'{base}/exceptiontype/(?P<exception_type>[a-z]+)/operation?/?'.format(base=base), SceneExceptionTypeOperationHandler),
+        (r'{base}/exceptiontype/operation?/?'.format(base=base), SceneExceptionAllTypeOperationHandler),
 
         # Regular REST routes
         (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id,
@@ -47,6 +49,7 @@ def get_apiv2_handlers(base):
         (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
                                                                  query=query_extended), AssetHandler),
         (r'{base}/sceneexception(?:/(?P<row_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
+        (r'{base}/exceptiontype(?:/(?P<exception_type>[a-z]+)?)?/?'.format(base=base), SceneExceptionTypeHandler),
 
         # Always keep this last!
         (r'{base}(/?.*)'.format(base=base), NotFoundHandler),

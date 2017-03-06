@@ -16,20 +16,67 @@ def get_last_updates():
     return last_updates
 
 
-class SceneExceptionOperationHandler(BaseRequestHandler):
+class SceneExceptionTypeHandler(BaseRequestHandler):
+    """Scene Exception type request handler."""
+
+    def set_default_headers(self):
+        """Set default CORS headers."""
+        super(SceneExceptionTypeHandler, self).set_default_headers()
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+
+    def get(self, exception_type):
+        if exception_type is not None and exception_type not in ['medusa', 'xem', 'anidb']:
+            return self.api_finish(status=400)
+
+        if exception_type:
+            mapped_exception_type = {'medusa': 'custom_exceptions'}.get(exception_type, exception_type)
+            for k, v in get_last_updates().items():
+                if k == mapped_exception_type:
+                    last_updated = {"id": {'custom_exceptions': 'medusa'}.get(k, k), "lastUpdate": v}
+        else:
+            last_updated = [{"id": {'custom_exceptions': 'medusa'}.get(k, k), "lastUpdate": v}
+                            for k, v in get_last_updates().items()]
+
+        self.api_finish(data=last_updated)
+
+
+class SceneExceptionAllTypeOperationHandler(BaseRequestHandler):
+    """Scene Exception operation request handler, to update all scene exception types."""
+
+    def set_default_headers(self):
+        """Set default CORS headers."""
+        super(SceneExceptionAllTypeOperationHandler, self).set_default_headers()
+        self.set_header('Access-Control-Allow-Methods', 'POST')
+
+    def post(self):
+        """Start scene exceptions type operation. To refresh all scene exception types."""
+        json_body = json_decode(self.request.body)
+
+        if json_body.get('type', '') == 'REFRESH':
+            retrieve_exceptions(force=True, exception_type=None)
+            return self.api_finish(status=201)
+        return self.api_finish(status=400)
+
+
+class SceneExceptionTypeOperationHandler(BaseRequestHandler):
     """Scene Exception operation request handler."""
 
     def set_default_headers(self):
         """Set default CORS headers."""
-        super(SceneExceptionOperationHandler, self).set_default_headers()
-        self.set_header('Access-Control-Allow-Methods', 'PUT')
+        super(SceneExceptionTypeOperationHandler, self).set_default_headers()
+        self.set_header('Access-Control-Allow-Methods', 'POST')
 
-    def post(self):
-        """Start fetch retrieving scene name exceptions."""
+    def post(self, exception_type):
+        """Start scene exceptions type operation."""
+        if not exception_type or exception_type not in ['medusa', 'xem', 'anidb']:
+            return self.api_finish(status=400)
+
+        exception_type = {'medusa': 'custom_exceptions'}.get(exception_type, exception_type)
+
         json_body = json_decode(self.request.body)
 
         if json_body.get('type', '') == 'REFRESH':
-            retrieve_exceptions(force=True)
+            retrieve_exceptions(force=True, exception_type=exception_type)
             return self.api_finish(status=201)
         return self.api_finish(status=400)
 
