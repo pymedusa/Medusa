@@ -26,13 +26,13 @@ function displayPNotify(type, title, message) {
     });
 }
 
-function WSCheckNotifications() {
+function wsCheckNotifications() {
     var ws = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
-    ws.onmessage = function (evt) {
+    ws.onmessage = function(evt) {
         var msg;
         try {
             msg = JSON.parse(evt.data);
-        } catch(e) {
+        } catch (err) {
             msg = evt.data;
         }
 
@@ -46,7 +46,7 @@ function WSCheckNotifications() {
 }
 
 $(document).ready(function() {
-    WSCheckNotifications();
+    wsCheckNotifications();
     if (test) {
         displayPNotify('notice', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
     }
