@@ -1169,7 +1169,8 @@ class PostProcessor(object):
         self._log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
         # create any folders we need
-        helpers.make_dirs(dest_path)
+        if not helpers.make_dirs(dest_path):
+            raise EpisodePostProcessingFailedException('Unable to create destination folder to the files')
 
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
