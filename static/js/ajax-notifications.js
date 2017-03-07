@@ -19,7 +19,7 @@ function displayPNotify(type, title, message) {
     new PNotify({ // eslint-disable-line no-new
         type: type,
         title: title,
-        text: message.replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
+        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
             .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*')
             .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
             .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
@@ -29,11 +29,18 @@ function displayPNotify(type, title, message) {
 function WSCheckNotifications() {
     var ws = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
     ws.onmessage = function (evt) {
-        var parsedJson = $.parseJSON(evt.data);
+        var msg;
+        try {
+            msg = JSON.parse(evt.data);
+        } catch(e) {
+            msg = evt.data;
+        }
 
         // Add handling for different kinds of events. For ex: {"event": "notification", "data": {"title": ..}}
-        if (parsedJson.event === 'notification') {
-            displayPNotify(parsedJson.data.type, parsedJson.data.title, parsedJson.data.body);
+        if (msg.event === 'notification') {
+            displayPNotify(msg.data.type, msg.data.title, msg.data.body);
+        } else {
+            displayPNotify('info', '', msg);
         }
     };
 }
