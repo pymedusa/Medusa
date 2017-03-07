@@ -39,7 +39,7 @@ from medusa.helper.exceptions import (
     CantUpdateShowException,
     EpisodeDeletedException,
     MultipleShowObjectsException,
-    ShowDirectoryNotFoundException, ex
+    ShowDirectoryNotFoundException
 )
 from medusa.helpers import (
     chmod_as_parent,
