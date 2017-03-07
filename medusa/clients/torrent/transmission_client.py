@@ -233,12 +233,15 @@ class TransmissionAPI(GenericClient):
         4 = Downloading
         5 = Queued to seed
         6 = Seeding
+
+        isFinished = whether seeding finished (based on idle timeout or seed ratio)
+        IsStalled =  Based on Tranmission setting "Transfer is stalled when inactive for"
         """
         logger.info('Checking Transmission torrent status.')
 
         return_params = {
-            'fields': ['id', 'name', 'hashString', 'percentDone', 'status', 'eta', 'isStalled',
-                       'isFinished', 'downloadDir', 'uploadRatio', 'secondsSeeding', 'seedIdleLimit', 'files']
+            'fields': ['name', 'hashString', 'percentDone', 'status', 'isStalled', 'errorString', 'seedRatioLimit',
+                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files']
         }
 
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
@@ -278,8 +281,11 @@ class TransmissionAPI(GenericClient):
                 continue
 
             status = 'busy'
+            error_string = torrent.get('errorString')
             if torrent.get('isStalled') and not torrent['percentDone'] == 1:
-                status = 'failed'
+                status = 'stalled'
+            elif error_string and 'unregistered torrent' in error_string.lower():
+                status = 'unregistered'
             elif torrent['status'] == 0:
                 if torrent['percentDone'] == 1 and torrent.get('isFinished'):
                     status = 'completed'
@@ -287,14 +293,23 @@ class TransmissionAPI(GenericClient):
                     status = 'stopped'
 
             if status == 'completed':
-                logger.info("Torrent completed and reached minimum ratio: [{ratio:.3f}] or "
+                logger.info("Torrent completed and reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}] or "
                             "seed idle limit: [{seed_limit} min]. Removing it: [{name}]",
-                            ratio=torrent['uploadRatio'], seed_limit=torrent['seedIdleLimit'], name=torrent['name'])
-                #  self.remove_torrent(torrent['hashString'])
+                            ratio=torrent['uploadRatio'],
+                            ratio_limit=torrent['seedRatioLimit'],
+                            seed_limit=torrent['seedIdleLimit'],
+                            name=torrent['name'])
+                self.remove_torrent(torrent['hashString'])
+            elif status == 'stalled':
+                logger.warning("Torrent is stalled. Check it: [{name}]", name=torrent['name'])
+            elif status == 'unregistered':
+                logger.warning("Torrent was unregistered from tracker. Check it: [{name}]", name=torrent['name'])
             else:
-                logger.info("Torrent didn't reached minimum ratio: [{ratio}]. "
+                logger.info("Torrent didn't reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}]. "
                             "Keeping it: [{name}]",
-                            ratio=torrent['uploadRatio'], name=torrent['name'])
+                            ratio=torrent['uploadRatio'],
+                            ratio_limit=torrent['seedRatioLimit'],
+                            name=torrent['name'])
 
         if not found_torrents:
             logger.info('No torrents found that were snatched by Medusa')
