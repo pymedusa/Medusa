@@ -47,7 +47,7 @@ class Notifications(object):
         push_to_web_socket(json.dumps({'event': 'notification',
                                        'data': {'title': new_notification.title,
                                                 'body': new_notification.message,
-                                                'type': new_notification.type}}))
+                                                'type': new_notification.notification_type}}))
 
     def error(self, title, message=''):
         """
@@ -60,7 +60,7 @@ class Notifications(object):
         push_to_web_socket(json.dumps({'event': 'notification',
                                        'data': {'title': new_notification.title,
                                                 'body': new_notification.message,
-                                                'type': new_notification.type}}))
+                                                'type': new_notification.notification_type}}))
 
     def get_notifications(self, remote_ip='127.0.0.1'):
         """

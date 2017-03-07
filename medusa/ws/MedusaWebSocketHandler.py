@@ -21,11 +21,16 @@
 from tornado.websocket import WebSocketHandler
 
 clients = []
+backlogged_msgs = []
 
 
 def push_to_web_socket(msg):
-    for client in clients:
-        client.write_message(msg)
+    if len(clients):
+        for client in clients:
+            client.write_message(msg)
+    else:
+        # No clients so let's backlog this
+        backlogged_msgs.append(msg)
 
 
 class WebSocketUIHandler(WebSocketHandler):
@@ -35,6 +40,10 @@ class WebSocketUIHandler(WebSocketHandler):
     def open(self, *args, **kwargs):
         clients.append(self)
         WebSocketHandler.open(self, *args, **kwargs)
+        if len(clients) == 0 and len(backlogged_msgs):
+            # We have pending messages and a new client
+            for msg in backlogged_msgs:
+                push_to_web_socket(msg)
 
     def on_message(self, message):
         print(u"Received: " + message)
