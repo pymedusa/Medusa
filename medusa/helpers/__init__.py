@@ -416,7 +416,7 @@ def make_dirs(path):
             try:
                 logger.debug(u"Folder {path} didn't exist, creating it", path=path)
                 os.makedirs(path)
-            except (OSError, IOError) as e:
+            except (OSError, IOError, WindowsError) as e:
                 logger.error(u"Failed creating {path} : {error!r}", path=path, error=e)
                 return False
 
@@ -442,7 +442,7 @@ def make_dirs(path):
                     # do the library update for synoindex
                     from medusa import notifiers
                     notifiers.synoindex_notifier.addFolder(sofar)
-                except (OSError, IOError) as e:
+                except (OSError, IOError, WindowsError) as e:
                     logger.error(u'Failed creating {path} : {error!r}', path=sofar, error=e)
                     return False
 
