@@ -806,31 +806,8 @@ class PostProcessor(object):
                     # Check if the last snatch was a manual snatch
                     if history_result[0]['manually_searched']:
                         self.manually_searched = True
-
-                    download_result = main_db_con.select(
-                        'SELECT resource '
-                        'FROM history '
-                        'WHERE showid = ? '
-                        'AND season = ? '
-                        'AND episode = ? '
-                        'AND quality = ? '
-                        "AND action LIKE '%04' "
-                        'ORDER BY date DESC',
-                        [show_id, season, episode, quality])
-
-                    if download_result:
-                        download_name = os.path.basename(download_result[0]['resource'])
-                        # If the file name we are processing differs from the file
-                        # that was previously processed, we want this file
-                        if self.file_name != download_name:
-                            self.in_history = True
-                            return
-
-                    else:
-                        # There aren't any other files processed before for this
-                        # episode and quality, we can safely say we want this file
-                        self.in_history = True
-                        return
+                    self.in_history = True
+                return
 
     def _is_priority(self, old_ep_quality, new_ep_quality):
             """
