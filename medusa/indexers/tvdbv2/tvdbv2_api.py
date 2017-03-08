@@ -59,7 +59,7 @@ class TVDBv2(BaseIndexer):
 
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
-        apikey = '0629B785CE550C8D'
+        apikey = '4EEBC22487003BC1'
 
         authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
 
