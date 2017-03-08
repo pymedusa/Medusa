@@ -637,6 +637,21 @@
                                         </span>
                                     </label>
                                 </div>
+                                <div class="field-pair" id="torrent_seed_location_option">
+                                    <label>
+                                        <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p>where Transmission will move Torrents after Post-Processing<br/>
+                                                   <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
+                                                   to another location after Post-Processor to prevent reprocessing the same file over and over.
+                                                   This feature does a "Set Torrent location" or "Move Torrent" like in client
+                                                </p>
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
                                 <div class="field-pair" id="torrent_seed_time_option">
                                     <label>
                                         <span class="component-title" id="torrent_seed_time_label">Minimum seeding time is</span>

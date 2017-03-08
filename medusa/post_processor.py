@@ -27,6 +27,8 @@ from collections import OrderedDict
 
 import adba
 
+from medusa.clients import torrent
+
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
@@ -92,6 +94,8 @@ class PostProcessor(object):
         self.anidbEpisode = None
 
         self.manually_searched = False
+
+        self.info_hash = None
 
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
@@ -788,7 +792,7 @@ class PostProcessor(object):
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality, manually_searched '
+                    'SELECT quality, manually_searched, info_hash '
                     'FROM history '
                     'WHERE showid = ? '
                     'AND season = ? '
@@ -806,6 +810,8 @@ class PostProcessor(object):
                     # Check if the last snatch was a manual snatch
                     if history_result[0]['manually_searched']:
                         self.manually_searched = True
+                    # Get info hash so we can move torrent if setting is enabled
+                    self.info_hash = history_result[0]['info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -1145,11 +1151,11 @@ class PostProcessor(object):
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if release_name is not None:
-            failed_history.log_success(release_name)
+        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        if nzb_release_name is not None:
+            failed_history.log_success(nzb_release_name)
         else:
-            self._log(u"Couldn't determine release name, aborting", logger.WARNING)
+            self._log(u"Couldn't determine NZB release name, aborting", logger.WARNING)
 
         # find the destination folder
         try:
@@ -1262,5 +1268,22 @@ class PostProcessor(object):
                        u'Continuing with post-processing...'.format(e))
 
         self._run_extra_scripts(ep_obj)
+
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+            logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
+            try:
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
+                if self.info_hash and client.move_torrent(self.info_hash):
+                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
+                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
+                               logger.WARNING)
+                else:
+                    logger.log("Could not move from '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
+                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+            except Exception as e:
+                logger.log("Failed to move from '{release}' torrent with hash: {hash} to: '{path}'."
+                           "Error: {error}".format(release=self.release_name, hash=self.info_hash,
+                                                   path=app.TORRENT_SEED_LOCATION, error=e), logger.DEBUG)
 
         return True
