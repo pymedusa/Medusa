@@ -48,6 +48,7 @@ from medusa.common import (
 from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
+    pretty_file_size,
     try_int,
 )
 from medusa.helper.exceptions import (
@@ -109,7 +110,9 @@ from requests.compat import (
     unquote_plus,
 )
 from six import iteritems
+
 from tornroutes import route
+
 from traktor import (
     MissingTokenException,
     TokenExpiredException,
@@ -1259,6 +1262,7 @@ class Home(WebRoot):
                 i['status'], i['quality'] = Quality.split_composite_status(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
+                i['resource_size'] = pretty_file_size(i['resource_size']) if i['resource_size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
