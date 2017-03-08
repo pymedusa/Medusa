@@ -1245,7 +1245,7 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource '
+                b'SELECT date, action, provider, resource, resource_size '
                 b'FROM history '
                 b'WHERE showid = ? '
                 b'AND season = ? '
@@ -1287,7 +1287,8 @@ class Home(WebRoot):
                 elif any([item for item in episode_history
                           if all([provider_result['name'] in item['resource'],
                                   item['provider'] in (provider_result['provider'],),
-                                  item['status'] in snatched_statuses])
+                                  item['status'] in snatched_statuses,
+                                  item['resource_size'] == provider_result['size']],)
                           ]):
                     provider_result['status_highlight'] = 'snatched'
                 else:
