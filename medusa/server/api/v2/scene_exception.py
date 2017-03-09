@@ -25,6 +25,8 @@ class SceneExceptionTypeHandler(BaseRequestHandler):
         self.set_header('Access-Control-Allow-Methods', 'GET')
 
     def get(self, exception_type):
+        """Return a list or instance of exception types."""
+        exception_types = []
         if exception_type is not None and exception_type not in ['medusa', 'xem', 'anidb']:
             return self.api_finish(status=400)
 
@@ -32,12 +34,12 @@ class SceneExceptionTypeHandler(BaseRequestHandler):
             mapped_exception_type = {'medusa': 'custom_exceptions'}.get(exception_type, exception_type)
             for k, v in get_last_updates().items():
                 if k == mapped_exception_type:
-                    last_updated = {"id": {'custom_exceptions': 'medusa'}.get(k, k), "lastUpdate": v}
+                    exception_types = {"id": {'custom_exceptions': 'medusa'}.get(k, k), "lastUpdate": v}
         else:
-            last_updated = [{"id": {'custom_exceptions': 'medusa'}.get(k, k), "lastUpdate": v}
-                            for k, v in get_last_updates().items()]
+            exception_types = [{"id": {'custom_exceptions': 'medusa'}.get(k, k), "lastUpdate": v}
+                               for k, v in get_last_updates().items()]
 
-        self.api_finish(data=last_updated)
+        self.api_finish(data=exception_types)
 
 
 class SceneExceptionAllTypeOperationHandler(BaseRequestHandler):

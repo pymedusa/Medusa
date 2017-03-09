@@ -82,8 +82,8 @@ from medusa.helpers.externals import get_externals
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
-    indexer_id_to_slug,
     indexerConfig,
+    indexer_id_to_slug,
     mappings,
     reverse_mappings
 )

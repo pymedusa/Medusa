@@ -117,7 +117,8 @@ def indexer_name_to_id(indexer_name):
     """Reverse translate the indexer identifier to it's id.
 
     :param indexer_name: Identifier of the indexer. Example: will return 1 for 'tvdb'.
-    :return: The indexer id."""
+    :return: The indexer id.
+    """
     return {v['identifier']: k for k, v in indexerConfig.items()}[indexer_name]
 
 
