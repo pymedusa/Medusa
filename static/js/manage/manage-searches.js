@@ -17,7 +17,7 @@ MEDUSA.manage.manageSearches = function() {
         });
         var anidbExceptionDate = new Date(anidbException.lastUpdate * 1000).toLocaleDateString();
 
-        var table = $('<ul></ul>')
+        var table = $('<ul class="simpleList"></ul>')
             .append(
                 '<li>' +
                 '<a href="' + MEDUSA.config.anonRedirect +
@@ -47,9 +47,20 @@ MEDUSA.manage.manageSearches = function() {
         log.error('Trying to get scene exceptions failed with error: ' + err);
     });
 
+    var updateSpinner = function(spinnerContainer, message, showSpinner) {
+        // get spinner object as needed
+        if (showSpinner) {
+            message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
+        }
+        $(spinnerContainer).empty().append(message);
+    };
+
     $('.forceSceneExceptionRefresh').on('click', function() {
         var status = $('#sceneExceptionStatus');
-        status[0].innerHTML = 'Retrieving scene exceptions...';
+        // Start a spinner.
+        updateSpinner(status, 'Retrieving scene exceptions...', true);
+
+        //status[0].innerHTML = 'Retrieving scene exceptions...';
 
         api.post('exceptiontype/operation', {type: 'REFRESH'}, {
             timeout: 60000
@@ -64,9 +75,12 @@ MEDUSA.manage.manageSearches = function() {
                 $('.forceSceneExceptionRefresh').addClass('disabled');
             }).catch(function(err) {
                 log.error('Trying to get scene exceptions failed with error: ' + err);
+                updateSpinner(status, 'Trying to get scene exceptions failed with error: ' + err, false);
             });
+            updateSpinner(status, 'Finished updating scene exceptions.', false);
         }).catch(function(err) {
             log.error('Trying to update scene exceptions failed with error: ' + err);
+            updateSpinner(status, 'Trying to update scene exceptions failed with error: ' + err, false);
         });
     });
 };
