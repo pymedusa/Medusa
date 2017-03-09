@@ -317,6 +317,8 @@ class TransmissionAPI(GenericClient):
                     status = 'completed'
                 else:
                     status = 'stopped'
+            elif torrent['status'] == 6:
+                status = 'seeding'
 
             if status == 'completed':
                 logger.info("Torrent completed and reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}] or "
@@ -330,12 +332,25 @@ class TransmissionAPI(GenericClient):
                 logger.warning("Torrent is stalled. Check it: [{name}]", name=torrent['name'])
             elif status == 'unregistered':
                 logger.warning("Torrent was unregistered from tracker. Check it: [{name}]", name=torrent['name'])
+            elif status == 'seeding':
+                if float(torrent['uploadRatio']) < float(torrent['seedRatioLimit']):
+                    logger.info("Torrent didn't reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}]. "
+                                "Keeping it: [{name}]",
+                                ratio=torrent['uploadRatio'],
+                                ratio_limit=torrent['seedRatioLimit'],
+                                name=torrent['name'])
+                else:
+                    logger.info("Torrent completed and reached minimum ratio but it was force started again. "
+                                "Current ratio: [{ratio:.3f}/{ratio_limit:.3f}]. Keeping it: [{name}]",
+                                ratio=torrent['uploadRatio'],
+                                ratio_limit=torrent['seedRatioLimit'],
+                                name=torrent['name'])
+            elif status in ('stopped', 'busy'):
+                logger.info("Torrent is {status}. Keeping it: [{name}]", status=status, name=torrent['name'])
             else:
-                logger.info("Torrent didn't reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}]. "
-                            "Keeping it: [{name}]",
-                            ratio=torrent['uploadRatio'],
-                            ratio_limit=torrent['seedRatioLimit'],
-                            name=torrent['name'])
+                logger.warning("Torrent has an unmapped status. Keeping it: [{name}]. Report torrent info: {info}",
+                               name=torrent['name'],
+                               info=torrent)
 
         if not found_torrents:
             logger.info('No torrents found that were snatched by Medusa')
