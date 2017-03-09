@@ -1,5 +1,8 @@
 MEDUSA.manage.manageSearches = function() {
-    // Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
+    /**
+     * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
+     * @param exceptions - A list of exception types with their last_updates.
+     */
     var updateExceptionTable = function(exceptions) {
         var status = $('#sceneExceptionStatus');
         var medusaException = _.find(exceptions.data, function(obj) {
@@ -41,26 +44,27 @@ MEDUSA.manage.manageSearches = function() {
         $('.forceSceneExceptionRefresh').removeClass('disabled');
     };
 
-    api.get('exceptiontype').then(function(response) {
-        updateExceptionTable(response);
-    }).catch(function(err) {
-        log.error('Trying to get scene exceptions failed with error: ' + err);
-    });
-
+    /**
+     * Update an element with a spinner gif and a descriptive message.
+     * @param spinnerContainer - An element we can use to add the spinner and message to.
+     * @param message - A string with the message to display behind the spinner.
+     * @param showSpinner - A boolean to show or not show the spinner (gif).
+     */
     var updateSpinner = function(spinnerContainer, message, showSpinner) {
-        // get spinner object as needed
         if (showSpinner) {
-            message = '<img id="searchingAnim" src="images/loading32' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
+            message = '<img id="searchingAnim" src="images/loading32' +
+                MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />&nbsp;' + message;
         }
         $(spinnerContainer).empty().append(message);
     };
 
+    /**
+     * Trigger the force refresh of all the exception types.
+     */
     $('.forceSceneExceptionRefresh').on('click', function() {
         var status = $('#sceneExceptionStatus');
         // Start a spinner.
         updateSpinner(status, 'Retrieving scene exceptions...', true);
-
-        //status[0].innerHTML = 'Retrieving scene exceptions...';
 
         api.post('exceptiontype/operation', {type: 'REFRESH'}, {
             timeout: 60000
@@ -82,5 +86,12 @@ MEDUSA.manage.manageSearches = function() {
             log.error('Trying to update scene exceptions failed with error: ' + err);
             updateSpinner(status, 'Trying to update scene exceptions failed with error: ' + err, false);
         });
+    });
+
+    // Initially load the exception types last updates on page load.
+    api.get('exceptiontype').then(function(response) {
+        updateExceptionTable(response);
+    }).catch(function(err) {
+        log.error('Trying to get scene exceptions failed with error: ' + err);
     });
 };
