@@ -314,13 +314,13 @@ class TransmissionAPI(GenericClient):
                                 ratio_limit=torrent['seedRatioLimit'],
                                 name=torrent['name'])
                 else:
-                    logger.info("Torrent completed and reached minimum ratio but it was restarted to seed more. "
+                    logger.info("Torrent completed and reached minimum ratio but it was force started again. "
                                 "Current ratio: [{ratio:.3f}/{ratio_limit:.3f}]. Keeping it: [{name}]",
                                 ratio=torrent['uploadRatio'],
                                 ratio_limit=torrent['seedRatioLimit'],
                                 name=torrent['name'])
-            elif status == 'stopped':
-                logger.info("Torrent is stopped. Keeping it: [{name}]", name=torrent['name'])
+            elif status in ('stopped', 'busy'):
+                logger.info("Torrent is {status}. Keeping it: [{name}]", status=status, name=torrent['name'])
             else:
                 logger.warning("Torrent has an unmapped status. Keeping it: [{name}]. Report torrent info: {info}",
                                name=torrent['name'],
