@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """TVDB2 api module."""
+import datetime
 import logging
 from collections import OrderedDict
 
@@ -32,6 +33,53 @@ from ..indexer_ui import BaseUI, ConsoleUI
 
 
 logger = logging.getLogger(__name__)
+
+FALLBACK_TIMEOUT = 600
+API_BASE_TVDB = 'https://api.thetvdb.com'
+API_BASE_URL_FALLBACK = 'https://tvdb2.plex.tv'
+# Initiate the tvdb api v2
+api_base_url = API_BASE_TVDB
+plex_fallback_time = datetime.datetime.now()
+tvdb_connect_failures_count = 0
+
+
+def plex_fallback(func):
+    def inner(*args, **kwargs):
+        global plex_fallback_time
+        global api_base_url
+        global tvdb_connect_failures_count
+
+        if plex_fallback_time + datetime.timedelta(seconds=FALLBACK_TIMEOUT) < datetime.datetime.now():
+            api_base_url = API_BASE_TVDB
+            tvdb_connect_failures_count = 0
+        else:
+            logger.debug("Plex fallback still enabled.")
+
+        try:
+            api_result = func(*args, **kwargs)
+        except ApiException as e:
+            logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
+            tvdb_connect_failures_count += 1
+            if tvdb_connect_failures_count < 4:
+                raise
+        except (MaxRetryError, RequestError) as e:
+            logger.warning("could not connect to TheTvdb.com, with reason '%s'.", e.reason)
+            tvdb_connect_failures_count += 1
+            if tvdb_connect_failures_count < 4:
+                raise
+        except Exception as e:
+            logger.warning("could not connect to TheTvdb.com, with reason '%s'.", e.message)
+            tvdb_connect_failures_count += 1
+            if tvdb_connect_failures_count < 4:
+                raise
+
+        if tvdb_connect_failures_count > 3:
+            api_base_url = API_BASE_URL_FALLBACK
+            plex_fallback_time = datetime.datetime.now()
+
+        api_result = func(*args, **kwargs)
+        return api_result
+    return inner
 
 
 class TVDBv2(BaseIndexer):
@@ -54,30 +102,9 @@ class TVDBv2(BaseIndexer):
         self.config['artwork_prefix'] = '%(base_url)s/banners/%%s' % self.config
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
-        # Initiate the tvdb api v2
-        api_base_url = 'https://api.thetvdb.com'
-
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
         apikey = '0629B785CE550C8D'
-
-        authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
-
-        try:
-            unauthenticated_client = ApiClient(api_base_url)
-            auth_api = AuthenticationApi(unauthenticated_client)
-            access_token = auth_api.login_post(authentication_string)
-            auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
-        except ApiException as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
-        except (MaxRetryError, RequestError) as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
-
-        self.search_api = SearchApi(auth_client)
-        self.series_api = SeriesApi(auth_client)
-        self.updates_api = UpdatesApi(auth_client)
 
         # An api to indexer series/episode object mapping
         self.series_map = {
@@ -98,6 +125,28 @@ class TVDBv2(BaseIndexer):
             'rating': 'contentrating',
             'imdbId': 'imdb_id'
         }
+
+        self._authenticate(apikey)
+
+    @plex_fallback
+    def _authenticate(self, apikey, username='', password=''):
+        authentication_string = {'apikey': apikey, 'username': username, 'userpass': password}
+
+        try:
+            unauthenticated_client = ApiClient(api_base_url)
+            auth_api = AuthenticationApi(unauthenticated_client)
+            access_token = auth_api.login_post(authentication_string)
+            auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
+        except ApiException as e:
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
+        except (MaxRetryError, RequestError) as e:
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
+
+        self.search_api = SearchApi(auth_client)
+        self.series_api = SeriesApi(auth_client)
+        self.updates_api = UpdatesApi(auth_client)
 
     def _object_to_dict(self, tvdb_response, key_mapping=None, list_separator='|'):
         parsed_response = []
@@ -137,7 +186,8 @@ class TVDBv2(BaseIndexer):
                             return_dict[attribute] = value
 
                     except Exception as e:
-                        logger.warning('Exception trying to parse attribute: %s, with exception: %r', attribute, e)
+                        logger.warning('Exception trying to parse attribute: %s, with exception: %r', attribute,
+                                       e.message)
                 parsed_response.append(return_dict)
             else:
                 logger.debug('Missing attribute map, cant parse to dict')
@@ -157,7 +207,7 @@ class TVDBv2(BaseIndexer):
                 'Show search failed in getting a result with reason: %s' % e.reason
             )
         except (MaxRetryError, RequestError) as e:
-            raise IndexerException('Show search failed in getting a result with error: %r' % e)
+            raise IndexerException('Show search failed in getting a result with error: %r' % e.message)
 
         if results:
             return results
@@ -165,6 +215,7 @@ class TVDBv2(BaseIndexer):
             return OrderedDict({'data': None})
 
     # Tvdb implementation
+    @plex_fallback
     def search(self, series):
         """Search tvdbv2.com for the series name.
 
@@ -188,6 +239,7 @@ class TVDBv2(BaseIndexer):
 
         return OrderedDict({'series': cleaned_results})['series']
 
+    @plex_fallback
     def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
         """Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
 
@@ -218,6 +270,7 @@ class TVDBv2(BaseIndexer):
         episodes = self._download_episodes(tvdb_id, specials=False, aired_season=None)
         return self._parse_episodes(tvdb_id, episodes)
 
+    @plex_fallback
     def _download_episodes(self, tvdb_id, specials=False, aired_season=None):
         """Download episodes for a given tvdb_id.
 
@@ -261,11 +314,11 @@ class TVDBv2(BaseIndexer):
             logger.debug('Error trying to index the episodes')
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
-                'could not get any episodes. Did a {search_type} search. Exception: {ex}'.format
-                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), ex=e)
+                'could not get any episodes. Did a {search_type} search. Exception: {e}'.format
+                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), e=e.message)
             )
         except (MaxRetryError, RequestError) as e:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {e}'.format(e=e.message))
 
         if not results:
             logger.debug('Series results incomplete')
@@ -354,6 +407,7 @@ class TVDBv2(BaseIndexer):
 
         return ui.select_series(all_series)
 
+    @plex_fallback
     def _parse_images(self, sid):
         """Parse images XML.
 
@@ -389,7 +443,7 @@ class TVDBv2(BaseIndexer):
         try:
             series_images_count = self.series_api.series_id_images_get(sid, accept_language=self.config['language'])
         except Exception as e:
-            logger.debug('Could not get image count for showid: %s, with exception: %r', sid, e)
+            logger.debug('Could not get image count for showid: %s, with exception: %r', sid, e.message)
             return False
 
         for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
@@ -442,12 +496,13 @@ class TVDBv2(BaseIndexer):
                         base_path[k] = v
 
             except Exception as e:
-                logger.warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
+                logger.warning('Could not parse Poster for showid: %s, with exception: %s', sid, e.message)
                 return False
 
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
 
+    @plex_fallback
     def _parse_actors(self, sid):
         """Parser actors XML.
 
@@ -567,7 +622,7 @@ class TVDBv2(BaseIndexer):
                 total_updates += [int(_.id) for _ in updates]
                 count += 1
         except (ApiException, MaxRetryError, RequestError) as e:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {e}'.format(e=e.message))
 
         if total_updates and filter_show_list:
             new_list = []
