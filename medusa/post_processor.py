@@ -457,7 +457,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to move file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -467,7 +467,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
         def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -477,7 +477,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to hard link the files to their new home')
 
         def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
@@ -488,7 +488,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
