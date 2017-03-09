@@ -5,20 +5,21 @@ MEDUSA.manage.manageSearches = function() {
      */
     var updateExceptionTable = function(exceptions) {
         var status = $('#sceneExceptionStatus');
-        var medusaException = _.find(exceptions.data, function(obj) {
+
+        var medusaException = exceptions.data.filter(function(obj) {
             return obj.id === 'medusa';
         });
-        var cusExceptionDate = new Date(medusaException.lastUpdate * 1000).toLocaleDateString();
+        var cusExceptionDate = new Date(medusaException[0].lastUpdate * 1000).toLocaleDateString();
 
-        var xemException = _.find(exceptions.data, function(obj) {
+        var xemException = exceptions.data.filter(function(obj) {
             return obj.id === 'xem';
         });
-        var xemExceptionDate = new Date(xemException.lastUpdate * 1000).toLocaleDateString();
+        var xemExceptionDate = new Date(xemException[0].lastUpdate * 1000).toLocaleDateString();
 
-        var anidbException = _.find(exceptions.data, function(obj) {
+        var anidbException = exceptions.data.filter(function(obj) {
             return obj.id === 'anidb';
         });
-        var anidbExceptionDate = new Date(anidbException.lastUpdate * 1000).toLocaleDateString();
+        var anidbExceptionDate = new Date(anidbException[0].lastUpdate * 1000).toLocaleDateString();
 
         var table = $('<ul class="simpleList"></ul>')
             .append(
