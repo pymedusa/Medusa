@@ -1217,7 +1217,7 @@ class Series(TV):
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
-        self.runtime = str(getattr(indexed_show, 'runtime', ''))
+        self.runtime = int(getattr(indexed_show, 'runtime', 0))
 
         # set the externals, using the result from the indexer.
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
@@ -1278,7 +1278,7 @@ class Series(TV):
             'countries': '',
             'country_codes': '',
             'rating': str(imdb_obj.rating) or '',
-            'votes': str(imdb_obj.votes) or '',
+            'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
             'certificates': imdb_obj.certification or '',
             'plot': imdb_obj.plots[0] if imdb_obj.plots else imdb_obj.plot_outline or '',
