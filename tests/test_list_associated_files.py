@@ -27,9 +27,8 @@ class TestPostProcessor(PostProcessor):
 
 
 @pytest.mark.parametrize('p', [
-    {  # p0: Process file and no associated files
+    {  # p0: No associated files. Wrong basename
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
             'bow.514.hdtv-lol[ettv].mkv',
             'bow.514.hdtv-lol.srt',
@@ -41,9 +40,8 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': [],
         'allowed_extensions': "nfo,srt"
     },
-    {  # p1: Process file and no associated file
+    {  # p1: No associated files
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
             'bow.514.hdtv-lol[ettv].mkv',
             {'samples': (
@@ -56,18 +54,16 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': [],
         'allowed_extensions': "nfo,srt"
     },
-    {  # p2: Don't Process file and not associated file
+    {  # p2: No media file, so can't list associated files
         'path': 'media/postprocess/',
-        'expected': False,
         'structure': (
             'bow.514.hdtv-lol.srt',
         ),
         'expected_associated_files': [],
         'allowed_extensions': "nfo,srt"
     },
-    {  # p3: Process file and .srt and .nfo associated files. Check subfolders
+    {  # p3: .srt and .nfo associated files. Check subfolders
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
@@ -87,9 +83,8 @@ class TestPostProcessor(PostProcessor):
         'subfolders': True
 
     },
-    {  # p4: Process file and only .nfo associated file
+    {  # p4: Only .nfo associated file allowed
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
@@ -100,9 +95,8 @@ class TestPostProcessor(PostProcessor):
                                       ],
         'allowed_extensions': "nfo"
     },
-    {  # p5: Process file and no allowed extensions
+    {  # p5: No allowed extensions
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
@@ -112,9 +106,8 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': [],
         'allowed_extensions': ""
     },
-    {  # p6: Process file. RARed file with .rar associated file
+    {  # p6: Associated file based on RARed file
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
                 'show.101.720p-dimension.rar',
@@ -123,9 +116,8 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': ['show.101.720p-dimension.nfo'],
         'allowed_extensions': "nfo"
     },
-    {  # p7: Process file and subtitles only for associated files
+    {  # p7: 'Subtitles only' param for associated files
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
@@ -136,9 +128,8 @@ class TestPostProcessor(PostProcessor):
         'allowed_extensions': "nfo,srt",
         'subtitles_only': True
     },
-    {  # p8: Process file and subtitle in subfolder. Check subfolders enabled
+    {  # p8: Subtitle in subfolder. Check subfolders enabled
         'path': 'media/postprocess/',
-        'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
                 {'subs': (
