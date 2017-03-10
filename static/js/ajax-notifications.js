@@ -44,11 +44,17 @@ function wsCheckNotifications() {
             displayPNotify('info', '', msg);
         }
     };
+
+    ws.onerror = function(evt) {
+        console.log('Error connecting to websocket. Please check your network connecton: ' + evt);
+        displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
+            'If you are using a reverse proxy, please take a look at our wiki for config examples.');
+    };
 }
 
 $(document).ready(function() {
     wsCheckNotifications();
     if (test) {
-        displayPNotify('notice', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
+        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
     }
 });
