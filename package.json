@@ -13,7 +13,8 @@
     "test-js": "xo",
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "security": "snyk test",
-    "build": "node_modules/grunt-cli/bin/grunt"
+    "build": "node_modules/grunt-cli/bin/grunt",
+    "install": "yarn run test-js"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
