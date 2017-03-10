@@ -45,8 +45,9 @@ function wsCheckNotifications() {
         }
     };
 
-    ws.onerror = function(evt) {
-        console.log('Error connecting to websocket. Please check your network connecton: ' + evt);
+    ws.onerror = function() {
+        log.warn('Error connecting to websocket. Please check your network connection. ' +
+            'If you are using a reverse proxy, please take a look at our wiki for config examples.');
         displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
     };
