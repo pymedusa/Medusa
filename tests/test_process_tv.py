@@ -30,8 +30,6 @@ class TestPostProcessor(PostProcessor):
 @pytest.mark.parametrize('p', [
     {  # p0: Process file and no associated files
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
             'bow.514.hdtv-lol[ettv].mkv',
@@ -46,8 +44,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p1: Process file and no associated file
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
             'bow.514.hdtv-lol[ettv].mkv',
@@ -63,8 +59,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p2: Don't Process file and not associated file
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': False,
         'structure': (
             'bow.514.hdtv-lol.srt',
@@ -74,8 +68,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p3: Process file and .srt and .nfo associated files. Check subfolders
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
@@ -98,8 +90,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p4: Process file and only .nfo associated file
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
@@ -113,8 +103,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p5: Process file and no allowed extensions
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
@@ -127,8 +115,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p6: Process file. RARed file with .rar associated file
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
@@ -140,8 +126,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p7: Process file and subtitles only for associated files
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
@@ -155,8 +139,6 @@ class TestPostProcessor(PostProcessor):
     },
     {  # p8: Process file and subtitle in subfolder. Check subfolders enabled
         'path': 'media/postprocess/',
-        'nzb_name': None,
-        'failed': False,
         'expected': True,
         'structure': (
                 'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
@@ -178,6 +160,8 @@ def test_should_process(p, create_structure):
     path = os.path.join(test_path, os.path.normcase(p['path']))
     file = os.path.join(path, p['structure'][0])
     expected_associated_files = p['expected_associated_files']
+    nzb_name = p.get('nzb_name', None)
+    failed = p.get('failed', False)
     subtitles_only = p.get('subtitles_only', False)
     subfolders = p.get('subfolders', False)
     app.ALLOWED_EXTENSIONS = p['allowed_extensions']
@@ -187,7 +171,7 @@ def test_should_process(p, create_structure):
     processor = TestPostProcessor(file)
 
     # When
-    result = sut.should_process(path, p['nzb_name'], p['failed'])
+    result = sut.should_process(path, nzb_name, failed)
     found_associated_files = processor.list_associated_files(file, subtitles_only=subtitles_only, subfolders=subfolders)
     associated_files_basenames = [os.path.basename(i) for i in found_associated_files]
 
