@@ -72,7 +72,7 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': [],
         'allowed_extensions': "nfo,srt"
     },
-    {  # p3: Process file and .srt and .nfo associated files
+    {  # p3: Process file and .srt and .nfo associated files. Check subfolders
         'path': 'media/postprocess/',
         'nzb_name': None,
         'failed': False,
@@ -92,7 +92,8 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': ['Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
                                       'Show.S01E01.720p.HDTV.X264-DIMENSION.nfo',
                                       ],
-        'allowed_extensions': "nfo,srt"
+        'allowed_extensions': "nfo,srt",
+        'subfolders': True
 
     },
     {  # p4: Process file and only .nfo associated file
@@ -137,6 +138,38 @@ class TestPostProcessor(PostProcessor):
         'expected_associated_files': ['show.101.720p-dimension.nfo'],
         'allowed_extensions': "nfo"
     },
+    {  # p7: Process file and subtitles only for associated files
+        'path': 'media/postprocess/',
+        'nzb_name': None,
+        'failed': False,
+        'expected': True,
+        'structure': (
+                'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
+                'Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
+                'Show.S01E01.720p.HDTV.X264-DIMENSION.nfo',
+                'Show.S01E01.720p.HDTV.X264-DIMENSION.sfv'
+        ),
+        'expected_associated_files': ['Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt'],
+        'allowed_extensions': "nfo,srt",
+        'subtitles_only': True
+    },
+    {  # p8: Process file and subtitle in subfolder. Check subfolders enabled
+        'path': 'media/postprocess/',
+        'nzb_name': None,
+        'failed': False,
+        'expected': True,
+        'structure': (
+                'Show.S01E01.720p.HDTV.X264-DIMENSION.mkv',
+                {'subs': (
+                    'RARBG.txt', 'Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
+                )}
+        ),
+        'expected_associated_files': ['Show.S01E01.720p.HDTV.X264-DIMENSION.pt-BR.srt',
+                                      ],
+        'allowed_extensions': "nfo,srt",
+        'subfolders': True
+
+    },
 ])
 def test_should_process(p, create_structure):
     """Run the test."""
@@ -145,6 +178,8 @@ def test_should_process(p, create_structure):
     path = os.path.join(test_path, os.path.normcase(p['path']))
     file = os.path.join(path, p['structure'][0])
     expected_associated_files = p['expected_associated_files']
+    subtitles_only = p.get('subtitles_only', False)
+    subfolders = p.get('subfolders', False)
     app.ALLOWED_EXTENSIONS = p['allowed_extensions']
     app.MOVE_ASSOCIATED_FILES = 1
 
@@ -153,7 +188,7 @@ def test_should_process(p, create_structure):
 
     # When
     result = sut.should_process(path, p['nzb_name'], p['failed'])
-    found_associated_files = processor.list_associated_files(file)
+    found_associated_files = processor.list_associated_files(file, subtitles_only=subtitles_only, subfolders=subfolders)
     associated_files_basenames = [os.path.basename(i) for i in found_associated_files]
 
     # Then
