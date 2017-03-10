@@ -18,9 +18,9 @@ class TestPostProcessor(PostProcessor):
 
     @staticmethod
     def _rar_basename(filepath, files):
-        for files in files:
-            if os.path.splitext(os.path.basename(files))[1] == '.rar':
-                return os.path.basename(os.path.splitext(os.path.basename(files))[0])
+        for found_file in files:
+            if os.path.splitext(os.path.basename(found_file))[1] == '.rar':
+                return os.path.basename(os.path.splitext(os.path.basename(found_file))[0])
 
     def _log(self, message=None, level=None):
         pass
@@ -148,17 +148,17 @@ def test_list_associated_files(p, create_structure):
     # Given
     test_path = create_structure(p['path'], structure=p['structure'])
     path = os.path.join(test_path, os.path.normcase(p['path']))
-    file = os.path.join(path, p['structure'][0])
+    media_file = os.path.join(path, p['structure'][0])
     expected_associated_files = p['expected_associated_files']
     subtitles_only = p.get('subtitles_only', False)
     subfolders = p.get('subfolders', False)
     app.ALLOWED_EXTENSIONS = p['allowed_extensions']
     app.MOVE_ASSOCIATED_FILES = 1
 
-    processor = TestPostProcessor(file)
+    processor = TestPostProcessor(media_file)
 
     # When
-    found_associated_files = processor.list_associated_files(file, subtitles_only=subtitles_only, subfolders=subfolders)
+    found_associated_files = processor.list_associated_files(media_file, subtitles_only=subtitles_only, subfolders=subfolders)
     associated_files_basenames = [os.path.basename(i) for i in found_associated_files]
 
     # Then
