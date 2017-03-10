@@ -32,7 +32,7 @@ function wsCheckNotifications() {
         var msg;
         try {
             msg = JSON.parse(evt.data);
-        } catch (err) {
+        } catch (e) { // eslint-disable-line unicorn/catch-error-name
             msg = evt.data;
         }
 
