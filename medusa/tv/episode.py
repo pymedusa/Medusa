@@ -89,6 +89,8 @@ from medusa.scene_numbering import (
 )
 from medusa.tv.base import TV
 
+from requests.exceptions import RequestException
+
 import shutil_custom
 
 try:
@@ -269,7 +271,10 @@ class Episode(TV):
                         ep=(episode_num(self.season, self.episode) or
                             episode_num(self.season, self.episode, numbering='absolute')))
 
-            notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
+            try:
+                notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
+            except RequestException as e:
+                logger.debug(u'Unable to send subtitle download notification. Error: {error}', error=e.message)
         else:
             logger.info('{id}: No subtitles found for {show} {ep}',
                         id=self.show.indexerid, show=self.show.name,
