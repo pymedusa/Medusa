@@ -27,7 +27,8 @@ function displayPNotify(type, title, message) {
 }
 
 function wsCheckNotifications() {
-    var ws = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
+    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
         var msg;
         try {
