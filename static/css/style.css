@@ -2757,6 +2757,14 @@ div.blackwhitelist.manual {
     margin: 7px 0;
 }
 
+ul.simpleList {
+    padding-left: 0px;
+}
+
+ul.simpleList li {
+    list-style-type: none;
+}
+
 /* =======================================================================
 bootstrap Overrides
 ========================================================================== */

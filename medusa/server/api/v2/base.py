@@ -132,6 +132,18 @@ class BaseRequestHandler(RequestHandler):
             return function(value)
 
     @staticmethod
+    def _parse_boolean(value):
+        """Parse value using the specified function.
+
+        :param value:
+        :return:
+        """
+        if isinstance(value, text_type):
+            return value.lower() == 'true'
+
+        return bool(value)
+
+    @staticmethod
     def _parse_date(value, fmt='%Y-%m-%d'):
         """Parse a date value using the specified format.
 
