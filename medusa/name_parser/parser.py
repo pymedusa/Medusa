@@ -25,10 +25,11 @@ import time
 from collections import OrderedDict
 
 import guessit
+
 from .. import common, db, helpers, scene_exceptions, scene_numbering
 from ..helper.common import episode_num
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerException
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class NameParser(object):
         """The NameParser constructor.
 
         :param show:
-        :type show: medusa.tv.TVShow
+        :type show: medusa.tv.Series
         :param try_indexers:
         :type try_indexers: bool
         :param naming_pattern:
@@ -92,6 +93,13 @@ class NameParser(object):
             if sql_result:
                 season_number = int(sql_result[0][0])
                 episode_numbers = [int(sql_result[0][1])]
+
+                # Use the next query item if we have multiple results
+                # and the current one is a special episode (season 0)
+                if season_number == 0 and len(sql_result) > 1:
+                    season_number = int(sql_result[1][0])
+                    episode_numbers = [int(sql_result[1][1])]
+
                 logger.debug('Database info for show {name}: Season: {season} Episode(s): {episodes}',
                              name=result.show.name, season=season_number, episodes=episode_numbers)
 
@@ -112,11 +120,14 @@ class NameParser(object):
                     logger.debug('Indexer info for show {name}: {ep}',
                                  name=result.show.name, ep=episode_num(season_number, episode_numbers[0]))
                 except IndexerEpisodeNotFound:
-                    logger.warn("Unable to find episode with date {date} for show '{name}'. Skipping",
-                                date=result.air_date, name=result.show.name)
+                    logger.warning("Unable to find episode with date {date} for show '{name}'. Skipping",
+                                   date=result.air_date, name=result.show.name)
                     episode_numbers = []
                 except IndexerError as e:
-                    logger.warn('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    logger.warning('Unable to contact {indexer_api.name}: {e}', indexer_api=indexer_api, e=e.message)
+                    episode_numbers = []
+                except IndexerException as e:
+                    logger.warning('Indexer exception: {indexer_api.name}: {e}', indexer_api=indexer_api, e=e.message)
                     episode_numbers = []
 
             for episode_number in episode_numbers:
@@ -144,6 +155,7 @@ class NameParser(object):
                                                                        result.show.indexer, absolute_episode,
                                                                        True, scene_season)
 
+                # Translate the absolute episode number, back to the indexers season and episode.
                 (s, e) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                 logger.debug("Scene numbering enabled show '{name}' using indexer for absolute {absolute}: {ep}",
                              name=result.show.name, absolute=a, ep=episode_num(s, e, 'absolute'))
@@ -199,6 +211,13 @@ class NameParser(object):
             result.episode_numbers = new_episode_numbers
             result.season_number = new_season_numbers[0]
 
+        # For anime that we still couldn't get a season, let's assume we should use 1.
+        if result.show.is_anime and result.season_number is None and result.episode_numbers:
+            result.season_number = 1
+            logger.warn("For this anime show {name}, we couldn't parse a season number, "
+                        "let's assume it's an absolute numbered anime show with season 1",
+                        name=result.show.name)
+
         if result.show.is_scene:
             logger.debug('Converted parsed result {original} into {result}', original=result.original_name,
                          result=result)
@@ -247,6 +266,9 @@ class NameParser(object):
         if not result.show:
             raise InvalidShowException('Unable to match {result.original_name} to a show in your database. '
                                        'Parser result: {result}'.format(result=result))
+
+        logger.debug("Matched release '{release}' to a show in your database: '{name}'",
+                     release=result.original_name, name=result.show.name)
 
         if result.season_number is None and not result.episode_numbers and \
                 result.air_date is None and not result.ab_episode_numbers and not result.series_name:
@@ -368,7 +390,7 @@ class ParseResult(object):
         quality = common.Quality.from_guessit(guess)
         if quality != common.Quality.UNKNOWN:
             return quality
-        return common.Quality.nameQuality(self.original_name, self.is_anime, extend)
+        return common.Quality.name_quality(self.original_name, self.is_anime, extend)
 
     @property
     def is_air_by_date(self):
@@ -410,8 +432,10 @@ class ParseResult(object):
 class NameParserCache(object):
     """Name parser cache."""
 
-    _previous_parsed = {}
-    _cache_size = 100
+    def __init__(self, max_size=1000):
+        """Initiate the cache with a maximum size."""
+        self.cache = OrderedDict()
+        self.max_size = max_size
 
     def add(self, name, parse_result):
         """Add the result to the parser cache.
@@ -421,9 +445,9 @@ class NameParserCache(object):
         :param parse_result:
         :type parse_result: ParseResult
         """
-        self._previous_parsed[name] = parse_result
-        while len(self._previous_parsed) > self._cache_size:
-            del self._previous_parsed[self._previous_parsed.keys()[0]]
+        while len(self.cache) >= self.max_size:
+            self.cache.popitem(last=False)
+        self.cache[name] = parse_result
 
     def get(self, name):
         """Return the cached parsed result.
@@ -433,9 +457,9 @@ class NameParserCache(object):
         :return:
         :rtype: ParseResult
         """
-        if name in self._previous_parsed:
+        if name in self.cache:
             logger.debug("Using cached parse result for '{name}'", name=name)
-            return self._previous_parsed[name]
+            return self.cache[name]
 
 
 name_parser_cache = NameParserCache()

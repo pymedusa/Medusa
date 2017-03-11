@@ -5,8 +5,8 @@
     import os
     import re
     from medusa.app import (
-        dailySearchScheduler as daily_search_scheduler,
-        backlogSearchScheduler as backlog_search_scheduler,
+        daily_search_scheduler as daily_search_scheduler,
+        backlog_search_scheduler as backlog_search_scheduler,
         BRANCH, DATE_PRESET, TIME_PRESET
     )
     from medusa.helper.common import pretty_file_size
@@ -60,3 +60,8 @@
     </footer>
 % endif
 <!-- END FOOTER -->
+<div class="scroll-top-wrapper ">
+	<span class="scroll-top-inner">
+		<i class="glyphicon glyphicon-circle-arrow-up"></i>
+	</span>
+</div>

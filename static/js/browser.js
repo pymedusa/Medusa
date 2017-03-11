@@ -27,6 +27,7 @@
         }
 
         fileBrowserDialog.dialog('option', 'dialogClass', 'browserDialog busy');
+        fileBrowserDialog.dialog('option', 'closeText', ''); // This removes the "Close" text
 
         currentRequest = $.getJSON(endpoint, {
             path: path,

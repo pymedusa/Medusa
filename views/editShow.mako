@@ -6,6 +6,7 @@
     from medusa.common import statusStrings
     from medusa.helper import exceptions
     from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_config import mappings
     from medusa import scene_exceptions
 %>
 <%block name="metas">
@@ -19,6 +20,8 @@
 % endif
 </%block>
 <%block name="content">
+<input type="hidden" id="showID" value="${show.indexerid}" />
+<input type="hidden" id="showIndexerSlug" value="${show.indexer_slug}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
@@ -51,7 +54,7 @@
                             <label for="qualityPreset">
                                 <span class="component-title">Preferred Quality</span>
                                 <span class="component-desc">
-                                    <% allowed_qualities, preferred_qualities = common.Quality.splitQuality(int(show.quality)) %>
+                                    <% allowed_qualities, preferred_qualities = common.Quality.split_quality(int(show.quality)) %>
                                     <%include file="/inc_qualityChooser.mako"/>
                                 </span>
                             </label>
@@ -61,8 +64,8 @@
                                 <span class="component-title">Default Episode Status</span>
                                 <span class="component-desc">
                                     <select name="defaultEpStatus" id="defaultEpStatusSelect" class="form-control form-control-inline input-sm">
-                                        % for curStatus in [WANTED, SKIPPED, IGNORED]:
-                                        <option value="${curStatus}" ${'selected="selected"' if curStatus == show.default_ep_status else ''}>${statusStrings[curStatus]}</option>
+                                        % for cur_status in [WANTED, SKIPPED, IGNORED]:
+                                        <option value="${cur_status}" ${'selected="selected"' if cur_status == show.default_ep_status else ''}>${statusStrings[cur_status]}</option>
                                         % endfor
                                     </select>
                                     <div class="clear-left"><p>This will set the status for future episodes.</p></div>
@@ -73,7 +76,7 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexerLang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
+                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>
@@ -150,7 +153,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvdorder == 1 else ''} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>

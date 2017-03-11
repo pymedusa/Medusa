@@ -22,11 +22,11 @@ import io
 import os
 
 from six import string_types
-from .. import app, helpers, logger
+from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num, replace_extension
-from ..helper.exceptions import ShowNotFoundException, ex
+from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from ..metadata import media_browser
 
 try:
@@ -97,49 +97,20 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Creates an elementTree XML structure for a MediaBrowser-style series.xml
         returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
+        my_show = self._get_show_data(show_obj)
 
-        show_id = show_obj.indexerid
-
-        indexer_lang = show_obj.lang
-        l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-        l_indexer_api_params['actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params['language'] = indexer_lang
-
-        if show_obj.dvdorder != 0:
-            l_indexer_api_params['dvdorder'] = True
-
-        t = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
+        # as that pretty useless.
+        if not my_show:
+            return False
 
         root_node = etree.Element('details')
         tv_node = etree.SubElement(root_node, 'movie')
         tv_node.attrib['isExtra'] = 'false'
         tv_node.attrib['isSet'] = 'false'
         tv_node.attrib['isTV'] = 'true'
-
-        try:
-            my_show = t[int(show_id)]
-        except IndexerShowNotFound:
-            logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            raise
-
-        except IndexerError:
-            logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
-            raise
-
-        # check for title and id
-        if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
-            logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            return False
 
         title = etree.SubElement(tv_node, 'title')
         title.text = my_show['seriesname']
@@ -204,7 +175,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     cur_actor = etree.SubElement(cast, 'actor')
                     cur_actor.text = actor['name'].strip()
 
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
 
         data = etree.ElementTree(root_node)
 
@@ -215,32 +186,14 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Creates an elementTree XML structure for a MediaBrowser style episode.xml
         and returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        # There's gotta be a better way of doing this but we don't wanna
-        # change the language value elsewhere
-        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params[b'language'] = indexer_lang
-
-        if ep_obj.show.dvdorder != 0:
-            l_indexer_api_params[b'dvdorder'] = True
-
-        try:
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
-        except IndexerShowNotFound as e:
-            raise ShowNotFoundException(e.message)
-        except IndexerError:
-            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
-            return
+        my_show = self._get_show_data(ep_obj.show)
+        if not my_show:
+            return None
 
         root_node = etree.Element('details')
         movie = etree.SubElement(root_node, 'movie')
@@ -351,7 +304,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                         overview.text = u'\r'.join([overview.text, ep_to_write.description])
 
         # Make it purdy
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
 
         data = etree.ElementTree(root_node)
 
@@ -362,7 +315,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         Generates and writes show_obj's metadata under the given path to the
         filename given by get_show_file_path()
 
-        show_obj: TVShow object for which to create the metadata
+        show_obj: Series object for which to create the metadata
 
         path: An absolute or relative path where we should put the file. Note that
                 the file name will be the default show_file_name.
@@ -385,7 +338,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u'Writing show nfo file to {path}'.format
                        (path=nfo_file_path), logger.DEBUG)
@@ -394,7 +347,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
             data.write(nfo_file, encoding='utf-8', xml_declaration=True)
             nfo_file.close()
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
         except IOError as e:
             logger.log(u'Unable to write file to {path} - '
                        u'are you sure the folder is writable? {exception}'.format
@@ -410,7 +363,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         given filename root. Uses the episode's name with the extension in
         _ep_nfo_extension.
 
-        ep_obj: TVEpisode object for which to create the metadata
+        ep_obj: Episode object for which to create the metadata
 
         file_name_path: The file name to use for this metadata. Note that the extension
                 will be automatically added based on _ep_nfo_extension. This should
@@ -434,7 +387,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u'Writing episode nfo file to {path}'.format
                        (path=nfo_file_path), logger.DEBUG)
@@ -443,7 +396,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 # Calling encode directly, b/c often descriptions have wonky characters.
                 data.write(nfo_file, encoding='utf-8', xml_declaration=True)
 
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
 
         except IOError as e:
             logger.log(u'Unable to write file to {path} - '

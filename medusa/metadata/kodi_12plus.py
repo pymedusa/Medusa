@@ -22,11 +22,10 @@ import re
 from babelfish import Country
 from six import string_types
 from . import generic
-from .. import app, helpers, logger
+from .. import helpers, logger
 from ..helper.common import dateFormat, episode_num
-from ..helper.exceptions import ShowNotFoundException
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 
 try:
     import xml.etree.cElementTree as etree
@@ -104,45 +103,17 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for an KODI-style tvshow.nfo and
         returns the resulting data object.
 
-        show_obj: a TVShow instance to create the NFO for
+        show_obj: a Series instance to create the NFO for
         """
 
-        show_id = show_obj.indexerid
+        my_show = self._get_show_data(show_obj)
 
-        indexer_lang = show_obj.lang
-        l_indexer_api_params = indexerApi(show_obj.indexer).api_params.copy()
-
-        l_indexer_api_params['actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params['language'] = indexer_lang
-
-        if show_obj.dvdorder != 0:
-            l_indexer_api_params['dvdorder'] = True
-
-        t = indexerApi(show_obj.indexer).indexer(**l_indexer_api_params)
+        # If by any reason it couldn't get the shows indexer data let's not go throught the rest of this method
+        # as that pretty useless.
+        if not my_show:
+            return False
 
         tv_node = etree.Element('tvshow')
-
-        try:
-            my_show = t[int(show_id)]
-        except IndexerShowNotFound:
-            logger.log(u'Unable to find {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            raise
-
-        except IndexerError:
-            logger.log(u'{indexer} is down, can\'t use its data to add this show'.format
-                       (indexer=indexerApi(show_obj.indexer).name), logger.ERROR)
-            raise
-
-        # check for title and id
-        if not (getattr(my_show, 'seriesname', None) and getattr(my_show, 'id', None)):
-            logger.log(u'Incomplete info for {indexer} show {id}, skipping it'.format
-                       (indexer=indexerApi(show_obj.indexer).name,
-                        id=show_id), logger.ERROR)
-            return False
 
         title = etree.SubElement(tv_node, 'title')
         title.text = my_show['seriesname']
@@ -232,7 +203,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                     cur_actor_thumb.text = actor['image'].strip()
 
         # Make it purdy
-        helpers.indentXML(tv_node)
+        helpers.indent_xml(tv_node)
 
         data = etree.ElementTree(tv_node)
 
@@ -243,34 +214,13 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         Creates an elementTree XML structure for an KODI-style episode.nfo and
         returns the resulting data object.
 
-        show_obj: a TVEpisode instance to create the NFO for
+        show_obj: a Episode instance to create the NFO for
         """
-
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        # There's gotta be a better way of doing this but we don't wanna
-        # change the language value elsewhere
-        l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-        l_indexer_api_params[b'actors'] = True
-
-        if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-            l_indexer_api_params[b'language'] = indexer_lang
-
-        if ep_obj.show.dvdorder != 0:
-            l_indexer_api_params[b'dvdorder'] = True
-
-        try:
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
-        except IndexerShowNotFound as e:
-            raise ShowNotFoundException(e.message)
-        except IndexerError:
-            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
-            return
+        my_show = self._get_show_data(ep_obj.show)
+        if not my_show:
+            return None
 
         if len(eps_to_write) > 1:
             root_node = etree.Element('kodimultiepisode')
@@ -387,7 +337,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
                         cur_actor_thumb.text = actor['image'].strip()
 
         # Make it purdy
-        helpers.indentXML(root_node)
+        helpers.indent_xml(root_node)
 
         data = etree.ElementTree(root_node)
 

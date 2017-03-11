@@ -12,7 +12,7 @@ $(document).ready(function() {
             return;
         }
 
-        window.location.href = 'manage/massEdit?toEdit=' + editArr.join('|');
+        window.location.href = $('base').attr('href') + 'manage/massEdit?toEdit=' + editArr.join('|');
     });
 
     $('.submitMassUpdate').on('click', function() {
@@ -62,6 +62,8 @@ $(document).ready(function() {
             }
         });
 
+        var totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr]).length; // eslint-disable-line no-useless-call
+
         if (deleteCount >= 1) {
             $.confirm({
                 title: 'Delete Shows',
@@ -76,7 +78,7 @@ $(document).ready(function() {
                             deleteArr.push($(this).attr('id').split('-')[1]);
                         }
                     });
-                    if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+                    if (totalCount === 0) {
                         return false;
                     }
                     var params = $.param({
@@ -89,11 +91,11 @@ $(document).ready(function() {
                         toMetadata: metadataArr.join('|')
                     });
 
-                    window.location.href = 'manage/massUpdate?' + params;
+                    window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
                 }
             });
         }
-        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+        if (totalCount === 0) {
             return false;
         }
         var params = $.param({
@@ -105,7 +107,7 @@ $(document).ready(function() {
             toRemove: removeArr.join('|'),
             toMetadata: metadataArr.join('|')
         });
-        window.location.href = 'manage/massUpdate?' + params;
+        window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
     });
 
     ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(function(name) {

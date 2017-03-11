@@ -25,15 +25,29 @@ import time
 import traceback
 
 from dateutil import parser
+
+from medusa import (
+    app,
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.common import cpu_presets
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.helper.encoding import ss
+from medusa.indexers.indexer_config import (
+    INDEXER_TMDB,
+    INDEXER_TVDBV2,
+    INDEXER_TVMAZE,
+    mappings,
+)
+from medusa.providers.nzb.nzb_provider import NZBProvider
+
 from requests.compat import urljoin
 import validators
-from .nzb_provider import NZBProvider
-from ... import app, logger, tv_cache
-from ...bs4_parser import BS4Parser
-from ...common import cpu_presets
-from ...helper.common import convert_size, try_int
-from ...helper.encoding import ss
-from ...indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, mappings
 
 
 class NewznabProvider(NZBProvider):
@@ -75,7 +89,7 @@ class NewznabProvider(NZBProvider):
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tv_cache.TVCache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tv.Cache(self, min_time=30)  # only poll newznab providers every 30 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -159,6 +173,11 @@ class NewznabProvider(NZBProvider):
                     except AttributeError:
                         self.torznab = False
 
+                    if not html('item'):
+                        logger.log('No results returned from provider. Check chosen Newznab search categories '
+                                   'in provider settings and/or usenet retention', logger.DEBUG)
+                        continue
+
                     for item in html('item'):
                         try:
                             title = item.title.get_text(strip=True)
@@ -193,7 +212,10 @@ class NewznabProvider(NZBProvider):
 
                             size = convert_size(item_size) or -1
                             pubdate_raw = item.pubdate.get_text(strip=True)
-                            pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                            try:
+                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                            except ValueError:
+                                pubdate = None
 
                             item = {
                                 'title': title,
@@ -202,7 +224,6 @@ class NewznabProvider(NZBProvider):
                                 'seeders': seeders,
                                 'leechers': leechers,
                                 'pubdate': pubdate,
-                                'torrent_hash': None,
                             }
                             if mode != 'RSS':
                                 if seeders == -1:

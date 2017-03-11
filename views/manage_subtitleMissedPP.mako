@@ -9,14 +9,18 @@
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 </%block>
 <%block name="content">
-    <div>
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
-    </div>
-<div id="container">
+<div class="row">
+<div class="col-md-12">
+% if not header is UNDEFINED:
+    <h1 class="header">${header}</h1>
+% else:
+    <h1 class="title">${title}</h1>
+% endif
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="horizontal-scroll">
     <table id="releasesPP" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
         <thead aria-live="polite" aria-relevant="all">
             <tr>
@@ -29,9 +33,12 @@
         </thead>
         <tbody aria-live="polite" aria-relevant="all">
         % for index, epResult in enumerate(releases_in_pp):
+           % if epResult['status'] != 'snatched':
+               <% continue %>
+           % endif
             <tr class="snatched" role="row" release_id=${index}>
-                <td class="tvShow" align="left"><a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">
-                        ${epResult['show_name']}
+                <td class="tvShow" align="left">
+                    <a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">${epResult['show_name']}</a>
                 </td>
                 <td class="tvShow" align="center">
                         ${episode_num(epResult['season'], epResult['episode'])}
@@ -52,7 +59,7 @@
         </tbody>
     </table>
 <%include file="subtitle_modal.mako"/>
-</br>
+<br>
 <form name="processForm" method="post" action="home/postprocess/processEpisode" style="float: right;">
 <table>
     <input type="hidden" id="proc_type" name="type" value="manual">
@@ -66,5 +73,44 @@
 </table>
     <input id="submit" class="btn" type="submit" value="Run Manual Post-Process" />
 </form>
-</div>
+</div><!-- Releases missed subtitles -->
+</div><!-- col -->
+</div><!-- row -->
+<br>
+<div class="row ${' hidden' if app.TORRENT_SEED_LOCATION else ''}">
+<div class="col-md-12">
+<h3 style="display: inline;">Releases waiting minimum ratio</h3>
+<div class="horizontal-scroll">
+    <table id="releasesPP-downloaded" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
+        <thead aria-live="polite" aria-relevant="all">
+            <tr>
+                <th>Show</th>
+                <th>Episode</th>
+                <th>Release</th>
+            </tr>
+        </thead>
+        <tbody aria-live="polite" aria-relevant="all">
+        % for index, epResult in enumerate(releases_in_pp):
+           % if epResult['status'] != 'downloaded':
+               <% continue %>
+           % endif
+            <tr class="downloaded" role="row" release_id=${index}>
+                <td class="tvShow" align="left">
+                    <a href="home/displayShow?show=${epResult['show']}#season-${epResult['season']}">${epResult['show_name']}</a>
+                </td>
+                <td class="tvShow" align="center">
+                        ${episode_num(epResult['season'], epResult['episode'])}
+                </td>
+                <td class="tvShow" align="left">
+                    <span class="break-word" title=${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}>
+                        ${os.path.basename(epResult['release'])}
+                    </span>
+                </td>
+            </tr>
+        % endfor
+        </tbody>
+    </table>
+</div><!-- Releases waiting minimum ratio -->
+</div><!-- col -->
+</div><!-- row -->
 </%block>

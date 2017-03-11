@@ -27,9 +27,7 @@ from ..indexers.indexer_api import indexerApi
 
 
 class Notifier(object):
-    """
-    A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library.
-    """
+    """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
     def notify_snatch(self, ep_name, is_proper):
         pass
@@ -51,7 +49,7 @@ class Notifier(object):
         """
         Sends a request to trakt indicating that the given episode is part of our library.
 
-        ep_obj: The TVEpisode object to add to trakt
+        ep_obj: The Episode object to add to trakt
         """
 
         trakt_id = indexerApi(ep_obj.show.indexer).config['trakt_id']
@@ -70,7 +68,7 @@ class Notifier(object):
                     'shows': [
                         {
                             'title': ep_obj.show.name,
-                            'year': ep_obj.show.startyear,
+                            'year': ep_obj.show.start_year,
                             'ids': {},
                         }
                     ]
@@ -107,7 +105,7 @@ class Notifier(object):
         """
         Sends a request to trakt indicating that the given episode is part of our library.
 
-        show_obj: The TVShow object to add to trakt
+        show_obj: The Series object to add to trakt
         s: season number
         e: episode number
         data_show: structured object of shows trakt type
@@ -133,7 +131,7 @@ class Notifier(object):
                         'shows': [
                             {
                                 'title': show_obj.name,
-                                'year': show_obj.startyear,
+                                'year': show_obj.start_year,
                                 'ids': {},
                             }
                         ]

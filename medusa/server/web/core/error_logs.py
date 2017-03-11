@@ -3,17 +3,22 @@
 
 from __future__ import unicode_literals
 
+import logging
 from datetime import datetime, timedelta
 
 from mako.filters import html_escape
+
+from medusa import ui
+from medusa.classes import ErrorViewer, WarningViewer
+from medusa.issue_submitter import IssueSubmitter
+from medusa.logger import filter_logline, read_loglines
+from medusa.server.web.core.base import PageTemplate, WebRoot
+from medusa.version_checker import CheckVersion
+
 from six import text_type
 from tornroutes import route
-from .base import PageTemplate, WebRoot
-from .... import logger, ui
-from ....classes import ErrorViewer, WarningViewer
-from ....issue_submitter import IssueSubmitter
-from ....logger import filter_logline, read_loglines
-from ....version_checker import CheckVersion
+
+log = logging.getLogger(__name__)
 
 log_name_filters = {
     None: html_escape('<No Filter>'),
@@ -30,11 +35,13 @@ log_name_filters = {
     'SEARCHQUEUE-RETRY': 'Search Queue (Retry/Failed)',
     'SEARCHQUEUE-RSS': 'Search Queue (RSS)',
     'SHOWQUEUE-UPDATE': 'Show Queue (Update)',
+    'SHOWQUEUE-SEASON-UPDATE': 'Show Season Queue (Update)',
     'SHOWQUEUE-REFRESH': 'Show Queue (Refresh)',
     'FINDPROPERS': 'Find Propers',
     'POSTPROCESSOR': 'PostProcessor',
     'FINDSUBTITLES': 'Find Subtitles',
     'TRAKTCHECKER': 'Trakt Checker',
+    'TORRENTCHECKER': 'Torrent Checker',
     'EVENT': 'Event',
     'ERROR': 'Error',
     'TORNADO': 'Tornado',
@@ -73,31 +80,31 @@ class ErrorLogs(WebRoot):
             {  # Clear Errors
                 'title': 'Clear Errors',
                 'path': 'errorlogs/clearerrors/',
-                'requires': self._has_errors() and level == logger.ERROR,
+                'requires': self._has_errors() and level == logging.ERROR,
                 'icon': 'ui-icon ui-icon-trash'
             },
             {  # Clear Warnings
                 'title': 'Clear Warnings',
-                'path': 'errorlogs/clearerrors/?level={level}'.format(level=logger.WARNING),
-                'requires': self._has_warnings() and level == logger.WARNING,
+                'path': 'errorlogs/clearerrors/?level={level}'.format(level=logging.WARNING),
+                'requires': self._has_warnings() and level == logging.WARNING,
                 'icon': 'ui-icon ui-icon-trash'
             },
             {  # Submit Errors
                 'title': 'Submit Errors',
                 'path': 'errorlogs/submit_errors/',
-                'requires': self._has_errors() and level == logger.ERROR,
+                'requires': self._has_errors() and level == logging.ERROR,
                 'class': 'submiterrors',
                 'confirm': True,
                 'icon': 'ui-icon ui-icon-arrowreturnthick-1-n'
             },
         ]
 
-    def index(self, level=logger.ERROR, **kwargs):
+    def index(self, level=logging.ERROR, **kwargs):
         """Default index page."""
         try:
             level = int(level)
         except (TypeError, ValueError):
-            level = logger.ERROR
+            level = logging.ERROR
 
         t = PageTemplate(rh=self, filename='errorlogs.mako')
         return t.render(header='Logs &amp; Errors', title='Logs &amp; Errors', topmenu='system',
@@ -111,17 +118,18 @@ class ErrorLogs(WebRoot):
     def _has_warnings():
         return bool(WarningViewer.errors)
 
-    def clearerrors(self, level=logger.ERROR):
+    def clearerrors(self, level=logging.ERROR):
         """Clear the errors or warnings."""
         # @TODO: Replace this with DELETE /api/v2/log/{logLevel} or /api/v2/log/
-        if int(level) == logger.WARNING:
+        if int(level) == logging.WARNING:
             WarningViewer.clear()
         else:
             ErrorViewer.clear()
 
         return self.redirect('/errorlogs/viewlog/')
 
-    def viewlog(self, min_level=logger.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day', **kwargs):
+    def viewlog(self, min_level=logging.INFO, log_filter=None, log_search=None, max_lines=1000, log_period='one_day',
+                text_view=None, **kwargs):
         """View the log given the specified filters."""
         # @TODO: Replace index with this or merge it so ?search=true or ?query={queryString} enables this "view"
         min_level = int(min_level)
@@ -136,9 +144,12 @@ class ErrorLogs(WebRoot):
                                                                                   thread_name=thread_names.get(log_filter, log_filter),
                                                                                   search_query=log_search))]
 
-        return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
-                        min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
-                        controller='errorlogs', action='viewlogs')
+        if not text_view:
+            return t.render(header='Log File', title='Logs', topmenu='system', log_lines='\n'.join([html_escape(line) for line in data]),
+                            min_level=min_level, log_name_filters=log_name_filters, log_filter=log_filter, log_search=log_search, log_period=log_period,
+                            controller='errorlogs', action='viewlogs')
+        else:
+            return '<br/>'.join([html_escape(line) for line in data])
 
     def submit_errors(self):
         """Create an issue in medusa issue tracker."""

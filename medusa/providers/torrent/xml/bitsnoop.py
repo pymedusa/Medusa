@@ -20,11 +20,15 @@ from __future__ import unicode_literals
 
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import convert_size, try_int
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
-from ..torrent_provider import TorrentProvider
-from .... import app, logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 
 class BitSnoopProvider(TorrentProvider):
@@ -46,7 +50,7 @@ class BitSnoopProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
 
@@ -55,7 +59,7 @@ class BitSnoopProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, search_params={'RSS': ['rss']})
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -81,7 +85,7 @@ class BitSnoopProvider(TorrentProvider):
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-                elif not response or not response.text.startswith('<?xml'):
+                elif not response.text.startswith('<?xml'):
                     logger.log('Expected xml but got something else, is your mirror failing?', logger.INFO)
                     continue
 
@@ -100,29 +104,28 @@ class BitSnoopProvider(TorrentProvider):
         """
         items = []
 
-        with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html('item')
+        with BS4Parser(data, 'html.parser') as xml:
 
-            for row in torrent_rows:
+            elements = xml.find_all('item')
+            if not elements:
+                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                return items
+
+            for element in elements:
                 try:
-                    if not row.category.text.endswith(('TV', 'Anime')):
+                    if not element.category.text.endswith(('TV', 'Anime')):
                         continue
 
-                    title = row.title.text
-                    # Use the torcache link bitsnoop provides,
-                    # unless it is not torcache or we are not using blackhole
-                    # because we want to use magnets if connecting direct to client
-                    # so that proxies work.
-                    download_url = row.enclosure['url']
-                    if app.TORRENT_METHOD != 'blackhole' or 'torcache' not in download_url:
-                        download_url = row.find('magneturi').next.replace('CDATA', '').strip('[]') + \
-                            self._custom_trackers
-
+                    title = element.title.text
+                    download_url = element.magneturi.get_text()
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(row.find('numseeders').text)
-                    leechers = try_int(row.find('numleechers').text)
+                    # Add custom trackers to the magnet link
+                    download_url += self._custom_trackers
+
+                    seeders = try_int(element.numseeders.text)
+                    leechers = try_int(element.numleechers.text)
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -132,9 +135,8 @@ class BitSnoopProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = row.find('size').text
+                    torrent_size = element.size.text
                     size = convert_size(torrent_size) or -1
-                    torrent_hash = row.find('infohash').text
 
                     item = {
                         'title': title,
@@ -143,7 +145,6 @@ class BitSnoopProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

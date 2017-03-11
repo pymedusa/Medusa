@@ -22,16 +22,21 @@ import datetime
 import re
 import traceback
 
-from pytimeparse import parse
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.indexers.indexer_config import mappings
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
+from pytimeparse import parse
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
-from ....indexers.indexer_config import mappings
 
 
 class SDBitsProvider(TorrentProvider):
@@ -62,7 +67,7 @@ class SDBitsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=30)
+        self.cache = tv.Cache(self, min_time=30)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -173,7 +178,6 @@ class SDBitsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -16,7 +16,7 @@ class HomeNews(Home):
 
     def index(self):
         try:
-            news = app.versionCheckScheduler.action.check_for_new_news(force=True)
+            news = app.version_check_scheduler.action.check_for_new_news(force=True)
         except Exception:
             logger.log('Could not load news from repo, giving a link!', logger.DEBUG)
             news = 'Could not load news from the repo. [Click here for news.md]({url})'.format(url=app.NEWS_URL)

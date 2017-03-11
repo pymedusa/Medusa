@@ -65,13 +65,13 @@ class Configuration(object):
 
         # Authentication Settings
         # dict to store API key(s)
-        self.api_key = {'identifier': '7FAF7FE037212506'}
+        self.api_key = {}
         # dict to store API prefix (e.g. Bearer)
         self.api_key_prefix = {}
         # Username for HTTP basic authentication
-        self.username = "p0psicles"
+        self.username = ""
         # Password for HTTP basic authentication
-        self.password = "Tequila99"
+        self.password = ""
 
 
         # Logging Settings

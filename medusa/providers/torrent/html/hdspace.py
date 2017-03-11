@@ -23,13 +23,19 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 
 class HDSpaceProvider(TorrentProvider):
@@ -59,7 +65,7 @@ class HDSpaceProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # only poll HDSpace every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # only poll HDSpace every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -139,7 +145,11 @@ class HDSpaceProvider(TorrentProvider):
                     continue
 
                 try:
-                    title = row.find('td', class_='lista', attrs={'align': 'left'}).find('a').get_text()
+                    comments_counter = row.find_all('td', class_='lista', attrs={'align': 'center'})[4].find('a')
+                    if comments_counter:
+                        title = comments_counter['title'][10:]
+                    else:
+                        title = row.find('td', class_='lista', attrs={'align': 'left'}).find('a').get_text()
                     dl_href = row.find('td', class_='lista', attrs={'width': '20',
                                        'style': 'text-align: center;'}).find('a').get('href')
                     download_url = urljoin(self.url, dl_href)
@@ -167,7 +177,6 @@ class HDSpaceProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

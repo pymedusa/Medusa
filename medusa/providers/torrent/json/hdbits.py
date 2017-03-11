@@ -19,10 +19,14 @@ from __future__ import unicode_literals
 
 import json
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.exceptions import AuthException
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urlencode, urljoin
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....helper.exceptions import AuthException
 
 
 class HDBitsProvider(TorrentProvider):
@@ -159,7 +163,7 @@ class HDBitsProvider(TorrentProvider):
             elif show.anime:
                 post_data['tvdb'] = {
                     'id': show.indexerid,
-                    'episode': '%i' % int(episode.scene_absolute_number)
+                    'episode': "{0}".format(episode.scene_absolute_number)
                 }
             else:
                 post_data['tvdb'] = {
@@ -177,7 +181,7 @@ class HDBitsProvider(TorrentProvider):
             elif show.anime:
                 post_data['tvdb'] = {
                     'id': show.indexerid,
-                    'season': '%d' % season.scene_absolute_number,
+                    'season': "{0}".format(season.scene_absolute_number),
                 }
             else:
                 post_data['tvdb'] = {
@@ -191,7 +195,7 @@ class HDBitsProvider(TorrentProvider):
         return json.dumps(post_data)
 
 
-class HDBitsCache(tv_cache.TVCache):
+class HDBitsCache(tv.Cache):
     """Provider cache class."""
 
     def _get_rss_data(self):

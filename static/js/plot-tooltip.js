@@ -1,20 +1,18 @@
 $(function() {
     $('.plotInfo').each(function() {
-        var match = $(this).attr('id').match(/^plot_info_(\d+)_(\d+)_(\d+)$/);
+        var match = $(this).attr('id').match(/^plot_info_([\da-z]+)_(\d+)_(\d+)$/);
+        // http://localhost:8081/api/v2/show/tvdb83462/s01e01/description?api_key=xxx
         $(this).qtip({
             content: {
-                text: 'Loading...',
-                ajax: {
-                    url: 'home/plotDetails',
-                    type: 'GET',
-                    data: {
-                        show: match[1],
-                        episode: match[3],
-                        season: match[2]
-                    },
-                    success: function(data) {
-                        this.set('content.text', data);
-                    }
+                text: function(event, qt) {
+                    api.get('show/' + match[1] + '/s' + match[2] + 'e' + match[3] + '/description').then(function(response) {
+                        // Set the tooltip content upon successful retrieval
+                        qt.set('content.text', response.data);
+                    }, function(xhr) {
+                        // Upon failure... set the tooltip content to the status and error value
+                        qt.set('content.text', 'Error while loading plot: ' + xhr.status + ': ' + xhr.statusText);
+                    });
+                    return 'Loading...';
                 }
             },
             show: {

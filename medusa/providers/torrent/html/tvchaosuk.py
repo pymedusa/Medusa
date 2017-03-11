@@ -20,12 +20,19 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.helper.exceptions import AuthException
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
-from ....helper.exceptions import AuthException
 
 
 class TVChaosUKProvider(TorrentProvider):
@@ -49,6 +56,8 @@ class TVChaosUKProvider(TorrentProvider):
         }
 
         # Proper Strings
+        # Provider always returns propers and non-propers in a show search
+        self.proper_strings = ['']
 
         # Miscellaneous Options
         self.freeleech = None
@@ -58,7 +67,7 @@ class TVChaosUKProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -187,7 +196,6 @@ class TVChaosUKProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

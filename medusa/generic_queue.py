@@ -1,26 +1,10 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import logging
 import threading
 
-from . import logger
+log = logging.getLogger()
 
 
 class QueuePriorities(object):
@@ -31,27 +15,21 @@ class QueuePriorities(object):
 
 class GenericQueue(object):
     def __init__(self):
-
         self.currentItem = None
-
         self.queue = []
-
         self.queue_name = "QUEUE"
-
         self.min_priority = 0
-
         self.lock = threading.Lock()
-
         self.amActive = False
 
     def pause(self):
-        """Pauses this queue"""
-        logger.log(u"Pausing queue")
+        """Pauses this queue."""
+        log.info(u"Pausing queue")
         self.min_priority = 999999999999
 
     def unpause(self):
-        """Unpauses this queue"""
-        logger.log(u"Unpausing queue")
+        """Unpauses this queue."""
+        log.info(u"Unpausing queue")
         self.min_priority = 0
 
     def add_item(self, item):
@@ -77,12 +55,14 @@ class GenericQueue(object):
             # only start a new task if one isn't already going
             if self.currentItem is None or not self.currentItem.isAlive():
 
-                # if the thread is dead then the current item should be finished
+                # if the thread is dead then the current item should be
+                # finished
                 if self.currentItem:
                     self.currentItem.finish()
                     self.currentItem = None
 
-                # if there's something in the queue then run it in a thread and take it out of the queue
+                # if there's something in the queue then run it in a thread
+                # and take it out of the queue
                 if self.queue:
 
                     # sort by priority
@@ -106,7 +86,10 @@ class GenericQueue(object):
 
                     # launch the queue item in a thread
                     self.currentItem = self.queue.pop(0)
-                    self.currentItem.name = self.queue_name + '-' + self.currentItem.name
+                    self.currentItem.name = u'{queue}-{item}'.format(
+                        queue=self.queue_name,
+                        item=self.currentItem.name,
+                    )
                     self.currentItem.start()
 
         self.amActive = False
@@ -115,7 +98,6 @@ class GenericQueue(object):
 class QueueItem(threading.Thread):
     def __init__(self, name, action_id=0):
         super(QueueItem, self).__init__()
-
         self.name = name.replace(" ", "-").upper()
         self.inProgress = False
         self.priority = QueuePriorities.NORMAL
@@ -124,13 +106,10 @@ class QueueItem(threading.Thread):
         self.added = None
 
     def run(self):
-        """Implementing classes should call this"""
-
+        """Implementing classes should call this."""
         self.inProgress = True
 
     def finish(self):
-        """Implementing Classes should call this"""
-
+        """Implementing Classes should call this."""
         self.inProgress = False
-
         threading.currentThread().name = self.name

@@ -41,7 +41,7 @@ class ConfigBackupRestore(Config):
                 for filename in files:
                     source.append(os.path.join(path, filename))
 
-            if helpers.backupConfigZip(source, target, app.DATA_DIR):
+            if helpers.backup_config_zip(source, target, app.DATA_DIR):
                 final_result += 'Successful backup to {location}'.format(location=target)
             else:
                 final_result += 'Backup FAILED'
@@ -61,7 +61,7 @@ class ConfigBackupRestore(Config):
             source = backupFile
             target_dir = os.path.join(app.DATA_DIR, 'restore')
 
-            if helpers.restoreConfigZip(source, target_dir):
+            if helpers.restore_config_zip(source, target_dir):
                 final_result += 'Successfully extracted restore files to {location}'.format(location=target_dir)
                 final_result += '<br>Restart Medusa to complete the restore.'
             else:

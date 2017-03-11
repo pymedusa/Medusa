@@ -26,8 +26,8 @@ class ConfigGeneral(Config):
                         controller='config', action='index')
 
     @staticmethod
-    def generateApiKey():
-        return helpers.generateApiKey()
+    def generate_api_key():
+        return helpers.generate_api_key()
 
     @staticmethod
     def saveRootDirs(rootDirString=None):
@@ -40,7 +40,7 @@ class ConfigGeneral(Config):
         allowed_qualities = allowed_qualities.split(',') if allowed_qualities else []
         preferred_qualities = preferred_qualities.split(',') if preferred_qualities else []
 
-        new_quality = Quality.combineQualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
+        new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
         app.STATUS_DEFAULT = int(defaultStatus)
         app.STATUS_DEFAULT_AFTER = int(defaultStatusAfter)
@@ -64,8 +64,9 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_reset_branches=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
-                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None, dbdebug=None):
+                    git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
+                    display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
+                    dbdebug=None):
         results = []
 
         # Misc
@@ -91,11 +92,15 @@ class ConfigGeneral(Config):
         app.ANON_REDIRECT = anon_redirect
         app.PROXY_SETTING = proxy_setting
         app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
+        app.GIT_AUTH_TYPE = try_int(git_auth_type)
         app.GIT_USERNAME = git_username
         app.GIT_PASSWORD = git_password
+        app.GIT_TOKEN = git_token
         app.GIT_RESET = config.checkbox_to_value(git_reset)
         app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
-        app.GIT_PATH = git_path
+        if app.GIT_PATH != git_path:
+            app.GIT_PATH = git_path
+            config.change_GIT_PATH()
         app.GIT_REMOTE = git_remote
         app.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         app.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
@@ -129,7 +134,12 @@ class ConfigGeneral(Config):
 
         # Validate github credentials
         try:
-            github_client.authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            if app.GIT_AUTH_TYPE == 0:
+                github_client.authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            else:
+                github = github_client.token_authenticate(app.GIT_TOKEN)
+                if app.GIT_USERNAME and app.GIT_USERNAME != github_client.get_user(gh=github):
+                    app.GIT_USERNAME = github_client.get_user(gh=github)
         except (GithubException, IOError):
             logger.log('Error while validating your Github credentials.', logger.WARNING)
 

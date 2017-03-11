@@ -23,8 +23,8 @@ from __future__ import print_function
 import unittest
 
 from medusa import app, common, providers
-from medusa.search.core import searchProviders
-from medusa.tv import TVEpisode, TVShow
+from medusa.search.core import search_providers
+from medusa.tv import Episode, Series
 from . import test_lib as test
 
 TESTS = {
@@ -93,7 +93,7 @@ def generator(tvdb_id, show_name, cur_data, force_search):
         """Test to perform."""
         global search_items  # pylint: disable=global-statement
         search_items = cur_data["i"]
-        show = TVShow(1, tvdb_id)
+        show = Series(1, tvdb_id)
         show.name = show_name
         show.quality = cur_data["q"]
         show.save_to_db()
@@ -101,11 +101,11 @@ def generator(tvdb_id, show_name, cur_data, force_search):
         episode = None
 
         for epNumber in cur_data["e"]:
-            episode = TVEpisode(show, cur_data["s"], epNumber)
+            episode = Episode(show, cur_data["s"], epNumber)
             episode.status = common.WANTED
             episode.save_to_db()
 
-        best_result = searchProviders(show, episode.episode, force_search)
+        best_result = search_providers(show, episode.episode, force_search)
         if not best_result:
             assert cur_data["b"] == best_result
         # pylint: disable=no-member

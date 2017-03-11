@@ -203,15 +203,14 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         result.output += logHelper(u"PostProcessing Path: %s" % path, logger.INFO)
         result.output += logHelper(u"PostProcessing Dirs: %s" % str(dirs), logger.DEBUG)
 
-        videoFiles = [x for x in files if helpers.isMediaFile(x)]
-        rarFiles = [x for x in files if helpers.isRarFile(x)]
+        videoFiles = [x for x in files if helpers.is_media_file(x)]
+        rarFiles = [x for x in files if helpers.is_rar_file(x)]
         rarContent = ""
-        if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
-            # Unpack only if video file was not already extracted by 'postpone if no subs' feature
+        if rarFiles:
             rarContent = unRAR(path, rarFiles, force, result)
             files += rarContent
-            videoFiles += [x for x in rarContent if helpers.isMediaFile(x)]
-        videoInRar = [x for x in rarContent if helpers.isMediaFile(x)] if rarContent else ''
+            videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
+        videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
 
         result.output += logHelper(u"PostProcessing Files: %s" % files, logger.DEBUG)
         result.output += logHelper(u"PostProcessing VideoFiles: %s" % videoFiles, logger.DEBUG)
@@ -227,7 +226,11 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
         # Don't Link media when the media is extracted from a rar in the same path
         if process_method in (u'hardlink', u'symlink') and videoInRar:
             process_media(path, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
-            delete_files(path, rarContent, result)
+            #  As is a hardlink/symlink we can't keep the extracted file in the folder
+            #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
+            #  That's why we don't check for app.DELRARCONTENTS here.
+            # Don't delete extracted video file if it was Postponed by missing subtitles
+            delete_files(path, set(rarContent) - set(videoInRar), result)
             for video in set(videoFiles) - set(videoInRar):
                 process_media(path, [video], nzbName, process_method, force, is_priority, ignore_subs, result)
         elif app.DELRARCONTENTS and videoInRar:
@@ -259,26 +262,26 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
             postpone = SyncFiles and app.POSTPONE_IF_SYNC_FILES
 
             if not postpone:
-                videoFiles = [x for x in fileList if helpers.isMediaFile(x)]
-                rarFiles = [x for x in fileList if helpers.isRarFile(x)]
+                videoFiles = [x for x in fileList if helpers.is_media_file(x)]
+                rarFiles = [x for x in fileList if helpers.is_rar_file(x)]
                 rarContent = ""
-                if rarFiles and not (app.POSTPONE_IF_NO_SUBS and videoFiles):
-                    # Unpack only if video file was not already extracted by 'postpone if no subs' feature
+                if rarFiles:
                     rarContent = unRAR(processPath, rarFiles, force, result)
                     fileList = set(fileList + rarContent)
-                    videoFiles += [x for x in rarContent if helpers.isMediaFile(x)]
+                    videoFiles += [x for x in rarContent if helpers.is_media_file(x)]
 
-                videoInRar = [x for x in rarContent if helpers.isMediaFile(x)] if rarContent else ''
-                notwantedFiles = [x for x in fileList if x not in videoFiles]
-                if notwantedFiles:
-                    result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
+                videoInRar = [x for x in rarContent if helpers.is_media_file(x)] if rarContent else ''
 
                 # Don't Link media when the media is extracted from a rar in the same path
                 if process_method in (u'hardlink', u'symlink') and videoInRar:
                     process_media(processPath, videoInRar, nzbName, u'move', force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
                                   is_priority, ignore_subs, result)
-                    delete_files(processPath, rarContent, result)
+                    #  As is a hardlink/symlink we can't keep the extracted file in the folder
+                    #  Otherwise when torrent+data gets removed the folder won't be deleted because of hanging files
+                    #  That's why we don't check for app.DELRARCONTENTS here.
+                    # Don't delete extracted video file if it was Postponed by missing subtitles
+                    delete_files(processPath, set(rarContent) - set(videoInRar), result)
                 elif app.DELRARCONTENTS and videoInRar:
                     process_media(processPath, videoInRar, nzbName, process_method, force, is_priority, ignore_subs, result)
                     process_media(processPath, set(videoFiles) - set(videoInRar), nzbName, process_method, force,
@@ -292,7 +295,12 @@ def processDir(dirName, nzbName=None, process_method=None, force=False, is_prior
                         continue
 
                     delete_folder(os.path.join(processPath, u'@eaDir'))
-                    delete_files(processPath, notwantedFiles, result)
+                    allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                    notwantedFiles = [x for x in fileList
+                                      if x not in videoFiles and helpers.get_extension(x) not in allowed_extensions]
+                    if notwantedFiles:
+                        result.output += logHelper(u"Found unwanted files: %s" % notwantedFiles, logger.DEBUG)
+                        delete_files(processPath, notwantedFiles, result)
 
                     if all([not app.NO_DELETE or proc_type == u"manual",
                             process_method == u"move",
@@ -386,7 +394,7 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):
         allDirs += processdir
         allFiles += fileList
 
-    videoFiles = [x for x in allFiles if helpers.isMediaFile(x)]
+    videoFiles = [x for x in allFiles if helpers.is_media_file(x)]
     allDirs.append(dirName)
 
     # check if the dir have at least one tv video file
@@ -395,25 +403,25 @@ def validateDir(path, dirName, nzbNameOriginal, failed, result):
             NameParser().parse(video, cache_result=False)
             return True
         except (InvalidNameException, InvalidShowException) as error:
-            result.output += logHelper(u"{}".format(error), logger.DEBUG)
+            logger.log(u'{0}'.format(error), logger.DEBUG)
 
     for proc_dir in allDirs:
         try:
             NameParser().parse(proc_dir, cache_result=False)
             return True
         except (InvalidNameException, InvalidShowException) as error:
-            result.output += logHelper(u"{}".format(error), logger.DEBUG)
+            logger.log(u'{0}'.format(error), logger.DEBUG)
 
     if app.UNPACK:
         # Search for packed release
-        packedFiles = [x for x in allFiles if helpers.isRarFile(x)]
+        packedFiles = [x for x in allFiles if helpers.is_rar_file(x)]
 
         for packed in packedFiles:
             try:
                 NameParser().parse(packed, cache_result=False)
                 return True
             except (InvalidNameException, InvalidShowException) as error:
-                result.output += logHelper(u"{}".format(error), logger.DEBUG)
+                logger.log(u'{0}'.format(error), logger.DEBUG)
 
     result.output += logHelper(u"%s : No processable items found in the folder" % dirName, logger.DEBUG)
     return False
@@ -451,7 +459,15 @@ def unRAR(path, rarFiles, force, result):
                                                    file_in_archive, logger.DEBUG)
                         skip_file = True
                         break
+                    if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
+                        result.output += logHelper(u"Archive file already extracted, extraction skipped: %s" %
+                                                   file_in_archive, logger.DEBUG)
 
+                        skip_file = True
+                        #  We need to return the media file inside the .RAR so we can move
+                        #  when method is hardlink/symlink
+                        unpacked_files.append(file_in_archive)
+                        break
                 if skip_file:
                     continue
 
@@ -478,7 +494,7 @@ def unRAR(path, rarFiles, force, result):
                 failure = (ex(e), u'Unpacking failed for an unknown reason')
 
             if failure is not None:
-                result.output += logHelper(u'Failed Unrar archive {}: {}'.format(archive, failure[0]), logger.ERROR)
+                result.output += logHelper(u'Failed Unrar archive {}: {}'.format(archive, failure[0]), logger.WARNING)
                 result.missedfiles.append(u'{} : Unpacking failed: {}'.format(archive, failure[1]))
                 result.result = False
                 continue
@@ -556,7 +572,7 @@ def process_media(processPath, videoFiles, nzbName, process_method, force, is_pr
                                                        u"Continuing the post-process of this file: %s" % cur_video_file)
                         else:
                             associated_files = processor.list_associated_files(cur_video_file_path, subtitles_only=True)
-                            if not [f for f in associated_files if f[-3:] in subtitle_extensions]:
+                            if not [f for f in associated_files if helpers.get_extension(f) in subtitle_extensions]:
                                 result.output += logHelper(u"No subtitles associated. Postponing the post-process of this file:"
                                                            u" %s" % cur_video_file, logger.DEBUG)
                                 continue

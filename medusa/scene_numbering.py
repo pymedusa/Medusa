@@ -367,7 +367,7 @@ def get_scene_numbering_for_show(indexer_id, indexer):
     return result
 
 
-def get_xem_numbering_for_show(indexer_id, indexer):
+def get_xem_numbering_for_show(indexer_id, indexer, refresh_data=True):
     """
     Returns a dict of (season, episode) : (sceneSeason, sceneEpisode) mappings
     for an entire show.  Both the keys and values of the dict are tuples.
@@ -379,7 +379,8 @@ def get_xem_numbering_for_show(indexer_id, indexer):
     indexer_id = int(indexer_id)
     indexer = int(indexer)
 
-    xem_refresh(indexer_id, indexer)
+    if refresh_data:
+        xem_refresh(indexer_id, indexer)
 
     main_db_con = db.DBConnection()
     rows = main_db_con.select(
@@ -491,20 +492,21 @@ def xem_refresh(indexer_id, indexer, force=False):
 
         try:
             if not indexerApi(indexer).config.get('xem_origin'):
+                logger.log(u'{0} is an unsupported indexer in XEM'.format(indexerApi(indexer).name), logger.DEBUG)
                 return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
-            parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
+            parsedJSON = helpers.get_url(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
-                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.INFO)
+                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
                 return
 
             # XEM API URL
             url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer).config['xem_origin'])
 
-            parsedJSON = helpers.getURL(url, session=xem_session, returns='json')
+            parsedJSON = helpers.get_url(url, session=xem_session, returns='json')
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
-                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.INFO)
+                logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
                 return
 
             cl = []

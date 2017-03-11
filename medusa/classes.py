@@ -15,10 +15,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Collection of generic used classes."""
 import logging
 
 from dateutil import parser
+
 from six.moves.urllib.request import FancyURLopener
 
 from . import app
@@ -36,8 +37,12 @@ class ApplicationURLopener(FancyURLopener, object):
 class SearchResult(object):
     """Represents a search result from an indexer."""
 
-    def __init__(self, episodes):
-        self.provider = None
+    def __init__(self, episodes=None, provider=None):
+        # list of Episode objects that this result is associated with
+        self.episodes = episodes
+
+        # the search provider
+        self.provider = provider
 
         # release show object
         self.show = None
@@ -47,9 +52,6 @@ class SearchResult(object):
 
         # used by some providers to store extra info associated with the result
         self.extraInfo = []
-
-        # list of TVEpisode objects that this result is associated with
-        self.episodes = episodes
 
         # quality of the release
         self.quality = Quality.UNKNOWN
@@ -87,54 +89,125 @@ class SearchResult(object):
         # content
         self.content = None
 
+        # Result type like: nzb, nzbdata, torrent
         self.resultType = u''
+
+        # Store the parse result, as it might be useful for other information later on.
+        self.parsed_result = None
+
+        # Reference to the search_provider
+        self.provider = provider
+
+        # Raw result in a dictionary
+        self.item = None
+
+        # Search flag for specifying if we want to re-download the already downloaded quality.
+        self.download_current_quality = None
+
+        # Search flag for adding or not adding the search result to cache.
+        self.add_cache_entry = True
+
+        # Search flag for flagging if this is a same-day-special.
+        self.same_day_special = False
+
+        # Keep track if we really want to result.
+        self.result_wanted = False
+
+        # The actual parsed season.
+        self.actual_season = None
+
+        # The actual parsed episode.
+        self.actual_episodes = None
 
     def __str__(self):
 
         if self.provider is None:
             return u'Invalid provider, unable to print self'
 
-        my_string = u'{} @ {}\n'.format(self.provider.name, self.url)
+        my_string = u'{0} @ {1}\n'.format(self.provider.name, self.url)
         my_string += u'Extra Info:\n'
         for extra in self.extraInfo:
-            my_string += u' {}\n'.format(extra)
+            my_string += u' {0}\n'.format(extra)
 
         my_string += u'Episodes:\n'
         for ep in self.episodes:
-            my_string += u' {}\n'.format(ep)
+            my_string += u' {0}\n'.format(ep)
 
-        my_string += u'Quality: {}\n'.format(Quality.qualityStrings[self.quality])
-        my_string += u'Name: {}\n'.format(self.name)
-        my_string += u'Size: {}\n'.format(self.size)
-        my_string += u'Release Group: {}\n'.format(self.release_group)
+        my_string += u'Quality: {0}\n'.format(Quality.qualityStrings[self.quality])
+        my_string += u'Name: {0}\n'.format(self.name)
+        my_string += u'Size: {0}\n'.format(self.size)
+        my_string += u'Release Group: {0}\n'.format(self.release_group)
 
         return my_string
 
-    def fileName(self):
-        return u'{}.{}'.format(self.episodes[0].pretty_name(), self.resultType)
+    def file_name(self):
+        return u'{0}.{1}'.format(self.episodes[0].pretty_name(), self.resultType)
+
+    def add_result_to_cache(self, cache):
+        """Cache the item if needed."""
+        if self.add_cache_entry:
+            logger.debug('Adding item from search to cache: {release_name}', release_name=self.name)
+            return cache.add_cache_entry(self.name, self.url, self.seeders,
+                                         self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
+        return None
+
+    def check_episodes_for_quality(self, forced_search, download_current_quality):
+        """Check if that episode is wanted in that quality.
+
+        We could have gotten a multi-ep result, let's see if at least one if them is what we want
+        in the correct quality.
+        """
+        if not self.actual_episodes or not self.actual_season:
+            return False
+
+        result_wanted = False
+        for episode_number in self.actual_episodes:
+            # Check whether or not the episode with the specified quality is wanted.
+            if self.show.want_episode(self.actual_season, episode_number,
+                                      self.quality, forced_search, download_current_quality):
+                result_wanted = True
+
+        if not result_wanted:
+            logger.debug('We could not find a result in the correct quality for {release_name} with url {url}',
+                         release_name=self.name, url=self.url)
+            return False
+        return True
+
+    def create_episode_object(self):
+        """Use this result to create an episode segment out of it."""
+        episode_object = []
+        for current_episode in self.actual_episodes:
+            episode_object.append(self.show.get_episode(self.actual_season,
+                                                        current_episode))
+        self.episodes = episode_object
+        return episode_object
+
+    def finish_search_result(self, provider):
+        self.size = provider._get_size(self.item)
+        self.pubdate = provider._get_pubdate(self.item)
 
 
 class NZBSearchResult(SearchResult):
     """Regular NZB result with an URL to the NZB."""
 
-    def __init__(self, episodes):
-        super(NZBSearchResult, self).__init__(episodes)
+    def __init__(self, episodes, provider=None):
+        super(NZBSearchResult, self).__init__(episodes, provider=provider)
         self.resultType = u'nzb'
 
 
 class NZBDataSearchResult(SearchResult):
     """NZB result where the actual NZB XML data is stored in the extraInfo."""
 
-    def __init__(self, episodes):
-        super(NZBDataSearchResult, self).__init__(episodes)
+    def __init__(self, episodes, provider=None):
+        super(NZBDataSearchResult, self).__init__(episodes, provider=provider)
         self.resultType = u'nzbdata'
 
 
 class TorrentSearchResult(SearchResult):
     """Torrent result with an URL to the torrent."""
 
-    def __init__(self, episodes):
-        super(TorrentSearchResult, self).__init__(episodes)
+    def __init__(self, episodes, provider=None):
+        super(TorrentSearchResult, self).__init__(episodes, provider=provider)
         self.resultType = u'torrent'
 
 
@@ -161,23 +234,23 @@ class AllShowsListUI(object):  # pylint: disable=too-few-public-methods
             if 'searchterm' in self.config:
                 search_term = self.config['searchterm']
                 # try to pick a show that's in my show list
-                for curShow in all_series:
-                    if curShow in search_results:
+                for cur_show in all_series:
+                    if cur_show in search_results:
                         continue
 
-                    if 'seriesname' in curShow:
-                        series_names.append(curShow['seriesname'])
-                    if 'aliasnames' in curShow:
-                        series_names.extend(curShow['aliasnames'].split('|'))
+                    if 'seriesname' in cur_show:
+                        series_names.append(cur_show['seriesname'])
+                    if 'aliasnames' in cur_show:
+                        series_names.extend(cur_show['aliasnames'].split('|'))
 
                     for name in series_names:
                         if search_term.lower() in name.lower():
-                            if 'firstaired' not in curShow:
+                            if 'firstaired' not in cur_show:
                                 default_date = parser.parse('1900-01-01').date()
-                                curShow['firstaired'] = default_date.strftime(dateTimeFormat)
+                                cur_show['firstaired'] = default_date.strftime(dateTimeFormat)
 
-                            if curShow not in search_results:
-                                search_results += [curShow]
+                            if cur_show not in search_results:
+                                search_results += [cur_show]
 
         return search_results
 
@@ -199,9 +272,9 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
         try:
             # try to pick a show that's in my show list
             show_id_list = [int(x.indexerid) for x in app.showList]
-            for curShow in all_series:
-                if int(curShow['id']) in show_id_list:
-                    return curShow
+            for cur_show in all_series:
+                if int(cur_show['id']) in show_id_list:
+                    return cur_show
         except Exception:
             pass
 
@@ -210,7 +283,7 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
 
 class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, torrent_hash, proper_tags):
+    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, proper_tags):
         self.name = name
         self.url = url
         self.date = date
@@ -223,7 +296,7 @@ class Proper(object):
         self.size = size
         self.pubdate = pubdate
         self.proper_tags = proper_tags
-        self.hash = torrent_hash
+        self.hash = None
         self.show = show
         self.indexer = None
         self.indexerid = -1
@@ -274,6 +347,7 @@ class Viewer(object):
         :rtype: list of medusa.logger.LogLine
         """
         return sorted(self._errors.values(), key=lambda error: error.timestamp, reverse=True)
+
 
 try:
     import urllib

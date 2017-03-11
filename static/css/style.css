@@ -6,6 +6,11 @@ strong.warning {
 inc_top.mako
 ========================================================================== */
 
+.header {
+    display: block;
+    clear: right;
+}
+
 .navbaricon {
     margin-top: -15px;
     margin-bottom: -15px;
@@ -157,8 +162,6 @@ inc_top.mako
     padding-left: 0;
     background: transparent;
     border-width: 0;
-    -moz-border-radius: 0;
-    -webkit-border-radius: 0;
     border-radius: 0;
 }
 
@@ -179,25 +182,26 @@ inc_top.mako
 }
 
 #content {
-    width: 95%;
-    min-width: 875px;
-    padding: 15px;
     margin-left: auto;
     margin-right: auto;
     clear: both;
 }
 
-#SubMenu {
-    padding-right: 20px;
-    clear: both;
+#sub-menu {
     font-size: 12px;
     float: right;
+    padding-top: 2px;
+}
+
+#sub-menu > a {
+    float: right;
+    margin-left: 4px;
 }
 
 .upgrade-notification {
-    width: 600px;
     text-align: center;
-    margin: 50px auto 0;
+    margin-top: 20px;
+    display: inline-block;
 }
 
 [class^="menu-icon-"],
@@ -207,7 +211,6 @@ inc_top.mako
     width: 16px;
     display: inline-block;
     position: relative;
-    top: 2px;
     float: left;
 }
 
@@ -422,6 +425,17 @@ inc_rootDirs.mako
 }
 
 /* =======================================================================
+history.mako
+========================================================================== */
+.layout-controls {
+    padding-top: 24px;
+}
+
+.fanartOpacity {
+    opacity: 0.9;
+}
+
+/* =======================================================================
 home.mako
 ========================================================================== */
 
@@ -514,8 +528,23 @@ home.mako
     background-image: -o-linear-gradient(rgb(218, 89, 69), rgb(177, 26, 16)) !important;
 }
 
-span.show-option {
+div.ellipsis {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 85%;
+}
+
+div.xem {
+    position: absolute;
+    right: 1px;
+    top: 0;
+}
+
+/* Show options */
+
+.show-option {
+    float: left;
     margin-left: 10px;
     line-height: 40px;
 }
@@ -544,14 +573,52 @@ span.show-option {
     box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.31);
 }
 
+.aligner {
+    display: flex;
+    align-items: center;
+}
+
+/* FF hack */
+@-moz-document url-prefix() {
+    .aligner {
+        flex-flow: column-reverse;
+        align-items: inherit;
+    }
+}
+
+/* IE 11 hack */
+@media all and (-ms-high-contrast: none) {
+    .poster-overlay {
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}
+
 .show-details {
     height: 32px;
     overflow: hidden;
 }
 
+/* Used by isotope scaling */
 .show-image {
-    overflow: hidden;
     max-width: 100%;
+    overflow: hidden;
+    border: 1px solid rgb(136, 136, 136);
+}
+
+/* Used by the displayShow and snatchSelection show header posters */
+#container-display-show img.show-image {
+    max-width: 180px;
+}
+
+.background-image img {
+    width: 100%;
+    overflow: hidden;
+}
+
+.poster-overlay {
+    position: absolute;
 }
 
 .show-container .ui-progressbar {
@@ -726,7 +793,7 @@ td.tvShow a:hover {
 }
 
 #popover-target label {
-    margin: 0 5px;
+    margin: 2px 4px 2px 0;
     display: block;
 }
 
@@ -738,12 +805,19 @@ td.tvShow a:hover {
     margin-left: -50px;
 }
 
+.min-cell-width {
+    width: 1px;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
 /* =======================================================================
 home_addShows.mako
 ========================================================================== */
 
 #addShowPortal {
-    width: 700px;
     padding: 10px 0;
     margin-right: auto;
     margin-left: auto;
@@ -751,6 +825,11 @@ home_addShows.mako
 
 #addShowPortal a {
     padding: 10px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    margin-bottom: 15px;
 }
 
 div.button {
@@ -967,34 +1046,267 @@ home_postprocess.mako
     margin-left: auto;
 }
 
+.lineH-40 {
+    line-height: 40px;
+}
+
+#episodeDir {
+    width: 70%;
+    margin-right: 5px;
+}
+
+.smallhelp {
+    line-height: 0;
+    font-size: 12px;
+}
+
+#process td:nth-child(1) {
+    padding-right: 10px;
+    width: 290px;
+}
+
 /* =======================================================================
 displayShow.mako
 ========================================================================== */
 
 .modal-wide .modal-dialog {
-  width: 90%;
+    width: 90%;
 }
 
-.modal-dialog{
-    overflow-y: initial !important
+.modal-dialog {
+    overflow-y: initial !important;
 }
-.modal-body{
+
+.modal-body {
     overflow-y: auto;
 }
 
-#posterCol {
-    float: left;
-    margin-right: 10px;
-    margin-bottom: 20px;
+div#container-display-show {
+    display: table;
 }
 
-#showCol {
+.show-poster-container {
+    margin-right: 10px;
+    display: table-cell;
+    width: 180px;
+}
+
+.ver-spacer {
+    width: 15px;
+}
+
+#show-specials-and-seasons {
+    margin-bottom: 15px;
+}
+
+#showSelector {
+    height: 31px;
+    display: table-cell;
+    left: 20px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.show-info-container {
     overflow: hidden;
-    margin-bottom: 20px;
+    display: table-cell;
+}
+
+.select-show-group {
+    width: 300px;
+}
+
+.container-navShow {
+    margin-top: -2px;
+    margin-left: 305px;
+    z-index: 10;
+}
+
+.tvshowImg {
+    border: 1px solid rgb(204, 204, 204);
+    border-radius: 5px;
+    height: 311px;
+    width: auto;
+    float: left;
+}
+
+@media (min-width: 1281px) {
+    #sub-menu-container {
+        position: fixed;
+        width: 100%;
+        top: 51px;
+    }
+}
+
+@media (max-width: 1281px) {
+    #sub-menu-container {
+        position: relative;
+        margin-top: -24px;
+    }
+}
+
+@media (max-width: 767px) and (min-width: 341px) {
+    .select-show-group {
+        width: 100%;
+        margin: 1em;
+    }
+
+    .container-navShow {
+        margin-left: 305px;
+    }
+
+    .showSelector {
+        width: 100%;
+    }
+
+    .container-navShow {
+        display: none;
+    }
+
+    #key-padding {
+        padding-bottom: 4px;
+    }
+}
+
+@media (max-width: 340px) {
+    .select-show-group {
+        width: 260px;
+        margin: 1em;
+    }
+
+    .container-navShow {
+        margin-left: 265px;
+    }
+}
+
+@media (max-width: 767px) {
+    #showSelector {
+        left: 5px;
+        margin-bottom: 5px;
+    }
+
+    .pull-xs-left {
+        float: left;
+    }
+
+    .pull-xs-right {
+        float: right;
+    }
+
+    .no-padding-xs {
+        padding: 0;
+    }
+
+    .nocheck {
+        padding-left: 0 !important;
+    }
+
+    .tvshowImg {
+        margin-bottom: 10px;
+    }
+
+    .show-poster-container {
+        display: inline-block;
+        width: 100%;
+        margin: 0 auto;
+        border-style: none;
+    }
+
+    .show-poster-container img {
+        display: block;
+        margin: 0 auto;
+        max-width: 280px !important;
+    }
+
+    .tvshowImg {
+        float: none;
+    }
+
+    .col-md-12 > .horizontal-scroll {
+        margin: 0 -13px;
+    }
+
+    .show-info-container {
+        display: block;
+        padding-top: 5px;
+        width: 100%;
+    }
+}
+
+@media (min-width: 768px) {
+    .display-specials,
+    .display-seasons {
+        top: -60px;
+    }
+
+    #show-specials-and-seasons {
+        bottom: 5px;
+        right: 15px;
+        position: absolute;
+    }
+
+    .tvshowImg {
+        max-height: 245px;
+    }
+}
+
+@media (min-width: 992px) {
+    .row.wide {
+        margin-left: -11%;
+        margin-right: -11%;
+    }
+}
+
+@media (max-width: 991px) and (min-width: 768px) {
+    .show-poster-container {
+        float: left;
+        display: inline-block;
+        width: 100%;
+        border-style: none;
+    }
+
+    .show-info-container {
+        display: block;
+        width: 100%;
+    }
+
+    #container-display-show img.show-image {
+        max-width: 280px;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .pull-md-left {
+        float: left;
+    }
+
+    .pull-md-right {
+        float: right;
+    }
+
+    .tvshowImg {
+        max-height: 269px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .pull-lg-left {
+        float: left;
+    }
+
+    .pull-lg-right {
+        float: right;
+    }
+
+    .tvshowImg {
+        max-height: 269px;
+    }
 }
 
 .navShow {
-    display: inline;
+    width: 18px;
+    max-height: 15px;
+    display: -webkit-box;
     cursor: pointer;
 }
 
@@ -1022,7 +1334,6 @@ h1.title a {
 
 .displayspecials {
     position: relative;
-    top: -24px;
 }
 
 #showinfo {
@@ -1063,16 +1374,16 @@ span.imdbstars > * {
 ul.tags {
     list-style-type: none;
     position: relative;
-    top: -5px;
+    top: 4px;
     margin-left: -40px;
 }
 
 ul.tags li {
     margin-right: 4px;
     margin-bottom: 5px;
-    padding: 3px 4px 3px 25px;
+    padding: 2px 7px 2px 25px;
     background: url("../images/tag.png") no-repeat scroll 5px 4px rgb(85, 85, 85);
-    border-radius: 3px;
+    border-radius: 1px;
     border: 1px solid rgb(17, 17, 17);
     color: rgb(255, 255, 255);
     font: 14px/18px "Open Sans", "Helvetica Neue", Helvetica, Arial, Geneva, sans-serif;
@@ -1084,38 +1395,51 @@ ul.tags li a {
     color: rgb(255, 255, 255);
 }
 
-.tvshowImg {
-    border: 1px solid rgb(204, 204, 204);
-    border-radius: 5px;
-    height: 311px;
-    width: auto;
-    float: left;
-}
-
 #summary {
+    margin-top: 5px;
     padding: 10px;
-    background-color: rgb(239, 239, 239);
-    border: 1px solid rgb(223, 222, 222);
     width: 100%;
-    height: 250px;
     overflow: auto;
     cursor: default;
 }
 
+#summaryBackground {
+    position: absolute;
+    top: 305px;
+    width: 100%;
+    height: 200px;
+    background-color: #efefef;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none;
+    border-color: rgb(136, 136, 136);
+}
+
+#checkboxControlsBackground {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 0;
+    background-color: #ddd;
+    opacity: 0.8;
+    border-width: 1px;
+    border-style: solid none;
+    border-color: rgb(136, 136, 136);
+    z-index: -2;
+}
+
 .summaryTable {
-    max-width: 70%;
     overflow: hidden;
 }
 
 #checkboxControls {
-    padding-top: 5px;
+    padding-top: 2px;
 }
 
 #checkboxControls span {
-    padding: 5px;
-    font-size: 13px;
+    padding: 3px 10px 5px;
+    font-size: 11px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 #checkboxControls label {
@@ -1152,41 +1476,35 @@ ul.tags li a {
 }
 
 .downloaded {
-background-color: rgb(195, 227, 200);
+    background-color: rgb(195, 227, 200);
 }
 
 .failed {
-background-color: rgb(255, 153, 153);
+    background-color: rgb(255, 153, 153);
 }
 
 span.unaired {
     color: rgb(88, 75, 32);
-    border: 1px solid rgb(88, 75, 32);
 }
 
 span.skipped {
     color: rgb(29, 80, 104);
-    border: 1px solid rgb(29, 80, 104);
 }
 
 span.good {
     color: rgb(41, 87, 48);
-    border: 1px solid rgb(41, 87, 48);
 }
 
 span.qual {
     color: rgb(118, 81, 0);
-    border: 1px solid rgb(118, 81, 0);
 }
 
 span.wanted {
     color: rgb(137, 0, 0);
-    border: 1px solid rgb(137, 0, 0);
 }
 
 span.snatched {
     color: rgb(101, 33, 100);
-    border: 1px solid rgb(101, 33, 100);
 }
 
 span.unaired b,
@@ -1375,7 +1693,6 @@ td.col-subtitles {
 
 th.col-status,
 td.col-status {
-    width: 230px;
     text-align: center;
 }
 
@@ -1395,19 +1712,16 @@ td.col-search {
 }
 
 td.col-date {
-    min-width: 104px;
     text-align: center;
     white-space: nowrap;
 }
 
 td.col-size {
-    min-width: 79px;
     text-align: center;
     white-space: nowrap;
 }
 
 td.col-provider {
-    min-width: 133px;
     text-align: center;
     white-space: nowrap;
 }
@@ -1443,7 +1757,7 @@ div.season-scene-exception {
 #showBanner {
     float: right;
     height: 50px;
-    border: 1px solid black;
+    border: 1px solid rgb(136, 136, 136);
 }
 
 .fanart {
@@ -1456,16 +1770,22 @@ div.season-scene-exception {
     float: right;
 }
 
+select#select-show {
+    padding-top: 5px;
+    display: inline-block;
+    width: 100%;
+}
+
 /* =======================================================================
 schedule.mako
 ========================================================================== */
 
 .key {
-    margin-bottom: 20px;
+    line-height: 25px;
 }
 
 .listing-key {
-    padding: 5px;
+    padding: 2px 5px;
     font-size: 13px;
     font-weight: bold;
     border-radius: 5px;
@@ -1527,7 +1847,6 @@ h2.network {
     margin: auto;
     padding: 0;
     text-align: left;
-    width: 750px;
     border-radius: 5px;
     background: rgb(255, 255, 255);
     cursor: default;
@@ -1626,6 +1945,7 @@ h2.network {
 
 .calendarShow .poster {
     padding-bottom: 2px;
+    height: 212px;
 }
 
 .calendarShow .poster img {
@@ -1656,7 +1976,6 @@ config*.mako
 
 #config-content {
     display: block;
-    width: 960px;
     padding: 0 0 40px;
     margin: 0 auto;
     clear: both;
@@ -2232,6 +2551,10 @@ a.whitelink {
 Global
 ========================================================================== */
 
+.logging-filter-controll {
+    padding-top: 24px;
+}
+
 span.path {
     padding: 3px 6px;
     color: rgb(139, 0, 0);
@@ -2239,43 +2562,43 @@ span.path {
 }
 
 .align-left {
-    text-align: left;
+    text-align: left !important;
 }
 
 .h2footer {
-    margin: -45px 0 8px;
     line-height: 18px;
+    clear: both;
 }
 
 span.quality {
     font: 12px/13px "Open Sans", verdana, sans-serif;
-    background-image:-webkit-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    background-image:-moz-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    background-image:-o-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    background-image:linear-gradient(to bottom, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.25));
-    -webkit-box-shadow:inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
-    box-shadow:inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
     text-shadow: 0 1px rgba(0, 0, 0, 0.8);
     color: rgb(255, 255, 255);
     display: inline-block;
     padding: 2px 4px;
     text-align: center;
     vertical-align: baseline;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
     border-radius: 4px;
     white-space: nowrap;
 }
 
 span.any-hd {
     background-color: rgb(38, 114, 182);
-    background: repeating-linear-gradient(
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
+    background:
+        repeating-linear-gradient(
         -45deg,
         rgb(38, 114, 182),
         rgb(38, 114, 182) 10px,
         rgb(91, 153, 13) 10px,
         rgb(91, 153, 13) 20px
     );
+    /* stylelint-enable */
 }
 
 span.Custom {
@@ -2348,8 +2671,9 @@ span.true {
     color: rgb(102, 153, 102);
 }
 
-span.break-word {
+.break-word {
     word-break: break-all;
+    word-wrap: break-word;
 }
 
 span.required {
@@ -2433,12 +2757,20 @@ div.blackwhitelist.manual {
     margin: 7px 0;
 }
 
+ul.simpleList {
+    padding-left: 0px;
+}
+
+ul.simpleList li {
+    list-style-type: none;
+}
+
 /* =======================================================================
 bootstrap Overrides
 ========================================================================== */
 
 #vue-wrap {
-        padding-top: 60px;
+    padding-top: 75px;
 }
 
 body {
@@ -2467,11 +2799,6 @@ select,
 .uneditable-input {
     width: auto;
     color: rgb(0, 0, 0);
-}
-
-.container-fluid {
-    margin-left: 10px;
-    margin-right: 10px;
 }
 
 .navbar-brand {
@@ -2610,6 +2937,15 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     padding: 4px 36px 4px 20px;
 }
 
+.dropdown-menu-custom > li > a {
+    padding: 15px 36px 15px 5px;
+    border-bottom: 1px solid darkgrey;
+}
+
+.dropdown-menu-custom > li:last-child > a {
+    border-bottom-style: none;
+}
+
 .dropdown-menu {
     background-color: rgb(245, 241, 228);
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -2626,12 +2962,38 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     width: auto;
 }
 
+.input-sm-smallfont {
+    font-size: 11px;
+}
+
+.input-sm-custom {
+    padding: 2px 5px 3px;
+    border-radius: 1px;
+    line-height: 1.5;
+    height: auto;
+}
+
+#sub-menu-container {
+    z-index: 550;
+    min-height: 41px;
+}
+
+.shadow {
+    box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
+}
+
+.border-bottom {
+    border-width: 1px;
+    border-style: none none solid;
+    border-color: rgb(62, 63, 58);
+}
+
 .btn {
     display: inline-block;
     *display: inline;
-    padding: 4px 10px 4px;
+    padding: 4px 10px;
     margin-bottom: 0;
-    *margin-left: .3em;
+    *margin-left: 0.3em;
     font-size: 12px;
     line-height: 16px;
     *line-height: 20px;
@@ -2646,7 +3008,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgb(255, 255, 255)), to(rgb(230, 230, 230)));
     background-image: -webkit-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
     background-image: -o-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
-    background-image: linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
+    background-image: linear-gradient(to top, rgb(255, 255, 255), rgb(230, 230, 230));
     background-image: -moz-linear-gradient(top, rgb(255, 255, 255), rgb(230, 230, 230));
     background-repeat: repeat-x;
     border: 1px solid rgb(204, 204, 204);
@@ -2656,12 +3018,10 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     border-bottom-color: rgb(179, 179, 179);
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
-    border-radius: 4px;
+    border-radius: 1px;
     filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ffffff', endColorstr='#e6e6e6', GradientType=0);
     filter: progid:dximagetransform.microsoft.gradient(enabled=false);
     *zoom: 1;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-    -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -2708,8 +3068,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-color: rgb(217, 217, 217) \9;
     background-image: none;
     outline: 0;
-    -webkit-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
-    -moz-box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -2720,8 +3078,6 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: none;
     opacity: 0.65;
     filter: alpha(opacity=65);
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
     box-shadow: none;
 }
 
@@ -2729,9 +3085,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     padding: 9px 14px;
     font-size: 15px;
     line-height: normal;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
+    border-radius: 1px;
 }
 
 .btn-large [class^="icon-"] {
@@ -2787,7 +3141,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
     background-image: -o-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
     background-image: -moz-linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
-    background-image: linear-gradient(top, rgb(0, 136, 204), rgb(0, 85, 204));
+    background-image: linear-gradient(to top, rgb(0, 136, 204), rgb(0, 85, 204));
     background-repeat: repeat-x;
     border-color: rgb(0, 85, 204) rgb(0, 85, 204) rgb(0, 53, 128);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2817,7 +3171,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
     background-image: -o-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
     background-image: -moz-linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
-    background-image: linear-gradient(top, rgb(251, 180, 80), rgb(248, 148, 6));
+    background-image: linear-gradient(to top, rgb(251, 180, 80), rgb(248, 148, 6));
     background-repeat: repeat-x;
     border-color: rgb(248, 148, 6) rgb(248, 148, 6) rgb(173, 103, 4);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2847,7 +3201,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
     background-image: -o-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
     background-image: -moz-linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
-    background-image: linear-gradient(top, rgb(238, 95, 91), rgb(189, 54, 47));
+    background-image: linear-gradient(to top, rgb(238, 95, 91), rgb(189, 54, 47));
     background-repeat: repeat-x;
     border-color: rgb(189, 54, 47) rgb(189, 54, 47) rgb(128, 36, 32);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2877,7 +3231,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
     background-image: -o-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
     background-image: -moz-linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
-    background-image: linear-gradient(top, rgb(98, 196, 98), rgb(81, 163, 81));
+    background-image: linear-gradient(to top, rgb(98, 196, 98), rgb(81, 163, 81));
     background-repeat: repeat-x;
     border-color: rgb(81, 163, 81) rgb(81, 163, 81) rgb(56, 112, 56);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2907,7 +3261,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
     background-image: -o-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
     background-image: -moz-linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
-    background-image: linear-gradient(top, rgb(91, 192, 222), rgb(47, 150, 180));
+    background-image: linear-gradient(to top, rgb(91, 192, 222), rgb(47, 150, 180));
     background-repeat: repeat-x;
     border-color: rgb(47, 150, 180) rgb(47, 150, 180) rgb(31, 99, 119);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2937,7 +3291,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     background-image: -webkit-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
     background-image: -o-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
     background-image: -moz-linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
-    background-image: linear-gradient(top, rgb(85, 85, 85), rgb(34, 34, 34));
+    background-image: linear-gradient(to top, rgb(85, 85, 85), rgb(34, 34, 34));
     background-repeat: repeat-x;
     border-color: rgb(34, 34, 34) rgb(34, 34, 34) rgb(0, 0, 0);
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
@@ -2963,7 +3317,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
     padding: 1px 5px;
     font-size: 12px;
     line-height: 1.5;
-    border-radius: 3px;
+    border-radius: 1px;
 }
 
 @media (min-width: 768px) {
@@ -3102,9 +3456,7 @@ div.formpaginate .next {
     cursor: hand;
     cursor: pointer;
     background: rgb(87, 68, 43);
-    -webkit-border-radius: 6px;
-        -moz-border-radius: 6px;
-            border-radius: 6px;
+    border-radius: 6px;
 }
 
 .stepDiv {
@@ -3132,7 +3484,6 @@ div.formpaginate .next {
     font-size: 12px;
     font-weight: normal;
     display: block;
-    width: 475px;
     margin-left: 182px;
 }
 
@@ -3494,12 +3845,11 @@ jquery.confirm.css
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: -moz-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: -o-linear-gradient(top, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.08),rgba(255,255,255,0) 50%,rgba(0,0,0,0) 51%,rgba(0,0,0,0.25));
-    -webkit-box-shadow: inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
-    box-shadow: inset 0 1px rgba(255,255,255,0.1),inset 0 -1px 3px rgba(0,0,0,0.3),inset 0 0 0 1px rgba(255,255,255,0.08),0 1px 2px rgba(0,0,0,0.15);
+    background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0) 51%, rgba(0, 0, 0, 0.25));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), inset 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 #confirmBox .button:last-child {
@@ -3675,13 +4025,123 @@ div#searchNotification {
     display: inline-block;
 }
 
+.left-30 {
+    margin-left: -30px;
+}
+
+.right-30 {
+    margin-right: -30px;
+}
+
+.vMiddle {
+    vertical-align: middle;
+}
+
+.curHelp {
+    cursor: help;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(1) tr:nth-child(1) {
+    height: 60px;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(4) tr:nth-child(1) {
+    height: 30px;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) tr:nth-child(2) {
+    height: 30px;
+}
+
+#snatchhistory th.row-seasonheader {
+    vertical-align: bottom;
+    width: auto;
+}
+
+#snatchhistory th.row-seasonheader h3 {
+    display: inline;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(1) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(2) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(3) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter tbody:nth-child(2) th:nth-child(4) {
+    width: 52%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(1) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(2) {
+    width: 18%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(3) {
+    width: 15%;
+    text-align: center !important;
+}
+
+#snatchhistory.tablesorter td:nth-child(4) {
+    width: 52%;
+}
+
+#srchresults.tablesorter td:nth-child(1) {
+    width: 56%;
+}
+
+#srchresults.tablesorter td:nth-child(n+2) {
+    width: 4%;
+    text-align: center;
+}
+
 .summaryTable tr td {
     word-break: break-all;
+}
+
+.release-name-ellipses {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 250px;
 }
 
 /* =======================================================================
 viewLog.mako
 ========================================================================== */
+div .notepad {
+    position: absolute;
+    right: 15px;
+    opacity: 0.1;
+    zoom: 1;
+    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%);
+    -webkit-transition: opacity 0.5s; /* Safari */
+    transition: opacity 0.5s;
+}
+
+div .notepad:hover {
+    opacity: 0.4;
+}
+
+div.notepad img {
+    width: 50px;
+}
 
 /* Pull left in mobile resolutions */
 @media (max-width: 767px) {
@@ -3708,3 +4168,159 @@ viewLog.mako
 .log-filter {
     margin-top: 20px;
 }
+
+/* ========================================================================
+CSS helper classes
+=========================================================================== */
+
+.top-5 {
+    margin-top: 5px;
+}
+
+.top-10 {
+    margin-top: 10px;
+}
+
+.top-15 {
+    margin-top: 15px;
+}
+
+.top-20 {
+    margin-top: 20px;
+}
+
+.top-25 {
+    margin-top: 25px;
+}
+
+.bottom-5 {
+    margin-bottom: 5px;
+}
+
+.bottom-10 {
+    margin-bottom: 10px;
+}
+
+.bottom-15 {
+    margin-bottom: 15px;
+}
+
+.bottom-20 {
+    margin-bottom: 20px;
+}
+
+.bottom-25 {
+    margin-bottom: 25px;
+}
+
+.horizontal-scroll {
+    overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+    .col-md-12 > .horizontal-scroll {
+        margin: 0 -13px;
+    }
+}
+
+/* sub-menu */
+
+@media screen and (min-width: 0) and (max-width: 768px) {
+    .full-width { display: none; }  /* show it on small screens */
+    .mobile { display: block; }
+    .mobile .ui-icon { display: inline-block; }
+
+    .dropdown-menu-custom > li > a {
+        padding: 15px 36px 15px 5px;
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+    }
+
+    .mobile > ul > li > a {
+        padding-top: 15px;
+        padding-bottom: 15px;
+        padding-left: 8px;
+    }
+
+    .mobile .img-align {
+        width: 25px;
+        float: left;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    .full-width { display: block; }  /* show it on small screens */
+    .mobile { display: none; }
+}
+
+/* navbar padding, to make room for in-page scrollbars */
+.padding-right-15 {
+    padding-right: 15px !important;
+}
+
+.backlog-quality {
+    color: rgb(255, 255, 255);
+    background-color: rgb(55, 55, 55);
+}
+
+#key-padding {
+    margin-left: 215px;
+}
+
+@media (max-width: 1700px) {
+    #key-padding {
+        margin-left: 0;
+        margin-right: 5px;
+    }
+}
+
+.triggerhighlight {
+    cursor: default;
+}
+
+/* =======================================================================
+ Scroll to top
+========================================================================== */
+.scroll-top-wrapper {
+    position: fixed;
+    opacity: 0;
+    visibility: hidden;
+    overflow: hidden;
+    text-align: center;
+    font-size: 20px;
+    z-index: 99999999;
+    background-color: #777;
+    color: #eee;
+    width: 50px;
+    height: 48px;
+    line-height: 48px;
+    right: 30px;
+    bottom: 30px;
+    padding-top: 2px;
+    border-radius: 10px;
+    -webkit-transition: all 0.5s ease-in-out;
+    -moz-transition: all 0.5s ease-in-out;
+    -ms-transition: all 0.5s ease-in-out;
+    -o-transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
+}
+
+.scroll-top-wrapper:hover {
+    background-color: #888;
+}
+
+.scroll-top-wrapper.show {
+    visibility: visible;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.scroll-top-wrapper i.fa {
+    line-height: inherit;
+}
+
+/* CSS for Nav dropdown hover
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+*/

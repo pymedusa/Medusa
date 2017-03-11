@@ -21,11 +21,15 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size
 
 
 class Torrentz2Provider(TorrentProvider):
@@ -56,7 +60,7 @@ class Torrentz2Provider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=15)  # only poll Torrentz every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)  # only poll Torrentz every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -119,8 +123,8 @@ class Torrentz2Provider(TorrentProvider):
                     title_raw = row.title.text
                     # Add "-" after codec and add missing "."
                     title = re.sub(r'([xh][ .]?264|xvid)( )', r'\1-', title_raw).replace(' ', '.') if title_raw else ''
-                    torrent_hash = row.guid.text.rsplit('/', 1)[-1]
-                    download_url = "magnet:?xt=urn:btih:" + torrent_hash + "&dn=" + title + self._custom_trackers
+                    info_hash = row.guid.text.rsplit('/', 1)[-1]
+                    download_url = "magnet:?xt=urn:btih:" + info_hash + "&dn=" + title + self._custom_trackers
                     if not all([title, download_url]):
                         continue
 
@@ -142,7 +146,6 @@ class Torrentz2Provider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -21,11 +21,16 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import try_int
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import try_int
 
 
 class EliteTorrentProvider(TorrentProvider):
@@ -54,7 +59,7 @@ class EliteTorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)  # Only poll EliteTorrent every 20 minutes max
+        self.cache = tv.Cache(self)  # Only poll EliteTorrent every 20 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -151,7 +156,6 @@ class EliteTorrentProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -177,7 +181,8 @@ class EliteTorrentProvider(TorrentProvider):
         title = title.replace('(calidad regular)', 'DVDrip x264')
         title = title.replace('(calidad media)', 'DVDrip x264')
 
-        # Language, all results from this provider have spanish audio, we append it to title (to avoid downloading undesired torrents)
+        # Language, all results from this provider have spanish audio,
+        # We append it to title (to avoid downloading undesired torrents)
         title += ' SPANISH AUDIO'
         title += '-ELITETORRENT'
 

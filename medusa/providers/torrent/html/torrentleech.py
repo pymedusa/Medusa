@@ -18,15 +18,21 @@
 """Provider code for TorrentLeech."""
 from __future__ import unicode_literals
 
-import re
 import traceback
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 
 class TorrentLeechProvider(TorrentProvider):
@@ -41,14 +47,14 @@ class TorrentLeechProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://torrentleech.org'
+        self.url = 'https://classic.torrentleech.org'
         self.urls = {
-            'login': urljoin(self.url, 'user/account/login/'),
+            'login': urljoin(self.url, 'user/account/login'),
             'search': urljoin(self.url, 'torrents/browse'),
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
 
@@ -57,7 +63,7 @@ class TorrentLeechProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -113,9 +119,6 @@ class TorrentLeechProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         def process_column_header(td):
             result = ''
             if td.a:
@@ -157,7 +160,7 @@ class TorrentLeechProvider(TorrentProvider):
                         continue
 
                     torrent_size = row('td')[labels.index('Size')].get_text()
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,
@@ -166,7 +169,6 @@ class TorrentLeechProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -181,7 +183,8 @@ class TorrentLeechProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
+        cookies = dict_from_cookiejar(self.session.cookies)
+        if any(cookies.values()) and cookies.get('member_id'):
             return True
 
         login_params = {
@@ -196,8 +199,7 @@ class TorrentLeechProvider(TorrentProvider):
             logger.log('Unable to connect to provider', logger.WARNING)
             return False
 
-        if any([re.search('Invalid Username/password', response.text),
-                re.search('<title>Login :: TorrentLeech.org</title>', response.text), ]):
+        if '<title>Login :: TorrentLeech.org</title>' in response.text:
             logger.log('Invalid username or password. Check your settings', logger.WARNING)
             return False
 

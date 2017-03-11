@@ -10,14 +10,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- These values come from css/dark.css and css/light.css -->
         % if app.THEME_NAME == "dark":
-        <meta name="theme-color" content="#15528F">
+        <meta name="theme-color" content="#333333">
         % elif app.THEME_NAME == "light":
         <meta name="theme-color" content="#333333">
         % endif
         <title>Medusa - ${title}</title>
         <base href="${base_url}">
         <%block name="metas" />
-        <link rel="shortcut icon" href="images/ico/favicon.ico">
+        <link rel="shortcut icon" href="images/ico/favicon.ico?v=2">
         <link rel="icon" sizes="16x16 32x32 64x64" href="images/ico/favicon.ico">
         <link rel="icon" type="image/png" sizes="196x196" href="images/ico/favicon-196.png">
         <link rel="icon" type="image/png" sizes="160x160" href="images/ico/favicon-160.png">
@@ -38,6 +38,7 @@
         }
         </style>
         <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/bootstrap-formhelpers.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
@@ -48,29 +49,28 @@
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
-        <div v-cloak id="vue-wrap">
+        <div v-cloak id="vue-wrap" class="container-fluid">
             <%include file="/partials/header.mako"/>
             % if submenu:
             <%include file="/partials/submenu.mako"/>
             % endif
             <%include file="/partials/alerts.mako"/>
-            <div id="contentWrapper">
-                <div id="content">
-                    <%block name="content" />
-                </div><!-- /content -->
-            </div><!-- /contentWrapper -->
+               <div id="content-row" class="row">
+                    <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
+                        <%block name="content" />
+                    </div>
+               </div><!-- /content -->
             <%include file="/partials/footer.mako" />
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
-		<script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/timeago.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/api.js?${sbPID}"></script>
         <script type="text/javascript" src="js/core.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
@@ -108,11 +108,11 @@
         <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
         <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
         <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
         <%block name="scripts" />

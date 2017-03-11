@@ -22,11 +22,16 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from medusa import (
+    helpers,
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
-from ..torrent_provider import TorrentProvider
-from .... import helpers, logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size
 
 
 class NewpctProvider(TorrentProvider):
@@ -52,7 +57,7 @@ class NewpctProvider(TorrentProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=20)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -151,7 +156,6 @@ class NewpctProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
@@ -218,7 +222,8 @@ class NewpctProvider(TorrentProvider):
         urls, filename = self._make_url(result)
 
         for url in urls:
-            # Search results don't return torrent files directly, it returns show sheets so we must parse showSheet to access torrent.
+            # Search results don't return torrent files directly,
+            # it returns show sheets so we must parse showSheet to access torrent.
             response = self.get_url(url, returns='response')
             url_torrent = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', response.text, re.DOTALL).group()
 

@@ -60,9 +60,13 @@ class IndexerAttributeNotFound(IndexerException):
     """Raised if an episode does not have the requested attribute (such as a episode name)."""
 
 
-class IndexerSeasonUpdatesNotSupported(IndentationError):
+class IndexerSeasonUpdatesNotSupported(IndexerException):
     """Raised if an episode does not have the requested attribute (such as a episode name)."""
 
 
 class IndexerUnavailable(IndexerError):
     """Indexer API is unavailable, for example when giving back a 5xx response."""
+
+
+class IndexerShowAllreadyInLibrary(IndexerException):
+    """The show is already in the library. Same show for multiple indexers, is not supported."""

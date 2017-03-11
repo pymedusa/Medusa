@@ -12,7 +12,7 @@ from tornroutes import route
 from .api.v1.core import ApiHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import app, logger
-from ..helpers import create_https_certificates, generateApiKey
+from ..helpers import create_https_certificates, generate_api_key
 
 
 def get_apiv2_handlers(base):
@@ -20,30 +20,38 @@ def get_apiv2_handlers(base):
     from .api.v2.config import ConfigHandler
     from .api.v2.log import LogHandler
     from .api.v2.show import ShowHandler
-    from .api.v2.auth import LoginHandler
+    from .api.v2.auth import AuthHandler
     from .api.v2.asset import AssetHandler
     from .api.v2.base import NotFoundHandler
-    from .api.v2.cache import SceneExceptionHandler
+    from .api.v2.scene_exception import (SceneExceptionHandler, SceneExceptionTypeHandler,
+                                         SceneExceptionAllTypeOperationHandler, SceneExceptionTypeOperationHandler)
 
     show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
-    ep_id = r'(?:(?:s(?P<season>\d{1,2})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|' \
-            r'(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
+    # This has to accept season of 1-4 as some seasons are years. For example Formula 1
+    ep_id = r'(?:(?:s(?P<season>\d{1,4})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))' \
+            r'|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
     query = r'(?P<query>[\w]+)'
     query_extended = r'(?P<query>[\w \(\)%]+)'  # This also accepts the space char, () and %
     log_level = r'(?P<log_level>[a-zA-Z]+)'
     asset_group = r'(?P<asset_group>[a-zA-Z0-9]+)'
 
     return [
+        # All operations endpoints should be defined first.
+        (r'{base}/exceptiontype/(?P<exception_type>[a-z]+)/operation?/?'.format(base=base), SceneExceptionTypeOperationHandler),
+        (r'{base}/exceptiontype/operation?/?'.format(base=base), SceneExceptionAllTypeOperationHandler),
+
+        # Regular REST routes
         (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id,
-                                                                          query=query),
-         ShowHandler),
+                                                                          query=query), ShowHandler),
         (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
         (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
-        (r'{base}/auth/login(/?)'.format(base=base), LoginHandler),
+        (r'{base}/authenticate(/?)'.format(base=base), AuthHandler),
         (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
-                                                                 query=query_extended),
-         AssetHandler),
-        (r'{base}/scene(?:/(?P<row_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
+                                                                 query=query_extended), AssetHandler),
+        (r'{base}/sceneexception(?:/(?P<exception_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
+        (r'{base}/exceptiontype(?:/(?P<exception_type>[a-z]+)?)?/?'.format(base=base), SceneExceptionTypeHandler),
+
+        # Always keep this last!
         (r'{base}(/?.*)'.format(base=base), NotFoundHandler),
     ]
 
@@ -81,7 +89,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # api root
         if not app.API_KEY:
-            app.API_KEY = generateApiKey()
+            app.API_KEY = generate_api_key()
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
         self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
 

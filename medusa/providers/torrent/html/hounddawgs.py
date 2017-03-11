@@ -21,12 +21,19 @@ from __future__ import unicode_literals
 import re
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 
 class HoundDawgsProvider(TorrentProvider):
@@ -59,7 +66,7 @@ class HoundDawgsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -107,14 +114,10 @@ class HoundDawgsProvider(TorrentProvider):
                 if not response or not response.text:
                     logger.log('No data returned from provider', logger.DEBUG)
                     continue
-
-                str_table_start = "<table class='torrent_table"
-                start_table_index = response.text.find(str_table_start)
-                data = response.text[start_table_index:]
-                if not data:
+                if not response.text:
                     continue
 
-                results += self.parse(data, mode)
+                results += self.parse(response.text, mode)
 
         return results
 
@@ -159,7 +162,7 @@ class HoundDawgsProvider(TorrentProvider):
                         continue
 
                     title = all_as[2].string
-                    download_url = self.urls['base_url'] + all_as[0].attrs['href']
+                    download_url = urljoin(self.url, all_as[0].attrs['href'])
                     if not all([title, download_url]):
                         continue
 
@@ -185,7 +188,6 @@ class HoundDawgsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

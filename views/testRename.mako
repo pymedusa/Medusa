@@ -5,6 +5,7 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
     from medusa import db, sbdatetime, network_timezones
+    from random import choice
     import datetime
     import re
 %>
@@ -12,12 +13,12 @@
 <script type="text/javascript" src="js/test-rename.js"></script>
 </%block>
 <%block name="content">
+<input type="hidden" id="showID" value="${show.indexerid}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
     <h1 class="title">${title}</h1>
 % endif
-<input type="hidden" id="showID" value="${show.indexerid}" />
 <h3>Preview of the proposed name changes</h3>
 <blockquote>
 % if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:
@@ -28,25 +29,24 @@
     ${app.NAMING_PATTERN}
 % endif
 </blockquote>
-<% curSeason = -1 %>
+<% cur_season = -1 %>
 <% odd = False%>
-<table id="SelectAllTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
-    <thead>
-        <tr class="seasonheader" id="season-all">
-            <td colspan="4">
-                <h2>All Seasons</h2>
-            </td>
-        </tr>
-        <tr class="seasoncols" id="selectall">
-            <th class="col-checkbox"><input type="checkbox" class="seriesCheck" id="SelectAll" /></th>
-            <th align="left" valign="top" class="nowrap">Select All</th>
-            <th width="100%" class="col-name" style="visibility:hidden;"></th>
-        </tr>
-    </thead>
-</table>
-<br>
-<input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
-
+<h2>All Seasons</h2>
+<div class="row">
+    <div class="col-md-2">
+    <table id="SelectAllTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
+        <thead>
+            <tr class="seasoncols" id="selectall">
+                <th class="col-checkbox"><input type="checkbox" class="seriesCheck" id="SelectAll" /></th>
+                <th align="left" valign="top" class="nowrap">Select All</th>
+            </tr>
+        </thead>
+    </table>
+    </div>
+    <div class="col-md-10">
+        <input type="submit" value="Rename Selected" class="btn btn-success"> <a href="home/displayShow?show=${show.indexerid}" class="btn btn-danger">Cancel Rename</a>
+    </div>
+</div>
 <table id="testRenameTable" class="defaultTable ${"summaryFanArt" if app.FANART_BACKGROUND else ""}" cellspacing="1" border="0" cellpadding="0">
 % for cur_ep_obj in ep_obj_list:
 <%
@@ -54,7 +54,7 @@
     curExt = curLoc.split('.')[-1]
     newLoc = cur_ep_obj.proper_path() + '.' + curExt
 %>
-% if int(cur_ep_obj.season) != curSeason:
+% if int(cur_ep_obj.season) != cur_season:
     <thead>
         <tr class="seasonheader" id="season-${cur_ep_obj.season}">
             <td colspan="4">
@@ -69,7 +69,7 @@
             <th class="col-name">New Location</th>
         </tr>
     </thead>
-<% curSeason = int(cur_ep_obj.season) %>
+<% cur_season = int(cur_ep_obj.season) %>
 % endif
     <tbody>
 <%
@@ -79,7 +79,7 @@ epList = sorted([cur_ep_obj.episode] + [x.episode for x in cur_ep_obj.related_ep
 if len(epList) > 1:
     epList = [min(epList), max(epList)]
 %>
-        <tr class="season-${curSeason} ${'good' if curLoc == newLoc else 'wanted'} seasonstyle">
+        <tr class="season-${cur_season} ${'good' if curLoc == newLoc else 'wanted'} seasonstyle">
             <td class="col-checkbox">
             % if curLoc != newLoc:
                 <input type="checkbox" class="epCheck" id="${str(cur_ep_obj.season) + 'x' + str(cur_ep_obj.episode)}" name="${str(cur_ep_obj.season) + "x" + str(cur_ep_obj.episode)}" />

@@ -1,8 +1,39 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
-    if (MEDUSA.config.fanartBackground) {
-        $.backstretch('showPoster/?show=' + $('#showID').attr('value') + '&which=fanart');
-        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+    $('.imdbPlot').on('click', function() {
+        $(this).prev('span').toggle();
+        if ($(this).html() === '..show less') {
+            $(this).html('..show more');
+        } else {
+            $(this).html('..show less');
+        }
+        moveSummaryBackground();
+        movecheckboxControlsBackground();
+    });
+
+    // adjust the summary background position and size on page load and resize
+    function moveSummaryBackground() {
+        var height = $('#summary').height() + 10;
+        var top = $('#summary').offset().top + 5;
+        $('#summaryBackground').height(height);
+        $('#summaryBackground').offset({top: top, left: 0});
     }
+
+    function movecheckboxControlsBackground() {
+        var height = $('#checkboxControls').height() + 10;
+        var top = $('#checkboxControls').offset().top - 3;
+        $('#checkboxControlsBackground').height(height);
+        $('#checkboxControlsBackground').offset({top: top, left: 0});
+    }
+
+    $(window).resize(function() {
+        moveSummaryBackground();
+        movecheckboxControlsBackground();
+    });
+
+    $(function() {
+        moveSummaryBackground();
+        movecheckboxControlsBackground();
+    });
 
     $.ajaxEpSearch({
         colorRow: true
@@ -24,13 +55,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     $('#prevShow').on('click', function() {
-        $('#pickShow option:selected').prev('option').prop('selected', true);
-        $('#pickShow').change();
+        $('#select-show option:selected').prev('option').prop('selected', true);
+        $('#select-show').change();
     });
 
     $('#nextShow').on('click', function() {
-        $('#pickShow option:selected').next('option').prop('selected', true);
-        $('#pickShow').change();
+        $('#select-show option:selected').next('option').prop('selected', true);
+        $('#select-show').change();
     });
 
     $('#changeStatus').on('click', function() {
@@ -46,7 +77,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
+        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
     });
 
     $('.seasonCheck').on('click', function() {
@@ -108,12 +139,12 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // handle the show selection dropbox
-    $('#pickShow').on('change', function() {
+    $('#select-show').on('change', function() {
         var val = $(this).val();
         if (val === 0) {
             return;
         }
-        window.location.href = 'home/displayShow?show=' + val;
+        window.location.href = $('base').attr('href') + 'home/displayShow?show=' + val;
     });
 
     // show/hide different types of rows when the checkboxes are changed
@@ -293,32 +324,6 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
     });
 
-    $('.addQTip').each(function() {
-        $(this).css({
-            'cursor': 'help', // eslint-disable-line quote-props
-            'text-shadow': '0px 0px 0.5px #666'
-        });
-        $(this).qtip({
-            show: {
-                solo: true
-            },
-            position: {
-                my: 'left center',
-                adjust: {
-                    y: -10,
-                    x: 2
-                }
-            },
-            style: {
-                tip: {
-                    corner: true,
-                    method: 'polygon'
-                },
-                classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
-            }
-        });
-    });
-
     $.fn.generateStars = function() {
         return this.each(function(i, e) {
             $(e).html($('<span/>').width($(e).text() * 12));
@@ -331,7 +336,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
         widgetOptions: {
             columnSelector_saveColumns: true, // eslint-disable-line camelcase
-            columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
+            columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
             columnSelector_mediaquery: false, // eslint-disable-line camelcase
             columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
         }
@@ -352,11 +357,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Show Episodes');
+            $('#season-' + result[1] + '-cols').addClass('shadow');
         });
         $('.collapse.toggle').on('show.bs.collapse', function() {
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Hide Episodes');
+            $('#season-' + result[1] + '-cols').removeClass('shadow');
         });
     });
 
@@ -404,5 +411,21 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         indexer_id: $('input#showID').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
+    });
+
+    // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
+    $('.display-specials a').on('click', function() {
+        api.patch('config', {
+            layout: {
+                show: {
+                    specials: $(this).text() !== 'Hide'
+                }
+            }
+        }).then(function(response) {
+            log.info(response.data);
+            window.location.reload();
+        }).catch(function(err) {
+            log.error(err.data);
+        });
     });
 };

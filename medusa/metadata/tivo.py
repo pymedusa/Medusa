@@ -22,17 +22,17 @@ import datetime
 import io
 import os
 
-from .. import app, helpers, logger
+from .. import helpers, logger
 from ..helper.common import episode_num
-from ..helper.exceptions import ShowNotFoundException, ex
+from ..helper.exceptions import ex
 from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerError, IndexerSeasonNotFound, IndexerShowNotFound
+from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 from ..metadata import generic
 
 
 class TIVOMetadata(generic.GenericMetadata):
     """
-    Metadata generation class for TIVO
+    Metadata generation class for TIVO.
 
     The following file structure is used:
 
@@ -134,7 +134,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         ie If the episode name is foo.avi, the metadata name is foo.avi.txt
 
-        ep_obj: a TVEpisode object to get the path for
+        ep_obj: a Episode object to get the path for
         """
         if os.path.isfile(ep_obj.location):
             metadata_file_name = '{file}.{extension}'.format(
@@ -154,7 +154,7 @@ class TIVOMetadata(generic.GenericMetadata):
         Creates a key value structure for a Tivo episode metadata file and
         returns the resulting data object.
 
-        ep_obj: a TVEpisode instance to create the metadata file for.
+        ep_obj: a Episode instance to create the metadata file for.
 
         Lookup the show in http://thetvdb.com/ using the python library:
 
@@ -171,27 +171,9 @@ class TIVOMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        indexer_lang = ep_obj.show.lang
-
-        try:
-            l_indexer_api_params = indexerApi(ep_obj.show.indexer).api_params.copy()
-
-            l_indexer_api_params['actors'] = True
-
-            if indexer_lang and not indexer_lang == app.INDEXER_DEFAULT_LANGUAGE:
-                l_indexer_api_params['language'] = indexer_lang
-
-            if ep_obj.show.dvdorder != 0:
-                l_indexer_api_params['dvdorder'] = True
-
-            t = indexerApi(ep_obj.show.indexer).indexer(**l_indexer_api_params)
-            my_show = t[ep_obj.show.indexerid]
-        except IndexerShowNotFound as e:
-            raise ShowNotFoundException(e.message)
-        except IndexerError:
-            logger.log(u'Unable to connect to {indexer} while creating meta files - skipping it.'.format
-                       (indexer=indexerApi(ep_obj.show.indexer).name), logger.WARNING)
-            return False
+        my_show = self._get_show_data(ep_obj.show)
+        if not my_show:
+            return None
 
         for ep_to_write in eps_to_write:
 
@@ -304,7 +286,7 @@ class TIVOMetadata(generic.GenericMetadata):
         given filename root. Uses the episode's name with the extension in
         _ep_nfo_extension.
 
-        ep_obj: TVEpisode object for which to create the metadata
+        ep_obj: Episode object for which to create the metadata
 
         file_name_path: The file name to use for this metadata. Note that the extension
                 will be automatically added based on _ep_nfo_extension. This should
@@ -324,7 +306,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 logger.log(u'Metadata directory did not exist, creating it at {path}'.format
                            (path=nfo_file_dir), logger.DEBUG)
                 os.makedirs(nfo_file_dir)
-                helpers.chmodAsParent(nfo_file_dir)
+                helpers.chmod_as_parent(nfo_file_dir)
 
             logger.log(u'Writing episode nfo file to {path}'.format
                        (path=nfo_file_path), logger.DEBUG)
@@ -333,7 +315,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 # Calling encode directly, b/c often descriptions have wonky characters.
                 nfo_file.write(data.encode('utf-8'))
 
-            helpers.chmodAsParent(nfo_file_path)
+            helpers.chmod_as_parent(nfo_file_path)
 
         except EnvironmentError as e:
             logger.log(u'Unable to write file to {path} - '

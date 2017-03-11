@@ -21,9 +21,7 @@ from ..image_cache import ImageCache
 
 
 class ShowBanner(GenericMedia):
-    """
-    Get the banner of a show
-    """
+    """Get the banner of a show."""
 
     def get_default_media_name(self):
         return 'banner.png'

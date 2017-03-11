@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa import clients
+    from medusa.clients import torrent
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -70,7 +70,7 @@
                             </div>
                             <div class="field-pair">
                                 <label>
-                                    <span class="component-title">Backlog search day(s)</span>
+                                    <span class="component-title">Forced backlog search day(s)</span>
                                     <span class="component-desc">
                                         <input type="number" min="1" step="1" name="backlog_days" value="${app.BACKLOG_DAYS}" class="form-control input-sm input75"/>
                                         <p>number of day(s) that the "Forced Backlog Search" will cover (e.g. 7 Days)</p>
@@ -95,6 +95,27 @@
                                         </span>
                                 </label>
                             </div><!-- daily search frequency -->
+                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD != 'transmission' else ''}>
+                                <label for="remove_from_client">
+                                    <span class="component-title">Remove torrents from client</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD == 'transmission' else ''}/>
+                                        <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
+                                        <p><b>Note:</b> For now only Transmission is supported</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div id="content_remove_from_client">
+                                <div class="field-pair">
+                                    <label>
+                                        <span class="component-title">Frequency to check torrents ratio</span>
+                                        <span class="component-desc">
+                                            <input type="number" min="${app.MIN_TORRENT_CHECKER_FREQUENCY}" step="1" name="torrent_checker_frequency" value="${app.TORRENT_CHECKER_FREQUENCY}" class="form-control input-sm input75"/>
+                                            <p>Frequency in minutes to check torrent's ratio (default: 60)</p>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="field-pair">
                                 <label>
                                     <span class="component-title">Usenet retention</span>
@@ -265,8 +286,8 @@
                                 <span class="component-desc">
                                     <select name="nzb_method" id="nzb_method" class="form-control input-sm">
 <% nzb_method_text = {'blackhole': "Black hole", 'sabnzbd': "SABnzbd", 'nzbget': "NZBget"} %>
-% for curAction in ('sabnzbd', 'blackhole', 'nzbget'):
-                                    <option value="${curAction}" ${'selected="selected"' if app.NZB_METHOD == curAction else ''}>${nzb_method_text[curAction]}</option>
+% for cur_action in ('sabnzbd', 'blackhole', 'nzbget'):
+                                    <option value="${cur_action}" ${'selected="selected"' if app.NZB_METHOD == cur_action else ''}>${nzb_method_text[cur_action]}</option>
 % endfor
                                     </select>
                                 </span>
@@ -492,8 +513,8 @@
                                     <span class="component-desc">
                                     <select name="torrent_method" id="torrent_method" class="form-control input-sm">
     <% torrent_method_text = {'blackhole': "Black hole", 'utorrent': "uTorrent", 'transmission': "Transmission", 'deluge': "Deluge (via WebUI)", 'deluged': "Deluge (via Daemon)", 'download_station': "Synology DS", 'rtorrent': "rTorrent", 'qbittorrent': "qbittorrent", 'mlnet': "MLDonkey"} %>
-    % for curAction in ('blackhole', 'utorrent', 'transmission', 'deluge', 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'):
-                                    <option value="${curAction}" ${'selected="selected"' if app.TORRENT_METHOD == curAction else ''}>${torrent_method_text[curAction]}</option>
+    % for cur_action in ('blackhole', 'utorrent', 'transmission', 'deluge', 'deluged', 'download_station', 'rtorrent', 'qbittorrent', 'mlnet'):
+                                    <option value="${cur_action}" ${'selected="selected"' if app.TORRENT_METHOD == cur_action else ''}>${torrent_method_text[cur_action]}</option>
     % endfor
                                     </select>
                                     </span>
@@ -612,6 +633,21 @@
                                             <input type="text" name="torrent_path" id="torrent_path" value="${app.TORRENT_PATH}" class="form-control input-sm input350"/>
                                             <div class="clear-left"><p>where <span id="torrent_client">the torrent client</span> will save downloaded files (blank for client default)
                                                 <span id="path_synology"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair" id="torrent_seed_location_option">
+                                    <label>
+                                        <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p>where Transmission will move Torrents after Post-Processing<br/>
+                                                   <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
+                                                   to another location after Post-Processor to prevent reprocessing the same file over and over.
+                                                   This feature does a "Set Torrent location" or "Move Torrent" like in client
+                                                </p>
                                             </div>
                                         </span>
                                     </label>

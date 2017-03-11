@@ -47,7 +47,7 @@ def _getMetadataClass(name):
 
 
 def get_metadata_generator_dict():
-    result = {}
+    result = dict()
     for cur_generator_id in available_generators():
         cur_generator = _getMetadataClass(cur_generator_id)
         if not cur_generator:

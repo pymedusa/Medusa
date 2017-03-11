@@ -54,7 +54,7 @@ MEDUSA.config.init = function() {
                     $(this).removeAttr('disabled');
                     $(this).next().remove();
                     $(this).show();
-                    window.location.href = 'config/providers/';
+                    window.location.href = $('base').attr('href') + 'config/providers/';
                 });
                 $('#email_show').trigger('notify');
                 $('#prowl_show').trigger('notify');
@@ -67,7 +67,7 @@ MEDUSA.config.init = function() {
     });
 
     $('#generate_new_apikey').on('click', function() {
-        $.get('config/general/generateApiKey', function(data) {
+        $.get('config/general/generate_api_key', function(data) {
             if (data.error !== undefined) {
                 alert(data.error); // eslint-disable-line no-alert
                 return;
@@ -82,12 +82,12 @@ MEDUSA.config.init = function() {
             if (data.status === 'success') {
                 if (data.message === 'equal') {
                     // Checkout Branch
-                    window.location.href = url;
+                    window.location.href = $('base').attr('href') + url;
                 }
                 if (data.message === 'upgrade') {
                     if (confirm('Changing branch will upgrade your database.\nYou won\'t be able to downgrade afterward.\nDo you want to continue?')) { // eslint-disable-line no-alert
                         // Checkout Branch
-                        window.location.href = url;
+                        window.location.href = $('base').attr('href') + url;
                     }
                 }
                 if (data.message === 'downgrade') {
@@ -111,5 +111,41 @@ MEDUSA.config.init = function() {
             $('#git_reset_branches').prop('disabled', false);
             $('#branchForceUpdate').prop('disabled', false);
         });
+    });
+
+    // GitHub Auth Types
+    function setupGithubAuthTypes() {
+        var selected = parseInt($('input[name="git_auth_type"]').filter(':checked').val(), 10);
+
+        $('div[name="content_github_auth_type"]').each(function(index) {
+            if (index === selected) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+    // GitHub Auth Types
+    setupGithubAuthTypes();
+
+    $('input[name="git_auth_type"]').on('click', function() {
+        setupGithubAuthTypes();
+    });
+
+    $('#git_token').on('click', function() {
+        $('#git_token').select();
+    });
+
+    $('#create_access_token').popover({
+        placement: 'left',
+        html: true, // required if content has HTML
+        title: 'Github Token',
+        content: '<p>Copy the generated token and paste it in the token input box.</p>' +
+            '<p><a href="' + MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens/new?description=Medusa&scopes=user,gist,public_repo" target="_blank">' +
+            '<input class="btn" type="button" value="Continue to Github..."></a></p><br/>'
+    });
+
+    $('#manage_tokens').on('click', function() {
+        window.open(MEDUSA.config.anonRedirect + 'https://github.com/settings/tokens', '_blank');
     });
 };

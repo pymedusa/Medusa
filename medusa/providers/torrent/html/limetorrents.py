@@ -23,13 +23,19 @@ import traceback
 
 from contextlib2 import suppress
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
-
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 id_regex = re.compile(r'(?:\/)(.*)(?:-torrent-([0-9]*)\.html)', re.I)
 hash_regex = re.compile(r'(.*)([0-9a-f]{40})(.*)', re.I)
@@ -64,7 +70,7 @@ class LimeTorrentsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)
+        self.cache = tv.Cache(self, min_time=10)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -150,14 +156,14 @@ class LimeTorrentsProvider(TorrentProvider):
                         title = alt_title.replace('-', ' ')
 
                     torrent_id = regex_result.group(2)
-                    torrent_hash = hash_regex.search(title_url).group(2)
-                    if not all([title, torrent_id, torrent_hash]):
+                    info_hash = hash_regex.search(title_url).group(2)
+                    if not all([title, torrent_id, info_hash]):
                         continue
 
                     with suppress(RequestsConnectionError, Timeout):
                         # Suppress the timeout since we are not interested in actually getting the results
                         self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
-                                                                                   'infohash': torrent_hash})
+                                                                                   'infohash': info_hash})
 
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''), 1)
@@ -172,7 +178,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     size = convert_size(cells[labels.index('Size')].get_text(strip=True)) or -1
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=torrent_hash, title=title, trackers=self._custom_trackers)
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     item = {
                         'title': title,
@@ -181,7 +187,6 @@ class LimeTorrentsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -9,7 +9,7 @@
     from medusa.metadata.generic import GenericMetadata
     from medusa.helpers import anon_url
     from medusa.indexers.indexer_api import indexerApi
-    gh_branch = app.GIT_REMOTE_BRANCHES or app.versionCheckScheduler.action.list_remote_branches()
+    gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -220,7 +220,6 @@
                                         <option value="dark" ${'selected="selected"' if app.THEME_NAME == 'dark' else ''}>Dark</option>
                                         <option value="light" ${'selected="selected"' if app.THEME_NAME == 'light' else ''}>Light</option>
                                     </select>
-                                    <span class="red-text">for appearance to take effect, save then refresh your browser</span>
                                 </span>
                             </label>
                         </div>
@@ -689,23 +688,57 @@
                             </label>
                         </div>
                         <div class="field-pair">
-                            <label for="git_username">
-                                <span class="component-title">GitHub username</span>
+                            <label for="git_auth_type">
+                                <span class="component-title">GitHub authentication type:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="git_username" id="git_username" value="${app.GIT_USERNAME}" class="form-control input-sm input300"
-                                           autocomplete="no" />
-                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    <input type="radio" name="git_auth_type" id="git_auth_type_basic" value="0" ${('', 'checked="checked"')[app.GIT_AUTH_TYPE == 0]}/>
+                                    <label>Username and password</label>
+                                </span>
+                                <span class="component-desc">
+                                    <input type="radio" name="git_auth_type" id="git_auth_type_token" value="1" ${('', 'checked="checked"')[app.GIT_AUTH_TYPE == 1]}/>
+                                    <label>Personal access token</label>
+                                </span>
+                                <span class="component-desc">
+                                    <div class="clear-left"><p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p></div>
                                 </span>
                             </label>
                         </div>
-                        <div class="field-pair">
-                            <label for="git_password">
-                                <span class="component-title">GitHub password</span>
-                                <span class="component-desc">
-                                    <input type="password" name="git_password" id="git_password" value="${app.GIT_PASSWORD}" class="form-control input-sm input300" autocomplete="no"/>
-                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
-                                </span>
-                            </label>
+                        <div name="content_github_auth_type">
+                            <div class="field-pair">
+                                <label for="git_username">
+                                    <span class="component-title">GitHub username</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="git_username" id="git_username" value="${app.GIT_USERNAME}" class="form-control input-sm input300"
+                                               autocomplete="no" />
+                                        <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="git_password">
+                                    <span class="component-title">GitHub password</span>
+                                    <span class="component-desc">
+                                        <input type="password" name="git_password" id="git_password" value="${app.GIT_PASSWORD}" class="form-control input-sm input300" autocomplete="no"/>
+                                        <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div name="content_github_auth_type">
+                            <div class="field-pair">
+                                <label for="git_password">
+                                    <span class="component-title">GitHub personal access token</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                         % if not app.GIT_TOKEN:
+                                            <input class="btn btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                         % else:
+                                            <input class="btn btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                         % endif
+                                        <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                         <div class="field-pair">
                             <label for="git_remote">

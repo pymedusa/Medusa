@@ -89,8 +89,8 @@ class HomeAddShows(Home):
                     indexer_results = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except IndexerException as msg:
-                    logger.log(u'Error searching for show: {error}'.format(error=msg))
+                except IndexerException as e:
+                    logger.log(u'Error searching for show: {error}'.format(error=e.message))
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
@@ -161,13 +161,15 @@ class HomeAddShows(Home):
                 dir_list.append(cur_dir)
 
                 indexer_id = show_name = indexer = None
+                # You may only call .values() on metadata_provider_dict! As on values() call the indexer_api attribute
+                # is reset. This will prevent errors, when using multiple indexers and caching.
                 for cur_provider in app.metadata_provider_dict.values():
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
                         # default to TVDB if indexer was not detected
                         if show_name and not (indexer or indexer_id):
-                            (_, idxr, i) = helpers.searchIndexerForShowID(show_name, indexer, indexer_id)
+                            (_, idxr, i) = helpers.search_indexer_for_show_id(show_name, indexer, indexer_id)
 
                             # set indexer and indexer_id from found info
                             if not indexer and idxr:
@@ -386,7 +388,7 @@ class HomeAddShows(Home):
         Currently only TVDB and IMDB id's supported.
         """
         if indexer != 'TVDB':
-            tvdb_id = helpers.getTVDBFromID(indexer_id, indexer.upper())
+            tvdb_id = helpers.get_tvdb_from_id(indexer_id, indexer.upper())
             if not tvdb_id:
                 logger.log(u'Unable to to find tvdb ID to add %s' % show_name)
                 ui.notifications.error(
@@ -438,7 +440,7 @@ class HomeAddShows(Home):
             if not isinstance(best_qualities, list):
                 best_qualities = [best_qualities]
 
-            quality = Quality.combineQualities([int(q) for q in any_qualities], [int(q) for q in best_qualities])
+            quality = Quality.combine_qualities([int(q) for q in any_qualities], [int(q) for q in best_qualities])
 
             location = root_dir
 
@@ -466,17 +468,17 @@ class HomeAddShows(Home):
         show_dir = None
 
         # add the show
-        app.showQueueScheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality, flatten_folders,
-                                              indexer_lang, subtitles, anime, scene, None, blacklist, whitelist,
-                                              int(default_status_after), root_dir=location)
+        app.show_queue_scheduler.action.addShow(INDEXER_TVDBV2, int(indexer_id), show_dir, int(default_status), quality,
+                                                flatten_folders, indexer_lang, subtitles, anime, scene, None, blacklist,
+                                                whitelist, int(default_status_after), root_dir=location)
 
         ui.notifications.message('Show added', 'Adding the specified show {0}'.format(show_name))
 
         # done adding show
         return self.redirect('/home/')
 
-    def addNewShow(self, whichSeries=None, indexerLang=None, rootDir=None, defaultStatus=None,
-                   quality_preset=None, allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
+    def addNewShow(self, whichSeries=None, indexer_lang=None, rootDir=None, defaultStatus=None, quality_preset=None,
+                   allowed_qualities=None, preferred_qualities=None, flatten_folders=None, subtitles=None,
                    fullShowPath=None, other_shows=None, skipShow=None, providedIndexer=None, anime=None,
                    scene=None, blacklist=None, whitelist=None, defaultStatusAfter=None):
         """
@@ -485,7 +487,7 @@ class HomeAddShows(Home):
         """
         provided_indexer = providedIndexer
 
-        indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexerLang else indexerLang
+        indexer_lang = app.INDEXER_DEFAULT_LANGUAGE if not indexer_lang else indexer_lang
 
         # grab our list of other dirs if given
         if not other_shows:
@@ -551,7 +553,7 @@ class HomeAddShows(Home):
             logger.log(u'Skipping initial creation of {path} due to config.ini setting'.format
                        (path=show_dir))
         else:
-            dir_exists = helpers.makeDir(show_dir)
+            dir_exists = helpers.make_dir(show_dir)
             if not dir_exists:
                 logger.log(u'Unable to create the folder {path}, can\'t add the show'.format
                            (path=show_dir), logger.ERROR)
@@ -560,7 +562,7 @@ class HomeAddShows(Home):
                 # Don't redirect to default page because user wants to see the new show
                 return self.redirect('/home/')
             else:
-                helpers.chmodAsParent(show_dir)
+                helpers.chmod_as_parent(show_dir)
 
         # prepare the inputs for passing along
         scene = config.checkbox_to_value(scene)
@@ -581,12 +583,12 @@ class HomeAddShows(Home):
             allowed_qualities = [allowed_qualities]
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
-        new_quality = Quality.combineQualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
+        new_quality = Quality.combine_qualities([int(q) for q in allowed_qualities], [int(q) for q in preferred_qualities])
 
         # add the show
-        app.showQueueScheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
-                                              flatten_folders, indexer_lang, subtitles, anime,
-                                              scene, None, blacklist, whitelist, int(defaultStatusAfter))
+        app.show_queue_scheduler.action.addShow(indexer, indexer_id, show_dir, int(defaultStatus), new_quality,
+                                                flatten_folders, indexer_lang, subtitles, anime,
+                                                scene, None, blacklist, whitelist, int(defaultStatusAfter))
         ui.notifications.message('Show added', 'Adding the specified show into {path}'.format(path=show_dir))
 
         return finishAddShow()
@@ -655,7 +657,7 @@ class HomeAddShows(Home):
 
             if indexer is not None and indexer_id is not None:
                 # add the show
-                app.showQueueScheduler.action.addShow(
+                app.show_queue_scheduler.action.addShow(
                     indexer, indexer_id, show_dir,
                     default_status=app.STATUS_DEFAULT,
                     quality=app.QUALITY_DEFAULT,

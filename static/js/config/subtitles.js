@@ -1,4 +1,4 @@
-MEDUSA.config.subtitles = function() {
+MEDUSA.config.subtitlesPage = function() {
     $.fn.showHideServices = function() {
         $('.serviceDiv').each(function() {
             var serviceName = $(this).attr('id');

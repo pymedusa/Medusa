@@ -25,6 +25,7 @@ setup(
         'pytest-flake8',
         'pytest-tornado',
         'PyYAML',
+        'pep8-naming ',
         'mock',
     ],
     extras_require={

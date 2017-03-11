@@ -16,7 +16,9 @@
     <h1 class="title">${title}</h1>
 % endif
 <div id="summary2" class="align-left">
+
 <h3>Backlog Search:</h3>
+<h5>Note: Limited by backlog days setting: last ${app.BACKLOG_DAYS} days</h5>
 <a class="btn" href="manage/manageSearches/forceBacklog"><i class="icon-exclamation-sign"></i> Force</a>
 <a class="btn" href="manage/manageSearches/pauseBacklog?paused=${('1', '0')[bool(backlogPaused)]}"><i class="icon-${('paused', 'play')[bool(backlogPaused)]}"></i> ${('pause', 'Unpause')[bool(backlogPaused)]}</a>
 % if not backlogRunning:
@@ -25,11 +27,11 @@
     ${'Paused:' if backlogPaused else ''}
     Currently running<br>
 % endif
-<br>
+
 <h3>Daily Search:</h3>
 <a class="btn" href="manage/manageSearches/forceSearch"><i class="icon-exclamation-sign"></i> Force</a>
 ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
-<br>
+
 <h3>Propers Search:</h3>
 <a class="btn ${('disabled', '')[bool(app.DOWNLOAD_PROPERS)]}" href="manage/manageSearches/forceFindPropers"><i class="icon-exclamation-sign"></i> Force</a>
 % if not app.DOWNLOAD_PROPERS:
@@ -39,7 +41,7 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 % else:
     In Progress<br>
 % endif
-<br>
+
 <h3>Subtitle Search:</h3>
 <a class="btn ${('disabled', '')[bool(app.USE_SUBTITLES)]}" href="manage/manageSearches/forceSubtitlesFinder"><i class="icon-exclamation-sign"></i> Force</a>
 % if not app.USE_SUBTITLES:
@@ -49,13 +51,19 @@ ${('Not in progress', 'In Progress')[dailySearchStatus]}<br>
 % else:
     In Progress<br>
 % endif
-<br>
+
+<h3>Scene Exceptions:</h3>
+<a class="btn disabled forceSceneExceptionRefresh"><i class="icon-exclamation-sign"></i> Force</a>
+<span id="sceneExceptionStatus"></span>
+
 <h3>Search Queue:</h3>
-Backlog: <i>${searchQueueLength['backlog']} pending items</i><br>
-Daily: <i>${searchQueueLength['daily']} pending items</i><br>
-Forced: <i>${forcedSearchQueueLength['forced_search']} pending items</i><br>
-Manual: <i>${forcedSearchQueueLength['manual_search']} pending items</i><br>
-Failed: <i>${forcedSearchQueueLength['failed']} pending items</i><br>
+<ul class='simpleList'>
+    <li>Backlog: <i>${searchQueueLength['backlog']} pending items</i>
+    <li>Daily: <i>${searchQueueLength['daily']} pending items</i>
+    <li>Forced: <i>${forcedSearchQueueLength['forced_search']} pending items</i>
+    <li>Manual: <i>${forcedSearchQueueLength['manual_search']} pending items</i>
+    <li>Failed: <i>${forcedSearchQueueLength['failed']} pending items</i>
+</ul>
 </div>
 </div>
 </%block>

@@ -25,10 +25,6 @@ from tornado.web import HTTPError, RequestHandler, authenticated
 from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
-from ....media.banner import ShowBanner
-from ....media.fan_art import ShowFanArt
-from ....media.network_logo import ShowNetworkLogo
-from ....media.poster import ShowPoster
 from ....show.coming_episodes import ComingEpisodes
 
 
@@ -150,11 +146,6 @@ class BaseHandler(RequestHandler):
         self.startTime = time.time()
 
         super(BaseHandler, self).__init__(*args, **kwargs)
-
-    # def set_default_headers(self):
-    #     self.set_header(
-    #         'Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0'
-    #     )
 
     def write_error(self, status_code, **kwargs):
         """
@@ -322,39 +313,10 @@ class WebRoot(WebHandler):
         return t.render(title='API Builder', header='API Builder', shows=shows, episodes=episodes, apikey=apikey,
                         commands=function_mapper)
 
-    def showPoster(self, show=None, which=None):
-        media = None
-        media_format = ('normal', 'thumb')[which in ('banner_thumb', 'poster_thumb', 'small')]
-
-        if which[0:6] == 'banner':
-            media = ShowBanner(show, media_format)
-        elif which[0:6] == 'fanart':
-            media = ShowFanArt(show, media_format)
-        elif which[0:6] == 'poster':
-            media = ShowPoster(show, media_format)
-        elif which[0:7] == 'network':
-            media = ShowNetworkLogo(show, media_format)
-
-        if media is not None:
-            self.set_header('Content-Type', media.get_media_type())
-
-            return media.get_media()
-
-        return None
-
-    def setHomeLayout(self, layout):
-        # @TODO: Replace this with home={poster, small, banner, simple, coverflow} PATCH /api/v2/config/layout
-        if layout not in ('poster', 'small', 'banner', 'simple', 'coverflow'):
-            layout = 'poster'
-
-        app.HOME_LAYOUT = layout
-        # Don't redirect to default page so user can see new layout
-        return self.redirect('/home/')
-
     @staticmethod
     def setPosterSortBy(sort):
         # @TODO: Replace this with poster.sort.field={name, date, network, progress} PATCH /api/v2/config/layout
-        if sort not in ('name', 'date', 'network', 'progress'):
+        if sort not in ('name', 'date', 'network', 'progress', 'indexer'):
             sort = 'name'
 
         app.POSTER_SORTBY = sort
@@ -366,50 +328,20 @@ class WebRoot(WebHandler):
         app.POSTER_SORTDIR = int(direction)
         app.instance.save_config()
 
-    def setHistoryLayout(self, layout):
-        # @TODO: Replace this with history={compact, detailed} PATCH /api/v2/config/layout
-        if layout not in ('compact', 'detailed'):
-            layout = 'detailed'
-
-        app.HISTORY_LAYOUT = layout
-
-        return self.redirect('/history/')
-
-    def toggleDisplayShowSpecials(self, show):
-        app.DISPLAY_SHOW_SPECIALS = not app.DISPLAY_SHOW_SPECIALS
-
-        return self.redirect('/home/displayShow?show={show}'.format(show=show))
-
-    def setScheduleLayout(self, layout):
-        # @TODO: Replace this with schedule={poster, banner, list, calandar} PATCH /api/v2/config/layout
-        if layout not in ('poster', 'banner', 'list', 'calendar'):
-            layout = 'banner'
-
-        if layout == 'calendar':
-            app.COMING_EPS_SORT = 'date'
-
-        app.COMING_EPS_LAYOUT = layout
-
-        return self.redirect('/schedule/')
-
     def toggleScheduleDisplayPaused(self):
         app.COMING_EPS_DISPLAY_PAUSED = not app.COMING_EPS_DISPLAY_PAUSED
 
         return self.redirect('/schedule/')
 
     def setScheduleSort(self, sort):
-        if sort not in ('date', 'network', 'show'):
+        if sort not in ('date', 'network', 'show') or app.COMING_EPS_LAYOUT == 'calendar':
             sort = 'date'
-
-        if app.COMING_EPS_LAYOUT == 'calendar':
-            sort \
-                = 'date'
 
         app.COMING_EPS_SORT = sort
 
         return self.redirect('/schedule/')
 
-    def schedule(self, layout=None):
+    def schedule(self):
         next_week = datetime.date.today() + datetime.timedelta(days=7)
         next_week1 = datetime.datetime.combine(next_week, datetime.time(tzinfo=network_timezones.app_timezone))
         results = ComingEpisodes.get_coming_episodes(ComingEpisodes.categories, app.COMING_EPS_SORT, False)
@@ -443,14 +375,8 @@ class WebRoot(WebHandler):
             },
         ]
 
-        # Allow local overriding of layout parameter
-        if layout and layout in ('poster', 'banner', 'list', 'calendar'):
-            layout = layout
-        else:
-            layout = app.COMING_EPS_LAYOUT
-
         t = PageTemplate(rh=self, filename='schedule.mako')
-        return t.render(submenu=submenu, next_week=next_week1, today=today, results=results, layout=layout,
+        return t.render(submenu=submenu[::-1], next_week=next_week1, today=today, results=results, layout=app.COMING_EPS_LAYOUT,
                         title='Schedule', header='Schedule', topmenu='schedule',
                         controller='schedule', action='index')
 

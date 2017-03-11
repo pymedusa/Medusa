@@ -41,7 +41,7 @@ from .cache import cache, memory_cache
 from .common import Quality, cpu_presets
 from .helper.common import dateTimeFormat, episode_num, remove_extension, subtitle_extensions
 from .helper.exceptions import ex
-from .helpers import isMediaFile, isRarFile
+from .helpers import is_media_file, is_rar_file
 from .show.show import Show
 
 
@@ -298,7 +298,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     """List subtitles for the given episode in the given path.
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param video_path:
     :type video_path: text_type
     :param limit:
@@ -341,7 +341,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """Save the subtitle with the given id.
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param subtitle_id:
     :type subtitle_id: text_type
     :param video_path:
@@ -369,7 +369,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     Checks whether subtitles are needed or not
 
     :param tv_episode: the episode to download subtitles
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param video_path: the video path. If none, the episode location will be used
     :type video_path: str
     :param subtitles: True if existing external subtitles should be taken into account
@@ -453,7 +453,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     """Save subtitles.
 
     :param tv_episode: the episode to download subtitles
-    :type tv_episode: sickbeard.tv.TVEpisode
+    :type tv_episode: sickbeard.tv.Episode
     :param video:
     :type video: subliminal.Video
     :param found_subtitles:
@@ -478,10 +478,10 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
         logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
                     subtitle.provider_name, subtitle.language.opensubtitles)
         subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
-        helpers.chmodAsParent(subtitle_path)
-        helpers.fixSetGroupID(subtitle_path)
+        helpers.chmod_as_parent(subtitle_path)
+        helpers.fix_set_group_id(subtitle_path)
 
-        if app.SUBTITLES_EXTRA_SCRIPTS and isMediaFile(video_path):
+        if app.SUBTITLES_EXTRA_SCRIPTS and is_media_file(video_path):
             subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
             run_subs_extra_scripts(video_path=video_path, subtitle_path=subtitle_path,
                                    subtitle_language=subtitle.language, show_name=show_name, season=season,
@@ -578,7 +578,7 @@ def get_current_subtitles(tv_episode):
     """Return a list of current subtitles for the episode.
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :return: the current subtitles (3-letter opensubtitles codes) for the specified video
     :rtype: list of str
     """
@@ -682,7 +682,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     scanning and parsing the video metadata all the time
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param video_path: the video path
     :type video_path: str
     :param subtitles_dir: the subtitles directory
@@ -747,8 +747,8 @@ def get_subtitles_dir(video_path):
         return _decode(app.SUBTITLES_DIR)
 
     new_subtitles_path = os.path.join(os.path.dirname(video_path), app.SUBTITLES_DIR)
-    if helpers.makeDir(new_subtitles_path):
-        helpers.chmodAsParent(new_subtitles_path)
+    if helpers.make_dir(new_subtitles_path):
+        helpers.chmod_as_parent(new_subtitles_path)
     else:
         logger.warning(u'Unable to create subtitles folder %s', new_subtitles_path)
 
@@ -805,7 +805,7 @@ class SubtitlesFinder(object):
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
         from . import process_tv
-        from .tv import TVEpisode
+        from .tv import Episode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
 
@@ -826,11 +826,11 @@ class SubtitlesFinder(object):
                 # Delete unwanted subtitles before downloading new ones
                 delete_unwanted_subtitles(root, filename)
 
-                if not isMediaFile(filename):
+                if not is_media_file(filename):
                     continue
 
                 video_path = os.path.join(root, filename)
-                tv_episode = TVEpisode.from_filepath(video_path)
+                tv_episode = Episode.from_filepath(video_path)
 
                 if not tv_episode:
                     logger.debug(u'%s cannot be parsed to an episode', filename)
@@ -880,9 +880,9 @@ class SubtitlesFinder(object):
         """
         from . import process_tv
         for root, _, files in os.walk(dirpath, topdown=False):
-            rar_files = [rar_file for rar_file in files if isRarFile(rar_file)]
+            rar_files = [rar_file for rar_file in files if is_rar_file(rar_file)]
             if rar_files and app.UNPACK:
-                video_files = [video_file for video_file in files if isMediaFile(video_file)]
+                video_files = [video_file for video_file in files if is_media_file(video_file)]
                 if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
                     logger.debug(u'Found rar files in post-process folder: %s', rar_files)
                     result = process_tv.ProcessResult()
@@ -940,30 +940,30 @@ class SubtitlesFinder(object):
         for args in sql_args:
             sql_results += database.select(
                 "SELECT "
-                "   s.show_name, "
-                "   e.showid, "
-                "   e.season, "
-                "   e.episode,"
-                "   e.release_name, "
-                "   e.status, "
-                "   e.subtitles, "
-                "   e.subtitles_searchcount AS searchcount, "
-                "   e.subtitles_lastsearch AS lastsearch, "
-                "   e.location, (? - e.airdate) as age "
+                "s.show_name, "
+                "e.showid, "
+                "e.season, "
+                "e.episode,"
+                "e.release_name, "
+                "e.status, "
+                "e.subtitles, "
+                "e.subtitles_searchcount AS searchcount, "
+                "e.subtitles_lastsearch AS lastsearch, "
+                "e.location, (? - e.airdate) as age "
                 "FROM "
-                "   tv_episodes AS e "
-                "INNER JOIN "
-                "   tv_shows AS s "
+                "tv_episodes AS e "
+                "INNER JOIN tv_shows AS s "
                 "ON (e.showid = s.indexer_id) "
-                "WHERE"
-                "   s.subtitles = 1 "
-                "   AND (e.status LIKE '%4' OR e.status LIKE '%6') "
-                "   AND e.season > 0 "
-                "   AND e.location != '' "
-                "   AND age {} 30 "
-                "   AND e.subtitles NOT LIKE ? "
+                "WHERE "
+                "s.subtitles = 1 "
+                "AND s.paused = 0 "
+                "AND (e.status LIKE '%4' OR e.status LIKE '%6') "
+                "AND e.season > 0 "
+                "AND e.location != '' "
+                "AND age {} 30 "
+                "AND e.subtitles NOT LIKE ? "
                 "ORDER BY "
-                "   lastsearch ASC "
+                "lastsearch ASC "
                 "LIMIT {}".format
                 (args['age_comparison'], args['limit']), [datetime.datetime.now().toordinal(), sql_like_languages]
             )

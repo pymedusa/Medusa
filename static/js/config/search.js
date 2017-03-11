@@ -3,6 +3,7 @@ MEDUSA.config.search = function() {
     $('#nzb_dir').fileBrowser({title: 'Select .nzb black hole/watch location'});
     $('#torrent_dir').fileBrowser({title: 'Select .torrent black hole/watch location'});
     $('#torrent_path').fileBrowser({title: 'Select .torrent download location'});
+    $('#torrent_seed_location').fileBrowser({title: 'Select Post-Processed seeding torrents location'});
 
     $.fn.nzbMethodHandler = function() {
         var selectedProvider = $('#nzb_method :selected').val();
@@ -67,6 +68,7 @@ MEDUSA.config.search = function() {
             $('#torrent_auth_type_option').hide();
             $('#torrent_path_option').show();
             $('#torrent_path_option').find('.fileBrowser').show();
+            $('#torrent_seed_location').hide();
             $('#torrent_seed_time_option').hide();
             $('#torrent_high_bandwidth_option').hide();
             $('#torrent_label_option').show();
@@ -90,6 +92,7 @@ MEDUSA.config.search = function() {
                 $('#torrent_label_anime_option').hide();
                 $('#torrent_rpcurl_option').show();
                 $('#host_desc_torrent').text('URL to your Transmission client (e.g. http://localhost:9091)');
+                $('#torrent_seed_location').show().find('.fileBrowser').show();
             } else if (selectedProvider.toLowerCase() === 'deluge') {
                 client = 'Deluge';
                 $('#torrent_verify_cert_option').show();
@@ -200,7 +203,7 @@ MEDUSA.config.search = function() {
         nzbget.host = $('#nzbget_host').val();
         nzbget.username = $('#nzbget_username').val();
         nzbget.password = $('#nzbget_password').val();
-        nzbget.useHttps = $('#nzbget_use_https').val();
+        nzbget.useHttps = $('#nzbget_use_https').prop('checked');
 
         $.get('home/testNZBget', {
             host: nzbget.host,

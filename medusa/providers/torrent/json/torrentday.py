@@ -22,11 +22,16 @@ import re
 import traceback
 
 from dateutil import parser
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....helper.common import convert_size
 
 
 class TorrentDayProvider(TorrentProvider):
@@ -63,7 +68,7 @@ class TorrentDayProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll IPTorrents every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -164,7 +169,6 @@ class TorrentDayProvider(TorrentProvider):
                     'seeders': seeders,
                     'leechers': leechers,
                     'pubdate': pubdate,
-                    'torrent_hash': None,
                 }
                 if mode != 'RSS':
                     logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

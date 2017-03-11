@@ -19,22 +19,49 @@
 import os
 import traceback
 
-from imdb import _exceptions as imdb_exceptions
-from six import binary_type, text_type
-from traktor import TraktException
-from . import app, generic_queue, logger, name_cache, notifiers, scene_numbering, ui
-from .black_and_white_list import BlackAndWhiteList
-from .common import WANTED
-from .helper.common import episode_num, sanitize_filename
-from .helper.exceptions import (
-    CantRefreshShowException, CantRemoveShowException, CantUpdateShowException,
-    EpisodeDeletedException, MultipleShowObjectsException, ShowDirectoryNotFoundException, ex
+from imdbpie.exceptions import HTTPError as IMDbHTTPError
+
+from medusa import (
+    app,
+    generic_queue,
+    logger,
+    name_cache,
+    notifiers,
+    scene_numbering,
+    ui,
 )
-from .helpers import chmodAsParent, get_showname_from_indexer, makeDir
-from .indexers.indexer_api import indexerApi
-from .indexers.indexer_exceptions import (IndexerAttributeNotFound, IndexerError, IndexerException,
-                                          IndexerShowIncomplete, IndexerShowNotFoundInLanguage)
-from .tv import TVShow
+from medusa.black_and_white_list import BlackAndWhiteList
+from medusa.common import WANTED, statusStrings
+from medusa.helper.common import episode_num, sanitize_filename
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantRemoveShowException,
+    CantUpdateShowException,
+    EpisodeDeletedException,
+    MultipleShowObjectsException,
+    ShowDirectoryNotFoundException
+)
+from medusa.helpers import (
+    chmod_as_parent,
+    delete_empty_folders,
+    get_showname_from_indexer,
+    make_dir,
+)
+from medusa.helpers.externals import check_existing_shows
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_exceptions import (
+    IndexerAttributeNotFound,
+    IndexerError,
+    IndexerException,
+    IndexerShowAllreadyInLibrary,
+    IndexerShowIncomplete,
+    IndexerShowNotFoundInLanguage,
+)
+from medusa.tv import Series
+
+from six import binary_type, text_type
+
+from traktor import TraktException
 
 
 class ShowQueueActions(object):
@@ -239,15 +266,15 @@ class ShowQueue(generic_queue.GenericQueue):
         queue_item_obj = QueueItemRemove(show=show, full=full)
         self.add_item(queue_item_obj)
 
-        # Show removal has been queued, let's updaste the app.RECENTLY_DELETED global, to keep track of it
-        app.RECENTLY_DELETED.update([show.indexerid])
+        # Show removal has been queued, let's update the app.RECENTLY_DELETED global, to keep track of it
+        app.RECENTLY_DELETED.update([show.indexer_slug])
 
         return queue_item_obj
 
 
 class ShowQueueItem(generic_queue.QueueItem):
     """
-    Represents an item in the queue waiting to be executed
+    Represents an item in the queue waiting to be executed.
 
     Can be either:
     - show being added (may or may not be associated with a show object)
@@ -262,8 +289,8 @@ class ShowQueueItem(generic_queue.QueueItem):
         self.show = show
 
     def isInQueue(self):
-        return self in app.showQueueScheduler.action.queue + [
-            app.showQueueScheduler.action.currentItem]  # @UndefinedVariable
+        return self in app.show_queue_scheduler.action.queue + [
+            app.show_queue_scheduler.action.currentItem]  # @UndefinedVariable
 
     def _getName(self):
         return str(self.show.indexerid)
@@ -354,12 +381,12 @@ class QueueItemAdd(ShowQueueItem):
                 show_name = get_showname_from_indexer(self.indexer, self.indexer_id, self.lang)
                 if show_name:
                     self.showDir = os.path.join(self.root_dir, sanitize_filename(show_name))
-                    dir_exists = makeDir(self.showDir)
+                    dir_exists = make_dir(self.showDir)
                     if not dir_exists:
                         logger.log(u"Unable to create the folder {0}, can't add the show".format(self.showDir))
                         return
 
-                    chmodAsParent(self.showDir)
+                    chmod_as_parent(self.showDir)
                 else:
                     logger.log(u"Unable to get a show {0}, can't add the show".format(self.showDir))
                     return
@@ -367,12 +394,13 @@ class QueueItemAdd(ShowQueueItem):
             # this usually only happens if they have an NFO in their show dir which gave us a Indexer ID that
             # has no proper english version of the show
             if getattr(s, 'seriesname', None) is None:
-                logger.log(u"Show in {} has no name on {}, probably searched with the wrong language.".format
+                logger.log(u"Show in {0} has no name on {1}, probably searched with the wrong language.".format
                            (self.showDir, indexerApi(self.indexer).name), logger.ERROR)
 
-                ui.notifications.error("Unable to add show", "Show in " + self.showDir + " has no name on " +
-                                       str(indexerApi(self.indexer).name) + ", probably the wrong language. "
-                                       "Delete .nfo and manually add the correct language.")
+                ui.notifications.error('Unable to add show',
+                                       'Show in {0} has no name on {1}, probably the wrong language. \
+                                       Delete .nfo and manually add the correct language.'
+                                       .format(self.showDir, indexerApi(self.indexer).name))
                 self._finishEarly()
                 return
             # if the show has no episodes/seasons
@@ -380,36 +408,66 @@ class QueueItemAdd(ShowQueueItem):
                 logger.log(u"Show " + str(s['seriesname']) + u" is on " + str(indexerApi(self.indexer).name) +
                            u" but contains no season/episode data.")
                 ui.notifications.error("Unable to add show",
-                                       "Show " + str(s['seriesname']) + " is on " + str(indexerApi(
-                                           self.indexer).name) + " but contains no season/episode data.")
+                                       "Show {0} is on {1} but contains no season/episode data.".
+                                       format(s['seriesname'], indexerApi(self.indexer).name))
                 self._finishEarly()
+
                 return
+
+            # Check if we can already find this show in our current showList.
+            try:
+                check_existing_shows(s, self.indexer)
+            except IndexerShowAllreadyInLibrary as e:
+                logger.log(u"Could not add the show %s, as it already is in your library."
+                           u" Error: %s" % (s['seriesname'], e.message), logger.WARNING)
+                ui.notifications.error(
+                    'Unable to add show',
+                    'reason: {0}' .format(e.message)
+                )
+                self._finishEarly()
+
+                # Clean up leftover if the newly created directory is empty.
+                delete_empty_folders(self.showDir)
+                return
+
         # TODO: Add more specific indexer exceptions, that should provide the user with some accurate feedback.
         except IndexerShowIncomplete as e:
             logger.log(u"%s Error while loading information from indexer %s. "
                        u"Error: %s" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.WARNING)
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s "
-                "Reason: %s" %
-                (self.showDir, indexerApi(self.indexer).name, self.indexer_id, e)
+                "Unable to look up the show in {0} on {1} using ID {2} "
+                "Reason: {3}"
+                .format(self.showDir, indexerApi(self.indexer).name, self.indexer_id, e.message)
             )
+            self._finishEarly()
+            return
+        except IndexerShowNotFoundInLanguage as e:
+            logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
+                       u'show information in the searched language {language}. Aborting: {error_msg}'.format
+                       (id=self.indexer_id, indexer=indexerApi(self.indexer).name,
+                        language=e.language, error_msg=e.message), logger.WARNING)
+            ui.notifications.error('Error adding show!',
+                                   'Unable to add show {indexer_id} on {indexer} with this language: {language}'.
+                                   format(indexer_id=self.indexer_id,
+                                          indexer=indexerApi(self.indexer).name,
+                                          language=e.language))
             self._finishEarly()
             return
         except Exception as e:
             logger.log(u"%s Error while loading information from indexer %s. "
-                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, ex(e)), logger.ERROR)
+                       u"Error: %r" % (self.indexer_id, indexerApi(self.indexer).name, e.message), logger.ERROR)
             ui.notifications.error(
                 "Unable to add show",
-                "Unable to look up the show in %s on %s using ID %s, not using the NFO. "
-                "Delete .nfo and try adding manually again." %
-                (self.showDir, indexerApi(self.indexer).name, self.indexer_id)
+                "Unable to look up the show in {0} on {1} using ID {2}, not using the NFO. "
+                "Delete .nfo and try adding manually again.".
+                format(self.showDir, indexerApi(self.indexer).name, self.indexer_id)
             )
             self._finishEarly()
             return
 
         try:
-            newShow = TVShow(self.indexer, self.indexer_id, self.lang)
+            newShow = Series(self.indexer, self.indexer_id, self.lang)
             newShow.load_from_indexer(t)
 
             self.show = newShow
@@ -425,7 +483,8 @@ class QueueItemAdd(ShowQueueItem):
             self.show.paused = self.paused if self.paused is not None else False
 
             # set up default new/missing episode status
-            logger.log(u"Setting all episodes to the specified default status: " + str(self.show.default_ep_status))
+            logger.log(u"Setting all previously aired episodes to the specified status: {status}".format
+                       (status=statusStrings[self.default_status]))
             self.show.default_ep_status = self.default_status
 
             if self.show.anime:
@@ -445,7 +504,7 @@ class QueueItemAdd(ShowQueueItem):
 
         except IndexerException as e:
             logger.log(
-                u"Unable to add show due to an error with " + indexerApi(self.indexer).name + ": " + ex(e),
+                u"Unable to add show due to an error with " + indexerApi(self.indexer).name + ": " + e.message,
                 logger.ERROR)
             if self.show:
                 ui.notifications.error(
@@ -464,7 +523,7 @@ class QueueItemAdd(ShowQueueItem):
             return
 
         except Exception as e:
-            logger.log(u"Error trying to add show: " + ex(e), logger.ERROR)
+            logger.log(u"Error trying to add show: " + e.message, logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
             self._finishEarly()
             raise
@@ -472,15 +531,15 @@ class QueueItemAdd(ShowQueueItem):
         logger.log(u"Retrieving show info from IMDb", logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
-            logger.log(u"Something wrong on IMDb api: " + ex(e), logger.WARNING)
+        except IMDbHTTPError as e:
+            logger.log(u"Something wrong on IMDb api: " + e.message, logger.WARNING)
         except Exception as e:
-            logger.log(u"Error loading IMDb info: " + ex(e), logger.ERROR)
+            logger.log(u"Error loading IMDb info: " + e.message, logger.ERROR)
 
         try:
             self.show.save_to_db()
         except Exception as e:
-            logger.log(u"Error saving the show to the database: " + ex(e), logger.ERROR)
+            logger.log(u"Error saving the show to the database: " + e.message, logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
             self._finishEarly()
             raise
@@ -492,7 +551,7 @@ class QueueItemAdd(ShowQueueItem):
             self.show.load_episodes_from_indexer(tvapi=t)
         except Exception as e:
             logger.log(
-                u"Error with " + indexerApi(self.show.indexer).name + ", not creating episode list: " + ex(e),
+                u"Error with " + indexerApi(self.show.indexer).name + ", not creating episode list: " + e.message,
                 logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
@@ -502,29 +561,28 @@ class QueueItemAdd(ShowQueueItem):
         try:
             self.show.load_episodes_from_dir()
         except Exception as e:
-            logger.log(u"Error searching dir for episodes: " + ex(e), logger.ERROR)
+            logger.log(u"Error searching dir for episodes: " + e.message, logger.ERROR)
             logger.log(traceback.format_exc(), logger.DEBUG)
 
         # if they set default ep status to WANTED then run the backlog to search for episodes
         # FIXME: This needs to be a backlog queue item!!!
         if self.show.default_ep_status == WANTED:
             logger.log(u"Launching backlog for this show since its episodes are WANTED")
-            app.backlogSearchScheduler.action.searchBacklog([self.show])
+            app.backlog_search_scheduler.action.search_backlog([self.show])
 
         self.show.write_metadata()
         self.show.update_metadata()
         self.show.populate_cache()
-        self.show.create_next_season_update()
 
         self.show.flush_episodes()
 
         if app.USE_TRAKT:
             # if there are specific episodes that need to be added by trakt
-            app.traktCheckerScheduler.action.manage_new_show(self.show)
+            app.trakt_checker_scheduler.action.manage_new_show(self.show)
 
             # add show to trakt.tv library
             if app.TRAKT_SYNC:
-                app.traktCheckerScheduler.action.add_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.add_show_trakt_library(self.show)
 
             if app.TRAKT_SYNC_WATCHLIST:
                 logger.log(u"update watchlist")
@@ -546,7 +604,7 @@ class QueueItemAdd(ShowQueueItem):
 
     def _finishEarly(self):
         if self.show is not None:
-            app.showQueueScheduler.action.removeShow(self.show)
+            app.show_queue_scheduler.action.removeShow(self.show)
 
         self.finish()
 
@@ -578,7 +636,7 @@ class QueueItemRefresh(ShowQueueItem):
             scene_numbering.xem_refresh(self.show.indexerid, self.show.indexer)
         except Exception as e:
             logger.log(u"{id}: Error while refreshing show {show}. Error: {error_msg}".format
-                       (id=self.show.indexerid, show=self.show.name, error_msg=e), logger.ERROR)
+                       (id=self.show.indexerid, show=self.show.name, error_msg=e.message), logger.ERROR)
 
         self.finish()
 
@@ -659,22 +717,24 @@ class QueueItemUpdate(ShowQueueItem):
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
+            # Let's make sure we refresh the indexer_api object attached to the show object.
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                        error_msg=e.message), logger.WARNING)
             return
         except IndexerAttributeNotFound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                        error_msg=e.message), logger.WARNING)
             return
         except IndexerShowNotFoundInLanguage as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. The indexer does not provide '
                        u'show information in the searched language {language}. Aborting: {error_msg}'.format
-                       (language=e.language, id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        language=e.language, error_msg=e.message), logger.WARNING)
             ui.notifications.error('Error changing language show!',
                                    'Unable to change language for show {show_name} on {indexer} to language: {language}'.
                                    format(show_name=self.show.name,
@@ -685,12 +745,12 @@ class QueueItemUpdate(ShowQueueItem):
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
 
         # have to save show before reading episodes from db
         try:
@@ -698,11 +758,17 @@ class QueueItemUpdate(ShowQueueItem):
             self.show.save_to_db()
         except Exception as e:
             logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
             logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
-        episodes_from_db = self.show.load_episodes_from_db()
+        try:
+            episodes_from_db = self.show.load_episodes_from_db()
+        except IndexerException as e:
+            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        error_msg=e.message), logger.WARNING)
+            return
 
         # get episode list from the indexer
         try:
@@ -710,7 +776,7 @@ class QueueItemUpdate(ShowQueueItem):
         except IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name, error_msg=ex(e)),
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name, error_msg=e.message),
                        logger.WARNING)
             episodes_from_indexer = None
 
@@ -746,14 +812,14 @@ class QueueItemUpdate(ShowQueueItem):
             self.show.save_to_db()
         except Exception as e:
             logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
             logger.log(traceback.format_exc(), logger.ERROR)
 
         logger.log(u'{id}: Finished update of {show}'.format
                    (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
 
         # Refresh show needs to be forced since current execution locks the queue
-        app.showQueueScheduler.action.refreshShow(self.show, True)
+        app.show_queue_scheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -777,33 +843,35 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     show=self.show.name,
                     season=u' with season(s) [{0}]'.
                     format(u','.join(str(s) for s in self.seasons) if self.seasons else u'')
-                    ), logger.DEBUG)
+                    ), logger.INFO)
 
         logger.log(u'{id}: Retrieving show info from {indexer}'.format
                    (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name),
                    logger.DEBUG)
         try:
+            # Let's make sure we refresh the indexer_api object attached to the show object.
+            self.show.create_indexer()
             self.show.load_from_indexer()
         except IndexerError as e:
             logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                        error_msg=e.message), logger.WARNING)
             return
         except IndexerAttributeNotFound as e:
             logger.log(u'{id}: Data retrieved from {indexer} was incomplete. Aborting: {error_msg}'.format
                        (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
-                        error_msg=ex(e)), logger.WARNING)
+                        error_msg=e.message), logger.WARNING)
             return
 
         logger.log(u'{id}: Retrieving show info from IMDb'.format(id=self.show.indexerid), logger.DEBUG)
         try:
             self.show.load_imdb_info()
-        except imdb_exceptions.IMDbError as e:
+        except IMDbHTTPError as e:
             logger.log(u'{id}: Something wrong on IMDb api: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
         except Exception as e:
             logger.log(u'{id}: Error loading IMDb info: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
 
         # have to save show before reading episodes from db
         try:
@@ -811,11 +879,17 @@ class QueueItemSeasonUpdate(ShowQueueItem):
             self.show.save_to_db()
         except Exception as e:
             logger.log(u"{id}: Error saving new IMDb show info to database: {error_msg}".format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
             logger.log(traceback.format_exc(), logger.ERROR)
 
         # get episode list from DB
-        episodes_from_db = self.show.load_episodes_from_db(self.seasons)
+        try:
+            episodes_from_db = self.show.load_episodes_from_db(self.seasons)
+        except IndexerException as e:
+            logger.log(u'{id}: Unable to contact {indexer}. Aborting: {error_msg}'.format
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name,
+                        error_msg=e.message), logger.WARNING)
+            return
 
         # get episode list from the indexer
         try:
@@ -823,7 +897,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
         except IndexerException as e:
             logger.log(u'{id}: Unable to get info from {indexer}. The show info will not be refreshed. '
                        u'Error: {error_msg}'.format
-                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name, error_msg=ex(e)),
+                       (id=self.show.indexerid, indexer=indexerApi(self.show.indexer).name, error_msg=e.message),
                        logger.WARNING)
             episodes_from_indexer = None
 
@@ -853,28 +927,18 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
 
-            # If this is a season limited update, let's update the cache season next_update
-            if self.seasons:
-                for season in self.seasons:
-                    self.show.create_next_season_update(season)
-            else:
-                # We did a show refresh, let's updated each next season update
-                self.show.create_next_season_update()
-
         # Save only after all changes were applied
         try:
             logger.log(u'{id}: Saving all updated show info to database'.format(id=self.show.indexerid), logger.DEBUG)
             self.show.save_to_db()
         except Exception as e:
             logger.log(u'{id}: Error saving all updated show info to database: {error_msg}'.format
-                       (id=self.show.indexerid, error_msg=ex(e)), logger.WARNING)
+                       (id=self.show.indexerid, error_msg=e.message), logger.WARNING)
             logger.log(traceback.format_exc(), logger.ERROR)
 
         logger.log(u'{id}: Finished update of {show}'.format
-                   (id=self.show.indexerid, show=self.show.name), logger.DEBUG)
+                   (id=self.show.indexerid, show=self.show.name), logger.INFO)
 
-        # Refresh show needs to be forced since current execution locks the queue
-        app.showQueueScheduler.action.refreshShow(self.show, True)
         self.finish()
 
 
@@ -896,11 +960,11 @@ class QueueItemRemove(ShowQueueItem):
         # Episodes from the db to know which eps to remove.
         if app.USE_TRAKT:
             try:
-                app.traktCheckerScheduler.action.remove_show_trakt_library(self.show)
+                app.trakt_checker_scheduler.action.remove_show_trakt_library(self.show)
             except TraktException as e:
                 logger.log(u'{id}: Unable to delete show {show} from Trakt. '
                            u'Please remove manually otherwise it will be added again. Error: {error_msg}'.format
-                           (id=self.show.indexerid, show=self.show.name, error_msg=ex(e)), logger.WARNING)
+                           (id=self.show.indexerid, show=self.show.name, error_msg=e.message), logger.WARNING)
 
         self.show.delete_show(full=self.full)
 

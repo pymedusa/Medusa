@@ -21,11 +21,14 @@ from bencode.BTL import BTFailure
 
 from feedparser.util import FeedParserDict
 
-from ..generic_provider import GenericProvider
-from ... import app, logger
-from ...classes import TorrentSearchResult
-from ...helper.common import try_int
-from ...helpers import remove_file_failed
+from medusa import (
+    app,
+    logger,
+)
+from medusa.classes import TorrentSearchResult
+from medusa.helper.common import try_int
+from medusa.helpers import remove_file_failed
+from medusa.providers.generic_provider import GenericProvider
 
 
 class TorrentProvider(GenericProvider):
@@ -45,14 +48,14 @@ class TorrentProvider(GenericProvider):
     @property
     def _custom_trackers(self):
         """Check if provider has custom trackers."""
-        if not (app.TRACKERS_LIST and self.public):
+        if not self.public or not app.TRACKERS_LIST.strip():
             return ''
 
-        return '&tr=' + '&tr='.join({x.strip() for x in app.TRACKERS_LIST.split(',') if x.strip()})
+        return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST.split(',') if x.strip())
 
     def _get_result(self, episodes):
-        """Return provider result."""
-        return TorrentSearchResult(episodes)
+        """Return a provider result object."""
+        return TorrentSearchResult(episodes, provider=self)
 
     def _get_size(self, item):
         """Get result size."""
@@ -146,18 +149,3 @@ class TorrentProvider(GenericProvider):
             pubdate = None
 
         return pubdate
-
-    def _get_torrent_hash(self, item):
-        """
-        Return torrent_hash of the item.
-
-        If provider doesnt have _get_torrent_hash function this will be used
-        """
-        if isinstance(item, dict):
-            torrent_hash = item.get('torrent_hash')
-        elif isinstance(item, (list, tuple)) and len(item) > 2:
-            torrent_hash = item[6]
-        else:
-            torrent_hash = None
-
-        return torrent_hash

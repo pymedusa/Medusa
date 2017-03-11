@@ -37,7 +37,7 @@ class ImdbPopular(object):
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
-        tvdb_id = helpers.getTVDBFromID(show_obj.get('imdb_tt'), 'IMDB')
+        tvdb_id = helpers.get_tvdb_from_id(show_obj.get('imdb_tt'), 'IMDB')
         if not tvdb_id:
             return None
 
@@ -60,8 +60,8 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        response = helpers.getURL(self.url, session=self.session, params=self.params,
-                                  headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
+        response = helpers.get_url(self.url, session=self.session, params=self.params,
+                                   headers={'Referer': 'http://akas.imdb.com/'}, returns='response')
         if not response or not response.text:
             return None
 

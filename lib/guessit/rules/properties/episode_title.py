@@ -5,10 +5,12 @@ Episode title
 """
 from collections import defaultdict
 
-from rebulk import Rebulk, Rule, AppendMatch, RenameMatch
+from rebulk import Rebulk, Rule, AppendMatch, RenameMatch, POST_PROCESS
+
 from ..common import seps, title_seps
-from ..properties.title import TitleFromPosition, TitleBaseRule
 from ..common.formatters import cleanup
+from ..properties.title import TitleFromPosition, TitleBaseRule
+from ..properties.type import TypeProcessor
 
 
 def episode_title():
@@ -21,7 +23,8 @@ def episode_title():
                             AlternativeTitleReplace,
                             TitleToEpisodeTitle,
                             Filepart3EpisodeTitle,
-                            Filepart2EpisodeTitle)
+                            Filepart2EpisodeTitle,
+                            RenameEpisodeTitleWhenMovieType)
     return rebulk
 
 
@@ -33,21 +36,17 @@ class TitleToEpisodeTitle(Rule):
 
     def when(self, matches, context):
         titles = matches.named('title')
-
-        if len(titles) < 2:
-            return
-
         title_groups = defaultdict(list)
         for title in titles:
             title_groups[title.value].append(title)
 
+        if len(title_groups) < 2:
+            return
+
         episode_titles = []
-        main_titles = []
         for title in titles:
             if matches.previous(title, lambda match: match.name == 'episode'):
                 episode_titles.append(title)
-            else:
-                main_titles.append(title)
 
         if episode_titles:
             return episode_titles
@@ -130,7 +129,29 @@ class AlternativeTitleReplace(Rule):
     def then(self, matches, when_response, context):
         matches.remove(when_response)
         when_response.name = 'episode_title'
+        when_response.tags.append('alternative-replaced')
         matches.append(when_response)
+
+
+class RenameEpisodeTitleWhenMovieType(Rule):
+    """
+    Rename episode_title by alternative_title when type is movie.
+    """
+    priority = POST_PROCESS
+
+    dependency = TypeProcessor
+    consequence = RenameMatch
+
+    def when(self, matches, context):
+        if matches.named('episode_title', lambda m: 'alternative-replaced' not in m.tags) \
+                and not matches.named('type', lambda m: m.value == 'episode'):
+            return matches.named('episode_title')
+
+    def then(self, matches, when_response, context):
+        for match in when_response:
+            matches.remove(match)
+            match.name = 'alternative_title'
+            matches.append(match)
 
 
 class Filepart3EpisodeTitle(Rule):
@@ -174,7 +195,15 @@ class Filepart2EpisodeTitle(Rule):
     AAAAAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB
 
     If BBBB contains episode and AAA contains a hole followed by seasonNumber
-    Then title is to be found in AAAA.
+    then title is to be found in AAAA.
+
+    or
+
+    Serie name/SO1E01-episode_title.mkv
+    AAAAAAAAAA/BBBBBBBBBBBBBBBBBBBBB
+
+    If BBBB contains season and episode and AAA contains a hole
+    then title is to be found in AAAA.
     """
     consequence = AppendMatch('title')
 
@@ -188,7 +217,8 @@ class Filepart2EpisodeTitle(Rule):
 
         episode_number = matches.range(filename.start, filename.end, lambda match: match.name == 'episode', 0)
         if episode_number:
-            season = matches.range(directory.start, directory.end, lambda match: match.name == 'season', 0)
+            season = (matches.range(directory.start, directory.end, lambda match: match.name == 'season', 0) or
+                      matches.range(filename.start, filename.end, lambda match: match.name == 'season', 0))
             if season:
                 hole = matches.holes(directory.start, directory.end, formatter=cleanup, seps=title_seps,
                                      predicate=lambda match: match.value, index=0)

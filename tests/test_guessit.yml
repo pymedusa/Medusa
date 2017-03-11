@@ -151,7 +151,7 @@
   season: 4
   episode: 8
   format: HDTV
-  language: es
+  language: ca
   type: episode
 
 # newpct (SpanishNewpctReleaseName)
@@ -853,7 +853,7 @@
 ? - 12.monkeys.Season.1.Complete
   - /somefolder/12.monkeys.Season.1.Complete
   - /12 Monkeys/12.monkeys.Season.1.Complete
-: title: 12 monkeys
+: title: 12 Monkeys
   season: 1
   other: Complete
   type: episode
@@ -1009,7 +1009,6 @@
   video_codec: h264
   video_encoder: x264
   release_group: TV2LAX9
-  bonus: 9 # not a big issue
   type: episode
 
 # expected_group
@@ -1655,7 +1654,7 @@
   format: HDTV
   video_codec: h264
   video_encoder: x264
-  other: Re-Encoded
+  other: ReEncoded
   release_group: GROUP
   type: episode
 
@@ -1759,6 +1758,7 @@
   episode: 15
   screen_size: 480p
   format: BDRip
+  video_codec: h264
   language: uk
   release_group: hurtom
   type: episode
@@ -1816,6 +1816,7 @@
 : title: Show Name
   season: 2
   episode: 5
+  other: Formula One
   episode_details: Special
   screen_size: 720p
   format: HDTV
@@ -2106,6 +2107,7 @@
 : title: Show Name
   season: 2
   episode: 5
+  other: Formula One
   screen_size: 720p
   format: HDTV
   video_codec: h264
@@ -2145,7 +2147,7 @@
   format: HDTV
   season: 1
   episode: 5
-  language: es
+  language: ca
   type: episode
 
 # SpanishNewpctReleaseName
@@ -2282,6 +2284,7 @@
   language: it
   audio_codec: AAC
   format: WEB-DL
+  other: Mux
   release_group: UBi
   type: episode
 
@@ -2306,6 +2309,7 @@
   video_codec: h264
   language: [it, en]
   format: WEB-DL
+  other: Mux
   audio_codec: AC3
   subtitle_language: [it, en]
   release_group: GiuseppeTnT Littlelinx
@@ -2320,6 +2324,7 @@
   language: it
   audio_codec: AAC
   format: HDTV
+  other: Mux
   release_group: NovaRip
   type: episode
 
@@ -2331,6 +2336,7 @@
   episode_title: Un Tuffo Nel Passato
   language: it
   format: HDTV
+  other: Mux
   video_codec: h264
   video_encoder: x264
   release_group: NovaRip
@@ -2348,6 +2354,7 @@
   audio_codec: MP3
   subtitle_language: [it, en]
   format: WEB-DL
+  other: Mux
   release_group: Pir8
   type: episode
 
@@ -2362,6 +2369,7 @@
   audio_codec: AAC
   subtitle_language: [it, en]
   format: WEB-DL
+  other: Mux
   release_group: sp_54321
   type: episode
 
@@ -2417,10 +2425,10 @@
   release_group: SUJAIDR
   type: episode
 
-? Show.Name.-.Alternative.-.02.(1280x720.HEVC.AAC)
+? Show.Name.-.Other Name.-.02.(1280x720.HEVC.AAC)
 : title: Show Name
-  alternative_title: Alternative
-  alias: Show Name - Alternative
+  alternative_title: Other Name
+  alias: Show Name - Other Name
   absolute_episode: 2
   episode: 2
   screen_size: 720p
@@ -2432,8 +2440,7 @@
 : title: Show Name
   season: 2
   episode: 1
-  other: Multi Language
-  language: [fr, en]
+  language: [mul, fr, en]
   subtitle_language: fr
   screen_size: 1080p
   format: WEB-DL
@@ -2553,6 +2560,7 @@
   audio_codec: DTS
   audio_profile: HDMA
   audio_channels: '5.1'
+  video_codec: h264
   other: Remux
   screen_size: 1080p
   release_group: FraMeSToR
@@ -2659,7 +2667,7 @@
 : title: Show Name
   season: 6
   episode: 16
-  other: Hardcoded subtitles
+  other: Hardcoded Subtitles
   format: HDTV
   video_codec: h264
   video_encoder: x264
@@ -2687,7 +2695,9 @@
 : title: Show Name
   season: 12
   episode: 17
-  other: DirFix
+  other: Proper
+  proper_count: 1
+  proper_tag: DIRFIX
   format: HDTV
   video_codec: h264
   video_encoder: x264
@@ -2757,11 +2767,8 @@
 
 # Subtitulado (it seems regex with ñ doesn't work with rebulk)
 ? - Show.Name.S01E03.HDTV.Subtitulado.Esp.SC
-  - Show.Name.S01E03.HDTV.Subtitulado.Esp.Spanish.SC
   - Show.Name.S01E03.HDTV.Subtitulado.Espanol.SC
-  - Show.Name.S01E03.HDTV.Subtitulado.Espanol.Spanish.SC
-#  - Show.Name.S01E03.HDTV.Subtitulado.Español.SC
-#  - Show.Name.S01E03.HDTV.Subtitulado.Español.Spanish.SC
+  - Show.Name.S01E03.HDTV.Subtitulado.Español.SC
 : title: Show Name
   season: 1
   episode: 3
@@ -2826,7 +2833,8 @@
 : title: Show Name
   season: 1
   episode: 6
-  screen_size: 2160p
+  streaming_service: Netflix
+  other: UltraHD
   type: episode
 
 # Corner case for size
@@ -3143,7 +3151,7 @@
 
 # Title with number and unicode character
 ? 3 Show.på.(abc2).s01e01
-: title: 3 Show på abc2
+: title: 3 Show på (abc2)
   season: 1
   episode: 1
   type: episode
@@ -3192,11 +3200,11 @@
   type: episode
 
 # Regression test for #1088
-# episode title has s1 that might lead to season detection issues
 ? Show.Name.S02E06.eps2.4.m4ster-s1ave.aes.1080p.AMZN.WEBRip.DD5.1.x264-GROUP
 : title: Show Name
   season: 2
   episode: 6
+  episode_title: eps2 4 m4ster-s1ave aes
   screen_size: 1080p
   format: WEBRip
   streaming_service: Amazon Prime
@@ -3503,13 +3511,20 @@
 
 # BDRip
 ? - Show.Name.BD.720p
-  - Show.Name.BDMux.720p
   - Show.Name.BDRip.720p
-  - Show.Name.BDRipMux.720p
   - Show.Name.BD.Rip.720p
   - Show.Name.BD-Rip.720p
 : title: Show Name
   format: BDRip
+  screen_size: 720p
+  type: episode
+
+# BDRip
+? - Show.Name.BDMux.720p
+  - Show.Name.BDRipMux.720p
+: title: Show Name
+  format: BDRip
+  other: Mux
   screen_size: 720p
   type: episode
 
@@ -3525,12 +3540,19 @@
 
 # BRRip
 ? - Show.Name.BRRip.720p
-  - Show.Name.BRMux.720p
-  - Show.Name.BRRipMux.720p
   - Show.Name.BR.Rip.720p
   - Show.Name.BR-Rip.720p
 : title: Show Name
   format: BRRip
+  screen_size: 720p
+  type: episode
+
+# BRRip
+? - Show.Name.BRMux.720p
+  - Show.Name.BRRipMux.720p
+: title: Show Name
+  format: BRRip
+  other: Mux
   screen_size: 720p
   type: episode
 
@@ -4055,4 +4077,73 @@
   format: WEBRip
   other: HD
   screen_size: 720p
+  type: episode
+
+? Show.Name.S01.720p.WEBRip.DD5.1.x264-MiNiGRiP
+: title: Show Name
+  season: 1
+  screen_size: 720p
+  format: WEBRip
+  audio_codec: AC3
+  audio_channels: '5.1'
+  video_codec: h264
+  video_encoder: x264
+  release_group: MiNiGRiP
+  type: episode
+
+? Show.Name.(2016).S01E02.HDTV.SubtituladoEsp.SC
+: title: Show Name
+  alias: Show Name 2016
+  year: 2016
+  season: 1
+  episode: 2
+  format: HDTV
+  subtitle_language: es
+  release_group: SC
+  type: episode
+
+? Show.Name.S01E02.HDTV.XviD.2HD.720p.HDTV.X264
+: title: Show Name
+  season: 1
+  episode: 2
+  format: HDTV
+  video_codec: XviD
+  release_group: 2HD
+  screen_size: 720p
+  type: episode
+
+# Regression 1986: Anime should be detected
+? Show Name - 722 [HD_1280x720].mp4
+: title: Show Name
+  absolute_episode: 722
+  episode: 722
+  other: HD
+  screen_size: 720p
+  container: mp4
+  mimetype: video/mp4
+  type: episode
+
+# TODO: Fix anime release group
+? "[Zero-Raws].Show.Name.493-498.&.500-507.(CX.1280x720.VFR.x264.AAC)"
+: title: Show Name
+  absolute_episode: [493, 494, 495, 496, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507]
+  episode: [500, 501, 502, 503, 504, 505, 506, 507]
+  screen_size: 720p
+  release_group: VFR
+  video_codec: h264
+  video_encoder: x264
+  audio_codec: AAC
+  type: episode
+
+? "[MK-Pn8].Dimension.W.-.05.[720p][Hi10][Dual][TV-Dub][EDA6E7F1]"
+: release_group: MK-Pn8
+  title: Dimension W
+  episode: 5
+  absolute_episode: 5
+  screen_size: 720p
+  video_profile: 10bit
+  other: DualAudio
+  format: TV
+  language: und
+  crc32: EDA6E7F1
   type: episode

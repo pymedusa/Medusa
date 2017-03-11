@@ -20,13 +20,19 @@ from __future__ import unicode_literals
 
 import traceback
 
-import validators
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.common import USER_AGENT
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....common import USER_AGENT
-from ....helper.common import convert_size, try_int
+import validators
 
 
 class TorrentProjectProvider(TorrentProvider):
@@ -53,7 +59,7 @@ class TorrentProjectProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=20)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -131,9 +137,9 @@ class TorrentProjectProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    torrent_hash = download_url.split('/')[1]
+                    info_hash = download_url.split('/')[1]
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=torrent_hash, title=title, trackers=self._custom_trackers)
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     seeders = try_int(row.find('span', class_='bc seeders').find('span').get_text(), 1)
                     leechers = try_int(row.find('span', class_='bc leechers').find('span').get_text())
@@ -156,7 +162,6 @@ class TorrentProjectProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': None,
-                        'torrent_hash': torrent_hash,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

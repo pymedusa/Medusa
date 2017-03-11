@@ -4,7 +4,7 @@
 import unittest
 
 from medusa import common, db, name_cache, scene_exceptions, show_name_helpers
-from medusa.tv import TVShow as Show
+from medusa.tv import Series as Show
 from . import test_lib as test
 
 
@@ -39,7 +39,12 @@ class SceneTests(test.AppTestDBCase):
     def test_all_possible_show_names(self):
         # common.sceneExceptions[-1] = ['Exception Test']
         test_cache_db_con = db.DBConnection('cache.db')
-        test_cache_db_con.action("INSERT INTO scene_exceptions (indexer_id, show_name, season) VALUES (?,?,?)", [-1, 'Exception Test', -1])
+        test_cache_db_con.action("INSERT INTO scene_exceptions (indexer, indexer_id, show_name, season) "
+                                 "VALUES (?,?,?,?)", [1, -1, 'Exception Test', -1])
+
+        # Make sure cache has been created
+        scene_exceptions.refresh_exceptions_cache()
+
         common.countryList['Full Country Name'] = 'FCN'
 
         self._test_all_possible_show_names('Show Name', expected=['Show Name'])
@@ -63,12 +68,18 @@ class SceneExceptionTestCase(test.AppTestDBCase):
         super(SceneExceptionTestCase, self).setUp()
         scene_exceptions.retrieve_exceptions()
 
+        # Make sure cache has been created
+        scene_exceptions.refresh_exceptions_cache()
+
     def test_scene_ex_empty(self):
-        self.assertEqual(scene_exceptions.get_scene_exceptions(0), [])
+        self.assertEqual(scene_exceptions.get_scene_exceptions(0, 0), set())
 
     @unittest.expectedFailure
     def test_scene_ex_babylon_5(self):
-        self.assertEqual(sorted(scene_exceptions.get_scene_exceptions(70726)), ['Babylon 5', 'Babylon5'])
+        self.assertEqual(
+            sorted(scene_exceptions.get_scene_exceptions(70726, 1)),
+            sorted({'Babylon 5', 'Babylon5'})
+        )
 
     @unittest.expectedFailure
     def test_scene_ex_by_name(self):

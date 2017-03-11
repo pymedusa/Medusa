@@ -7,8 +7,8 @@ if not show is UNDEFINED:
     __quality = int(show.quality)
 else:
     __quality = int(app.QUALITY_DEFAULT)
-allowed_qualities, preferred_qualities = Quality.splitQuality(__quality)
-overall_quality = Quality.combineQualities(allowed_qualities, preferred_qualities)
+allowed_qualities, preferred_qualities = Quality.split_quality(__quality)
+overall_quality = Quality.combine_qualities(allowed_qualities, preferred_qualities)
 selected = None
 %>
 <select id="qualityPreset" name="quality_preset" class="form-control form-control-inline input-sm">
@@ -39,13 +39,24 @@ selected = None
             </select>
         </div>
     </div>
-        % if preferred_qualities:
-            <h5>Downloads <b>any</b> of this qualities:
-                ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}.</h5>
-            <h5>But will <b>stop searching</b> when find <b>any</b> from: ${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</h5>
-                <b>Note:</b> Status from Preferred quality will be SNATCHED BEST, else SNATCHED.
-        % else:
-            <h5>Downloads <b>any</b> of this qualities: ${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])} and stop searching.</h5>
-            <b>Note:</b> Status will be SNATCHED.
-        % endif
+    <div id="qualityExplanation">
+        <h5><b>Quality setting explanation:</b></h5>
+        <h5 id="allowedText">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
+        <h5 id="preferredText1">Downloads <b>any</b> of these qualities: <label id="allowedPreferredExplanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
+        <h5 id="preferredText2">But it will stop searching when one of these is downloaded:  <label id="preferredExplanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>
+    </div>
+    <div>
+        <h5 class="red-text" id="backloggedEpisodes"></h5>
+    </div>
+    <div id="archive" style="display: none;">
+        <h5>
+            <b>
+                Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
+            </b>
+                <br />Avoids unnecessarily increasing your backlog
+            </br>
+        </h5>
+        <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
+        <h5 id="archivedStatus"></h5>
+    </div>
 </div>

@@ -21,13 +21,18 @@ import re
 import traceback
 
 from dateutil import parser
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import try_int
+from medusa.helper.exceptions import AuthException
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import try_int
-from ....helper.exceptions import AuthException
 
 
 class TransmitTheNetProvider(TorrentProvider):
@@ -58,7 +63,7 @@ class TransmitTheNetProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -173,7 +178,6 @@ class TransmitTheNetProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

@@ -87,6 +87,12 @@
 ? HD
 : other: HD
 
+? UHD
+? Ultra
+? UltraHD
+? Ultra HD
+: other: UltraHD
+
 ? mHD # ??
 : other: mHD
 
@@ -132,3 +138,18 @@
 
 ? Other-HQ
 : other: HQ
+
+? reenc
+? re-enc
+? re-encoded
+? reencoded
+: other: ReEncoded
+
+? Super Movie Alternate XViD
+? Super Movie Alternative XViD
+? Super Movie Alternate Cut XViD
+? Super Movie Alternative Cut XViD
+: other: Alternative Cut
+
+? CONVERT XViD
+: other: Converted

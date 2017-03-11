@@ -24,8 +24,9 @@ import re
 from requests.compat import urlsplit
 from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
-from . import app, common, db, helpers, logger, naming
+from . import app, common, db, helpers, logger, naming, scheduler
 from .helper.common import try_int
+from .version_checker import CheckVersion
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
@@ -65,7 +66,7 @@ def change_HTTPS_CERT(https_cert):
         return True
 
     if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
-        if helpers.makeDir(os.path.dirname(os.path.abspath(https_cert))):
+        if helpers.make_dir(os.path.dirname(os.path.abspath(https_cert))):
             app.HTTPS_CERT = os.path.normpath(https_cert)
             logger.log(u"Changed https cert path to " + https_cert)
         else:
@@ -86,7 +87,7 @@ def change_HTTPS_KEY(https_key):
         return True
 
     if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
-        if helpers.makeDir(os.path.dirname(os.path.abspath(https_key))):
+        if helpers.make_dir(os.path.dirname(os.path.abspath(https_key))):
             app.HTTPS_KEY = os.path.normpath(https_key)
             logger.log(u"Changed https key path to " + https_key)
         else:
@@ -105,7 +106,7 @@ def change_LOG_DIR(log_dir):
     abs_log_dir = os.path.normpath(os.path.join(app.DATA_DIR, log_dir))
 
     if os.path.normpath(app.LOG_DIR) != abs_log_dir:
-        if not helpers.makeDir(abs_log_dir):
+        if not helpers.make_dir(abs_log_dir):
             return False
 
         app.ACTUAL_LOG_DIR = os.path.normpath(log_dir)
@@ -126,7 +127,7 @@ def change_NZB_DIR(nzb_dir):
         return True
 
     if os.path.normpath(app.NZB_DIR) != os.path.normpath(nzb_dir):
-        if helpers.makeDir(nzb_dir):
+        if helpers.make_dir(nzb_dir):
             app.NZB_DIR = os.path.normpath(nzb_dir)
             logger.log(u"Changed NZB folder to " + nzb_dir)
         else:
@@ -147,7 +148,7 @@ def change_TORRENT_DIR(torrent_dir):
         return True
 
     if os.path.normpath(app.TORRENT_DIR) != os.path.normpath(torrent_dir):
-        if helpers.makeDir(torrent_dir):
+        if helpers.make_dir(torrent_dir):
             app.TORRENT_DIR = os.path.normpath(torrent_dir)
             logger.log(u"Changed torrent folder to " + torrent_dir)
         else:
@@ -168,7 +169,7 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
         return True
 
     if os.path.normpath(app.TV_DOWNLOAD_DIR) != os.path.normpath(tv_download_dir):
-        if helpers.makeDir(tv_download_dir):
+        if helpers.make_dir(tv_download_dir):
             app.TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
             logger.log(u"Changed TV download folder to " + tv_download_dir)
         else:
@@ -189,7 +190,21 @@ def change_AUTOPOSTPROCESSOR_FREQUENCY(freq):
     if app.AUTOPOSTPROCESSOR_FREQUENCY < app.MIN_AUTOPOSTPROCESSOR_FREQUENCY:
         app.AUTOPOSTPROCESSOR_FREQUENCY = app.MIN_AUTOPOSTPROCESSOR_FREQUENCY
 
-    app.autoPostProcessorScheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+    app.auto_post_processor_scheduler.cycleTime = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
+
+
+def change_TORRENT_CHECKER_FREQUENCY(freq):
+    """
+    Change frequency of Torrent Checker thread
+
+    :param freq: New frequency
+    """
+    app.TORRENT_CHECKER_FREQUECY = try_int(freq, app.DEFAULT_TORRENT_CHECKER_FREQUENCY)
+
+    if app.TORRENT_CHECKER_FREQUECY < app.MIN_TORRENT_CHECKER_FREQUENCY:
+        app.TORRENT_CHECKER_FREQUECY = app.MIN_TORRENT_CHECKER_FREQUENCY
+
+    app.torrent_checker_scheduler.cycleTime = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUECY)
 
 
 def change_DAILYSEARCH_FREQUENCY(freq):
@@ -203,7 +218,7 @@ def change_DAILYSEARCH_FREQUENCY(freq):
     if app.DAILYSEARCH_FREQUENCY < app.MIN_DAILYSEARCH_FREQUENCY:
         app.DAILYSEARCH_FREQUENCY = app.MIN_DAILYSEARCH_FREQUENCY
 
-    app.dailySearchScheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
+    app.daily_search_scheduler.cycleTime = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
 
 
 def change_BACKLOG_FREQUENCY(freq):
@@ -218,7 +233,7 @@ def change_BACKLOG_FREQUENCY(freq):
     if app.BACKLOG_FREQUENCY < app.MIN_BACKLOG_FREQUENCY:
         app.BACKLOG_FREQUENCY = app.MIN_BACKLOG_FREQUENCY
 
-    app.backlogSearchScheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
+    app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
 
 
 def change_UPDATE_FREQUENCY(freq):
@@ -232,7 +247,7 @@ def change_UPDATE_FREQUENCY(freq):
     if app.UPDATE_FREQUENCY < app.MIN_UPDATE_FREQUENCY:
         app.UPDATE_FREQUENCY = app.MIN_UPDATE_FREQUENCY
 
-    app.versionCheckScheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
+    app.version_check_scheduler.cycleTime = datetime.timedelta(hours=app.UPDATE_FREQUENCY)
 
 
 def change_SHOWUPDATE_HOUR(freq):
@@ -248,7 +263,7 @@ def change_SHOWUPDATE_HOUR(freq):
     elif app.SHOWUPDATE_HOUR < 0:
         app.SHOWUPDATE_HOUR = 0
 
-    app.showUpdateScheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
+    app.show_update_scheduler.start_time = datetime.time(hour=app.SHOWUPDATE_HOUR)
 
 
 def change_SUBTITLES_FINDER_FREQUENCY(subtitles_finder_frequency):
@@ -269,6 +284,7 @@ def change_VERSION_NOTIFY(version_notify):
 
     :param version_notify: New frequency
     """
+
     oldSetting = app.VERSION_NOTIFY
 
     app.VERSION_NOTIFY = version_notify
@@ -277,7 +293,20 @@ def change_VERSION_NOTIFY(version_notify):
         app.NEWEST_VERSION_STRING = None
 
     if oldSetting is False and version_notify is True:
-        app.versionCheckScheduler.forceRun()
+        app.version_check_scheduler.forceRun()
+
+
+def change_GIT_PATH():
+    """
+    Recreate the version_check scheduler when GIT_PATH is changed.
+    Force a run to clear or set any error messages.
+    """
+    app.version_check_scheduler = None
+    app.version_check_scheduler = scheduler.Scheduler(
+        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName="CHECKVERSION", silent=False)
+    app.version_check_scheduler.enable = True
+    app.version_check_scheduler.start()
+    app.version_check_scheduler.forceRun()
 
 
 def change_DOWNLOAD_PROPERS(download_propers):
@@ -294,15 +323,15 @@ def change_DOWNLOAD_PROPERS(download_propers):
 
     app.DOWNLOAD_PROPERS = download_propers
     if app.DOWNLOAD_PROPERS:
-        if not app.properFinderScheduler.enable:
+        if not app.proper_finder_scheduler.enable:
             logger.log(u"Starting PROPERFINDER thread", logger.INFO)
-            app.properFinderScheduler.silent = False
-            app.properFinderScheduler.enable = True
+            app.proper_finder_scheduler.silent = False
+            app.proper_finder_scheduler.enable = True
         else:
             logger.log(u"Unable to start PROPERFINDER thread. Already running", logger.INFO)
     else:
-        app.properFinderScheduler.enable = False
-        app.traktCheckerScheduler.silent = True
+        app.proper_finder_scheduler.enable = False
+        app.trakt_checker_scheduler.silent = True
         logger.log(u"Stopping PROPERFINDER thread", logger.INFO)
 
 
@@ -320,15 +349,15 @@ def change_USE_TRAKT(use_trakt):
 
     app.USE_TRAKT = use_trakt
     if app.USE_TRAKT:
-        if not app.traktCheckerScheduler.enable:
+        if not app.trakt_checker_scheduler.enable:
             logger.log(u"Starting TRAKTCHECKER thread", logger.INFO)
-            app.traktCheckerScheduler.silent = False
-            app.traktCheckerScheduler.enable = True
+            app.trakt_checker_scheduler.silent = False
+            app.trakt_checker_scheduler.enable = True
         else:
             logger.log(u"Unable to start TRAKTCHECKER thread. Already running", logger.INFO)
     else:
-        app.traktCheckerScheduler.enable = False
-        app.traktCheckerScheduler.silent = True
+        app.trakt_checker_scheduler.enable = False
+        app.trakt_checker_scheduler.silent = True
         logger.log(u"Stopping TRAKTCHECKER thread", logger.INFO)
 
 
@@ -346,15 +375,15 @@ def change_USE_SUBTITLES(use_subtitles):
 
     app.USE_SUBTITLES = use_subtitles
     if app.USE_SUBTITLES:
-        if not app.subtitlesFinderScheduler.enable:
+        if not app.subtitles_finder_scheduler.enable:
             logger.log(u"Starting SUBTITLESFINDER thread", logger.INFO)
-            app.subtitlesFinderScheduler.silent = False
-            app.subtitlesFinderScheduler.enable = True
+            app.subtitles_finder_scheduler.silent = False
+            app.subtitles_finder_scheduler.enable = True
         else:
             logger.log(u"Unable to start SUBTITLESFINDER thread. Already running", logger.INFO)
     else:
-        app.subtitlesFinderScheduler.enable = False
-        app.subtitlesFinderScheduler.silent = True
+        app.subtitles_finder_scheduler.enable = False
+        app.subtitles_finder_scheduler.silent = True
         logger.log(u"Stopping SUBTITLESFINDER thread", logger.INFO)
 
 
@@ -372,16 +401,16 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
 
     app.PROCESS_AUTOMATICALLY = process_automatically
     if app.PROCESS_AUTOMATICALLY:
-        if not app.autoPostProcessorScheduler.enable:
+        if not app.auto_post_processor_scheduler.enable:
             logger.log(u"Starting POSTPROCESSOR thread", logger.INFO)
-            app.autoPostProcessorScheduler.silent = False
-            app.autoPostProcessorScheduler.enable = True
+            app.auto_post_processor_scheduler.silent = False
+            app.auto_post_processor_scheduler.enable = True
         else:
             logger.log(u"Unable to start POSTPROCESSOR thread. Already running", logger.INFO)
     else:
         logger.log(u"Stopping POSTPROCESSOR thread", logger.INFO)
-        app.autoPostProcessorScheduler.enable = False
-        app.autoPostProcessorScheduler.silent = True
+        app.auto_post_processor_scheduler.enable = False
+        app.auto_post_processor_scheduler.silent = True
 
 
 def CheckSection(CFG, sec):
@@ -699,7 +728,7 @@ class ConfigMigrator(object):
                 migration_name = ''
 
             logger.log(u"Backing up config before upgrade")
-            if not helpers.backupVersionedFile(app.CONFIG_FILE, self.config_version):
+            if not helpers.backup_versioned_file(app.CONFIG_FILE, self.config_version):
                 logger.log_error_and_exit(u"Config backup failed, abort upgrading config")
             else:
                 logger.log(u"Proceeding with upgrade")

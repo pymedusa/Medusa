@@ -21,12 +21,20 @@ from __future__ import unicode_literals
 import traceback
 
 from dateutil import parser
+
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 
 class DanishbitsProvider(TorrentProvider):
@@ -57,7 +65,7 @@ class DanishbitsProvider(TorrentProvider):
         self.minleech = 0
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll Danishbits every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll Danishbits every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -172,7 +180,6 @@ class DanishbitsProvider(TorrentProvider):
                         'seeders': seeders,
                         'leechers': leechers,
                         'pubdate': pubdate,
-                        'torrent_hash': None,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format

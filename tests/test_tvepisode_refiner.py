@@ -11,9 +11,9 @@ from subliminal.video import Video
 def data(create_tvshow, create_tvepisode):
     show_name = 'Enhanced Show Name'
     show_year = 2012
-    tvshow = create_tvshow(indexerid=12, name='{0} ({1})'.format(show_name, show_year), imdbid='tt0000000')
+    tvshow = create_tvshow(indexerid=12, name='{0} ({1})'.format(show_name, show_year), imdb_id='tt0000000')
     tvepisode = create_tvepisode(show=tvshow, indexer=34, season=3, episode=4, name='Episode Title',
-                                 file_size=1122334455, status=Quality.compositeStatus(DOWNLOADED, Quality.FULLHDBLURAY),
+                                 file_size=1122334455, status=Quality.composite_status(DOWNLOADED, Quality.FULLHDBLURAY),
                                  release_group='SuperGroup')
     return {
         'tvshow': tvshow,
@@ -21,7 +21,7 @@ def data(create_tvshow, create_tvepisode):
             'series': show_name,
             'year': show_year,
             'series_tvdb_id': tvshow.tvdb_id,
-            'series_imdb_id': tvshow.imdbid,
+            'series_imdb_id': tvshow.imdb_id,
         },
         'tvepisode': tvepisode,
         'tvepisode_properties': {
