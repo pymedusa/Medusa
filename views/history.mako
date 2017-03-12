@@ -5,6 +5,7 @@
     from datetime import datetime
     import re
     import time
+    from random import choice
     from medusa import providers
     from medusa.sbdatetime import sbdatetime
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED, DOWNLOADED, SUBTITLED
@@ -14,19 +15,17 @@
 %>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<!-- Title -->
+
+<input type="hidden" id="showID" value="${choice(historyResults).show_id if historyResults else ''}" />
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-6"> <!-- Title -->
         % if not header is UNDEFINED:
             <h1 class="header">${header}</h1>
         % else:
             <h1 class="title">${title}</h1>
         % endif
-    </div>
-</div>
-<!-- Controls -->
-<div class="row">
-    <div class="col-md-12">
+    </div> <!-- layout title -->
+    <div class="col-md-6 pull-right"> <!-- Controls -->
         <div class="layout-controls pull-right">
             <div class="show-option">
                 <span>Limit:</span>
@@ -57,8 +56,9 @@
 <!-- Title -->
 <div class="row">
     <div class="col-md-12">
+        <div class="horizontal-scroll">
         % if app.HISTORY_LAYOUT == "detailed":
-            <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+            <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
                     <tr>
                         <th class="nowrap" width="15%">Time</th>
@@ -77,13 +77,13 @@
                 % for hItem in historyResults:
                     <% composite = Quality.split_composite_status(int(hItem.action)) %>
                     <tr>
-                        <td align="center">
+                        <td align="center" class="triggerhighlight">
                             <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.date), History.date_format), show_seconds=True) %>
                             <% isoDate = datetime.strptime(str(hItem.date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
-                        <td class="tvShow"><a href="home/displayShow?show=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </a></td>
-                        <td align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
+                        <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${hItem.show_id}#season-${hItem.season}">${hItem.show_name} - ${"S%02i" % int(hItem.season)}${"E%02i" % int(hItem.episode)} ${'<span class="quality Proper">Proper</span>' if hItem.proper_tags else ''} </a></td>
+                        <td class="triggerhighlight"align="center" ${'class="subtitles_column"' if composite.status == SUBTITLED else ''}>
                         % if composite.status == SUBTITLED:
                             <img width="16" height="11" style="vertical-align:middle;" src="images/subtitles/flags/${hItem.resource}.png" onError="this.onerror=null;this.src='images/flags/unknown.png';">
                         % endif
@@ -95,7 +95,7 @@
                                 <img src="images/info32.png" width="16" height="16" style="vertical-align:middle;" title="${hItem.proper_tags.replace('|', ', ')}"/>
                             % endif
                         </td>
-                        <td align="center">
+                        <td align="center" class="triggerhighlight">
                         % if composite.status in [DOWNLOADED, ARCHIVED]:
                             % if hItem.provider != "-1":
                                 <span style="vertical-align:middle;"><i>${hItem.provider}</i></span>
@@ -118,13 +118,13 @@
                         % endif
                         </td>
                         <span style="display: none;">${composite.quality}</span>
-                        <td align="center">${renderQualityPill(composite.quality)}</td>
+                        <td align="center" class="triggerhighlight">${renderQualityPill(composite.quality)}</td>
                     </tr>
                 % endfor
                 </tbody>
             </table>
         % else:
-            <table id="historyTable" class="defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
+            <table id="historyTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>
                     <tr>
                         <th class="nowrap" width="18%">Time</th>
@@ -139,22 +139,22 @@
                 </thead>
                 <tfoot>
                     <tr>
-                        <th class="nowrap" colspan="6">&nbsp;</th>
+                        <th class="nowrap shadow" colspan="6">&nbsp;</th>
                     </tr>
                 </tfoot>
                 <tbody>
                 % for hItem in compactResults:
                     <tr>
-                        <td align="center">
+                        <td align="center" class="triggerhighlight">
                             <% airDate = sbdatetime.sbfdatetime(datetime.strptime(str(hItem.actions[0].date), History.date_format), show_seconds=True) %>
                             <% isoDate = datetime.strptime(str(hItem.actions[0].date), History.date_format).isoformat('T') %>
                             <time datetime="${isoDate}" class="date">${airDate}</time>
                         </td>
-                        <td class="tvShow">
+                        <td class="tvShow triggerhighlight">
                             <% proper_tags = [action.proper_tags for action in hItem.actions if action.proper_tags] %>
                             <span><a href="home/displayShow?show=${hItem.index.show_id}#season-${hItem.index.season}">${hItem.show_name} - ${"S%02i" % int(hItem.index.season)}${"E%02i" % int(hItem.index.episode)} ${'<span class="quality Proper">Proper</span>' if proper_tags else ''}</a></span>
                         </td>
-                        <td align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
+                        <td class="triggerhighlight" align="center" provider="${str(sorted(hItem.actions)[0].provider)}">
                             % for cur_action in sorted(hItem.actions, key=lambda x: x.date):
                                 <% composite = Quality.split_composite_status(int(cur_action.action)) %>
                                 % if composite.status == SNATCHED:
@@ -176,7 +176,7 @@
                                 % endif
                             % endfor
                         </td>
-                        <td align="center">
+                        <td align="center" class="triggerhighlight">
                             % for cur_action in sorted(hItem.actions):
                                 <% composite = Quality.split_composite_status(int(cur_action.action)) %>
                                 % if composite.status in [DOWNLOADED, ARCHIVED]:
@@ -189,7 +189,7 @@
                             % endfor
                         </td>
                         % if app.USE_SUBTITLES:
-                        <td align="center">
+                        <td align="center" class="triggerhighlight">
                             % for cur_action in sorted(hItem.actions):
                                 <% composite = Quality.split_composite_status(int(cur_action.action)) %>
                                 % if composite.status == SUBTITLED:
@@ -201,12 +201,13 @@
                             % endfor
                         </td>
                         % endif
-                        <td align="center" quality="${composite.quality}">${renderQualityPill(composite.quality)}</td>
+                        <td align="center" class="triggerhighlight" quality="${composite.quality}">${renderQualityPill(composite.quality)}</td>
                     </tr>
                 % endfor
                 </tbody>
             </table>
             % endif
+            </div>
         </div>
     </div>
 </%block>

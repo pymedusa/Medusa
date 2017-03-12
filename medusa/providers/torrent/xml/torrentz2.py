@@ -21,12 +21,15 @@ from __future__ import unicode_literals
 import re
 import traceback
 
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size
+from requests.compat import urljoin
 
 
 class Torrentz2Provider(TorrentProvider):
@@ -57,7 +60,7 @@ class Torrentz2Provider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=15)  # only poll Torrentz every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)  # only poll Torrentz every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

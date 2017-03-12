@@ -9,41 +9,113 @@ import time
 from datetime import date, datetime
 
 import adba
-from requests.compat import quote_plus, unquote_plus
+
+from medusa import (
+    app,
+    config,
+    db,
+    helpers,
+    logger,
+    notifiers,
+    providers,
+    subtitles,
+    ui,
+)
+from medusa.black_and_white_list import (
+    BlackAndWhiteList,
+    short_group_names,
+)
+from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
+from medusa.common import (
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    WANTED,
+    cpu_presets,
+    statusStrings,
+)
+from medusa.failed_history import prepare_failed_name
+from medusa.helper.common import (
+    enabled_providers,
+    try_int,
+)
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+    ex,
+)
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import (
+    IndexerException,
+    IndexerShowNotFoundInLanguage,
+)
+from medusa.providers.generic_provider import GenericProvider
+from medusa.sbdatetime import sbdatetime
+from medusa.scene_exceptions import (
+    get_all_scene_exceptions,
+    get_scene_exceptions,
+    update_scene_exceptions,
+)
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering,
+    get_scene_absolute_numbering_for_show,
+    get_scene_numbering,
+    get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show,
+    get_xem_numbering_for_show,
+    set_scene_numbering,
+    xem_refresh,
+)
+from medusa.search.manual import (
+    SEARCH_STATUS_FINISHED,
+    SEARCH_STATUS_QUEUED,
+    SEARCH_STATUS_SEARCHING,
+    collect_episodes_from_search_thread,
+    get_episode,
+    get_provider_cache_results,
+    update_finished_search_queue_item,
+)
+from medusa.search.queue import (
+    BacklogQueueItem,
+    FailedQueueItem,
+    ForcedSearchQueueItem,
+    ManualSnatchQueueItem,
+)
+from medusa.server.web.core import (
+    PageTemplate,
+    WebRoot,
+)
+from medusa.show.history import History
+from medusa.show.show import Show
+from medusa.system.restart import Restart
+from medusa.system.shutdown import Shutdown
+from medusa.version_checker import CheckVersion
+
+from requests.compat import (
+    quote_plus,
+    unquote_plus,
+)
 from six import iteritems
 from tornroutes import route
-from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
-from ..core import PageTemplate, WebRoot
-from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
-from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings
-from ....failed_history import prepare_failed_name
-from ....helper.common import enabled_providers, try_int
-from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException, IndexerShowNotFoundInLanguage
-from ....providers.generic_provider import GenericProvider
-from ....sbdatetime import sbdatetime
-from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
-from ....scene_numbering import (
-    get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
-    get_scene_numbering, get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
-    set_scene_numbering, xem_refresh
+from traktor import (
+    MissingTokenException,
+    TokenExpiredException,
+    TraktApi,
+    TraktException,
 )
-from ....search.manual import (
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collect_episodes_from_search_thread,
-    get_episode, get_provider_cache_results, update_finished_search_queue_item
-)
-from ....search.queue import (
-    BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
-)
-from ....show.history import History
-from ....show.show import Show
-from ....system.restart import Restart
-from ....system.shutdown import Shutdown
-from ....version_checker import CheckVersion
 
 
 @route('/home(/?.*)')
@@ -57,17 +129,30 @@ class Home(WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
+        selected_root = int(app.SELECTED_ROOT)
+        shows_dir = None
+        if selected_root is not None and app.ROOT_DIRS:
+            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_dirs = backend_pieces[1:]
+            shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+
+        shows = []
         if app.ANIME_SPLIT_HOME:
-            shows = []
             anime = []
             for show in app.showList:
+                if shows_dir and not show._location.startswith(shows_dir):
+                    continue
                 if show.is_anime:
                     anime.append(show)
                 else:
                     shows.append(show)
             show_lists = [['Shows', shows], ['Anime', anime]]
         else:
-            show_lists = [['Shows', app.showList]]
+            for show in app.showList:
+                if shows_dir and not show._location.startswith(shows_dir):
+                    continue
+                shows.append(show)
+            show_lists = [['Shows', shows]]
 
         stats = self.show_statistics()
         return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
@@ -212,7 +297,7 @@ class Home(WebRoot):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
-        client = clients.get_client_class(torrent_method)
+        client = torrent.get_client_class(torrent_method)
 
         _, acces_msg = client(host, username, password).test_authentication()
 
@@ -412,8 +497,13 @@ class Home(WebRoot):
         trakt_settings = {"trakt_api_key": app.TRAKT_API_KEY,
                           "trakt_api_secret": app.TRAKT_API_SECRET}
         trakt_api = TraktApi(app.SSL_VERIFY, app.TRAKT_TIMEOUT, **trakt_settings)
+        response = None
         try:
             (access_token, refresh_token) = trakt_api.get_token(app.TRAKT_REFRESH_TOKEN, trakt_pin=trakt_pin)
+            if access_token and refresh_token:
+                app.TRAKT_ACCESS_TOKEN = access_token
+                app.TRAKT_REFRESH_TOKEN = refresh_token
+                response = trakt_api.validate_account()
         except MissingTokenException:
             ui.notifications.error('You need to get a PIN and authorize Medusa app')
             return 'You need to get a PIN and authorize Medusa app'
@@ -426,10 +516,6 @@ class Home(WebRoot):
         except TraktException:
             ui.notifications.error("Connection error. Click 'Authorize Medusa' button again")
             return "Connection error. Click 'Authorize Medusa' button again"
-        if access_token:
-            app.TRAKT_ACCESS_TOKEN = access_token
-            app.TRAKT_REFRESH_TOKEN = refresh_token
-        response = trakt_api.validate_account()
         if response:
             ui.notifications.message('Trakt Authorized')
             return "Trakt Authorized"
@@ -683,10 +769,11 @@ class Home(WebRoot):
         :return: A json with the scene exceptions per season.
         """
         return json.dumps({
-            'seasonExceptions': get_all_scene_exceptions(indexer_id),
+            'seasonExceptions': {season: list(exception_name) for season, exception_name
+                                 in iteritems(get_all_scene_exceptions(indexer_id))},
             'xemNumbering': {tvdb_season_ep[0]: anidb_season_ep[0]
                              for (tvdb_season_ep, anidb_season_ep)
-                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer))}
+                             in iteritems(get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False))}
         })
 
     def displayShow(self, show=None):
@@ -871,7 +958,7 @@ class Home(WebRoot):
             sortedShowLists=sorted_show_lists, bwl=bwl, ep_counts=ep_counts,
             ep_cats=ep_cats, all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexerid, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexerid, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexerid, indexer, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexerid, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexerid, indexer),
             title=show_obj.name, controller='home', action='displayShow',
@@ -1255,9 +1342,9 @@ class Home(WebRoot):
             submenu=submenu[::-1], showLoc=show_loc, show_message=show_message,
             show=show_obj, provider_results=provider_results, episode=episode,
             sortedShowLists=sorted_show_lists, bwl=bwl, season=season, manual_search_type=manual_search_type,
-            all_scene_exceptions=show_obj.exceptions,
+            all_scene_exceptions=' | '.join(show_obj.exceptions),
             scene_numbering=get_scene_numbering_for_show(indexer_id, indexer),
-            xem_numbering=get_xem_numbering_for_show(indexer_id, indexer),
+            xem_numbering=get_xem_numbering_for_show(indexer_id, indexer, refresh_data=False),
             scene_absolute_numbering=get_scene_absolute_numbering_for_show(indexer_id, indexer),
             xem_absolute_numbering=get_xem_absolute_numbering_for_show(indexer_id, indexer),
             title=show_obj.name, controller='home', action='snatchSelection',
@@ -1284,7 +1371,7 @@ class Home(WebRoot):
         """
         Request the show in a specific language from the indexer.
 
-        :param show_obj: (TVShow) Show object
+        :param show_obj: (Series) Show object
         :param language: Language two-letter country code. For ex: 'en'
         :returns: True if show is found in language else False
         """
@@ -1316,7 +1403,7 @@ class Home(WebRoot):
 
         allowed_qualities = allowed_qualities or []
         preferred_qualities = preferred_qualities or []
-        exceptions_list = exceptions_list or []
+        exceptions = exceptions_list or set()
 
         anidb_failed = False
         errors = []
@@ -1400,10 +1487,10 @@ class Home(WebRoot):
                 )
             except IndexerShowNotFoundInLanguage:
                 status = 'Could not change language to'
-            except IndexerException as error:
+            except IndexerException as e:
                 status = u'Failed getting show in'
                 msg += u' Please try again later. Error: {err}'.format(
-                    err=error,
+                    err=e.message,
                 )
             else:
                 language = indexer_lang
@@ -1411,7 +1498,9 @@ class Home(WebRoot):
                 log_level = logger.INFO
             finally:
                 indexer_lang = language
-                errors.append(msg.format(status=status))
+                msg = msg.format(status=status)
+                if log_level >= logger.WARNING:
+                    errors.append(msg)
                 logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
@@ -1425,15 +1514,18 @@ class Home(WebRoot):
         if not isinstance(preferred_qualities, list):
             preferred_qualities = [preferred_qualities]
 
-        if not isinstance(exceptions_list, list):
-            exceptions_list = [exceptions_list]
+        if isinstance(exceptions, list):
+            exceptions = set(exceptions)
+
+        if not isinstance(exceptions, set):
+            exceptions = {exceptions}
 
         # If directCall from mass_edit_update no scene exceptions handling or
         # blackandwhite list handling
         if directCall:
             do_update_exceptions = False
         else:
-            if set(exceptions_list) == set(show_obj.exceptions):
+            if exceptions == show_obj.exceptions:
                 do_update_exceptions = False
             else:
                 do_update_exceptions = True
@@ -1519,7 +1611,7 @@ class Home(WebRoot):
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions_list)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors.append('Unable to force an update on scene exceptions of the show.')

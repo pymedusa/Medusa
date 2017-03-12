@@ -37,8 +37,6 @@ function updateImages(data) {
                 img.prop('alt', 'Searching');
                 img.prop('src', 'images/' + loadingImage);
                 disableLink(el);
-                // Update Status and Quality
-                rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
                 // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
@@ -56,8 +54,8 @@ function updateImages(data) {
                 enableLink(el);
 
                 // Update Status and Quality
-                rSearchTerm = /(\w+)\s\((.+?)\)/;
-                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$2" + '</span>'); // eslint-disable-line quotes, no-useless-concat
+                rSearchTerm = /(\w+(\s\((\bBest\b|\bProper\b)\))?)\s\((.+?)\)/;
+                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$4" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
             // update the status column if it exists
@@ -119,136 +117,135 @@ $(document).ready(function() {
     checkManualSearches();
 });
 
-(function() {
-    $.ajaxEpSearch = function(options) {
-        options = $.extend({}, {
-            size: 16,
-            colorRow: false,
-            loadingImage: 'loading16.gif',
-            queuedImage: 'queued.png',
-            noImage: 'no16.png',
-            yesImage: 'yes16.png'
-        }, options);
+$.ajaxEpSearch = function(options) {
+    options = $.extend({}, {
+        size: 16,
+        colorRow: false,
+        loadingImage: 'loading16.gif',
+        queuedImage: 'queued.png',
+        noImage: 'no16.png',
+        yesImage: 'yes16.png'
+    }, options);
 
-        $('.epRetry').on('click', function(event) {
-            event.preventDefault();
+    $('.epRetry').on('click', function(event) {
+        event.preventDefault();
 
-            // Check if we have disabled the click
-            if ($(this).prop('enableClick') === '0') {
-                return false;
-            }
-
-            selectedEpisode = $(this);
-
-            $('#forcedSearchModalFailed').modal('show');
-        });
-
-        function forcedSearch() {
-            var imageName;
-            var imageResult;
-            var htmlContent;
-
-            var parent = selectedEpisode.parent();
-
-            // Create var for anchor
-            var link = selectedEpisode;
-
-            // Create var for img under anchor and set options for the loading gif
-            var img = selectedEpisode.children('img');
-            img.prop('title', 'loading');
-            img.prop('alt', '');
-            img.prop('src', '/images/' + options.loadingImage);
-
-            var url = selectedEpisode.prop('href');
-
-            if (!failedDownload) {
-                url = url.replace('retryEpisode', 'searchEpisode');
-            }
-
-            // Only pass the down_cur_quality flag when retryEpisode() is called
-            if (qualityDownload && url.indexOf('retryEpisode') >= 0) {
-                url += '&down_cur_quality=1';
-            }
-
-            $.getJSON(url, function(data) {
-                // if they failed then just put the red X
-                if (data.result.toLowerCase() === 'failure') {
-                    imageName = options.noImage;
-                    imageResult = 'failed';
-                } else {
-                    // if the snatch was successful then apply the
-                    // corresponding class and fill in the row appropriately
-                    imageName = options.loadingImage;
-                    imageResult = 'success';
-                    // color the row
-                    if (options.colorRow) {
-                        parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
-                    }
-                    // applying the quality class
-                    var rSearchTerm = /(\w+)\s\((.+?)\)/;
-                    htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
-                    // update the status column if it exists
-                    parent.siblings('.col-status').html(htmlContent);
-                    // Only if the queuing was successful, disable the onClick event of the loading image
-                    disableLink(link);
-                }
-
-                // put the corresponding image as the result of queuing of the manual search
-                img.prop('title', imageResult);
-                img.prop('alt', imageResult);
-                img.prop('height', options.size);
-                img.prop('src', 'images/' + imageName);
-            });
-
-            // don't follow the link
+        // Check if we have disabled the click
+        if ($(this).prop('enableClick') === '0') {
             return false;
         }
 
-        $('.epSearch').on('click', function(event) {
-            event.preventDefault();
+        selectedEpisode = $(this);
 
-            // Check if we have disabled the click
-            if ($(this).prop('enableClick') === '0') {
-                return false;
-            }
+        $('#forcedSearchModalFailed').modal('show');
+    });
 
-            selectedEpisode = $(this);
+    function forcedSearch() {
+        var imageName;
+        var imageResult;
+        var htmlContent;
 
-            // @TODO: Replace this with an easier to read selector
-            if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {
-                $('#forcedSearchModalQuality').modal('show');
+        var parent = selectedEpisode.parent();
+
+        // Create var for anchor
+        var link = selectedEpisode;
+
+        // Create var for img under anchor and set options for the loading gif
+        var img = selectedEpisode.children('img');
+        img.prop('title', 'loading');
+        img.prop('alt', '');
+        img.prop('src', 'images/' + options.loadingImage);
+
+        var url = selectedEpisode.prop('href');
+
+        if (!failedDownload) {
+            url = url.replace('retryEpisode', 'searchEpisode');
+        }
+
+        // Only pass the down_cur_quality flag when retryEpisode() is called
+        if (qualityDownload && url.indexOf('retryEpisode') >= 0) {
+            url += '&down_cur_quality=1';
+        }
+
+        // @TODO: Move to the API
+        $.getJSON(url, function(data) {
+            // if they failed then just put the red X
+            if (data.result.toLowerCase() === 'failure') {
+                imageName = options.noImage;
+                imageResult = 'failed';
             } else {
-                forcedSearch();
+                // if the snatch was successful then apply the
+                // corresponding class and fill in the row appropriately
+                imageName = options.loadingImage;
+                imageResult = 'success';
+                // color the row
+                if (options.colorRow) {
+                    parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
+                }
+                // applying the quality class
+                var rSearchTerm = /(\w+)\s\((.+?)\)/;
+                htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
+                // update the status column if it exists
+                parent.siblings('.col-status').html(htmlContent);
+                // Only if the queuing was successful, disable the onClick event of the loading image
+                disableLink(link);
             }
+
+            // put the corresponding image as the result of queuing of the manual search
+            img.prop('title', imageResult);
+            img.prop('alt', imageResult);
+            img.prop('height', options.size);
+            img.prop('src', 'images/' + imageName);
         });
 
-        $('.epManualSearch').on('click', function(event) {
-            event.preventDefault();
+        // don't follow the link
+        return false;
+    }
 
-            // @TODO: Omg this disables all the manual snatch icons, when one is clicked
-            if ($(this).hasClass('disabled')) {
-                return false;
-            }
+    $('.epSearch').on('click', function(event) {
+        event.preventDefault();
 
-            $('.epManualSearch').addClass('disabled');
-            $('.epManualSearch').fadeTo(1, 0.1);
+        // Check if we have disabled the click
+        if ($(this).prop('enableClick') === '0') {
+            return false;
+        }
 
-            var url = this.href;
-            if (event.shiftKey || event.ctrlKey || event.which === 2) {
-                window.open(url, '_blank');
-            } else {
-                window.location = url;
-            }
-        });
+        selectedEpisode = $(this);
 
-        $('#forcedSearchModalFailed .btn').on('click', function() {
-            failedDownload = ($(this).text().toLowerCase() === 'yes');
+        // @TODO: Replace this with an easier to read selector
+        if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {
             $('#forcedSearchModalQuality').modal('show');
-        });
-
-        $('#forcedSearchModalQuality .btn').on('click', function() {
-            qualityDownload = ($(this).text().toLowerCase() === 'yes');
+        } else {
             forcedSearch();
-        });
-    };
-})();
+        }
+    });
+
+    $('.epManualSearch').on('click', function(event) {
+        event.preventDefault();
+
+        // @TODO: Omg this disables all the manual snatch icons, when one is clicked
+        if ($(this).hasClass('disabled')) {
+            return false;
+        }
+
+        $('.epManualSearch').addClass('disabled');
+        $('.epManualSearch').fadeTo(1, 0.1);
+
+        var url = this.href;
+        if (event.shiftKey || event.ctrlKey || event.which === 2) {
+            window.open(url, '_blank');
+        } else {
+            window.location = url;
+        }
+    });
+
+    $('#forcedSearchModalFailed .btn').on('click', function() {
+        failedDownload = ($(this).text().toLowerCase() === 'yes');
+        $('#forcedSearchModalQuality').modal('show');
+    });
+
+    $('#forcedSearchModalQuality .btn').on('click', function() {
+        qualityDownload = ($(this).text().toLowerCase() === 'yes');
+        forcedSearch();
+    });
+};

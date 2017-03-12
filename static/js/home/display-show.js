@@ -1,26 +1,38 @@
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
-    if (MEDUSA.config.fanartBackground) {
-        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
-        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-        $.backstretch(path);
-        $('.backstretch').css('top','50px');
-        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
-    }
+    $('.imdbPlot').on('click', function() {
+        $(this).prev('span').toggle();
+        if ($(this).html() === '..show less') {
+            $(this).html('..show more');
+        } else {
+            $(this).html('..show less');
+        }
+        moveSummaryBackground();
+        movecheckboxControlsBackground();
+    });
 
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
-        var height = $("#summary").height() + 10;
-        var top = $("#summary").offset().top + 5;
-        $("#summaryBackground").height(height);
-        $("#summaryBackground").offset({ top: top, left: 0});
+        var height = $('#summary').height() + 10;
+        var top = $('#summary').offset().top + 5;
+        $('#summaryBackground').height(height);
+        $('#summaryBackground').offset({top: top, left: 0});
+    }
+
+    function movecheckboxControlsBackground() {
+        var height = $('#checkboxControls').height() + 10;
+        var top = $('#checkboxControls').offset().top - 3;
+        $('#checkboxControlsBackground').height(height);
+        $('#checkboxControlsBackground').offset({top: top, left: 0});
     }
 
     $(window).resize(function() {
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     $(function() {
         moveSummaryBackground();
+        movecheckboxControlsBackground();
     });
 
     $.ajaxEpSearch({
@@ -324,7 +336,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
         widgetOptions: {
             columnSelector_saveColumns: true, // eslint-disable-line camelcase
-            columnSelector_layout: '<br><label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
+            columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
             columnSelector_mediaquery: false, // eslint-disable-line camelcase
             columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
         }
@@ -345,11 +357,13 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Show Episodes');
+            $('#season-' + result[1] + '-cols').addClass('shadow');
         });
         $('.collapse.toggle').on('show.bs.collapse', function() {
             var reg = /collapseSeason-([0-9]+)/g;
             var result = reg.exec(this.id);
             $('#showseason-' + result[1]).text('Hide Episodes');
+            $('#season-' + result[1] + '-cols').removeClass('shadow');
         });
     });
 
@@ -400,18 +414,18 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     });
 
     // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
-    $('.display-specials a').on('click', function(){
+    $('.display-specials a').on('click', function() {
         api.patch('config', {
             layout: {
                 show: {
-                    specials: $(this).text() === 'Hide' ? false : true
+                    specials: $(this).text() !== 'Hide'
                 }
             }
         }).then(function(response) {
             log.info(response.data);
             window.location.reload();
-        }).catch(function(response){
-            log.error(response.data);
+        }).catch(function(err) {
+            log.error(err.data);
         });
     });
 };

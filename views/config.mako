@@ -8,7 +8,7 @@
             <td>
                 Branch: <a v-bind:href="sourceUrl + '/tree/' + branch" v-on:click="anonRedirect">{{branch}}</a><br>
                 Commit: <a v-bind:href="sourceUrl + '/commit/' + commitHash" v-on:click="anonRedirect">{{commitHash}}</a><br>
-                Version: <a v-bind:href="sourceUrl + 'releases/tag/' + release" v-on:click="anonRedirect">{{release}}</a><br>
+                Version: <a v-bind:href="sourceUrl + '/releases/tag/' + release" v-on:click="anonRedirect">{{release}}</a><br>
                 Database: {{databaseVersion.major}}.{{databaseVersion.minor}}
             </td>
         </tr>

@@ -15,12 +15,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+"""Backlog module."""
 
 import datetime
 import threading
 
 from six import iteritems
+
 from .queue import BacklogQueueItem
 
 from .. import app, common, db, logger, scheduler, ui
@@ -29,11 +30,15 @@ from ..helper.common import episode_num
 
 
 class BacklogSearchScheduler(scheduler.Scheduler):
-    def forceSearch(self):
+    """Backlog search scheduler class."""
+
+    def force_search(self):
+        """Set the last backlog in the DB."""
         self.action._set_last_backlog(1)
         self.lastRun = datetime.datetime.fromordinal(1)
 
     def next_run(self):
+        """Return when backlog should run next."""
         if self.action._last_backlog <= 1:
             return datetime.date.today()
         else:
@@ -41,34 +46,40 @@ class BacklogSearchScheduler(scheduler.Scheduler):
 
 
 class BacklogSearcher(object):
-    def __init__(self):
+    """Backlog Searcher class."""
 
+    def __init__(self):
+        """Initialize the class."""
         self._last_backlog = self._get_last_backlog()
-        self.cycleTime = app.BACKLOG_FREQUENCY / 60 / 24
+        self.cycleTime = app.BACKLOG_FREQUENCY / 60.0 / 24
         self.lock = threading.Lock()
         self.amActive = False
         self.amPaused = False
         self.amWaiting = False
+        self.forced = False
         self.currentSearchInfo = {}
 
-        self._resetPI()
+        self._reset_pi()
 
-    def _resetPI(self):
+    def _reset_pi(self):
+        """Reset percent done."""
         self.percentDone = 0
         self.currentSearchInfo = {'title': 'Initializing'}
 
     def get_progress_indicator(self):
+        """Get backlog search progress indicator."""
         if self.amActive:
             return ui.ProgressIndicator(self.percentDone, self.currentSearchInfo)
         else:
             return None
 
     def am_running(self):
+        """Check if backlog is running."""
         logger.log(u"amWaiting: " + str(self.amWaiting) + ", amActive: " + str(self.amActive), logger.DEBUG)
         return (not self.amWaiting) and self.amActive
 
     def search_backlog(self, which_shows=None):
-
+        """Run the backlog search for given shows."""
         if self.amActive:
             logger.log(u"Backlog is still running, not starting it again", logger.DEBUG)
             return
@@ -87,12 +98,14 @@ class BacklogSearcher(object):
 
         self._get_last_backlog()
 
-        curDate = datetime.date.today().toordinal()
+        cur_date = datetime.date.today().toordinal()
         from_date = datetime.date.fromordinal(1)
 
-        if not which_shows and not ((curDate - self._last_backlog) >= self.cycleTime):
-            logger.log(u"Running limited backlog on missed episodes " + str(app.BACKLOG_DAYS) + " day(s) and older only")
+        if not which_shows and self.forced:
+            logger.log(u'Running limited backlog search on missed episodes from last {0} days'.format(app.BACKLOG_DAYS))
             from_date = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
+        else:
+            logger.log(u'Running full backlog search on missed episodes for selected shows')
 
         # go through non air-by-date shows and see if they need any episodes
         for cur_show in show_list:
@@ -114,13 +127,13 @@ class BacklogSearcher(object):
         # don't consider this an actual backlog search if we only did recent eps
         # or if we only did certain shows
         if from_date == datetime.date.fromordinal(1) and not which_shows:
-            self._set_last_backlog(curDate)
+            self._set_last_backlog(cur_date)
 
         self.amActive = False
-        self._resetPI()
+        self._reset_pi()
 
     def _get_last_backlog(self):
-
+        """Get the last time backloged runned."""
         logger.log(u"Retrieving the last check time from the DB", logger.DEBUG)
 
         main_db_con = db.DBConnection()
@@ -138,13 +151,13 @@ class BacklogSearcher(object):
         self._last_backlog = last_backlog
         return self._last_backlog
 
-    def _get_segments(self, show, from_date):
+    @staticmethod
+    def _get_segments(show, from_date):
+        """Get episodes that should be backlog searched."""
         wanted = {}
         if show.paused:
             logger.log(u"Skipping backlog for %s because the show is paused" % show.name, logger.DEBUG)
             return wanted
-
-        allowed_qualities, preferred_qualities = common.Quality.split_quality(show.quality)
 
         logger.log(u"Seeing if we need anything from %s" % show.name, logger.DEBUG)
 
@@ -156,10 +169,13 @@ class BacklogSearcher(object):
 
         # check through the list of statuses to see if we want any
         for sql_result in sql_results:
-            if not common.Quality.should_search(sql_result['status'], show, sql_result['manually_searched']):
+            should_search, shold_search_reason = common.Quality.should_search(sql_result['status'], show,
+                                                                              sql_result['manually_searched'])
+            if not should_search:
                 continue
-            logger.log(u"Found needed backlog episodes for: {show} {ep}".format
-                       (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"])), logger.INFO)
+            logger.log(u"Found needed backlog episodes for: {show} {ep}. Reason: {reason}".format
+                       (show=show.name, ep=episode_num(sql_result["season"], sql_result["episode"]),
+                        reason=shold_search_reason), logger.DEBUG)
             ep_obj = show.get_episode(sql_result["season"], sql_result["episode"])
 
             if ep_obj.season not in wanted:
@@ -169,8 +185,9 @@ class BacklogSearcher(object):
 
         return wanted
 
-    def _set_last_backlog(self, when):
-
+    @staticmethod
+    def _set_last_backlog(when):
+        """Set the last backlog in the DB."""
         logger.log(u"Setting the last backlog in the DB to " + str(when), logger.DEBUG)
 
         main_db_con = db.DBConnection()
@@ -182,7 +199,10 @@ class BacklogSearcher(object):
             main_db_con.action("UPDATE info SET last_backlog={0}".format(when))
 
     def run(self, force=False):
+        """Run the backlog."""
         try:
+            if force:
+                self.forced = True
             self.search_backlog()
         except:
             self.amActive = False

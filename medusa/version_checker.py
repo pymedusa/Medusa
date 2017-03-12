@@ -32,6 +32,9 @@ from .github_client import get_github_repo
 from .helper.exceptions import ex
 from .session.core import MedusaSession
 
+ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
+                 'OR shutdown application and delete your .git folder and run from source to enable updates.')
+
 
 class CheckVersion(object):
     """Version check class meant to run as a thread object with the sr scheduler."""
@@ -273,6 +276,7 @@ class CheckVersion(object):
 
         if not self.updater or (not app.VERSION_NOTIFY and not app.AUTO_UPDATE and not force):
             logger.log(u'Version checking is disabled, not checking for the newest version')
+            app.NEWEST_VERSION_STRING = None
             return False
 
         # checking for updates
@@ -408,12 +412,6 @@ class GitUpdateManager(UpdateManager):
     def get_num_commits_ahead(self):
         return self._num_commits_ahead
 
-    @staticmethod
-    def _git_error():
-        error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
-                         'in your config.ini OR delete your .git folder and run from source to enable updates.')
-        app.NEWEST_VERSION_STRING = error_message
-
     def _find_working_git(self):
         test_cmd = 'version'
 
@@ -457,9 +455,9 @@ class GitUpdateManager(UpdateManager):
                     logger.log(u'Not using: {0}'.format(cur_git), logger.DEBUG)
 
         # Still haven't found a working git
-        error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
-                         'in your config.ini OR delete your .git folder and run from source to enable updates.')
-        app.NEWEST_VERSION_STRING = error_message
+        # Warn user only if he has version check enabled
+        if app.VERSION_NOTIFY:
+            app.NEWEST_VERSION_STRING = ERROR_MESSAGE
 
         return None
 
@@ -470,8 +468,13 @@ class GitUpdateManager(UpdateManager):
 
         if not git_path:
             logger.log(u"No git specified, can't use git commands", logger.WARNING)
+            app.NEWEST_VERSION_STRING = ERROR_MESSAGE
             exit_status = 1
             return output, err, exit_status
+
+        # If we have a valid git remove the git warning
+        # String will be updated as soon we check github
+        app.NEWEST_VERSION_STRING = None
 
         cmd = git_path + ' ' + args
 
@@ -737,11 +740,20 @@ class GitUpdateManager(UpdateManager):
 
     def update_remote_origin(self):
         self._run_git(self._git_path, 'config remote.%s.url %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-        if app.GIT_USERNAME:
-            if app.DEVELOPER:
-                self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
-            else:
-                self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+        if app.GIT_AUTH_TYPE == 0:
+            if app.GIT_USERNAME:
+                if app.DEVELOPER:
+                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
+                else:
+                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
+                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
+        else:
+            if app.GIT_TOKEN:
+                if app.DEVELOPER:
+                    self._run_git(self._git_path, 'config remote.%s.pushurl %s' % (app.GIT_REMOTE, app.GIT_REMOTE_URL))
+                else:
+                    self._run_git(self._git_path, 'config remote.%s.pushurl %s'
+                                  % (app.GIT_REMOTE, app.GIT_REMOTE_URL.replace(app.GIT_ORG, app.GIT_USERNAME, 1)))
 
 
 class SourceUpdateManager(UpdateManager):

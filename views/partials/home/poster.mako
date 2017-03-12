@@ -84,7 +84,7 @@
                     <img src="images/poster-back-dark.png"/>
                 </div>
                 <div class="poster-overlay">
-                    <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" asset="show/${cur_show.indexerid}?type=posterThumb"/></a>
+                    <a href="home/displayShow?show=${cur_show.indexerid}"><img alt="" class="show-image" src="images/poster.png" lazy="on" asset="show/${cur_show.indexerid}?type=posterThumb"/></a>
                 </div>
             </div>
             <div class="show-poster-footer row">
@@ -92,7 +92,7 @@
                     <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}"></div>
                     <div class="show-title">
                         <div class="ellipsis">${cur_show.name}</div>
-                        % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer):
+                        % if get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False):
                             <div class="xem">
                                 <img src="images/xem.png" width="16" height="16" />
                             </div>
@@ -123,14 +123,14 @@
             % endif
                     </div>
                     <div class="show-details">
-                        <table class="show-details" width="100%" cellspacing="1" border="0" cellpadding="0">
+                        <table class="show-details ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%" cellspacing="1" border="0" cellpadding="0">
                             <tr>
                                 <td class="show-table">
                                     <span class="show-dlstats" title="${download_stat_tip}">${download_stat}</span>
                                 </td>
                                 <td class="show-table">
                                 % if cur_show.network:
-                                    <span title="${cur_show.network}"><img class="show-network-image" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                                    <span title="${cur_show.network}"><img class="show-network-image" src="images/network/nonetwork.png" lazy="on" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                                 % else:
                                     <span title="No Network"><img class="show-network-image" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
                                 % endif

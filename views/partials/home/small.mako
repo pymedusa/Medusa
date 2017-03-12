@@ -16,7 +16,7 @@
     % if curListType == "Anime":
         <h1 class="header">Anime List</h1>
     % endif
-<table id="showListTable${curListType}" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable${curListType}" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th class="min-cell-width nowrap">Next Ep</th>
@@ -138,14 +138,14 @@
             <td class="tvShow">
                 <div class="imgsmallposter small">
                     <a href="home/displayShow?show=${cur_show.indexerid}" title="${cur_show.name}">
-                        <img asset="show/${cur_show.indexerid}?type=posterThumb" class="small" alt="${cur_show.indexerid}"/>
+                        <img src="images/poster.png" lazy="on" asset="show/${cur_show.indexerid}?type=posterThumb" class="small" alt="${cur_show.indexerid}"/>
                     </a>
                     <a href="home/displayShow?show=${cur_show.indexerid}" style="vertical-align: middle;">${cur_show.name}</a>
                 </div>
             </td>
             <td align="center">
             % if cur_show.network:
-                <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" lazy="on" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                 <span class="visible-print-inline">${cur_show.network}</span>
             % else:
                 <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>

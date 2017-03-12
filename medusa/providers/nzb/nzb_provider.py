@@ -16,10 +16,10 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Provider code for Generic NZB Provider."""
 
-from ..generic_provider import GenericProvider
-from ... import app
-from ...classes import NZBSearchResult
-from ...helper.common import try_int
+from medusa import app
+from medusa.classes import NZBSearchResult
+from medusa.helper.common import try_int
+from medusa.providers.generic_provider import GenericProvider
 
 
 class NZBProvider(GenericProvider):
@@ -37,7 +37,7 @@ class NZBProvider(GenericProvider):
 
     def _get_result(self, episodes):
         """Return provider result."""
-        return NZBSearchResult(episodes)
+        return NZBSearchResult(episodes, provider=self)
 
     def _get_size(self, item):
         """Get result size."""

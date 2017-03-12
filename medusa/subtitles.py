@@ -298,7 +298,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     """List subtitles for the given episode in the given path.
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param video_path:
     :type video_path: text_type
     :param limit:
@@ -341,7 +341,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """Save the subtitle with the given id.
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param subtitle_id:
     :type subtitle_id: text_type
     :param video_path:
@@ -369,7 +369,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     Checks whether subtitles are needed or not
 
     :param tv_episode: the episode to download subtitles
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param video_path: the video path. If none, the episode location will be used
     :type video_path: str
     :param subtitles: True if existing external subtitles should be taken into account
@@ -453,7 +453,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     """Save subtitles.
 
     :param tv_episode: the episode to download subtitles
-    :type tv_episode: sickbeard.tv.TVEpisode
+    :type tv_episode: sickbeard.tv.Episode
     :param video:
     :type video: subliminal.Video
     :param found_subtitles:
@@ -578,7 +578,7 @@ def get_current_subtitles(tv_episode):
     """Return a list of current subtitles for the episode.
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :return: the current subtitles (3-letter opensubtitles codes) for the specified video
     :rtype: list of str
     """
@@ -682,7 +682,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     scanning and parsing the video metadata all the time
 
     :param tv_episode:
-    :type tv_episode: medusa.tv.TVEpisode
+    :type tv_episode: medusa.tv.Episode
     :param video_path: the video path
     :type video_path: str
     :param subtitles_dir: the subtitles directory
@@ -805,7 +805,7 @@ class SubtitlesFinder(object):
     def subtitles_download_in_pp():  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         """Check for needed subtitles in the post process folder."""
         from . import process_tv
-        from .tv import TVEpisode
+        from .tv import Episode
 
         logger.info(u'Checking for needed subtitles in Post-Process folder')
 
@@ -830,7 +830,7 @@ class SubtitlesFinder(object):
                     continue
 
                 video_path = os.path.join(root, filename)
-                tv_episode = TVEpisode.from_filepath(video_path)
+                tv_episode = Episode.from_filepath(video_path)
 
                 if not tv_episode:
                     logger.debug(u'%s cannot be parsed to an episode', filename)

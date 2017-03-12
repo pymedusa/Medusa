@@ -1,29 +1,14 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
 
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Browser module."""
 from __future__ import unicode_literals
 
+import logging
 import os
 import string
 
-from . import logger
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 # adapted from http://stackoverflow.com/questions/827371/is-there-a-way-to-list-all-the-available-drive-letters-in-python/827490
@@ -112,7 +97,7 @@ def list_folders(path, include_parent=False, include_files=False):
     try:
         file_list = get_file_list(path, include_files)
     except OSError as e:
-        logger.log('Unable to open %s: %s / %s' % (path, repr(e), str(e)), logger.WARNING)
+        log.warning('Unable to open %s: %s / %s', path, repr(e), str(e))
         file_list = get_file_list(parent_path, include_files)
 
     file_list = sorted(file_list,

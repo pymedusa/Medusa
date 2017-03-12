@@ -19,11 +19,14 @@ from __future__ import unicode_literals
 
 import json
 
-from requests.compat import urlencode, urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.exceptions import AuthException
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....helper.exceptions import AuthException
+from requests.compat import urlencode, urljoin
 
 
 class HDBitsProvider(TorrentProvider):
@@ -192,7 +195,7 @@ class HDBitsProvider(TorrentProvider):
         return json.dumps(post_data)
 
 
-class HDBitsCache(tv_cache.TVCache):
+class HDBitsCache(tv.Cache):
     """Provider cache class."""
 
     def _get_rss_data(self):

@@ -5,6 +5,7 @@
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.indexer_config import mappings
     from medusa import sbdatetime
+    from random import choice
     import datetime
     import time
     import re
@@ -13,14 +14,11 @@
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 </%block>
-<%block name="css">
-<style type="text/css">
-#sub-menu {display:none;}
-#contentWrapper {padding-top:30px;}
-</style>
-</%block>
+
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
+
+<input type="hidden" id="showID" value="${choice(results)['showid'] if results else ''}" />
 <div class="row">
     <div class="col-md-12">
         <h1 class="header">${header}</h1>
@@ -79,10 +77,11 @@
     </div>
 </div>
 
+<div class="horizontal-scroll">
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
-<table id="showListTable" class="defaultTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
+<table id="showListTable" class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter seasonstyle" cellspacing="1" border="0" cellpadding="0">
     <thead>
         <tr>
             <th>Airdate (${('local', 'network')[app.TIMEZONE_DISPLAY == 'network']})</th>
@@ -118,23 +117,23 @@
                 show_div = 'listing-default'
 %>
         <tr class="${show_div}">
-            <td align="center" nowrap="nowrap">
+            <td align="center" nowrap="nowrap" class="triggerhighlight">
                 <% airDate = sbdatetime.sbdatetime.convert_to_setting(cur_result['localtime']) %>
                 <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
             </td>
-            <td align="center" nowrap="nowrap">
+            <td align="center" nowrap="nowrap" class="triggerhighlight">
                 <% ends = sbdatetime.sbdatetime.convert_to_setting(cur_ep_enddate) %>
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
-            <td class="tvShow" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
+            <td class="tvShow triggerhighlight" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
 % if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
             </td>
-            <td nowrap="nowrap" align="center">
+            <td nowrap="nowrap" align="center" class="triggerhighlight">
                 ${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))}
             </td>
-            <td>
+            <td class="triggerhighlight">
 % if cur_result['description']:
                 <img alt="" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${str(mappings.get(cur_indexer).replace('_id', '')) + str(cur_result['showid'])}_${str(cur_result["season"])}_${str(cur_result["episode"])}" />
 % else:
@@ -142,16 +141,16 @@
 % endif
                 ${cur_result['name']}
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
                 ${cur_result['network']}
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
             ${run_time}min
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
                 ${renderQualityPill(cur_result['quality'], showTitle=True)}
             </td>
-            <td align="center" style="vertical-align: middle;">
+            <td align="center" style="vertical-align: middle;" class="triggerhighlight">
             % if cur_result['imdb_id']:
                 <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
@@ -162,7 +161,7 @@
                     <img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
             <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
             <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
             </td>
@@ -170,7 +169,7 @@
 % endfor
     </tbody>
     <tfoot>
-        <tr>
+        <tr class="shadow border-bottom">
             <th rowspan="1" colspan="10" align="center">&nbsp</th>
         </tr>
     </tfoot>
@@ -205,7 +204,7 @@
         <% show_network = ('no network', cur_result['network'])[bool(cur_result['network'])] %>
         % if cur_segment != show_network:
             <div>
-                <h2 class="network">${show_network}</h2>
+                <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} network">${show_network}</h2>
             <% cur_segment = cur_result['network'] %>
         % endif
         % if cur_ep_enddate < today:
@@ -222,24 +221,24 @@
     % elif app.COMING_EPS_SORT == 'date':
         % if cur_segment != cur_ep_airdate:
             % if cur_ep_enddate < today and cur_ep_airdate != today.date() and not missed_header:
-                <h2 class="day">Missed</h2>
+                <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">Missed</h2>
                 <% missed_header = True %>
             % elif cur_ep_airdate >= next_week.date() and not too_late_header:
-                <h2 class="day">Later</h2>
+                <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">Later</h2>
                 <% too_late_header = True %>
             % elif cur_ep_enddate >= today and cur_ep_airdate < next_week.date():
                 % if cur_ep_airdate == today.date():
-                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}<span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
                     <% today_header = True %>
                 % else:
-                    <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
+                    <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()}</h2>
                 % endif
             % endif
             <% cur_segment = cur_ep_airdate %>
         % endif
         % if cur_ep_airdate == today.date() and not today_header:
             <div>
-            <h2 class="day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
+            <h2 class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} day">${datetime.date.fromordinal(cur_ep_airdate.toordinal()).strftime('%A').decode(app.SYS_ENCODING).capitalize()} <span style="font-size: 14px; vertical-align: top;">[Today]</span></h2>
             <% today_header = True %>
         % endif
         % if cur_ep_enddate < today:
@@ -266,7 +265,7 @@
             % endif
         % endif
     % endif
-<div class="${show_div}" id="listing-${cur_result['showid']}">
+<div class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} ${show_div}" id="listing-${cur_result['showid']}">
     <div class="tvshowDiv">
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
         <tr>
@@ -334,7 +333,7 @@
 <div class="calendarWrapper">
     % for day in dates:
     <% tbl_day += 1 %>
-        <table class="defaultTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
+        <table class="${'fanartOpacity' if app.FANART_BACKGROUND else ''} defaultTable tablesorter calendarTable ${'cal-%s' % (('even', 'odd')[bool(tbl_day % 2)])}" cellspacing="0" border="0" cellpadding="0">
         <thead><tr><th>${day.strftime('%A').decode(app.SYS_ENCODING).capitalize()}</th></tr></thead>
         <tbody>
         <% day_has_show = False %>
@@ -381,6 +380,7 @@
 <!-- end calender view //-->
 </div>
 % endif
+</div>
 <div class="clearfix"></div>
 </div>
 </div>

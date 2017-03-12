@@ -22,11 +22,14 @@ import traceback
 
 from dateutil import parser
 
-from requests.compat import urljoin
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.helper.common import convert_size
+from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....helper.common import convert_size
+from requests.compat import urljoin
 
 
 class HD4FreeProvider(TorrentProvider):
@@ -56,7 +59,7 @@ class HD4FreeProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll HD4Free every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """

@@ -7,7 +7,6 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/quality-chooser.js?${sbPID}"></script>
 <script type="text/javascript" src="js/add-show-options.js?${sbPID}"></script>
-<script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
 <script type="text/javascript" src="js/blackwhite.js?${sbPID}"></script>
 </%block>
 <%block name="content">
@@ -25,7 +24,7 @@
             <br>
             <form id="addShowForm" method="post" action="addShows/addNewShow" accept-charset="utf-8">
                 <fieldset class="sectionwrap">
-                    <legend class="legendStep">Find a show on theTVDB</legend>
+                    <legend class="legendStep">Find a show on selected indexer(s)</legend>
                     <div class="stepDiv">
                         <input type="hidden" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" />
                         % if use_provided_info:

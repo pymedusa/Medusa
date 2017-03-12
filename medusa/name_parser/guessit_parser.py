@@ -16,13 +16,9 @@ EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 # release group exception list
 expected_groups = [
     # release groups with numbers
-    # https://github.com/guessit-io/guessit/issues/294
     'TV2LAX9',
 
-    # https://github.com/guessit-io/guessit/issues/352
-    'S4L',
-
-    # https://github.com/guessit-io/guessit/issues/356
+    # episode titles in the wrong place
     'DHD',
 ]
 
@@ -30,6 +26,7 @@ allowed_languages = {
     'de',
     'en',
     'es',
+    'ca',
     'fr',
     'he',
     'hu',
@@ -42,6 +39,8 @@ allowed_languages = {
     'ru',
     'sv',
     'uk',
+    'mul',  # multi language
+    'und',  # undetermined
 }
 
 allowed_countries = {
@@ -82,13 +81,13 @@ def get_expected_titles(show_list):
     (since they can confuse guessit).
 
     :param show_list:
-    :type show_list: list of medusa.tv.TVShow
+    :type show_list: list of medusa.tv.Series
     :return:
     :rtype: list of str
     """
     expected_titles = []
     for show in show_list:
-        names = [show.name] + show.exceptions
+        names = {show.name}.union(show.exceptions)
         for name in names:
             if name.isdigit():
                 # do not add numbers to expected titles.

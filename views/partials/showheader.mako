@@ -15,60 +15,60 @@
 <div class="row">
     <div id="showtitle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" data-showname="${show.name}">
         <div>
-        % if action == 'snatchSelection':
-            <h1 class="title" id="scene_exception_${show.indexerid}">
-                <a href="home/displayShow?show=${show.indexerid}" class="snatchTitle">
-                    ${show.name}
-                </a>
-            </h1>
-        % else:
-            <h1 class="title" id="scene_exception_${show.indexerid}">${show.name}</h1>
-        % endif
-
+            <h1 class="title" id="scene_exception_${show.indexerid}"><a href="home/displayShow?show=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
         </div>
-    % if season_results:
-        ##There is a special/season_0?##
-        % if int(season_results[-1]["season"]) == 0:
-            <% season_special = 1 %>
-        % else:
-            <% season_special = 0 %>
-        % endif
-        % if not app.DISPLAY_SHOW_SPECIALS and season_special:
-            <% lastSeason = season_results.pop(-1) %>
-        % endif
+
+    % if action == 'snatchSelection':
         <div id="show-specials-and-seasons" class="pull-right">
             <span class="h2footer display-specials">
-                % if season_special:
-                Display Specials:
-                    <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
-                % endif
+                <%include file="/partials/seasonEpisode.mako"/>
             </span>
-
-            <div class="h2footer display-seasons clear">
-                <span>
-                % if (len(season_results) > 14):
-                    <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
-                        <option value="jump">Jump to Season</option>
-                    % for seasonNum in season_results:
-                        <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
-                    % endfor
-                    </select>
-                % else:
-                    Season:
-                    % for seasonNum in season_results:
-                        % if int(seasonNum["season"]) == 0:
-                            <a href="#season-${seasonNum["season"]}">Specials</a>
-                        % else:
-                            <a href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</a>
-                        % endif
-                        % if seasonNum != season_results[-1]:
-                            <span class="separator">|</span>
-                        % endif
-                    % endfor
-                % endif
-                </span>
-            </div>
         </div>
+    % else:
+        % if season_results:
+            ##There is a special/season_0?##
+            % if int(season_results[-1]["season"]) == 0:
+                <% season_special = 1 %>
+            % else:
+                <% season_special = 0 %>
+            % endif
+            % if not app.DISPLAY_SHOW_SPECIALS and season_special:
+                <% lastSeason = season_results.pop(-1) %>
+            % endif
+            <div id="show-specials-and-seasons" class="pull-right">
+                <span class="h2footer display-specials">
+                    % if season_special:
+                    Display Specials:
+                        <a class="inner" style="cursor: pointer;">${'Hide' if app.DISPLAY_SHOW_SPECIALS else 'Show'}</a>
+                    % endif
+                </span>
+
+                <div class="h2footer display-seasons clear">
+                    <span>
+                    % if (len(season_results) > 14):
+                        <select id="seasonJump" class="form-control input-sm" style="position: relative; top: -4px;">
+                            <option value="jump">Jump to Season</option>
+                        % for seasonNum in season_results:
+                            <option value="#season-${seasonNum["season"]}" data-season="${seasonNum["season"]}">${'Season ' + str(seasonNum["season"]) if int(seasonNum["season"]) > 0 else 'Specials'}</option>
+                        % endfor
+                        </select>
+                    % else:
+                        Season:
+                        % for seasonNum in season_results:
+                            % if int(seasonNum["season"]) == 0:
+                                <a href="#season-${seasonNum["season"]}">Specials</a>
+                            % else:
+                                <a href="#season-${seasonNum["season"]}">${str(seasonNum["season"])}</a>
+                            % endif
+                            % if seasonNum != season_results[-1]:
+                                <span class="separator">|</span>
+                            % endif
+                        % endfor
+                    % endif
+                    </span>
+                </div>
+            </div>
+            % endif
         % endif
     </div> <!-- end show title -->
 </div> <!-- end row -->
@@ -82,7 +82,9 @@
 % endif
 </div>
 
-<div id="summaryBackground"></div>
+
+<div id="summaryBackground" class="shadow"></div>
+<div id="checkboxControlsBackground" class="shadow"></div>
 
 <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
     <div id="container-display-show" class="col-md-12">
@@ -90,7 +92,7 @@
             <div class="row">
                 <div class="image-flex-container col-md-12">
                     <a asset="show/${show.indexerid}?type=poster">
-                        <img alt="" class="show-image" asset="show/${show.indexerid}?type=posterThumb" />
+                        <img alt="" class="show-image shadow" asset="show/${show.indexerid}?type=posterThumb" />
                     </a>
                 </div>
             </div>
@@ -101,7 +103,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right" asset="show/${show.indexerid}?type=banner">
+                    <img id="showBanner" class="pull-right shadow" asset="show/${show.indexerid}?type=banner">
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -156,6 +158,18 @@
                 <div id="summary" class="col-md-12">
                     <div id="show-summary" class="${'summaryFanArt' if app.FANART_BACKGROUND else ''} col-lg-9 col-md-8 col-sm-8 col-xs-12">
                         <table class="summaryTable pull-left">
+                            % if show.plot:
+                                <tr><td colspan=2 style="padding-bottom:15px"><i>
+                                % if len(show.plot) < 250:
+                                    <div>${show.plot}</div>
+                                % else:
+                                    <div>${show.plot[0:250]}<span style="display:none;">${show.plot[250:len(show.plot)]}</span>
+                                    <span class="imdbPlot" style="color:#6ae;cursor:pointer">show more..</span>
+                                    </div>
+                                % endif
+                                    </td></tr>
+                            % endif
+
                             <% allowed_qualities, preferred_qualities = Quality.split_quality(int(show.quality)) %>
                                 <tr><td class="showLegend">Quality: </td><td>
                             % if show.quality in qualityPresets:
@@ -186,16 +200,16 @@
                                 <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
                             % endif
                             % if show.show_words().required_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word">${show.show_words().required_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'required'}">${show.show_words().required_words}</span></td></tr>
                             % endif
                             % if show.show_words().ignored_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word">${show.show_words().ignored_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'ignored'}">${show.show_words().ignored_words}</span></td></tr>
                             % endif
                             % if show.show_words().preferred_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word">${show.show_words().preferred_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'preferred'}">${show.show_words().preferred_words}</span></td></tr>
                             % endif
                             % if show.show_words().undesired_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word">${show.show_words().undesired_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'undesired'}">${show.show_words().undesired_words}</span></td></tr>
                             % endif
                             % if bwl and bwl.whitelist:
                                 <tr>
@@ -234,27 +248,46 @@
             </div> <!-- end of row -->
         </div> <!-- show-info-container -->
     </div> <!-- end of col -->
-
-
-<!-- Checkbox filter controls -->
-<div class="row">
-    <div class="col-md-12 pull-right clearfix" id="checkboxControls">
-        <div class="key pull-right">
-            <div class="row">
-                <div class="col-md-12">
-                    <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
-                    <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${ep_counts[Overview.WANTED]}</b></span></label>
-                    <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${ep_counts[Overview.QUAL]}</b></span></label>
-                    <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
-                    <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
-                    <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
-                </div>
-            </div>
-
-            <div class="pull-right" >
-                <button class="btn btn-xs seriesCheck">Select Filtered Episodes</button>
-                <button class="btn btn-xs clearAll">Clear All</button>
-            </div>
-        </div>
-    </div>
-</div> <!-- row -->
+    <div id="container-display-show" class="col-md-12">
+    % if (action == "displayShow"):
+        <div class="row"> <!-- Checkbox filter controls -->
+            <div class="col-lg-12" id="checkboxControls">
+                <div class="key">
+                    <div class="row">
+                        <div id="key-padding" class="pull-left top-5">
+                            <% total_snatched = ep_counts[Overview.SNATCHED] + ep_counts[Overview.SNATCHED_PROPER] + ep_counts[Overview.SNATCHED_BEST] %>
+                            <label for="wanted"><span class="wanted"><input type="checkbox" id="wanted" checked="checked" /> Wanted: <b>${ep_counts[Overview.WANTED]}</b></span></label>
+                            <label for="qual"><span class="qual"><input type="checkbox" id="qual" checked="checked" /> Allowed: <b>${ep_counts[Overview.QUAL]}</b></span></label>
+                            <label for="good"><span class="good"><input type="checkbox" id="good" checked="checked" /> Preferred: <b>${ep_counts[Overview.GOOD]}</b></span></label>
+                            <label for="skipped"><span class="skipped"><input type="checkbox" id="skipped" checked="checked" /> Skipped: <b>${ep_counts[Overview.SKIPPED]}</b></span></label>
+                            <label for="snatched"><span class="snatched"><input type="checkbox" id="snatched" checked="checked" /> Snatched: <b>${total_snatched}</b></span></label>
+                            <button class="btn seriesCheck">Select Episodes</button>
+                            <button class="btn clearAll">Clear</button>
+                        </div>
+                        <div class="pull-lg-right top-5">
+                            <select id="statusSelect" class="form-control form-control-inline input-sm-custom input-sm-smallfont">
+                            <option selected value="">Change selected to:</option>
+                            <option value=""">--------------------------------------------</option>
+                            <% availableStatus = [WANTED, SKIPPED, IGNORED, FAILED] %>
+                            % if not app.USE_FAILED_DOWNLOADS:
+                            <% availableStatus.remove(FAILED) %>
+                            % endif
+                            % for cur_status in availableStatus + Quality.DOWNLOADED + Quality.ARCHIVED:
+                                % if cur_status not in [DOWNLOADED, ARCHIVED]:
+                                <option value="${cur_status}">${statusStrings[cur_status]}</option>
+                                % endif
+                            % endfor
+                            </select>
+                            <input type="hidden" id="showID" value="${show.indexerid}" />
+                            <input type="hidden" id="indexer" value="${show.indexer}" />
+                            <input class="btn" type="button" id="changeStatus" value="Go" />
+                        </div>
+                    </div> <!-- end of row -->
+                </div> <!-- end of key -->
+            </div> <!-- checkboxControls -->
+        </div> <!-- end of row -->
+    % else:
+        &nbsp;
+    % endif
+    </div> <!-- end of col -->
+<div>&nbsp;</div>

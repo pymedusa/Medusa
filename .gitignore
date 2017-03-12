@@ -67,8 +67,8 @@ lib/unrar2/UnRAR.exe
 
 # Grunt #
 ######################
-.build/bower_components
-.build/node_modules
+**/bower_components
+**/node_modules
 .build/dist
 .build/package.json
 

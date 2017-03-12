@@ -5,40 +5,30 @@
     from medusa import sbdatetime
     from medusa import network_timezones
     from medusa.helper.common import pretty_file_size
+    from random import choice
     import re
 %>
 <%block name="metas">
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
+<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">
         <div class="pull-right">
-            % if app.HOME_LAYOUT != 'poster':
-                <span class="show-option">
-                    <button id="popover" type="button" class="btn btn-inline">
-                        Select Columns <b class="caret"></b>
-                    </button>
-                </span> <span class="show-option">
-                    <button type="button" class="resetsorting btn btn-inline">Clear
-                        Filter(s)</button>
-                </span>
-            % endif
             % if app.HOME_LAYOUT == 'poster':
                 <div class="show-option pull-right">
                     <input id="filterShowName" class="form-control form-control-inline input-sm input200" type="search" placeholder="Filter Show Name">
                 </div>
                 <div class="show-option pull-right"> Direction:
-                    <select id="postersortdirection"
-                        class="form-control form-control-inline input-sm">
+                    <select id="postersortdirection" class="form-control form-control-inline input-sm">
                             <option value="true" data-sort="setPosterSortDir/?direction=1" ${'selected="selected" ' if app.POSTER_SORTDIR==1 else ''}>Ascending</option>
                             <option value="false" data-sort="setPosterSortDir/?direction=0"
                                 ${'selected="selected" ' if app.POSTER_SORTDIR==0 else ''}>Descending</option>
                     </select>
                 </div>
                 <div class="show-option pull-right"> Sort By:
-                  <select id="postersort"
-                    class="form-control form-control-inline input-sm">
+                  <select id="postersort" class="form-control form-control-inline input-sm">
                         <option value="name" data-sort="setPosterSortBy/?sort=name" ${'selected="selected" ' if app.POSTER_SORTBY=='name' else ''}>Name</option>
                         <option value="date" data-sort="setPosterSortBy/?sort=date"    ${'selected="selected" ' if app.POSTER_SORTBY=='date' else ''}>Next Episode</option>
                         <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected" ' if app.POSTER_SORTBY=='network' else ''}>Network</option>
@@ -61,10 +51,31 @@
         % else:
         <h1 class="title pull-left" style="margin: 0;">${title}</h1>
         % endif
+    </div>
+</div>
 
-        <div class="show-option pull-right">
-            Layout: <select name="layout"
+<br>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="pull-left" id="showRoot" style="display: none;">
+            <select name="showRootDir" id="showRootDir"
                 class="form-control form-control-inline input-sm">
+            </select>
+        </div>
+        <div class="show-option pull-right">
+            % if app.HOME_LAYOUT != 'poster':
+                <span class="show-option">
+                    <button id="popover" type="button" class="btn btn-inline">
+                        Select Columns <b class="caret"></b>
+                    </button>
+                </span> <span class="show-option">
+                    <button type="button" class="resetsorting btn btn-inline">Clear
+                        Filter(s)</button>
+                </span>&nbsp;
+            % endif
+            Layout: <select name="layout"
+                class="form-control form-control-inline input-sm show-layout">
                 <option value="poster" ${'selected="selected"' if app.HOME_LAYOUT=='poster' else ''}>Poster</option>
                 <option value="small" ${'selected="selected"' if app.HOME_LAYOUT=='small' else ''}>Small Poster</option>
                 <option value="banner" ${'selected="selected"' if app.HOME_LAYOUT=='banner' else ''}>Banner</option>

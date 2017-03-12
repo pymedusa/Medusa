@@ -89,8 +89,8 @@ class HomeAddShows(Home):
                     indexer_results = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except IndexerException as msg:
-                    logger.log(u'Error searching for show: {error}'.format(error=msg))
+                except IndexerException as e:
+                    logger.log(u'Error searching for show: {error}'.format(error=e.message))
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),

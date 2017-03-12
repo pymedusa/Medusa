@@ -20,13 +20,19 @@ from __future__ import unicode_literals
 
 import traceback
 
+from medusa import (
+    logger,
+    tv,
+)
+from medusa.bs4_parser import BS4Parser
+from medusa.helper.common import (
+    convert_size,
+    try_int,
+)
+from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-
-from ..torrent_provider import TorrentProvider
-from .... import logger, tv_cache
-from ....bs4_parser import BS4Parser
-from ....helper.common import convert_size, try_int
 
 
 class BithdtvProvider(TorrentProvider):
@@ -60,7 +66,7 @@ class BithdtvProvider(TorrentProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = tv_cache.TVCache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll BitHDTV every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -110,9 +116,6 @@ class BithdtvProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html.parser') as html:  # Use html.parser, since html5parser has issues with this site.
@@ -141,8 +144,8 @@ class BithdtvProvider(TorrentProvider):
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[8].get_text(strip=True))
-                    leechers = try_int(cells[9].get_text(strip=True))
+                    seeders = try_int(cells[8].get_text(strip=True)) if len(cells) > 8 else 1
+                    leechers = try_int(cells[9].get_text(strip=True)) if len(cells) > 9 else 0
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -152,8 +155,8 @@ class BithdtvProvider(TorrentProvider):
                                        (title, seeders), logger.DEBUG)
                         continue
 
-                    torrent_size = cells[6].get_text(' ')
-                    size = convert_size(torrent_size, units=units) or -1
+                    torrent_size = cells[6].get_text(' ') if len(cells) > 6 else None
+                    size = convert_size(torrent_size) or -1
 
                     item = {
                         'title': title,

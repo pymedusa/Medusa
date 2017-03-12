@@ -11,7 +11,7 @@ from tornroutes import route
 
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import app, db, helpers, logger, post_processor, subtitles, ui
+from .... import app, db, helpers, logger, network_timezones, post_processor, sbdatetime, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -23,8 +23,9 @@ from ....helper.exceptions import (
     CantUpdateShowException,
 )
 from ....helpers import is_media_file
+from ....network_timezones import app_timezone
 from ....show.show import Show
-from ....tv import TVEpisode
+from ....tv import Episode
 
 
 @route('/manage(/?.*)')
@@ -284,7 +285,7 @@ class Manage(Home, WebRoot):
                 video_date = datetime.datetime.fromtimestamp(os.stat(video_path).st_ctime)
                 video_age = datetime.datetime.today() - video_date
 
-                tv_episode = TVEpisode.from_filepath(video_path)
+                tv_episode = Episode.from_filepath(video_path)
 
                 if not tv_episode:
                     logger.log(u"Filename '{0}' cannot be parsed to an episode".format(filename), logger.DEBUG)
@@ -341,40 +342,75 @@ class Manage(Home, WebRoot):
         show_cats = {}
         show_sql_results = {}
 
+        backlog_periods = {
+            'all': None,
+            'one_day': datetime.timedelta(days=1),
+            'three_days': datetime.timedelta(days=3),
+            'one_week': datetime.timedelta(days=7),
+            'one_month': datetime.timedelta(days=30),
+        }
+        backlog_period = backlog_periods.get(app.BACKLOG_PERIOD)
+
+        backlog_status = {
+            'all': [Overview.QUAL, Overview.WANTED],
+            'quality': [Overview.QUAL],
+            'wanted': [Overview.WANTED]
+        }
+        selected_backlog_status = backlog_status.get(app.BACKLOG_STATUS)
+
         main_db_con = db.DBConnection()
         for cur_show in app.showList:
+
+            if cur_show.paused:
+                continue
 
             ep_counts = {
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
-                Overview.GOOD: 0,
             }
             ep_cats = {}
 
             sql_results = main_db_con.select(
                 """
-                SELECT status, season, episode, name, airdate, manually_searched
-                FROM tv_episodes
-                WHERE tv_episodes.season IS NOT NULL AND
-                      tv_episodes.showid IN (SELECT tv_shows.indexer_id
-                                             FROM tv_shows
-                                             WHERE tv_shows.indexer_id = ? AND
-                                                   paused = 0)
-                ORDER BY tv_episodes.season DESC, tv_episodes.episode DESC
+                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched
+                FROM tv_episodes as e
+                WHERE e.season IS NOT NULL AND
+                      e.showid = ?
+                ORDER BY e.season DESC, e.episode DESC
                 """,
                 [cur_show.indexerid]
             )
-
-            for cur_result in sql_results:
+            filtered_episodes = []
+            backlogged_episodes = [dict(row) for row in sql_results]
+            for cur_result in backlogged_episodes:
                 cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
-                    ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
-                    ep_counts[cur_ep_cat] += 1
+                    if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:
+                        air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
+                        if air_date.year >= 1970 or cur_show.network:
+                            air_date = sbdatetime.sbdatetime.convert_to_setting(
+                                network_timezones.parse_date_time(cur_result[b'airdate'],
+                                                                  cur_show.airs,
+                                                                  cur_show.network))
+                            if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
+                                continue
+                        else:
+                            air_date = None
+                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result[b'season'],
+                                                                        cur_result[b'episode']) or
+                                                            episode_num(cur_result[b'season'],
+                                                                        cur_result[b'episode'],
+                                                                        numbering='absolute')))
+                        ep_cats[episode_string] = cur_ep_cat
+                        ep_counts[cur_ep_cat] += 1
+                        cur_result[b'airdate'] = air_date
+                        cur_result[b'episode_string'] = episode_string
+                        filtered_episodes.append(cur_result)
 
             show_counts[cur_show.indexerid] = ep_counts
             show_cats[cur_show.indexerid] = ep_cats
-            show_sql_results[cur_show.indexerid] = sql_results
+            show_sql_results[cur_show.indexerid] = filtered_episodes
 
         return t.render(
             showCounts=show_counts, showCats=show_cats,
@@ -674,30 +710,18 @@ class Manage(Home, WebRoot):
             ui.notifications.error('Errors encountered',
                                    '<br />\n'.join(errors))
 
-        def message_detail(title, items):
-            """
-            Create an unordered list of items with a title.
-            :return: The message if items else ''
-            """
-            return '' if not items else """
-                <br />
-                <b>{title}</b>
-                <br />
-                <ul>
-                  {list}
-                </ul>
-                """.format(title=title,
-                           list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
-                                           for cur_item in items]))
-
         message = ''
-        message += message_detail('Updates', updates)
-        message += message_detail('Refreshes', refreshes)
-        message += message_detail('Renames', renames)
-        message += message_detail('Subtitles', subtitles)
+        if updates:
+            message += '\nUpdates: {0}'.format(len(updates))
+        if refreshes:
+            message += '\nRefreshes: {0}'.format(len(refreshes))
+        if renames:
+            message += '\nRenames: {0}'.format(len(renames))
+        if subtitles:
+            message += '\nSubtitles: {0}'.format(len(subtitles))
 
         if message:
-            ui.notifications.message('The following actions were queued:', message)
+            ui.notifications.message('Queued actions:', message)
 
         return self.redirect('/manage/')
 
