@@ -44,10 +44,10 @@ class DelugeAPI(GenericClient):
         :type password: string
         """
         super(DelugeAPI, self).__init__('Deluge', host, username, password)
+        self.session.headers.update({'Content-Type': 'application/json'})
         self.url = '{host}json'.format(host=self.host)
 
     def _get_auth(self):
-
         post_data = json.dumps({
             'method': 'auth.login',
             'params': [
