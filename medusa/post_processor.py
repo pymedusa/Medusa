@@ -33,7 +33,7 @@ from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
 
-from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
+from . import app, common, db, failed_history, helpers, history, logger, notifiers
 from .helper.common import episode_num, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
@@ -1159,12 +1159,8 @@ class PostProcessor(object):
 
                 sql_l.append(cur_ep.get_sql())
 
-        # Just want to keep this consistent for failed handling right now
-        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if nzb_release_name is not None:
-            failed_history.log_success(nzb_release_name)
-        else:
-            self._log(u"Couldn't determine NZB release name, aborting", logger.WARNING)
+        if ep_obj.release_name:
+            failed_history.log_success(ep_obj.release_name)
 
         # find the destination folder
         try:
