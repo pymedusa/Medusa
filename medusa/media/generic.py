@@ -75,7 +75,7 @@ class GenericMedia(object):
         :return: The root folder containing the media
         """
 
-        return join(app.PROG_DIR, 'static')
+        return join(app.PROG_DIR, 'ui/resources')
 
     def get_media_type(self):
         """
