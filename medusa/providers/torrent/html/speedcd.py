@@ -50,7 +50,7 @@ class SpeedCDProvider(TorrentProvider):
         # URLs
         self.url = 'https://speed.cd'
         self.urls = {
-            'login': urljoin(self.url, 'takeElogin.php'),
+            'login': urljoin(self.url, 'take_login.php'),
             'search': urljoin(self.url, 'browse.php'),
         }
 

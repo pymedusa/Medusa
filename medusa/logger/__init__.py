@@ -29,24 +29,27 @@ import re
 import sys
 
 from collections import OrderedDict
-from logging import NullHandler
+from logging import (
+    CRITICAL,
+    DEBUG,
+    ERROR,
+    INFO,
+    NullHandler,
+    WARNING,
+)
 from logging.handlers import RotatingFileHandler
 import knowit
+
+from medusa import app
+from medusa.init.logconfig import standard_logger
+
 from requests.compat import quote
 from six import itervalues, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
 
-from . import app
-from .init.logconfig import standard_logger
-
 # log levels
-CRITICAL = logging.CRITICAL
-ERROR = logging.ERROR
-WARNING = logging.WARNING
-INFO = logging.INFO
-DEBUG = logging.DEBUG
 DB = 5
 
 LOGGING_LEVELS = {
@@ -514,7 +517,7 @@ class CensoredFormatter(logging.Formatter, object):
         :return:
         :rtype: str
         """
-        from . import classes, common
+        from medusa import classes, common
         privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
         if not privacy_level:
             msg = super(CensoredFormatter, self).format(record)
@@ -569,7 +572,7 @@ class Logger(object):
         :type console_logging: bool
         """
         import medusa
-        from .helper.common import dateTimeFormat
+        from medusa.helper.common import dateTimeFormat
         self.loggers.extend(get_loggers(medusa))
         self.loggers.extend(get_loggers(subliminal))
         self.loggers.extend([access_log, app_log, gen_log])
@@ -603,7 +606,7 @@ class Logger(object):
 
     def reconfigure_file_handler(self):
         """Reconfigure rotating file handler."""
-        from .helper.common import dateTimeFormat
+        from medusa.helper.common import dateTimeFormat
         target_file = os.path.join(app.LOG_DIR, app.LOG_FILENAME)
         target_size = int(app.LOG_SIZE * 1024 * 1024)
         target_number = int(app.LOG_NR)

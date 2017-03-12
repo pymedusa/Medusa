@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Post processor module."""
+
 import fnmatch
 import os
 import re
@@ -25,6 +26,11 @@ import subprocess
 from collections import OrderedDict
 
 import adba
+
+from medusa.clients import torrent
+
+import rarfile
+from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
 
@@ -88,6 +94,8 @@ class PostProcessor(object):
         self.anidbEpisode = None
 
         self.manually_searched = False
+
+        self.info_hash = None
 
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
@@ -158,8 +166,77 @@ class PostProcessor(object):
                       (existing_file), logger.DEBUG)
             return PostProcessor.DOESNT_EXIST
 
+    def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False, subfolders=False):
+        """
+        For a given file path search for files in the same directory and return their absolute paths.
+
+        :param filepath: The file to check for associated files
+        :param base_name_only: list only files with the same basename
+        :param subtitles_only: list only subtitles
+        :param subfolders: check subfolders while listing files
+        :return: A list containing all files which are associated to the given file
+        """
+        files = self._search_files(filepath, subfolders=subfolders, base_name_only=base_name_only)
+
+        # file path to the video file that is being processed (without extension)
+        processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
+
+        processed_names = (processed_file_name,)
+        processed_names += filter(None, (self._rar_basename(filepath, files),))
+
+        # loop through all the files in the folder, and check if they are the same name
+        # even when the cases don't match
+        filelist = []
+        for found_file in files:
+
+            file_name = os.path.basename(found_file).lower()
+
+            if file_name.startswith(processed_names):
+                filelist.append(found_file)
+
+        file_path_list = []
+        extensions_to_delete = []
+        for associated_file_path in filelist:
+            # Exclude the video file we are post-processing
+            if associated_file_path == filepath:
+                continue
+
+            # Exclude .rar files from associated list
+            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
+                continue
+
+            # Exlude non-subtitle files with the 'only subtitles' option
+            if subtitles_only and not is_subtitle(associated_file_path):
+                continue
+
+            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
+            if app.MOVE_ASSOCIATED_FILES:
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                found_extension = helpers.get_extension(associated_file_path)
+                if found_extension and found_extension not in allowed_extensions:
+                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
+                              (found_extension.upper()), logger.DEBUG)
+                    if os.path.isfile(associated_file_path):
+                        extensions_to_delete.append(associated_file_path)
+
+            if os.path.isfile(associated_file_path):
+                file_path_list.append(associated_file_path)
+
+        if file_path_list:
+            self._log(u'Found the following associated files for {0}: {1}'.format
+                      (filepath, file_path_list), logger.DEBUG)
+            if extensions_to_delete:
+                # Rebuild the 'file_path_list' list only with the extensions the user allows
+                file_path_list = [associated_file for associated_file in file_path_list
+                                  if associated_file not in extensions_to_delete]
+                self._delete(extensions_to_delete)
+        else:
+            self._log(u'No associated files for {0} were found during this pass'.format(filepath), logger.DEBUG)
+
+        return file_path_list
+
     @staticmethod
-    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=False):
+    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=None):
         """
         Search for files in a given path.
 
@@ -180,7 +257,7 @@ class PostProcessor(object):
 
         if base_name_only:
             if os.path.isfile(path):
-                new_pattern = os.path.basename(path).rpartition('.')[0]
+                new_pattern = os.path.splitext(os.path.basename(path))[0]
             elif os.path.isdir(path):
                 new_pattern = os.path.split(directory)[1]
             else:
@@ -196,96 +273,35 @@ class PostProcessor(object):
 
             pattern = new_pattern + pattern
 
-        found_files = []
+        files = []
         for root, __, filenames in os.walk(directory):
             for filename in fnmatch.filter(filenames, pattern):
-                found_files.append(os.path.join(root, filename))
+                files.append(os.path.join(root, filename))
             if not subfolders:
                 break
 
         if sort:
-            found_files = sorted(found_files, key=os.path.getsize, reverse=True)
+            files = sorted(files, key=os.path.getsize, reverse=True)
 
-        return found_files
+        return files
 
-    def list_associated_files(self, file_path, base_name_only=False, subtitles_only=False, subfolders=False):
-        """
-        For a given file path search for files in the same directory and return their absolute paths.
+    @staticmethod
+    def _rar_basename(filepath, files):
+        """Return the basename of the source rar archive if found."""
+        videofile = os.path.basename(filepath)
+        rars = (x for x in files if os.path.isfile(x) and rarfile.is_rarfile(x))
 
-        :param file_path: The file to check for associated files
-        :param base_name_only: False add extra '.' (conservative search) to file_path minus extension
-        :param subtitles_only: list only subtitles
-        :param subfolders: check subfolders while listing files
-        :return: A list containing all files which are associated to the given file
-        """
-        # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.basename(file_path).rpartition('.')[0].lower()
-
-        file_list = self._search_files(file_path, subfolders=subfolders, base_name_only=base_name_only)
-
-        # loop through all the files in the folder, and check if they are the same name
-        # even when the cases don't match
-        filelist = []
-        rar_file = [os.path.basename(f).rpartition('.')[0].lower() for f in file_list
-                    if helpers.get_extension(f).lower() == 'rar']
-        for found_file in file_list:
-
-            file_name = os.path.basename(found_file).lower()
-
-            if file_name.startswith(processed_file_name):
-
-                # only add subtitles with valid languages to the list
-                if is_subtitle(found_file):
-                    code = file_name.rsplit('.', 2)[1].replace('_', '-')
-                    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
-                    if not language:
-                        continue
-
-                filelist.append(found_file)
-            # List associated files based on .RAR files like Show.101.720p-GROUP.nfo and Show.101.720p-GROUP.rar
-            elif any([file_name.startswith(r) for r in rar_file]):
-                filelist.append(found_file)
-
-        file_path_list = []
-        extensions_to_delete = []
-        for associated_file_path in filelist:
-            # Exclude the video file we are post-processing
-            if associated_file_path == file_path:
+        for rar in rars:
+            try:
+                content = rarfile.RarFile(rar).namelist()
+            except NeedFirstVolume:
                 continue
-
-            # Exlude non-subtitle files with the 'only subtitles' option
-            if subtitles_only and not is_subtitle(associated_file_path):
+            except RarError as e:
+                logger.log(u'An error occurred while reading the following RAR file: {name}. '
+                           u'Error: {message}'.format(name=rar, message=e), logger.WARNING)
                 continue
-
-            # Exclude .rar files from associated list
-            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
-                continue
-
-            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
-            if app.MOVE_ASSOCIATED_FILES:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                found_extension = helpers.get_extension(associated_file_path)
-                if found_extension and found_extension not in allowed_extensions:
-                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
-                              (found_extension.upper()), logger.DEBUG)
-                    if os.path.isfile(associated_file_path):
-                        extensions_to_delete.append(associated_file_path)
-
-            if os.path.isfile(associated_file_path):
-                file_path_list.append(associated_file_path)
-
-        if file_path_list:
-            self._log(u'Found the following associated files for {0}: {1}'.format
-                      (file_path, file_path_list), logger.DEBUG)
-            if extensions_to_delete:
-                # Rebuild the 'file_path_list' list only with the extensions the user allows
-                file_path_list = [associated_file for associated_file in file_path_list
-                                  if associated_file not in extensions_to_delete]
-                self._delete(extensions_to_delete)
-        else:
-            self._log(u'No associated files for {0} were found during this pass'.format(file_path), logger.DEBUG)
-
-        return file_path_list
+            if videofile in content:
+                return os.path.splitext(os.path.basename(rar))[0]
 
     def _delete(self, file_path, associated_files=False):
         """
@@ -332,6 +348,58 @@ class PostProcessor(object):
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
+    @staticmethod
+    def rename_associated_file(new_path, new_base_name, filepath):
+        """Rename associated file using media basename.
+
+        :param new_path: full show folder path where the file will be moved|copied|linked to
+        :param new_base_name: the media base filename (no extension) to use during the rename
+        :param filepath: full path of the associated file
+        :return: renamed full file path
+        """
+        # remember if the extension changed
+        changed_extension = None
+        # file extension without leading dot
+        extension = helpers.get_extension(filepath)
+        # initally set current extension as new extension
+        new_extension = extension
+
+        if is_subtitle(filepath):
+            code = filepath.rsplit('.', 2)[1].lower().replace('_', '-')
+            if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
+                # TODO remove this hardcoded language
+                if code == 'pt-br':
+                    code = 'pt-BR'
+                new_extension = code + '.' + extension
+                changed_extension = True
+        # replace nfo with nfo-orig to avoid conflicts
+        elif extension == 'nfo' and app.NFO_RENAME:
+            new_extension = 'nfo-orig'
+            changed_extension = True
+
+        # rename file with new base name
+        if new_base_name:
+            new_file_name = new_base_name + '.' + new_extension
+        else:
+            # current file name including extension
+            new_file_name = os.path.basename(filepath)
+            # if we're not renaming we still need to change the extension sometimes
+            if changed_extension:
+                new_file_name = new_file_name.replace(extension, new_extension)
+
+        if app.SUBTITLES_DIR and is_subtitle(filepath):
+            subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
+            dir_exists = helpers.make_dir(subs_new_path)
+            if not dir_exists:
+                logger.log(u'Unable to create subtitles folder {0}'.format(subs_new_path), logger.ERROR)
+            else:
+                helpers.chmod_as_parent(subs_new_path)
+            new_file_path = os.path.join(subs_new_path, new_file_name)
+        else:
+            new_file_path = os.path.join(new_path, new_file_name)
+
+        return new_file_path
+
     def _combined_file_operation(self, file_path, new_path, new_base_name, associated_files=False,
                                  action=None, subtitles=False, subtitle_action=None):
         """
@@ -339,11 +407,11 @@ class PostProcessor(object):
 
         Can rename the file as well as change its location, and optionally move associated files too.
 
-        :param file_path: The full path of the media file to act on
-        :param new_path: Destination path where we want to move/copy the file to
-        :param new_base_name: The base filename (no extension) to use during the copy. Use None to keep the same name.
+        :param file_path: The full path of the file to act on
+        :param new_path: full show folder path where the file will be moved|copied|linked to
+        :param new_base_name: The base filename (no extension) to use during the action. Use None to keep the same name
         :param associated_files: Boolean, whether we should copy similarly-named files too
-        :param action: function that takes an old path and new path and does an operation with them (move/copy)
+        :param action: function that takes an old path and new path and does an operation with them (move/copy/link)
         :param subtitles: Boolean, whether we should process subtitles too
         """
         if not action:
@@ -361,71 +429,24 @@ class PostProcessor(object):
                       (file_path), logger.DEBUG)
             return
 
-        # base name with file path (without extension and ending dot)
-        old_base_name = file_path.rpartition('.')[0]
-        old_base_name_length = len(old_base_name)
+        for cur_associated_file in file_list:
+            new_file_path = self.rename_associated_file(new_path, new_base_name, cur_associated_file)
 
-        for cur_file_path in file_list:
-            # remember if the extension changed
-            changed_extension = None
-            # file extension without leading dot (for example: de.srt)
-            extension = cur_file_path[old_base_name_length + 1:]
-            # If basename is different, then is a RAR associated file.
-            if not extension:
-                helpers.get_extension(cur_file_path)
-            # initally set current extension as new extension
-            new_extension = extension
+            # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
+            # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
+            if app.POSTPONE_IF_NO_SUBS and is_subtitle(cur_associated_file):
+                # subtitle_action = move
+                action = subtitle_action or action
 
-            # split the extension in two parts. E.g.: ('de', '.srt')
-            split_extension = os.path.splitext(extension)
-            # check if it's a subtitle and also has a subtitle language
-            if is_subtitle(cur_file_path) and all(split_extension):
-                sub_lang = split_extension[0].lower()
-                if sub_lang == 'pt-br':
-                    sub_lang = 'pt-BR'
-                new_extension = sub_lang + split_extension[1]
-                changed_extension = True
-                #  If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
-                #  Otherwise when torrent+data gets removed the folder won't be deleted because of subtitle
-                if app.POSTPONE_IF_NO_SUBS:
-                    #  subtitle_action = move
-                    action = subtitle_action or action
-
-            # replace nfo with nfo-orig to avoid conflicts
-            if extension == 'nfo' and app.NFO_RENAME:
-                new_extension = 'nfo-orig'
-                changed_extension = True
-
-            # rename file with new base name
-            if new_base_name:
-                new_file_name = new_base_name + '.' + new_extension
-            else:
-                # current file name including extension
-                new_file_name = os.path.basename(cur_file_path)
-                # if we're not renaming we still need to change the extension sometimes
-                if changed_extension:
-                    new_file_name = new_file_name.replace(extension, new_extension)
-
-            if app.SUBTITLES_DIR and is_subtitle(cur_file_path):
-                subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
-                dir_exists = helpers.make_dir(subs_new_path)
-                if not dir_exists:
-                    logger.log(u'Unable to create subtitles folder {0}'.format(subs_new_path), logger.ERROR)
-                else:
-                    helpers.chmod_as_parent(subs_new_path)
-                new_file_path = os.path.join(subs_new_path, new_file_name)
-            else:
-                new_file_path = os.path.join(new_path, new_file_name)
-
-            action(cur_file_path, new_file_path)
+            action(cur_associated_file, new_file_path)
 
     def post_process_action(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
         """
         Run the given action on file and set proper permissions.
 
-        :param file_path: The full path of the media file
-        :param new_path: Destination path where we want the file to
-        :param new_base_name: The base filename (no extension) to use. Use None to keep the same name.
+        :param file_path: The full path of the file to act on
+        :param new_path: full show folder path where the file will be moved|copied|linked to
+        :param new_base_name: The base filename (no extension) to use. Use None to keep the same name
         :param associated_files: Boolean, whether we should run the action in similarly-named files too
         """
         def move(cur_file_path, new_file_path):
@@ -436,7 +457,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to move file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -446,7 +467,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
         def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -456,7 +477,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to hard link the files to their new home')
 
         def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
@@ -467,7 +488,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
@@ -771,7 +792,7 @@ class PostProcessor(object):
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality, manually_searched '
+                    'SELECT quality, manually_searched, info_hash '
                     'FROM history '
                     'WHERE showid = ? '
                     'AND season = ? '
@@ -789,6 +810,8 @@ class PostProcessor(object):
                     # Check if the last snatch was a manual snatch
                     if history_result[0]['manually_searched']:
                         self.manually_searched = True
+                    # Get info hash so we can move torrent if setting is enabled
+                    self.info_hash = history_result[0]['info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -976,7 +999,7 @@ class PostProcessor(object):
 
         # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
-        old_ep_status, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
+        _, old_ep_quality = common.Quality.split_composite_status(ep_obj.status)
 
         # get the quality of the episode we're processing
         if quality and common.Quality.qualityStrings[quality] != 'Unknown':
@@ -1128,11 +1151,11 @@ class PostProcessor(object):
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if release_name is not None:
-            failed_history.log_success(release_name)
+        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        if nzb_release_name is not None:
+            failed_history.log_success(nzb_release_name)
         else:
-            self._log(u"Couldn't determine release name, aborting", logger.WARNING)
+            self._log(u"Couldn't determine NZB release name, aborting", logger.WARNING)
 
         # find the destination folder
         try:
@@ -1146,7 +1169,8 @@ class PostProcessor(object):
         self._log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
         # create any folders we need
-        helpers.make_dirs(dest_path)
+        if not helpers.make_dirs(dest_path):
+            raise EpisodePostProcessingFailedException('Unable to create destination folder to the files')
 
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
@@ -1245,5 +1269,22 @@ class PostProcessor(object):
                        u'Continuing with post-processing...'.format(e))
 
         self._run_extra_scripts(ep_obj)
+
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+            logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
+            try:
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
+                if self.info_hash and client.move_torrent(self.info_hash):
+                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
+                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
+                               logger.WARNING)
+                else:
+                    logger.log("Could not move from '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
+                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+            except Exception as e:
+                logger.log("Failed to move from '{release}' torrent with hash: {hash} to: '{path}'."
+                           "Error: {error}".format(release=self.release_name, hash=self.info_hash,
+                                                   path=app.TORRENT_SEED_LOCATION, error=e), logger.DEBUG)
 
         return True

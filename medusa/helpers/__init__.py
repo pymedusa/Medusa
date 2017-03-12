@@ -58,18 +58,18 @@ import guessit
 
 from imdbpie import imdbpie
 
+from medusa import app, db
+from medusa.common import USER_AGENT
+from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
+from medusa.helper.exceptions import ex
+from medusa.indexers.indexer_exceptions import IndexerException
+from medusa.show.show import Show
+
 import requests
 from requests.compat import urlparse
 
 from six import binary_type, string_types, text_type
 from six.moves import http_client
-
-from . import app, db
-from .common import USER_AGENT
-from .helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
-from .helper.exceptions import ex
-from .indexers.indexer_exceptions import IndexerException
-from .show.show import Show
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +189,7 @@ def make_dir(path):
             os.makedirs(path)
 
             # do the library update for synoindex
-            from . import notifiers
+            from medusa import notifiers
             notifiers.synoindex_notifier.addFolder(path)
         except OSError:
             return False
@@ -208,7 +208,7 @@ def search_indexer_for_show_id(show_name, indexer=None, indexer_id=None, ui=None
     :param ui: Custom UI for indexer use
     :return:
     """
-    from .indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_api import indexerApi
     show_names = [re.sub('[. -]', ' ', show_name)]
 
     # Query Indexers for each search term and build the list of results
@@ -440,7 +440,7 @@ def make_dirs(path):
                     chmod_as_parent(os.path.normpath(sofar))
 
                     # do the library update for synoindex
-                    from . import notifiers
+                    from medusa import notifiers
                     notifiers.synoindex_notifier.addFolder(sofar)
                 except (OSError, IOError) as e:
                     logger.error(u'Failed creating {path} : {error!r}', path=sofar, error=e)
@@ -461,7 +461,7 @@ def rename_ep_file(cur_path, new_path, old_path_length=0):
     :param old_path_length: The length of media file path (old name) WITHOUT THE EXTENSION
     :type old_path_length: int
     """
-    from . import subtitles
+    from medusa import subtitles
     if old_path_length == 0 or old_path_length > len(cur_path):
         # approach from the right
         cur_file_name, cur_file_ext = os.path.splitext(cur_path)
@@ -526,7 +526,7 @@ def delete_empty_folders(top_dir, keep_dir=None):
                 os.rmdir(dirpath)
 
                 # Do the library update for synoindex
-                from . import notifiers
+                from medusa import notifiers
                 notifiers.synoindex_notifier.deleteFolder(dirpath)
             except OSError as e:
                 logger.warning(u'Unable to delete {folder}. Error: {error!r}'.format(folder=dirpath, error=e))
@@ -662,7 +662,7 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
-    from . import db
+    from medusa import db
     absolute_number = None
 
     if season and episode:
@@ -937,7 +937,7 @@ def full_sanitize_scene_name(name):
 
 
 def get_show(name, try_indexers=False):
-    from . import classes, name_cache, scene_exceptions
+    from medusa import classes, name_cache, scene_exceptions
     if not app.showList:
         return
 
@@ -1010,8 +1010,8 @@ def real_path(path):
 
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
-    from .indexers.indexer_api import indexerApi
-    from .indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+    from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
     indexer_lang = show.lang
 
     try:
@@ -1526,7 +1526,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
 
 def get_showname_from_indexer(indexer, indexer_id, lang='en'):
-    from .indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_api import indexerApi
     indexer_api_params = indexerApi(indexer).api_params.copy()
     if lang:
         indexer_api_params['language'] = lang

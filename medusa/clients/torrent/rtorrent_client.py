@@ -29,9 +29,10 @@ from __future__ import unicode_literals
 
 import logging
 
+from medusa import app
+from medusa.clients.torrent.generic import GenericClient
+
 from rtorrent import RTorrent
-from .generic import GenericClient
-from .. import app
 
 
 logger = logging.getLogger(__name__)

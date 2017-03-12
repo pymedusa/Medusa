@@ -1,60 +1,50 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
 import datetime
+import logging
 from base64 import standard_b64encode
+
+from medusa import app
+from medusa.common import Quality
+from medusa.helper.common import try_int
+from medusa.logger.adapters.style import BraceAdapter
 
 from six.moves.http_client import socket
 from six.moves.xmlrpc_client import ProtocolError, ServerProxy
-from . import app, logger
-from .common import Quality
-from .helper.common import try_int
+
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+log = BraceAdapter(log)
 
 
 def NZBConnection(url):
     """Method to connect to NZBget client
 
     :param url: nzb url to connect
-
     :return: True if connected, else False
     """
     nzbGetRPC = ServerProxy(url)
     try:
         if nzbGetRPC.writelog('INFO', 'Medusa connected to test connection.'):
-            logger.log('Successful connected to NZBget', logger.DEBUG)
+            log.debug('Successfully connected to NZBget')
         else:
-            logger.log('Successful connected to NZBget, but unable to send a message', logger.WARNING)
+            log.warning('Successfully connected to NZBget but unable to'
+                        ' send a message')
         return True
 
     except socket.error:
-        logger.log(
-            'Please check your NZBget host and port (if it is running). NZBget is not responding to this combination',
-            logger.WARNING)
+        log.warning('Please check your NZBget host and port (if it is'
+                    ' running). NZBget is not responding to this combination')
         return False
 
     except ProtocolError as e:
         if e.errmsg == 'Unauthorized':
-            logger.log('NZBget username or password is incorrect.', logger.WARNING)
+            log.warning('NZBget username or password is incorrect.')
         else:
-            logger.log('Protocol Error: ' + e.errmsg, logger.ERROR)
+            log.error('Protocol Error: {msg}', {'msg': e.errmsg})
         return False
 
 
@@ -76,15 +66,16 @@ def testNZB(host, username, password, use_https):
     return NZBConnection(url)
 
 
-def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches, too-many-return-statements
+def sendNZB(nzb, proper=False):
     """
     Sends NZB to NZBGet client
 
     :param nzb: nzb object
-    :param proper: True if this is a Proper download, False if not. Defaults to False
+    :param proper: True if a Proper download, False if not.
     """
     if app.NZBGET_HOST is None:
-        logger.log('No NZBget host found in configuration. Please configure it.', logger.WARNING)
+        log.warning('No NZBget host found in configuration.'
+                    ' Please configure it.')
         return False
 
     addToTop = False
@@ -132,17 +123,24 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
         data = nzb.extraInfo[0]
         nzbcontent64 = standard_b64encode(data)
 
-    logger.log('Sending NZB to NZBget')
-    logger.log('URL: ' + url, logger.DEBUG)
+    log.info('Sending NZB to NZBget')
+    log.debug('URL: {}', url)
 
     try:
         # Find out if nzbget supports priority (Version 9.0+),
         # old versions beginning with a 0.x will use the old command
         nzbget_version_str = nzbGetRPC.version()
-        nzbget_version = try_int(nzbget_version_str[:nzbget_version_str.find('.')])
+        nzbget_version = try_int(
+            nzbget_version_str[:nzbget_version_str.find('.')]
+        )
         if nzbget_version == 0:
             if nzbcontent64:
-                nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, addToTop, nzbcontent64)
+                nzbget_result = nzbGetRPC.append(
+                    nzb.name + '.nzb',
+                    category,
+                    addToTop,
+                    nzbcontent64
+                )
             else:
                 if nzb.resultType == 'nzb':
                     if not nzb.provider.login():
@@ -154,35 +152,53 @@ def sendNZB(nzb, proper=False):  # pylint: disable=too-many-locals, too-many-sta
 
                     nzbcontent64 = standard_b64encode(data)
 
-                nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, addToTop, nzbcontent64)
+                nzbget_result = nzbGetRPC.append(
+                    nzb.name + '.nzb',
+                    category,
+                    addToTop,
+                    nzbcontent64
+                )
         elif nzbget_version == 12:
             if nzbcontent64 is not None:
-                nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, nzbgetprio, False,
-                                                 nzbcontent64, False, dupekey, dupescore, 'score')
+                nzbget_result = nzbGetRPC.append(
+                    nzb.name + '.nzb', category, nzbgetprio, False,
+                    nzbcontent64, False, dupekey, dupescore, 'score'
+                )
             else:
-                nzbget_result = nzbGetRPC.appendurl(nzb.name + '.nzb', category, nzbgetprio, False,
-                                                    nzb.url, False, dupekey, dupescore, 'score')
-        # v13+ has a new combined append method that accepts both (url and content)
-        # also the return value has changed from boolean to integer
-        # (Positive number representing NZBID of the queue item. 0 and negative numbers represent error codes.)
+                nzbget_result = nzbGetRPC.appendurl(
+                    nzb.name + '.nzb', category, nzbgetprio, False, nzb.url,
+                    False, dupekey, dupescore, 'score'
+                )
+        # v13+ has a new combined append method that accepts both (url and
+        # content) also the return value has changed from boolean to integer
+        # (Positive number representing NZBID of the queue item. 0 and negative
+        # numbers represent error codes.)
         elif nzbget_version >= 13:
-            nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', nzbcontent64 if nzbcontent64 is not None else nzb.url,
-                                             category, nzbgetprio, False, False, dupekey, dupescore,
-                                             'score') > 0
+            nzbget_result = nzbGetRPC.append(
+                nzb.name + '.nzb',
+                nzbcontent64 if nzbcontent64 is not None else nzb.url,
+                category, nzbgetprio, False, False, dupekey, dupescore,
+                'score'
+            ) > 0
         else:
             if nzbcontent64 is not None:
-                nzbget_result = nzbGetRPC.append(nzb.name + '.nzb', category, nzbgetprio, False,
-                                                 nzbcontent64)
+                nzbget_result = nzbGetRPC.append(
+                    nzb.name + '.nzb', category, nzbgetprio, False,
+                    nzbcontent64
+                )
             else:
-                nzbget_result = nzbGetRPC.appendurl(nzb.name + '.nzb', category, nzbgetprio, False,
-                                                    nzb.url)
+                nzbget_result = nzbGetRPC.appendurl(
+                    nzb.name + '.nzb', category, nzbgetprio, False, nzb.url
+                )
 
         if nzbget_result:
-            logger.log('NZB sent to NZBget successfully', logger.DEBUG)
+            log.debug('NZB sent to NZBget successfully')
             return True
         else:
-            logger.log('NZBget could not add {} to the queue'.format(nzb.name + '.nzb'), logger.WARNING)
+            log.warning('NZBget could not add {name}.nzb to the queue',
+                        {'name': nzb.name})
             return False
     except Exception:
-        logger.log('Connect Error to NZBget: could not add {} to the queue'.format(nzb.name + '.nzb'), logger.WARNING)
+        log.warning('Connect Error to NZBget: could not add {file}.nzb to the'
+                    ' queue', {'name': nzb.name})
         return False

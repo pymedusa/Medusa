@@ -28,37 +28,38 @@ import traceback
 from collections import OrderedDict
 from datetime import date, datetime
 
-from requests.compat import unquote_plus
-from six import iteritems, text_type
-from tornado.web import RequestHandler
-from .... import (
+from medusa import (
     app, classes, db, helpers, image_cache, logger, network_timezones,
     process_tv, sbdatetime, subtitles, ui,
 )
-from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
+from medusa.common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
     UNAIRED, UNKNOWN, WANTED, \
     statusStrings
-from ....helper.common import (
+from medusa.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
 )
-from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
-from ....helper.quality import get_quality_string
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
-from ....logger import filter_logline, read_loglines
-from ....media.banner import ShowBanner
-from ....media.fan_art import ShowFanArt
-from ....media.network_logo import ShowNetworkLogo
-from ....media.poster import ShowPoster
-from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
-from ....show.coming_episodes import ComingEpisodes
-from ....show.history import History
-from ....show.show import Show
-from ....system.restart import Restart
-from ....system.shutdown import Shutdown
-from ....version_checker import CheckVersion
+from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from medusa.helpers.quality import get_quality_string
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.logger import filter_logline, read_loglines
+from medusa.media.banner import ShowBanner
+from medusa.media.fan_art import ShowFanArt
+from medusa.media.network_logo import ShowNetworkLogo
+from medusa.media.poster import ShowPoster
+from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.show.coming_episodes import ComingEpisodes
+from medusa.show.history import History
+from medusa.show.show import Show
+from medusa.system.restart import Restart
+from medusa.system.shutdown import Shutdown
+from medusa.version_checker import CheckVersion
+
+from requests.compat import unquote_plus
+from six import iteritems, text_type
+from tornado.web import RequestHandler
 
 indexer_ids = ["indexerid", "tvdbid", "tvmazeid", "tmdbid"]
 

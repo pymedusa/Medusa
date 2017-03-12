@@ -8,9 +8,9 @@ $(function() {
                     api.get('show/' + match[1] + '/s' + match[2] + 'e' + match[3] + '/description').then(function(response) {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
-                    }, function(xhr, status, error) {
+                    }, function(xhr) {
                         // Upon failure... set the tooltip content to the status and error value
-                        qt.set('content.text', status + ': ' + error);
+                        qt.set('content.text', 'Error while loading plot: ' + xhr.status + ': ' + xhr.statusText);
                     });
                     return 'Loading...';
                 }
