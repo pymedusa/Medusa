@@ -1653,7 +1653,8 @@ def get_broken_providers():
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
-    response = get_url(url, session=MedusaSession(), returns='json')
+    # TODO: Might want to replace this with a JsonSession(), as there the ValueError is handled.
+    response = MedusaSession().get(url).json()
     if response is None:
         logger.warning('Unable to update the list with broken providers. '
                        'This list is used to disable broken providers. '

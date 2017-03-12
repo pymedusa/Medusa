@@ -308,6 +308,7 @@ class Cache(object):
     def get_rss_feed(self, url, params=None):
         """Get rss feed entries."""
         if self.provider.login():
+            # TODO: Check the usage of get_url.
             return getFeed(url, params=params,
                            request_hook=self.provider.get_url)
         return {'entries': []}
