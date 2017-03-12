@@ -217,20 +217,14 @@ def snatch_episode(result):
             sql_l.append(curEpObj.get_sql())
 
         if curEpObj.status not in Quality.DOWNLOADED:
-            # TODO: Remove this broad catch when all notifiers handle exceptions
-            try:
-                notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
-                if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
-                        result.leechers not in (-1, None)]):
-                    notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
-                                            (notify_message, result.seeders,
-                                             result.leechers, result.provider.name), is_proper)
-                else:
-                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
-            except Exception as e:
-                # Without this, when notification fail, it crashes the snatch thread and Medusa will
-                # keep snatching until notification is sent
-                logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
+            notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
+            if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
+                    result.leechers not in (-1, None)]):
+                notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
+                                        (notify_message, result.seeders,
+                                         result.leechers, result.provider.name), is_proper)
+            else:
+                notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 trakt_data.append((curEpObj.season, curEpObj.episode))
