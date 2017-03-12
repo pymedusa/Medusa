@@ -24,6 +24,7 @@ import logging
 import os.path
 import re
 import shutil
+import socket
 import time
 from collections import (
     OrderedDict,
@@ -273,7 +274,7 @@ class Episode(TV):
 
             try:
                 notifiers.notify_subtitle_download(self.pretty_name(), subtitle_list)
-            except RequestException as e:
+            except (RequestException, socket.error) as e:
                 logger.debug(u'Unable to send subtitle download notification. Error: {error}', error=e.message)
         else:
             logger.info('{id}: No subtitles found for {show} {ep}',
