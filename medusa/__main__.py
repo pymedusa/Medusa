@@ -911,6 +911,8 @@ class Application(object):
             app.RELEASES_IN_PP = []
             app.GIT_REMOTE_BRANCHES = []
             app.KODI_LIBRARY_CLEAN_PENDING = False
+            app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
+            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
 
             # reconfigure the logger
             app_logger.reconfigure()
@@ -1466,6 +1468,8 @@ class Application(object):
         new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
+        new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
+        new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR

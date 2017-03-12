@@ -26,35 +26,50 @@
     "load-grunt-tasks": "^3.3.0",
     "snyk": "^1.9.1",
     "stylelint": "^7.2.0",
-    "xo": "^0.16.0"
+    "xo": "^0.17.1"
   },
   "xo": {
     "space": 4,
     "rules": {
-      "space-before-function-paren": ["error", "never"]
+      "space-before-function-paren": [
+        "error",
+        "never"
+      ]
     },
     "envs": [
       "browser",
       "jquery"
     ],
     "globals": [
+      "PNotify",
+      "LazyLoad",
+      "_",
+      "log",
       "MEDUSA",
-      "PNotify"
+      "api",
+      "apiKey",
+      "apiRoot"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
-      "static/js/vender.js"
+      "static/js/vender.js",
+      "static/js/api.js"
     ]
   },
   "stylelint": {
     "extends": "./.build/node_modules/stylelint-config-standard",
     "rules": {
-      "indentation": [ 4, {
-        "ignore": ["block"],
-        "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
-        "severity": "error"
-      } ]
+      "indentation": [
+        4,
+        {
+          "ignore": [
+            "block"
+          ],
+          "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
+          "severity": "error"
+        }
+      ]
     }
   }
 }

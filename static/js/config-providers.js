@@ -73,6 +73,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         newznabProviders[id] = newData;
 
         $('#editANewznabProvider').addOption(id, name);
+        $('select#editANewznabProvider').prop('selectedIndex', 0);
 
         if ($('#provider_order_list > #' + id).length === 0 && showProvider !== false) {
             var toAdd = '<li class="ui-state-default" id="' + id + '"> <input type="checkbox" id="enable_' + id + '" class="provider_enabler" CHECKED> <a href="' + MEDUSA.config.anonURL + url + '" class="imgLink" target="_new"><img src="images/providers/newznab.png" alt="' + name + '" width="16" height="16"></a> ' + name + '</li>'; // eslint-disable-line no-undef
@@ -84,8 +85,8 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeNewznabProviderString();
     };
 
-    $.fn.addTorrentRssProvider = function(id, name, url, cookies, title_tag) { // eslint-disable-line max-params
-        var newData = [name, url, cookies, title_tag];
+    $.fn.addTorrentRssProvider = function(id, name, url, cookies, titleTag) { // eslint-disable-line max-params
+        var newData = [name, url, cookies, titleTag];
         torrentRssProviders[id] = newData;
 
         $('#editATorrentRssProvider').addOption(id, name);
@@ -117,10 +118,10 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeNewznabProviderString();
     };
 
-    $.fn.updateTorrentRssProvider = function(id, url, cookies, title_tag) {
+    $.fn.updateTorrentRssProvider = function(id, url, cookies, titleTag) {
         torrentRssProviders[id][1] = url;
         torrentRssProviders[id][2] = cookies;
-        torrentRssProviders[id][3] = title_tag;
+        torrentRssProviders[id][3] = titleTag;
         $(this).populateTorrentRssSection();
         $(this).makeTorrentRssProviderString();
     };
@@ -381,9 +382,9 @@ $(document).ready(function() { // eslint-disable-line max-lines
 
         var url = $('#torrentrss_url').val();
         var cookies = $('#torrentrss_cookies').val();
-        var title_tag = $('#torrentrss_title_tag').val();
+        var titleTag = $('#torrentrss_title_tag').val();
 
-        $(this).updateTorrentRssProvider(selectedProvider, url, cookies, title_tag);
+        $(this).updateTorrentRssProvider(selectedProvider, url, cookies, titleTag);
     });
 
     $('body').on('change', '#editAProvider', function() {
@@ -475,14 +476,15 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var name = $('#torrentrss_name').val();
         var url = $('#torrentrss_url').val();
         var cookies = $('#torrentrss_cookies').val();
-        var title_tag = $('#torrentrss_title_tag').val();
+        var titleTag = $('#torrentrss_title_tag').val();
         var params = {
             name: name,
             url: url,
             cookies: cookies,
-            title_tag: title_tag
+            titleTag: titleTag
         };
 
+        // @TODO: Move to the API
         // send to the form with ajax, get a return value
         $.getJSON('config/providers/canAddTorrentRssProvider', params, function(data) {
             if (data.error !== undefined) {
@@ -490,7 +492,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
                 return;
             }
 
-            $(this).addTorrentRssProvider(data.success, name, url, cookies, title_tag);
+            $(this).addTorrentRssProvider(data.success, name, url, cookies, titleTag);
             $(this).refreshEditAProvider();
         });
     });

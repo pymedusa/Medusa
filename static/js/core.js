@@ -33,6 +33,20 @@ var UTIL = {
         }
 
         var body = document.body;
+        $('[asset]').each(function() {
+            let asset = $(this).attr('asset');
+            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            if (this.tagName.toLowerCase() === 'img') {
+                if ($(this).attr('lazy') === 'on') {
+                    $(this).attr('data-original', path);
+                } else {
+                    $(this).attr('src', path);
+                }
+            }
+            if (this.tagName.toLowerCase() === 'a') {
+                $(this).attr('href', path);
+            }
+        });
         var controller = body.getAttribute('data-controller');
         var action = body.getAttribute('data-action');
 
@@ -46,16 +60,15 @@ $.extend({
     isMeta: function(pyVar, result) { // eslint-disable-line no-unused-vars
         var reg = new RegExp(result.length > 1 ? result.join('|') : result);
 
-        if (typeof(pyVar) === 'object' && Object.keys(pyVar).length == 1) {
+        if (typeof (pyVar) === 'object' && Object.keys(pyVar).length === 1) {
             return (reg).test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]);
-        } else {
-            if (pyVar.match('medusa')) {
-                pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
-                    return m[1].toUpperCase();
-                });
-            }
-            return (reg).test(MEDUSA.config[pyVar]);
         }
+        if (pyVar.match('medusa')) {
+            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function(m) {
+                return m[1].toUpperCase();
+            });
+        }
+        return (reg).test(MEDUSA.config[pyVar]);
     }
 });
 
@@ -75,21 +88,11 @@ if (!document.location.pathname.endsWith('/login/')) {
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
 
-        $('[asset]').each(function(){
-            let asset = $(this).attr('asset');
-            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-            if (this.tagName.toLowerCase() === 'img') {
-                $(this).attr('src', path);
-            }
-            if (this.tagName.toLowerCase() === 'a') {
-                $(this).attr('href', path);
-            }
-        });
-
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);
         }
-    }).catch(function (error) {
+    }).catch(function(err) {
+        log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }

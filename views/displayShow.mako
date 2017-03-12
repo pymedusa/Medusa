@@ -94,9 +94,8 @@
             </thead>
             <tbody class="tablesorter-no-sort">
                 <tr>
-                    <th class="row-seasonheader ${'displayShowTable' if app.FANART_BACKGROUND else 'displayShowTableFanArt'}" colspan="13" style="vertical-align: bottom; width: auto;">
+                    <th class="row-seasonheader ${'displayShowTable' if app.FANART_BACKGROUND else 'displayShowTableFanArt'}" colspan="15" style="vertical-align: bottom; width: auto;">
                         <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if int(epResult["season"]) > 0 else "Specials"}
-                        <!-- @TODO: port the season scene exceptions to angular -->
                         % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                         <a class="epManualSearch" href="home/snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                         % endif
@@ -139,13 +138,12 @@
             </tbody>
             <tbody class="tablesorter-no-sort">
                 <tr>
-                    <th class="row-seasonheader ${'displayShowTableFanArt' if app.FANART_BACKGROUND else 'displayShowTable'}" colspan="13" style="vertical-align: bottom; width: auto;">
+                    <th class="row-seasonheader ${'displayShowTableFanArt' if app.FANART_BACKGROUND else 'displayShowTable'}" colspan="15" style="vertical-align: bottom; width: auto;">
                         <h3 style="display: inline;"><a name="season-${epResult["season"]}"></a>${"Season " + str(epResult["season"]) if int(epResult["season"]) else "Specials"}
                         % if not any([i for i in sql_results if epResult['season'] == i['season'] and int(i['status']) == 1]):
                         <a class="epManualSearch" href="home/snatchSelection?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=1&amp;manual_search_type=season"><img data-ep-manual-search src="images/manualsearch${'-white' if app.THEME_NAME == 'dark' else ''}.png" width="16" height="16" alt="search" title="Manual Search" /></a>
                         % endif
                         </h3>
-                        <!-- @TODO: port the season scene exceptions to angular -->
                         <div class="season-scene-exception" data-season=${str(epResult["season"])}></div>
                         <div class="pull-right"> <!-- hide/show episodes -->
                             % if not app.DISPLAY_ALL_SEASONS:
@@ -183,14 +181,14 @@
                 <% cur_season = int(epResult["season"]) %>
                 % endif
                 <tr class="${Overview.overviewStrings[ep_cats[epStr]]} season-${cur_season} seasonstyle" id="${'S' + str(epResult["season"]) + 'E' + str(epResult["episode"])}">
-                    <td class="col-checkbox">
+                    <td class="col-checkbox triggerhighlight">
                         % if int(epResult["status"]) != UNAIRED:
                             <input type="checkbox" class="epCheck" id="${str(epResult["season"])+'x'+str(epResult["episode"])}" name="${str(epResult["season"]) +"x"+str(epResult["episode"])}" />
                         % endif
                     </td>
-                    <td align="center"><img src="images/${("nfo-no.gif", "nfo.gif")[epResult["hasnfo"]]}" alt="${("N", "Y")[epResult["hasnfo"]]}" width="23" height="11" /></td>
-                    <td align="center"><img src="images/${("tbn-no.gif", "tbn.gif")[epResult["hastbn"]]}" alt="${("N", "Y")[epResult["hastbn"]]}" width="23" height="11" /></td>
-                    <td align="center">
+                    <td align="center" class="triggerhighlight"><img src="images/${("nfo-no.gif", "nfo.gif")[epResult["hasnfo"]]}" alt="${("N", "Y")[epResult["hasnfo"]]}" width="23" height="11" /></td>
+                    <td align="center" class="triggerhighlight"><img src="images/${("tbn-no.gif", "tbn.gif")[epResult["hastbn"]]}" alt="${("N", "Y")[epResult["hastbn"]]}" width="23" height="11" /></td>
+                    <td align="center" class="triggerhighlight">
                     <%
                         text = str(epResult['episode'])
                         if epLoc != '' and epLoc is not None:
@@ -202,8 +200,8 @@
                     %>
                         ${text}
                     </td>
-                    <td align="center">${epResult["absolute_number"]}</td>
-                    <td align="center">
+                    <td align="center" class="triggerhighlight">${epResult["absolute_number"]}</td>
+                    <td align="center" class="triggerhighlight">
                         <input type="text" placeholder="${str(dfltSeas) + 'x' + str(dfltEpis)}" size="6" maxlength="8"
                             class="sceneSeasonXEpisode form-control input-scene" data-for-season="${epResult["season"]}" data-for-episode="${epResult["episode"]}"
                             id="sceneSeasonXEpisode_${show.indexerid}_${str(epResult["season"])}_${str(epResult["episode"])}"
@@ -215,7 +213,7 @@
                             % endif
                                 style="padding: 0; text-align: center; max-width: 60px;"/>
                     </td>
-                    <td align="center">
+                    <td align="center" class="triggerhighlight">
                         <input type="text" placeholder="${str(dfltAbsolute)}" size="6" maxlength="8"
                             class="sceneAbsolute form-control input-scene" data-for-absolute="${epResult["absolute_number"]}"
                             id="sceneAbsolute_${show.indexerid}${"_"+str(epResult["absolute_number"])}"
@@ -227,7 +225,7 @@
                             % endif
                                 style="padding: 0; text-align: center; max-width: 60px;"/>
                     </td>
-                    <td class="col-name hidden-xs">
+                    <td class="col-name hidden-xs triggerhighlight">
                     % if epResult["description"] != "" and epResult["description"] is not None:
                         <img src="images/info32.png" width="16" height="16" class="plotInfo" alt="" id="plot_info_${show.indexer_slug}_${str(epResult["season"])}_${str(epResult["episode"])}" />
                     % else:
@@ -235,13 +233,13 @@
                     % endif
                     ${epResult["name"]}
                     </td>
-                    <td class="col-name hidden-xs">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
-                    <td class="col-ep">
+                    <td class="col-name hidden-xs triggerhighlight">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
+                    <td class="col-ep triggerhighlight">
                         % if epResult["file_size"] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             ${pretty_file_size(epResult["file_size"])}
                         % endif
                     </td>
-                    <td class="col-airdate">
+                    <td class="col-airdate triggerhighlight">
                         % if int(epResult['airdate']) != 1:
                             ## Lets do this exactly like ComingEpisodes and History
                             ## Avoid issues with dateutil's _isdst on Windows but still provide air dates
@@ -254,7 +252,7 @@
                             Never
                         % endif
                     </td>
-                    <td>
+                    <td class="triggerhighlight">
                         % if app.DOWNLOAD_URL and epResult['location'] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             <%
                                 filename = epResult['location']
@@ -266,7 +264,7 @@
                             <a href="${filename}">Download</a>
                         % endif
                     </td>
-                    <td class="col-subtitles" align="center">
+                    <td class="col-subtitles triggerhighlight" align="center">
                     % for flag in (epResult["subtitles"] or '').split(','):
                         % if flag.strip() and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             % if flag != 'und':
@@ -281,11 +279,11 @@
                     </td>
                         <% cur_status, cur_quality = Quality.split_composite_status(int(epResult["status"])) %>
                         % if cur_quality != Quality.NONE:
-                            <td class="col-status">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
+                            <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
                         % else:
-                            <td class="col-status">${statusStrings[cur_status]}</td>
+                            <td class="col-status triggerhighlight">${statusStrings[cur_status]}</td>
                         % endif
-                    <td class="col-search">
+                    <td class="col-search triggerhighlight">
                         % if int(epResult["season"]) != 0:
                             % if (int(epResult["status"]) in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST + Quality.DOWNLOADED ) and app.USE_FAILED_DOWNLOADS:
                                 <a class="epRetry" id="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" name="${str(show.indexerid)}x${str(epResult["season"])}x${str(epResult["episode"])}" href="home/retryEpisode?show=${show.indexerid}&amp;season=${epResult["season"]}&amp;episode=${epResult["episode"]}"><img data-ep-search src="images/search16.png" height="16" alt="retry" title="Retry Download" /></a>
@@ -306,7 +304,7 @@
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
             </tbody>
-            <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=13></th></tr></tbody>
+            <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=15></th></tr></tbody>
         </table>
     </div> <!-- end of col -->
 </div> <!-- row -->

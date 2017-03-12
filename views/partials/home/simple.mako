@@ -115,32 +115,32 @@
         % if cur_airs_next:
             <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_next, cur_show.airs, cur_show.network)) %>
             % try:
-                <td align="center" class="nowrap">
+                <td align="center" class="nowrap triggerhighlight">
                     <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
                 </td>
             % except ValueError:
-                <td align="center" class="nowrap"></td>
+                <td align="center" class="nowrap triggerhighlight"></td>
             % endtry
         % else:
-            <td align="center" class="nowrap"></td>
+            <td align="center" class="nowrap triggerhighlight"></td>
         % endif
         % if cur_airs_prev:
             <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(cur_airs_prev, cur_show.airs, cur_show.network)) %>
             % try:
-                <td align="center" class="nowrap">
+                <td align="center" class="nowrap triggerhighlight">
                     <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdate(airDate)}</time>
                 </td>
             % except ValueError:
-                <td align="center" class="nowrap"></td>
+                <td align="center" class="nowrap triggerhighlight"></td>
             % endtry
         % else:
-            <td align="center" class="nowrap"></td>
+            <td align="center" class="nowrap triggerhighlight"></td>
         % endif
-            <td class="tvShow"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
-            <td>
+            <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
+            <td class="triggerhighlight">
                 <span title="${cur_show.network}">${cur_show.network}</span>
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
                 % if cur_show.imdb_id:
                     <a href="${anon_url('http://www.imdb.com/title/', cur_show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdb_id}">
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
@@ -150,19 +150,19 @@
                     <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                 </a>
             </td>
-            <td align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
-            <td align="center">
+            <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
+            <td class="triggerhighlight" align="center">
                 ## This first span is used for sorting and is never displayed to user
                 <span style="display: none;">${download_stat}</span>
                 <div class="progressbar hidden-print" style="position:relative;" data-show-id="${cur_show.indexerid}" data-progress-percentage="${progressbar_percent}" data-progress-text="${download_stat}" data-progress-tip="${download_stat_tip}"></div>
                 <span class="visible-print-inline">${download_stat}</span>
             </td>
-            <td align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
-            <td align="center">
+            <td class="triggerhighlight" align="center" data-show-size="${show_size}">${pretty_file_size(show_size)}</td>
+            <td class="triggerhighlight" align="center">
                 <% paused = int(cur_show.paused) == 0 and cur_show.status == 'Continuing' %>
                 <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
             <%
                 display_status = cur_show.status
                 if None is not display_status:
@@ -173,7 +173,7 @@
             %>
             ${display_status}
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
                 <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
                 <img src="images/${('no16.png', 'yes16.png')[have_xem]}" alt="${('No', 'Yes')[have_xem]}" width="16" height="16" />
             </td>
