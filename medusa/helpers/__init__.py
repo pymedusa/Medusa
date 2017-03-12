@@ -62,6 +62,7 @@ from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_exceptions import IndexerException
+from medusa.session.core import MedusaSession
 from medusa.show.show import Show
 
 import requests
@@ -70,7 +71,6 @@ from requests.compat import urlparse
 from six import binary_type, string_types, text_type
 from six.moves import http_client
 
-from .session.core import MedusaSession
 logger = logging.getLogger(__name__)
 
 

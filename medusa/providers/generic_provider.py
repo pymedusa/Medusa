@@ -49,8 +49,6 @@ from medusa.helper.common import (
 from medusa.helper.exceptions import ex
 from medusa.helpers import (
     download_file,
-    get_url,
-    make_session,
 )
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.name_parser.parser import (
@@ -58,13 +56,14 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
+from medusa.session.custom import PolicedSession
+from medusa.session.hooks import cloudflare
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 from medusa.show_name_helpers import allPossibleShowNames
 
 from requests.utils import add_dict_to_cookiejar
 
-from ..session.custom import PolicedSession
 # Keep a list of per provider of recent provider search results
 recent_results = {}
 

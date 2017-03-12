@@ -22,12 +22,11 @@ import datetime
 
 from medusa import (
     app,
-    helpers,
     logger,
 )
 
+from medusa.session.core import MedusaSession
 from requests.compat import urljoin
-from .session.core import MedusaSession
 
 session = MedusaSession()
 
