@@ -24,7 +24,6 @@ import logging
 import os.path
 import re
 import shutil
-import socket
 import time
 from collections import (
     OrderedDict,
