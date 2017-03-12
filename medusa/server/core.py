@@ -8,8 +8,11 @@ import threading
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
+
 from tornroutes import route
+
 from .api.v1.core import ApiHandler
+
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
@@ -155,7 +158,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': self.video_root}),
-         ])
+        ])
 
         # Shared Static File Handlers
         self.app.add_handlers('.*$', [
