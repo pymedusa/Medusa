@@ -8,8 +8,11 @@ import threading
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
+
 from tornroutes import route
+
 from .api.v1.core import ApiHandler
+
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
@@ -147,35 +150,37 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
-        # Static File Handlers
         self.app.add_handlers('.*$', [
-            # favicon
-            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images/ico/favicon.ico')}),
-
-            # images
-            (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'images')}),
-
             # cached images
             (r'{base}/cache/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': os.path.join(app.CACHE_DIR, 'images')}),
 
+            # videos
+            (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': self.video_root}),
+        ])
+
+        # Shared Static File Handlers
+        self.app.add_handlers('.*$', [
+            # favicon
+            (r'{base}/(favicon\.ico)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['data_root'], 'resources/images/ico/favicon.ico')}),
+
+            # images
+            (r'{base}/images/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['data_root'], 'resources/images')}),
+
             # css
             (r'{base}/css/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'css')}),
+             {'path': os.path.join(self.options['data_root'], 'resources/css')}),
 
             # javascript
             (r'{base}/js/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'js')}),
+             {'path': os.path.join(self.options['data_root'], 'resources/js')}),
 
             # fonts
             (r'{base}/fonts/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': os.path.join(self.options['data_root'], 'fonts')}),
-
-            # videos
-            (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root})
+             {'path': os.path.join(self.options['data_root'], 'resources/fonts')}),
         ])
 
     def _get_webui_routes(self):
