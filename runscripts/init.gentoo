@@ -1,4 +1,4 @@
-#!/sbin/runscript
+#!/sbin/openrc-run
 # Copyright 1999-2013 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
@@ -74,4 +74,6 @@ stop() {
     local rc
 
     ebegin "Stopping Medusa"
+    start-stop-daemon --stop --pidfile $(get_pidfile) --retry 15
+    eend $?
 }
