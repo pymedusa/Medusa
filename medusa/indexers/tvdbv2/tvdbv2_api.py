@@ -58,13 +58,10 @@ def plex_fallback(func):
             return func(*args, **kwargs)
         except ApiException as e:
             logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
-            config['tvdb_connect_failures_count'] += 1
         except (IndexerUnavailable, MaxRetryError, RequestError) as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'.", e.message)
-            config['tvdb_connect_failures_count'] += 1
+            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
         except Exception as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'.", e.message)
-            config['tvdb_connect_failures_count'] += 1
+            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
 
         # If we got this far, it means we hit an exception, and we want to switch to the plex fallback.
         config['api_base_url'] = API_BASE_URL_FALLBACK
@@ -146,7 +143,7 @@ class TVDBv2(BaseIndexer):
                 logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
                 raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % e.reason)
             except (MaxRetryError, RequestError) as e:
-                logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
+                logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
                 raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
 
             self.search_api = SearchApi(auth_client)
