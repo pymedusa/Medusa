@@ -9,12 +9,12 @@
 # You will need to create a configuration file in order for this script
 # to work properly. Please create /etc/conf.d/medusa with the following:
 #
-# SICKRAGE_USER=<user you want medusa to run under>
-# SICKRAGE_GROUP=<group you want medusa to run under>
-# SICKRAGE_DIR=<path to start.py>
+# MEDUSA_USER=<user you want medusa to run under>
+# MEDUSA_GROUP=<group you want medusa to run under>
+# MEDUSA_DIR=<path to start.py>
 # PATH_TO_PYTHON_2=/usr/bin/python2.7
-# SICKRAGE_DATADIR=<directory that contains sickbeard.db file>
-# SICKRAGE_CONFDIR=<directory that contains Medusa's config.ini file>
+# MEDUSA_DATADIR=<directory that contains main.db file>
+# MEDUSA_CONFDIR=<directory that contains Medusa's config.ini file>
 #
 
 RUNDIR=/var/run/medusa
@@ -30,7 +30,7 @@ get_pidfile() {
         -e 's/[[:space:]]*$//' \
         -e 's/^[[:space:]]*//' \
         -e "s/^\(.*\)=\([^\"']*\)$/\1=\"\2\"/" \
-       <  ${SICKRAGE_CONFDIR}/config.ini \
+       <  ${MEDUSA_CONFDIR}/config.ini \
         | sed -n -e "/^\[General\]/,/^\s*\[/{/^[^;].*\=.*/p;}"`
 
     echo "${RUNDIR}/medusa-${web_port}.pid"
@@ -39,22 +39,22 @@ get_pidfile() {
 start() {
     ebegin "Starting Medusa"
 
-    checkpath -q -d -o ${SICKRAGE_USER}:${SICKRAGE_GROUP} -m 0770 "${RUNDIR}"
+    checkpath -q -d -o ${MEDUSA_USER}:${MEDUSA_GROUP} -m 0770 "${RUNDIR}"
 
     start-stop-daemon \
         --quiet \
         --start \
-        --user ${SICKRAGE_USER} \
-        --group ${SICKRAGE_GROUP} \
+        --user ${MEDUSA_USER} \
+        --group ${MEDUSA_GROUP} \
         --background \
         --pidfile $(get_pidfile) \
         --exec ${PATH_TO_PYTHON_2} \
         -- \
-        ${SICKRAGE_DIR}/start.py \
+        ${MEDUSA_DIR}/start.py \
         -d \
         --pidfile $(get_pidfile) \
-        --config ${SICKRAGE_CONFDIR}/config.ini \
-        --datadir ${SICKRAGE_DATADIR}
+        --config ${MEDUSA_CONFDIR}/config.ini \
+        --datadir ${MEDUSA_DATADIR}
     eend $?
 }
 
