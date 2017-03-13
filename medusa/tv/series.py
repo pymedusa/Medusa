@@ -189,6 +189,7 @@ class Series(TV):
 
     def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True, ):
         """Force the creation of a new Indexer API."""
+
         api = indexerApi(self.indexer)
         params = api.api_params.copy()
 
@@ -1419,8 +1420,8 @@ class Series(TV):
         if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
 
-        # Let's get some fresh indexer info, as we might need it later on.
-        self.create_indexer()
+        # # Let's get some fresh indexer info, as we might need it later on.
+        # self.create_indexer()
 
         # load from dir
         self.load_episodes_from_dir()
