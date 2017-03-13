@@ -26,7 +26,7 @@ from .show.history import History
 
 
 def _logHistoryItem(action, showid, season, episode, quality, resource,
-                    provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, resource_size=None):
+                    provider, version=-1, proper_tags='', manually_searched=False, info_hash=None, resource_size=-1):
     """
     Insert a history item in DB
 
