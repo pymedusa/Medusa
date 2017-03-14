@@ -111,10 +111,9 @@ class TVDBv2(BaseIndexer):
         self.config['artwork_prefix'] = '%(base_url)s/banners/%%s' % self.config
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
-        self.client_id = 'username'  # (optional! Only required for the /user routes)
-        self.client_secret = 'pass'  # (optional! Only required for the /user routes)
-        # self.apikey = '0629B785CE550C8D'
-        self.apikey = '01010'
+        self.client_id = ''  # (optional! Only required for the /user routes)
+        self.client_secret = ''  # (optional! Only required for the /user routes)
+        self.apikey = '0629B785CE550C8D'
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
