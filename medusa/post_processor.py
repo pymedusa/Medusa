@@ -20,6 +20,7 @@
 import fnmatch
 import os
 import re
+import socket
 import stat
 import subprocess
 
@@ -30,7 +31,10 @@ import adba
 from medusa.clients import torrent
 
 import rarfile
+
 from rarfile import Error as RarError, NeedFirstVolume
+
+import requests
 
 from six import text_type
 
@@ -1277,12 +1281,19 @@ class PostProcessor(object):
             else:
                 logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
-                if self.info_hash and client.move_torrent(self.info_hash):
+                try:
+                    torrent_moved = client.move_torrent(self.info_hash)
+                except (requests.exceptions.RequestException, socket.gaierror) as e:
+                    logger.log("Could not connect to client to move '{release}' torrent with hash: {hash} to: '{path}'."
+                               " Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
+                                                        path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+
+                if torrent_moved:
                     logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
                                (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
                                logger.WARNING)
                 else:
-                    logger.log("Could not move from '{release}' torrent with hash: {hash} to: '{path}'. "
+                    logger.log("Could not move '{release}' torrent with hash: {hash} to: '{path}'. "
                                "Please check logs.".format(release=self.release_name, hash=self.info_hash,
                                                            path=app.TORRENT_SEED_LOCATION), logger.WARNING)
 
