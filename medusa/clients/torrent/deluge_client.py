@@ -178,7 +178,7 @@ class DelugeAPI(GenericClient):
         post_data = json.dumps({
             'method': 'core.move_storage',
             'params': [
-                info_hash,
+                [info_hash],
                 app.TORRENT_SEED_LOCATION,
             ],
             'id': 72,
