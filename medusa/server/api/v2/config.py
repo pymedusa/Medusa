@@ -13,16 +13,18 @@ from .... import app, db, logger
 class ConfigHandler(BaseRequestHandler):
     """Config request handler."""
 
-    def set_default_headers(self):
-        """Set default CORS headers."""
-        super(ConfigHandler, self).set_default_headers()
-        self.set_header('Access-Control-Allow-Methods', 'GET, PATCH, OPTIONS')
+    #: resource name
+    name = 'config'
+    #: path param
+    path_param = ('path_param', r'\w+')
+    #: allowed HTTP methods
+    allowed_methods = ('GET', 'PATCH', 'OPTIONS')
 
-    def get(self, query=''):
+    def get(self, path_param=''):
         """Query general configuration.
 
-        :param query:
-        :type query: str
+        :param path_param:
+        :type path_param: str
         """
         config_data = {
             'anonRedirect': app.ANON_REDIRECT,
@@ -137,10 +139,10 @@ class ConfigHandler(BaseRequestHandler):
             }
         }
 
-        if query and query not in config_data:
-            return self.api_finish(status=404, error='{key} not found'.format(key=query))
+        if path_param and path_param not in config_data:
+            return self.api_finish(status=404, error='{key} not found'.format(key=path_param))
 
-        self.api_finish(data=config_data[query] if query else config_data)
+        self.api_finish(data=config_data[path_param] if path_param else config_data)
 
     def patch(self, *args, **kwargs):
         """Patch general configuration."""

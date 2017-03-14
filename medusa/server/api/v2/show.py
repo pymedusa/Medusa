@@ -29,10 +29,7 @@ class EpisodeIdentifier(object):
 class ShowHandler(BaseRequestHandler):
     """Shows request handler."""
 
-    def set_default_headers(self):
-        """Set default CORS headers."""
-        super(ShowHandler, self).set_default_headers()
-        self.set_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    allowed_methods = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
 
     def get(self, show_indexer, show_id, season, episode, absolute_episode, air_date, query):
         """Query show information.
@@ -71,7 +68,7 @@ class ShowHandler(BaseRequestHandler):
             return self._handle_detailed_show(tv_show, query)
 
         data = [s.to_json(detailed=self.get_argument('detailed', default=False)) for s in app.showList if self._match(s, arg_paused)]
-        return self._paginate(data, 'title')
+        return self._paginate(data, sort='title')
 
     @staticmethod
     def _match(tv_show, paused):
@@ -119,7 +116,7 @@ class ShowHandler(BaseRequestHandler):
         tv_episodes = tv_show.get_all_episodes(season=ep_id.season)
         data = [e.to_json(detailed=False) for e in tv_episodes]
 
-        return self._paginate(data, 'airDate')
+        return self._paginate(data, sort='airDate')
 
     @staticmethod
     def _find_tv_episode(tv_show, ep_id):

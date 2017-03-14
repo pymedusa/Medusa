@@ -6,7 +6,9 @@ import datetime
 import shutil
 import threading
 
-from medusa.indexers.indexer_config import INDEXER_TVDBV2
+import six
+
+from medusa.indexers.indexer_config import INDEXER_TVDBV2, indexer_id_to_slug, indexer_name_to_id, indexer_id_to_name
 
 import shutil_custom
 
@@ -75,3 +77,45 @@ class TV(object):
         """Un-serialize the object."""
         d['lock'] = threading.Lock()
         self.__dict__.update(d)
+
+
+class Indexer(object):
+
+    def __init__(self, identifier):
+        self.id = identifier
+
+    @property
+    def slug(self):
+        return indexer_id_to_name(self.id)
+
+    @classmethod
+    def from_slug(cls, slug):
+        identifier = indexer_name_to_id(slug)
+        if identifier is not None:
+            return Indexer(identifier)
+
+    def __bool__(self):
+        return self.id is not None
+
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        return '<Indexer [{0}:{1}]>'.format(self.slug, self.id)
+
+    def __str__(self):
+        return str(self.slug)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        if isinstance(other, six.string_types):
+            return str(self) == other
+        if isinstance(other, int):
+            return self.id == other
+        if not isinstance(other, Indexer):
+            return False
+        return self.id == other.id
+
+    def __ne__(self, other):
+        return not self == other

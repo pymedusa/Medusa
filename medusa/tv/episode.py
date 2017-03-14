@@ -19,7 +19,8 @@
 
 from __future__ import unicode_literals
 
-import datetime
+from datetime import date
+from datetime import datetime
 import logging
 import os.path
 import re
@@ -28,6 +29,8 @@ import time
 from collections import (
     OrderedDict,
 )
+
+import six
 
 import knowit
 
@@ -98,9 +101,72 @@ except ImportError:
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
-MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
+MILLIS_YEAR_1900 = datetime(year=1900, month=1, day=1).toordinal()
 
 logger = logging.getLogger(__name__)
+
+
+class EpisodeIdentifier(object):
+
+    date_fmt = '%Y-%m-%d'
+    regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
+                       r'(?:(?:s(?P<season>\d{1,4}))?(?:e(?P<episode>\d{1,3}))?))\b', re.IGNORECASE)
+
+    def __init__(self, season=None, episode=None, air_date=None):
+        self.season = season
+        self.episode = episode
+        self.air_date = air_date
+
+    @classmethod
+    def from_identifier(cls, slug):
+        match = cls.regex.match(slug)
+        if match:
+            try:
+                result = {k: int(v) if k != 'air_date' else datetime.strptime(v, cls.date_fmt)
+                          for k, v in match.groupdict().items() if v is not None}
+                if result:
+                    return EpisodeIdentifier(**result)
+            except ValueError:
+                pass
+
+    def __bool__(self):
+        return self.season is not None or self.episode is not None or self.air_date is not None
+
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        s = ''
+        if self.season is not None:
+            s += 's{0:02d}'.format(self.season)
+        if self.episode is not None:
+            s += 'e{0:02d}'.format(self.episode)
+        if self.air_date is not None:
+            s += '{0!r}'.format(self.air_date)
+        return '<EpisodeIdentifier [{0}]>'.format(s)
+
+    def __str__(self):
+        if self.episode is not None:
+            if self.season is None:
+                return 'e{0:02d}'.format(self.episode)
+            return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
+        if self.air_date is not None:
+            assert self.season is None
+            return self.air_date.strftime(self.date_fmt)
+
+        return 's{0:02d}'.format(self.season)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        if isinstance(other, six.string_types):
+            return str(self) == other
+        if not isinstance(other, EpisodeIdentifier):
+            return False
+        return self.season == other.season and self.episode == other.episode and self.air_date == other.air_date
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class Episode(TV):
@@ -128,8 +194,8 @@ class Episode(TV):
         self.description = ''
         self.subtitles = list()
         self.subtitles_searchcount = 0
-        self.subtitles_lastsearch = str(datetime.datetime.min)
-        self.airdate = datetime.date.fromordinal(1)
+        self.subtitles_lastsearch = str(datetime.min)
+        self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
         self.status = UNKNOWN
@@ -149,6 +215,33 @@ class Episode(TV):
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
+
+    @classmethod
+    def find_by_identifier(cls, series, identifier):
+        """Find Episode based on identifier.
+
+        :param series:
+        :type series: medusa.tv.series.Series
+        :param identifier:
+        :type identifier: EpisodeIdentifier
+        :return:
+        :rtype: medusa.tv.Episode
+        """
+        if identifier.episode is not None:
+            if identifier.season is not None:
+                episode = series.get_episode(season=identifier.season, episode=identifier.episode, should_cache=False)
+            else:
+                episode = series.get_episode(absolute_number=identifier.episode, should_cache=False)
+        elif identifier.air_date:
+            episode = series.get_episode(air_date=identifier.air_date, should_cache=False)
+        else:
+            # if this happens then it's a bug!
+            raise ValueError
+
+        if episode:
+            if not episode.loaded:
+                episode.load_from_db(episode.season, episode.episode)
+            return episode
 
     @staticmethod
     def from_filepath(filepath):
@@ -260,7 +353,7 @@ class Episode(TV):
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
         self.subtitles_searchcount += 1 if self.subtitles_searchcount else 1
-        self.subtitles_lastsearch = datetime.datetime.now().strftime(dateTimeFormat)
+        self.subtitles_lastsearch = datetime.now().strftime(dateTimeFormat)
         logger.debug('{id}: Saving last subtitles search to database', id=self.show.indexerid)
         self.save_to_db()
 
@@ -383,7 +476,7 @@ class Episode(TV):
                 self.subtitles = sql_results[0][b'subtitles'].split(',')
             self.subtitles_searchcount = sql_results[0][b'subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0][b'subtitles_lastsearch']
-            self.airdate = datetime.date.fromordinal(int(sql_results[0][b'airdate']))
+            self.airdate = date.fromordinal(int(sql_results[0][b'airdate']))
             self.status = int(sql_results[0][b'status'] or -1)
 
             # don't overwrite my location
@@ -517,11 +610,11 @@ class Episode(TV):
 
         firstaired = getattr(my_ep, 'firstaired', None)
         if not firstaired or firstaired == '0000-00-00':
-            firstaired = str(datetime.date.fromordinal(1))
+            firstaired = str(date.fromordinal(1))
         raw_airdate = [int(x) for x in firstaired.split('-')]
 
         try:
-            self.airdate = datetime.date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
+            self.airdate = date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
         except (ValueError, IndexError):
             logger.warning('{id}: Malformed air date of {aired} retrieved from {indexer} for {show} {ep}',
                            id=self.show.indexerid, aired=firstaired, indexer=indexerApi(self.indexer).name,
@@ -554,7 +647,7 @@ class Episode(TV):
                          status=statusStrings[self.status].upper(), location=self.location)
 
         if not os.path.isfile(self.location):
-            if (self.airdate >= datetime.date.today() or self.airdate == datetime.date.fromordinal(1)) and \
+            if (self.airdate >= date.today() or self.airdate == date.fromordinal(1)) and \
                     self.status in (UNAIRED, UNKNOWN, WANTED):
                 # Need to check if is UNAIRED otherwise code will step into second 'IF'
                 # and make episode as default_ep_status
@@ -675,9 +768,9 @@ class Episode(TV):
 
                     if ep_details.findtext('aired'):
                         raw_airdate = [int(x) for x in ep_details.findtext('aired').split('-')]
-                        self.airdate = datetime.date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
+                        self.airdate = date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
                     else:
-                        self.airdate = datetime.date.fromordinal(1)
+                        self.airdate = date.fromordinal(1)
 
                     self.hasnfo = True
             else:
@@ -709,7 +802,7 @@ class Episode(TV):
         indexer_name = indexerConfig[self.indexer]['identifier']
         parsed_airdate = sbdatetime.convert_to_setting(
             network_timezones.parse_date_time(
-                datetime.datetime.toordinal(self.airdate),
+                datetime.toordinal(self.airdate),
                 self.show.airs,
                 self.show.network
             )
@@ -1150,9 +1243,9 @@ class Episode(TV):
             '%Y': str(self.airdate.year),
             '%M': str(self.airdate.month),
             '%D': str(self.airdate.day),
-            '%CY': str(datetime.date.today().year),
-            '%CM': str(datetime.date.today().month),
-            '%CD': str(datetime.date.today().day),
+            '%CY': str(date.today().year),
+            '%CM': str(date.today().month),
+            '%CD': str(date.today().day),
             '%0M': '%02d' % self.airdate.month,
             '%0D': '%02d' % self.airdate.day,
             '%RT': 'PROPER' if self.is_proper else '',
@@ -1533,7 +1626,7 @@ class Episode(TV):
             if app.FILE_TIMESTAMP_TIMEZONE == 'local':
                 airdatetime = airdatetime.astimezone(network_timezones.app_timezone)
 
-            filemtime = datetime.datetime.fromtimestamp(
+            filemtime = datetime.fromtimestamp(
                 os.path.getmtime(self.location)).replace(tzinfo=network_timezones.app_timezone)
 
             if filemtime != airdatetime:

@@ -19,6 +19,12 @@ def get_last_updates():
 class SceneExceptionTypeHandler(BaseRequestHandler):
     """Scene Exception type request handler."""
 
+    # TODO: work in progress: Remove this
+    @classmethod
+    def create_app_handler(cls, base):
+        """Capture everything."""
+        return r'{base}/exceptiontype(?:/(?P<exception_type>[a-z]+)?)?/?'.format(base=base), cls
+
     def set_default_headers(self):
         """Set default CORS headers."""
         super(SceneExceptionTypeHandler, self).set_default_headers()
@@ -45,6 +51,12 @@ class SceneExceptionTypeHandler(BaseRequestHandler):
 class SceneExceptionAllTypeOperationHandler(BaseRequestHandler):
     """Scene Exception operation request handler, to update all scene exception types."""
 
+    # TODO: work in progress: Remove this
+    @classmethod
+    def create_app_handler(cls, base):
+        """Capture everything."""
+        return r'{base}/exceptiontype/operation?/?'.format(base=base), cls
+
     def set_default_headers(self):
         """Set default CORS headers."""
         super(SceneExceptionAllTypeOperationHandler, self).set_default_headers()
@@ -62,6 +74,12 @@ class SceneExceptionAllTypeOperationHandler(BaseRequestHandler):
 
 class SceneExceptionTypeOperationHandler(BaseRequestHandler):
     """Scene Exception operation request handler."""
+
+    # TODO: work in progress: Remove this
+    @classmethod
+    def create_app_handler(cls, base):
+        """Capture everything."""
+        return r'{base}/exceptiontype/(?P<exception_type>[a-z]+)/operation?/?'.format(base=base), cls
 
     def set_default_headers(self):
         """Set default CORS headers."""
@@ -85,6 +103,12 @@ class SceneExceptionTypeOperationHandler(BaseRequestHandler):
 
 class SceneExceptionHandler(BaseRequestHandler):
     """Scene Exception request handler."""
+
+    # TODO: work in progress: Remove this
+    @classmethod
+    def create_app_handler(cls, base):
+        """Capture everything."""
+        return r'{base}/sceneexception(?:/(?P<exception_id>\d+)?)?/?'.format(base=base), cls
 
     def set_default_headers(self):
         """Set default CORS headers."""
@@ -143,7 +167,7 @@ class SceneExceptionHandler(BaseRequestHandler):
 
         if exception_id:
             return self.api_finish(data=exceptions[0]) if exceptions else self.api_finish(status=404)
-        return self._paginate(exceptions, 'id')
+        return self._paginate(exceptions, sort='id')
 
     def put(self, *args, **kwargs):
         """Update show information.
