@@ -1271,8 +1271,11 @@ class PostProcessor(object):
         self._run_extra_scripts(ep_obj)
 
         if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
-            logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
-            try:
+            if not os.path.isdir(app.TORRENT_SEED_LOCATION):
+                logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
+                           logger.WARNING)
+            else:
+                logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 if self.info_hash and client.move_torrent(self.info_hash):
                     logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
@@ -1282,9 +1285,5 @@ class PostProcessor(object):
                     logger.log("Could not move from '{release}' torrent with hash: {hash} to: '{path}'. "
                                "Please check logs.".format(release=self.release_name, hash=self.info_hash,
                                                            path=app.TORRENT_SEED_LOCATION), logger.WARNING)
-            except Exception as e:
-                logger.log("Failed to move from '{release}' torrent with hash: {hash} to: '{path}'."
-                           "Error: {error}".format(release=self.release_name, hash=self.info_hash,
-                                                   path=app.TORRENT_SEED_LOCATION, error=e), logger.DEBUG)
 
         return True
