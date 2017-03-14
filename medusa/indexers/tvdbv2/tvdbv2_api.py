@@ -30,6 +30,7 @@ from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
                                   IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from ..indexer_ui import BaseUI, ConsoleUI
+from medusa import ui
 
 
 logger = logging.getLogger(__name__)
@@ -43,10 +44,21 @@ def plex_fallback(func):
     def inner(*args, **kwargs):
         config = args[0].config['session'].fallback_config
 
+        def fallback_notification():
+            ui.notifications.error('Tvdb2.plex.tv fallback',
+                                   'You are currently using the tvdb2.plex.tx fallback, '
+                                   'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
+                                   .format(
+                                       time_left=divmod(((config['plex_fallback_time'] +
+                                                          datetime.timedelta(hours=config['fallback_timeout'])) -
+                                                         datetime.datetime.now()).total_seconds(), 60)[0]
+                                   ))
+
         # Check if we need to revert to tvdb's api, because we exceed the fallback period.
         if config['api_base_url'] == API_BASE_URL_FALLBACK:
+            fallback_notification()
             if (config['plex_fallback_time'] +
-                    datetime.timedelta(seconds=config['fallback_timeout']) < datetime.datetime.now()):
+                    datetime.timedelta(hours=config['fallback_timeout']) < datetime.datetime.now()):
                 config['api_base_url'] = API_BASE_TVDB
             else:
                 logger.debug("Plex fallback still enabled.")
@@ -71,6 +83,8 @@ def plex_fallback(func):
         # Try to authenticate. Still need to do this, to create the search_api, series_api and updates_api.
         args[0]._authenticate()
 
+        # Send notification back to user.
+        fallback_notification()
         # Run api request
         return func(*args, **kwargs)
     return inner
@@ -99,13 +113,14 @@ class TVDBv2(BaseIndexer):
 
         self.client_id = 'username'  # (optional! Only required for the /user routes)
         self.client_secret = 'pass'  # (optional! Only required for the /user routes)
-        self.apikey = '0629B785CE550C8D'
+        # self.apikey = '0629B785CE550C8D'
+        self.apikey = '01010'
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
         if not hasattr(self.config['session'], 'fallback_config'):
             self.config['session'].fallback_config = {'plex_fallback_time': datetime.datetime.now(),
-                                                      'fallback_timeout': 600,
+                                                      'fallback_timeout': 3,
                                                       'api_base_url': API_BASE_TVDB}
 
         # An api to indexer series/episode object mapping
