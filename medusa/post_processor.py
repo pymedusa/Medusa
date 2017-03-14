@@ -1287,9 +1287,9 @@ class PostProcessor(object):
                 try:
                     torrent_moved = client.move_torrent(self.info_hash)
                 except (requests.exceptions.RequestException, socket.gaierror) as e:
-                    logger.log("Could not connect to client to move '{release}' torrent with hash: {hash} to: '{path}'."
-                               " Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
-                                                        path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                    logger.log("Could't connect to client to move '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
+                                                       path=app.TORRENT_SEED_LOCATION), logger.WARNING)
                 except AttributeError:
                     logger.log("Your client doesn't support moving torrents to new location" , logger.WARNING)
 
