@@ -31,32 +31,25 @@ class AuthHandler(BaseRequestHandler):
         """Request JWT."""
         username = app.WEB_USERNAME
         password = app.WEB_PASSWORD
-        submitted_username = ''
-        submitted_password = ''
-        submitted_exp = 86400  # 1 day
-        request_body = {}
 
         # If the user hasn't set a username and/or password just let them login
-        if username.strip() != '' and password.strip() != '':
-            if self.request.body:
-                if self.request.headers['content-type'] == 'application/json':
-                    request_body = tornado.escape.json_decode(self.request.body)
-                else:
-                    self._failed_login(error='Incorrect content-type')
-                if all(x in request_body for x in ['username', 'password']):
-                    submitted_username = request_body['username']
-                    submitted_password = request_body['password']
-                    if 'exp' in request_body:
-                        submitted_exp = request_body['exp']
-            else:
-                self._failed_login(error='No Credentials Provided')
+        if not username.strip() or not password.strip():
+            return self._login()
 
-            if username != submitted_username or password != submitted_password:
-                self._failed_login(error='Invalid credentials')
-            else:
-                self._login(submitted_exp)
-        else:
-            self._login()
+        if not self.request.body:
+            return self._failed_login(error='No Credentials Provided')
+
+        if self.request.headers['content-type'] != 'application/json':
+            return self._failed_login(error='Incorrect content-type')
+
+        request_body = tornado.escape.json_decode(self.request.body)
+        submitted_username = request_body.get('username')
+        submitted_password = request_body.get('password')
+        submitted_exp = request_body.get('exp', 86400)
+        if username != submitted_username or password != submitted_password:
+            return self._failed_login(error='Invalid credentials')
+
+        self._login(submitted_exp)
 
     def _login(self, exp=86400):
         self.set_header('Content-Type', 'application/jwt')
@@ -71,7 +64,7 @@ class AuthHandler(BaseRequestHandler):
             # @TODO: The jti should be saved so we can revoke tokens
             'jti': ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(20)),
             'exp': time_now + int(exp),
-            'scopes': ['show:read', 'show:write'],  # @TODO: This should be reaplce with scopes or roles/groups
+            'scopes': ['show:read', 'show:write'],  # @TODO: This should be replaced with scopes or roles/groups
             'username': app.WEB_USERNAME,
             'apiKey': app.API_KEY  # TODO: This should be replaced with the JWT itself
         }, app.ENCRYPTION_SECRET, algorithm='HS256'))
