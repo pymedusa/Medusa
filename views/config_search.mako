@@ -643,7 +643,7 @@
                                         <span class="component-desc">
                                             <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
-                                                <p>where Transmission will move Torrents after Post-Processing<br/>
+                                                <p>where <span id="torrent_client_seed_path">the torrent client</span> will move Torrents after Post-Processing<br/>
                                                    <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
                                                    to another location after Post-Processor to prevent reprocessing the same file over and over.
                                                    This feature does a "Set Torrent location" or "Move Torrent" like in client
