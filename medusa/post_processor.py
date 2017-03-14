@@ -1278,6 +1278,9 @@ class PostProcessor(object):
             if not os.path.isdir(app.TORRENT_SEED_LOCATION):
                 logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
                            logger.WARNING)
+            elif not self.info_hash:
+                logger.log("Not possible to move torrent after Post-Processor because it wasn't snatched by Medusa",
+                           logger.WARNING)
             else:
                 logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
