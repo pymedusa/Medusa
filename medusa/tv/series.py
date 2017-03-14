@@ -1543,14 +1543,6 @@ class Series(TV):
         if not self.dirty:
             return
 
-        def dict_compare(d1, d2):
-            """Compare two dicts and show modified values."""
-            d1_keys = set(d1.keys())
-            d2_keys = set(d2.keys())
-            intersect_keys = d1_keys.intersection(d2_keys)
-            modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
-            return modified
-
         logger.debug(u'{id}: Saving to database: {show}', id=self.indexerid, show=self.name)
 
         control_value_dict = {'indexer_id': self.indexerid}
@@ -1586,7 +1578,7 @@ class Series(TV):
         if sql_results:
             old_value_dict = {x: v for x, v in dict(sql_results[0]).iteritems() if x in new_value_dict.keys()}
             if old_value_dict:
-                tv_shows_modified = dict_compare(new_value_dict, old_value_dict)
+                tv_shows_modified = helpers.dict_compare(new_value_dict, old_value_dict)
                 logger.debug(u'Series object keys that were modified: {0}'.format(tv_shows_modified))
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
 
@@ -1600,7 +1592,7 @@ class Series(TV):
             if imdb_sql_results:
                 old_imdb_value_dict = {x: v for x, v in dict(imdb_sql_results[0]).iteritems() if x in new_value_dict.keys()}
                 if old_imdb_value_dict:
-                    imdb_modified = dict_compare(new_value_dict, old_imdb_value_dict)
+                    imdb_modified = helpers.dict_compare(new_value_dict, old_imdb_value_dict)
                     logger.debug(u'IMDB object keys that were modified: {0}'.format(imdb_modified))
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
 

@@ -1758,3 +1758,12 @@ def title_to_imdb(title, start_year, imdb_api=None):
     # Return the most relevant result (can be erroneous)
     if title_matches:
         return title_matches[0]
+
+
+def dict_compare(d1, d2):
+    """Compare two dicts and show modified values."""
+    d1_keys = set(d1.keys())
+    d2_keys = set(d2.keys())
+    intersect_keys = d1_keys.intersection(d2_keys)
+    modified = {o: (d1[o], d2[o]) for o in intersect_keys if d1[o] != d2[o]}
+    return modified

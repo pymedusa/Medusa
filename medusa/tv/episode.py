@@ -968,6 +968,12 @@ class Episode(TV):
 
         # use a custom update/insert method to get the data into the DB
         main_db_con = db.DBConnection()
+        sql_results = main_db_con.select('SELECT * FROM tv_episodes WHERE indexerid=?', [self.indexerid])
+        if sql_results:
+            old_value_dict = {x: v for x, v in dict(sql_results[0]).iteritems() if x in new_value_dict.keys()}
+            if old_value_dict:
+                tv_episodes_modified = helpers.dict_compare(new_value_dict, old_value_dict)
+                logger.debug(u'Episodes object keys that were modified: {0}'.format(tv_episodes_modified))
         main_db_con.upsert(b'tv_episodes', new_value_dict, control_value_dict)
         self.loaded = False
         self.reset_dirty()
