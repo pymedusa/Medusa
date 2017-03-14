@@ -1279,7 +1279,7 @@ class PostProcessor(object):
                 logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
                            logger.WARNING)
             elif not self.info_hash:
-                logger.log("Not possible to move torrent after Post-Processor because it wasn't snatched by Medusa",
+                logger.log("Not possible to move torrent after Post-Processor because info hash wasn't found in history",
                            logger.WARNING)
             else:
                 logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
