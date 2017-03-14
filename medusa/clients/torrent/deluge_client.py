@@ -184,8 +184,7 @@ class DelugeAPI(GenericClient):
             'id': 72,
         })
 
-        self._request(method='post', data=post_data)
-        return not self.response.json()['error']
+        return not self.response.json()['error'] if self._request(method='post', data=post_data) else False
 
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
