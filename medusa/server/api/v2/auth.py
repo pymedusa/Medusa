@@ -1,17 +1,16 @@
 # coding=utf-8
 """Request handler for authentication."""
 
+import logging
 import random
 import string
 import time
+
 import jwt
-import tornado
+from medusa import app, helpers, notifiers
 from medusa.logger.adapters.style import BraceAdapter
-
-from .base import BaseRequestHandler
-from .... import app, helpers, notifiers
-
-import logging
+from medusa.server.api.v2.base import BaseRequestHandler
+import tornado
 
 log = BraceAdapter(logging.getLogger(__name__))
 

@@ -1,9 +1,10 @@
 # coding=utf-8
-"""Tests for medusa.tv identifiers"""
+"""Tests for medusa.tv identifiers."""
+
 from datetime import datetime
 
-from medusa.tv.base import Indexer
 from medusa.tv.episode import EpisodeIdentifier
+from medusa.tv.indexer import Indexer
 from medusa.tv.series import SeriesIdentifier
 import pytest
 
@@ -84,7 +85,7 @@ def test_series_identifier(p):
         assert actual
         assert slug == actual
         assert expected_indexer == actual.indexer
-        assert expected_indexer_id == actual.indexer_id
+        assert expected_indexer_id == actual.id
         assert expected_indexer != actual
 
 

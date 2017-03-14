@@ -24,7 +24,6 @@ import datetime
 import glob
 import logging
 import os.path
-import re
 import shutil
 import stat
 import traceback
@@ -34,8 +33,6 @@ from collections import (
     namedtuple,
 )
 from itertools import groupby
-
-import six
 
 from imdbpie import imdbpie
 
@@ -74,6 +71,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.exceptions import (
+    CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
@@ -81,7 +79,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
     ex,
-    CantRemoveShowException)
+)
 from medusa.helpers.externals import get_externals
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
@@ -108,12 +106,11 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.tv.base import TV, Indexer
+from medusa.tv.base import TV
 from medusa.tv.episode import Episode
+from medusa.tv.indexer import Indexer
 
-import shutil_custom
-
-from six import text_type
+from six import string_types, text_type
 
 try:
     from send2trash import send2trash
@@ -121,14 +118,13 @@ except ImportError:
     app.TRASH_REMOVE_SHOW = 0
 
 
-shutil.copyfile = shutil_custom.copyfile_custom
-
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 logger = logging.getLogger(__name__)
 
 
 class SeriesIdentifier(object):
+    """Series identifier with indexer and indexer id."""
 
     def __init__(self, indexer, identifier):
         """Constructor.
@@ -143,32 +139,39 @@ class SeriesIdentifier(object):
 
     @classmethod
     def from_slug(cls, slug):
+        """Create SeriesIdentifier from slug. E.g.: tvdb1234."""
         indexer, indexer_id = slug_to_indexer_id(slug)
         if indexer is not None:
             return SeriesIdentifier(Indexer(indexer), indexer_id)
 
     def __bool__(self):
+        """Magic method."""
         return self.indexer is not None and self.id is not None
 
     __nonzero__ = __bool__
 
     def __repr__(self):
+        """Magic method."""
         return '<SeriesIdentifier [{0!r} - {1}]>'.format(self.indexer, self.id)
 
     def __str__(self):
+        """Magic method."""
         return '{0}{1}'.format(self.indexer, self.id)
 
     def __hash__(self):
+        """Magic method."""
         return hash(str(self))
 
     def __eq__(self, other):
-        if isinstance(other, six.string_types):
+        """Magic method."""
+        if isinstance(other, string_types):
             return str(self) == other
         if not isinstance(other, SeriesIdentifier):
             return False
         return self.indexer == other.indexer and self.id == other.id
 
     def __ne__(self, other):
+        """Magic method."""
         return not self == other
 
 
@@ -229,14 +232,17 @@ class Series(TV):
 
     @classmethod
     def find_series(cls, predicate=None):
+        """Find series based on given predicate."""
         return [s for s in app.showList if s and (not predicate or predicate(s))]
 
     @classmethod
     def find_by_identifier(cls, identifier, predicate=None):
-        """Find series by its identifier.
+        """Find series by its identifier and predicate.
 
         :param identifier:
         :type identifier: medusa.tv.series.SeriesIdentifier
+        :param predicate:
+        :type predicate: callable
         :return:
         :rtype:
         """

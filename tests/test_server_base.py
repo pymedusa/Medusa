@@ -1,9 +1,8 @@
 # coding=utf-8
-"""Tests for medusa.tv identifiers"""
+"""Tests for medusa.tv identifiers."""
 
 import re
-
-from medusa.server.core import create_url
+from medusa.server.api.v2.base import BaseRequestHandler
 import pytest
 
 
@@ -113,6 +112,7 @@ import pytest
 ])
 def test_match_url(p):
     # Given
+    sut = BaseRequestHandler
     resource = 'foo'
     paths = [
         ('path1', r'[a-z]+'),
@@ -120,7 +120,8 @@ def test_match_url(p):
         ('path3', r'\w+'),
         ('path4', r'[a-z]+'),
     ]
-    regex = re.compile(create_url('', resource, *paths))
+
+    regex = re.compile(sut.create_url('', resource, *paths))
     url = p['url']
     expected = p['expected']
 

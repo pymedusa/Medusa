@@ -1,9 +1,9 @@
 # coding=utf-8
 """Request handler for series and episodes."""
 
-from medusa.tv.series import SeriesIdentifier, Series
+from medusa.server.api.v2.base import BaseRequestHandler
+from medusa.tv.series import Series, SeriesIdentifier
 from tornado.escape import json_decode
-from .base import BaseRequestHandler
 
 
 class SeriesHandler(BaseRequestHandler):
@@ -16,7 +16,7 @@ class SeriesHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
 
-    def get(self, series_slug, path_param):
+    def get(self, series_slug, path_param=None):
         """Query series information.
 
         :param series_slug: series slug. E.g.: tvdb1234

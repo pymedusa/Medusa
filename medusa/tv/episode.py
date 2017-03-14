@@ -19,19 +19,15 @@
 
 from __future__ import unicode_literals
 
-from datetime import date
-from datetime import datetime
 import logging
 import os.path
 import re
-import shutil
 import time
+
 from collections import (
     OrderedDict,
 )
-
-import six
-
+from datetime import date, datetime
 import knowit
 
 from medusa import (
@@ -92,33 +88,40 @@ from medusa.scene_numbering import (
 )
 from medusa.tv.base import TV
 
-import shutil_custom
+from six import string_types
 
 try:
     import xml.etree.cElementTree as ETree
 except ImportError:
     import xml.etree.ElementTree as ETree
 
-shutil.copyfile = shutil_custom.copyfile_custom
-
-MILLIS_YEAR_1900 = datetime(year=1900, month=1, day=1).toordinal()
-
 logger = logging.getLogger(__name__)
 
 
 class EpisodeIdentifier(object):
+    """Episode Identifier with season/episode/air date."""
 
     date_fmt = '%Y-%m-%d'
     regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
                        r'(?:(?:s(?P<season>\d{1,4}))?(?:e(?P<episode>\d{1,3}))?))\b', re.IGNORECASE)
 
     def __init__(self, season=None, episode=None, air_date=None):
+        """Constructor.
+
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        :param air_date:
+        :type air_date: datetime
+        """
         self.season = season
         self.episode = episode
         self.air_date = air_date
 
     @classmethod
     def from_identifier(cls, slug):
+        """Create identifier from slug. E.g.: s01e02."""
         match = cls.regex.match(slug)
         if match:
             try:
@@ -130,11 +133,13 @@ class EpisodeIdentifier(object):
                 pass
 
     def __bool__(self):
+        """Magic method."""
         return self.season is not None or self.episode is not None or self.air_date is not None
 
     __nonzero__ = __bool__
 
     def __repr__(self):
+        """Magic method."""
         s = ''
         if self.season is not None:
             s += 's{0:02d}'.format(self.season)
@@ -145,6 +150,7 @@ class EpisodeIdentifier(object):
         return '<EpisodeIdentifier [{0}]>'.format(s)
 
     def __str__(self):
+        """Magic method."""
         if self.episode is not None:
             if self.season is None:
                 return 'e{0:02d}'.format(self.episode)
@@ -156,16 +162,19 @@ class EpisodeIdentifier(object):
         return 's{0:02d}'.format(self.season)
 
     def __hash__(self):
+        """Magic method."""
         return hash(str(self))
 
     def __eq__(self, other):
-        if isinstance(other, six.string_types):
+        """Magic method."""
+        if isinstance(other, string_types):
             return str(self) == other
         if not isinstance(other, EpisodeIdentifier):
             return False
         return self.season == other.season and self.episode == other.episode and self.air_date == other.air_date
 
     def __ne__(self, other):
+        """Magic method."""
         return not self == other
 
 

@@ -1,9 +1,9 @@
 # coding=utf-8
 """Request handler for series assets."""
 
+from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
-from medusa.tv.series import SeriesIdentifier, Series
-from .base import BaseRequestHandler
+from medusa.tv.series import Series, SeriesIdentifier
 
 
 class SeriesAssetHandler(BaseRequestHandler):
