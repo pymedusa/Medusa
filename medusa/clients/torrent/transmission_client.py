@@ -226,7 +226,7 @@ class TransmissionAPI(GenericClient):
         :return
         :rtype: bool
         """
-        if not app.TORRENT_SEED_LOCATION:
+        if not app.TORRENT_SEED_LOCATION or not info_hash:
             return
 
         arguments = {

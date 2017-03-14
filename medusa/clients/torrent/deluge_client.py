@@ -164,6 +164,28 @@ class DelugeAPI(GenericClient):
 
         return self.response.json()['result']
 
+    def move_torrent(self, info_hash):
+        """Set new torrent location given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        if not app.TORRENT_SEED_LOCATION or not info_hash:
+            return
+
+        post_data = json.dumps({
+            'method': 'core.move_storage',
+            'params': [
+                [info_hash],
+                app.TORRENT_SEED_LOCATION,
+            ],
+            'id': 72,
+        })
+
+        return not self.response.json()['error'] if self._request(method='post', data=post_data) else False
+
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
 
@@ -175,7 +197,7 @@ class DelugeAPI(GenericClient):
         post_data = json.dumps({
             'method': 'core.remove_torrent',
             'params': [
-                info_hash,
+                [info_hash],
                 True,
             ],
             'id': 5,
