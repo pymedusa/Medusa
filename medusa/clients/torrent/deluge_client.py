@@ -197,7 +197,7 @@ class DelugeAPI(GenericClient):
         post_data = json.dumps({
             'method': 'core.remove_torrent',
             'params': [
-                info_hash,
+                [info_hash],
                 True,
             ],
             'id': 5,
