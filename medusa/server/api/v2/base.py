@@ -9,10 +9,9 @@ import traceback
 from datetime import datetime
 from babelfish.language import Language
 import jwt
+from medusa import app
 from six import text_type
 from tornado.web import RequestHandler
-
-from .... import app
 
 
 class BaseRequestHandler(RequestHandler):
@@ -29,34 +28,31 @@ class BaseRequestHandler(RequestHandler):
     #: parent resource handler
     parent_handler = None
 
-    def __init__(self, application, request, **kwargs):
-        super(BaseRequestHandler, self).__init__(application, request, **kwargs)
-
     def prepare(self):
         """Check if JWT or API key is provided and valid."""
-        if self.request.method != 'OPTIONS':
-            token = ''
-            api_key = ''
-            if self.request.headers.get('Authorization'):
-                if self.request.headers.get('Authorization').startswith('Bearer'):
-                    try:
-                        token = jwt.decode(self.request.headers.get('Authorization').replace('Bearer ', ''), app.ENCRYPTION_SECRET, algorithms=['HS256'])
-                    except jwt.ExpiredSignatureError:
-                        self._unauthorized('Token has expired.')
-                    except jwt.DecodeError:
-                        self._unauthorized('Invalid token.')
-                if self.request.headers.get('Authorization').startswith('Basic'):
-                    auth_decoded = base64.decodestring(self.request.headers.get('Authorization')[6:])
-                    username, password = auth_decoded.split(':', 2)
-                    if username != app.WEB_USERNAME or password != app.WEB_PASSWORD:
-                        self._unauthorized('Invalid user/pass.')
+        if self.request.method == 'OPTIONS':
+            return
 
-            if self.get_argument('api_key', default='') and self.get_argument('api_key', default='') == app.API_KEY:
-                api_key = self.get_argument('api_key', default='')
-            if self.request.headers.get('X-Api-Key') and self.request.headers.get('X-Api-Key') == app.API_KEY:
-                api_key = self.request.headers.get('X-Api-Key')
-            if token == '' and api_key == '':
-                self._unauthorized('Invalid token or API key.')
+        token = ''
+        authorization = self.request.headers.get('Authorization')
+        if authorization:
+            if authorization.startswith('Bearer'):
+                try:
+                    token = authorization.replace('Bearer ', '')
+                    token = jwt.decode(token, app.ENCRYPTION_SECRET, algorithms=['HS256'])
+                except jwt.ExpiredSignatureError:
+                    return self._unauthorized('Token has expired.')
+                except jwt.DecodeError:
+                    return self._unauthorized('Invalid token.')
+            elif authorization.startswith('Basic'):
+                auth_decoded = base64.decodestring(authorization[6:])
+                username, password = auth_decoded.split(':', 2)
+                if username != app.WEB_USERNAME or password != app.WEB_PASSWORD:
+                    return self._unauthorized('Invalid user/pass.')
+
+        api_key = self.get_argument('api_key', default='') or self.request.headers.get('X-Api-Key')
+        if token == '' and (api_key == '' or api_key != app.API_KEY):
+            self._unauthorized('Invalid token or API key.')
 
     def write_error(self, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
@@ -111,7 +107,8 @@ class BaseRequestHandler(RequestHandler):
         return '/'.join(elements)
 
     @classmethod
-    def _create_url(cls, prefix_url, resource_name, *args):
+    def create_url(cls, prefix_url, resource_name, *args):
+        """Create url base on resource name and path params."""
         resource_url = prefix_url + '/' + resource_name
         path_params = ''
 
@@ -132,10 +129,11 @@ class BaseRequestHandler(RequestHandler):
 
     @classmethod
     def create_app_handler(cls, base):
+        """Create app handler tuple: regex, class."""
         if cls.parent_handler:
             base = cls._create_base_url(base, cls.parent_handler.name, cls.parent_handler.identifier)
 
-        return cls._create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
+        return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
     def _ok(self, data=None, headers=None, stream=None):
         self.api_finish(200, data=data, headers=headers, stream=stream)
@@ -193,7 +191,7 @@ class BaseRequestHandler(RequestHandler):
 
         results = []
         if data_generator:
-            results = data_generator()
+            results = list(data_generator())
         elif sort:
             arg_sort = self._get_sort(default=sort)
             arg_sort_order = self._get_sort_order()

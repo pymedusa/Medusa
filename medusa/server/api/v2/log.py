@@ -37,8 +37,11 @@ class LogHandler(BaseRequestHandler):
 
         def data_generator():
             """Read log lines based on the specified criteria."""
-            return [l.to_json() for l in read_loglines(max_lines=arg_limit + arg_page,
-                                                       predicate=lambda li: filter_logline(li, min_level=min_level))]
+            start = arg_limit * (arg_page - 1)
+            for i, l in enumerate(read_loglines(max_lines=arg_limit * arg_page,
+                                                predicate=lambda li: filter_logline(li, min_level=min_level))):
+                if i >= start:
+                    yield l.to_json()
 
         return self._paginate(data_generator=data_generator)
 
