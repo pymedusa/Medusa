@@ -92,7 +92,7 @@ class DelugeDAPI(GenericClient):
         :return
         :rtype: bool
         """
-        return self.drpc.remove_torrent_ratio(info_hash, True)
+        return self.drpc.remove_torrent_data(info_hash)
 
     def move_torrent(self, info_hash):
         """Set new torrent location given info_hash.
@@ -186,6 +186,25 @@ class DelugeRPC(object):
             return False
         else:
             return True
+
+    def remove_torrent_data(self, torrent_id):
+        """Remove torrent from client using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, True).get()
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
 
     def move_storage(self, torrent_id, location):
         """Move torrent to new location and return torrent id/hash.
