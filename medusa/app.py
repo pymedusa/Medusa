@@ -601,3 +601,9 @@ RECENTLY_DELETED = set()
 RELEASES_IN_PP = []
 
 PRIVACY_LEVEL = 'normal'
+
+# Plex fallback settings
+FALLBACK_PLEX_ENABLE = True
+FALLBACK_PLEX_NOTIFICATIONS = True
+FALLBACK_PLEX_TIMER = 3
+FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'

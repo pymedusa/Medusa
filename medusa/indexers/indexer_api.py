@@ -56,6 +56,13 @@ class indexerApi(object):
                 indexerConfig[self.indexer_id]['api_params']['cache'] = os.path.join(app.CACHE_DIR, 'indexers', self.name)
             if app.PROXY_SETTING and app.PROXY_INDEXERS:
                 indexerConfig[self.indexer_id]['api_params']['proxy'] = app.PROXY_SETTING
+            # TVDB can fallback to Plex mirror
+            if self.indexer_id == 1:
+                indexerConfig[self.indexer_id]['api_params']['plex_fallback'] = {
+                    'fallback_plex_enable': app.FALLBACK_PLEX_ENABLE,  # Enable plex fallback
+                    'fallback_plex_timer': app.FALLBACK_PLEX_TIMER,  # Amount of hours to fallback to tvdb api.
+                    'fallback_plex_notifications': app.FALLBACK_PLEX_NOTIFICATIONS  # Enable notifications.
+                }
 
             return indexerConfig[self.indexer_id]['api_params']
 

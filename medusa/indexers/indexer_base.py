@@ -59,7 +59,8 @@ class BaseIndexer(object):
                  dvdorder=False,
                  proxy=None,
                  session=None,
-                 image_type=None):  # pylint: disable=too-many-locals,too-many-arguments
+                 image_type=None,
+                 plex_fallback=None):  # pylint: disable=too-many-locals,too-many-arguments
         """Pass these arguments on as args from the subclass."""
         self.shows = ShowContainer()  # Holds all Show classes
         self.corrections = {}  # Holds show-name to show_id mapping

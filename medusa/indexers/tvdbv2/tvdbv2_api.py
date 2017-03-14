@@ -31,18 +31,22 @@ from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowInc
                                   IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from ..indexer_ui import BaseUI, ConsoleUI
 from medusa import ui
-
+from medusa.app import FALLBACK_PLEX_API_URL
 
 logger = logging.getLogger(__name__)
 
 API_BASE_TVDB = 'https://api.thetvdb.com'
-API_BASE_URL_FALLBACK = 'https://tvdb2.plex.tv'
+API_BASE_URL_FALLBACK = FALLBACK_PLEX_API_URL
 
 
 def plex_fallback(func):
     """Fallback to plex if tvdb fails to connect."""
     def inner(*args, **kwargs):
         config = args[0].config['session'].fallback_config
+        if not config['fallback_plex_enable']:
+            # Try to authenticate
+            args[0]._authenticate()
+            return func(*args, **kwargs)
 
         def fallback_notification():
             ui.notifications.error('Tvdb2.plex.tv fallback',
@@ -50,7 +54,7 @@ def plex_fallback(func):
                                    'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
                                    .format(
                                        time_left=divmod(((config['plex_fallback_time'] +
-                                                          datetime.timedelta(hours=config['fallback_timeout'])) -
+                                                          datetime.timedelta(hours=config['fallback_plex_timeout'])) -
                                                          datetime.datetime.now()).total_seconds(), 60)[0]
                                    ))
 
@@ -58,7 +62,7 @@ def plex_fallback(func):
         if config['api_base_url'] == API_BASE_URL_FALLBACK:
             fallback_notification()
             if (config['plex_fallback_time'] +
-                    datetime.timedelta(hours=config['fallback_timeout']) < datetime.datetime.now()):
+                    datetime.timedelta(hours=config['fallback_plex_timeout']) < datetime.datetime.now()):
                 config['api_base_url'] = API_BASE_TVDB
             else:
                 logger.debug("Plex fallback still enabled.")
@@ -118,9 +122,18 @@ class TVDBv2(BaseIndexer):
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
         if not hasattr(self.config['session'], 'fallback_config'):
-            self.config['session'].fallback_config = {'plex_fallback_time': datetime.datetime.now(),
-                                                      'fallback_timeout': 3,
-                                                      'api_base_url': API_BASE_TVDB}
+            self.config['session'].fallback_config = {
+                'plex_fallback_time': datetime.datetime.now(),
+                'api_base_url': API_BASE_TVDB,
+                'fallback_plex_enable': kwargs['plex_fallback']['fallback_plex_enable'],
+                'fallback_plex_timeout': kwargs['plex_fallback']['fallback_plex_timer'],
+                'fallback_plex_notifications': kwargs['plex_fallback']['fallback_plex_notifications']
+            }
+        else:
+            # Try to update some of the values
+            self.config['session'].fallback_config['fallback_plex_enable'] = kwargs['plex_fallback']['fallback_plex_enable']
+            self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timer']
+            self.config['session'].fallback_config['fallback_plex_notifications'] = kwargs['plex_fallback']['fallback_plex_notifications']
 
         # An api to indexer series/episode object mapping
         self.series_map = {
@@ -156,7 +169,7 @@ class TVDBv2(BaseIndexer):
                 auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
             except ApiException as e:
                 logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
-                raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % e.reason)
+                raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
             except (MaxRetryError, RequestError) as e:
                 logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
                 raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
@@ -619,6 +632,7 @@ class TVDBv2(BaseIndexer):
         return True
 
     # Public methods, usable separate from the default api's interface api['show_id']
+    @plex_fallback
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 
