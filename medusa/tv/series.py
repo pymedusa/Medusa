@@ -24,6 +24,7 @@ import datetime
 import glob
 import logging
 import os.path
+import re
 import shutil
 import stat
 import traceback
@@ -33,6 +34,8 @@ from collections import (
     namedtuple,
 )
 from itertools import groupby
+
+import six
 
 from imdbpie import imdbpie
 
@@ -78,7 +81,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
     ex,
-)
+    CantRemoveShowException)
 from medusa.helpers.externals import get_externals
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
@@ -86,13 +89,17 @@ from medusa.indexers.indexer_config import (
     indexerConfig,
     indexer_id_to_slug,
     mappings,
-    reverse_mappings
-)
+    reverse_mappings,
+    slug_to_indexer_id)
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
+from medusa.media.banner import ShowBanner
+from medusa.media.fan_art import ShowFanArt
+from medusa.media.network_logo import ShowNetworkLogo
+from medusa.media.poster import ShowPoster
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
@@ -101,7 +108,7 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.tv.base import TV
+from medusa.tv.base import TV, Indexer
 from medusa.tv.episode import Episode
 
 import shutil_custom
@@ -119,6 +126,50 @@ shutil.copyfile = shutil_custom.copyfile_custom
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 logger = logging.getLogger(__name__)
+
+
+class SeriesIdentifier(object):
+
+    def __init__(self, indexer, identifier):
+        """Constructor.
+
+        :param indexer:
+        :type indexer: Indexer
+        :param identifier:
+        :type identifier: int
+        """
+        self.indexer = indexer
+        self.id = identifier
+
+    @classmethod
+    def from_slug(cls, slug):
+        indexer, indexer_id = slug_to_indexer_id(slug)
+        if indexer is not None:
+            return SeriesIdentifier(Indexer(indexer), indexer_id)
+
+    def __bool__(self):
+        return self.indexer is not None and self.id is not None
+
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        return '<SeriesIdentifier [{0!r} - {1}]>'.format(self.indexer, self.id)
+
+    def __str__(self):
+        return '{0}{1}'.format(self.indexer, self.id)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        if isinstance(other, six.string_types):
+            return str(self) == other
+        if not isinstance(other, SeriesIdentifier):
+            return False
+        return self.indexer == other.indexer and self.id == other.id
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class Series(TV):
@@ -175,6 +226,23 @@ class Series(TV):
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
         self._load_from_db()
+
+    @classmethod
+    def find_series(cls, predicate=None):
+        return [s for s in app.showList if s and (not predicate or predicate(s))]
+
+    @classmethod
+    def find_by_identifier(cls, identifier, predicate=None):
+        """Find series by its identifier.
+
+        :param identifier:
+        :type identifier: medusa.tv.series.SeriesIdentifier
+        :return:
+        :rtype:
+        """
+        result = Show.find(app.showList, identifier.id, identifier.indexer.id)
+        if result and (not predicate or predicate(result)):
+            return result
 
     @property
     def indexer_api(self):
@@ -1966,3 +2034,35 @@ class Series(TV):
         else:
             logger.debug(u'No DOWNLOADED episodes for show ID: {show}', show=self.name)
             return False
+
+    def pause(self):
+        """Pause the series."""
+        self.paused = True
+        self.save_to_db()
+
+    def unpause(self):
+        """Unpause the series."""
+        self.paused = False
+        self.save_to_db()
+
+    def delete(self, remove_files):
+        """Delete the series."""
+        try:
+            app.show_queue_scheduler.action.removeShow(self, bool(remove_files))
+            return True
+        except CantRemoveShowException:
+            pass
+
+    def get_asset(self, asset_type):
+        """Get the specified asset for this series."""
+        asset_type = asset_type.lower()
+        media_format = ('normal', 'thumb')[asset_type in ('bannerthumb', 'posterthumb', 'small')]
+
+        if asset_type.startswith('banner'):
+            return ShowBanner(self.indexerid, media_format)
+        elif asset_type.startswith('fanart'):
+            return ShowFanArt(self.indexerid, media_format)
+        elif asset_type.startswith('poster'):
+            return ShowPoster(self.indexerid, media_format)
+        elif asset_type.startswith('network'):
+            return ShowNetworkLogo(self.indexerid, media_format)

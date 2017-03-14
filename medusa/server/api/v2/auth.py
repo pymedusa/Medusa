@@ -6,20 +6,23 @@ import string
 import time
 import jwt
 import tornado
+from medusa.logger.adapters.style import BraceAdapter
 
 from .base import BaseRequestHandler
-from .... import app, helpers, logger, notifiers
+from .... import app, helpers, notifiers
+
+import logging
+
+log = BraceAdapter(logging.getLogger(__name__))
 
 
 class AuthHandler(BaseRequestHandler):
     """Auth request handler."""
 
-    def set_default_headers(self):
-        """Set default CORS headers."""
-        super(AuthHandler, self).set_default_headers()
-        if app.APP_VERSION:
-            self.set_header('X-Medusa-Server', app.APP_VERSION)
-        self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+    #: resource name
+    name = 'authenticate'
+    #: allowed HTTP methods
+    allowed_methods = ('POST', 'OPTIONS')
 
     def prepare(self):
         """Prepare."""
@@ -61,9 +64,9 @@ class AuthHandler(BaseRequestHandler):
         if app.NOTIFY_ON_LOGIN and not helpers.is_ip_private(self.request.remote_ip):
             notifiers.notify_login(self.request.remote_ip)
 
-        logger.log('{user} logged into the API v2'.format(user=app.WEB_USERNAME), logger.INFO)
+        log.info('{user} logged into the API v2', {'user': app.WEB_USERNAME})
         time_now = int(time.time())
-        self.api_finish(data=jwt.encode({
+        self._ok(data=jwt.encode({
             'iss': 'Medusa ' + app.APP_VERSION,
             'iat': time_now,
             # @TODO: The jti should be saved so we can revoke tokens
@@ -75,8 +78,8 @@ class AuthHandler(BaseRequestHandler):
         }, app.ENCRYPTION_SECRET, algorithm='HS256'))
 
     def _failed_login(self, error=None):
-        self.api_finish(status=401, error=error)
-        logger.log('{user} attempted a failed login to the API v2 from IP: {ip}'.format(
-            user=app.WEB_USERNAME,
-            ip=self.request.remote_ip
-        ), logger.WARNING)
+        self._unauthorized(error=error)
+        log.warning('{user} attempted a failed login to the API v2 from IP: {ip}', {
+            'user': app.WEB_USERNAME,
+            'ip': self.request.remote_ip
+        })
