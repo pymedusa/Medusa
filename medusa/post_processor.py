@@ -1287,6 +1287,8 @@ class PostProcessor(object):
                     logger.log("Could not connect to client to move '{release}' torrent with hash: {hash} to: '{path}'."
                                " Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
                                                         path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                except AttributeError:
+                    logger.log("Your client doesn't support moving torrents to new location" , logger.WARNING)
 
                 if torrent_moved:
                     logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
