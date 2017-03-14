@@ -77,7 +77,7 @@ pre {
 </div> <!-- row -->
 <div class="row wide">
     <div class="col-md-12 ${'fanartOpacity' if app.FANART_BACKGROUND else ''}">
-        <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div>${log_lines}</pre>
+        <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div><%block filter="h">${log_lines}</%block></pre>
     </div>
 </div>
 </%block>
