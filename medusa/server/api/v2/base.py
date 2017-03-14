@@ -33,7 +33,7 @@ class BaseRequestHandler(RequestHandler):
         if self.request.method == 'OPTIONS':
             return
 
-        token = ''
+        token = None
         authorization = self.request.headers.get('Authorization')
         if authorization:
             if authorization.startswith('Bearer'):
@@ -50,8 +50,8 @@ class BaseRequestHandler(RequestHandler):
                 if username != app.WEB_USERNAME or password != app.WEB_PASSWORD:
                     return self._unauthorized('Invalid user/pass.')
 
-        api_key = self.get_argument('api_key', default='') or self.request.headers.get('X-Api-Key')
-        if token == '' and (api_key == '' or api_key != app.API_KEY):
+        api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
+        if not token and (not api_key or api_key != app.API_KEY):
             self._unauthorized('Invalid token or API key.')
 
     def write_error(self, *args, **kwargs):

@@ -70,9 +70,12 @@ class SeriesHandler(BaseRequestHandler):
         done = {}
         for key, value in data.items():
             if key == 'pause':
-                if value not in (True, False):
+                if value is True:
+                    series.pause()
+                elif value is False:
+                    series.unpause()
+                else:
                     return self._bad_request('Invalid request body: pause')
-                series.pause() if value else series.unpause()
                 done[key] = value
 
         return self._ok(done)

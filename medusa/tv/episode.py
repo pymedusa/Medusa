@@ -156,7 +156,8 @@ class EpisodeIdentifier(object):
                 return 'e{0:02d}'.format(self.episode)
             return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
         if self.air_date is not None:
-            assert self.season is None
+            if self.season is not None:
+                raise ValueError('aid_date is set, season should be None')
             return self.air_date.strftime(self.date_fmt)
 
         return 's{0:02d}'.format(self.season)

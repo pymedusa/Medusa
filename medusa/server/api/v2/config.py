@@ -20,7 +20,7 @@ class ConfigHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('GET', 'PATCH', 'OPTIONS')
 
-    def get(self, path_param=''):
+    def get(self, path_param=None):
         """Query general configuration.
 
         :param path_param:
@@ -40,7 +40,7 @@ class ConfigHandler(BaseRequestHandler):
             'timePreset': app.TIME_PRESET,
             'trimZero': app.TRIM_ZERO,
             'fanartBackground': app.FANART_BACKGROUND,
-            'fanartBackgroundOpacity': 0 if app.FANART_BACKGROUND_OPACITY is None else float(app.FANART_BACKGROUND_OPACITY),
+            'fanartBackgroundOpacity': float(app.FANART_BACKGROUND_OPACITY or 0),
             'branch': app.BRANCH,
             'commitHash': app.CUR_COMMIT_HASH,
             'release': app.APP_VERSION,
@@ -140,15 +140,20 @@ class ConfigHandler(BaseRequestHandler):
         }
 
         if path_param and path_param not in config_data:
-            return self.api_finish(status=404, error='{key} not found'.format(key=path_param))
+            return self._bad_request('{key} is a invalid path'.format(key=path_param))
 
-        self.api_finish(data=config_data[path_param] if path_param else config_data)
+        config_data = config_data[path_param]
+        return self._ok(data=config_data)
 
     def patch(self, *args, **kwargs):
         """Patch general configuration."""
         data = json_decode(self.request.body)
         done_data = {}
-        done_errors = []
+
+        # silent ignore static fields
+        data = {k: data[k] for k in data if k not in (
+            'commitHash', 'release', 'sslVersion', 'pythonVersion', 'databaseVersion', 'os', 'locale', 'localUser')}
+
         for key in data.keys():
             if key == 'anonRedirect':
                 app.ANON_REDIRECT = data['anonRedirect']
@@ -166,11 +171,8 @@ class ConfigHandler(BaseRequestHandler):
             # 'trimZero': app.TRIM_ZERO,
             # 'fanartBackground': app.FANART_BACKGROUND,
             # 'fanartBackgroundOpacity': app.FANART_BACKGROUND_OPACITY,
-            # 'branch': app.BRANCH, # @TODO: If branch change we should checkout new branch and if success return 200 otherwise return error
-            if key in ['commitHash', 'release', 'sslVersion', 'pythonVersion', 'databaseVersion', 'os', 'locale', 'localUser', ]:
-                # This is for fields that are static within the API
-                # For example you shouldn't be able to change the OS
-                done_errors.append(key)
+            # @TODO: If branch change we should checkout new branch and if success return 200 otherwise return error
+            # 'branch': app.BRANCH,
             # 'programDir': app.PROG_DIR,
             # 'configFile': app.CONFIG_FILE,
             # 'dbFilename': db.dbFilename(),
@@ -295,6 +297,4 @@ class ConfigHandler(BaseRequestHandler):
                     done_data['backlogOverview'].setdefault('status', app.BACKLOG_STATUS)
         # Make sure to update the config file after everything is updated
         app.instance.save_config()
-        if len(done_errors):
-            logger.log('Can\'t PATCH [' + ', '.join(done_errors) + '] since ' + ["it's a static field.", "they're static fields."][len(done_errors) > 1])
-        self.api_finish(data=done_data)
+        self._ok(data=done_data)
