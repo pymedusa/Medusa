@@ -39,6 +39,7 @@ API_BASE_URL_FALLBACK = 'https://tvdb2.plex.tv'
 
 
 def plex_fallback(func):
+    """Fallback to plex if tvdb fails to connect."""
     def inner(*args, **kwargs):
         config = args[0].config['session'].fallback_config
 
