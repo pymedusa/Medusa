@@ -1600,7 +1600,7 @@ class Home(WebRoot):
                         try:
                             app.show_queue_scheduler.action.refreshShow(show_obj)
                         except CantRefreshShowException as msg:
-                            errors.append('Unable to refresh {show}: {error}'.format(show_obj.name, error=msg))
+                            errors.append('Unable to refresh {show}: {error}'.format(show=show_obj.name, error=msg))
                 else:
                     log_message = u"New location '{location}' does not exist. Enable setting 'Create missing show dirs'"
                     logger.log(log_message, logger.WARNING)
