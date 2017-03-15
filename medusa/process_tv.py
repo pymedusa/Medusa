@@ -51,11 +51,11 @@ class ProcessResult(object):
 
     @property
     def directory(self):
+        """Return the root directory we are going to process."""
         return getattr(self, '_directory')
 
     @directory.setter
     def directory(self, path):
-        """Return the root directory we are going to process."""
         directory = None
         if os.path.isdir(path):
             self._log('Processing path: {0}'.format(path), logger.DEBUG)
@@ -143,7 +143,7 @@ class ProcessResult(object):
 
                 if not postpone:
 
-                    self._log('\nProcessing folder: {0}'.format(dir_path), logger.DEBUG)
+                    self._log('Processing folder: {0}'.format(dir_path), logger.DEBUG)
 
                     self.prepare_files(dir_path, filelist, force)
 
@@ -165,23 +165,23 @@ class ProcessResult(object):
                             self._log('Deleted folder: {0}'.format(dir_path), logger.DEBUG)
 
                 else:
-                    self._log('\nFound temporary sync files in folder: {0}'.format(dir_path))
+                    self._log('Found temporary sync files in folder: {0}'.format(dir_path))
                     self._log('Skipping post processing for folder: {0}'.format(dir_path))
                     self.missedfiles.append('{0}: Sync files found'.format(dir_path))
 
         if self.succeeded:
-            self._log('\nSuccessfully processed.')
+            self._log('Successfully processed.')
 
             # Clean Kodi library
             if app.KODI_LIBRARY_CLEAN_PENDING and notifiers.kodi_notifier.clean_library():
                 app.KODI_LIBRARY_CLEAN_PENDING = False
 
             if self.missedfiles:
-                self._log('\nI did encounter some unprocessable items: ')
+                self._log('I did encounter some unprocessable items: ')
                 for missedfile in self.missedfiles:
                     self._log('{0}'.format(missedfile))
         else:
-            self._log('\nProblem(s) during processing, failed for the following files/folders: ', logger.WARNING)
+            self._log('Problem(s) during processing, failed for the following files/folders: ', logger.WARNING)
             for missedfile in self.missedfiles:
                 self._log('{0}'.format(missedfile), logger.WARNING)
 
@@ -231,7 +231,7 @@ class ProcessResult(object):
             del root  # unused variable
             del dirs  # unused variable
 
-        self._log('\nNo processable items found in folder: {0}'.format(path), logger.DEBUG)
+        self._log('No processable items found in folder: {0}'.format(path), logger.DEBUG)
         return False
 
     def _get_files(self, path):
