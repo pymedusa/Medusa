@@ -143,7 +143,7 @@ class TestPostProcessor(PostProcessor):
 
     },
 ])
-def test_list_associated_files(p, create_structure):
+def test_list_associated_files(p, create_structure, monkeypatch):
     """Run the test."""
     # Given
     test_path = create_structure(p['path'], structure=p['structure'])
@@ -152,8 +152,8 @@ def test_list_associated_files(p, create_structure):
     expected_associated_files = p['expected_associated_files']
     subtitles_only = p.get('subtitles_only', False)
     subfolders = p.get('subfolders', False)
-    app.ALLOWED_EXTENSIONS = p['allowed_extensions']
-    app.MOVE_ASSOCIATED_FILES = 1
+    monkeypatch.setattr(app, 'ALLOWED_EXTENSIONS', p['allowed_extensions'])
+    monkeypatch.setattr(app, 'MOVE_ASSOCIATED_FILES', 1)
 
     processor = TestPostProcessor(media_file)
 
