@@ -44,14 +44,56 @@ class StyleAdapter(logging.LoggerAdapter):
         """
         self.__dict__[key] = value
 
-    def process(self, msg, kwargs):
+    def debug(self, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).debug(msg, *args, **kwargs)
+
+    def info(self, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).info(msg, *args, **kwargs)
+
+    def warning(self, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).warning(msg, *args, **kwargs)
+
+    def error(self, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).error(msg, *args, **kwargs)
+
+    def exception(self, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).exception(msg, *args, **kwargs)
+
+    def critical(self, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).critical(msg, *args, **kwargs)
+
+    def log(self, level, msg, *args, **kwargs):
+        """Delegate a debug call to the underlying logger."""
+        msg, args, kwargs = self.wrap_message(msg, args, kwargs)
+        super(StyleAdapter, self).log(level, msg, *args, **kwargs)
+
+    def wrap_message(self, msg, args, kwargs):
         """Enhance default process to use BraceMessage and remove unsupported keyword args for the actual logger method.
 
         :param msg:
         :param kwargs:
         :return:
         """
-        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
+        if '%s' in msg or '%r' in msg:
+            # TODO: Remove when all loggers get migrated to new style: No more log.debug('message %s', 'arg')
+            return msg, args, kwargs
+
+        return (BraceMessage(msg, args, kwargs),
+                (),
+                # TODO: Remove when all loggers get migrated to new style: No more log.debug('message {arg}', arg='arg')
+                {k: kwargs[k] for k in self.reserved_keywords if k in kwargs})
 
 
 class BraceMessage(object):
@@ -76,6 +118,12 @@ class BraceMessage(object):
         :rtype: str
         """
         result = text_type(self.fmt)
+        kwargs = [a for a in self.args if isinstance(a, dict)]
+        if len(kwargs) > 1:
+            raise ValueError('Only one dict can be used as logger argument. Found {0}'.format(len(kwargs)))
+        if kwargs:
+            return result.format(*self.args, **kwargs[0])
+
         return result.format(*self.args, **self.kwargs) if self.args or self.kwargs else result
 
 

@@ -9,7 +9,7 @@ import pytest
 @pytest.mark.gen_test
 def test_log_get(http_client, create_url, auth_headers, logger, commit_hash):
     # given
-    logger.info('Some {what} message', what='nice')
+    logger.info('Some {what} message', dict(what='nice'))
     url = create_url('/log')
 
     # when
@@ -31,9 +31,9 @@ def test_log_get(http_client, create_url, auth_headers, logger, commit_hash):
 @pytest.mark.gen_test
 def test_log_get_pagination(http_client, create_url, auth_headers, logger, commit_hash):
     # given
-    logger.info('Some {what} message 1', what='nice')
-    logger.info('Some {what} message 2', what='nice')
-    logger.info('Some {what} message 3', what='nice')
+    logger.info('Some {what} message 1', dict(what='nice'))
+    logger.info('Some {what} message 2', dict(what='nice'))
+    logger.info('Some {what} message 3', dict(what='nice'))
     url = create_url('/log', limit=2, page=2)
 
     # when
@@ -58,11 +58,8 @@ def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, re
     monkeypatch.setattr(log, 'logger', logger)
     url = create_url('/log')
     body = {
-        'message': 'Some %s {here}',
-        'args': ['nice'],
-        'kwargs': {
-            'here': 'message'
-        },
+        'message': 'Some {0} {here}',
+        'args': ['nice', dict(here='message')],
         'level': 'ERROR',
     }
 
