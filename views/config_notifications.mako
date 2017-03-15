@@ -1565,7 +1565,12 @@
                                         <span class="component-desc">
                                             <select id="trakt_default_indexer" name="trakt_default_indexer" class="form-control input-sm">
                                                 % for indexer in indexerApi().indexers:
-                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexerApi().indexers[indexer]}</option>
+                                                    <%
+                                                        name = indexerApi().indexers[indexer]
+                                                        if name == 'TVmaze':
+                                                            continue
+                                                    %>
+                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${name}</option>
                                                 % endfor
                                             </select>
                                         </span>

@@ -777,6 +777,9 @@ class Application(object):
             app.TRAKT_SYNC = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync', 0))
             app.TRAKT_SYNC_REMOVE = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_remove', 0))
             app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', 1)
+            if app.TRAKT_DEFAULT_INDEXER == 3:
+                # Trakt doesn't support TVMAZE. Default to TVDB
+                app.TRAKT_DEFAULT_INDEXER = 1
             app.TRAKT_TIMEOUT = check_setting_int(app.CFG, 'Trakt', 'trakt_timeout', 30)
             app.TRAKT_BLACKLIST_NAME = check_setting_str(app.CFG, 'Trakt', 'trakt_blacklist_name', '')
 
