@@ -123,7 +123,7 @@ class TVDBv2(BaseIndexer):
 
         self.client_id = ''  # (optional! Only required for the /user routes)
         self.client_secret = ''  # (optional! Only required for the /user routes)
-        self.apikey = '0629B785CE550C8Dzzz'
+        self.apikey = '0629B785CE550C8D'
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
