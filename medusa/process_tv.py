@@ -48,6 +48,7 @@ class ProcessResult(object):
         self.succeeded = True
         self.missedfiles = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+        self.postponed_no_subs = False
 
     @property
     def directory(self):
@@ -291,7 +292,10 @@ class ProcessResult(object):
             self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, force,
                                is_priority, ignore_subs)
 
-            self.delete_files(path, self.rar_content)
+            if not self.postponed_no_subs:
+                self.delete_files(path, self.rar_content)
+            else:
+                self.postponed_no_subs = False
 
         elif app.DELRARCONTENTS and self.video_in_rar:
             self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
@@ -299,10 +303,14 @@ class ProcessResult(object):
             self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name,
                                force, is_priority, ignore_subs)
 
-            self.delete_files(path, self.rar_content, force=True)
+            if not self.postponed_no_subs:
+                self.delete_files(path, self.rar_content, force=True)
+            else:
+                self.postponed_no_subs = False
 
         else:
             self.process_media(path, self.video_files, nzb_name, force, is_priority, ignore_subs)
+            self.postponed_no_subs = False
 
     @staticmethod
     def delete_folder(folder, check_empty=True):
@@ -530,6 +538,7 @@ class ProcessResult(object):
                                         in subtitle_extensions]:
                                     self._log('No subtitles associated. Postponing the post-process of this file: '
                                               '{0}'.format(video_file), logger.DEBUG)
+                                    self.postponed_no_subs = True
                                     continue
                                 else:
                                     self._log('Found subtitles associated. '
