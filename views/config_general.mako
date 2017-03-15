@@ -185,7 +185,7 @@
                                 <label for="fallback_plex_timer">
                                     <span class="component-title">Fallback duration</span>
                                     <span class="component-desc">
-                                        <input type="number" min="1" step="1" name="fallback_plex_timer" id="fallback_plex_timer" value="${app.FALLBACK_PLEX_TIMER}" class="form-control input-sm input75"/>
+                                        <input type="number" min="1" step="1" name="fallback_plex_timeout" id="fallback_plex_timeout" value="${app.FALLBACK_PLEX_TIMEOUT}" class="form-control input-sm input75"/>
                                         <p>Amount of hours after we try to revert back to the thetvdb.com api url (default:3).</p>
                                     </span>
                                 </label>

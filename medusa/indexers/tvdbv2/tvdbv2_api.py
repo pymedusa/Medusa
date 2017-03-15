@@ -40,12 +40,17 @@ API_BASE_URL_FALLBACK = FALLBACK_PLEX_API_URL
 
 
 def plex_fallback(func):
-    """Fallback to plex if tvdb fails to connect."""
+    """Fallback to plex if tvdb fails to connect.
+
+    Decorator that can be used to catch an exception and fallback to the plex proxy.
+    If there are issues with tvdb the plex mirror will also only work for a limited amount of time. That is why we
+    revert back to tvdb after an x amount of hours.
+    """
     def inner(*args, **kwargs):
         config = args[0].config['session'].fallback_config
         if not config['fallback_plex_enable']:
             # Try to authenticate
-            args[0]._authenticate()
+            args[0]._authenticate()  # pylint: disable=W021
             return func(*args, **kwargs)
 
         def fallback_notification():
@@ -60,7 +65,8 @@ def plex_fallback(func):
 
         # Check if we need to revert to tvdb's api, because we exceed the fallback period.
         if config['api_base_url'] == API_BASE_URL_FALLBACK:
-            fallback_notification()
+            if config['fallback_plex_notifications']:
+                fallback_notification()
             if (config['plex_fallback_time'] +
                     datetime.timedelta(hours=config['fallback_plex_timeout']) < datetime.datetime.now()):
                 config['api_base_url'] = API_BASE_TVDB
@@ -69,7 +75,7 @@ def plex_fallback(func):
 
         try:
             # Try to authenticate
-            args[0]._authenticate()
+            args[0]._authenticate()  # pylint: disable=W021
 
             # Run api request
             return func(*args, **kwargs)
@@ -85,7 +91,7 @@ def plex_fallback(func):
         config['plex_fallback_time'] = datetime.datetime.now()
 
         # Try to authenticate. Still need to do this, to create the search_api, series_api and updates_api.
-        args[0]._authenticate()
+        args[0]._authenticate()  # pylint: disable=W021
 
         # Send notification back to user.
         fallback_notification()
@@ -117,7 +123,7 @@ class TVDBv2(BaseIndexer):
 
         self.client_id = ''  # (optional! Only required for the /user routes)
         self.client_secret = ''  # (optional! Only required for the /user routes)
-        self.apikey = '0629B785CE550C8D'
+        self.apikey = '0629B785CE550C8Dzzz'
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
@@ -126,13 +132,13 @@ class TVDBv2(BaseIndexer):
                 'plex_fallback_time': datetime.datetime.now(),
                 'api_base_url': API_BASE_TVDB,
                 'fallback_plex_enable': kwargs['plex_fallback']['fallback_plex_enable'],
-                'fallback_plex_timeout': kwargs['plex_fallback']['fallback_plex_timer'],
+                'fallback_plex_timeout': kwargs['plex_fallback']['fallback_plex_timeout'],
                 'fallback_plex_notifications': kwargs['plex_fallback']['fallback_plex_notifications']
             }
         else:
             # Try to update some of the values
             self.config['session'].fallback_config['fallback_plex_enable'] = kwargs['plex_fallback']['fallback_plex_enable']
-            self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timer']
+            self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timeout']
             self.config['session'].fallback_config['fallback_plex_notifications'] = kwargs['plex_fallback']['fallback_plex_notifications']
 
         # An api to indexer series/episode object mapping

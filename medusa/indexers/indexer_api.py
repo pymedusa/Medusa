@@ -60,7 +60,7 @@ class indexerApi(object):
             if self.indexer_id == 1:
                 indexerConfig[self.indexer_id]['api_params']['plex_fallback'] = {
                     'fallback_plex_enable': app.FALLBACK_PLEX_ENABLE,  # Enable plex fallback
-                    'fallback_plex_timer': app.FALLBACK_PLEX_TIMER,  # Amount of hours to fallback to tvdb api.
+                    'fallback_plex_timeout': app.FALLBACK_PLEX_TIMEOUT,  # Amount of hours to fallback to tvdb api.
                     'fallback_plex_notifications': app.FALLBACK_PLEX_NOTIFICATIONS  # Enable notifications.
                 }
 
