@@ -167,6 +167,11 @@ class HomeAddShows(Home):
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
+                        # unicode encoded special character show names, should be encoded to byte, as the nfo can have a
+                        # show title with unicode encoded special chars. Like naruto shippuuden on tvmaze.
+                        if show_name:
+                            show_name = show_name.encode('utf-8')
+
                         # default to TVDB if indexer was not detected
                         if show_name and not (indexer or indexer_id):
                             (_, idxr, i) = helpers.search_indexer_for_show_id(show_name, indexer, indexer_id)
