@@ -167,17 +167,6 @@ class HomeAddShows(Home):
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
 
-                        # default to TVDB if indexer was not detected
-                        if show_name and not (indexer or indexer_id):
-                            (_, idxr, i) = helpers.search_indexer_for_show_id(show_name, indexer, indexer_id)
-
-                            # set indexer and indexer_id from found info
-                            if not indexer and idxr:
-                                indexer = idxr
-
-                            if not indexer_id and i:
-                                indexer_id = i
-
                 cur_dir['existing_info'] = (indexer_id, show_name, indexer)
 
                 if indexer_id and Show.find(app.showList, indexer_id):
