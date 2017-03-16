@@ -423,7 +423,7 @@ class TraktChecker(object):
                     show_name = show_obj['title']
 
                 if Show.find(app.showList, show_obj['imdb_id'], EXTERNAL_IMDB):
-                    logger.log(u"Show already added in your library: {0}".format(show_obj['title']), logger.DEBUG)
+                    logger.log(u'Show already added in your library: {0}'.format(show_obj['title']), logger.DEBUG)
                     continue
 
                 if int(app.TRAKT_METHOD_ADD) != 2:

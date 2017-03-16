@@ -1564,9 +1564,10 @@
                                         <span class="component-title">Default indexer</span>
                                         <span class="component-desc">
                                             <select id="trakt_default_indexer" name="trakt_default_indexer" class="form-control input-sm">
-                                                % for indexer in indexerApi().indexers:
+                                                <% indexers = indexerApi().indexers %>
+                                                % for indexer in indexers:
                                                     <%
-                                                        name = indexerApi().indexers[indexer]
+                                                        name = indexers[indexer]
                                                         if name == 'TVmaze':
                                                             continue
                                                     %>
