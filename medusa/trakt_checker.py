@@ -27,7 +27,7 @@ from .common import Quality, SKIPPED, UNKNOWN, WANTED
 from .helper.common import episode_num
 from .helper.exceptions import ex
 from .indexers.indexer_api import indexerApi
-from .indexers.indexer_config import EXTERNAL_IMDB
+from .indexers.indexer_config import EXTERNAL_IMDB, INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from .search.queue import BacklogQueueItem
 from .show.show import Show
 
@@ -422,8 +422,19 @@ class TraktChecker(object):
                 else:
                     show_name = show_obj['title']
 
-                if Show.find(app.showList, show_obj['imdb_id'], EXTERNAL_IMDB):
-                    logger.log(u'Show already added in your library: {0}'.format(show_obj['title']), logger.DEBUG)
+                found_indexer = None
+                if Show.find(app.showList, show_obj['all_ids'].get('tvdb', -1), INDEXER_TVDBV2):
+                    found_indexer = 'TVDB'
+                elif Show.find(app.showList, show_obj['all_ids'].get('tmdb', -1), INDEXER_TMDB):
+                    found_indexer = 'TMDB'
+                elif Show.find(app.showList, show_obj['all_ids'].get('tvmaze', -1), INDEXER_TVMAZE):
+                    found_indexer = 'TVMAZE'
+                elif Show.find(app.showList, show_obj['all_ids'].get('imdb', -1), EXTERNAL_IMDB):
+                    found_indexer = 'IMDB'
+
+                if found_indexer:
+                    logger.log(u'Show already added in your library: {0} with indexer: {1}'.format
+                               (show_obj['title'], found_indexer), logger.DEBUG)
                     continue
 
                 if int(app.TRAKT_METHOD_ADD) != 2:
@@ -554,15 +565,17 @@ class TraktChecker(object):
                 title = watchlist_item['show']['title']
                 year = watchlist_item['show']['year']
                 slug = watchlist_item['show']['ids']['slug']
-                imdb_id = watchlist_item['show']['ids']['imdb']
+                all_ids = {k: v for k, v in watchlist_item['show']['ids'].items() if k not in ['trakt', 'slug']}
 
                 if tvdb:
                     showid = watchlist_item['show']['ids'][tvdb_id]
-                    self.show_watchlist['{0}_id'.format(tvdb_id)][showid] = {'id': showid, 'title': title, 'year': year, 'slug': slug, 'imdb_id': imdb_id}
+                    self.show_watchlist['{0}_id'.format(tvdb_id)][showid] = {'id': showid, 'title': title, 'year': year,
+                                                                             'slug': slug, 'all_ids': all_ids}
 
                 if tmdb:
                     showid = watchlist_item['show']['ids'][tmdb_id]
-                    self.show_watchlist['{0}_id'.format(tmdb_id)][showid] = {'id': showid, 'title': title, 'year': year, 'slug': slug, 'imdb_id': imdb_id}
+                    self.show_watchlist['{0}_id'.format(tmdb_id)][showid] = {'id': showid, 'title': title, 'year': year,
+                                                                             'slug': slug, 'all_ids': all_ids}
         except TraktException as e:
             logger.log(u"Could not connect to Trakt. Unable to retrieve show's watchlist: {0!r}".format(e), logger.WARNING)
             return False
