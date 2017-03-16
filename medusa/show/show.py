@@ -67,7 +67,8 @@ class Show(object):
             return None
 
         indexer_ids = [indexer_id] if not isinstance(indexer_id, list) else indexer_id
-        results = [show for show in shows if (indexer is None or show.indexer == indexer) and show.indexerid in indexer_ids]
+        results = [show for show in shows if show.imdb_id == indexer_id and indexer == 10 or
+                   ((indexer is None or show.indexer == indexer) and show.indexerid in indexer_ids)]
 
         if not results:
             return None
