@@ -31,7 +31,8 @@ from .indexers.indexer_config import EXTERNAL_IMDB, INDEXER_TMDB, INDEXER_TVDBV2
 from .search.queue import BacklogQueueItem
 from .show.show import Show
 
-TRAKT_INDEXERS = {'TVDB': 'tvdb', 'TMDB': 'tmdb', 'TVmaze': 'tvmaze'}
+# Medusa indexer name vs trakt indexer name
+TRAKT_INDEXERS = {'tvdb': 'tvdb', 'tmdb': 'tmdb', 'tvmaze': 'tvmaze'}
 
 
 def setEpisodeToWanted(show, s, e):
@@ -112,7 +113,7 @@ class TraktChecker(object):
 
         return library_shows
 
-    def find_show(self, indexerid):
+    def find_show(self, indexerid, indexer_name):
 
         try:
             trakt_library = self._request('sync/collection/shows') or []
@@ -120,9 +121,8 @@ class TraktChecker(object):
                 logger.log('No shows found in your library, aborting library update', logger.DEBUG)
                 return
 
-            trakt_show = [x for x in trakt_library if int(indexerid) in [int(x['show']['ids'][TRAKT_INDEXERS.get('TVDB')] or 0),
-                                                                         int(x['show']['ids'][TRAKT_INDEXERS.get('TMDB')] or 0),
-                                                                         int(x['show']['ids'][TRAKT_INDEXERS.get('TVmaze')] or 0)]]
+            trakt_show = [x for x in trakt_library if
+                          int(indexerid) in [int(x['show']['ids'].get(TRAKT_INDEXERS.get(indexer_name, ''), 0))]]
         except TraktException as e:
             logger.log('Could not connect to Trakt. Aborting library check. Error: {0}'.format(repr(e)), logger.WARNING)
 
@@ -130,7 +130,7 @@ class TraktChecker(object):
 
     def remove_show_trakt_library(self, show_obj):
         """Remove Show from trakt collections."""
-        if self.find_show(show_obj.indexerid):
+        if self.find_show(show_obj.indexerid, show_obj.indexer_name):
             trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
 
             # URL parameters
@@ -145,11 +145,11 @@ class TraktChecker(object):
             }
 
             if trakt_id == 'tvdb_id':
-                data['shows'][0]['ids'][TRAKT_INDEXERS.get('TVDB')] = show_obj.indexerid
+                data['shows'][0]['ids'][TRAKT_INDEXERS.get('tvdb')] = show_obj.indexerid
             elif trakt_id == 'tmdb_id':
-                data['shows'][0]['ids'][TRAKT_INDEXERS.get('TMDB')] = show_obj.indexerid
+                data['shows'][0]['ids'][TRAKT_INDEXERS.get('tmdb')] = show_obj.indexerid
             elif trakt_id == 'tvmaze_id':
-                data['shows'][0]['ids'][TRAKT_INDEXERS.get('TVmaze')] = show_obj.indexerid
+                data['shows'][0]['ids'][TRAKT_INDEXERS.get('tvmaze')] = show_obj.indexerid
 
             logger.log('Removing {0} from Trakt library'.format(show_obj.name), logger.DEBUG)
 
@@ -174,7 +174,7 @@ class TraktChecker(object):
         """
         data = {}
 
-        if not self.find_show(show_obj.indexerid):
+        if not self.find_show(show_obj.indexerid, show_obj.indexer_name):
             trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
             # URL parameters
             data = {
@@ -188,11 +188,11 @@ class TraktChecker(object):
             }
 
             if trakt_id == 'tvdb_id':
-                data['shows'][0]['ids'][TRAKT_INDEXERS.get('TVDB')] = show_obj.indexerid
+                data['shows'][0]['ids'][TRAKT_INDEXERS.get('tvdb')] = show_obj.indexerid
             elif trakt_id == 'tmdb_id':
-                data['shows'][0]['ids'][TRAKT_INDEXERS.get('TMDB')] = show_obj.indexerid
+                data['shows'][0]['ids'][TRAKT_INDEXERS.get('tmdb')] = show_obj.indexerid
             elif trakt_id == 'tvmaze_id':
-                data['shows'][0]['ids'][TRAKT_INDEXERS.get('TVmaze')] = show_obj.indexerid
+                data['shows'][0]['ids'][TRAKT_INDEXERS.get('tvmaze')] = show_obj.indexerid
 
         if data:
             logger.log('Adding {0} to Trakt library'.format(show_obj.name), logger.DEBUG)
@@ -376,11 +376,11 @@ class TraktChecker(object):
                         logger.log('Adding Show {0} with ID: {1} to Trakt watchlist'.format(show_obj.name, show_obj.indexerid), logger.DEBUG)
                         show_el = {'title': show_obj.name, 'year': show_obj.start_year, 'ids': {}}
                         if trakt_id == 'tvdb_id':
-                            show_el['ids'][TRAKT_INDEXERS.get('TVDB')] = show_obj.indexerid
+                            show_el['ids'][TRAKT_INDEXERS.get('tvdb')] = show_obj.indexerid
                         elif trakt_id == 'tmdb_id':
-                            show_el['ids'][TRAKT_INDEXERS.get('TMDB')] = show_obj.indexerid
+                            show_el['ids'][TRAKT_INDEXERS.get('tmdb')] = show_obj.indexerid
                         elif trakt_id == 'tvmaze_id':
-                            show_el['ids'][TRAKT_INDEXERS.get('TVmaze')] = show_obj.indexerid
+                            show_el['ids'][TRAKT_INDEXERS.get('tvmaze')] = show_obj.indexerid
                         trakt_data.append(show_el)
 
                 if trakt_data:
@@ -433,11 +433,11 @@ class TraktChecker(object):
                     show_name = show_obj['title']
 
                 found_indexer = None
-                if Show.find(app.showList, show_obj['all_ids'].get(TRAKT_INDEXERS.get('TVDB'), -1), INDEXER_TVDBV2):
+                if Show.find(app.showList, show_obj['all_ids'].get(TRAKT_INDEXERS.get('tvdb'), -1), INDEXER_TVDBV2):
                     found_indexer = 'TVDB'
-                elif Show.find(app.showList, show_obj['all_ids'].get(TRAKT_INDEXERS.get('TMDB'), -1), INDEXER_TMDB):
+                elif Show.find(app.showList, show_obj['all_ids'].get(TRAKT_INDEXERS.get('tmdb'), -1), INDEXER_TMDB):
                     found_indexer = 'TMDB'
-                elif Show.find(app.showList, show_obj['all_ids'].get(TRAKT_INDEXERS.get('TVmaze'), -1), INDEXER_TVMAZE):
+                elif Show.find(app.showList, show_obj['all_ids'].get(TRAKT_INDEXERS.get('tvmaze'), -1), INDEXER_TVMAZE):
                     found_indexer = 'TVMAZE'
                 elif Show.find(app.showList, show_obj['all_ids'].get('imdb', -1), EXTERNAL_IMDB):
                     found_indexer = 'IMDB'
@@ -668,11 +668,11 @@ class TraktChecker(object):
                 trakt_id = indexerApi(indexerid).config['trakt_id']
 
                 if trakt_id == 'tvdb_id':
-                    uniqueShows[showid]['ids'][TRAKT_INDEXERS.get('TVDB')] = showid
+                    uniqueShows[showid]['ids'][TRAKT_INDEXERS.get('tvdb')] = showid
                 elif trakt_id == 'tmdb_id':
-                    uniqueShows[showid]['ids'][TRAKT_INDEXERS.get('TMDB')] = showid
+                    uniqueShows[showid]['ids'][TRAKT_INDEXERS.get('tmdb')] = showid
                 elif trakt_id == 'tvmaze_id':
-                    uniqueShows[showid]['ids'][TRAKT_INDEXERS.get('TVmaze')] = showid
+                    uniqueShows[showid]['ids'][TRAKT_INDEXERS.get('tvmaze')] = showid
                 uniqueSeasons[showid] = []
 
         # Get the unique seasons per Show
