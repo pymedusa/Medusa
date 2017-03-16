@@ -33,6 +33,7 @@ from .show.show import Show
 
 TRAKT_INDEXERS = ['tvdb', 'tmdb', 'tvmaze']
 
+
 def setEpisodeToWanted(show, s, e):
     """
     Sets an episode to wanted, only if it is currently skipped
@@ -562,7 +563,7 @@ class TraktChecker(object):
         Get Watchlist and parse once into addressable structure
         """
         try:
-            self.show_watchlist = {'tvdb_id': {}, 'tmdb_id': {}, 'tvmaze_id': {}}
+            self.show_watchlist = {k + '_id': {} for k in TRAKT_INDEXERS
             trakt_show_watchlist = self._request('sync/watchlist/shows')
 
             for watchlist_item in trakt_show_watchlist:
@@ -589,7 +590,7 @@ class TraktChecker(object):
          Get Watchlist and parse once into addressable structure
         """
         try:
-            self.episode_watchlist = {'tvdb_id': {}, 'tmdb_id': {}, 'tvmaze_id': {}}
+            self.episode_watchlist = {k + '_id': {} for k in TRAKT_INDEXERS
             trakt_episode_watchlist = self._request('sync/watchlist/episodes')
 
             for watchlist_item in trakt_episode_watchlist:
@@ -621,7 +622,7 @@ class TraktChecker(object):
         Get Collection and parse once into addressable structure
         """
         try:
-            self.collection_list = {'tvdb_id': {}, 'tmdb_id': {}, 'tvmaze_id': {}}
+            self.collection_list = {k + '_id': {} for k in TRAKT_INDEXERS}
             logger.log('Getting Show Collection', logger.DEBUG)
             trakt_collection = self._request('sync/collection/shows')
 
@@ -647,7 +648,6 @@ class TraktChecker(object):
 
                                     if episode not in self.collection_list['{0}_id'.format(indexer)][showid]['seasons'][season]['episodes'].keys():
                                         self.collection_list['{0}_id'.format(indexer)][showid]['seasons'][season]['episodes'][episode] = episode
-
 
         except TraktException as e:
             logger.log(u"Could not connect to Trakt. Unable to retrieve show's collection: {0!r}".format(e), logger.WARNING)
