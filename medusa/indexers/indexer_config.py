@@ -94,7 +94,7 @@ indexerConfig = {
             'use_zip': True,
             'session': make_session(cache_etags=False),
         },
-        'trakt_id': 'tvdb_id',
+        'trakt_id': 'tmdb_id',
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://www.themoviedb.org',
