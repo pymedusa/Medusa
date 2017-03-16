@@ -62,12 +62,12 @@ class Show(object):
         :return: The desired show if found, ``None`` if not found
         :throw: ``MultipleShowObjectsException`` if multiple shows match the provided ``indexer_id``
         """
-
+        from medusa.indexers.indexer_config import EXTERNAL_IMDB
         if indexer_id is None or shows is None or len(shows) == 0:
             return None
 
         indexer_ids = [indexer_id] if not isinstance(indexer_id, list) else indexer_id
-        results = [show for show in shows if show.imdb_id == indexer_id and indexer == 10 or
+        results = [show for show in shows if show.imdb_id == indexer_id and indexer == EXTERNAL_IMDB or
                    ((indexer is None or show.indexer == indexer) and show.indexerid in indexer_ids)]
 
         if not results:
