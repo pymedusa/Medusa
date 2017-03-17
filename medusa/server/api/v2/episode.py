@@ -19,7 +19,7 @@ class EpisodeHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'OPTIONS')
+    allowed_methods = ('GET', )
 
     def get(self, series_slug, identifier, path_param):
         """Query show information.

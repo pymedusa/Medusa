@@ -14,7 +14,7 @@ class SeriesHandler(BaseRequestHandler):
     #: identifier
     identifier = ('series_slug', r'[a-z]+\d+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'POST', 'PUT', 'DELETE', 'OPTIONS')
+    allowed_methods = ('GET', 'POST', 'PUT', 'DELETE', )
 
     def get(self, series_slug, path_param=None):
         """Query series information.

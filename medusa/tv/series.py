@@ -130,11 +130,11 @@ class SeriesIdentifier(object):
         """Constructor.
 
         :param indexer:
-        :type indexer: Indexer
+        :type indexer: Indexer or int
         :param identifier:
         :type identifier: int
         """
-        self.indexer = indexer
+        self.indexer = indexer if isinstance(indexer, Indexer) else Indexer.from_id(indexer)
         self.id = identifier
 
     @classmethod
@@ -143,6 +143,11 @@ class SeriesIdentifier(object):
         indexer, indexer_id = slug_to_indexer_id(slug)
         if indexer is not None:
             return SeriesIdentifier(Indexer(indexer), indexer_id)
+
+    @classmethod
+    def from_id(cls, indexer, indexer_id):
+        """Create SeriesIdentifier from tuple (indexer, indexer_id)."""
+        return SeriesIdentifier(indexer, indexer_id)
 
     def __bool__(self):
         """Magic method."""
@@ -249,6 +254,14 @@ class Series(TV):
         result = Show.find(app.showList, identifier.id, identifier.indexer.id)
         if result and (not predicate or predicate(result)):
             return result
+
+    @property
+    def identifier(self):
+        return SeriesIdentifier(self.indexer, self.indexerid)
+
+    @property
+    def slug(self):
+        return str(self.identifier)
 
     @property
     def indexer_api(self):

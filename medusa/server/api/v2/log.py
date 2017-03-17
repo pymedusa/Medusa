@@ -19,7 +19,7 @@ class LogHandler(BaseRequestHandler):
     #: identifier
     identifier = ('log_level', r'[a-zA-Z]+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'POST', 'OPTIONS')
+    allowed_methods = ('GET', 'POST', )
 
     def get(self, log_level):
         """Query logs.
@@ -27,21 +27,20 @@ class LogHandler(BaseRequestHandler):
         :param log_level:
         :type log_level: str
         """
-        log_level = log_level or 'INFO'
+        log_level = (log_level or 'INFO').upper()
         if log_level not in LOGGING_LEVELS:
             return self._not_found('Log level not found')
 
         arg_page = self._get_page()
         arg_limit = self._get_limit()
-        min_level = LOGGING_LEVELS[log_level.upper()]
+        min_level = LOGGING_LEVELS[log_level]
 
         def data_generator():
             """Read log lines based on the specified criteria."""
-            start = arg_limit * (arg_page - 1)
-            for i, l in enumerate(read_loglines(max_lines=arg_limit * arg_page,
-                                                predicate=lambda li: filter_logline(li, min_level=min_level))):
-                if i >= start:
-                    yield l.to_json()
+            start = arg_limit * (arg_page - 1) + 1
+            for l in read_loglines(start_index=start, max_lines=arg_limit * arg_page,
+                                   predicate=lambda li: filter_logline(li, min_level=min_level)):
+                yield l.to_json()
 
         return self._paginate(data_generator=data_generator)
 

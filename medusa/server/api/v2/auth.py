@@ -21,7 +21,7 @@ class AuthHandler(BaseRequestHandler):
     #: resource name
     name = 'authenticate'
     #: allowed HTTP methods
-    allowed_methods = ('POST', 'OPTIONS')
+    allowed_methods = ('POST', )
 
     def prepare(self):
         """Prepare."""

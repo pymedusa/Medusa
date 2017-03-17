@@ -23,6 +23,11 @@ class Indexer(object):
         if identifier is not None:
             return Indexer(identifier)
 
+    @classmethod
+    def from_id(cls, pk):
+        """Create Indexer from id."""
+        return Indexer(pk)
+
     @property
     def slug(self):
         """Slug name."""

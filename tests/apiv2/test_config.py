@@ -168,7 +168,7 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config, quer
 
 
 @pytest.mark.gen_test
-def test_config_get_detailed_not_found(http_client, create_url, auth_headers):
+def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
     # given
     url = create_url('/config/abcdef/')
 
@@ -177,4 +177,4 @@ def test_config_get_detailed_not_found(http_client, create_url, auth_headers):
         yield http_client.fetch(url, **auth_headers)
 
     # then
-    assert 404 == error.value.code
+    assert 400 == error.value.code

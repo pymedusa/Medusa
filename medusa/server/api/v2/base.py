@@ -2,6 +2,7 @@
 """Base module for request handlers."""
 
 import base64
+import collections
 import json
 import operator
 import traceback
@@ -10,12 +11,14 @@ from datetime import datetime
 from babelfish.language import Language
 import jwt
 from medusa import app
-from six import text_type
+from six import string_types, text_type
 from tornado.web import RequestHandler
 
 
 class BaseRequestHandler(RequestHandler):
     """A base class used for shared RequestHandler methods."""
+
+    DEFAULT_ALLOWED_METHODS = ('OPTIONS', )
 
     #: resource name
     name = None
@@ -24,7 +27,7 @@ class BaseRequestHandler(RequestHandler):
     #: path param
     path_param = None
     #: allowed HTTP methods
-    allowed_methods = ('OPTIONS', )
+    allowed_methods = None
     #: parent resource handler
     parent_handler = None
 
@@ -76,7 +79,7 @@ class BaseRequestHandler(RequestHandler):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'Origin, Accept, Authorization, Content-Type,'
                                                         'X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
-        self.set_header('Access-Control-Allow-Methods', ', '.join(self.allowed_methods))
+        self.set_header('Access-Control-Allow-Methods', ', '.join(self.DEFAULT_ALLOWED_METHODS + self.allowed_methods))
 
     def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, **kwargs):
         """End the api request writing error or data to http response."""
@@ -189,15 +192,16 @@ class BaseRequestHandler(RequestHandler):
             'X-Pagination-Limit': arg_limit
         }
 
-        results = []
         if data_generator:
             results = list(data_generator())
-        elif sort:
+        else:
             arg_sort = self._get_sort(default=sort)
             arg_sort_order = self._get_sort_order()
             start = (arg_page - 1) * arg_limit
             end = start + arg_limit
-            results = sorted(data, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
+            results = data
+            if arg_sort:
+                results = sorted(results, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
             results = results[start:end]
             headers['X-Pagination-Count'] = len(results)
 
@@ -257,3 +261,95 @@ def json_string_encoder(o):
         return getattr(o, 'name')
 
     return text_type(o)
+
+
+def iter_nested_items(data, prefix=''):
+    """Iterate through the dictionary.
+
+    Nested keys are separated with dots.
+    """
+    for key, value in data.items():
+        p = prefix + key
+        if isinstance(value, collections.Mapping):
+            for inner_key, inner_value in iter_nested_items(value, prefix=p + '.'):
+                yield inner_key, inner_value
+        else:
+            yield p, value
+
+
+def set_nested_value(data, key, value):
+    """Set nested value to the dictionary."""
+    keys = key.split('.')
+    for k in keys[:-1]:
+        data = data.setdefault(k, {})
+
+    data[keys[-1]] = value
+
+
+class PatchField(object):
+    """Represent a field to be patched."""
+
+    def __init__(self, target_type, attr, attr_type,
+                 validator=None, converter=None, default_value=None, post_processor=None):
+        """Constructor."""
+        if not hasattr(target_type, attr):
+            raise ValueError('{0!r} has no attribute {1}'.format(target_type, attr))
+
+        self.target_type = target_type
+        self.attr = attr
+        self.attr_type = attr_type
+        self.validator = validator or (lambda v: isinstance(v, self.attr_type))
+        self.converter = converter or (lambda v: v)
+        self.default_value = default_value
+        self.post_processor = post_processor
+
+    def patch(self, target, value):
+        """Patch the field with the specified value."""
+        valid = self.validator(value)
+
+        if not valid and self.default_value is not None:
+            value = self.default_value
+            valid = True
+
+        if valid:
+            setattr(target, self.attr, self.converter(value))
+            if self.post_processor:
+                self.post_processor(value)
+            return True
+
+
+class StringField(PatchField):
+    """Patch string fields."""
+
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+        """Constructor."""
+        super(StringField, self).__init__(target_type, attr, string_types, validator=validator, converter=converter,
+                                          default_value=default_value, post_processor=post_processor)
+
+
+class IntegerField(PatchField):
+    """Patch integer fields."""
+
+    def __init__(self, target_type, attr, validator=None, converter=None, default_value=None, post_processor=None):
+        """Constructor."""
+        super(IntegerField, self).__init__(target_type, attr, int, validator=validator, converter=converter,
+                                           default_value=default_value, post_processor=post_processor)
+
+
+class BooleanField(PatchField):
+    """Patch boolean fields."""
+
+    def __init__(self, target_type, attr, validator=None, converter=int, default_value=None, post_processor=None):
+        """Constructor."""
+        super(BooleanField, self).__init__(target_type, attr, bool, validator=validator, converter=converter,
+                                           default_value=default_value, post_processor=post_processor)
+
+
+class EnumField(PatchField):
+    """Patch enumeration fields."""
+
+    def __init__(self, target_type, attr, enums, attr_type=text_type,
+                 converter=None, default_value=None, post_processor=None):
+        """Constructor."""
+        super(EnumField, self).__init__(target_type, attr, attr_type, validator=lambda v: v in enums,
+                                        converter=converter, default_value=default_value, post_processor=post_processor)

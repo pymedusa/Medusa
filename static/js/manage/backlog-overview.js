@@ -60,7 +60,7 @@ MEDUSA.manage.backlogOverview = function() {
     });
 
     $('#backlog_period').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             backlogOverview: {
                 period: $(this).val()
             }
@@ -73,7 +73,7 @@ MEDUSA.manage.backlogOverview = function() {
     });
 
     $('#backlog_status').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             backlogOverview: {
                 status: $(this).val()
             }

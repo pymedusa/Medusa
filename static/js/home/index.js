@@ -323,7 +323,7 @@ MEDUSA.home.index = function() {
     });
 
     $('.show-option .show-layout').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             layout: {
                 home: $(this).val()
             }
@@ -336,7 +336,7 @@ MEDUSA.home.index = function() {
     });
 
     $('#showRootDir').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             selectedRootIndex: $(this).val()
         }).then(function(response) {
             log.info(response);
