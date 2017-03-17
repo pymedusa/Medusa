@@ -16,7 +16,7 @@ class SeriesAssetHandler(BaseRequestHandler):
     #: identifier
     identifier = ('identifier', r'[a-zA-Z]+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'OPTIONS')
+    allowed_methods = ('GET', )
 
     def get(self, series_slug, identifier, *args, **kwargs):
         """Get an asset."""
