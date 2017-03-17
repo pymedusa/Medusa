@@ -257,10 +257,12 @@ class Series(TV):
 
     @property
     def identifier(self):
+        """Identifier."""
         return SeriesIdentifier(self.indexer, self.indexerid)
 
     @property
     def slug(self):
+        """Slug."""
         return str(self.identifier)
 
     @property

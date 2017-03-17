@@ -136,7 +136,7 @@ def test_config_get(http_client, create_url, auth_headers, config):
     # given
     expected = config
 
-    url = create_url('/config')
+    url = create_url('/config/main')
 
     # when
     response = yield http_client.fetch(url, **auth_headers)
@@ -157,7 +157,7 @@ def test_config_get(http_client, create_url, auth_headers, config):
 def test_config_get_detailed(http_client, create_url, auth_headers, config, query):
     # given
     expected = config[query]
-    url = create_url('/config/{0}/'.format(query))
+    url = create_url('/config/main/{0}/'.format(query))
 
     # when
     response = yield http_client.fetch(url, **auth_headers)
@@ -170,7 +170,7 @@ def test_config_get_detailed(http_client, create_url, auth_headers, config, quer
 @pytest.mark.gen_test
 def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
     # given
-    url = create_url('/config/abcdef/')
+    url = create_url('/config/main/abcdef/')
 
     # when
     with pytest.raises(HTTPError) as error:
@@ -178,3 +178,16 @@ def test_config_get_detailed_bad_request(http_client, create_url, auth_headers):
 
     # then
     assert 400 == error.value.code
+
+
+@pytest.mark.gen_test
+def test_config_get_not_found(http_client, create_url, auth_headers):
+    # given
+    url = create_url('/config/abcdef/')
+
+    # when
+    with pytest.raises(HTTPError) as error:
+        yield http_client.fetch(url, **auth_headers)
+
+    # then
+    assert 404 == error.value.code
