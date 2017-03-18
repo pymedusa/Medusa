@@ -7,7 +7,7 @@ MEDUSA.manage.manageSearches = function() {
         var status = $('#sceneExceptionStatus');
 
         var medusaException = exceptions.data.filter(function(obj) {
-            return obj.id === 'medusa';
+            return obj.id === 'local';
         });
         var cusExceptionDate = new Date(medusaException[0].lastUpdate * 1000).toLocaleDateString();
 
@@ -67,7 +67,7 @@ MEDUSA.manage.manageSearches = function() {
         // Start a spinner.
         updateSpinner(status, 'Retrieving scene exceptions...', true);
 
-        api.post('exceptiontype/operation', {type: 'REFRESH'}, {
+        api.post('alias-source/operation', {type: 'REFRESH'}, {
             timeout: 60000
         }).then(function(response) {
             status[0].innerHTML = '';
@@ -75,7 +75,7 @@ MEDUSA.manage.manageSearches = function() {
                 $('<span></span>').text(response.data.result)
             );
 
-            api.get('exceptiontype').then(function(response) {
+            api.get('alias-source').then(function(response) {
                 updateExceptionTable(response);
                 $('.forceSceneExceptionRefresh').addClass('disabled');
             }).catch(function(err) {
@@ -90,7 +90,7 @@ MEDUSA.manage.manageSearches = function() {
     });
 
     // Initially load the exception types last updates on page load.
-    api.get('exceptiontype').then(function(response) {
+    api.get('alias-source').then(function(response) {
         updateExceptionTable(response);
     }).catch(function(err) {
         log.error('Trying to get scene exceptions failed with error: ' + err);

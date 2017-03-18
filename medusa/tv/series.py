@@ -149,6 +149,11 @@ class SeriesIdentifier(object):
         """Create SeriesIdentifier from tuple (indexer, indexer_id)."""
         return SeriesIdentifier(indexer, indexer_id)
 
+    @property
+    def slug(self):
+        """Slug."""
+        return str(self)
+
     def __bool__(self):
         """Magic method."""
         return self.indexer is not None and self.id is not None
@@ -263,7 +268,7 @@ class Series(TV):
     @property
     def slug(self):
         """Slug."""
-        return str(self.identifier)
+        return self.identifier.slug
 
     @property
     def indexer_api(self):

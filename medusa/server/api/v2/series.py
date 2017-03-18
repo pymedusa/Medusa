@@ -13,6 +13,8 @@ class SeriesHandler(BaseRequestHandler):
     name = 'series'
     #: identifier
     identifier = ('series_slug', r'[a-z]+\d+')
+    #: path param
+    path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', 'PUT', 'DELETE', )
 

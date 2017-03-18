@@ -202,8 +202,8 @@ class BaseRequestHandler(RequestHandler):
             results = data
             if arg_sort:
                 results = sorted(results, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
-            results = results[start:end]
             headers['X-Pagination-Count'] = len(results)
+            results = results[start:end]
 
         return self._ok(data=results, headers=headers)
 
