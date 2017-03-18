@@ -22,9 +22,9 @@ class EpisodeHandler(BaseRequestHandler):
     allowed_methods = ('GET', )
 
     def get(self, series_slug, identifier, path_param):
-        """Query show information.
+        """Query episode information.
 
-        :param series_slug: show slug. E.g.: tvdb1234
+        :param series_slug: series slug. E.g.: tvdb1234
         :param identifier:
         :param path_param:
         """

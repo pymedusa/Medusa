@@ -22,7 +22,6 @@
 <%block name="content">
 <input type="hidden" id="series_slug" value="${show.slug}" />
 <input type="hidden" id="showID" value="${show.indexerid}" />
-<input type="hidden" id="showIndexerSlug" value="${show.indexer_slug}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
