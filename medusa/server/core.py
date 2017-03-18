@@ -7,6 +7,8 @@ import threading
 
 from medusa.server.api.v2.episode import EpisodeHandler
 from medusa.server.api.v2.series import SeriesHandler
+from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
+from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
@@ -33,6 +35,8 @@ def get_apiv2_handlers(base):
         ConfigHandler.create_app_handler(base),
         LogHandler.create_app_handler(base),
         SeriesAssetHandler.create_app_handler(base),
+        SeriesOperationHandler.create_app_handler(base),
+        SeriesLegacyHandler.create_app_handler(base),  # To be removed
         SceneExceptionTypeOperationHandler.create_app_handler(base),
         SceneExceptionAllTypeOperationHandler.create_app_handler(base),
         SceneExceptionTypeHandler.create_app_handler(base),
