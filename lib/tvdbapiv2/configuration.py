@@ -20,8 +20,7 @@ Copyright 2015 SmartBear Software
 
 from __future__ import absolute_import
 
-import base64
-from requests.packages import urllib3
+from requests.packages.urllib3.util import make_headers
 
 try:
     import httplib
@@ -33,6 +32,7 @@ import sys
 import logging
 
 from six import iteritems
+
 
 def singleton(cls, *args, **kw):
     instances = {}
@@ -77,7 +77,6 @@ class Configuration(object):
         # Logging Settings
         self.logger = {}
         self.logger["package_logger"] = logging.getLogger("swagger_client")
-        self.logger["urllib3_logger"] = logging.getLogger("urllib3")
         # Log format
         self.logger_format = '%(asctime)s %(levelname)s %(message)s'
         # Log stream handler
@@ -205,8 +204,7 @@ class Configuration(object):
 
         :return: The token for basic HTTP authentication.
         """
-        return urllib3.util.make_headers(basic_auth=self.username + ':' + self.password)\
-                           .get('authorization')
+        return make_headers(basic_auth=self.username + ':' + self.password).get('authorization')
 
     def auth_settings(self):
         """
