@@ -5,8 +5,18 @@ from __future__ import unicode_literals
 import os
 import threading
 
+from medusa.server.api.v2.alias import AliasHandler
+from medusa.server.api.v2.alias_source import (
+    AliasSourceHandler,
+    AliasSourceOperationHandler,
+)
+from medusa.server.api.v2.auth import AuthHandler
+from medusa.server.api.v2.base import NotFoundHandler
+from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
+from medusa.server.api.v2.log import LogHandler
 from medusa.server.api.v2.series import SeriesHandler
+from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from tornado.httpserver import HTTPServer
@@ -21,14 +31,6 @@ from ..helpers import create_https_certificates, generate_api_key
 
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
-    from .api.v2.config import ConfigHandler
-    from .api.v2.log import LogHandler
-    from .api.v2.auth import AuthHandler
-    from .api.v2.series_asset import SeriesAssetHandler
-    from .api.v2.base import NotFoundHandler
-    from .api.v2.scene_exception import (SceneExceptionHandler, SceneExceptionTypeHandler,
-                                         SceneExceptionAllTypeOperationHandler, SceneExceptionTypeOperationHandler)
-
     return [
         EpisodeHandler.create_app_handler(base),
         SeriesHandler.create_app_handler(base),
@@ -37,10 +39,9 @@ def get_apiv2_handlers(base):
         SeriesAssetHandler.create_app_handler(base),
         SeriesOperationHandler.create_app_handler(base),
         SeriesLegacyHandler.create_app_handler(base),  # To be removed
-        SceneExceptionTypeOperationHandler.create_app_handler(base),
-        SceneExceptionAllTypeOperationHandler.create_app_handler(base),
-        SceneExceptionTypeHandler.create_app_handler(base),
-        SceneExceptionHandler.create_app_handler(base),
+        AliasSourceHandler.create_app_handler(base),
+        AliasSourceOperationHandler.create_app_handler(base),
+        AliasHandler.create_app_handler(base),
         AuthHandler.create_app_handler(base),
         # Always keep this last!
         NotFoundHandler.create_app_handler(base)
