@@ -72,11 +72,11 @@ $(document).ready(function() {
         var url = 'series/' + $('#series_slug').attr('value') + '/operation';
         api.post(url, {type: 'ARCHIVE_EPISODES'}).then(function(response) {
             var html = '';
-            if (response.status == 201) {
+            if (response.status === 201) {
                 html = 'Successfully archived episodes';
                 // Recalculate backlogged episodes after we archive it
                 backloggedEpisodes();
-            } else if (response.status == 204) {
+            } else if (response.status === 204) {
                 html = 'No episodes to be archived';
             }
             $('#archivedStatus').html(html);
