@@ -22,6 +22,7 @@ import datetime
 import traceback
 
 from traktor import TokenExpiredException, TraktApi, TraktException
+
 from . import app, db, logger, ui
 from .common import Quality, SKIPPED, WANTED
 from .helper.common import episode_num
@@ -40,6 +41,14 @@ def get_trakt_indexer(indexer):
         if TRAKT_INDEXERS[trakt_indexer] == indexer:
             return trakt_indexer
     return None
+
+
+def get_title_without_year(title, title_year):
+    """Get title without year."""
+    year = ' ({0})'.format(title_year)
+    if year in title:
+        title = title.replace(year)
+    return title
 
 
 def setEpisodeToWanted(show, s, e):
@@ -142,10 +151,11 @@ class TraktChecker(object):
             trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
 
             # URL parameters
+            title = get_title_without_year(show_obj.name, show_obj.start_year)
             data = {
                 'shows': [
                     {
-                        'title': show_obj.name,
+                        'title': title,
                         'year': show_obj.start_year,
                         'ids': {}
                     }
@@ -176,7 +186,7 @@ class TraktChecker(object):
 
     def add_show_trakt_library(self, show_obj):
         """
-        Sends a request to trakt indicating that the given show and all its episodes is part of our library.
+        Send a request to trakt indicating that the given show and all its episodes is part of our library.
 
         show_obj: The Series object to add to trakt
         """
@@ -185,10 +195,11 @@ class TraktChecker(object):
         if not self.find_show(show_obj.indexerid, show_obj.indexer):
             trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
             # URL parameters
+            title = get_title_without_year(show_obj.name, show_obj.start_year)
             data = {
                 'shows': [
                     {
-                        'title': show_obj.name,
+                        'title': title,
                         'year': show_obj.start_year,
                         'ids': {}
                     }
@@ -405,7 +416,8 @@ class TraktChecker(object):
                     if not self._check_list(show_obj=show_obj, List='Show'):
                         logger.log('Adding Show {0} to Trakt watchlist'.format
                                    (show_obj.name), logger.DEBUG)
-                        show_el = {'title': show_obj.name, 'year': show_obj.start_year, 'ids': {}}
+                        title = get_title_without_year(show_obj.name, show_obj.start_year)
+                        show_el = {'title': title, 'year': show_obj.start_year, 'ids': {}}
                         trakt_data.append(show_el)
 
                 if trakt_data:
@@ -581,9 +593,10 @@ class TraktChecker(object):
                 else:
                     return False
         elif 'Show' == List:
+            trakt_indexer = get_trakt_indexer(show_obj.indexer)
             for watchlisted_show in self.show_watchlist:
-                if watchlisted_show['show']['ids'].get(show_obj.indexer_name, '') == show_obj.indexerid or \
-                        watchlisted_show['show']['ids'].get('imdb', '') == show_obj.imdb_id:
+                if watchlisted_show['show']['ids'].get(trakt_indexer) == show_obj.indexerid or \
+                        watchlisted_show['show']['ids'].get(get_trakt_indexer(EXTERNAL_IMDB), '') == show_obj.imdb_id:
                     return True
             return False
         else:
