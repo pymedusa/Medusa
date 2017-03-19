@@ -25,12 +25,6 @@ class UpdateError(ApplicationException):
     """Update failed."""
 
 
-class EpisodeDeletedException(ApplicationException):
-    """
-    This episode has been deleted
-    """
-
-
 class EpisodeNotFoundException(ApplicationException):
     """
     The episode wasn't found on the Indexer

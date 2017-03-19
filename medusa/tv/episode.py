@@ -39,7 +39,7 @@ from medusa.common import (
     statusStrings,
 )
 from medusa.exceptions import (
-    EpisodeDeletedException,
+    RemovalError,
     EpisodeNotFoundException,
     MultipleEpisodesInDatabaseException,
     NoNFOException,
@@ -314,7 +314,7 @@ class Episode(TV):
                 if not self.hasnfo:
                     try:
                         result = self.load_from_indexer(season, episode)
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         result = False
 
                     # if we failed SQL *and* NFO, Indexers then fail
@@ -786,7 +786,7 @@ class Episode(TV):
         sql = b'DELETE FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?'
         main_db_con.action(sql, [self.show.indexerid, self.season, self.episode])
 
-        raise EpisodeDeletedException()
+        raise RemovalError()
 
     def get_sql(self):
         """Create SQL queue for this episode if any of its data has been changed since the last save."""

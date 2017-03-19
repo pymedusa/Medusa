@@ -20,7 +20,7 @@ from medusa.exceptions import (
     RefreshError,
     RemovalError,
     UpdateError,
-    EpisodeDeletedException,
+    RemovalError,
     MultipleShowObjectsException,
     ShowDirectoryNotFoundException,
 )
@@ -785,7 +785,7 @@ class QueueItemUpdate(ShowQueueItem):
                     ep_obj = self.show.get_episode(cur_season, cur_episode)
                     try:
                         ep_obj.delete_episode()
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
@@ -906,7 +906,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     ep_obj = self.show.get_episode(cur_season, cur_episode)
                     try:
                         ep_obj.delete_episode()
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)

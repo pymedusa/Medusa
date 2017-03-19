@@ -50,7 +50,7 @@ from medusa.common import (
     statusStrings,
 )
 from medusa.exceptions import (
-    EpisodeDeletedException,
+    RemovalError,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
     MultipleShowsInDatabaseException,
@@ -666,7 +666,7 @@ class Series(TV):
                 logger.warning(u"{id}: Episode {location} returned an exception {error_msg}",
                                id=self.indexerid, location=media_file, error_msg=ex(e))
                 continue
-            except EpisodeDeletedException:
+            except RemovalError:
                 logger.debug(u'{id}: The episode deleted itself when I tried making an object for it',
                              id=self.indexerid)
 
@@ -782,7 +782,7 @@ class Series(TV):
 
                 cur_ep.load_from_db(cur_season, cur_episode)
                 scanned_eps[cur_season][cur_episode] = True
-            except EpisodeDeletedException:
+            except RemovalError:
                 logger.debug(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
                              u'skipping it', id=cur_show_id, show=cur_show_name,
                              ep=episode_num(cur_season, cur_episode))
@@ -847,7 +847,7 @@ class Series(TV):
                 else:
                     try:
                         ep.load_from_indexer(tvapi=self.indexer_api)
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         logger.debug(u'{id}: The episode {ep} was deleted, skipping the rest of the load',
                                      id=self.indexerid, ep=episode_num(season, episode))
                         continue
@@ -1432,8 +1432,8 @@ class Series(TV):
             try:
                 cur_ep = self.get_episode(season, episode)
                 if not cur_ep:
-                    raise EpisodeDeletedException
-            except EpisodeDeletedException:
+                    raise RemovalError
+            except RemovalError:
                 logger.debug(u'{id:} Episode {show} {ep} was deleted while we were refreshing it, '
                              u'moving on to the next one',
                              id=self.indexerid, show=self.name, ep=episode_num(season, episode))
