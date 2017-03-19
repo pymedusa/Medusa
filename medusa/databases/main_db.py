@@ -333,7 +333,7 @@ class InitialSchema(db.SchemaUpgrade):
                 "CREATE TABLE blacklist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE whitelist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE xem_refresh (indexer TEXT, indexer_id INTEGER PRIMARY KEY, last_refreshed INTEGER);",
-                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC, PRIMARY KEY (indexer_id, indexer));",
+                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC, PRIMARY KEY (indexer_id, indexer, mindexer_id, mindexer));",
                 "CREATE UNIQUE INDEX idx_indexer_id ON tv_shows(indexer_id);",
                 "CREATE INDEX idx_showid ON tv_episodes(showid);",
                 "CREATE INDEX idx_sta_epi_air ON tv_episodes(status, episode, airdate);",
