@@ -869,7 +869,7 @@ class SubtitlesFinder(object):
 
         if run_post_process:
             logger.info(u'Starting post-process with default settings now that we found subtitles')
-            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).process()
+            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process()
 
     @staticmethod
     def unpack_rar_files(dirpath):
