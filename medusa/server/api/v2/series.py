@@ -91,7 +91,7 @@ class SeriesHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        remove_files = self._parse_boolean(self.get_argument('remove_files', default=None))
+        remove_files = self._parse_boolean(self.get_argument('remove-files', default=None))
         if not series.delete(remove_files):
             return self._conflict('Unable to delete series')
 
