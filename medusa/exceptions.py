@@ -39,10 +39,8 @@ class FailedProcessingError(PostProcessingError):
     """Error while processing failed item."""
 
 
-class MultipleEpisodesInDatabaseException(ApplicationException):
-    """
-    Multiple episodes were found in the database! The database must be fixed first
-    """
+class IntegrityError(ApplicationException):
+    """Relational integrity of the database is affected."""
 
 
 class MultipleShowsInDatabaseException(ApplicationException):

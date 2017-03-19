@@ -41,7 +41,7 @@ from medusa.common import (
 from medusa.exceptions import (
     RemovalError,
     EpisodeNotFoundException,
-    MultipleEpisodesInDatabaseException,
+    IntegrityError,
     NoNFOException,
 )
 from medusa.helper.common import (
@@ -347,7 +347,7 @@ class Episode(TV):
             b'  AND episode = ?', [self.show.indexerid, season, episode])
 
         if len(sql_results) > 1:
-            raise MultipleEpisodesInDatabaseException('Your DB has two records for the same show somehow.')
+            raise IntegrityError('Your DB has two records for the same show somehow.')
         elif not sql_results:
             logger.debug('{id}: {show} {ep} not found in the database',
                          id=self.show.indexerid, show=self.show.name, ep=episode_num(self.season, self.episode))
