@@ -53,7 +53,7 @@ from medusa.exceptions import (
     RemovalError,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
-    MultipleShowsInDatabaseException,
+    IntegrityError,
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
 )
@@ -1102,7 +1102,7 @@ class Series(TV):
         sql_results = main_db_con.select(b'SELECT * FROM tv_shows WHERE indexer_id = ?', [self.indexerid])
 
         if len(sql_results) > 1:
-            raise MultipleShowsInDatabaseException()
+            raise IntegrityError()
         elif not sql_results:
             logger.info(u'{indexerid}: Unable to find the show in the database', indexerid=self.indexerid)
             return

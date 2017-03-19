@@ -43,12 +43,6 @@ class IntegrityError(ApplicationException):
     """Relational integrity of the database is affected."""
 
 
-class MultipleShowsInDatabaseException(ApplicationException):
-    """
-    Multiple shows were found in the database! The database must be fixed first
-    """
-
-
 class MultipleShowObjectsException(ApplicationException):
     """
     Multiple objects for the same show were found! Something is very wrong
