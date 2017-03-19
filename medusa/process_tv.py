@@ -49,6 +49,7 @@ class ProcessResult(object):
         self.missedfiles = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
         self.postponed_no_subs = False
+        self.resource_name = None
 
     @property
     def directory(self):
@@ -83,14 +84,21 @@ class ProcessResult(object):
     def paths(self):
         """Return the paths we are going to try to process."""
         if self.directory:
-            for root, dirs, files in os.walk(self.directory):
-                del files  # unused variable
-                if self.directory == root:
-                    yield root
-                for folder in dirs:
-                    path = os.path.join(root, folder)
+            if self.resource_name:
+                path = os.path.join(self.directory, self.resource_name)
+                if os.isdir(path):
                     yield path
-                break
+                else:
+                    yield self.directory
+            else:
+                for root, dirs, files in os.walk(self.directory):
+                    del files  # unused variable
+                    if self.directory == root:
+                        yield root
+                    for folder in dirs:
+                        path = os.path.join(root, folder)
+                        yield path
+                    break
 
     @property
     def video_files(self):
@@ -123,6 +131,9 @@ class ProcessResult(object):
         """
         if not self.directory:
             return self.output
+
+        if nzb_name:
+            self.resource_name = nzb_name
 
         if app.POSTPONE_IF_NO_SUBS:
             self._log("Feature 'postpone post-processing if no subtitle available' is enabled.")
@@ -237,13 +248,16 @@ class ProcessResult(object):
 
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
-        topdown = True if self.directory == path else False
-        for root, dirs, files in os.walk(path, topdown=topdown):
-            if files:
-                yield root, files
-            if topdown:
-                break
-            del dirs  # unused variable
+        if self.resource_name and os.path.isfile(os.path.join(path, self.resource_name)):
+                yield path, self.resource_name
+        else:
+            topdown = True if self.directory == path else False
+            for root, dirs, files in os.walk(path, topdown=topdown):
+                if files:
+                    yield root, files
+                if topdown:
+                    break
+                del dirs  # unused variable
 
     def prepare_files(self, path, files, force=False):
         """Prepare files for post-processing."""
