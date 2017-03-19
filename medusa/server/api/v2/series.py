@@ -16,7 +16,7 @@ class SeriesHandler(BaseRequestHandler):
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
-    allowed_methods = ('GET', 'POST', 'PUT', 'DELETE', )
+    allowed_methods = ('GET', 'PATCH', 'DELETE', )
 
     def get(self, series_slug, path_param=None):
         """Query series information.
@@ -51,10 +51,6 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._ok(data)
 
-    def put(self, identifier):
-        """Replace whole series."""
-        return self._not_implemented()
-
     def patch(self, identifier):
         """Patch series."""
         if not identifier:
@@ -81,10 +77,6 @@ class SeriesHandler(BaseRequestHandler):
                 done[key] = value
 
         return self._ok(done)
-
-    def post(self):
-        """Create new series."""
-        return self._not_implemented()
 
     def delete(self, identifier):
         """Delete the series."""

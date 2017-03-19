@@ -150,7 +150,7 @@ class AliasHandler(BaseRequestHandler):
             return self._bad_request('Unable to create alias')
 
         data['id'] = cursor.lastrowid
-        return self._ok(data)
+        return self._created(data=data, identifier=data['id'])
 
     def delete(self, identifier, **kwargs):
         """Delete an alias."""
