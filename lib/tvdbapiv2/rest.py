@@ -20,29 +20,9 @@ https://www.dropbox.com/developers/core/sdks/python
 """
 from __future__ import absolute_import
 
-import sys
 import io
-import json
-import ssl
-import certifi
 import logging
-
-# python 2 and python 3 compatibility library
-from six import iteritems
-
-from .configuration import Configuration
-
-try:
-    from requests.packages import urllib3
-except ImportError:
-    raise ImportError('Swagger python client requires urllib3.')
-
-try:
-    # for python3
-    from urllib.parse import urlencode
-except ImportError:
-    # for python2
-    from urllib import urlencode
+from requests.exceptions import RequestException
 
 
 logger = logging.getLogger(__name__)
@@ -51,124 +31,49 @@ logger = logging.getLogger(__name__)
 class RESTResponse(io.IOBase):
 
     def __init__(self, resp):
-        self.urllib3_response = resp
-        self.status = resp.status
+        self.requests_response = resp
+        self.status = resp.status_code
         self.reason = resp.reason
-        self.data = resp.data
+        self.data = resp.content
 
     def getheaders(self):
         """
         Returns a dictionary of the response headers.
         """
-        return self.urllib3_response.getheaders()
+        return self.requests_response.headers
 
     def getheader(self, name, default=None):
         """
         Returns a given response header.
         """
-        return self.urllib3_response.getheader(name, default)
+        return self.requests_response.headers.get(name, default)
 
 
 class RESTClientObject(object):
 
-    def __init__(self, pools_size=4):
-        # urllib3.PoolManager will pass all kw parameters to connectionpool
-        # https://github.com/shazow/urllib3/blob/f9409436f83aeb79fbaf090181cd81b784f1b8ce/urllib3/poolmanager.py#L75
-        # https://github.com/shazow/urllib3/blob/f9409436f83aeb79fbaf090181cd81b784f1b8ce/urllib3/connectionpool.py#L680
-        # ca_certs vs cert_file vs key_file
-        # http://stackoverflow.com/a/23957365/2985775
+    def __init__(self, session=None):
+        self.session = session
 
-        # cert_reqs
-        if Configuration().verify_ssl:
-            cert_reqs = ssl.CERT_REQUIRED
-        else:
-            cert_reqs = ssl.CERT_NONE
-
-        # ca_certs
-        if Configuration().ssl_ca_cert:
-            ca_certs = Configuration().ssl_ca_cert
-        else:
-            # if not set certificate file, use Mozilla's root certificates.
-            ca_certs = certifi.where()
-
-        # cert_file
-        cert_file = Configuration().cert_file
-
-        # key file
-        key_file = Configuration().key_file
-
-        # https pool manager
-        self.pool_manager = urllib3.PoolManager(
-            num_pools=pools_size,
-            cert_reqs=cert_reqs,
-            ca_certs=ca_certs,
-            cert_file=cert_file,
-            key_file=key_file
-        )
-
-    def request(self, method, url, query_params=None, headers=None,
-                body=None, post_params=None):
-        """
-        :param method: http request method
-        :param url: http request url
-        :param query_params: query parameters in the url
-        :param headers: http request headers
-        :param body: request json body, for `application/json`
-        :param post_params: request post parameters,
-                            `application/x-www-form-urlencode`
-                            and `multipart/form-data`
-        """
-        method = method.upper()
-        assert method in ['GET', 'HEAD', 'DELETE', 'POST', 'PUT', 'PATCH', 'OPTIONS']
-
-        if post_params and body:
-            raise ValueError(
-                "body parameter cannot be used with post_params parameter."
-            )
-
-        post_params = post_params or {}
-        headers = headers or {}
-
-        if 'Content-Type' not in headers:
-            headers['Content-Type'] = 'application/json'
+    def request(self, method, url, query_params=None, headers=None, body=None, post_params=None):
 
         try:
             # For `POST`, `PUT`, `PATCH`, `OPTIONS`
             if method in ['POST', 'PUT', 'PATCH', 'OPTIONS']:
-                if query_params:
-                    url += '?' + urlencode(query_params)
                 if headers['Content-Type'] == 'application/json':
-                    r = self.pool_manager.request(method, url,
-                                                  body=json.dumps(body),
-                                                  headers=headers)
+                    r = self.session.request(method, url, params=query_params, headers=headers, json=body)
                 if headers['Content-Type'] == 'application/x-www-form-urlencoded':
-                    r = self.pool_manager.request(method, url,
-                                                  fields=post_params,
-                                                  encode_multipart=False,
-                                                  headers=headers)
+                    r = self.session.request(method, url, params=query_params, headers=headers, json=post_params)
                 if headers['Content-Type'] == 'multipart/form-data':
-                    # must del headers['Content-Type'], or the correct Content-Type
-                    # which generated by urllib3 will be overwritten.
-                    del headers['Content-Type']
-                    r = self.pool_manager.request(method, url,
-                                                  fields=post_params,
-                                                  encode_multipart=True,
-                                                  headers=headers)
+                    r = self.session.request(method, url, params=query_params, headers=headers)
             # For `GET`, `HEAD`, `DELETE`
             else:
-                r = self.pool_manager.request(method, url,
-                                              fields=query_params,
-                                              headers=headers)
-        except urllib3.exceptions.SSLError as e:
+                r = self.session.request(method, url, params=query_params, headers=headers)
+
+        except RequestException as e:
             msg = "{0}\n{1}".format(type(e).__name__, str(e))
             raise ApiException(status=0, reason=msg)
 
         r = RESTResponse(r)
-
-        # In the python 3, the response.data is bytes.
-        # we need to decode it to string.
-        #if sys.version_info > (3,):
-        r.data = r.data.decode('utf8')
 
         # log response body
         logger.debug("response body: %s" % r.data)
