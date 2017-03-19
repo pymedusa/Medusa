@@ -78,7 +78,7 @@ class AliasSourceOperationHandler(BaseRequestHandler):
         }
 
         if identifier not in types:
-            return self._bad_request('Invalid alias identifier')
+            return self._not_found('Alias source not found')
 
         data = json_decode(self.request.body)
         if not data or not all([data.get('type')]) and len(data) != 1:
