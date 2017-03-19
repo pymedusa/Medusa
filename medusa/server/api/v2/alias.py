@@ -21,15 +21,6 @@ class AliasHandler(BaseRequestHandler):
 
     def get(self, identifier, path_param):
         """Query scene_exception information."""
-        series_slug = self.get_query_argument('series-identifier', None)
-        series_identifier = SeriesIdentifier.from_slug(series_slug)
-
-        if series_slug and not series_identifier:
-            return self._bad_request('Invalid series-identifier')
-
-        season = self._parse(self.get_query_argument('season', None))
-        exception_type = self.get_query_argument('type', None) == 'local'
-
         cache_db_con = db.DBConnection('cache.db')
         sql_base = (b'SELECT '
                     b'  exception_id, '
@@ -38,26 +29,35 @@ class AliasHandler(BaseRequestHandler):
                     b'  show_name, '
                     b'  season, '
                     b'  custom '
-                    b'FROM scene_exceptions')
+                    b'FROM scene_exceptions ')
         sql_where = []
         params = []
 
         if identifier is not None:
             sql_where.append(b'exception_id')
             params += [identifier]
+        else:
+            series_slug = self.get_query_argument('series', None)
+            series_identifier = SeriesIdentifier.from_slug(series_slug)
 
-        if series_identifier:
-            sql_where.append(b'indexer')
-            sql_where.append(b'indexer_id')
-            params += [series_identifier.indexer.id, series_identifier.id]
+            if series_slug and not series_identifier:
+                return self._bad_request('Invalid series')
 
-        if season is not None:
-            sql_where.append(b'season')
-            params += [season]
+            season = self._parse(self.get_query_argument('season', None))
+            exception_type = self.get_query_argument('type', None) == 'local'
 
-        if exception_type:
-            sql_where.append(b'custom')
-            params += [exception_type]
+            if series_identifier:
+                sql_where.append(b'indexer')
+                sql_where.append(b'indexer_id')
+                params += [series_identifier.indexer.id, series_identifier.id]
+
+            if season is not None:
+                sql_where.append(b'season')
+                params += [season]
+
+            if exception_type:
+                sql_where.append(b'custom')
+                params += [exception_type]
 
         if sql_where:
             sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])
@@ -89,7 +89,7 @@ class AliasHandler(BaseRequestHandler):
         """Update alias information."""
         identifier = self._parse(identifier)
         if not identifier:
-            return self._bad_request('Invalid alias id')
+            return self._not_found('Invalid alias id')
 
         data = json_decode(self.request.body)
 
@@ -147,7 +147,7 @@ class AliasHandler(BaseRequestHandler):
                                       data.get('season')])
 
         if cache_db_con.connection.total_changes - last_changes <= 0:
-            return self._bad_request('Unable to create alias')
+            return self._conflict('Unable to create alias')
 
         data['id'] = cursor.lastrowid
         return self._created(data=data, identifier=data['id'])
