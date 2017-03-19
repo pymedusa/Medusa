@@ -23,9 +23,9 @@ class LogHandler(BaseRequestHandler):
 
     def get(self):
         """Query logs."""
-        log_level = self.get_argument('log-level', 'INFO').upper()
+        log_level = self.get_argument('level', 'INFO').upper()
         if log_level not in LOGGING_LEVELS:
-            return self._not_found('Log level not found')
+            return self._bad_request('Invalid log level')
 
         arg_page = self._get_page()
         arg_limit = self._get_limit()
