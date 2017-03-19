@@ -1248,7 +1248,7 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource, resource_size '
+                b'SELECT date, action, provider, resource, size '
                 b'FROM history '
                 b'WHERE showid = ? '
                 b'AND season = ? '
@@ -1262,7 +1262,7 @@ class Home(WebRoot):
                 i['status'], i['quality'] = Quality.split_composite_status(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
-                i['resource_size'] = pretty_file_size(i['resource_size']) if i['resource_size'] > -1 else 'N/A'
+                i['size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
@@ -1292,7 +1292,7 @@ class Home(WebRoot):
                           if all([provider_result['name'] in item['resource'],
                                   item['provider'] in (provider_result['provider'],),
                                   item['status'] in snatched_statuses,
-                                  item['resource_size'] == provider_result['size']],)
+                                  item['size'] == provider_result['size']],)
                           ]):
                     provider_result['status_highlight'] = 'snatched'
                 else:

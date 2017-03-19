@@ -562,7 +562,7 @@ class AddPlot(AddInfoHash):
 
 
 class AddResourceSize(AddPlot):
-    """Adds column resource_size to history table."""
+    """Adds column size to history table."""
 
     def test(self):
         """
@@ -573,8 +573,8 @@ class AddResourceSize(AddPlot):
     def execute(self):
         backupDatabase(self.connection.version)
 
-        log.info(u"Adding column resource_size in history")
-        if not self.hasColumn("history", "resource_size"):
-            self.addColumn("history", "resource_size", 'NUMERIC', -1)
+        log.info(u"Adding column size in history")
+        if not self.hasColumn("history", "size"):
+            self.addColumn("history", "size", 'NUMERIC', -1)
 
         # self.inc_minor_version()
