@@ -21,7 +21,8 @@
 from __future__ import unicode_literals
 
 from medusa import app, logger
-from medusa.trakt_checker import get_title_without_year, get_trakt_indexer
+from medusa.helpers import get_title_without_year
+from medusa.indexers.indexer_config import get_trakt_indexer
 
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
 

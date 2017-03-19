@@ -1758,3 +1758,13 @@ def title_to_imdb(title, start_year, imdb_api=None):
     # Return the most relevant result (can be erroneous)
     if title_matches:
         return title_matches[0]
+
+
+def get_title_without_year(title, title_year):
+    """Get title without year."""
+    if not title_year:
+        return title
+    year = ' ({year})'.format(year=title_year)
+    if year in title:
+        title = title.replace(year, '')
+    return title

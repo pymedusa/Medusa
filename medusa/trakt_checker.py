@@ -26,28 +26,10 @@ from traktor import TokenExpiredException, TraktApi, TraktException
 from . import app, db, logger, ui
 from .common import Quality, SKIPPED, WANTED
 from .helper.common import episode_num
-from .indexers.indexer_config import EXTERNAL_IMDB, INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE, indexerConfig
+from .helpers import get_title_without_year
+from .indexers.indexer_config import EXTERNAL_IMDB, get_trakt_indexer, indexerConfig
 from .search.queue import BacklogQueueItem
 from .show.show import Show
-
-# trakt indexer name vs Medusa indexer name
-TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB}
-
-
-def get_trakt_indexer(indexer):
-    """Get trakt indexer name using given indexer number."""
-    for trakt_indexer in TRAKT_INDEXERS:
-        if TRAKT_INDEXERS[trakt_indexer] == indexer:
-            return trakt_indexer
-    return None
-
-
-def get_title_without_year(title, title_year):
-    """Get title without year."""
-    year = ' ({0})'.format(title_year)
-    if year in title:
-        title = title.replace(year)
-    return title
 
 
 def setEpisodeToWanted(show, s, e):
@@ -247,8 +229,8 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for cur_episode in episodes:
-                    # Trakt doesn't support TVMAZE
-                    if cur_episode[b'indexer'] == INDEXER_TVMAZE:
+                    # Check if TRAKT supports that indexer
+                    if not get_trakt_indexer(cur_episode[b'indexer']):
                         return
                     if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
                                         season=cur_episode[b'season'], episode=cur_episode[b'episode'],
@@ -384,8 +366,8 @@ class TraktChecker(object):
                 trakt_data = []
 
                 for cur_episode in episodes:
-                    # Trakt doesn't support TVMAZE
-                    if cur_episode[b'indexer'] == INDEXER_TVMAZE:
+                    # Check if TRAKT supports that indexer
+                    if not get_trakt_indexer(cur_episode[b'indexer']):
                         return
 
                     if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],

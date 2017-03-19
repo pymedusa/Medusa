@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+
 from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
@@ -44,6 +45,9 @@ EXTERNAL_IMDB = 10
 EXTERNAL_ANIDB = 11
 
 EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id', INDEXER_TVRAGE: 'tvrage_id'}
+
+# trakt indexer name vs Medusa indexer
+TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB}
 
 indexerConfig = {
     INDEXER_TVDBV2: {
@@ -139,3 +143,11 @@ def slug_to_indexer_id(slug):
         return None, None
     result = re.compile(r'([a-z]+)([0-9]+)').match(slug)
     return indexer_name_to_id(result.group(1)), int(result.group(2))
+
+
+def get_trakt_indexer(indexer):
+    """Get trakt indexer name using given indexer number."""
+    for trakt_indexer in TRAKT_INDEXERS:
+        if TRAKT_INDEXERS[trakt_indexer] == indexer:
+            return trakt_indexer
+    return None
