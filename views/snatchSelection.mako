@@ -4,7 +4,6 @@
     from medusa.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
@@ -72,7 +71,9 @@
                 </table>
             % endif
             <!-- add provider meta data -->
-                <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                <div id='manualSearchMeta'>
+                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                </div>
                 <div class="col-md-12 bottom-15">
                     <div class="col-md-8 left-30">
                     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
@@ -102,7 +103,7 @@
                             <th data-priority="critical" class="col-search">Snatch</th>
                         </tr>
                     </thead>
-                    <tbody aria-live="polite" aria-relevant="all">
+                    <tbody id="manualSearchTbody" aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses triggerhighlight">

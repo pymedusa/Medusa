@@ -58,10 +58,12 @@ def episodes():
         :return:
         """
         if match.name == 'episode' and other.name in \
-                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date', 'year']:
+                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date', 'year'] \
+                and 'weak-audio_channels' not in other.tags:
             return match
         if match.name == 'season' and other.name in \
-                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date']:
+                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date'] \
+                and 'weak-audio_channels' not in other.tags:
             return match
         if match.name in ['season', 'episode'] and other.name in ['season', 'episode'] \
                 and match.initiator != other.initiator:
@@ -75,7 +77,7 @@ def episodes():
     season_episode_seps.extend(seps)
     season_episode_seps.extend(['x', 'X', 'e', 'E'])
 
-    season_words = ['season', 'saison', 'serie', 'seasons', 'saisons', 'series',
+    season_words = ['season', 'saison', 'seizoen', 'serie', 'seasons', 'saisons', 'series',
                     'tem', 'temp', 'temporada', 'temporadas', 'stagione']
     episode_words = ['episode', 'episodes', 'eps', 'ep', 'episodio',
                      'episodios', 'capitulo', 'capitulos']

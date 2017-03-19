@@ -20,6 +20,7 @@
 import fnmatch
 import os
 import re
+import socket
 import stat
 import subprocess
 
@@ -27,8 +28,13 @@ from collections import OrderedDict
 
 import adba
 
+from medusa.clients import torrent
+
 import rarfile
+
 from rarfile import Error as RarError, NeedFirstVolume
+
+import requests
 
 from six import text_type
 
@@ -92,6 +98,8 @@ class PostProcessor(object):
         self.anidbEpisode = None
 
         self.manually_searched = False
+
+        self.info_hash = None
 
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
@@ -453,7 +461,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to move file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -463,7 +471,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
         def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -473,7 +481,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to hard link the files to their new home')
 
         def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
@@ -484,7 +492,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise
+                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
@@ -723,25 +731,32 @@ class PostProcessor(object):
 
         return root_ep
 
+    def _quality_from_status(self, status):
+        """
+        Determine the quality of the file that is being post processed with its status.
+
+        :param status: The status related to the file we are post processing
+        :return: A quality value found in common.Quality
+        """
+        quality = common.Quality.UNKNOWN
+
+        if status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
+            _, quality = common.Quality.split_composite_status(status)
+            if quality != common.Quality.UNKNOWN:
+                self._log(u'The snatched status has a quality in it, using that: {0}'.format
+                          (common.Quality.qualityStrings[quality]), logger.DEBUG)
+                return quality
+
+        return quality
+
     def _get_quality(self, ep_obj):
         """
-        Determine the quality of the file that is being post processed.
-
-        First by checking if it is directly available in the Episode's status or
-        otherwise by parsing through the data available.
+        Determine the quality of the file that is being post processed with alternative methods.
 
         :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
         ep_quality = common.Quality.UNKNOWN
-
-        # Try getting quality from the episode (snatched) status first
-        if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, ep_quality = common.Quality.split_composite_status(ep_obj.status)
-            if ep_quality != common.Quality.UNKNOWN:
-                self._log(u'The snatched status has a quality in it, using that: {0}'.format
-                          (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
-                return ep_quality
 
         for resource_name, cur_name in self.item_resources.items():
 
@@ -788,7 +803,7 @@ class PostProcessor(object):
                 # Second: get the quality of the last snatched epsiode
                 # and compare it to the quality we are post-processing
                 history_result = main_db_con.select(
-                    'SELECT quality, manually_searched '
+                    'SELECT quality, manually_searched, info_hash '
                     'FROM history '
                     'WHERE showid = ? '
                     'AND season = ? '
@@ -806,6 +821,8 @@ class PostProcessor(object):
                     # Check if the last snatch was a manual snatch
                     if history_result[0]['manually_searched']:
                         self.manually_searched = True
+                    # Get info hash so we can move torrent if setting is enabled
+                    self.info_hash = history_result[0]['info_hash'] or None
 
                     download_result = main_db_con.select(
                         'SELECT resource '
@@ -956,6 +973,37 @@ class PostProcessor(object):
             self._log(u'Setting to clean Kodi library as we are going to replace the file')
             app.KODI_LIBRARY_CLEAN_PENDING = True
 
+    def move_torrent_seeding_folder(self):
+        """Move torrent to a given seeding folder after PP."""
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+            if not os.path.isdir(app.TORRENT_SEED_LOCATION):
+                logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
+                           logger.WARNING)
+            elif not self.info_hash:
+                logger.log("Not possible to move torrent after Post-Processor because info hash wasn't found in history",
+                           logger.WARNING)
+            else:
+                logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
+                torrent_moved = False
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
+                try:
+                    torrent_moved = client.move_torrent(self.info_hash)
+                except (requests.exceptions.RequestException, socket.gaierror) as e:
+                    logger.log("Could't connect to client to move '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
+                                                       path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                except AttributeError:
+                    logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
+
+                if torrent_moved:
+                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
+                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
+                               logger.WARNING)
+                else:
+                    logger.log("Could not move '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
+                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+
     def process(self):
         """
         Post-process a given file.
@@ -1001,15 +1049,18 @@ class PostProcessor(object):
                       (common.Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
         else:
-            new_ep_quality = self._get_quality(ep_obj)
-
-        logger.log(u'Quality of the episode we are processing: {0}'.format
-                   (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
+            new_ep_quality = self._quality_from_status(ep_obj.status)
 
         # check snatched history to see if we should set the download as priority
         self._priority_from_history(show.indexerid, season, episodes, new_ep_quality)
         if self.in_history:
             self._log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
+
+        if new_ep_quality == common.Quality.UNKNOWN:
+            new_ep_quality = self._get_quality(ep_obj)
+
+        logger.log(u'Quality of the episode we are processing: {0}'.format
+                   (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
         priority_download = self._is_priority(old_ep_quality, new_ep_quality)
@@ -1145,11 +1196,11 @@ class PostProcessor(object):
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
-        if release_name is not None:
-            failed_history.log_success(release_name)
+        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        if nzb_release_name is not None:
+            failed_history.log_success(nzb_release_name)
         else:
-            self._log(u"Couldn't determine release name, aborting", logger.WARNING)
+            self._log(u"Couldn't determine NZB release name, aborting", logger.WARNING)
 
         # find the destination folder
         try:
@@ -1163,7 +1214,8 @@ class PostProcessor(object):
         self._log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
         # create any folders we need
-        helpers.make_dirs(dest_path)
+        if not helpers.make_dirs(dest_path):
+            raise EpisodePostProcessingFailedException('Unable to create destination folder to the files')
 
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
@@ -1232,35 +1284,25 @@ class PostProcessor(object):
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
             history.logDownload(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
-        # If any notification fails, don't stop post_processor
-        try:
-            # send notifications
-            notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
-
-            # do the library update for KODI
-            notifiers.kodi_notifier.update_library(ep_obj.show.name)
-
-            # do the library update for Plex
-            notifiers.plex_notifier.update_library(ep_obj)
-
-            # do the library update for EMBY
-            notifiers.emby_notifier.update_library(ep_obj.show)
-
-            # do the library update for NMJ
-            # nmj_notifier kicks off its library update when the notify_download is issued (inside notifiers)
-
-            # do the library update for Synology Indexer
-            notifiers.synoindex_notifier.addFile(ep_obj.location)
-
-            # do the library update for pyTivo
-            notifiers.pytivo_notifier.update_library(ep_obj)
-
-            # do the library update for Trakt
-            notifiers.trakt_notifier.update_library(ep_obj)
-        except Exception as e:
-            logger.log(u'Some notifications could not be sent. Error: {0!r}. '
-                       u'Continuing with post-processing...'.format(e))
+        # send notifications
+        notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        # do the library update for KODI
+        notifiers.kodi_notifier.update_library(ep_obj.show.name)
+        # do the library update for Plex
+        notifiers.plex_notifier.update_library(ep_obj)
+        # do the library update for EMBY
+        notifiers.emby_notifier.update_library(ep_obj.show)
+        # do the library update for NMJ
+        # nmj_notifier kicks off its library update when the notify_download is issued (inside notifiers)
+        # do the library update for Synology Indexer
+        notifiers.synoindex_notifier.addFile(ep_obj.location)
+        # do the library update for pyTivo
+        notifiers.pytivo_notifier.update_library(ep_obj)
+        # do the library update for Trakt
+        notifiers.trakt_notifier.update_library(ep_obj)
 
         self._run_extra_scripts(ep_obj)
+
+        self.move_torrent_seeding_folder()
 
         return True

@@ -92,12 +92,11 @@ class ShowUpdater(object):
                     except IndexerException as e:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                                       indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
                         continue
                     except Exception as e:
                         logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
-                                         u'issues while trying to get updates for show {show}. Cause: {cause}. '
-                                         u'Traceback: {trace}',
+                                         u'issues while trying to get updates for show {show}. Cause: {cause}.',
                                          indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
                         continue
 
@@ -136,7 +135,7 @@ class ShowUpdater(object):
                 except IndexerException as e:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'issues while trying to get updates for show {show}. Cause: {cause}',
-                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e)
+                                   indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
                     continue
                 except Exception as e:
                     logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '

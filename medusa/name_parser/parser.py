@@ -124,10 +124,10 @@ class NameParser(object):
                                    date=result.air_date, name=result.show.name)
                     episode_numbers = []
                 except IndexerError as e:
-                    logger.warning('Unable to contact {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    logger.warning('Unable to contact {indexer_api.name}: {e}', indexer_api=indexer_api, e=e.message)
                     episode_numbers = []
                 except IndexerException as e:
-                    logger.warning('Indexer exception: {indexer_api.name}: {ex!r}', indexer_api=indexer_api, ex=e)
+                    logger.warning('Indexer exception: {indexer_api.name}: {e}', indexer_api=indexer_api, e=e.message)
                     episode_numbers = []
 
             for episode_number in episode_numbers:

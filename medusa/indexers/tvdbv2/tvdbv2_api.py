@@ -69,8 +69,8 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
         except (MaxRetryError, RequestError) as e:
             logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
             raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
@@ -154,7 +154,7 @@ class TVDBv2(BaseIndexer):
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
         except ApiException as e:
             raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
+                'Show search failed in getting a result with reason: %s' % e.reason
             )
         except (MaxRetryError, RequestError) as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)

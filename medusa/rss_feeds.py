@@ -1,7 +1,15 @@
 # coding=utf-8
+
+import logging
+
 from feedparser.api import parse
-from . import logger
-from .helper.exceptions import ex
+
+from medusa.helper.exceptions import ex
+from medusa.logger.adapters.style import BraceAdapter
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler)
+log = BraceAdapter(log)
 
 
 def getFeed(url, params=None, request_hook=None):
@@ -17,11 +25,12 @@ def getFeed(url, params=None, request_hook=None):
             elif 'error' in feed.feed:
                 err_code = feed.feed['error']['code']
                 err_desc = feed.feed['error']['description']
-                logger.log(u'RSS ERROR:[%s] CODE:[%s]' % (err_desc, err_code), logger.DEBUG)
+                log.debug(u'RSS ERROR:[{error}] CODE:[{code}]',
+                          {'error': err_desc, 'code': err_code})
         else:
-            logger.log(u'RSS error loading data: ' + url, logger.DEBUG)
+            log.debug(u'RSS error loading data: {}', url)
 
     except Exception as e:
-        logger.log(u'RSS error: ' + ex(e), logger.DEBUG)
+        log.debug(u'RSS error: {}', ex(e))
 
     return {'entries': []}

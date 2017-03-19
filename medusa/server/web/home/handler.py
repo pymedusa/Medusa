@@ -1487,10 +1487,10 @@ class Home(WebRoot):
                 )
             except IndexerShowNotFoundInLanguage:
                 status = 'Could not change language to'
-            except IndexerException as error:
+            except IndexerException as e:
                 status = u'Failed getting show in'
                 msg += u' Please try again later. Error: {err}'.format(
-                    err=error,
+                    err=e.message,
                 )
             else:
                 language = indexer_lang
