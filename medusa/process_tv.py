@@ -86,7 +86,7 @@ class ProcessResult(object):
         if self.directory:
             if self.resource_name:
                 path = os.path.join(self.directory, self.resource_name)
-                if os.isdir(path):
+                if os.path.isdir(path):
                     yield path
                 else:
                     yield self.directory
