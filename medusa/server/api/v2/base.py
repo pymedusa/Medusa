@@ -36,26 +36,32 @@ class BaseRequestHandler(RequestHandler):
         if self.request.method == 'OPTIONS':
             return
 
-        token = None
-        authorization = self.request.headers.get('Authorization')
-        if authorization:
-            if authorization.startswith('Bearer'):
-                try:
-                    token = authorization.replace('Bearer ', '')
-                    token = jwt.decode(token, app.ENCRYPTION_SECRET, algorithms=['HS256'])
-                except jwt.ExpiredSignatureError:
-                    return self._unauthorized('Token has expired.')
-                except jwt.DecodeError:
-                    return self._unauthorized('Invalid token.')
-            elif authorization.startswith('Basic'):
-                auth_decoded = base64.decodestring(authorization[6:])
-                username, password = auth_decoded.split(':', 2)
-                if username != app.WEB_USERNAME or password != app.WEB_PASSWORD:
-                    return self._unauthorized('Invalid user/pass.')
-
         api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
-        if not token and (not api_key or api_key != app.API_KEY):
-            self._unauthorized('Invalid token or API key.')
+        if api_key:
+            if api_key == app.API_KEY:
+                return
+
+            return self._unauthorized('Invalid API key.')
+
+        authorization = self.request.headers.get('Authorization')
+        if not authorization:
+            return self._unauthorized('No authorization token.')
+
+        if authorization.startswith('Bearer'):
+            try:
+                token = authorization.replace('Bearer ', '')
+                jwt.decode(token, app.ENCRYPTION_SECRET, algorithms=['HS256'])
+            except jwt.ExpiredSignatureError:
+                return self._unauthorized('Token has expired.')
+            except jwt.DecodeError:
+                return self._unauthorized('Invalid token.')
+        elif authorization.startswith('Basic'):
+            auth_decoded = base64.decodestring(authorization[6:])
+            username, password = auth_decoded.split(':', 2)
+            if username != app.WEB_USERNAME or password != app.WEB_PASSWORD:
+                return self._unauthorized('Invalid user/pass.')
+        else:
+            return self._unauthorized('Invalid token.')
 
     def write_error(self, *args, **kwargs):
         """Only send traceback if app.DEVELOPER is true."""
