@@ -42,7 +42,7 @@ from medusa.exceptions import (
     RemovalError,
     EpisodeNotFoundException,
     IntegrityError,
-    NoNFOException,
+    NFOError,
 )
 from medusa.helper.common import (
     dateFormat,
@@ -306,7 +306,7 @@ class Episode(TV):
             if self.is_location_valid():
                 try:
                     self.__load_from_nfo(self.location)
-                except NoNFOException:
+                except NFOError:
                     logger.error('{id}: There was an error loading the NFO for episode {show} {ep}',
                                  id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode))
 
@@ -620,7 +620,7 @@ class Episode(TV):
                         logger.warning("{id}: Failed to rename your episode's NFO file. "
                                        'You need to delete it or fix it: {error_msg}',
                                        id=self.show.indexerid, error_msg=ex(e))
-                    raise NoNFOException('Error in NFO format')
+                    raise NFOError('Error in NFO format')
 
                 for ep_details in list(show_xml.iter('episodedetails')):
                     if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
@@ -634,7 +634,7 @@ class Episode(TV):
                         continue
 
                     if ep_details.findtext('title') is None or ep_details.findtext('aired') is None:
-                        raise NoNFOException('Error in NFO format (missing episode title or airdate)')
+                        raise NFOError('Error in NFO format (missing episode title or airdate)')
 
                     self.name = ep_details.findtext('title')
                     self.episode = int(ep_details.findtext('episode'))

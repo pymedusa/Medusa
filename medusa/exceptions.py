@@ -43,10 +43,8 @@ class IntegrityError(ApplicationException):
     """Relational integrity of the database is affected."""
 
 
-class NoNFOException(ApplicationException):
-    """
-    No NFO was found
-    """
+class NFOError(ApplicationException):
+    """Error while processing NFO."""
 
 
 class ShowDirectoryNotFoundException(ApplicationException):
