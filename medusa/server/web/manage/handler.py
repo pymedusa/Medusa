@@ -710,30 +710,18 @@ class Manage(Home, WebRoot):
             ui.notifications.error('Errors encountered',
                                    '<br />\n'.join(errors))
 
-        def message_detail(title, items):
-            """
-            Create an unordered list of items with a title.
-            :return: The message if items else ''
-            """
-            return '' if not items else """
-                <br />
-                <b>{title}</b>
-                <br />
-                <ul>
-                  {list}
-                </ul>
-                """.format(title=title,
-                           list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
-                                           for cur_item in items]))
-
         message = ''
-        message += message_detail('Updates', updates)
-        message += message_detail('Refreshes', refreshes)
-        message += message_detail('Renames', renames)
-        message += message_detail('Subtitles', subtitles)
+        if updates:
+            message += '\nUpdates: {0}'.format(len(updates))
+        if refreshes:
+            message += '\nRefreshes: {0}'.format(len(refreshes))
+        if renames:
+            message += '\nRenames: {0}'.format(len(renames))
+        if subtitles:
+            message += '\nSubtitles: {0}'.format(len(subtitles))
 
         if message:
-            ui.notifications.message('The following actions were queued:', message)
+            ui.notifications.message('Queued actions:', message)
 
         return self.redirect('/manage/')
 

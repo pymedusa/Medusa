@@ -95,7 +95,19 @@ class DelugeDAPI(GenericClient):
         :return
         :rtype: bool
         """
-        return self.drpc.remove_torrent_ratio(info_hash, True)
+        return self.drpc.remove_torrent_data(info_hash)
+
+    def move_torrent(self, info_hash):
+        """Set new torrent location given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        if not app.TORRENT_SEED_LOCATION or not info_hash:
+            return
+        return self.drpc.move_storage(info_hash, app.TORRENT_SEED_LOCATION)
 
     def _set_torrent_label(self, result):
 
@@ -178,6 +190,46 @@ class DelugeRPC(object):
             return False
         else:
             return True
+
+    def remove_torrent_data(self, torrent_id):
+        """Remove torrent from client using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, True).get()
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
+
+    def move_storage(self, torrent_id, location):
+        """Move torrent to new location and return torrent id/hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :param location:
+        :type location: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.move_storage(torrent_id, location).get()
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
 
     def add_torrent_magnet(self, torrent, options, info_hash):
         """Add Torrent magnet and return torrent id/hash.

@@ -1213,7 +1213,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             if response_type and response_type != u'response':
                 return None
 
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, socket.gaierror) as e:
         logger.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
         return None
     except Exception as e:

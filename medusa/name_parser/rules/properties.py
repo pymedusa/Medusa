@@ -79,10 +79,6 @@ def other():
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
     rebulk.defaults(name='other', validator=seps_surround)
 
-    rebulk.regex('DIRFIX', value='DirFix')
-    rebulk.regex('INTERNAL', value='Internal')
-    rebulk.regex(r'UNCENSORED', value='Uncensored')
-
     rebulk.regex('F1', value='Formula One',
                  conflict_solver=lambda match, other: other if other.name == 'film' else '__default__')
 

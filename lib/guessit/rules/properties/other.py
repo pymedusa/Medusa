@@ -31,7 +31,10 @@ def other():
     rebulk.regex('Re-?Enc(?:oded)?', value='ReEncoded')
 
     rebulk.string('Real', 'Fix', 'Fixed', value='Proper', tags=['has-neighbor-before', 'has-neighbor-after'])
-    rebulk.string('Proper', 'Repack', 'Rerip', value='Proper')
+    rebulk.string('Proper', 'Repack', 'Rerip', 'Dirfix', 'Nfofix', 'Prooffix', value='Proper',
+                  tags=['streaming_service.prefix', 'streaming_service.suffix'])
+    rebulk.regex('(?:Proof-?)?Sample-?Fix', value='Proper',
+                 tags=['streaming_service.prefix', 'streaming_service.suffix'])
     rebulk.string('Fansub', value='Fansub', tags='has-neighbor')
     rebulk.string('Fastsub', value='Fastsub', tags='has-neighbor')
 
@@ -74,9 +77,21 @@ def other():
                  tags=['streaming_service.prefix', 'streaming_service.suffix'])
 
     for value in ('Limited', 'Complete', 'Classic', 'Unrated', 'LiNE', 'Bonus', 'Trailer', 'FINAL', 'Retail', 'Uncut',
-                  'Extended', 'Extended Cut'):
+                  'Extended', 'Extended Cut', 'Colorized', 'Internal', 'Uncensored'):
         rebulk.string(value, value=value, tags=['has-neighbor', 'release-group-prefix'])
+    rebulk.regex('Extended-?version', value='Extended', tags=['has-neighbor', 'release-group-prefix'])
+    rebulk.regex('Alternat(e|ive)(?:-?Cut)?', value='Alternative Cut', tags=['has-neighbor', 'release-group-prefix'])
+    rebulk.regex('Read-?NFO', value='Read NFO')
+    rebulk.string('CONVERT', value='Converted', tags='has-neighbor')
+    rebulk.string('DOCU', value='Documentary', tags='has-neighbor')
+    rebulk.string('OM', value='Open Matte', tags='has-neighbor')
+    rebulk.string('STV', value='Straight to Video', tags='has-neighbor')
+    rebulk.string('OAR', value='Original Aspect Ratio', tags='has-neighbor')
+    rebulk.string('Festival', value='Festival', tags=['has-neighbor-before', 'has-neighbor-after'])
     rebulk.string('Complet', value='Complete', tags=['has-neighbor', 'release-group-prefix'])
+
+    for coast in ('East', 'West'):
+        rebulk.regex(r'(?:Live-)?(?:Episode-)?' + coast + '-?(?:Coast-)?Feed', value=coast + ' Coast Feed')
 
     rebulk.string('VO', 'OV', value='OV', tags='has-neighbor')
 
