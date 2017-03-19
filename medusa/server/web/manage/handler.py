@@ -11,7 +11,7 @@ from tornroutes import route
 
 from medusa.exceptions import (
     RefreshError,
-    CantUpdateShowException,
+    UpdateError,
 )
 from ..core import PageTemplate, WebRoot
 from ..home import Home
@@ -687,7 +687,7 @@ class Manage(Home, WebRoot):
                 try:
                     app.show_queue_scheduler.action.updateShow(show_obj)
                     updates.append(show_obj.name)
-                except CantUpdateShowException as msg:
+                except UpdateError as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated

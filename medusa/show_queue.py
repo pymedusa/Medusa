@@ -19,7 +19,7 @@ from medusa.common import WANTED, statusStrings
 from medusa.exceptions import (
     RefreshError,
     RemovalError,
-    CantUpdateShowException,
+    UpdateError,
     EpisodeDeletedException,
     MultipleShowObjectsException,
     ShowDirectoryNotFoundException,
@@ -156,18 +156,18 @@ class ShowQueue(generic_queue.GenericQueue):
     def updateShow(self, show, season=None):
 
         if self.isBeingAdded(show):
-            raise CantUpdateShowException(
+            raise UpdateError(
                 u"{show_name} is still being added, wait until it is finished before you update."
                 .format(show_name=show.name))
 
         if self.isBeingUpdated(show):
-            raise CantUpdateShowException(
+            raise UpdateError(
                 u"{show_name} is already being updated by Post-processor or manually started, "
                 u"can't update again until it's done."
                 .format(show_name=show.name))
 
         if self.isInUpdateQueue(show):
-            raise CantUpdateShowException(
+            raise UpdateError(
                 u"{show_name} is in process of being updated by Post-processor or manually started, "
                 u"can't update again until it's done."
                 .format(show_name=show.name))

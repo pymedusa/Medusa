@@ -20,7 +20,7 @@ from medusa.common import (
     SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, statusStrings,
 )
 from medusa.exceptions import (
-    CantUpdateShowException,
+    UpdateError,
     ShowDirectoryNotFoundException,
 )
 from medusa.helper.common import (
@@ -2695,7 +2695,7 @@ class CMD_ShowUpdate(ApiCall):
         try:
             app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg=str(show_obj.name) + " has queued to be updated")
-        except CantUpdateShowException as e:
+        except UpdateError as e:
             logger.log(u"API::Unable to update show: {0}".format(str(e)), logger.DEBUG)
             return _responds(RESULT_FAILURE, msg="Unable to update " + str(show_obj.name))
 

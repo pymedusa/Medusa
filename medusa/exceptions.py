@@ -21,10 +21,8 @@ class RemovalError(ApplicationException):
     """Removal failed."""
 
 
-class CantUpdateShowException(ApplicationException):
-    """
-    The show can't be updated right now
-    """
+class UpdateError(ApplicationException):
+    """Update failed."""
 
 
 class EpisodeDeletedException(ApplicationException):
