@@ -285,6 +285,10 @@ class ProcessResult(object):
 
     def process_files(self, path, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
         """Post-process and delete the files in a given path."""
+        # TODO: Replace this with something that works for multiple video files
+        if nzb_name and len(self.video_files) > 1:
+            nzb_name = None
+
         # Don't Link media when the media is extracted from a rar in the same path
         if self.process_method in ('hardlink', 'symlink') and self.video_in_rar:
             self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
