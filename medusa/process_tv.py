@@ -14,7 +14,7 @@ from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, Incorrect
 
 from medusa.exceptions import (
     PostProcessingError,
-    FailedPostProcessingFailedException,
+    FailedProcessingError,
 )
 from medusa.helper.exceptions import ex
 from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
@@ -565,7 +565,7 @@ class ProcessResult(object):
                 processor = failed_processor.FailedProcessor(path, nzb_name)
                 self.result = processor.process()
                 process_fail_message = ''
-            except FailedPostProcessingFailedException as error:
+            except FailedProcessingError as error:
                 self.result = False
                 process_fail_message = ex(error)
 

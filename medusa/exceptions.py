@@ -35,10 +35,8 @@ class PostProcessingError(ApplicationException):
     """Error while post-processing."""
 
 
-class FailedPostProcessingFailedException(ApplicationException):
-    """
-    The failed post-processing failed
-    """
+class FailedProcessingError(PostProcessingError):
+    """Error while processing failed item."""
 
 
 class MultipleEpisodesInDatabaseException(ApplicationException):
