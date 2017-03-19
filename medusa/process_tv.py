@@ -13,7 +13,7 @@ from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, Incorrect
                                    InvalidRARArchiveUsage)
 
 from medusa.exceptions import (
-    EpisodePostProcessingFailedException,
+    PostProcessingError,
     FailedPostProcessingFailedException,
 )
 from medusa.helper.exceptions import ex
@@ -542,7 +542,7 @@ class ProcessResult(object):
 
                 self.result = processor.process()
                 process_fail_message = ''
-            except EpisodePostProcessingFailedException as error:
+            except PostProcessingError as error:
                 self.result = False
                 process_fail_message = ex(error)
 

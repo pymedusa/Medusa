@@ -31,7 +31,7 @@ class EpisodeNotFoundException(ApplicationException):
     """
 
 
-class EpisodePostProcessingFailedException(ApplicationException):
+class PostProcessingError(ApplicationException):
     """
     The episode post-processing failed
     """
