@@ -973,6 +973,37 @@ class PostProcessor(object):
             self._log(u'Setting to clean Kodi library as we are going to replace the file')
             app.KODI_LIBRARY_CLEAN_PENDING = True
 
+    def move_torrent_seeding_folder(self):
+        """Move torrent to a given seeding folder after PP."""
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+            if not os.path.isdir(app.TORRENT_SEED_LOCATION):
+                logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
+                           logger.WARNING)
+            elif not self.info_hash:
+                logger.log("Not possible to move torrent after Post-Processor because info hash wasn't found in history",
+                           logger.WARNING)
+            else:
+                logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
+                torrent_moved = False
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
+                try:
+                    torrent_moved = client.move_torrent(self.info_hash)
+                except (requests.exceptions.RequestException, socket.gaierror) as e:
+                    logger.log("Could't connect to client to move '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
+                                                       path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                except AttributeError:
+                    logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
+
+                if torrent_moved:
+                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
+                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
+                               logger.WARNING)
+                else:
+                    logger.log("Could not move '{release}' torrent with hash: {hash} to: '{path}'. "
+                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
+                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+
     def process(self):
         """
         Post-process a given file.
@@ -1272,32 +1303,6 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
-            if not os.path.isdir(app.TORRENT_SEED_LOCATION):
-                logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
-                           logger.WARNING)
-            elif not self.info_hash:
-                logger.log("Not possible to move torrent after Post-Processor because info hash wasn't found in history",
-                           logger.WARNING)
-            else:
-                logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
-                client = torrent.get_client_class(app.TORRENT_METHOD)()
-                try:
-                    torrent_moved = client.move_torrent(self.info_hash)
-                except (requests.exceptions.RequestException, socket.gaierror) as e:
-                    logger.log("Could't connect to client to move '{release}' torrent with hash: {hash} to: '{path}'. "
-                               "Error: {error}".format(release=self.release_name, hash=self.info_hash, error=e.message,
-                                                       path=app.TORRENT_SEED_LOCATION), logger.WARNING)
-                except AttributeError:
-                    logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
-
-                if torrent_moved:
-                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
-                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
-                               logger.WARNING)
-                else:
-                    logger.log("Could not move '{release}' torrent with hash: {hash} to: '{path}'. "
-                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
-                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+        self.move_torrent_seeding_folder()
 
         return True
