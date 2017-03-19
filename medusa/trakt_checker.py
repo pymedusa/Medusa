@@ -448,7 +448,7 @@ class TraktChecker(object):
         if not self.show_watchlist:
             logger.log('No shows found in your watchlist, aborting watchlist update', logger.DEBUG)
         else:
-            indexer = int(app.TRAKT_DEFAULT_INDEXER)
+            trakt_default_indexer = int(app.TRAKT_DEFAULT_INDEXER)
 
             for watchlisted_show in self.show_watchlist:
                 trakt_show = watchlisted_show['show']
@@ -475,10 +475,11 @@ class TraktChecker(object):
                 if show:
                     continue
 
+                indexer_id = trakt_show['ids'].get(get_trakt_indexer(trakt_default_indexer), -1)
                 if int(app.TRAKT_METHOD_ADD) != 2:
-                    self.add_show(indexer, indexer_id, show_name, SKIPPED)
+                    self.add_show(trakt_default_indexer, indexer_id, show_name, SKIPPED)
                 else:
-                    self.add_show(indexer, indexer_id, show_name, WANTED)
+                    self.add_show(trakt_default_indexer, indexer_id, show_name, WANTED)
 
                 if int(app.TRAKT_METHOD_ADD) == 1:
                     new_show = Show.find(app.showList, indexer_id)
