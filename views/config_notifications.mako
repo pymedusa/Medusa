@@ -6,6 +6,7 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
     from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_config import get_trakt_indexer
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -1567,11 +1568,10 @@
                                                 <% indexers = indexerApi().indexers %>
                                                 % for indexer in indexers:
                                                     <%
-                                                        name = indexers[indexer]
-                                                        if name == 'TVmaze':
+                                                        if not get_trakt_indexer(indexer):
                                                             continue
                                                     %>
-                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${name}</option>
+                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexers[indexer]}</option>
                                                 % endfor
                                             </select>
                                         </span>
