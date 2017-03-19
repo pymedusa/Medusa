@@ -18,7 +18,7 @@ from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import WANTED, statusStrings
 from medusa.exceptions import (
     RefreshError,
-    CantRemoveShowException,
+    RemovalError,
     CantUpdateShowException,
     EpisodeDeletedException,
     MultipleShowObjectsException,
@@ -231,16 +231,16 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def removeShow(self, show, full=False):
         if show is None:
-            raise CantRemoveShowException(u'Failed removing show: Show does not exist')
+            raise RemovalError(u'Failed removing show: Show does not exist')
 
         if not hasattr(show, u'indexerid'):
-            raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
+            raise RemovalError(u'Failed removing show: Show does not have an indexer id')
 
         if self.isBeingRemoved(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.indexerid))
+            raise RemovalError(u'[{!s}]: Show is already being removed'.format(show.indexerid))
 
         if self.isInRemoveQueue(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
+            raise RemovalError(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
 
         # remove other queued actions for this show.
         for item in self.queue:

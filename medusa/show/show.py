@@ -4,7 +4,7 @@ from datetime import date
 
 from medusa.exceptions import (
     RefreshError,
-    CantRemoveShowException,
+    RemovalError,
     MultipleShowObjectsException,
 )
 from medusa.helper.exceptions import ex
@@ -36,7 +36,7 @@ class Show(object):
         if show:
             try:
                 app.show_queue_scheduler.action.removeShow(show, bool(remove_files))
-            except CantRemoveShowException as exception:
+            except RemovalError as exception:
                 return ex(exception), show
 
         return None, show

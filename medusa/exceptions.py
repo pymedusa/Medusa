@@ -17,10 +17,8 @@ class RefreshError(ApplicationException):
     """Refreshing failed."""
 
 
-class CantRemoveShowException(ApplicationException):
-    """
-    The show can't be removed right now
-    """
+class RemovalError(ApplicationException):
+    """Removal failed."""
 
 
 class CantUpdateShowException(ApplicationException):
