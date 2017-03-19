@@ -360,7 +360,6 @@ class CreateAliasWithAlternativeTitles(Rule):
 
     priority = POST_PROCESS
     consequence = AppendMatch
-    blacklist = ('temporada', 'temp', 'tem')
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -379,10 +378,6 @@ class CreateAliasWithAlternativeTitles(Rule):
         for filepart in marker_sorted(fileparts, matches):
             title = matches.range(filepart.start, filepart.end, predicate=lambda match: match.name == 'title', index=0)
             if not title:
-                continue
-
-            if matches.range(filepart.start, filepart.end, predicate=lambda match:
-                             (match.name == 'alternative_title' and match.value.lower() in self.blacklist)):
                 continue
 
             alternative_titles = matches.range(filepart.start, filepart.end,

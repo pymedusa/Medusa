@@ -206,4 +206,8 @@ MEDUSA.addShows.newShow = function() {
         updateSampleText();
         myform.loadsection(2);
     });
+
+    $('#rootDirs').on('change', function() {
+        updateSampleText();
+    });
 };

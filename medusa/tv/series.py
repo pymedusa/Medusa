@@ -83,8 +83,9 @@ from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     indexerConfig,
+    indexer_id_to_slug,
     mappings,
-    reverse_mappings,
+    reverse_mappings
 )
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
@@ -266,7 +267,7 @@ class Series(TV):
     @property
     def indexer_slug(self):
         """Return the slug name of the show. Example: tvdb1234."""
-        return '{name}{indexerid}'.format(name=self.indexer_name, indexerid=self.indexerid)
+        return indexer_id_to_slug(self.indexer, self.indexerid)
 
     @location.setter
     def location(self, value):
@@ -1217,7 +1218,7 @@ class Series(TV):
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
-        self.runtime = getattr(indexed_show, 'runtime', '')
+        self.runtime = int(getattr(indexed_show, 'runtime', 0))
 
         # set the externals, using the result from the indexer.
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
@@ -1277,7 +1278,7 @@ class Series(TV):
             'genres': '|'.join(imdb_obj.genres or ''),
             'countries': '',
             'country_codes': '',
-            'rating': imdb_obj.rating or '',
+            'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
             'certificates': imdb_obj.certification or '',

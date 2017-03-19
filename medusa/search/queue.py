@@ -580,8 +580,10 @@ class FailedQueueItem(generic_queue.QueueItem):
                                     name=result.name, seeders=result.seeders, leechers=result.leechers,
                                     size=pretty_file_size(result.size), provider=result.provider.name)
                     else:
-                        logger.log('Downloading {name} with size: {size} from {provider}',
-                                   name=result.name, size=pretty_file_size(result.size), provider=result.provider.name)
+                        logger.info('Downloading {name} with size: {size} from {provider}',
+                                    name=result.name,
+                                    size=pretty_file_size(result.size),
+                                    provider=result.provider.name)
                     self.success = snatch_episode(result)
 
                     # give the CPU a break

@@ -646,6 +646,7 @@ class Application(object):
             app.TORRENT_VERIFY_CERT = bool(check_setting_int(app.CFG, 'TORRENT', 'torrent_verify_cert', 0))
             app.TORRENT_RPCURL = check_setting_str(app.CFG, 'TORRENT', 'torrent_rpcurl', 'transmission')
             app.TORRENT_AUTH_TYPE = check_setting_str(app.CFG, 'TORRENT', 'torrent_auth_type', '')
+            app.TORRENT_SEED_LOCATION = check_setting_str(app.CFG, 'TORRENT', 'torrent_seed_location', '')
 
             app.USE_KODI = bool(check_setting_int(app.CFG, 'KODI', 'use_kodi', 0))
             app.KODI_ALWAYS_ON = bool(check_setting_int(app.CFG, 'KODI', 'kodi_always_on', 1))
@@ -1566,6 +1567,7 @@ class Application(object):
         new_config['TORRENT']['torrent_verify_cert'] = int(app.TORRENT_VERIFY_CERT)
         new_config['TORRENT']['torrent_rpcurl'] = app.TORRENT_RPCURL
         new_config['TORRENT']['torrent_auth_type'] = app.TORRENT_AUTH_TYPE
+        new_config['TORRENT']['torrent_seed_location'] = app.TORRENT_SEED_LOCATION
 
         new_config['KODI'] = {}
         new_config['KODI']['use_kodi'] = int(app.USE_KODI)
