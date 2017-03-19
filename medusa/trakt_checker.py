@@ -26,7 +26,7 @@ from . import app, db, logger, ui
 from .common import Quality, SKIPPED, WANTED
 from .helper.common import episode_num
 from .helpers import get_title_without_year
-from .indexers.indexer_config import EXTERNAL_IMDB, get_trakt_indexer, indexerConfig
+from .indexers.indexer_config import EXTERNAL_IMDB, EXTERNAL_TRAKT, get_trakt_indexer, indexerConfig
 from .search.queue import BacklogQueueItem
 from .show.show import Show
 
@@ -462,6 +462,11 @@ class TraktChecker(object):
                     trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
                     indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
                     show = Show.find(app.showList, indexer_id, EXTERNAL_IMDB)
+                if not show:
+                    # If can't find with available indexers try TRAKT
+                    trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
+                    indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                    show = Show.find(app.showList, indexer_id, EXTERNAL_TRAKT)
 
                 if show:
                     continue
@@ -511,6 +516,11 @@ class TraktChecker(object):
                 trakt_indexer = get_trakt_indexer(EXTERNAL_IMDB)
                 indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
                 show = Show.find(app.showList, indexer_id, EXTERNAL_IMDB)
+            if not show:
+                # If can't find with available indexers try TRAKT
+                trakt_indexer = get_trakt_indexer(EXTERNAL_TRAKT)
+                indexer_id = trakt_show['ids'].get(trakt_indexer, -1)
+                show = Show.find(app.showList, indexer_id, EXTERNAL_TRAKT)
 
             # If can't find show add with default trakt indexer
             if not show:
