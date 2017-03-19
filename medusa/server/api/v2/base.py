@@ -181,7 +181,7 @@ class BaseRequestHandler(RequestHandler):
         return self.get_argument('sort', default=default)
 
     def _get_sort_order(self, default='asc'):
-        return self.get_argument('sort_order', default=default).lower()
+        return self.get_argument('order', default=default).lower()
 
     def _get_page(self):
         return max(1, int(self.get_argument('page', default=1)))
