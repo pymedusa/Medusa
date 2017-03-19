@@ -37,11 +37,8 @@ class BaseRequestHandler(RequestHandler):
             return
 
         api_key = self.get_argument('api_key', default=None) or self.request.headers.get('X-Api-Key')
-        if api_key:
-            if api_key == app.API_KEY:
-                return
-
-            return self._unauthorized('Invalid API key.')
+        if api_key and api_key == app.API_KEY:
+            return
 
         authorization = self.request.headers.get('Authorization')
         if not authorization:
