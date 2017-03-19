@@ -32,7 +32,7 @@ class EpisodeNotFoundException(ApplicationException):
 
 
 class PostProcessingError(ApplicationException):
-    """Post-processing failed."""
+    """Error while post-processing."""
 
 
 class FailedPostProcessingFailedException(ApplicationException):
