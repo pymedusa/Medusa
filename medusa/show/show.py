@@ -3,7 +3,7 @@
 from datetime import date
 
 from medusa.exceptions import (
-    CantRefreshShowException,
+    RefreshError,
     CantRemoveShowException,
     MultipleShowObjectsException,
 )
@@ -173,7 +173,7 @@ class Show(object):
 
         try:
             app.show_queue_scheduler.action.refreshShow(show)
-        except CantRefreshShowException as exception:
+        except RefreshError as exception:
             return ex(exception), show
 
         return None, show

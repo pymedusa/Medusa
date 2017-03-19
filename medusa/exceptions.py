@@ -13,10 +13,8 @@ class AuthException(ApplicationException):
     """
 
 
-class CantRefreshShowException(ApplicationException):
-    """
-    The show can't be refreshed right now
-    """
+class RefreshError(ApplicationException):
+    """Refreshing failed."""
 
 
 class CantRemoveShowException(ApplicationException):

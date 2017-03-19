@@ -5,7 +5,7 @@ import threading
 import time
 
 from medusa.exceptions import (
-    CantRefreshShowException,
+    RefreshError,
     CantUpdateShowException,
 )
 from . import app, db, helpers, network_timezones, ui
@@ -144,7 +144,7 @@ class ShowUpdater(object):
                 logger.info(u'Full update on show: {show}', show=show.name)
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show))
-                except (CantUpdateShowException, CantRefreshShowException) as e:
+                except (CantUpdateShowException, RefreshError) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
@@ -173,7 +173,7 @@ class ShowUpdater(object):
             if not show.paused:
                 try:
                     app.show_queue_scheduler.action.refreshShow(show, True)
-                except CantRefreshShowException as e:
+                except RefreshError as e:
                     logger.warning(u'Show refresh on show {show_name} failed. Error: {error}',
                                    show_name=show.name, error=e)
                 except Exception as e:

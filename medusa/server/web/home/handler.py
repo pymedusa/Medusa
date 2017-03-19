@@ -46,7 +46,7 @@ from medusa.common import (
     statusStrings,
 )
 from medusa.exceptions import (
-    CantRefreshShowException,
+    RefreshError,
     CantUpdateShowException,
     ShowDirectoryNotFoundException,
 )
@@ -1556,7 +1556,7 @@ class Home(WebRoot):
                 show_obj.flatten_folders = flatten_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(show_obj)
-                except CantRefreshShowException as msg:
+                except RefreshError as msg:
                     errors.append('Unable to refresh this show: {error}'.format(error=msg))
 
             show_obj.paused = paused
@@ -1588,7 +1588,7 @@ class Home(WebRoot):
                         show_obj.location = location
                         try:
                             app.show_queue_scheduler.action.refreshShow(show_obj)
-                        except CantRefreshShowException as msg:
+                        except RefreshError as msg:
                             errors.append('Unable to refresh this show:{error}'.format(error=msg))
                             # grab updated info from TVDB
                             # show_obj.load_episodes_from_indexer()

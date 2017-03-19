@@ -17,7 +17,7 @@ from medusa import (
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import WANTED, statusStrings
 from medusa.exceptions import (
-    CantRefreshShowException,
+    RefreshError,
     CantRemoveShowException,
     CantUpdateShowException,
     EpisodeDeletedException,
@@ -181,7 +181,7 @@ class ShowQueue(generic_queue.GenericQueue):
     def refreshShow(self, show, force=False):
 
         if self.isBeingRefreshed(show) and not force:
-            raise CantRefreshShowException("This show is already being refreshed, not refreshing again.")
+            raise RefreshError("This show is already being refreshed, not refreshing again.")
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
             logger.log(
