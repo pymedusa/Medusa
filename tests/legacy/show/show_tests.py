@@ -8,7 +8,7 @@ import unittest
 
 from medusa import app
 from medusa.common import Quality
-from medusa.exceptions import MultipleShowObjectsException
+from medusa.exceptions import IntegrityError
 from medusa.show.show import Show
 from medusa.tv import Series
 
@@ -58,7 +58,7 @@ class ShowTests(unittest.TestCase):
                 else:
                     self.assertEqual(Show.find(None, indexer_id), result)
 
-        with self.assertRaises(MultipleShowObjectsException):
+        with self.assertRaises(IntegrityError):
             Show.find(shows_duplicate, 456)
 
     def test_validate_indexer_id(self):

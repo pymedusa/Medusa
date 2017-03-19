@@ -4,7 +4,7 @@ from abc import abstractmethod
 from mimetypes import guess_type
 from os.path import isfile, join, normpath
 
-from medusa.exceptions import MultipleShowObjectsException
+from medusa.exceptions import IntegrityError
 from .. import app
 from ..helper.common import try_int
 from ..show.show import Show
@@ -80,7 +80,7 @@ class GenericMedia(object):
 
         try:
             return Show.find(app.showList, self.indexer_id)
-        except MultipleShowObjectsException:
+        except IntegrityError:
             return None
 
     def get_static_media_path(self):

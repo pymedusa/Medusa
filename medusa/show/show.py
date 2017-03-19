@@ -5,7 +5,7 @@ from datetime import date
 from medusa.exceptions import (
     RefreshError,
     RemovalError,
-    MultipleShowObjectsException,
+    IntegrityError,
 )
 from medusa.helper.exceptions import ex
 from .. import app
@@ -64,7 +64,7 @@ class Show(object):
         if len(results) == 1:
             return results[0]
 
-        raise MultipleShowObjectsException()
+        raise IntegrityError()
 
     @staticmethod
     def find_by_id(shows, indexer, show_id):
@@ -195,7 +195,7 @@ class Show(object):
 
         try:
             show = Show.find(app.showList, indexer_id)
-        except MultipleShowObjectsException:
+        except IntegrityError:
             return 'Unable to find the specified show', None
 
         return None, show

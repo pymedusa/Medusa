@@ -43,12 +43,6 @@ class IntegrityError(ApplicationException):
     """Relational integrity of the database is affected."""
 
 
-class MultipleShowObjectsException(ApplicationException):
-    """
-    Multiple objects for the same show were found! Something is very wrong
-    """
-
-
 class NoNFOException(ApplicationException):
     """
     No NFO was found

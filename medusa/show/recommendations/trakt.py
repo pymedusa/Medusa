@@ -7,7 +7,7 @@ from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2 import (ApiClient, AuthenticationApi, SeriesApi)
 
-from medusa.exceptions import MultipleShowObjectsException
+from medusa.exceptions import IntegrityError
 from medusa.helper.exceptions import ex
 from .recommended import RecommendedShow
 from ... import app, logger
@@ -148,7 +148,7 @@ class TraktPopular(object):
                     else:
                         trending_shows.append(self._create_recommended_show(show))
 
-                except MultipleShowObjectsException:
+                except IntegrityError:
                     continue
 
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''

@@ -52,7 +52,7 @@ from medusa.common import (
 from medusa.exceptions import (
     RemovalError,
     EpisodeNotFoundException,
-    MultipleShowObjectsException,
+    IntegrityError,
     IntegrityError,
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
@@ -155,7 +155,7 @@ class Series(TV):
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
-            raise MultipleShowObjectsException("Can't create a show if it already exists")
+            raise IntegrityError("Can't create a show if it already exists")
 
         self._load_from_db()
 

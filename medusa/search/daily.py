@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import threading
 from datetime import date, datetime, timedelta
 
-from medusa.exceptions import MultipleShowObjectsException
+from medusa.exceptions import IntegrityError
 from .queue import DailySearchQueueItem
 from .. import app, common, logger
 from ..db import DBConnection
@@ -67,7 +67,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
                 if not show or show.paused:
                     continue
 
-            except MultipleShowObjectsException:
+            except IntegrityError:
                 logger.log('ERROR: expected to find a single show matching {id}'.format(id=show_id))
                 continue
 

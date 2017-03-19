@@ -21,7 +21,7 @@ from medusa.exceptions import (
     RemovalError,
     UpdateError,
     RemovalError,
-    MultipleShowObjectsException,
+    IntegrityError,
     ShowDirectoryNotFoundException,
 )
 from medusa.helper.common import episode_num, sanitize_filename
@@ -500,7 +500,7 @@ class QueueItemAdd(ShowQueueItem):
             self._finishEarly()
             return
 
-        except MultipleShowObjectsException:
+        except IntegrityError:
             logger.log(u"The show in " + self.showDir + " is already in your show list, skipping", logger.WARNING)
             ui.notifications.error('Show skipped', "The show in " + self.showDir + " is already in your show list")
             self._finishEarly()
