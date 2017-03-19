@@ -32,17 +32,36 @@ from ..helpers import create_https_certificates, generate_api_key
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
     return [
+        # Order: Most specific to most generic
+        # /api/v2/series/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
-        SeriesHandler.create_app_handler(base),
-        ConfigHandler.create_app_handler(base),
-        LogHandler.create_app_handler(base),
-        SeriesAssetHandler.create_app_handler(base),
+
+        # /api/v2/series/tvdb1234/operation
         SeriesOperationHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234/asset
+        SeriesAssetHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234/legacy
         SeriesLegacyHandler.create_app_handler(base),  # To be removed
-        AliasSourceHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234
+        SeriesHandler.create_app_handler(base),
+
+        # /api/v2/config
+        ConfigHandler.create_app_handler(base),
+
+        # /api/v2/log
+        LogHandler.create_app_handler(base),
+
+        # /api/v2/alias-source/xem/operation
         AliasSourceOperationHandler.create_app_handler(base),
+        # /api/v2/alias-source
+        AliasSourceHandler.create_app_handler(base),
+
+        # /api/v2/alias
         AliasHandler.create_app_handler(base),
+
+        # /api/v2/authenticate
         AuthHandler.create_app_handler(base),
+
         # Always keep this last!
         NotFoundHandler.create_app_handler(base)
     ]

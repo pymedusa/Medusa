@@ -3,9 +3,9 @@
 import json
 import logging
 
+from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
-from .base import BaseRequestHandler
-from ....logger import LOGGING_LEVELS, filter_logline, read_loglines
+from medusa.server.api.v2.base import BaseRequestHandler
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -17,17 +17,13 @@ class LogHandler(BaseRequestHandler):
     #: resource name
     name = 'log'
     #: identifier
-    identifier = ('log_level', r'[a-zA-Z]+')
+    identifier = None
     #: allowed HTTP methods
     allowed_methods = ('GET', 'POST', )
 
-    def get(self, log_level):
-        """Query logs.
-
-        :param log_level:
-        :type log_level: str
-        """
-        log_level = (log_level or 'INFO').upper()
+    def get(self):
+        """Query logs."""
+        log_level = self.get_argument('log-level', 'INFO').upper()
         if log_level not in LOGGING_LEVELS:
             return self._not_found('Log level not found')
 
@@ -44,19 +40,22 @@ class LogHandler(BaseRequestHandler):
 
         return self._paginate(data_generator=data_generator)
 
-    def post(self, log_level):
+    def post(self):
         """Create a log line.
 
         By definition this method is NOT idempotent.
         """
         data = json.loads(self.request.body)
-        log_level = data.get('level', 'INFO').upper()
-        if log_level not in LOGGING_LEVELS:
+        if not data or not all([data.get('message')]):
+            return self._bad_request('Invalid request')
+
+        data['level'] = data.get('level', 'INFO').upper()
+        if data['level'] not in LOGGING_LEVELS:
             return self._bad_request('Invalid log level')
 
         message = data['message']
         args = data.get('args', [])
         kwargs = data.get('kwargs', {})
-        level = LOGGING_LEVELS[log_level]
+        level = LOGGING_LEVELS[data['level']]
         log.log(level, message, exc_info=False, *args, **kwargs)
         self._created()

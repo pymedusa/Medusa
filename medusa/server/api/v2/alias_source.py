@@ -1,5 +1,7 @@
 # coding=utf-8
 """Request handler for alias source."""
+from datetime import datetime
+
 from medusa.scene_exceptions import get_last_refresh, retrieve_exceptions
 from medusa.server.api.v2.base import BaseRequestHandler
 from tornado.escape import json_decode
@@ -66,14 +68,25 @@ class AliasSourceOperationHandler(BaseRequestHandler):
     #: allowed HTTP methods
     allowed_methods = ('POST', )
 
-    def post(self):
+    def post(self, identifier):
         """Refresh all scene exception types."""
+        types = {
+            'local': 'custom_exceptions',
+            'xem': 'xem',
+            'anidb': 'anidb',
+            'all': None,
+        }
+
+        if identifier not in types:
+            return self._bad_request('Invalid alias identifier')
+
         data = json_decode(self.request.body)
-        if not data or not all([data.get('type')]):
+        if not data or not all([data.get('type')]) and len(data) != 1:
             return self._bad_request('Invalid request body')
 
         if data['type'] == 'REFRESH':
-            retrieve_exceptions(force=True, exception_type=None)
-            return self._created()
+            retrieve_exceptions(force=True, exception_type=types[identifier])
+            data['creation'] = datetime.now()
+            return self._created(data=data)
 
         return self._bad_request('Operation not supported')

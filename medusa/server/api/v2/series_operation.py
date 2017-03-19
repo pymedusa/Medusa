@@ -35,7 +35,7 @@ class SeriesOperationHandler(BaseRequestHandler):
             return self._not_found('Series not found')
 
         data = json_decode(self.request.body)
-        if not data or not all([data.get('type')]):
+        if not data or not all([data.get('type')]) or len(data) != 1:
             return self._bad_request('Invalid request body')
 
         if data['type'] == 'ARCHIVE_EPISODES':

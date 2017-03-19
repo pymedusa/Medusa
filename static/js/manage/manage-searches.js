@@ -67,7 +67,7 @@ MEDUSA.manage.manageSearches = function() {
         // Start a spinner.
         updateSpinner(status, 'Retrieving scene exceptions...', true);
 
-        api.post('alias-source/operation', {type: 'REFRESH'}, {
+        api.post('alias-source/all/operation', {type: 'REFRESH'}, {
             timeout: 60000
         }).then(function(response) {
             status[0].innerHTML = '';

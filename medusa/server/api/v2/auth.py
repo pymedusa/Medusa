@@ -10,7 +10,7 @@ import jwt
 from medusa import app, helpers, notifiers
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.server.api.v2.base import BaseRequestHandler
-import tornado
+from tornado.escape import json_decode
 
 log = BraceAdapter(logging.getLogger(__name__))
 
@@ -42,7 +42,7 @@ class AuthHandler(BaseRequestHandler):
         if self.request.headers['content-type'] != 'application/json':
             return self._failed_login(error='Incorrect content-type')
 
-        request_body = tornado.escape.json_decode(self.request.body)
+        request_body = json_decode(self.request.body)
         submitted_username = request_body.get('username')
         submitted_password = request_body.get('password')
         submitted_exp = request_body.get('exp', 86400)

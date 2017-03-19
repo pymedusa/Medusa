@@ -141,8 +141,14 @@ class BaseRequestHandler(RequestHandler):
     def _ok(self, data=None, headers=None, stream=None):
         self.api_finish(200, data=data, headers=headers, stream=stream)
 
-    def _created(self):
-        self.api_finish(201)
+    def _created(self, data=None, identifier=None):
+        if identifier is not None:
+            location = self.request.path
+            if not location.endswith('/'):
+                location += '/'
+
+            self.set_header('Location', '{0}{1}'.format(location, identifier))
+        self.api_finish(201, data=data)
 
     def _accepted(self):
         self.api_finish(202)
@@ -192,8 +198,12 @@ class BaseRequestHandler(RequestHandler):
             'X-Pagination-Limit': arg_limit
         }
 
+        first_page = None if arg_page <= 1 else 1
+        previous_page = None if arg_page <= 1 else arg_page - 1
         if data_generator:
-            results = list(data_generator())
+            results = list(data_generator())[:arg_limit]
+            next_page = None if len(results) < arg_limit else arg_page + 1
+            last_page = None
         else:
             arg_sort = self._get_sort(default=sort)
             arg_sort_order = self._get_sort_order()
@@ -202,8 +212,26 @@ class BaseRequestHandler(RequestHandler):
             results = data
             if arg_sort:
                 results = sorted(results, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
-            headers['X-Pagination-Count'] = len(results)
+            count = len(results)
+            headers['X-Pagination-Count'] = count
             results = results[start:end]
+            next_page = None if end > count else arg_page + 1
+            last_page = ((count - 1) / arg_limit) + 1
+            if last_page <= arg_page:
+                last_page = None
+
+        links = []
+        for rel, page in (('next', next_page), ('last', last_page),
+                          ('first', first_page), ('previous', previous_page)):
+            if page is None:
+                continue
+
+            link = '<{path}?page={page}&limit={limit}>; rel="{rel}"'.format(
+                path=self.request.path, page=page, limit=arg_limit, rel=rel)
+            links.append(link)
+
+        if links:
+            self.set_header('Link', ', '.join(links))
 
         return self._ok(data=results, headers=headers)
 
