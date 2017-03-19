@@ -1,20 +1,4 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import traceback
@@ -32,15 +16,15 @@ from medusa import (
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import WANTED, statusStrings
-from medusa.helper.common import episode_num, sanitize_filename
-from medusa.helper.exceptions import (
+from medusa.exceptions import (
     CantRefreshShowException,
     CantRemoveShowException,
     CantUpdateShowException,
     EpisodeDeletedException,
     MultipleShowObjectsException,
-    ShowDirectoryNotFoundException
+    ShowDirectoryNotFoundException,
 )
+from medusa.helper.common import episode_num, sanitize_filename
 from medusa.helpers import (
     chmod_as_parent,
     delete_empty_folders,

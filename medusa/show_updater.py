@@ -1,28 +1,14 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import threading
 import time
-import app
 
-from . import db, helpers, network_timezones, ui
-from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from medusa.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+)
+from . import app, db, helpers, network_timezones, ui
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from .scene_exceptions import refresh_exceptions_cache

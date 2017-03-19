@@ -1,32 +1,17 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
 
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Daily searcher module."""
+
 from __future__ import unicode_literals
 
 import threading
 from datetime import date, datetime, timedelta
 
+from medusa.exceptions import MultipleShowObjectsException
 from .queue import DailySearchQueueItem
 from .. import app, common, logger
 from ..db import DBConnection
 from ..helper.common import try_int
-from ..helper.exceptions import MultipleShowObjectsException
 from ..network_timezones import app_timezone, network_dict, parse_date_time, update_network_dict
 from ..show.show import Show
 

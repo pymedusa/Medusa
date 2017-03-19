@@ -1,24 +1,7 @@
 # coding=utf-8
-# This file is part of Medusa.
-#
 
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+from medusa.helper.encoding import ss
 from six import text_type
-
-from .encoding import ss
 
 
 def ex(e):
@@ -54,93 +37,3 @@ def ex(e):
                             text_type(fixed_arg, errors='replace'))
 
     return message
-
-
-class ApplicationException(Exception):
-    """
-    Generic Application Exception - should never be thrown, only sub-classed
-    """
-
-
-class AuthException(ApplicationException):
-    """
-    Authentication information is incorrect
-    """
-
-
-class CantRefreshShowException(ApplicationException):
-    """
-    The show can't be refreshed right now
-    """
-
-
-class CantRemoveShowException(ApplicationException):
-    """
-    The show can't be removed right now
-    """
-
-
-class CantUpdateShowException(ApplicationException):
-    """
-    The show can't be updated right now
-    """
-
-
-class EpisodeDeletedException(ApplicationException):
-    """
-    This episode has been deleted
-    """
-
-
-class EpisodeNotFoundException(ApplicationException):
-    """
-    The episode wasn't found on the Indexer
-    """
-
-
-class EpisodePostProcessingFailedException(ApplicationException):
-    """
-    The episode post-processing failed
-    """
-
-
-class FailedPostProcessingFailedException(ApplicationException):
-    """
-    The failed post-processing failed
-    """
-
-
-class MultipleEpisodesInDatabaseException(ApplicationException):
-    """
-    Multiple episodes were found in the database! The database must be fixed first
-    """
-
-
-class MultipleShowsInDatabaseException(ApplicationException):
-    """
-    Multiple shows were found in the database! The database must be fixed first
-    """
-
-
-class MultipleShowObjectsException(ApplicationException):
-    """
-    Multiple objects for the same show were found! Something is very wrong
-    """
-
-
-class NoNFOException(ApplicationException):
-    """
-    No NFO was found
-    """
-
-
-class ShowDirectoryNotFoundException(ApplicationException):
-    """
-    The show directory was not found
-    """
-
-
-class ShowNotFoundException(ApplicationException):
-    """
-    The show wasn't found on the Indexer
-    """

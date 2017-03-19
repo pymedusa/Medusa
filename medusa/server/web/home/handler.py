@@ -45,17 +45,17 @@ from medusa.common import (
     cpu_presets,
     statusStrings,
 )
+from medusa.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+)
 from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
     try_int,
 )
-from medusa.helper.exceptions import (
-    CantRefreshShowException,
-    CantUpdateShowException,
-    ShowDirectoryNotFoundException,
-    ex,
-)
+from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import (

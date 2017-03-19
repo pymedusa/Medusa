@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Series classes."""
 
 from __future__ import unicode_literals
@@ -64,20 +49,20 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.helper.common import (
-    episode_num,
-    pretty_file_size,
-    try_int,
-)
-from medusa.helper.exceptions import (
+from medusa.exceptions import (
     EpisodeDeletedException,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
     MultipleShowsInDatabaseException,
     ShowDirectoryNotFoundException,
     ShowNotFoundException,
-    ex,
 )
+from medusa.helper.common import (
+    episode_num,
+    pretty_file_size,
+    try_int,
+)
+from medusa.helper.exceptions import ex
 from medusa.helpers.externals import get_externals
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (

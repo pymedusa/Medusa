@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Post processor module."""
 
 import fnmatch
@@ -29,6 +14,11 @@ from collections import OrderedDict
 import adba
 
 from medusa.clients import torrent
+from medusa.exceptions import (
+    EpisodeNotFoundException,
+    EpisodePostProcessingFailedException,
+    ShowDirectoryNotFoundException,
+)
 
 import rarfile
 
@@ -40,8 +30,6 @@ from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension
-from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
-                                ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .subtitles import from_code, from_ietf_code
