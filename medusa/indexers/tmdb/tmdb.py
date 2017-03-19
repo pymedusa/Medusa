@@ -594,7 +594,7 @@ class Tmdb(BaseIndexer):
         return show_season_updates
 
     def get_id_by_external(self, **kwargs):
-        """Search tvmaze for a show, using an external id.
+        """Search tmdb for a show, using an external id.
 
         Accepts as kwargs, so you'l need to add the externals as key/values.
         :param tvrage_id: The tvrage id.
@@ -608,11 +608,10 @@ class Tmdb(BaseIndexer):
                 if result.get('tv_results') and result['tv_results'][0]:
                     # Get the external id's for the passed shows id.
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
-                    externals['tmdb_id'] = result['tv_results'][0]['id']
-
                     externals = {external_id: external_value
                                  for external_id, external_value
                                  in externals.items()
                                  if external_value and external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
+                    externals['tmdb_id'] = result['tv_results'][0]['id']
                     return externals
         return {}

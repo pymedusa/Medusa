@@ -502,10 +502,11 @@ class TVmaze(BaseIndexer):
                     if result:
                         externals = result.externals
                         externals[external_id] = result.id
-                        return {mapping[external_id]: external_value
-                                for external_id, external_value
-                                in externals.items()
-                                if external_value and mapping.get(external_id)}
+                        externals = {mapping[external_id]: external_value
+                                     for external_id, external_value
+                                     in externals.items()
+                                     if external_value and mapping.get(external_id)}
+                        externals['tvmaze_id'] = result.maze_id
                 except ShowNotFound:
                     logger.debug('Could not get tvmaze externals using external key %s and id %s',
                                  external_id, kwargs.get(external_id))
