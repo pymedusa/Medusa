@@ -577,4 +577,4 @@ class AddResourceSize(AddPlot):
         if not self.hasColumn("history", "size"):
             self.addColumn("history", "size", 'NUMERIC', -1)
 
-        # self.inc_minor_version()
+        self.inc_minor_version()
