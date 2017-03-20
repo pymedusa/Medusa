@@ -110,12 +110,12 @@ class ProcessResult(object):
         logger.log(message, level)
         self._output.append(message)
 
-    def process(self, nzb_name=None, force=False, is_priority=None, delete_on=False, failed=False,
+    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False, failed=False,
                 proc_type='auto', ignore_subs=False):
         """
         Scan through the files in the root directory and process whatever media files are found.
 
-        :param nzb_name: The NZB name which resulted in this folder being downloaded
+        :param resource_name: The resource that will be processed directly
         :param force: True to postprocess already postprocessed files
         :param is_priority: Boolean for whether or not is a priority download
         :param delete_on: Boolean for whether or not it should delete files
@@ -126,15 +126,15 @@ class ProcessResult(object):
         if not self.directory:
             return self.output
 
-        if nzb_name:
-            self.resource_name = nzb_name
+        if resource_name:
+            self.resource_name = resource_name
 
         if app.POSTPONE_IF_NO_SUBS:
             self._log("Feature 'postpone post-processing if no subtitle available' is enabled.")
 
         for path in self.paths:
 
-            if not self.should_process(path, nzb_name, failed):
+            if not self.should_process(path, failed):
                 continue
 
             self.result = True
@@ -153,7 +153,7 @@ class ProcessResult(object):
 
                     self.prepare_files(dir_path, filelist, force)
 
-                    self.process_files(dir_path, nzb_name=nzb_name, force=force, is_priority=is_priority,
+                    self.process_files(dir_path, force=force, is_priority=is_priority,
                                        ignore_subs=ignore_subs)
 
                     # Always delete files if they are being moved or if it's explicitly wanted
@@ -193,12 +193,11 @@ class ProcessResult(object):
 
         return self.output
 
-    def should_process(self, path, nzb_name=None, failed=False):
+    def should_process(self, path, failed=False):
         """
         Determine if a directory should be processed.
 
         :param path: Path we want to verify
-        :param nzb_name: (optional) Name of the NZB file we are processing
         :param failed: (optional) Mark the directory as failed
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
@@ -221,7 +220,7 @@ class ProcessResult(object):
             return False
 
         if failed:
-            self.process_failed(path, nzb_name)
+            self.process_failed(path)
             self.missedfiles.append('{0}: Failed download'.format(folder))
             return False
 
@@ -293,17 +292,17 @@ class ProcessResult(object):
         self.video_in_rar = video_in_rar
         self.unwanted_files = unwanted_files
 
-    def process_files(self, path, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
+    def process_files(self, path, force=False, is_priority=None, ignore_subs=False):
         """Post-process and delete the files in a given path."""
         # TODO: Replace this with something that works for multiple video files
-        if nzb_name and len(self.video_files) > 1:
-            nzb_name = None
+        if self.resource_name and len(self.video_files) > 1:
+            self.resource_name = None
 
         # Don't Link media when the media is extracted from a rar in the same path
         if self.process_method in ('hardlink', 'symlink') and self.video_in_rar:
-            self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_in_rar, force, is_priority, ignore_subs)
 
-            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, force,
+            self.process_media(path, set(self.video_files) - set(self.video_in_rar), force,
                                is_priority, ignore_subs)
 
             if not self.postponed_no_subs:
@@ -312,9 +311,9 @@ class ProcessResult(object):
                 self.postponed_no_subs = False
 
         elif app.DELRARCONTENTS and self.video_in_rar:
-            self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_in_rar, force, is_priority, ignore_subs)
 
-            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name,
+            self.process_media(path, set(self.video_files) - set(self.video_in_rar),
                                force, is_priority, ignore_subs)
 
             if not self.postponed_no_subs:
@@ -323,7 +322,7 @@ class ProcessResult(object):
                 self.postponed_no_subs = False
 
         else:
-            self.process_media(path, self.video_files, nzb_name, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_files, force, is_priority, ignore_subs)
             self.postponed_no_subs = False
 
     @staticmethod
@@ -508,13 +507,12 @@ class ProcessResult(object):
                       "been processed, skipping: {0}".format(video_file), logger.DEBUG)
             return True
 
-    def process_media(self, path, video_files, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
+    def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
         """
         Postprocess media files.
 
         :param processPath: Path to postprocess in
         :param videoFiles: Filenames to look for and postprocess
-        :param nzbName: Name of NZB file related
         :param force: Postprocess currently postprocessing file
         :param is_priority: Boolean, is this a priority download
         :param result: Previous results
@@ -530,11 +528,12 @@ class ProcessResult(object):
                 continue
 
             try:
-                processor = post_processor.PostProcessor(file_path, nzb_name, self.process_method, is_priority)
+                processor = post_processor.PostProcessor(file_path, self.resource_name,
+                                                         self.process_method, is_priority)
 
                 if app.POSTPONE_IF_NO_SUBS:
                     if not ignore_subs:
-                        if self.subtitles_enabled(file_path, nzb_name):
+                        if self.subtitles_enabled(file_path, self.resource_name):
                             embedded_subs = set() if app.IGNORE_EMBEDDED_SUBS else get_embedded_subtitles(file_path)
 
                             # We want to ignore embedded subtitles and video has at least one
@@ -580,13 +579,13 @@ class ProcessResult(object):
                 self.missedfiles.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
                 self.succeeded = False
 
-    def process_failed(self, path, nzb_name=None):
+    def process_failed(self, path):
         """Process a download that did not complete correctly."""
         if app.USE_FAILED_DOWNLOADS:
             processor = None
 
             try:
-                processor = failed_processor.FailedProcessor(path, nzb_name)
+                processor = failed_processor.FailedProcessor(path, self.resource_name)
                 self.result = processor.process()
                 process_fail_message = ''
             except FailedPostProcessingFailedException as error:
@@ -601,10 +600,11 @@ class ProcessResult(object):
                     self._log('Deleted folder: {0}'.format(path), logger.DEBUG)
 
             if self.result:
-                self._log('Failed Download Processing succeeded: {0}, {1}'.format(nzb_name, path))
+                self._log('Failed Download Processing succeeded: {0}, {1}'.format
+                          (self.resource_name, path))
             else:
                 self._log('Failed Download Processing failed: {0}, {1}: {2}'.format
-                          (nzb_name, path, process_fail_message), logger.WARNING)
+                          (self.resource_name, path, process_fail_message), logger.WARNING)
 
     @staticmethod
     def subtitles_enabled(*args):
