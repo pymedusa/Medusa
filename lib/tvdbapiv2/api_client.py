@@ -46,7 +46,7 @@ except ImportError:
     from urllib import quote
 
 from .configuration import Configuration
-from .tvdb.sessions.auth.v2 import TVDBAuth
+from .auth.tvdb import TVDBAuth, TVDBUserAuth
 
 
 class ApiClient(object):
