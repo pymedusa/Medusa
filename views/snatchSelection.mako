@@ -63,7 +63,7 @@
                                 ${item['resource_file']}
                                 </td>
                                 <td class="col-size">
-                                ${item['resource_size']}
+                                ${item['size']}
                                 </td>
                             </tr>
                         % endfor
