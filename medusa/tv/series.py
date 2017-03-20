@@ -901,13 +901,13 @@ class Series(TV):
                b'WHERE (indexer = ? AND indexer_id = ?) '
                b'OR (mindexer = ? AND mindexer_id = ?)')
 
-        results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
-
+        sql_results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
+        results = [dict(result) for result in sql_results]
         for result in results:
-            if result[0] == self.indexer:
-                self.externals[mappings[result[2]]] = result[3]
+            if result[b'indexer'] == self.indexer:
+                self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
             else:
-                self.externals[mappings[result[0]]] = result[1]
+                self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
 
         return self.externals
 
