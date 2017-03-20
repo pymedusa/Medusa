@@ -20,7 +20,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 6
+CURRENT_MINOR_DB_VERSION = 7
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -584,3 +584,25 @@ class AddResourceSize(AddPlot):
             self.addColumn("history", "size", 'NUMERIC', -1)
 
         self.inc_minor_version()
+
+
+class AddPKIndexerMapping(AddResourceSize):
+    """Add PK to mindexer_id and mindexer in indexer mapping table."""
+
+    def test(self):
+        """Test if the version is at least 44.7"""
+        return self.connection.version >= (44, 7)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Adding PK to mindexer_id and mindexer in indexer mapping table')
+        self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
+        self.connection.action("CREATE TABLE IF NOT EXISTS new_indexer_mapping"
+                               "(indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC,"
+                               "PRIMARY KEY (indexer_id, indexer, mindexer_id, mindexer));")
+        self.connection.action("INSERT INTO new_indexer_mapping SELECT * FROM indexer_mapping;")
+        self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
+        self.connection.action("ALTER TABLE new_indexer_mapping RENAME TO indexer_mapping;")
+        self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
+        # self.inc_minor_version()
