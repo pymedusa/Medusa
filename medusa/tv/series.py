@@ -134,7 +134,8 @@ class Series(TV):
         :param lang:
         :type lang: str
         """
-        super(Series, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
+        super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
+                                                          'external', 'imdb_info'})
         self.name = ''
         self.imdb_id = ''
         self.network = ''
