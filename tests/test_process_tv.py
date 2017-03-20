@@ -157,8 +157,8 @@ def test_paths(monkeypatch, p, create_structure):
                      ('media/postprocess/subfolder', ['readme.txt'])
                      ],
         'structure': (
-            'show.name.s02e01.webrip.x264-kovalski.mkv',
             'sample.mkv',
+            'show.name.s02e01.webrip.x264-kovalski.mkv',
             {'subfolder': (
                 'readme.txt',
             )}
