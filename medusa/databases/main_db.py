@@ -21,7 +21,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 5
+CURRENT_MINOR_DB_VERSION = 6
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -558,4 +558,23 @@ class AddPlot(AddInfoHash):
         log.info(u'Adding column plot in tv_show')
         if not self.hasColumn('tv_shows', 'plot'):
             self.addColumn('tv_shows', 'plot', 'TEXT', None)
+        self.inc_minor_version()
+
+
+class AddResourceSize(AddPlot):
+    """Adds column size to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.6
+        """
+        return self.connection.version >= (44, 6)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u"Adding column size in history")
+        if not self.hasColumn("history", "size"):
+            self.addColumn("history", "size", 'NUMERIC', -1)
+
         self.inc_minor_version()

@@ -48,6 +48,7 @@ from medusa.common import (
 from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
+    pretty_file_size,
     try_int,
 )
 from medusa.helper.exceptions import (
@@ -109,7 +110,9 @@ from requests.compat import (
     unquote_plus,
 )
 from six import iteritems
+
 from tornroutes import route
+
 from traktor import (
     MissingTokenException,
     TokenExpiredException,
@@ -1245,7 +1248,7 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource '
+                b'SELECT date, action, provider, resource, size '
                 b'FROM history '
                 b'WHERE showid = ? '
                 b'AND season = ? '
@@ -1259,6 +1262,7 @@ class Home(WebRoot):
                 i['status'], i['quality'] = Quality.split_composite_status(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
+                i['size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
@@ -1287,7 +1291,8 @@ class Home(WebRoot):
                 elif any([item for item in episode_history
                           if all([provider_result['name'] in item['resource'],
                                   item['provider'] in (provider_result['provider'],),
-                                  item['status'] in snatched_statuses])
+                                  item['status'] in snatched_statuses,
+                                  item['size'] == provider_result['size']],)
                           ]):
                     provider_result['status_highlight'] = 'snatched'
                 else:
