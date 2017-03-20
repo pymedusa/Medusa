@@ -142,7 +142,7 @@ def snatch_episode(result):
         if app.NZB_METHOD == "blackhole":
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == "sabnzbd":
-            result_downloaded = sab.sendNZB(result)
+            result_downloaded = sab.send_nzb(result)
         elif app.NZB_METHOD == "nzbget":
             result_downloaded = nzbget.sendNZB(result, is_proper)
         else:
