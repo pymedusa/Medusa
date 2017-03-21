@@ -828,26 +828,38 @@ class Episode(TV):
             ('airDate', parsed_airdate),
             ('title', self.name),
             ('description', self.description),
-            ('hasNfo', self.hasnfo),
-            ('hasTbn', self.hastbn),
+            ('content', []),
             ('subtitles', self.subtitles),
             ('status', statusStrings[Quality.split_composite_status(self.status).status]),
-            ('releaseName', self.release_name),
-            ('isProper', self.is_proper),
-            ('version', self.version),
+            ('release', OrderedDict([
+                ('name', self.release_name),
+                ('group', self.release_group),
+                ('proper', self.is_proper),
+                ('version', self.version),
+            ])),
             ('scene', OrderedDict([
                 ('season', self.scene_season),
                 ('episode', self.scene_episode),
                 ('absoluteNumber', self.scene_absolute_number),
             ])),
-            ('location', self.location),
-            ('fileSize', self.file_size),
+            ('file', OrderedDict([
+                ('location', self.location),
+                ('size', self.file_size),
+            ])),
         ])
+        if self.hasnfo:
+            data['content'].append('NFO')
+        if self.hastbn:
+            data['content'].append('thumbnail')
+
         if detailed:
             data.update(OrderedDict([
-                ('releaseGroup', self.release_group),
-                ('subtitlesSearchCount', self.subtitles_searchcount),
-                ('subtitlesLastSearched', self.subtitles_lastsearch),
+                ('statistics', OrderedDict([
+                    ('subtitleSearch', OrderedDict([
+                        ('last', self.subtitles_lastsearch),
+                        ('count', self.subtitles_searchcount),
+                    ])),
+                ])),
                 ('wantedQualities', self.wanted_quality),
                 ('relatedEpisodes', [ep.identifier() for ep in self.related_episodes]),
             ]))
