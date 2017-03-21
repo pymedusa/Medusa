@@ -290,7 +290,7 @@ class TVmaze(BaseIndexer):
         >>> t['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
-        u'http://theTMDB.com/banners/posters/76156-2.jpg'
+        u'http://thetvmaze.com/banners/posters/76156-2.jpg'
         >>>
 
         Any key starting with an underscore has been processed (not the raw
@@ -347,16 +347,16 @@ class TVmaze(BaseIndexer):
 
     def _parse_actors(self, tvmaze_id):
         """Parsers actors XML, from
-        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
 
         Actors are retrieved using t['show name]['_actors'], for example:
 
         >>> t = TVMaze(actors = True)
         >>> actors = t['scrubs']['_actors']
         >>> type(actors)
-        <class 'TMDB_api.Actors'>
+        <class 'tvmaze_api.Actors'>
         >>> type(actors[0])
-        <class 'TMDB_api.Actor'>
+        <class 'tvmaze_api.Actor'>
         >>> actors[0]
         <Actor "Zach Braff">
         >>> sorted(actors[0].keys())
@@ -364,7 +364,7 @@ class TVmaze(BaseIndexer):
         >>> actors[0]['name']
         u'Zach Braff'
         >>> actors[0]['image']
-        u'http://theTMDB.com/banners/actors/43640.jpg'
+        u'http://thetvmaze.com/banners/actors/43640.jpg'
 
         Any key starting with an underscore has been processed (not the raw
         data from the indexer)
@@ -391,7 +391,7 @@ class TVmaze(BaseIndexer):
         self._set_show_data(tvmaze_id, '_actors', cur_actors)
 
     def _get_show_data(self, tvmaze_id, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the TheTMDB json response
+        """Takes a series ID, gets the epInfo URL and parses the tvmaze json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
