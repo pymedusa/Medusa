@@ -31,6 +31,7 @@ import json
 import mimetypes
 import tempfile
 import threading
+import requests
 
 from datetime import datetime
 from datetime import date
@@ -71,9 +72,9 @@ class ApiClient(object):
         """
         Constructor of the class.
         """
-        self.session = session
+        self.session = session or requests.session()
         if api_key:
-            self.session.auth = TVDBAuth(api_key, session=self.session)
+            self.session.auth = TVDBAuth(api_key)
         self.rest_client = RESTClientObject(session=self.session)
         self.default_headers = {}
         # if header_name is not None:
