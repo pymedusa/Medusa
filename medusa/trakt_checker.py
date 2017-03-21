@@ -78,7 +78,7 @@ class TraktChecker(object):
             if len(app.ROOT_DIRS.split('|')) < 2:
                 logger.log('No default root directory', logger.WARNING)
                 ui.notifications.error('Unable to add show',
-                                       'You do not have any default root directory configured. '
+                                       'You do not have any default root directory. '
                                        'Please configure in general settings!')
                 return
 
@@ -109,11 +109,11 @@ class TraktChecker(object):
         try:
             trakt_library = self._request('sync/collection/shows') or []
         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-            logger.log('Unable to get your collected shows from Trakt. Error: {0}'.format(e.message),
+            logger.log("Unable to retrieve shows from Trakt collection. Error: {0}".format(e.message),
                        logger.DEBUG)
 
         if not trakt_library:
-            logger.log('No shows found in your library, aborting library update', logger.DEBUG)
+            logger.log('No shows found in your Trakt library. Nothing to sync', logger.DEBUG)
             return
         trakt_show = [x for x in trakt_library if
                       int(indexerid) in [int(x['show']['ids'].get(get_trakt_indexer(indexer)))]]
@@ -142,19 +142,19 @@ class TraktChecker(object):
 
             data['shows'][0]['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
 
-            logger.log('Removing {0} from Trakt library'.format(show_obj.name), logger.INFO)
+            logger.log("Removing '{0}' from Trakt library".format(show_obj.name), logger.INFO)
 
             # Remove all episodes from the Trakt collection for this show
             try:
                 self.remove_episode_trakt_collection(filter_show=show_obj)
             except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-                logger.log('Unable to remove all episodes for show {0} from Trakt library. Error: {1}'.
+                logger.log("Unable to remove all episodes from show '{0}' from Trakt library. Error: {1}".
                            format(show_obj.name, e.message), logger.DEBUG)
 
             try:
                 self._request('sync/collection/remove', data, method='POST')
             except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-                logger.log('Unable to remove show {0} from Trakt library. Error: {1}'.
+                logger.log("Unable to remove show '{0}' from Trakt library. Error: {1}".
                            format(show_obj.name, e.message), logger.DEBUG)
 
     def add_show_trakt_library(self, show_obj):
@@ -186,12 +186,12 @@ class TraktChecker(object):
             data['shows'][0]['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
 
         if data:
-            logger.log('Adding {0} to Trakt library'.format(show_obj.name), logger.INFO)
+            logger.log("Adding show '{0}' to Trakt library".format(show_obj.name), logger.INFO)
 
             try:
                 self._request('sync/collection', data, method='POST')
             except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-                logger.log('Unable to add show {0} to Trakt library. Error: {1}'.format
+                logger.log("Unable to add show '{0}' to Trakt library. Error: {1}".format
                            (show_obj.name, e.message), logger.DEBUG)
                 return
 
@@ -229,7 +229,7 @@ class TraktChecker(object):
                     if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
                                         season=cur_episode[b'season'], episode=cur_episode[b'episode'],
                                         List='Collection'):
-                        logger.log('Removing Episode {show} {ep} from collection'.format
+                        logger.log('Removing episode {show} {ep} from collection'.format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])), logger.INFO)
                         trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
@@ -270,7 +270,7 @@ class TraktChecker(object):
                     if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
                                             season=cur_episode[b'season'], episode=cur_episode[b'episode'],
                                             List='Collection'):
-                        logger.log('Adding Episode {show} {ep} to collection'.format
+                        logger.log('Adding episode {show} {ep} to Trakt collection'.format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])),
                                    logger.INFO)
@@ -329,7 +329,7 @@ class TraktChecker(object):
 
                     if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
                                         season=cur_episode[b'season'], episode=cur_episode[b'episode']):
-                        logger.log('Removing Episode {show} {ep} from watchlist'.format
+                        logger.log('Removing episode {show} {ep} from Trakt watchlist'.format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])),
                                    logger.INFO)
@@ -369,7 +369,7 @@ class TraktChecker(object):
 
                     if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
                                             season=cur_episode[b'season'], episode=cur_episode[b'episode']):
-                        logger.log('Adding Episode {show} {ep} to watchlist'.format
+                        logger.log('Adding episode {show} {ep} to Trakt watchlist'.format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])),
                                    logger.INFO)
@@ -392,7 +392,7 @@ class TraktChecker(object):
 
                 for show_obj in app.showList:
                     if not self._check_list(show_obj=show_obj, List='Show'):
-                        logger.log('Adding Show {0} to Trakt watchlist'.format
+                        logger.log("Adding show '{0}' to Trakt watchlist".format
                                    (show_obj.name), logger.INFO)
                         title = get_title_without_year(show_obj.name, show_obj.start_year)
                         show_el = {'title': title, 'year': show_obj.start_year, 'ids': {}}
@@ -403,7 +403,7 @@ class TraktChecker(object):
                         data = {'shows': trakt_data}
                         self._request('sync/watchlist', data, method='POST')
                     except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-                        logger.log('Unable to add shos to Trakt watchlist. Error: {0}'.format(e.message), logger.DEBUG)
+                        logger.log('Unable to add show to Trakt watchlist. Error: {0}'.format(e.message), logger.DEBUG)
                     self._get_show_watchlist()
 
     def remove_from_library(self):
@@ -414,15 +414,15 @@ class TraktChecker(object):
                 for show in app.showList:
                     if show.status == 'Ended':
                         if not show.imdb_id:
-                            logger.log('Unable to check Trakt progress for {0} '
-                                       'because the IMDB id is missing from tvdb data, skipping'.format(show.name),
-                                       logger.DEBUG)
+                            logger.log("Unable to check Trakt progress for show '{0}' "
+                                       'because IMDB ID is missing. Skipping'.format(show.name),
+                                       logger.INFO)
                             continue
 
                         try:
                             progress = self._request('shows/{0}/progress/watched'.format(show.imdb_id)) or []
                         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-                            logger.log('Unable to check if show {0} is ended/completed. Error: {1}'.format
+                            logger.log("Unable to check if show '{0}' is ended/completed. Error: {1}".format
                                        (show.name, e.message), logger.DEBUG)
                             continue
 
@@ -431,13 +431,13 @@ class TraktChecker(object):
 
                         if progress.get('aired', True) == progress.get('completed', False):
                             app.show_queue_scheduler.action.removeShow(show, full=True)
-                            logger.log('Show {0} has being queued to be removed from Medusa'.format
+                            logger.log("Show '{0}' has being queued to be removed from Medusa library".format
                                        (show.name), logger.INFO)
 
     def fetch_trakt_shows(self):
 
         if not self.show_watchlist:
-            logger.log('No shows found in your watchlist, aborting watchlist update', logger.DEBUG)
+            logger.log('No shows found in your Trakt watchlist. Nothing to sync', logger.DEBUG)
         else:
             trakt_default_indexer = int(app.TRAKT_DEFAULT_INDEXER)
 
@@ -491,7 +491,7 @@ class TraktChecker(object):
         Sets episodes to wanted that are in trakt watchlist
         """
         if not self.episode_watchlist:
-            logger.log('No episode found in your watchlist, aborting episode update', logger.DEBUG)
+            logger.log('No episodes found in your Trakt watchlist. Nothing to sync', logger.DEBUG)
             return
 
         managed_show = []
@@ -544,7 +544,7 @@ class TraktChecker(object):
             location = root_dirs[int(root_dirs[0]) + 1] if root_dirs else None
 
             if location:
-                logger.log('Adding show {0} with ID: {1}'.format(show_name, indexer_id))
+                logger.log("Adding show '{0}' with ID: {1}".format(show_name, indexer_id))
 
                 app.show_queue_scheduler.action.addShow(indexer, indexer_id, None,
                                                         default_status=status,
@@ -553,12 +553,11 @@ class TraktChecker(object):
                                                         paused=app.TRAKT_START_PAUSED,
                                                         default_status_after=status, root_dir=location)
             else:
-                logger.log('There was an error creating the show, no root directory setting found', logger.WARNING)
+                logger.log('Error creating show folder. No default root directory', logger.WARNING)
                 return
 
     def manage_new_show(self, show):
-        logger.log('Checking if trakt watchlist wants to search for episodes from new show {0}'.format(show.name),
-                   logger.DEBUG)
+        logger.log("Checking for wanted episodes for show '{0}' in Trakt watchlist".format(show.name), logger.DEBUG)
         episodes = [i for i in self.todoWanted if i[0] == show.indexerid]
 
         for episode in episodes:
@@ -604,7 +603,7 @@ class TraktChecker(object):
         try:
             self.show_watchlist = self._request('sync/watchlist/shows')
         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-            logger.log(u"Unable to retrieve user's watchlist: {0}".format(e.message),
+            logger.log(u'Unable to retrieve shows from Trakt watchlist: {0}'.format(e.message),
                        logger.WARNING)
             return False
         return True
@@ -616,7 +615,7 @@ class TraktChecker(object):
         try:
             self.episode_watchlist = self._request('sync/watchlist/episodes')
         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-            logger.log(u"Unable to retrieve user episode's watchlist: {0}".format(e.message),
+            logger.log(u'Unable to retrieve episodes from Trakt watchlist: {0}'.format(e.message),
                        logger.WARNING)
             return False
         return True
@@ -628,7 +627,7 @@ class TraktChecker(object):
         try:
             self.collection_list = self._request('sync/collection/shows')
         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
-            logger.log(u"Unable to retrieve user's collection: {0}".format(e.message),
+            logger.log(u"Unable to retrieve shows from Trakt collection: {0}".format(e.message),
                        logger.DEBUG)
             return False
         return True
