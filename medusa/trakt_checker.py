@@ -418,14 +418,15 @@ class TraktChecker(object):
             if app.showList:
                 for show in app.showList:
                     if show.status == 'Ended':
-                        if not show.imdb_id:
+                        trakt_id = show.externals.get('trakt_id', None)
+                        if not (trakt_id or show.imdb_id):
                             logger.log("Unable to check Trakt progress for show '{0}' "
-                                       'because IMDB ID is missing. Skipping'.format(show.name),
+                                       'because Trakt|IMDB ID is missing. Skipping'.format(show.name),
                                        logger.INFO)
                             continue
 
                         try:
-                            progress = self._request('shows/{0}/progress/watched'.format(show.imdb_id)) or []
+                            progress = self._request('shows/{0}/progress/watched'.format(trakt_id or show.imdb_id)) or []
                         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
                             logger.log("Unable to check if show '{0}' is ended/completed. Error: {1}".format
                                        (show.name, e.message), logger.DEBUG)
