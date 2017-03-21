@@ -13,9 +13,8 @@ from medusa.name_parser.parser import NameParser
 
 from six import iteritems
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
-log = BraceAdapter(log)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44

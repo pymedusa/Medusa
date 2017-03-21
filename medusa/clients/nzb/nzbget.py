@@ -15,9 +15,8 @@ from six.moves.http_client import socket
 from six.moves.xmlrpc_client import ProtocolError, ServerProxy
 
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
-log = BraceAdapter(log)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def NZBConnection(url):

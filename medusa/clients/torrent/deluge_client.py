@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Mr_Orange <mr_orange@hotmail.it>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Deluge Web Client."""
 
 from __future__ import unicode_literals
@@ -25,10 +10,12 @@ from base64 import b64encode
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class DelugeAPI(GenericClient):
@@ -72,8 +59,11 @@ class DelugeAPI(GenericClient):
         })
 
         try:
-            self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                              verify=app.TORRENT_VERIFY_CERT)
+            self.response = self.session.post(
+                self.url,
+                data=post_data.encode('utf-8'),
+                verify=app.TORRENT_VERIFY_CERT
+            )
         except RequestException:
             return None
 
@@ -86,14 +76,18 @@ class DelugeAPI(GenericClient):
                 'id': 11,
             })
             try:
-                self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=app.TORRENT_VERIFY_CERT)
+                self.response = self.session.post(
+                    self.url,
+                    data=post_data.encode('utf-8'),
+                    verify=app.TORRENT_VERIFY_CERT
+                )
             except RequestException:
                 return None
 
             hosts = self.response.json()['result']
             if not hosts:
-                logger.error('{name}: WebUI does not contain daemons', name=self.name)
+                log.error('{name}: WebUI does not contain daemons',
+                          {'name': self.name})
                 return None
 
             post_data = json.dumps({
@@ -105,8 +99,11 @@ class DelugeAPI(GenericClient):
             })
 
             try:
-                self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=app.TORRENT_VERIFY_CERT)
+                self.response = self.session.post(
+                    self.url,
+                    data=post_data.encode('utf-8'),
+                    verify=app.TORRENT_VERIFY_CERT
+                )
             except RequestException:
                 return None
 
@@ -117,14 +114,18 @@ class DelugeAPI(GenericClient):
             })
 
             try:
-                self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=app.TORRENT_VERIFY_CERT)
+                self.response = self.session.post(
+                    self.url,
+                    data=post_data.encode('utf-8'),
+                    verify=app.TORRENT_VERIFY_CERT
+                )
             except RequestException:
                 return None
 
             connected = self.response.json()['result']
             if not connected:
-                logger.error('{name}: WebUI could not connect to daemon', name=self.name)
+                log.error('{name}: WebUI could not connect to daemon',
+                          {'name': self.name})
                 return None
 
         return self.auth
@@ -212,7 +213,9 @@ class DelugeAPI(GenericClient):
         if result.show.is_anime:
             label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
+            log.error('{name}: Invalid label. Label must not contain a space',
+                      {'name': self.name})
+
             return False
 
         if label:
@@ -228,8 +231,9 @@ class DelugeAPI(GenericClient):
 
             if labels is not None:
                 if label not in labels:
-                    logger.debug('{name}: {label} label does not exist in Deluge we must add it', name=self.name,
-                                 label=label)
+                    log.debug('{name}: {label} label does not exist in Deluge'
+                              ' we must add it',
+                              {'name': self.name, 'label': label})
                     post_data = json.dumps({
                         'method': 'label.add',
                         'params': [
@@ -239,7 +243,8 @@ class DelugeAPI(GenericClient):
                     })
 
                     self._request(method='post', data=post_data)
-                    logger.debug('{name}: {label} label added to Deluge', name=self.name, label=label)
+                    log.debug('{name}: {label} label added to Deluge',
+                              {'name': self.name, 'label': label})
 
                 # add label to torrent
                 post_data = json.dumps({
@@ -252,9 +257,12 @@ class DelugeAPI(GenericClient):
                 })
 
                 self._request(method='post', data=post_data)
-                logger.debug('{name}: {label} label added to torrent', name=self.name, label=label)
+                log.debug('{name}: {label} label added to torrent',
+                          {'name': self.name, 'label': label})
+
             else:
-                logger.debug('{name}: label plugin not detected', name=self.name)
+                log.debug('{name}: label plugin not detected',
+                          {'name': self.name})
                 return False
 
         return not self.response.json()['error']
@@ -278,7 +286,8 @@ class DelugeAPI(GenericClient):
 
             self._request(method='post', data=post_data)
 
-            # Return false if we couldn't enable setting set_torrent_stop_at_ratio. No reason to set ratio.
+            # if unable to set_torrent_stop_at_ratio return False
+            # No reason to set ratio.
             if self.response.json()['error']:
                 return False
 
