@@ -84,7 +84,7 @@ def log_snatch(searchResult):
                         provider, version, proper_tags, manually_searched, info_hash, size)
 
 
-def logDownload(episode, filename, new_ep_quality, release_group=None, version=-1):
+def log_download(episode, filename, new_ep_quality, release_group=None, version=-1):
     """
     Log history of download
 
@@ -97,6 +97,7 @@ def logDownload(episode, filename, new_ep_quality, release_group=None, version=-
     showid = int(episode.show.indexerid)
     season = int(episode.season)
     ep_number = int(episode.episode)
+    size = int(episode.file_size)
 
     quality = new_ep_quality
 
@@ -108,7 +109,7 @@ def logDownload(episode, filename, new_ep_quality, release_group=None, version=-
 
     action = episode.status
 
-    _logHistoryItem(action, showid, season, ep_number, quality, filename, provider, version)
+    _logHistoryItem(action, showid, season, ep_number, quality, filename, provider, version, size=size)
 
 
 def logSubtitle(showid, season, episode, status, subtitle_result):
