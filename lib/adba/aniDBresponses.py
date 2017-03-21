@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 #
 # This file is part of aDBa.
 #
@@ -16,7 +17,7 @@
 # along with aDBa.  If not, see <http://www.gnu.org/licenses/>.
 
 from types import FunctionType
-from aniDBmaper import AniDBMaper
+from .aniDBmaper import AniDBMaper
 
 
 class ResponseResolver:
@@ -28,7 +29,8 @@ class ResponseResolver:
         self.resstr = resstr
         self.datalines = datalines
 
-    def parse(self, data):
+    @staticmethod
+    def parse(data):
         resline = data.split('\n', 1)[0]
         lines = data.split('\n')[1:-1]
 
@@ -59,34 +61,33 @@ class Response:
         self.maper = AniDBMaper()
 
     def __repr__(self):
-        tmp = "%s(%s,%s,%s) %s\n" % (
-        self.__class__.__name__, repr(self.restag), repr(self.rescode), repr(self.resstr), repr(self.attrs))
+        tmp = "%s(%s,%s,%s) %s\n" % (self.__class__.__name__, repr(self.restag), repr(self.rescode), repr(self.resstr), repr(self.attrs))
 
         m = 0
         for line in self.datalines:
-            for k, v in line.iteritems():
+            for k, v in line.items():
                 if len(k) > m:
                     m = len(k)
 
         for line in self.datalines:
             tmp += "  Line:\n"
-            for k, v in line.iteritems():
+            for k, v in line.items():
                 tmp += "    %s:%s %s\n" % (k, (m - len(k)) * ' ', v)
         return tmp
 
     def parse(self):
         tmp = self.resstr.split(' ', len(self.codehead))
-        self.attrs = dict(zip(self.codehead, tmp[:-1]))
+        self.attrs = dict(list(zip(self.codehead, tmp[:-1])))
         self.resstr = tmp[-1]
 
         self.datalines = []
         for rawline in self.rawlines:
-            normal = dict(zip(self.codetail, rawline))
+            normal = dict(list(zip(self.codetail, rawline)))
             rawline = rawline[len(self.codetail):]
             rep = []
             if len(self.coderep):
                 while rawline:
-                    tmp = dict(zip(self.coderep, rawline))
+                    tmp = dict(list(zip(self.coderep, rawline)))
                     rawline = rawline[len(self.coderep):]
                     rep.append(tmp)
             # normal['rep']=rep
@@ -101,8 +102,8 @@ class LoginAcceptedResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        sesskey	- session key
-        address	- your address (ip:port) as seen by the server
+        sesskey    - session key
+        address    - your address (ip:port) as seen by the server
 
         data:
 
@@ -113,7 +114,7 @@ class LoginAcceptedResponse(Response):
         self.coderep = ()
 
         nat = cmd.parameters['nat']
-        nat = int(nat == None and nat or '0')
+        nat = int(nat is None and nat or '0')
         if nat:
             self.codehead = ('sesskey', 'address')
         else:
@@ -124,8 +125,8 @@ class LoginAcceptedNewVerResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        sesskey	- session key
-        address	- your address (ip:port) as seen by the server
+        sesskey    - session key
+        address    - your address (ip:port) as seen by the server
 
         data:
 
@@ -136,7 +137,7 @@ class LoginAcceptedNewVerResponse(Response):
         self.coderep = ()
 
         nat = cmd.parameters['nat']
-        nat = int(nat == None and nat or '0')
+        nat = int(nat is None and nat or '0')
         if nat:
             self.codehead = ('sesskey', 'address')
         else:
@@ -209,7 +210,7 @@ class UptimeResponse(Response):
         attributes:
 
         data:
-        uptime	- udpserver uptime in milliseconds
+        uptime    - udpserver uptime in milliseconds
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -223,7 +224,7 @@ class EncryptionEnabledResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        salt	- salt
+        salt    - salt
 
         data:
 
@@ -317,48 +318,48 @@ class FileResponse(Response):
         attributes:
 
         data:
-        eid		episode id
-        gid		group id
-        lid		mylist id
-        state		state
-        size		size
-        ed2k		ed2k
-        md5		md5
-        sha1		sha1
-        crc32		crc32
-        dublang		dub language
-        sublang		sub language
-        quality		quality
-        source		source
-        audiocodec	audio codec
-        audiobitrate	audio bitrate
-        videocodec	video codec
-        videobitrate	video bitrate
-        resolution	video resolution
-        filetype	file type (extension)
-        length		length in seconds
-        description	description
-        filename	anidb file name
-        gname		group name
-        gshortname	group short name
-        epno		number of episode
-        epname		ep english name
-        epromaji	ep romaji name
-        epkanji		ep kanji name
-        totaleps	anime total episodes
-        lastep		last episode nr (highest, not special)
-        year		year
-        type		type
-        romaji		romaji name
-        kanji		kanji name
-        name		english name
-        othername	other name
-        shortnames	short name list
-        synonyms	synonym list
-        categories	category list
-        relatedaids	related aid list
-        producernames	producer name list
-        producerids	producer id list
+        eid        episode id
+        gid        group id
+        lid        mylist id
+        state        state
+        size        size
+        ed2k        ed2k
+        md5        md5
+        sha1        sha1
+        crc32        crc32
+        dublang        dub language
+        sublang        sub language
+        quality        quality
+        source        source
+        audiocodec    audio codec
+        audiobitrate    audio bitrate
+        videocodec    video codec
+        videobitrate    video bitrate
+        resolution    video resolution
+        filetype    file type (extension)
+        length        length in seconds
+        description    description
+        filename    anidb file name
+        gname        group name
+        gshortname    group short name
+        epno        number of episode
+        epname        ep english name
+        epromaji    ep romaji name
+        epkanji        ep kanji name
+        totaleps    anime total episodes
+        lastep        last episode nr (highest, not special)
+        year        year
+        type        type
+        romaji        romaji name
+        kanji        kanji name
+        name        english name
+        othername    other name
+        shortnames    short name list
+        synonyms    synonym list
+        categories    category list
+        relatedaids    related aid list
+        producernames    producer name list
+        producerids    producer id list
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -369,13 +370,12 @@ class FileResponse(Response):
         fmask = cmd.parameters['fmask']
         amask = cmd.parameters['amask']
 
-        codeListF = self.maper.getFileCodesF(fmask)
-        codeListA = self.maper.getFileCodesA(amask)
-        # print "File - codelistF: "+str(codeListF)
-        #print "File - codelistA: "+str(codeListA)
+        code_list_f = self.maper.getFileCodesF(fmask)
+        code_list_a = self.maper.getFileCodesA(amask)
+        # print "File - codelistF: "+str(code_list_f)
+        # print "File - codelistA: "+str(code_list_a)
 
-
-        self.codetail = tuple(['fid'] + codeListF + codeListA)
+        self.codetail = tuple(['fid'] + code_list_f + code_list_a)
 
 
 class MylistResponse(Response):
@@ -384,17 +384,17 @@ class MylistResponse(Response):
         attributes:
 
         data:
-        lid	 - mylist id
-        fid	 - file id
-        eid	 - episode id
-        aid	 - anime id
-        gid	 - group id
-        date	 - date when you added this to mylist
-        state	 - the location of the file
+        lid     - mylist id
+        fid     - file id
+        eid     - episode id
+        aid     - anime id
+        gid     - group id
+        date     - date when you added this to mylist
+        state     - the location of the file
         viewdate - date when you marked this watched
-        storage	 - for example the title of the cd you have this on
-        source	 - where you got the file (bittorrent,dc++,ed2k,...)
-        other	 - other data regarding this file
+        storage     - for example the title of the cd you have this on
+        source     - where you got the file (bittorrent,dc++,ed2k,...)
+        other     - other data regarding this file
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
         self.codestr = 'MYLIST'
@@ -409,51 +409,28 @@ class MylistStatsResponse(Response):
         attributes:
 
         data:
-        animes		- animes
-        eps		- eps
-        files		- files
-        filesizes	- size of files
-        animesadded	- added animes
-        epsadded	- added eps
-        filesadded	- added files
-        groupsadded	- added groups
-        leechperc	- leech %
-        lameperc	- lame %
-        viewedofdb	- viewed % of db
-        mylistofdb	- mylist % of db
-        viewedofmylist	- viewed % of mylist
-        viewedeps	- number of viewed eps
-        votes		- votes
-        reviews		- reviews
+        animes        - animes
+        eps        - eps
+        files        - files
+        filesizes    - size of files
+        animesadded    - added animes
+        epsadded    - added eps
+        filesadded    - added files
+        groupsadded    - added groups
+        leechperc    - leech %
+        lameperc    - lame %
+        viewedofdb    - viewed % of db
+        mylistofdb    - mylist % of db
+        viewedofmylist    - viewed % of mylist
+        viewedeps    - number of viewed eps
+        votes        - votes
+        reviews        - reviews
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
         self.codestr = 'MYLIST_STATS'
         self.codehead = ()
-        self.codetail = (
-        'animes', 'eps', 'files', 'filesizes', 'animesadded', 'epsadded', 'filesadded', 'groupsadded', 'leechperc',
-        'lameperc', 'viewedofdb', 'mylistofdb', 'viewedofmylist', 'viewedeps', 'votes', 'reviews')
-        self.coderep = ()
-
-
-class NotificationResponse(Response):
-    def __init__(self, cmd, restag, rescode, resstr, datalines):
-        """
-        attributes:
-
-        data:
-        nid         - notification id
-        unknown     - unsure what this parameter is
-        type        - Type of notification: type=>  0=all, 1=new, 2=group, 3=complete
-        aid         - anime id
-        priority    - low = 0, medium = 1, high = 2 (unconfirmed)
-        date        - date notification subscribed to
-
-        """
-        Response.__init__(self, cmd, restag, rescode, resstr, datalines)
-        self.codestr = 'NOTIFICATION'
-        self.codehead = ()
-        self.codetail = ('nid', 'unknown', 'type', 'aid', 'priority', 'date')
+        self.codetail = ('animes', 'eps', 'files', 'filesizes', 'animesadded', 'epsadded', 'filesadded', 'groupsadded', 'leechperc', 'lameperc', 'viewedofdb', 'mylistofdb', 'viewedofmylist', 'viewedeps', 'votes', 'reviews')
         self.coderep = ()
 
 
@@ -466,8 +443,8 @@ class AnimeResponse(Response):
 
         # TODO: impl random anime
         amask = cmd.parameters['amask']
-        codeList = self.maper.getAnimeCodesA(amask)
-        self.codetail = tuple(codeList)
+        code_list = self.maper.getAnimeCodesA(amask)
+        self.codetail = tuple(code_list)
 
 
 class AnimeBestMatchResponse(Response):
@@ -506,15 +483,15 @@ class EpisodeResponse(Response):
         attributes:
 
         data:
-        eid	- episode id
-        aid	- anime id
-        length	- length
-        rating	- rating
-        votes	- votes
-        epno	- number of episode
-        name	- english name of episode
-        romaji	- romaji name of episode
-        kanji	- kanji name of episode
+        eid    - episode id
+        aid    - anime id
+        length    - length
+        rating    - rating
+        votes    - votes
+        epno    - number of episode
+        name    - english name of episode
+        romaji    - romaji name of episode
+        kanji    - kanji name of episode
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -530,13 +507,13 @@ class ProducerResponse(Response):
         attributes:
 
         data:
-        pid	  - producer id
-        name	  - name of producer
+        pid      - producer id
+        name      - name of producer
         shortname - short name
         othername - other name
-        type	  - type
-        pic	  - picture name
-        url	  - home page url
+        type      - type
+        pic      - picture name
+        url      - home page url
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -552,23 +529,22 @@ class GroupResponse(Response):
         attributes:
 
         data:
-        gid	   - group id
-        rating	   - rating
-        votes	   - votes
-        animes	   - anime count
-        files	   - file count
-        name	   - name
+        gid       - group id
+        rating       - rating
+        votes       - votes
+        animes       - anime count
+        files       - file count
+        name       - name
         shortname  - short
         ircchannel - irc channel
         ircserver  - irc server
-        url	   - url
+        url       - url
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
         self.codestr = 'GROUP'
         self.codehead = ()
-        self.codetail = (
-        'gid', 'rating', 'votes', 'animes', 'files', 'name', 'shortname', 'ircchannel', 'ircserver', 'url')
+        self.codetail = ('gid', 'rating', 'votes', 'animes', 'files', 'name', 'shortname', 'ircchannel', 'ircserver', 'url')
         self.coderep = ()
 
 
@@ -578,16 +554,16 @@ class GroupstatusResponse(Response):
         attributes:
 
         data:
-        gid	   - group id
-        rating	   - rating
-        votes	   - votes
-        animes	   - anime count
-        files	   - file count
-        name	   - name
+        gid       - group id
+        rating       - rating
+        votes       - votes
+        animes       - anime count
+        files       - file count
+        name       - name
         shortname  - short
         ircchannel - irc channel
         ircserver  - irc server
-        url	   - url
+        url       - url
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -601,14 +577,14 @@ class BuddyListResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        start	- mylist entry number of first buddy on this packet
-        end	- mylist entry number of last buddy on this packet
-        total	- total number of buddies on mylist
+        start    - mylist entry number of first buddy on this packet
+        end    - mylist entry number of last buddy on this packet
+        total    - total number of buddies on mylist
 
         data:
-        uid	- uid
-        name	- username
-        state	- state
+        uid    - uid
+        name    - username
+        state    - state
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -622,13 +598,13 @@ class BuddyStateResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        start	- mylist entry number of first buddy on this packet
-        end	- mylist entry number of last buddy on this packet
-        total	- total number of buddies on mylist
+        start    - mylist entry number of first buddy on this packet
+        end    - mylist entry number of last buddy on this packet
+        total    - total number of buddies on mylist
 
         data:
-        uid	- uid
-        state	- online state
+        uid    - uid
+        state    - online state
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -704,7 +680,7 @@ class VotedResponse(Response):
         attributes:
 
         data:
-        name	- aname/ename/gname
+        name    - aname/ename/gname
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -720,8 +696,8 @@ class VoteFoundResponse(Response):
         attributes:
 
         data:
-        name	- aname/ename/gname
-        value	- vote value
+        name    - aname/ename/gname
+        value    - vote value
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -737,8 +713,8 @@ class VoteUpdatedResponse(Response):
         attributes:
 
         data:
-        name	- aname/ename/gname
-        value	- vote value
+        name    - aname/ename/gname
+        value    - vote value
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -754,8 +730,8 @@ class VoteRevokedResponse(Response):
         attributes:
 
         data:
-        name	- aname/ename/gname
-        value	- vote value
+        name    - aname/ename/gname
+        value    - vote value
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -777,22 +753,7 @@ class NotificationAddedResponse(Response):
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
         self.codestr = 'NOTIFICATION_ITEM_ADDED'
         self.codehead = ()
-        self.codetail = ('nid')
-        self.coderep = ()
-
-class NotificationDeletedResponse(Response):
-    def __init__(self, cmd, restag, rescode, resstr, datalines):
-        """
-        attributes:
-
-        data:
-        nid - notofication id
-
-        """
-        Response.__init__(self, cmd, restag, rescode, resstr, datalines)
-        self.codestr = 'NOTIFICATION_ITEM_DELETED'
-        self.codehead = ()
-        self.codetail = ()
+        self.codetail = 'nid'
         self.coderep = ()
 
 
@@ -808,27 +769,8 @@ class NotificationUpdatedResponse(Response):
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
         self.codestr = 'NOTIFICATION_ITEM_UPDATED'
         self.codehead = ()
-        self.codetail = ('nid')
+        self.codetail = 'nid'
         self.coderep = ()
-
-
-class MultipleNotificationResponse(Response):
-    def __init__(self, cmd, restag, rescode, resstr, datalines):
-        """
-        attributes:
-
-        data:
-        nid         - notification id
-        type        -
-        priority    -
-
-
-        """
-        Response.__init__(self, cmd, restag, rescode, resstr, datalines)
-        self.codestr = 'MULTIPLE NOTIFICATION ITEMS'
-        self.codehead = ()
-        self.codetail = ()
-        self.coderep = ('nid', 'type', 'priority',)
 
 
 class NotificationEnabledResponse(Response):
@@ -850,13 +792,13 @@ class NotificationNotifyResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        nid	- notify packet id
+        nid    - notify packet id
 
         data:
-        aid	- anime id
-        date	- date
-        count	- count
-        name	- name of the anime
+        aid    - anime id
+        date    - date
+        count    - count
+        name    - name of the anime
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -870,14 +812,14 @@ class NotificationMessageResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        nid	- notify packet id
+        nid    - notify packet id
 
         data:
-        type	- type
-        date	- date
-        uid	- user id of the sender
-        name	- name of the sender
-        subject	- subject
+        type    - type
+        date    - date
+        uid    - user id of the sender
+        name    - name of the sender
+        subject    - subject
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -891,11 +833,11 @@ class NotificationBuddyResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        nid	- notify packet id
+        nid    - notify packet id
 
         data:
-        uid	- buddy uid
-        type	- event type
+        uid    - buddy uid
+        type    - event type
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -909,11 +851,11 @@ class NotificationShutdownResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
-        nid	- notify packet id
+        nid    - notify packet id
 
         data:
-        time	- time offline
-        comment	- comment
+        time    - time offline
+        comment    - comment
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -968,15 +910,15 @@ class NotifyackSuccessfulNResponse(Response):
         self.coderep = ()
 
 
-class NotificationStateResponse(Response):
+class NotificationResponse(Response):
     def __init__(self, cmd, restag, rescode, resstr, datalines):
         """
         attributes:
 
         data:
         notifies - pending notifies
-        msgs	 - pending msgs
-        buddys	 - number of online buddys
+        msgs     - pending msgs
+        buddys     - number of online buddys
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -985,7 +927,7 @@ class NotificationStateResponse(Response):
         self.coderep = ()
 
         buddy = cmd.parameters['buddy']
-        buddy = int(buddy != None and buddy or '0')
+        buddy = int(buddy is not None and buddy or '0')
         if buddy:
             self.codetail = ('notifies', 'msgs', 'buddys')
         else:
@@ -998,8 +940,8 @@ class NotifylistResponse(Response):
         attributes:
 
         data:
-        type	- type
-        nid	- notify id
+        type    - type
+        nid    - notify id
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1015,13 +957,13 @@ class NotifygetMessageResponse(Response):
         attributes:
 
         data:
-        nid	- notify id
-        uid	- from user id
-        uname	- from username
-        date	- date
-        type	- type
-        title	- title
-        body	- body
+        nid    - notify id
+        uid    - from user id
+        uname    - from username
+        date    - date
+        type    - type
+        title    - title
+        body    - body
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1037,17 +979,17 @@ class NotifygetNotifyResponse(Response):
         attributes:
 
         data:
-        aid	- aid
-        type	- type
-        count	- count
-        date	- date
-        name	- anime name
-        fid     - comma separated list of fids
+        aid    - aid
+        type    - type
+        count    - count
+        date    - date
+        name    - anime name
+
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
         self.codestr = 'NOTIFYGET_NOTIFY'
         self.codehead = ()
-        self.codetail = ('aid', 'type', 'count', 'date', 'name', 'fid')
+        self.codetail = ('aid', 'type', 'count', 'date', 'name')
         self.coderep = ()
 
 
@@ -1072,7 +1014,7 @@ class UserResponse(Response):
         attributes:
 
         data:
-        uid	- user id
+        uid    - user id
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1163,7 +1105,7 @@ class MylistEntryEditedResponse(Response):
         attributes:
 
         data:
-        entries	- number of entries edited
+        entries    - number of entries edited
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1179,15 +1121,15 @@ class MultipleMylistEntriesResponse(Response):
         attributes:
 
         data:
-        name	   - anime title
-        eps	   - episodes
+        name       - anime title
+        eps       - episodes
         unknowneps - eps with state unknown
-        hddeps	   - eps with state on hdd
-        cdeps	   - eps with state on cd
+        hddeps       - eps with state on hdd
+        cdeps       - eps with state on cd
         deletedeps - eps with state deleted
         watchedeps - watched eps
         gshortname - group short name
-        geps	   - eps for group
+        geps       - eps for group
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1278,7 +1220,7 @@ class MultipleFilesFoundResponse(Response):
         attributes:
 
         data:
-        fid	- file id
+        fid    - file id
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1286,21 +1228,6 @@ class MultipleFilesFoundResponse(Response):
         self.codehead = ()
         self.codetail = ()
         self.coderep = ('fid',)
-
-
-class NoSuchNotificationResponse(Response):
-    def __init__(self, cmd, restag, rescode, resstr, datalines):
-        """
-        attributes:
-
-        data:
-
-        """
-        Response.__init__(self, cmd, restag, rescode, resstr, datalines)
-        self.codestr = 'NO_SUCH_NOTIFICATION'
-        self.codehead = ()
-        self.codetail = ()
-        self.coderep = ()
 
 
 class NoGroupsFoundResponse(Response):
@@ -1489,7 +1416,7 @@ class PermvoteNotAllowedResponse(Response):
         attributes:
 
         data:
-        aname	- name of the anime
+        aname    - name of the anime
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1505,7 +1432,7 @@ class AlreadyPermvotedResponse(Response):
         attributes:
 
         data:
-        name	- aname/ename/gname
+        name    - aname/ename/gname
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1911,7 +1838,7 @@ class VersionResponse(Response):
         attributes:
 
         data:
-        version	- server version
+        version    - server version
 
         """
         Response.__init__(self, cmd, restag, rescode, resstr, datalines)
@@ -1938,7 +1865,6 @@ responses = {
     '220': FileResponse,
     '221': MylistResponse,
     '222': MylistStatsResponse,
-    '224': NotificationResponse,
     '225': GroupstatusResponse,
     '230': AnimeResponse,
     '231': AnimeBestMatchResponse,
@@ -1946,9 +1872,7 @@ responses = {
     '240': EpisodeResponse,
     '245': ProducerResponse,
     '246': NotificationAddedResponse,
-    '247': NotificationDeletedResponse,
     '248': NotificationUpdatedResponse,
-    '249': MultipleNotificationResponse,
     '250': GroupResponse,
     '253': BuddyListResponse,
     '254': BuddyStateResponse,
@@ -1968,7 +1892,7 @@ responses = {
     '280': PushackConfirmedResponse,
     '281': NotifyackSuccessfulMResponse,
     '282': NotifyackSuccessfulNResponse,
-    '290': NotificationStateResponse,
+    '290': NotificationResponse,
     '291': NotifylistResponse,
     '292': NotifygetMessageResponse,
     '293': NotifygetNotifyResponse,
@@ -1987,7 +1911,6 @@ responses = {
     '320': NoSuchFileResponse,
     '321': NoSuchEntryResponse,
     '322': MultipleFilesFoundResponse,
-    '324': NoSuchNotificationResponse,
     '325': NoGroupsFoundResponse,
     '330': NoSuchAnimeResponse,
     '340': NoSuchEpisodeResponse,
@@ -2030,4 +1953,3 @@ responses = {
     '666': ApiViolationResponse,
     '998': VersionResponse
 }
-
