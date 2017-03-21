@@ -494,7 +494,6 @@ class TVmaze(BaseIndexer):
         :returns: A dict with externals, including the tvmaze id.
         """
         mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
-        externals = {}
         for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
             if kwargs.get(external_id):
                 try:
@@ -507,6 +506,7 @@ class TVmaze(BaseIndexer):
                                      in externals.items()
                                      if external_value and mapping.get(external_id)}
                         externals['tvmaze_id'] = result.maze_id
+                        return externals
                 except ShowNotFound:
                     logger.debug('Could not get tvmaze externals using external key %s and id %s',
                                  external_id, kwargs.get(external_id))
@@ -514,4 +514,4 @@ class TVmaze(BaseIndexer):
                 except BaseError as e:
                     logger.warning('Could not get tvmaze externals. Cause: %s', e)
                     continue
-        return externals
+        return {}
