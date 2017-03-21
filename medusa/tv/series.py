@@ -904,10 +904,13 @@ class Series(TV):
         sql_results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
         results = [dict(result) for result in sql_results]
         for result in results:
-            if result[b'indexer'] == self.indexer:
-                self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
-            else:
-                self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
+            try:
+                if result[b'indexer'] == self.indexer:
+                    self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+                else:
+                    self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
+            except KeyError as e:
+                logger.error(u'Indexer not supported in current mappings: {id}', id=e.message)
 
         return self.externals
 
