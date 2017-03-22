@@ -1262,7 +1262,7 @@ class Home(WebRoot):
                 i['status'], i['quality'] = Quality.split_composite_status(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
-                i['size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
+                i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
@@ -1290,9 +1290,9 @@ class Home(WebRoot):
                     provider_result['status_highlight'] = 'failed'
                 elif any([item for item in episode_history
                           if all([provider_result['name'] in item['resource'],
-                                  item['provider'] in (provider_result['provider'],),
+                                  item['provider'] in provider_result['provider'],
                                   item['status'] in snatched_statuses,
-                                  item['size'] == provider_result['size']],)
+                                  item['size'] == provider_result['size']])
                           ]):
                     provider_result['status_highlight'] = 'snatched'
                 else:

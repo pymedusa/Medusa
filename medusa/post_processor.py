@@ -1282,7 +1282,7 @@ class PostProcessor(object):
 
         # log it to history episode and related episodes (multi-episode for example)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            history.logDownload(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
+            history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
         # send notifications
         notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
