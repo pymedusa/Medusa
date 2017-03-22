@@ -238,11 +238,11 @@ class GenericClient(object):
         """
         r_code = False
 
-        log.log('Calling {name} Client', {'name': self.name})
+        log.debug('Calling {name} Client', {'name': self.name})
 
         if not self.auth:
             if not self._get_auth():
-                log.log('{name}: Authentication Failed', {'name': self.name})
+                log.warning('{name}: Authentication Failed', {'name': self.name})
                 return r_code
 
         try:
