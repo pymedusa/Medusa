@@ -76,7 +76,7 @@ class BraceMessage(object):
         :rtype: str
         """
         result = text_type(self.fmt)
-        return result.format(*self.args, **self.kwargs) if self.args or self.kwargs else result
+        return result.format(*self.args, **self.kwargs) if self.args or self.kwargs.get('extra') else result
 
 
 def initialize():
