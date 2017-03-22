@@ -1575,6 +1575,12 @@ class Series(TV):
                           'plot': self.plot}
 
         main_db_con = db.DBConnection()
+        sql_results = main_db_con.select('SELECT * FROM tv_shows WHERE indexer_id=?', [self.indexerid])
+        if sql_results:
+            old_value_dict = {x: v for x, v in dict(sql_results[0]).iteritems() if x in new_value_dict.keys()}
+            if old_value_dict:
+                tv_shows_modified = helpers.dict_compare(new_value_dict, old_value_dict)
+                logger.debug(u'Series object keys that were modified: {0}'.format(tv_shows_modified))
         main_db_con.upsert('tv_shows', new_value_dict, control_value_dict)
 
         helpers.update_anime_support()
@@ -1583,7 +1589,12 @@ class Series(TV):
             control_value_dict = {'indexer_id': self.indexerid}
             new_value_dict = self.imdb_info
 
-            main_db_con = db.DBConnection()
+            imdb_sql_results = main_db_con.select('SELECT * FROM imdb_info WHERE indexer_id=?', [self.indexerid])
+            if imdb_sql_results:
+                old_imdb_value_dict = {x: v for x, v in dict(imdb_sql_results[0]).iteritems() if x in new_value_dict.keys()}
+                if old_imdb_value_dict:
+                    imdb_modified = helpers.dict_compare(new_value_dict, old_imdb_value_dict)
+                    logger.debug(u'IMDB object keys that were modified: {0}'.format(imdb_modified))
             main_db_con.upsert('imdb_info', new_value_dict, control_value_dict)
 
         self.reset_dirty()
