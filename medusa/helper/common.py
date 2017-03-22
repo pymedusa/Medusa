@@ -295,8 +295,8 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
-        if candidate and ("," in candidate or "." in candidate):
-            log.error(u"Failed parsing provider. Traceback: %r" % traceback.format_exc())
+        if candidate and (',' in candidate or '.' in candidate):
+            log.error(u'Failed parsing provider. Traceback: %r', traceback.format_exc())
         return default_value
 
 
