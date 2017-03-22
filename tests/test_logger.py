@@ -4,9 +4,9 @@ from datetime import datetime
 
 import medusa.logger as sut
 from medusa.logger import DEBUG, INFO, LogLine, WARNING
+from medusa.logger.adapters.style import BraceAdapter
 import pytest
 
-from medusa.logger.adapters.style import BraceAdapter
 from six import text_type
 
 
