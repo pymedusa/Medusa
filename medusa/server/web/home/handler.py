@@ -1431,6 +1431,7 @@ class Home(WebRoot):
 
         show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
+        # If user set quality_preset remove all preferred_qualities
         if try_int(quality_preset, None):
             preferred_qualities = []
 
@@ -1473,7 +1474,8 @@ class Home(WebRoot):
         subtitles = config.checkbox_to_value(subtitles)
 
         do_update = False
-        if show_obj.lang != indexer_lang:
+        # In mass edit, we can't change language so we need to check if indexer_lang is set
+        if indexer_lang and show_obj.lang != indexer_lang:
             msg = (
                 '{{status}} {language}'
                 ' for {indexer_name} show {show_id}'.format(

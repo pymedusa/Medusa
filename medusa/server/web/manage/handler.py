@@ -542,7 +542,7 @@ class Manage(Home, WebRoot):
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
 
-    def massEditSubmit(self, paused=None, default_ep_status=None,
+    def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
@@ -609,6 +609,12 @@ class Manage(Home, WebRoot):
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
+            if dvd_order == 'keep':
+                new_dvd_order = show_obj.dvd_order
+            else:
+                new_dvd_order = True if dvd_order == 'enable' else False
+            new_dvd_order = 'on' if new_dvd_order else 'off'
+
             if flatten_folders == 'keep':
                 new_flatten_folders = show_obj.flatten_folders
             else:
@@ -636,7 +642,7 @@ class Manage(Home, WebRoot):
                                         paused=new_paused, sports=new_sports,
                                         subtitles=new_subtitles, anime=new_anime,
                                         scene=new_scene, air_by_date=new_air_by_date,
-                                        directCall=True)
+                                        dvd_order=new_dvd_order, directCall=True)
 
             if cur_errors:
                 logger.log(u'Errors: {errors}'.format(errors=cur_errors), logger.ERROR)
