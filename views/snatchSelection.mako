@@ -68,10 +68,10 @@
                             </tr>
                         % endfor
                         <tr id="history-footer" class="tablesorter-no-sort border-bottom shadow">
-                            <th class="tablesorter-no-sort" colspan=4></th>
+                            <th class="tablesorter-no-sort" colspan="5"></th>
                         </tr>
                     </tbody>
-                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=4></td></tr></tbody>
+                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan="5"></td></tr></tbody>
                 </table>
             % endif
             <!-- add provider meta data -->
@@ -144,9 +144,9 @@
                     </tbody>
                     <tbody class="tablesorter-no-sort">
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
-                        <th class="tablesorter-no-sort" colspan=11></td>
+                        <th class="tablesorter-no-sort" colspan="11"></td>
                     </tr>
-                    <tr><th class="row-seasonheader" colspan=11></th></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan="11"></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->
