@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Series classes."""
 
 from __future__ import unicode_literals
@@ -64,20 +49,20 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
+from medusa.exceptions import (
+    RemovalError,
+    EpisodeNotFoundException,
+    IntegrityError,
+    IntegrityError,
+    ShowDirectoryNotFoundException,
+    ShowNotFoundException,
+)
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
     try_int,
 )
-from medusa.helper.exceptions import (
-    EpisodeDeletedException,
-    EpisodeNotFoundException,
-    MultipleShowObjectsException,
-    MultipleShowsInDatabaseException,
-    ShowDirectoryNotFoundException,
-    ShowNotFoundException,
-    ex,
-)
+from medusa.helper.exceptions import ex
 from medusa.helpers.externals import get_externals
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
@@ -171,7 +156,7 @@ class Series(TV):
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
-            raise MultipleShowObjectsException("Can't create a show if it already exists")
+            raise IntegrityError("Can't create a show if it already exists")
 
         self._load_from_db()
 
@@ -682,7 +667,7 @@ class Series(TV):
                 logger.warning(u"{id}: Episode {location} returned an exception {error_msg}",
                                id=self.indexerid, location=media_file, error_msg=ex(e))
                 continue
-            except EpisodeDeletedException:
+            except RemovalError:
                 logger.debug(u'{id}: The episode deleted itself when I tried making an object for it',
                              id=self.indexerid)
 
@@ -798,7 +783,7 @@ class Series(TV):
 
                 cur_ep.load_from_db(cur_season, cur_episode)
                 scanned_eps[cur_season][cur_episode] = True
-            except EpisodeDeletedException:
+            except RemovalError:
                 logger.debug(u'{id}: Tried loading {show} {ep} from the DB that should have been deleted, '
                              u'skipping it', id=cur_show_id, show=cur_show_name,
                              ep=episode_num(cur_season, cur_episode))
@@ -863,7 +848,7 @@ class Series(TV):
                 else:
                     try:
                         ep.load_from_indexer(tvapi=self.indexer_api)
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         logger.debug(u'{id}: The episode {ep} was deleted, skipping the rest of the load',
                                      id=self.indexerid, ep=episode_num(season, episode))
                         continue
@@ -1118,7 +1103,7 @@ class Series(TV):
         sql_results = main_db_con.select(b'SELECT * FROM tv_shows WHERE indexer_id = ?', [self.indexerid])
 
         if len(sql_results) > 1:
-            raise MultipleShowsInDatabaseException()
+            raise IntegrityError()
         elif not sql_results:
             logger.info(u'{indexerid}: Unable to find the show in the database', indexerid=self.indexerid)
             return
@@ -1448,8 +1433,8 @@ class Series(TV):
             try:
                 cur_ep = self.get_episode(season, episode)
                 if not cur_ep:
-                    raise EpisodeDeletedException
-            except EpisodeDeletedException:
+                    raise RemovalError
+            except RemovalError:
                 logger.debug(u'{id:} Episode {show} {ep} was deleted while we were refreshing it, '
                              u'moving on to the next one',
                              id=self.indexerid, show=self.name, ep=episode_num(season, episode))

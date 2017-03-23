@@ -1,22 +1,7 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Proper finder module."""
+
 from __future__ import unicode_literals
 
 import datetime
@@ -26,15 +11,15 @@ import re
 import threading
 import time
 import traceback
-
 from socket import timeout as socket_timeout
 
 from requests import exceptions as requests_exceptions
 
+from medusa.exceptions import AuthException
+from medusa.helper.exceptions import ex
 from .. import app, db, helpers, logger
 from ..common import Quality, cpu_presets
 from ..helper.common import enabled_providers
-from ..helper.exceptions import AuthException, ex
 from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from ..search.core import pick_best_result, snatch_episode
 from ..show.history import History

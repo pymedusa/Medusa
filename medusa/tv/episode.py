@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Episode classes."""
 
 from __future__ import unicode_literals
@@ -53,6 +38,12 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
+from medusa.exceptions import (
+    RemovalError,
+    EpisodeNotFoundException,
+    IntegrityError,
+    NFOError,
+)
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -62,13 +53,7 @@ from medusa.helper.common import (
     sanitize_filename,
     try_int,
 )
-from medusa.helper.exceptions import (
-    EpisodeDeletedException,
-    EpisodeNotFoundException,
-    MultipleEpisodesInDatabaseException,
-    NoNFOException,
-    ex,
-)
+from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import (
@@ -323,7 +308,7 @@ class Episode(TV):
             if self.is_location_valid():
                 try:
                     self.__load_from_nfo(self.location)
-                except NoNFOException:
+                except NFOError:
                     logger.error('{id}: There was an error loading the NFO for episode {show} {ep}',
                                  id=self.show.indexerid, show=self.show.name, ep=episode_num(season, episode))
 
@@ -331,7 +316,7 @@ class Episode(TV):
                 if not self.hasnfo:
                     try:
                         result = self.load_from_indexer(season, episode)
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         result = False
 
                     # if we failed SQL *and* NFO, Indexers then fail
@@ -364,7 +349,7 @@ class Episode(TV):
             b'  AND episode = ?', [self.show.indexerid, season, episode])
 
         if len(sql_results) > 1:
-            raise MultipleEpisodesInDatabaseException('Your DB has two records for the same show somehow.')
+            raise IntegrityError('Your DB has two records for the same show somehow.')
         elif not sql_results:
             logger.debug('{id}: {show} {ep} not found in the database',
                          id=self.show.indexerid, show=self.show.name, ep=episode_num(self.season, self.episode))
@@ -637,7 +622,7 @@ class Episode(TV):
                         logger.warning("{id}: Failed to rename your episode's NFO file. "
                                        'You need to delete it or fix it: {error_msg}',
                                        id=self.show.indexerid, error_msg=ex(e))
-                    raise NoNFOException('Error in NFO format')
+                    raise NFOError('Error in NFO format')
 
                 for ep_details in list(show_xml.iter('episodedetails')):
                     if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
@@ -651,7 +636,7 @@ class Episode(TV):
                         continue
 
                     if ep_details.findtext('title') is None or ep_details.findtext('aired') is None:
-                        raise NoNFOException('Error in NFO format (missing episode title or airdate)')
+                        raise NFOError('Error in NFO format (missing episode title or airdate)')
 
                     self.name = ep_details.findtext('title')
                     self.episode = int(ep_details.findtext('episode'))
@@ -803,7 +788,7 @@ class Episode(TV):
         sql = b'DELETE FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?'
         main_db_con.action(sql, [self.show.indexerid, self.season, self.episode])
 
-        raise EpisodeDeletedException()
+        raise RemovalError()
 
     def get_sql(self):
         """Create SQL queue for this episode if any of its data has been changed since the last save."""

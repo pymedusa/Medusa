@@ -1,22 +1,7 @@
 # coding=utf-8
-# Author: Tyler Fenby <tylerfenby@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
 
+from medusa.exceptions import FailedProcessingError
 from . import app, logger, show_name_helpers
-from .helper.exceptions import FailedPostProcessingFailedException
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .search.queue import FailedQueueItem
 
@@ -45,7 +30,7 @@ class FailedProcessor(object):
         releaseName = show_name_helpers.determineReleaseName(self.dir_name, self.nzb_name)
         if not releaseName:
             self._log(u'Warning: unable to find a valid release name.', logger.WARNING)
-            raise FailedPostProcessingFailedException()
+            raise FailedProcessingError()
 
         try:
             parsed = NameParser().parse(releaseName)
@@ -53,7 +38,7 @@ class FailedProcessor(object):
             self._log(u'Not enough information to parse release name into a valid show. '
                       u'Consider adding scene exceptions or improve naming for: {release}'.format
                       (release=releaseName), logger.WARNING)
-            raise FailedPostProcessingFailedException()
+            raise FailedProcessingError()
 
         self._log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
 

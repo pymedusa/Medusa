@@ -9,6 +9,10 @@ import re
 
 from tornroutes import route
 
+from medusa.exceptions import (
+    RefreshError,
+    UpdateError,
+)
 from ..core import PageTemplate, WebRoot
 from ..home import Home
 from .... import app, db, helpers, logger, network_timezones, post_processor, sbdatetime, subtitles, ui
@@ -17,10 +21,6 @@ from ....common import (
 )
 from ....helper.common import (
     episode_num, try_int,
-)
-from ....helper.exceptions import (
-    CantRefreshShowException,
-    CantUpdateShowException,
 )
 from ....helpers import is_media_file
 from ....network_timezones import app_timezone
@@ -687,14 +687,14 @@ class Manage(Home, WebRoot):
                 try:
                     app.show_queue_scheduler.action.updateShow(show_obj)
                     updates.append(show_obj.name)
-                except CantUpdateShowException as msg:
+                except UpdateError as msg:
                     errors.append('Unable to update show: {error}'.format(error=msg))
 
             elif cur_show_id in to_refresh:  # don't bother refreshing shows that were updated
                 try:
                     app.show_queue_scheduler.action.refreshShow(show_obj)
                     refreshes.append(show_obj.name)
-                except CantRefreshShowException as msg:
+                except RefreshError as msg:
                     errors.append('Unable to refresh show {show.name}: {error}'.format
                                   (show=show_obj, error=msg))
 

@@ -1,19 +1,4 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -26,9 +11,14 @@ import shutil_custom
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
+
+from medusa.exceptions import (
+    PostProcessingError,
+    FailedProcessingError,
+)
+from medusa.helper.exceptions import ex
 from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from .helper.common import is_sync_file, subtitle_extensions
-from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
@@ -556,7 +546,7 @@ class ProcessResult(object):
 
                 self.result = processor.process()
                 process_fail_message = ''
-            except EpisodePostProcessingFailedException as error:
+            except PostProcessingError as error:
                 self.result = False
                 process_fail_message = ex(error)
 
@@ -579,7 +569,7 @@ class ProcessResult(object):
                 processor = failed_processor.FailedProcessor(path, nzb_name)
                 self.result = processor.process()
                 process_fail_message = ''
-            except FailedPostProcessingFailedException as error:
+            except FailedProcessingError as error:
                 self.result = False
                 process_fail_message = ex(error)
 

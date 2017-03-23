@@ -1,20 +1,7 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Animetorrents."""
+
 from __future__ import unicode_literals
 
 import re
@@ -28,8 +15,8 @@ from medusa import (
     tv,
 )
 from medusa.bs4_parser import BS4Parser
+from medusa.exceptions import AuthException
 from medusa.helper.common import convert_size
-from medusa.helper.exceptions import AuthException
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 from medusa.show_name_helpers import allPossibleShowNames
 

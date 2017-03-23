@@ -1,21 +1,4 @@
 # coding=utf-8
-# Author: Dennis Lutter <lad1337@gmail.com>
-# Author: Jonathon Saine <thezoggy@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 # TODO: break this up into separate files
 # pylint: disable=line-too-long,too-many-lines,abstract-method
@@ -32,14 +15,19 @@ from medusa import (
     app, classes, db, helpers, image_cache, logger, network_timezones,
     process_tv, sbdatetime, subtitles, ui,
 )
-from medusa.common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
-    UNAIRED, UNKNOWN, WANTED, \
-    statusStrings
+from medusa.common import (
+    ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED,
+    SNATCHED, SNATCHED_PROPER, UNAIRED, UNKNOWN, WANTED, statusStrings,
+)
+from medusa.exceptions import (
+    UpdateError,
+    ShowDirectoryNotFoundException,
+)
 from medusa.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
 )
-from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from medusa.helper.exceptions import ex
 from medusa.helpers.quality import get_quality_string
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
@@ -2707,7 +2695,7 @@ class CMD_ShowUpdate(ApiCall):
         try:
             app.show_queue_scheduler.action.updateShow(show_obj)
             return _responds(RESULT_SUCCESS, msg=str(show_obj.name) + " has queued to be updated")
-        except CantUpdateShowException as e:
+        except UpdateError as e:
             logger.log(u"API::Unable to update show: {0}".format(str(e)), logger.DEBUG)
             return _responds(RESULT_FAILURE, msg="Unable to update " + str(show_obj.name))
 

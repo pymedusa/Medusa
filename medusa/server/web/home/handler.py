@@ -45,18 +45,18 @@ from medusa.common import (
     cpu_presets,
     statusStrings,
 )
+from medusa.exceptions import (
+    RefreshError,
+    UpdateError,
+    ShowDirectoryNotFoundException,
+)
 from medusa.failed_history import prepare_failed_name
 from medusa.helper.common import (
     enabled_providers,
     pretty_file_size,
     try_int,
 )
-from medusa.helper.exceptions import (
-    CantRefreshShowException,
-    CantUpdateShowException,
-    ShowDirectoryNotFoundException,
-    ex,
-)
+from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import (
@@ -1561,7 +1561,7 @@ class Home(WebRoot):
                 show_obj.flatten_folders = flatten_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(show_obj)
-                except CantRefreshShowException as msg:
+                except RefreshError as msg:
                     errors.append('Unable to refresh this show: {error}'.format(error=msg))
 
             show_obj.paused = paused
@@ -1593,7 +1593,7 @@ class Home(WebRoot):
                         show_obj.location = location
                         try:
                             app.show_queue_scheduler.action.refreshShow(show_obj)
-                        except CantRefreshShowException as msg:
+                        except RefreshError as msg:
                             errors.append('Unable to refresh this show:{error}'.format(error=msg))
                             # grab updated info from TVDB
                             # show_obj.load_episodes_from_indexer()
@@ -1611,21 +1611,21 @@ class Home(WebRoot):
             try:
                 app.show_queue_scheduler.action.updateShow(show_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as msg:
+            except UpdateError as msg:
                 errors.append('Unable to update show: {0}'.format(str(msg)))
 
         if do_update_exceptions:
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException:
+            except UpdateError:
                 errors.append('Unable to force an update on scene exceptions of the show.')
 
         if do_update_scene_numbering:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException:
+            except UpdateError:
                 errors.append('Unable to force an update on scene numbering of the show.')
 
             # Must erase cached results when toggling scene numbering
@@ -1732,7 +1732,7 @@ class Home(WebRoot):
         # force the update
         try:
             app.show_queue_scheduler.action.updateShow(show_obj)
-        except CantUpdateShowException as e:
+        except UpdateError as e:
             ui.notifications.error('Unable to update this show.', ex(e))
 
         # just give it some time

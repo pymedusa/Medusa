@@ -1,27 +1,16 @@
 # coding=utf-8
-# This file is part of Medusa.
-#
-
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
 
+from medusa.exceptions import (
+    RefreshError,
+    RemovalError,
+    IntegrityError,
+)
+from medusa.helper.exceptions import ex
 from .. import app
 from ..common import Quality, SKIPPED, WANTED
 from ..db import DBConnection
-from ..helper.exceptions import CantRefreshShowException, CantRemoveShowException, MultipleShowObjectsException, ex
 
 
 class Show(object):
@@ -47,7 +36,7 @@ class Show(object):
         if show:
             try:
                 app.show_queue_scheduler.action.removeShow(show, bool(remove_files))
-            except CantRemoveShowException as exception:
+            except RemovalError as exception:
                 return ex(exception), show
 
         return None, show
@@ -81,7 +70,7 @@ class Show(object):
         if len(results) == 1:
             return results[0]
 
-        raise MultipleShowObjectsException()
+        raise IntegrityError()
 
     @staticmethod
     def find_by_id(shows, indexer, show_id):
@@ -190,7 +179,7 @@ class Show(object):
 
         try:
             app.show_queue_scheduler.action.refreshShow(show)
-        except CantRefreshShowException as exception:
+        except RefreshError as exception:
             return ex(exception), show
 
         return None, show
@@ -212,7 +201,7 @@ class Show(object):
 
         try:
             show = Show.find(app.showList, indexer_id)
-        except MultipleShowObjectsException:
+        except IntegrityError:
             return 'Unable to find the specified show', None
 
         return None, show

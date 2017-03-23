@@ -1,28 +1,14 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
 import threading
 import time
-import app
 
-from . import db, helpers, network_timezones, ui
-from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
+from medusa.exceptions import (
+    RefreshError,
+    UpdateError,
+)
+from . import app, db, helpers, network_timezones, ui
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from .scene_exceptions import refresh_exceptions_cache
@@ -158,7 +144,7 @@ class ShowUpdater(object):
                 logger.info(u'Full update on show: {show}', show=show.name)
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show))
-                except (CantUpdateShowException, CantRefreshShowException) as e:
+                except (UpdateError, RefreshError) as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
@@ -172,7 +158,7 @@ class ShowUpdater(object):
                 logger.info(u'Updating season {season} for show: {show}.', season=show[2], show=show[1].name)
                 try:
                     pi_list.append(app.show_queue_scheduler.action.updateShow(show[1], season=show[2]))
-                except CantUpdateShowException as e:
+                except UpdateError as e:
                     logger.warning(u'Automatic update failed. Error: {error}', error=e)
                 except Exception as e:
                     logger.error(u'Automatic update failed: Error: {error}', error=e)
@@ -187,7 +173,7 @@ class ShowUpdater(object):
             if not show.paused:
                 try:
                     app.show_queue_scheduler.action.refreshShow(show, True)
-                except CantRefreshShowException as e:
+                except RefreshError as e:
                     logger.warning(u'Show refresh on show {show_name} failed. Error: {error}',
                                    show_name=show.name, error=e)
                 except Exception as e:

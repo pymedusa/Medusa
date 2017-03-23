@@ -1,38 +1,26 @@
 # coding=utf-8
-# Orginal author: Dustyn Gibson <miigotu@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for HDTorrents."""
+
 from __future__ import unicode_literals
 
 import re
 import traceback
 
 from dateutil import parser
+
 from medusa import (
     logger,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
+from medusa.exceptions import AuthException
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
-from medusa.helper.exceptions import AuthException
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 

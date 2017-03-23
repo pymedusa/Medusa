@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Post processor module."""
 
 import fnmatch
@@ -29,6 +14,11 @@ from collections import OrderedDict
 import adba
 
 from medusa.clients import torrent
+from medusa.exceptions import (
+    EpisodeNotFoundException,
+    PostProcessingError,
+    ShowDirectoryNotFoundException,
+)
 
 import rarfile
 
@@ -40,8 +30,6 @@ from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
 from .helper.common import episode_num, remove_extension
-from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
-                                ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .subtitles import from_code, from_ietf_code
@@ -461,7 +449,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to move file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
+                raise PostProcessingError('Unable to move the files to their new home')
 
         def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -471,7 +459,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
+                raise PostProcessingError('Unable to copy the files to their new home')
 
         def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -481,7 +469,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to hard link the files to their new home')
+                raise PostProcessingError('Unable to hard link the files to their new home')
 
         def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
@@ -492,7 +480,7 @@ class PostProcessor(object):
             except (IOError, OSError) as e:
                 self._log(u'Unable to link file {0} to {1}: {2!r}'.format
                           (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
+                raise PostProcessingError('Unable to move and link the files to their new home')
 
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
@@ -720,7 +708,7 @@ class PostProcessor(object):
                 if not cur_ep:
                     raise EpisodeNotFoundException()
             except EpisodeNotFoundException as e:
-                raise EpisodePostProcessingFailedException(u'Unable to create episode: {0!r}'.format(e))
+                raise PostProcessingError(u'Unable to create episode: {0!r}'.format(e))
 
             # associate all the episodes together under a single root episode
             if root_ep is None:
@@ -1017,7 +1005,7 @@ class PostProcessor(object):
             return False
 
         if not os.path.exists(self.file_path):
-            raise EpisodePostProcessingFailedException(u"File {0} doesn't exist, did unrar fail?".format
+            raise PostProcessingError(u"File {0} doesn't exist, did unrar fail?".format
                                                        (self.file_path))
 
         for ignore_file in self.IGNORED_FILESTRINGS:
@@ -1034,10 +1022,10 @@ class PostProcessor(object):
         # try to find the file info
         (show, season, episodes, quality, version) = self._find_info()
         if not show:
-            raise EpisodePostProcessingFailedException(u"This show isn't in your list, you need to add it "
+            raise PostProcessingError(u"This show isn't in your list, you need to add it "
                                                        u"before post-processing an episode")
         elif season is None or not episodes:
-            raise EpisodePostProcessingFailedException(u'Not enough information to determine what episode this is')
+            raise PostProcessingError(u'Not enough information to determine what episode this is')
 
         # retrieve/create the corresponding Episode objects
         ep_obj = self._get_ep_obj(show, season, episodes)
@@ -1091,7 +1079,7 @@ class PostProcessor(object):
                     should_process, should_process_reason = self._should_process(old_ep_quality, new_ep_quality,
                                                                                  allowed_qualities, preferred_qualities)
                     if not should_process:
-                        raise EpisodePostProcessingFailedException(
+                        raise PostProcessingError(
                             u'File exists. Marking it unsafe to replace. Reason: {0}'.format(should_process_reason))
                     else:
                         self._log(u'File exists. Marking it safe to replace. Reason: {0}'.format(should_process_reason))
@@ -1138,7 +1126,7 @@ class PostProcessor(object):
                 if cur_ep.location:
                     helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.show._location)
             except (OSError, IOError):
-                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
+                raise PostProcessingError(u'Unable to delete the existing files')
 
             # set the status of the episodes
             # for cur_ep in [ep_obj] + ep_obj.related_episodes:
@@ -1154,7 +1142,7 @@ class PostProcessor(object):
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.addFolder(ep_obj.show._location)
             except (OSError, IOError):
-                raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {0}'.format
+                raise PostProcessingError(u'Unable to create the show directory: {0}'.format
                                                            (ep_obj.show._location))
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
@@ -1208,14 +1196,14 @@ class PostProcessor(object):
             proper_absolute_path = os.path.join(ep_obj.show.location, proper_path)
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
-            raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
+            raise PostProcessingError(u"Unable to post-process an episode if the show dir '{0}' "
                                                        u"doesn't exist, quitting".format(ep_obj.show.raw_location))
 
         self._log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
         # create any folders we need
         if not helpers.make_dirs(dest_path):
-            raise EpisodePostProcessingFailedException('Unable to create destination folder to the files')
+            raise PostProcessingError('Unable to create destination folder to the files')
 
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
@@ -1237,15 +1225,15 @@ class PostProcessor(object):
             if self.process_method in ['copy', 'hardlink', 'move', 'symlink']:
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
-                        raise EpisodePostProcessingFailedException('File is locked for reading')
+                        raise PostProcessingError('File is locked for reading')
                 self.post_process_action(self.file_path, dest_path, new_base_name,
                                          app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
-                raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
+                raise PostProcessingError('Unable to move the files to their new home')
         except (OSError, IOError):
-            raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
+            raise PostProcessingError('Unable to move the files to their new home')
 
         # download subtitles
         if app.USE_SUBTITLES and ep_obj.show.subtitles:

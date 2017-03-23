@@ -1,20 +1,4 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import traceback
@@ -32,15 +16,15 @@ from medusa import (
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import WANTED, statusStrings
-from medusa.helper.common import episode_num, sanitize_filename
-from medusa.helper.exceptions import (
-    CantRefreshShowException,
-    CantRemoveShowException,
-    CantUpdateShowException,
-    EpisodeDeletedException,
-    MultipleShowObjectsException,
-    ShowDirectoryNotFoundException
+from medusa.exceptions import (
+    RefreshError,
+    RemovalError,
+    UpdateError,
+    RemovalError,
+    IntegrityError,
+    ShowDirectoryNotFoundException,
 )
+from medusa.helper.common import episode_num, sanitize_filename
 from medusa.helpers import (
     chmod_as_parent,
     delete_empty_folders,
@@ -172,18 +156,18 @@ class ShowQueue(generic_queue.GenericQueue):
     def updateShow(self, show, season=None):
 
         if self.isBeingAdded(show):
-            raise CantUpdateShowException(
+            raise UpdateError(
                 u"{show_name} is still being added, wait until it is finished before you update."
                 .format(show_name=show.name))
 
         if self.isBeingUpdated(show):
-            raise CantUpdateShowException(
+            raise UpdateError(
                 u"{show_name} is already being updated by Post-processor or manually started, "
                 u"can't update again until it's done."
                 .format(show_name=show.name))
 
         if self.isInUpdateQueue(show):
-            raise CantUpdateShowException(
+            raise UpdateError(
                 u"{show_name} is in process of being updated by Post-processor or manually started, "
                 u"can't update again until it's done."
                 .format(show_name=show.name))
@@ -197,7 +181,7 @@ class ShowQueue(generic_queue.GenericQueue):
     def refreshShow(self, show, force=False):
 
         if self.isBeingRefreshed(show) and not force:
-            raise CantRefreshShowException("This show is already being refreshed, not refreshing again.")
+            raise RefreshError("This show is already being refreshed, not refreshing again.")
 
         if (self.isBeingUpdated(show) or self.isInUpdateQueue(show)) and not force:
             logger.log(
@@ -247,16 +231,16 @@ class ShowQueue(generic_queue.GenericQueue):
 
     def removeShow(self, show, full=False):
         if show is None:
-            raise CantRemoveShowException(u'Failed removing show: Show does not exist')
+            raise RemovalError(u'Failed removing show: Show does not exist')
 
         if not hasattr(show, u'indexerid'):
-            raise CantRemoveShowException(u'Failed removing show: Show does not have an indexer id')
+            raise RemovalError(u'Failed removing show: Show does not have an indexer id')
 
         if self.isBeingRemoved(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already being removed'.format(show.indexerid))
+            raise RemovalError(u'[{!s}]: Show is already being removed'.format(show.indexerid))
 
         if self.isInRemoveQueue(show):
-            raise CantRemoveShowException(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
+            raise RemovalError(u'[{!s}]: Show is already queued to be removed'.format(show.indexerid))
 
         # remove other queued actions for this show.
         for item in self.queue:
@@ -516,7 +500,7 @@ class QueueItemAdd(ShowQueueItem):
             self._finishEarly()
             return
 
-        except MultipleShowObjectsException:
+        except IntegrityError:
             logger.log(u"The show in " + self.showDir + " is already in your show list, skipping", logger.WARNING)
             ui.notifications.error('Show skipped', "The show in " + self.showDir + " is already in your show list")
             self._finishEarly()
@@ -801,7 +785,7 @@ class QueueItemUpdate(ShowQueueItem):
                     ep_obj = self.show.get_episode(cur_season, cur_episode)
                     try:
                         ep_obj.delete_episode()
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
@@ -922,7 +906,7 @@ class QueueItemSeasonUpdate(ShowQueueItem):
                     ep_obj = self.show.get_episode(cur_season, cur_episode)
                     try:
                         ep_obj.delete_episode()
-                    except EpisodeDeletedException:
+                    except RemovalError:
                         logger.log(u'{id}: Episode {show} {ep} successfully deleted from the database'.format
                                    (id=self.show.indexerid, show=self.show.name,
                                     ep=episode_num(cur_season, cur_episode)), logger.DEBUG)
