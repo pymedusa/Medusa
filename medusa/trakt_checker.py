@@ -620,7 +620,7 @@ class TraktChecker(object):
             self.show_watchlist = self._request('sync/watchlist/shows')
         except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
             logger.log(u'Unable to retrieve shows from Trakt watchlist. Error: {error}'.format
-                       (error=e.message), logger.WARNING)
+                       (error=e.message), logger.DEBUG)
             return False
         return True
 
