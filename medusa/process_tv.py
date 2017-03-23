@@ -641,28 +641,35 @@ class ProcessResult(object):
                        logger.WARNING)
             return False
         else:
-            release_names = ', '.join(release_names)
+            if release_names:
+                releases_count = len(release_names)
+                # Log 'release' or 'releases'
+                s = 's' if len(releases_count) > 1 else ''
+                release_names = ', '.join(release_names)
+            else:
+                s = ''
+                release_names = 'N/A'
             logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
             torrent_moved = False
             client = torrent.get_client_class(app.TORRENT_METHOD)()
             try:
                 torrent_moved = client.move_torrent(info_hash)
             except (requests.exceptions.RequestException, socket.gaierror) as e:
-                logger.log("Could't connect to client to move torrent for releases '{release}' with hash: {hash} "
+                logger.log("Could't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
                            "to: '{path}'. Error: {error}".format
-                           (release=release_names, hash=info_hash, error=e.message, path=app.TORRENT_SEED_LOCATION),
+                           (release=release_names, hash=info_hash, error=e.message, path=app.TORRENT_SEED_LOCATION, s=s),
                            logger.WARNING)
                 return False
             except AttributeError:
                 logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
                 return True
             if torrent_moved:
-                logger.log("Moved torrent for releases '{release}' with hash: {hash} to: '{path}'".format
-                           (release=release_names, hash=info_hash, path=app.TORRENT_SEED_LOCATION),
+                logger.log("Moved torrent for release{s} '{release}' with hash: {hash} to: '{path}'".format
+                           (release=release_names, hash=info_hash, path=app.TORRENT_SEED_LOCATION, s=s),
                            logger.WARNING)
                 return True
             else:
-                logger.log("Could not move torrent for releases '{release}' with hash: {hash} to: '{path}'. "
-                           "Please check logs.".format(release=release_names, hash=info_hash,
+                logger.log("Could not move torrent for release{s} '{release}' with hash: {hash} to: '{path}'. "
+                           "Please check logs.".format(release=release_names, hash=info_hash, s=s,
                                                        path=app.TORRENT_SEED_LOCATION), logger.WARNING)
                 return False
