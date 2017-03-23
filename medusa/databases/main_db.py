@@ -230,6 +230,13 @@ class MainSanityCheck(db.DBSanityCheck):
             'pilot rejected': 'Ended',
             'canceled': 'Ended',
             'ended': 'Ended',
+            'to be determined': 'Continuing',
+            'running': 'Continuing',
+            'planned': 'Continuing',
+            'in production': 'Continuing',
+            'pilot': 'Continuing',
+            'returning series': 'Continuing',
+            'cancelled': 'Ended',
             '': 'Unknown',
         }
 

@@ -175,15 +175,7 @@
                 <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center">
-            <%
-                display_status = cur_show.status
-                if None is not display_status:
-                    if re.search(r'(?i)(?:new|returning)\s*series', cur_show.status):
-                        display_status = 'Continuing'
-                    elif re.search('(?i)(?:nded)', cur_show.status):
-                        display_status = 'Ended'
-            %>
-            ${display_status}
+            ${cur_show.status}
             </td>
             <td align="center">
                 <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
