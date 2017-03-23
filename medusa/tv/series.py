@@ -189,7 +189,6 @@ class Series(TV):
 
     def create_indexer(self, banners=False, actors=False, dvd_order=False, episodes=True, ):
         """Force the creation of a new Indexer API."""
-
         api = indexerApi(self.indexer)
         params = api.api_params.copy()
 
