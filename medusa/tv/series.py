@@ -1420,7 +1420,7 @@ class Series(TV):
             return False
 
         # Let's get some fresh indexer info, as we might need it later on.
-        self.create_indexer()
+        # self.create_indexer()
 
         # load from dir
         self.load_episodes_from_dir()
