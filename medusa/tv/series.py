@@ -1420,7 +1420,7 @@ class Series(TV):
         if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
 
-        # # Let's get some fresh indexer info, as we might need it later on.
+        # Let's get some fresh indexer info, as we might need it later on.
         # self.create_indexer()
 
         # load from dir
