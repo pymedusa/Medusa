@@ -1411,21 +1411,23 @@ class Home(WebRoot):
         exceptions = exceptions_list or set()
 
         anidb_failed = False
-        errors = []
+        errors = 0
 
         if show is None:
-            error_string = 'Invalid show ID: {show}'.format(show=show)
+            error_string = 'No show was selected'
             if directCall:
-                return [error_string]
+                errors += 1
+                return errors
             else:
                 return self._genericMessage('Error', error_string)
 
         show_obj = Show.find(app.showList, int(show))
 
         if not show_obj:
-            error_string = 'Unable to find the specified show: {show}'.format(show=show)
+            error_string = 'Unable to find the specified show ID: {show}'.format(show=show)
             if directCall:
-                return [error_string]
+                errors += 1
+                return errors
             else:
                 return self._genericMessage('Error', error_string)
 
@@ -1449,9 +1451,10 @@ class Home(WebRoot):
                     try:
                         anime = adba.Anime(app.ADBA_CONNECTION, name=show_obj.name)
                         groups = anime.get_groups()
-                    except Exception as msg:
-                        ui.notifications.error('Unable to retreive Fansub Groups from AniDB.')
-                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error is {0}'.format(str(msg)), logger.DEBUG)
+                    except Exception as e:
+                        errors += 1
+                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error:{error}'.format
+                                   (error=e.message), logger.WARNING)
 
             with show_obj.lock:
                 show = show_obj
@@ -1493,11 +1496,13 @@ class Home(WebRoot):
                     indexer_lang,
                 )
             except IndexerShowNotFoundInLanguage:
+                errors += 1
                 status = 'Could not change language to'
             except IndexerException as e:
+                errors += 1
                 status = u'Failed getting show in'
-                msg += u' Please try again later. Error: {err}'.format(
-                    err=e.message,
+                msg += u' Please try again later. Error: {error}'.format(
+                    error=e.message,
                 )
             else:
                 language = indexer_lang
@@ -1506,8 +1511,6 @@ class Home(WebRoot):
             finally:
                 indexer_lang = language
                 msg = msg.format(status=status)
-                if log_level >= logger.WARNING:
-                    errors.append(msg)
                 logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
@@ -1563,8 +1566,10 @@ class Home(WebRoot):
                 show_obj.flatten_folders = flatten_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(show_obj)
-                except CantRefreshShowException as msg:
-                    errors.append('Unable to refresh this show: {error}'.format(error=msg))
+                except CantRefreshShowException as e:
+                    errors += 1
+                    logger.warning("Unable to refresh show '{show}': {error}".format
+                                   (show=show_obj.name, error=e.message))
 
             show_obj.paused = paused
             show_obj.scene = scene
@@ -1573,10 +1578,10 @@ class Home(WebRoot):
             show_obj.subtitles = subtitles
             show_obj.air_by_date = air_by_date
             show_obj.default_ep_status = int(defaultEpStatus)
+            show_obj.dvd_order = dvd_order
 
             if not directCall:
                 show_obj.lang = indexer_lang
-                show_obj.dvd_order = dvd_order
                 show_obj.rls_ignore_words = rls_ignore_words.strip()
                 show_obj.rls_require_words = rls_require_words.strip()
 
@@ -1590,10 +1595,9 @@ class Home(WebRoot):
                     try:
                         os.mkdir(new_location)
                     except OSError as e:
-                        log_message = u"Unable to create the show directory '{location}. " \
-                                      u"Error: {error}".format(location=new_location, error=ex(e))
-                        logger.log(log_message, logger.DEBUG)
-                        errors.append(log_message)
+                        errors += 1
+                        logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
+                                   (location=new_location, error=e.message or e.strerror), logger.DEBUG)
                     else:
                         helpers.chmod_as_parent(show_obj._location)
                         show_obj.location = location
@@ -1601,12 +1605,14 @@ class Home(WebRoot):
                     if do_update and os.path.isdir(show_obj._location):
                         try:
                             app.show_queue_scheduler.action.refreshShow(show_obj)
-                        except CantRefreshShowException as msg:
-                            errors.append('Unable to refresh {show}: {error}'.format(show=show_obj.name, error=msg))
+                        except CantRefreshShowException as e:
+                            errors += 1
+                            logger.warning("Unable to refresh show '{show}': {error}".format
+                                           (show=show_obj.name, error=e.message))
                 else:
-                    log_message = u"New location '{location}' does not exist. Enable setting 'Create missing show dirs'"
-                    logger.log(log_message, logger.WARNING)
-                    errors.append(log_message)
+                    logger.log("New location '{location}' does not exist. "
+                               "Enable setting 'Create missing show dirs'".format
+                               (location=location), logger.WARNING)
 
             # save it to the DB
             show_obj.save_to_db()
@@ -1616,22 +1622,28 @@ class Home(WebRoot):
             try:
                 app.show_queue_scheduler.action.updateShow(show_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as msg:
-                errors.append('Unable to update show: {0}'.format(str(msg)))
+            except CantUpdateShowException as e:
+                errors += 1
+                logger.warning("Unable to update show '{show}': {error}".format
+                               (show=show_obj.name, error=e.message))
 
         if do_update_exceptions:
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
-                errors.append('Unable to force an update on scene exceptions of the show.')
+                errors += 1
+                logger.warning("Unable to force an update on scene exceptions for show '{show}': {error}".format
+                               (show=show_obj.name, error=e.message))
 
         if do_update_scene_numbering:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
-                errors.append('Unable to force an update on scene numbering of the show.')
+                errors += 1
+                logger.warning("Unable to force an update on scene numbering for show '{show}': {error}".format
+                               (show=show_obj.name, error=e.message))
 
             # Must erase cached results when toggling scene numbering
             self.erase_cache(show_obj)
@@ -1640,10 +1652,8 @@ class Home(WebRoot):
             return errors
 
         if errors:
-            ui.notifications.error(
-                '{num} error{s} while saving changes:'.format(num=len(errors), s='s' if len(errors) > 1 else ''),
-                '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error_item)
-                                                             for error_item in errors])))
+            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
+                                   (num=errors, s='s' if errors > 1 else ''))
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
