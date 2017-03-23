@@ -642,9 +642,8 @@ class ProcessResult(object):
             return False
         else:
             if release_names:
-                releases_count = len(release_names)
                 # Log 'release' or 'releases'
-                s = 's' if len(releases_count) > 1 else ''
+                s = 's' if len(release_names) > 1 else ''
                 release_names = ', '.join(release_names)
             else:
                 s = ''
