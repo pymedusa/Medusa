@@ -461,6 +461,9 @@ class Manage(Home, WebRoot):
         air_by_date_all_same = True
         last_air_by_date = None
 
+        dvd_order_all_same = True
+        last_dvd_order = None
+
         root_dir_list = []
 
         for cur_show in show_list:
@@ -526,6 +529,12 @@ class Manage(Home, WebRoot):
                 else:
                     last_air_by_date = cur_show.air_by_date
 
+            if dvd_order_all_same:
+                if last_dvd_order not in (None, cur_show.dvd_order):
+                    dvd_order_all_same = False
+                else:
+                    last_dvd_order = cur_show.dvd_order
+
         default_ep_status_value = last_default_ep_status if default_ep_status_all_same else None
         paused_value = last_paused if paused_all_same else None
         anime_value = last_anime if anime_all_same else None
@@ -535,14 +544,15 @@ class Manage(Home, WebRoot):
         scene_value = last_scene if scene_all_same else None
         sports_value = last_sports if sports_all_same else None
         air_by_date_value = last_air_by_date if air_by_date_all_same else None
+        dvd_order_value = last_dvd_order if dvd_order_all_same else None
         root_dir_list = root_dir_list
 
-        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value,
+        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order=dvd_order_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
 
-    def massEditSubmit(self, paused=None, default_ep_status=None,
+    def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
@@ -557,10 +567,9 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        show_ids = toEdit.split('|')
-        errors = []
+        show_ids = toEdit.split('|') if toEdit else []
+        errors = 0
         for cur_show in show_ids:
-            cur_errors = []
             show_obj = Show.find(app.showList, int(cur_show))
             if not show_obj:
                 continue
@@ -609,6 +618,12 @@ class Manage(Home, WebRoot):
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
+            if dvd_order == 'keep':
+                new_dvd_order = show_obj.dvd_order
+            else:
+                new_dvd_order = True if dvd_order == 'enable' else False
+            new_dvd_order = 'on' if new_dvd_order else 'off'
+
             if flatten_folders == 'keep':
                 new_flatten_folders = show_obj.flatten_folders
             else:
@@ -629,31 +644,18 @@ class Manage(Home, WebRoot):
 
             exceptions_list = []
 
-            cur_errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
-                                        preferred_qualities, exceptions_list,
-                                        defaultEpStatus=new_default_ep_status,
-                                        flatten_folders=new_flatten_folders,
-                                        paused=new_paused, sports=new_sports,
-                                        subtitles=new_subtitles, anime=new_anime,
-                                        scene=new_scene, air_by_date=new_air_by_date,
-                                        directCall=True)
+            errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
+                                    preferred_qualities, exceptions_list,
+                                    defaultEpStatus=new_default_ep_status,
+                                    flatten_folders=new_flatten_folders,
+                                    paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
+                                    subtitles=new_subtitles, anime=new_anime,
+                                    scene=new_scene, air_by_date=new_air_by_date,
+                                    directCall=True)
 
-            if cur_errors:
-                logger.log(u'Errors: {errors}'.format(errors=cur_errors), logger.ERROR)
-                errors.append(
-                    '<b>{show}:</b>\n<ul>{errors}</ul>'.format(
-                        show=show_obj.name,
-                        errors=' '.join(['<li>{error}</li>'.format(error=error)
-                                         for error in cur_errors])
-                    )
-                )
         if errors:
-            ui.notifications.error(
-                '{num} error{s} while saving changes:'.format(
-                    num=len(errors),
-                    s='s' if len(errors) > 1 else ''),
-                ' '.join(errors)
-            )
+            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
+                                   (num=errors, s='s' if errors > 1 else ''))
 
         return self.redirect('/manage/')
 
