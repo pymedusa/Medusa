@@ -587,7 +587,7 @@ class AddResourceSize(AddPlot):
 
 
 class AddPKIndexerMapping(AddResourceSize):
-    """Add PK to mindexer_id and mindexer in indexer mapping table."""
+    """Add PK to mindexer column in indexer_mapping table."""
 
     def test(self):
         """Test if the version is at least 44.7"""
@@ -596,7 +596,7 @@ class AddPKIndexerMapping(AddResourceSize):
     def execute(self):
         backupDatabase(self.connection.version)
 
-        log.info(u'Adding PK to mindexer_id and mindexer in indexer mapping table')
+        log.info(u'Adding PK to mindexer column in indexer_mapping table')
         self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
         self.connection.action("CREATE TABLE IF NOT EXISTS new_indexer_mapping"
                                "(indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC,"
@@ -605,4 +605,4 @@ class AddPKIndexerMapping(AddResourceSize):
         self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
         self.connection.action("ALTER TABLE new_indexer_mapping RENAME TO indexer_mapping;")
         self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
-        # self.inc_minor_version()
+        self.inc_minor_version()
