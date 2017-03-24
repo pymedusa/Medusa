@@ -290,12 +290,17 @@ class TVDBv2(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 logger.debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
+                use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
             else:
                 use_dvd = False
 
             if use_dvd:
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
+                if self.config['dvdorder']:
+                    logger.warning('Episode doest not have DVD ordering available (season: %s, episode: %s). '
+                                   'Falling back to non-DVD order. '
+                                   'Please consider disable DVD ordering for the show with TMDB ID: %s',
+                                   seasnum, epno, tvdb_id)
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
