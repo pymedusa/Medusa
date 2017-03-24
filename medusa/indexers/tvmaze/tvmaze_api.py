@@ -214,7 +214,7 @@ class TVmaze(BaseIndexer):
         """
         results = None
         if tvmaze_id:
-            logger.debug('Getting all show data for %s', [tvmaze_id])
+            logger.debug('Getting all show data for %s', tvmaze_id)
             results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
 
         if not results:
@@ -232,7 +232,7 @@ class TVmaze(BaseIndexer):
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
         # Parse episode data
-        logger.debug('Getting all episodes of %s', [tvmaze_id])
+        logger.debug('Getting all episodes of %s', tvmaze_id)
         try:
             results = self.tvmaze_api.episode_list(tvmaze_id, specials=specials)
         except IDNotFound:
@@ -252,7 +252,7 @@ class TVmaze(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 logger.debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
+                use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
             else:
                 use_dvd = False
 
@@ -260,6 +260,11 @@ class TVmaze(BaseIndexer):
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
+                if self.config['dvdorder']:
+                    logger.warning('Episode doest not have DVD ordering available (season: %s, episode: %s). '
+                                   'Falling back to non-DVD order. '
+                                   'Please consider disable DVD ordering for the show with TVmaze ID: %s',
+                                   seasnum, epno, tvmaze_id)
 
             if seasnum is None or epno is None:
                 logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
@@ -293,12 +298,12 @@ class TVmaze(BaseIndexer):
 
         This interface will be improved in future versions.
         """
-        logger.debug('Getting show banners for %s', [tvmaze_id])
+        logger.debug('Getting show banners for %s', tvmaze_id)
 
         try:
             image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
-            logger.debug('Could not parse Poster for showid: %s', [tvmaze_id])
+            logger.debug('Could not parse Poster for showid: %s', tvmaze_id)
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
@@ -322,7 +327,7 @@ class TVmaze(BaseIndexer):
         """Parse Show and Season posters."""
         seasons = {}
         if tvmaze_id:
-            logger.debug('Getting all show data for %s', [tvmaze_id])
+            logger.debug('Getting all show data for %s', tvmaze_id)
             try:
                 seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
             except BaseError as e:
@@ -364,7 +369,7 @@ class TVmaze(BaseIndexer):
         Any key starting with an underscore has been processed (not the raw
         data from the indexer)
         """
-        logger.debug('Getting actors for %s', [tvmaze_id])
+        logger.debug('Getting actors for %s', tvmaze_id)
         try:
             actors = self.tvmaze_api.show_cast(tvmaze_id)
         except CastNotFound:
