@@ -600,7 +600,7 @@ class AddPKIndexerMapping(AddResourceSize):
         self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
         self.connection.action("CREATE TABLE IF NOT EXISTS new_indexer_mapping"
                                "(indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC,"
-                               "PRIMARY KEY (indexer_id, indexer, mindexer_id, mindexer));")
+                               "PRIMARY KEY (indexer_id, indexer, mindexer));")
         self.connection.action("INSERT INTO new_indexer_mapping SELECT * FROM indexer_mapping;")
         self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
         self.connection.action("ALTER TABLE new_indexer_mapping RENAME TO indexer_mapping;")
