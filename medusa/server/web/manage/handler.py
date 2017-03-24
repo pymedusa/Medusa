@@ -547,7 +547,7 @@ class Manage(Home, WebRoot):
         dvd_order_value = last_dvd_order if dvd_order_all_same else None
         root_dir_list = root_dir_list
 
-        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order=dvd_order_value,
+        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order_value=dvd_order_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
