@@ -272,7 +272,7 @@ class Tmdb(BaseIndexer):
                 if self.config['dvdorder']:
                     logger.warning('Episode doest not have DVD ordering available (season: %s, episode: %s). '
                                    'Falling back to non-DVD order. '
-                                    'Please consider disable DVD ordering for the show with TMDB ID: %s',
+                                   'Please consider disable DVD ordering for the show with TMDB ID: %s',
                                    seasnum, epno, tmdb_id)
 
             if seasnum is None or epno is None:
