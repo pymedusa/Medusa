@@ -1568,8 +1568,8 @@ class Home(WebRoot):
                     app.show_queue_scheduler.action.refreshShow(show_obj)
                 except CantRefreshShowException as e:
                     errors += 1
-                    logger.warning("Unable to refresh show '{show}': {error}".format
-                                   (show=show_obj.name, error=e.message))
+                    logger.log("Unable to refresh show '{show}': {error}".format
+                               (show=show_obj.name, error=e.message), logger.WARNING)
 
             show_obj.paused = paused
             show_obj.scene = scene
@@ -1589,32 +1589,39 @@ class Home(WebRoot):
             old_location = os.path.normpath(show_obj._location)
             new_location = os.path.normpath(location)
             if old_location != new_location:
-                logger.log('Changing show location to: {new}'.format(new=new_location), logger.DEBUG)
-                if not os.path.isdir(show_obj._location) and app.CREATE_MISSING_SHOW_DIRS:
-                    logger.log(u"Show directory doesn't exist, creating it", logger.DEBUG)
-                    try:
-                        os.mkdir(new_location)
-                    except OSError as e:
-                        errors += 1
-                        logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
-                                   (location=new_location, error=e.message or e.strerror), logger.DEBUG)
-                    else:
-                        helpers.chmod_as_parent(show_obj._location)
-                        show_obj.location = location
-
-                    if do_update and os.path.isdir(show_obj._location):
+                changed_location = True
+                logger.log('Changing show location to: {new}'.format(new=new_location), logger.INFO)
+                if not os.path.isdir(new_location):
+                    if app.CREATE_MISSING_SHOW_DIRS:
+                        logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
                         try:
-                            app.show_queue_scheduler.action.refreshShow(show_obj)
-                        except CantRefreshShowException as e:
+                            os.mkdir(new_location)
+                        except OSError as e:
                             errors += 1
-                            logger.warning("Unable to refresh show '{show}': {error}".format
-                                           (show=show_obj.name, error=e.message))
-                else:
-                    logger.log("New location '{location}' does not exist. "
-                               "Enable setting 'Create missing show dirs'".format
-                               (location=location), logger.WARNING)
+                            changed_location = False
+                            logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
+                                       (location=new_location, error=e.message or e.strerror), logger.WARNING)
+                        else:
+                            logger.log(u"New show directory created", logger.INFO)
+                            helpers.chmod_as_parent(new_location)
+                    else:
+                        logger.log("New location '{location}' does not exist. "
+                                   "Enable setting 'Create missing show dirs'".format
+                                   (location=location), logger.WARNING)
 
-            # save it to the DB
+                # Save new location to DB only if we changed it
+                if changed_location:
+                    show_obj.location = new_location
+
+                if (do_update or changed_location) and os.path.isdir(new_location):
+                    try:
+                        app.show_queue_scheduler.action.refreshShow(show_obj)
+                    except CantRefreshShowException as e:
+                        errors += 1
+                        logger.log("Unable to refresh show '{show}': {error}".format
+                                   (show=show_obj.name, error=e.message), logger.WARNING)
+
+            # Save all settings changed while in show_obj.lock
             show_obj.save_to_db()
 
         # force the update
@@ -1624,17 +1631,17 @@ class Home(WebRoot):
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as e:
                 errors += 1
-                logger.warning("Unable to update show '{show}': {error}".format
-                               (show=show_obj.name, error=e.message))
+                logger.log("Unable to update show '{show}': {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors += 1
-                logger.warning("Unable to force an update on scene exceptions for show '{show}': {error}".format
-                               (show=show_obj.name, error=e.message))
+                logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
         if do_update_scene_numbering:
             try:
@@ -1642,8 +1649,8 @@ class Home(WebRoot):
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors += 1
-                logger.warning("Unable to force an update on scene numbering for show '{show}': {error}".format
-                               (show=show_obj.name, error=e.message))
+                logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
             # Must erase cached results when toggling scene numbering
             self.erase_cache(show_obj)
@@ -1655,6 +1662,7 @@ class Home(WebRoot):
             ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
                                    (num=errors, s='s' if errors > 1 else ''))
 
+        logger.log(u"Finished editing show: {show}".format(show=show_obj.name), logger.DEBUG)
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def erase_cache(self, show_obj):
