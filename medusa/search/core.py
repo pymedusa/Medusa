@@ -220,11 +220,11 @@ def snatch_episode(result):
             notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
-                notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
+                notifiers.notify_snatch(u'{0} with {1} seeders and {2} leechers from {3}'.format
                                         (notify_message, result.seeders,
                                          result.leechers, result.provider.name), is_proper)
             else:
-                notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
+                notifiers.notify_snatch(u'{0} from {1}'.format(notify_message, result.provider.name), is_proper)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 trakt_data.append((curEpObj.season, curEpObj.episode))
@@ -234,7 +234,7 @@ def snatch_episode(result):
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
         if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update="add")
+            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update='add')
 
     if sql_l:
         main_db_con = db.DBConnection()
@@ -253,7 +253,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
     """
     results = results if isinstance(results, list) else [results]
 
-    logger.log(u"Picking the best result out of " + str([x.name for x in results]), logger.DEBUG)
+    logger.log(u'Picking the best result out of ' + str([x.name for x in results]), logger.DEBUG)
 
     best_result = None
 
@@ -267,12 +267,12 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             if not show.release_groups.is_valid(cur_result):
                 continue
 
-        logger.log(u"Quality of " + cur_result.name + u" is " + Quality.qualityStrings[cur_result.quality])
+        logger.log(u'Quality of ' + cur_result.name + u' is ' + Quality.qualityStrings[cur_result.quality])
 
         allowed_qualities, preferred_qualities = show.current_qualities
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
-            logger.log(cur_result.name + u" is a quality we know we don't want, rejecting it", logger.DEBUG)
+            logger.log(cur_result.name + u' is an unwanted quality, rejecting it', logger.DEBUG)
             continue
 
         # If doesnt have min seeders OR min leechers then discard it
