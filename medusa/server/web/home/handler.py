@@ -9,42 +9,116 @@ import time
 from datetime import date, datetime
 
 import adba
-from requests.compat import quote_plus, unquote_plus
+
+from medusa import (
+    app,
+    config,
+    db,
+    helpers,
+    logger,
+    notifiers,
+    providers,
+    subtitles,
+    ui,
+)
+from medusa.black_and_white_list import (
+    BlackAndWhiteList,
+    short_group_names,
+)
+from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
+from medusa.common import (
+    DOWNLOADED,
+    FAILED,
+    IGNORED,
+    Overview,
+    Quality,
+    SKIPPED,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNAIRED,
+    WANTED,
+    cpu_presets,
+    statusStrings,
+)
+from medusa.failed_history import prepare_failed_name
+from medusa.helper.common import (
+    enabled_providers,
+    pretty_file_size,
+    try_int,
+)
+from medusa.helper.exceptions import (
+    CantRefreshShowException,
+    CantUpdateShowException,
+    ShowDirectoryNotFoundException,
+    ex,
+)
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import (
+    IndexerException,
+    IndexerShowNotFoundInLanguage,
+)
+from medusa.providers.generic_provider import GenericProvider
+from medusa.sbdatetime import sbdatetime
+from medusa.scene_exceptions import (
+    get_all_scene_exceptions,
+    get_scene_exceptions,
+    update_scene_exceptions,
+)
+from medusa.scene_numbering import (
+    get_scene_absolute_numbering,
+    get_scene_absolute_numbering_for_show,
+    get_scene_numbering,
+    get_scene_numbering_for_show,
+    get_xem_absolute_numbering_for_show,
+    get_xem_numbering_for_show,
+    set_scene_numbering,
+    xem_refresh,
+)
+from medusa.search.manual import (
+    SEARCH_STATUS_FINISHED,
+    SEARCH_STATUS_QUEUED,
+    SEARCH_STATUS_SEARCHING,
+    collect_episodes_from_search_thread,
+    get_episode,
+    get_provider_cache_results,
+    update_finished_search_queue_item,
+)
+from medusa.search.queue import (
+    BacklogQueueItem,
+    FailedQueueItem,
+    ForcedSearchQueueItem,
+    ManualSnatchQueueItem,
+)
+from medusa.server.web.core import (
+    PageTemplate,
+    WebRoot,
+)
+from medusa.show.history import History
+from medusa.show.show import Show
+from medusa.system.restart import Restart
+from medusa.system.shutdown import Shutdown
+from medusa.version_checker import CheckVersion
+
+from requests.compat import (
+    quote_plus,
+    unquote_plus,
+)
 from six import iteritems
+
 from tornroutes import route
-from traktor import MissingTokenException, TokenExpiredException, TraktApi, TraktException
-from ..core import PageTemplate, WebRoot
-from .... import app, clients, config, db, helpers, logger, notifiers, nzbget, providers, sab, subtitles, ui
-from ....black_and_white_list import BlackAndWhiteList, short_group_names
-from ....common import (DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED,
-                        SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNAIRED, WANTED, cpu_presets, statusStrings)
-from ....failed_history import prepare_failed_name
-from ....helper.common import enabled_providers, try_int
-from ....helper.exceptions import CantRefreshShowException, CantUpdateShowException, ShowDirectoryNotFoundException, ex
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerException, IndexerShowNotFoundInLanguage
-from ....providers.generic_provider import GenericProvider
-from ....sbdatetime import sbdatetime
-from ....scene_exceptions import get_all_scene_exceptions, get_scene_exceptions, update_scene_exceptions
-from ....scene_numbering import (
-    get_scene_absolute_numbering, get_scene_absolute_numbering_for_show,
-    get_scene_numbering, get_scene_numbering_for_show,
-    get_xem_absolute_numbering_for_show, get_xem_numbering_for_show,
-    set_scene_numbering, xem_refresh
+
+from traktor import (
+    MissingTokenException,
+    TokenExpiredException,
+    TraktApi,
+    TraktException,
 )
-from ....search.manual import (
-    SEARCH_STATUS_FINISHED, SEARCH_STATUS_QUEUED, SEARCH_STATUS_SEARCHING, collect_episodes_from_search_thread,
-    get_episode, get_provider_cache_results, update_finished_search_queue_item
-)
-from ....search.queue import (
-    BacklogQueueItem, FailedQueueItem, ForcedSearchQueueItem, ManualSnatchQueueItem
-)
-from ....show.history import History
-from ....show.show import Show
-from ....system.restart import Restart
-from ....system.shutdown import Shutdown
-from ....version_checker import CheckVersion
 
 
 @route('/home(/?.*)')
@@ -58,17 +132,30 @@ class Home(WebRoot):
 
     def index(self):
         t = PageTemplate(rh=self, filename='home.mako')
+        selected_root = int(app.SELECTED_ROOT)
+        shows_dir = None
+        if selected_root is not None and app.ROOT_DIRS:
+            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_dirs = backend_pieces[1:]
+            shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+
+        shows = []
         if app.ANIME_SPLIT_HOME:
-            shows = []
             anime = []
             for show in app.showList:
+                if shows_dir and not show._location.startswith(shows_dir):
+                    continue
                 if show.is_anime:
                     anime.append(show)
                 else:
                     shows.append(show)
             show_lists = [['Shows', shows], ['Anime', anime]]
         else:
-            show_lists = [['Shows', app.showList]]
+            for show in app.showList:
+                if shows_dir and not show._location.startswith(shows_dir):
+                    continue
+                shows.append(show)
+            show_lists = [['Shows', shows]]
 
         stats = self.show_statistics()
         return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
@@ -189,9 +276,9 @@ class Home(WebRoot):
     def testSABnzbd(host=None, username=None, password=None, apikey=None):
         host = config.clean_url(host)
 
-        connection, acces_msg = sab.getSabAccesMethod(host)
+        connection, acces_msg = sab.get_sab_access_method(host)
         if connection:
-            authed, auth_msg = sab.testAuthentication(host, username, password, apikey)  # @UnusedVariable
+            authed, auth_msg = sab.test_authentication(host, username, password, apikey)  # @UnusedVariable
             if authed:
                 return 'Success. Connected and authenticated'
             else:
@@ -213,7 +300,7 @@ class Home(WebRoot):
         # @TODO: Move this to the validation section of each PATCH/PUT method for torrents
         host = config.clean_url(host)
 
-        client = clients.get_client_class(torrent_method)
+        client = torrent.get_client_class(torrent_method)
 
         _, acces_msg = client(host, username, password).test_authentication()
 
@@ -1161,7 +1248,7 @@ class Home(WebRoot):
         try:
             main_db_con = db.DBConnection()
             episode_status_result = main_db_con.action(
-                b'SELECT date, action, provider, resource '
+                b'SELECT date, action, provider, resource, size '
                 b'FROM history '
                 b'WHERE showid = ? '
                 b'AND season = ? '
@@ -1175,6 +1262,7 @@ class Home(WebRoot):
                 i['status'], i['quality'] = Quality.split_composite_status(i['action'])
                 i['action_date'] = sbdatetime.sbfdatetime(datetime.strptime(str(i['date']), History.date_format), show_seconds=True)
                 i['resource_file'] = os.path.basename(i['resource'])
+                i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
@@ -1202,8 +1290,9 @@ class Home(WebRoot):
                     provider_result['status_highlight'] = 'failed'
                 elif any([item for item in episode_history
                           if all([provider_result['name'] in item['resource'],
-                                  item['provider'] in (provider_result['provider'],),
-                                  item['status'] in snatched_statuses])
+                                  item['provider'] in provider_result['provider'],
+                                  item['status'] in snatched_statuses,
+                                  item['size'] == provider_result['size']])
                           ]):
                     provider_result['status_highlight'] = 'snatched'
                 else:
@@ -1322,26 +1411,29 @@ class Home(WebRoot):
         exceptions = exceptions_list or set()
 
         anidb_failed = False
-        errors = []
+        errors = 0
 
         if show is None:
-            error_string = 'Invalid show ID: {show}'.format(show=show)
+            error_string = 'No show was selected'
             if directCall:
-                return [error_string]
+                errors += 1
+                return errors
             else:
                 return self._genericMessage('Error', error_string)
 
         show_obj = Show.find(app.showList, int(show))
 
         if not show_obj:
-            error_string = 'Unable to find the specified show: {show}'.format(show=show)
+            error_string = 'Unable to find the specified show ID: {show}'.format(show=show)
             if directCall:
-                return [error_string]
+                errors += 1
+                return errors
             else:
                 return self._genericMessage('Error', error_string)
 
         show_obj.exceptions = get_scene_exceptions(show_obj.indexerid, show_obj.indexer)
 
+        # If user set quality_preset remove all preferred_qualities
         if try_int(quality_preset, None):
             preferred_qualities = []
 
@@ -1359,9 +1451,10 @@ class Home(WebRoot):
                     try:
                         anime = adba.Anime(app.ADBA_CONNECTION, name=show_obj.name)
                         groups = anime.get_groups()
-                    except Exception as msg:
-                        ui.notifications.error('Unable to retreive Fansub Groups from AniDB.')
-                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error is {0}'.format(str(msg)), logger.DEBUG)
+                    except Exception as e:
+                        errors += 1
+                        logger.log(u'Unable to retreive Fansub Groups from AniDB. Error:{error}'.format
+                                   (error=e.message), logger.WARNING)
 
             with show_obj.lock:
                 show = show_obj
@@ -1384,7 +1477,8 @@ class Home(WebRoot):
         subtitles = config.checkbox_to_value(subtitles)
 
         do_update = False
-        if show_obj.lang != indexer_lang:
+        # In mass edit, we can't change language so we need to check if indexer_lang is set
+        if indexer_lang and show_obj.lang != indexer_lang:
             msg = (
                 '{{status}} {language}'
                 ' for {indexer_name} show {show_id}'.format(
@@ -1402,11 +1496,13 @@ class Home(WebRoot):
                     indexer_lang,
                 )
             except IndexerShowNotFoundInLanguage:
+                errors += 1
                 status = 'Could not change language to'
-            except IndexerException as error:
+            except IndexerException as e:
+                errors += 1
                 status = u'Failed getting show in'
-                msg += u' Please try again later. Error: {err}'.format(
-                    err=error,
+                msg += u' Please try again later. Error: {error}'.format(
+                    error=e.message,
                 )
             else:
                 language = indexer_lang
@@ -1415,8 +1511,6 @@ class Home(WebRoot):
             finally:
                 indexer_lang = language
                 msg = msg.format(status=status)
-                if log_level >= logger.WARNING:
-                    errors.append(msg)
                 logger.log(msg, log_level)
 
         if scene == show_obj.scene and anime == show_obj.anime:
@@ -1472,8 +1566,10 @@ class Home(WebRoot):
                 show_obj.flatten_folders = flatten_folders
                 try:
                     app.show_queue_scheduler.action.refreshShow(show_obj)
-                except CantRefreshShowException as msg:
-                    errors.append('Unable to refresh this show: {error}'.format(error=msg))
+                except CantRefreshShowException as e:
+                    errors += 1
+                    logger.log("Unable to refresh show '{show}': {error}".format
+                               (show=show_obj.name, error=e.message), logger.WARNING)
 
             show_obj.paused = paused
             show_obj.scene = scene
@@ -1482,10 +1578,10 @@ class Home(WebRoot):
             show_obj.subtitles = subtitles
             show_obj.air_by_date = air_by_date
             show_obj.default_ep_status = int(defaultEpStatus)
+            show_obj.dvd_order = dvd_order
 
             if not directCall:
                 show_obj.lang = indexer_lang
-                show_obj.dvd_order = dvd_order
                 show_obj.rls_ignore_words = rls_ignore_words.strip()
                 show_obj.rls_require_words = rls_require_words.strip()
 
@@ -1493,28 +1589,39 @@ class Home(WebRoot):
             old_location = os.path.normpath(show_obj._location)
             new_location = os.path.normpath(location)
             if old_location != new_location:
-                logger.log('{old} != {new}'.format(old=old_location, new=new_location), logger.DEBUG)  # pylint: disable=protected-access
-                if not os.path.isdir(location) and not app.CREATE_MISSING_SHOW_DIRS:
-                    errors.append('New location <tt>{location}</tt> does not exist'.format(location=location))
-
-                # don't bother if we're going to update anyway
-                elif not do_update:
-                    # change it
-                    try:
-                        show_obj.location = location
+                changed_location = True
+                logger.log('Changing show location to: {new}'.format(new=new_location), logger.INFO)
+                if not os.path.isdir(new_location):
+                    if app.CREATE_MISSING_SHOW_DIRS:
+                        logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
                         try:
-                            app.show_queue_scheduler.action.refreshShow(show_obj)
-                        except CantRefreshShowException as msg:
-                            errors.append('Unable to refresh this show:{error}'.format(error=msg))
-                            # grab updated info from TVDB
-                            # show_obj.load_episodes_from_indexer()
-                            # rescan the episodes in the new folder
-                    except ShowDirectoryNotFoundException:
-                        errors.append('The folder at <tt>{location}</tt> doesn\'t contain a tvshow.nfo - '
-                                      'copy your files to that folder before you change the directory in Medusa.'.format
-                                      (location=location))
+                            os.mkdir(new_location)
+                        except OSError as e:
+                            errors += 1
+                            changed_location = False
+                            logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
+                                       (location=new_location, error=e.message or e.strerror), logger.WARNING)
+                        else:
+                            logger.log(u"New show directory created", logger.INFO)
+                            helpers.chmod_as_parent(new_location)
+                    else:
+                        logger.log("New location '{location}' does not exist. "
+                                   "Enable setting 'Create missing show dirs'".format
+                                   (location=location), logger.WARNING)
 
-            # save it to the DB
+                # Save new location to DB only if we changed it
+                if changed_location:
+                    show_obj.location = new_location
+
+                if (do_update or changed_location) and os.path.isdir(new_location):
+                    try:
+                        app.show_queue_scheduler.action.refreshShow(show_obj)
+                    except CantRefreshShowException as e:
+                        errors += 1
+                        logger.log("Unable to refresh show '{show}': {error}".format
+                                   (show=show_obj.name, error=e.message), logger.WARNING)
+
+            # Save all settings changed while in show_obj.lock
             show_obj.save_to_db()
 
         # force the update
@@ -1522,22 +1629,28 @@ class Home(WebRoot):
             try:
                 app.show_queue_scheduler.action.updateShow(show_obj)
                 time.sleep(cpu_presets[app.CPU_PRESET])
-            except CantUpdateShowException as msg:
-                errors.append('Unable to update show: {0}'.format(str(msg)))
+            except CantUpdateShowException as e:
+                errors += 1
+                logger.log("Unable to update show '{show}': {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
         if do_update_exceptions:
             try:
-                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)  # @UndefinedVdexerid)
+                update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
-                errors.append('Unable to force an update on scene exceptions of the show.')
+                errors += 1
+                logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
         if do_update_scene_numbering:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
-                errors.append('Unable to force an update on scene numbering of the show.')
+                errors += 1
+                logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
             # Must erase cached results when toggling scene numbering
             self.erase_cache(show_obj)
@@ -1546,11 +1659,10 @@ class Home(WebRoot):
             return errors
 
         if errors:
-            ui.notifications.error(
-                '{num} error{s} while saving changes:'.format(num=len(errors), s='s' if len(errors) > 1 else ''),
-                '<ul>\n{list}\n</ul>'.format(list='\n'.join(['<li>{items}</li>'.format(items=error_item)
-                                                             for error_item in errors])))
+            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
+                                   (num=errors, s='s' if errors > 1 else ''))
 
+        logger.log(u"Finished editing show: {show}".format(show=show_obj.name), logger.DEBUG)
         return self.redirect('/home/displayShow?show={show}'.format(show=show))
 
     def erase_cache(self, show_obj):

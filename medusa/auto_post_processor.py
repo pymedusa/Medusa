@@ -49,11 +49,11 @@ class PostProcessor(object):
                 return
 
             if not (force or os.path.isabs(app.TV_DOWNLOAD_DIR)):
-                logger.error(u"Automatic post-processing attempted but directory is relative "
-                             u"(and probably not what you really want to process): {folder}",
+                logger.error(u'Automatic post-processing attempted but directory is relative '
+                             u'(and probably not what you really want to process): {folder}',
                              folder=app.TV_DOWNLOAD_DIR)
                 return
 
-            process_tv.processDir(app.TV_DOWNLOAD_DIR, force=force)
+            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process(force=force)
         finally:
             self.amActive = False

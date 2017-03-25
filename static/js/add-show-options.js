@@ -9,10 +9,11 @@ $(document).ready(function() {
             bestQualArray.push($(d).val());
         });
 
+        // @TODO: Move this to API
         $.get('config/general/saveAddShowDefaults', {
             defaultStatus: $('#statusSelect').val(),
-            allowed_qualities: anyQualArray.join(','),
-            preferred_qualities: bestQualArray.join(','),
+            allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
+            preferred_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
             defaultFlattenFolders: $('#flatten_folders').prop('checked'),
             subtitles: $('#subtitles').prop('checked'),
             anime: $('#anime').prop('checked'),
