@@ -32,8 +32,6 @@
 .ui-autocomplete {
     max-height: 180px;
     overflow-y: auto;
-    /* prevent horizontal scrollbar */
-    overflow-x: hidden;
-    /* add padding to account for vertical scrollbar */
-    padding-right: 20px;
+    overflow-x: hidden; /* prevent horizontal scrollbar */
+    padding-right: 20px; /* add padding to account for vertical scrollbar */
 }

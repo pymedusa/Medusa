@@ -1,4 +1,4 @@
-var messageUrl = 'ui/get_messages'; // eslint-disable-line xo/filename-case
+var messageUrl = 'ui/get_messages';
 var test = !1;
 
 var iconUrl = 'images/ico/favicon-120.png';
@@ -19,10 +19,10 @@ function displayPNotify(type, title, message) {
     new PNotify({ // eslint-disable-line no-new
         type: type,
         title: title,
-        text: message.replace(/<br[\s\/]*(?:\s[^>]*)?>/ig, '\n')
-            .replace(/<[\/]?b(?:\s[^>]*)?>/ig, '*')
-            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[\/]i>/ig, ']')
-            .replace(/<(?:[\/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
+        text: message.replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
+            .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*')
+            .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
+            .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
     });
 }
 

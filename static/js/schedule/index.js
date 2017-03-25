@@ -1,5 +1,5 @@
 MEDUSA.schedule.index = function() {
-    if ($.isMeta({'layout': 'schedule'}, ['list'])) {
+    if ($.isMeta({layout: 'schedule'}, ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
@@ -37,7 +37,7 @@ MEDUSA.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if ($.isMeta({'layout': 'schedule'}, ['banner', 'poster'])) {
+    if ($.isMeta({layout: 'schedule'}, ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
             loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'
@@ -61,7 +61,7 @@ MEDUSA.schedule.index = function() {
         $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
 
-    $('.show-option select[name="layout"]').on('change', function(){
+    $('.show-option select[name="layout"]').on('change', function() {
         api.patch('config', {
             layout: {
                 schedule: $(this).val()
@@ -69,8 +69,8 @@ MEDUSA.schedule.index = function() {
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
 };

@@ -3,6 +3,7 @@ MEDUSA.config.search = function() {
     $('#nzb_dir').fileBrowser({title: 'Select .nzb black hole/watch location'});
     $('#torrent_dir').fileBrowser({title: 'Select .torrent black hole/watch location'});
     $('#torrent_path').fileBrowser({title: 'Select .torrent download location'});
+    $('#torrent_seed_location').fileBrowser({title: 'Select Post-Processed seeding torrents location'});
 
     $.fn.nzbMethodHandler = function() {
         var selectedProvider = $('#nzb_method :selected').val();
@@ -67,6 +68,7 @@ MEDUSA.config.search = function() {
             $('#torrent_auth_type_option').hide();
             $('#torrent_path_option').show();
             $('#torrent_path_option').find('.fileBrowser').show();
+            $('#torrent_seed_location_option').hide();
             $('#torrent_seed_time_option').hide();
             $('#torrent_high_bandwidth_option').hide();
             $('#torrent_label_option').show();
@@ -81,6 +83,7 @@ MEDUSA.config.search = function() {
                 $('#torrent_seed_time_label').text('Minimum seeding time is');
                 $('#torrent_seed_time_option').show();
                 $('#host_desc_torrent').text('URL to your uTorrent client (e.g. http://localhost:8000)');
+                $('#torrent_seed_location_option').hide();
             } else if (selectedProvider.toLowerCase() === 'transmission') {
                 client = 'Transmission';
                 $('#torrent_seed_time_label').text('Stop seeding when inactive for');
@@ -90,6 +93,7 @@ MEDUSA.config.search = function() {
                 $('#torrent_label_anime_option').hide();
                 $('#torrent_rpcurl_option').show();
                 $('#host_desc_torrent').text('URL to your Transmission client (e.g. http://localhost:9091)');
+                $('#torrent_seed_location_option').show();
             } else if (selectedProvider.toLowerCase() === 'deluge') {
                 client = 'Deluge';
                 $('#torrent_verify_cert_option').show();
@@ -100,6 +104,7 @@ MEDUSA.config.search = function() {
                 $('#torrent_username_option').hide();
                 $('#torrent_username').prop('value', '');
                 $('#host_desc_torrent').text('URL to your Deluge client (e.g. http://localhost:8112)');
+                $('#torrent_seed_location_option').show();
             } else if (selectedProvider.toLowerCase() === 'deluged') {
                 client = 'Deluge';
                 $('#torrent_verify_cert_option').hide();
@@ -109,6 +114,7 @@ MEDUSA.config.search = function() {
                 $('#label_anime_warning_deluge').show();
                 $('#torrent_username_option').show();
                 $('#host_desc_torrent').text('IP or Hostname of your Deluge Daemon (e.g. scgi://localhost:58846)');
+                $('#torrent_seed_location_option').show();
             } else if (selectedProvider.toLowerCase() === 'download_station') {
                 client = 'Synology DS';
                 $('#torrent_label_option').hide();
@@ -117,6 +123,7 @@ MEDUSA.config.search = function() {
                 $('#torrent_path_option').find('.fileBrowser').hide();
                 $('#host_desc_torrent').text('URL to your Synology DS client (e.g. http://localhost:5000)');
                 $('#path_synology').show();
+                $('#torrent_seed_location_option').hide();
             } else if (selectedProvider.toLowerCase() === 'rtorrent') {
                 client = 'rTorrent';
                 $('#torrent_paused_option').hide();
@@ -125,12 +132,14 @@ MEDUSA.config.search = function() {
                 $('#torrent_verify_deluge').hide();
                 $('#torrent_verify_rtorrent').show();
                 $('#torrent_auth_type_option').show();
+                $('#torrent_seed_location_option').hide();
             } else if (selectedProvider.toLowerCase() === 'qbittorrent') {
                 client = 'qbittorrent';
                 $('#torrent_path_option').hide();
                 $('#label_warning_qbittorrent').show();
                 $('#label_anime_warning_qbittorrent').show();
                 $('#host_desc_torrent').text('URL to your qbittorrent client (e.g. http://localhost:8080)');
+                $('#torrent_seed_location_option').hide();
             } else if (selectedProvider.toLowerCase() === 'mlnet') {
                 client = 'mlnet';
                 $('#torrent_path_option').hide();
@@ -141,11 +150,12 @@ MEDUSA.config.search = function() {
                 $('#torrent_label_anime_option').hide();
                 $('#torrent_paused_option').hide();
                 $('#host_desc_torrent').text('URL to your MLDonkey (e.g. http://localhost:4080)');
+                $('#torrent_seed_location_option').hide();
             }
             $('#host_title').text(client + host);
             $('#username_title').text(client + username);
             $('#password_title').text(client + password);
-            $('#torrent_client').text(client);
+            $('#torrent_client, #torrent_client_seed_path').text(client);
             $('#rpcurl_title').text(client + rpcurl);
             optionPanel = '#options_torrent_clients';
         }

@@ -69,8 +69,8 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
         except (MaxRetryError, RequestError) as e:
             logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
             raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
@@ -154,7 +154,7 @@ class TVDBv2(BaseIndexer):
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
         except ApiException as e:
             raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
+                'Show search failed in getting a result with reason: %s' % e.reason
             )
         except (MaxRetryError, RequestError) as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)
@@ -300,7 +300,11 @@ class TVDBv2(BaseIndexer):
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
+                logger.warning('This episode has incomplete information. The season or episode number '
+                               '(season: %s, episode: %s) is missing. '
+                               'to get rid of this warning, you will have to contact tvdb through their forums '
+                               'and have them fix the specific episode.',
+                               seasnum, epno)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
@@ -592,6 +596,14 @@ class TVDBv2(BaseIndexer):
             episodes = self._download_episodes(show_id)
 
             for episode in episodes['episode']:
+                if episode.get('seasonnumber') is None or episode.get('episodenumber') is None:
+                    logger.warning('This episode has incomplete information. The season or episode number '
+                                   '(season: %s, episode: %s) is missing. '
+                                   'to get rid of this warning, you will have to contact tvdb through their forums '
+                                   'and have them fix the specific episode.',
+                                   episode.get('seasonnumber'), episode.get('episodenumber'))
+                    continue
+
                 if int(episode['lastupdated']) > from_time:
                     total_updates.append(int(episode['seasonnumber']))
 
