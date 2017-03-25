@@ -22,12 +22,6 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 session = requests.Session()
-session.params.update({
-    'output': 'json',
-    'ma_username': app.SAB_USERNAME,
-    'ma_password': app.SAB_PASSWORD,
-    'apikey': app.SAB_APIKEY,
-})
 
 
 def send_nzb(nzb):
@@ -36,6 +30,12 @@ def send_nzb(nzb):
 
     :param nzb: The NZBSearchResult object to send to SAB
     """
+    session.params.update({
+        'output': 'json',
+        'ma_username': app.SAB_USERNAME,
+        'ma_password': app.SAB_PASSWORD,
+        'apikey': app.SAB_APIKEY,
+    })
 
     category = app.SAB_CATEGORY
     if nzb.show.is_anime:
@@ -96,6 +96,12 @@ def get_sab_access_method(host=None):
     :param host: hostname where SAB lives
     :return: (boolean, string) with True if method was successful
     """
+    session.params.update({
+        'output': 'json',
+        'ma_username': app.SAB_USERNAME,
+        'ma_password': app.SAB_PASSWORD,
+        'apikey': app.SAB_APIKEY,
+    })
     url = urljoin(host, 'api')
     response = session.get(url, params={'mode': 'auth'}, verify=False)
 
