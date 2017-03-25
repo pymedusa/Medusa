@@ -21,6 +21,6 @@ def handle(err, message='', *args, **kwargs):
         elif err.errno == 13:
             logger.warning('{m}Permission denied: {error_msg}', m=m, error_msg=err)
         else:
-            logger.warning('{m}Environment error: {error_msg}', m=m, error_msg=err)
+            logger.exception('{m}Environment error: {error_msg}', m=m, error_msg=err)
     else:
         logger.exception('{m}Exception generated: {error_msg}', m=m, error_msg=err)

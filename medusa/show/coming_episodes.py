@@ -18,11 +18,11 @@
 
 from datetime import date, timedelta
 
+from medusa.helpers.quality import get_quality_string
 from .. import app
 from ..common import IGNORED, Quality, UNAIRED, WANTED
 from ..db import DBConnection
 from ..helper.common import dateFormat, timeFormat
-from ..helper.quality import get_quality_string
 from ..network_timezones import parse_date_time
 from ..sbdatetime import sbdatetime
 

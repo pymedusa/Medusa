@@ -1,7 +1,7 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    from medusa import clients
+    from medusa.clients import torrent
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -633,6 +633,21 @@
                                             <input type="text" name="torrent_path" id="torrent_path" value="${app.TORRENT_PATH}" class="form-control input-sm input350"/>
                                             <div class="clear-left"><p>where <span id="torrent_client">the torrent client</span> will save downloaded files (blank for client default)
                                                 <span id="path_synology"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair" id="torrent_seed_location_option">
+                                    <label>
+                                        <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p>where <span id="torrent_client_seed_path">the torrent client</span> will move Torrents after Post-Processing<br/>
+                                                   <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
+                                                   to another location after Post-Processor to prevent reprocessing the same file over and over.
+                                                   This feature does a "Set Torrent location" or "Move Torrent" like in client
+                                                </p>
                                             </div>
                                         </span>
                                     </label>

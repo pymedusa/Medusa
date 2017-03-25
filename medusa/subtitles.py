@@ -869,7 +869,7 @@ class SubtitlesFinder(object):
 
         if run_post_process:
             logger.info(u'Starting post-process with default settings now that we found subtitles')
-            process_tv.processDir(app.TV_DOWNLOAD_DIR)
+            process_tv.ProcessResult(app.TV_DOWNLOAD_DIR, app.PROCESS_METHOD).process()
 
     @staticmethod
     def unpack_rar_files(dirpath):
@@ -885,8 +885,7 @@ class SubtitlesFinder(object):
                 video_files = [video_file for video_file in files if is_media_file(video_file)]
                 if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
                     logger.debug(u'Found rar files in post-process folder: %s', rar_files)
-                    result = process_tv.ProcessResult()
-                    process_tv.unRAR(root, rar_files, False, result)
+                    process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
             elif rar_files and not app.UNPACK:
                 logger.warning(u'Unpack is disabled. Skipping: %s', rar_files)
 

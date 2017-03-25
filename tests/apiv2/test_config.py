@@ -122,6 +122,11 @@ def config(monkeypatch, app_config):
                 'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
                 'specials': bool(app.DISPLAY_SHOW_SPECIALS)
             }
+        },
+        'selectedRootIndex': app.SELECTED_ROOT,
+        'backlogOverview': {
+            'period': app.BACKLOG_PERIOD,
+            'status': app.BACKLOG_STATUS
         }
     }
 

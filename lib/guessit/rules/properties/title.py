@@ -142,7 +142,7 @@ class TitleBaseRule(Rule):
         :return:
         """
         if context.get('type') == 'episode' and match.name == 'episode_details':
-            return False
+            return match.start >= hole.start and match.end <= hole.end
         return True
 
     def check_titles_in_filepart(self, filepart, matches, context):

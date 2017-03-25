@@ -1,8 +1,8 @@
 MEDUSA.addShows.addExistingShow = function() {
     $('#tableDiv').on('click', '#checkAll', function() {
-        var seasCheck = this;
+        var seasonCheck = this;
         $('.dirCheck').each(function() {
-            this.checked = seasCheck.checked;
+            this.checked = seasonCheck.checked;
         });
     });
 
@@ -10,11 +10,10 @@ MEDUSA.addShows.addExistingShow = function() {
         var dirArr = [];
         $('.dirCheck').each(function() {
             if (this.checked === true) {
-                var show = $(this).attr('id');
-                var originalIndexer = $(this).attr('data-indexer')
-                var indexerId = '|' + $(this).attr('data-indexer-id')
-                var showName = $(this).attr('data-show-name')
-                var showDir = $(this).attr('data-show-dir')
+                var originalIndexer = $(this).attr('data-indexer');
+                var indexerId = '|' + $(this).attr('data-indexer-id');
+                var showName = $(this).attr('data-show-name');
+                var showDir = $(this).attr('data-show-dir');
 
                 var indexer = $(this).closest('tr').find('select').val();
                 if (originalIndexer !== indexer || originalIndexer === '0') {
