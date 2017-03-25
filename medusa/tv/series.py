@@ -901,8 +901,8 @@ class Series(TV):
                b'WHERE (indexer = ? AND indexer_id = ?) '
                b'OR (mindexer = ? AND mindexer_id = ?)')
 
-        sql_results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
-        results = [dict(result) for result in sql_results]
+        results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
+
         for result in results:
             try:
                 if result[b'indexer'] == self.indexer:
