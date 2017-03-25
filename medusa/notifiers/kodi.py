@@ -164,20 +164,13 @@ class Notifier(object):
 
         kodiapi = self._get_kodi_version(host, app.KODI_USERNAME, app.KODI_PASSWORD)
         if kodiapi:
-            if kodiapi <= 4:
-                # try to update for just the show, if it fails, do full update if enabled
-                if not self._update_library(host, showName) and app.KODI_UPDATE_FULL:
-                    logger.log(u"Single show update failed, falling back to full update", logger.DEBUG)
-                    return self._update_library(host)
-                else:
-                    return True
+            update = self._update_library if kodiapi <= 4 else self._update_library_json
+            # try to update for just the show, if it fails, do full update if enabled
+            if not update(host, showName) and app.KODI_UPDATE_FULL:
+                logger.log(u"Single show update failed, falling back to full update", logger.DEBUG)
+                return update(host)
             else:
-                # try to update for just the show, if it fails, do full update if enabled
-                if not self._update_library_json(host, showName) and app.KODI_UPDATE_FULL:
-                    logger.log(u"Single show update failed, falling back to full update", logger.DEBUG)
-                    return self._update_library_json(host)
-                else:
-                    return True
+                return True
         elif app.KODI_ALWAYS_ON:
             logger.log(u"Failed to detect KODI version for '" + host + "', check configuration and try again.", logger.WARNING)
 
