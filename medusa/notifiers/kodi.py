@@ -68,7 +68,11 @@ class Notifier(object):
         # override socket timeout to reduce delay for this call alone
         socket.setdefaulttimeout(10)
 
-        checkCommand = '{"jsonrpc":"2.0","method":"JSONRPC.Version","id":1}'
+        checkCommand = json.dumps({
+            'jsonrpc': '2.0',
+            'method': 'JSONRPC.Version',
+            'id': 1,
+        })
         result = self._send_to_kodi_json(checkCommand, host, username, password, dest_app)
 
         # revert back to default socket timeout
@@ -134,8 +138,16 @@ class Notifier(object):
                         result += curHost + ':' + str(notifyResult)
                 else:
                     logger.log(u"Detected %s version >= 12, using %s JSON API" % (dest_app, dest_app), logger.DEBUG)
-                    command = '{"jsonrpc":"2.0","method":"GUI.ShowNotification","params":{"title":"%s","message":"%s", "image": "%s"},"id":1}' % (
-                        title.encode("utf-8"), message.encode("utf-8"), app.LOGO_URL)
+                    command = json.dumps({
+                        'jsonrpc': '2.0',
+                        'method': 'GUI.ShowNotification',
+                        'params': {
+                            'title': title.encode("utf-8"),
+                            'message': message.encode("utf-8"),
+                            'image': app.LOGO_URL,
+                        },
+                        'id': '1',
+                    })
                     notifyResult = self._send_to_kodi_json(command, curHost, username, password, dest_app)
                     if notifyResult and notifyResult.get('result'):  # pylint: disable=no-member
                         result += curHost + ':' + notifyResult["result"].decode(app.SYS_ENCODING)
@@ -196,10 +208,8 @@ class Notifier(object):
         """
 
         # fill in omitted parameters
-        if not username:
-            username = app.KODI_USERNAME
-        if not password:
-            password = app.KODI_PASSWORD
+        username = username or app.KODI_USERNAME
+        password = password or app.KODI_PASSWORD
 
         if not host:
             logger.log(u'No %s host passed, aborting update' % dest_app, logger.WARNING)
@@ -401,7 +411,14 @@ class Notifier(object):
         clean_library = True
         for host in [x.strip() for x in app.KODI_HOST.split(',')]:
             logger.log(u'Cleaning KODI library via JSON method for host: {0}'.format(host), logger.INFO)
-            update_command = '{"jsonrpc":"2.0","method":"VideoLibrary.Clean","params": {"showdialogs": false},"id":1}'
+            update_command = json.dumps({
+                'jsonrpc': '2.0',
+                'method': 'VideoLibrary.Clean',
+                'params': {
+                    'showdialogs': False,
+                },
+                'id': 1,
+            })
             request = self._send_to_kodi_json(update_command, host)
             if not request:
                 if app.KODI_ALWAYS_ON:
@@ -454,16 +471,32 @@ class Notifier(object):
             logger.log(u"Updating library in KODI via JSON method for show " + showName, logger.DEBUG)
 
             # let's try letting kodi filter the shows
-            showsCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShows","params":{"filter":{"field":"title","operator":"is","value":"%s"},"properties":["title"]},"id":"Medusa"}'
+            showsCommand = json.dumps({
+                'jsonrpc': '2.0',
+                'method': 'VideoLibrary.GetTVShows',
+                'params': {
+                    'filter': {
+                        'field': 'title',
+                        'operator': 'is',
+                        'value': showName,
+                    },
+                    'properties': ['title'],
+                },
+                'id': 'Medusa',
+            })
 
             # get tvshowid by showName
-            showsResponse = self._send_to_kodi_json(showsCommand % showName, host)
+            showsResponse = self._send_to_kodi_json(showsCommand, host)
 
             if showsResponse and "result" in showsResponse and "tvshows" in showsResponse["result"]:
                 shows = showsResponse["result"]["tvshows"]
             else:
                 # fall back to retrieving the entire show list
-                showsCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShows","id":1}'
+                showsCommand = json.dumps({
+                    'jsonrpc': '2.0',
+                    'method': 'VideoLibrary.GetTVShows',
+                    'id': 1,
+                })
                 showsResponse = self._send_to_kodi_json(showsCommand, host)
 
                 if showsResponse and "result" in showsResponse and "tvshows" in showsResponse["result"]:
@@ -491,7 +524,15 @@ class Notifier(object):
 
             # lookup tv-show path if we don't already know it
             if not path:
-                pathCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.GetTVShowDetails","params":{"tvshowid":%d, "properties": ["file"]},"id":1}' % tvshowid
+                pathCommand = json.dumps({
+                    'jsonrpc': '2.0',
+                    'method': 'VideoLibrary.GetTVShowDetails',
+                    'params': {
+                        'tvshowid': tvshowid,
+                        'properties': ['file'],
+                    },
+                    'id': 1,
+                })
                 pathResponse = self._send_to_kodi_json(pathCommand, host)
 
                 path = pathResponse["result"]["tvshowdetails"]["file"]
@@ -503,7 +544,14 @@ class Notifier(object):
                 return False
 
             logger.log(u"KODI Updating " + showName + " on " + host + " at " + path, logger.DEBUG)
-            updateCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.Scan","params":{"directory":%s},"id":1}' % (json.dumps(path))
+            updateCommand = json.dumps({
+                'jsonrpc': '2.0',
+                'method': 'VideoLibrary.Scan',
+                'params': {
+                    'directory': path,
+                },
+                'id': 1,
+            })
             request = self._send_to_kodi_json(updateCommand, host)
             if not request:
                 logger.log(u"Update of show directory failed on " + showName + " on " + host + " at " + path, logger.WARNING)
@@ -518,7 +566,11 @@ class Notifier(object):
         # do a full update if requested
         else:
             logger.log(u"Doing Full Library KODI update on host: " + host, logger.DEBUG)
-            updateCommand = '{"jsonrpc":"2.0","method":"VideoLibrary.Scan","id":1}'
+            updateCommand = json.dumps({
+                'jsonrpc': '2.0',
+                'method': 'VideoLibrary.Scan',
+                'id': 1,
+            })
             request = self._send_to_kodi_json(updateCommand, host)
 
             if not request:
