@@ -333,7 +333,7 @@ class InitialSchema(db.SchemaUpgrade):
                 "CREATE TABLE blacklist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE whitelist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE xem_refresh (indexer TEXT, indexer_id INTEGER PRIMARY KEY, last_refreshed INTEGER);",
-                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC, PRIMARY KEY (indexer_id, indexer, mindexer_id, mindexer));",
+                "CREATE TABLE indexer_mapping (indexer_id TEXT, indexer INTEGER, mindexer_id TEXT, mindexer INTEGER, PRIMARY KEY (indexer_id, indexer, mindexer));",
                 "CREATE UNIQUE INDEX idx_indexer_id ON tv_shows(indexer_id);",
                 "CREATE INDEX idx_showid ON tv_episodes(showid);",
                 "CREATE INDEX idx_sta_epi_air ON tv_episodes(status, episode, airdate);",
@@ -599,7 +599,7 @@ class AddPKIndexerMapping(AddResourceSize):
         log.info(u'Adding PK to mindexer column in indexer_mapping table')
         self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
         self.connection.action("CREATE TABLE IF NOT EXISTS new_indexer_mapping"
-                               "(indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC,"
+                               "(indexer_id TEXT, indexer INTEGER, mindexer_id TEXT, mindexer INTEGER,"
                                "PRIMARY KEY (indexer_id, indexer, mindexer));")
         self.connection.action("INSERT INTO new_indexer_mapping SELECT * FROM indexer_mapping;")
         self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
