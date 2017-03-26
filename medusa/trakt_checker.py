@@ -225,15 +225,16 @@ class TraktChecker(object):
                 for cur_episode in episodes:
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode[b'indexer']):
-                        return
+                        continue
                     if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
                                         season=cur_episode[b'season'], episode=cur_episode[b'episode'],
                                         list_type='Collection'):
                         logger.log("Removing episode '{show}' {ep} from Trakt collection".format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])), logger.INFO)
+                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
                         trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
-                                           cur_episode[b'show_name'], cur_episode[b'startyear'],
+                                           title, cur_episode[b'startyear'],
                                            cur_episode[b'season'], cur_episode[b'episode']))
 
                 if trakt_data:
@@ -267,7 +268,7 @@ class TraktChecker(object):
                 for cur_episode in episodes:
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode[b'indexer']):
-                        return
+                        continue
 
                     if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'indexer_id'],
                                             season=cur_episode[b'season'], episode=cur_episode[b'episode'],
@@ -276,8 +277,9 @@ class TraktChecker(object):
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])),
                                    logger.INFO)
+                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
                         trakt_data.append((cur_episode[b'indexer_id'], cur_episode[b'indexer'],
-                                           cur_episode[b'show_name'], cur_episode[b'startyear'],
+                                           title, cur_episode[b'startyear'],
                                            cur_episode[b'season'], cur_episode[b'episode']))
 
                 if trakt_data:
@@ -331,15 +333,16 @@ class TraktChecker(object):
 
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode[b'indexer']):
-                        return
+                        continue
 
                     if self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
                                         season=cur_episode[b'season'], episode=cur_episode[b'episode']):
                         logger.log("Removing episode '{show}' {ep} from Trakt watchlist".format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])), logger.INFO)
+                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
                         trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'],
-                                           cur_episode[b'show_name'], cur_episode[b'startyear'],
+                                           title, cur_episode[b'startyear'],
                                            cur_episode[b'season'], cur_episode[b'episode']))
 
                 if trakt_data:
@@ -373,7 +376,7 @@ class TraktChecker(object):
                 for cur_episode in episodes:
                     # Check if TRAKT supports that indexer
                     if not get_trakt_indexer(cur_episode[b'indexer']):
-                        return
+                        continue
 
                     if not self._check_list(indexer=cur_episode[b'indexer'], indexer_id=cur_episode[b'showid'],
                                             season=cur_episode[b'season'], episode=cur_episode[b'episode']):
@@ -381,7 +384,8 @@ class TraktChecker(object):
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode'])),
                                    logger.INFO)
-                        trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'], cur_episode[b'show_name'],
+                        title = get_title_without_year(cur_episode[b'show_name'], cur_episode[b'startyear'])
+                        trakt_data.append((cur_episode[b'showid'], cur_episode[b'indexer'], title,
                                            cur_episode[b'startyear'], cur_episode[b'season'], cur_episode[b'episode']))
 
                 if trakt_data:
@@ -645,19 +649,19 @@ class TraktChecker(object):
         return True
 
     @staticmethod
-    def trakt_bulk_data_generate(data):
+    def trakt_bulk_data_generate(trakt_data):
         """Build the JSON structure to send back to Trakt."""
         unique_shows = {}
         unique_seasons = {}
 
-        for indexer_id, indexer, show_name, start_year, season, episode in data:
+        for indexer_id, indexer, show_name, start_year, season, episode in trakt_data:
             if indexer_id not in unique_shows:
                 unique_shows[indexer_id] = {'title': show_name, 'year': start_year, 'ids': {}, 'seasons': []}
                 unique_shows[indexer_id]['ids'][get_trakt_indexer(indexer)] = indexer_id
                 unique_seasons[indexer_id] = []
 
         # Get the unique seasons per Show
-        for indexer_id, indexer, show_name, start_year, season, episode in data:
+        for indexer_id, indexer, show_name, start_year, season, episode in trakt_data:
             if season not in unique_seasons[indexer_id]:
                 unique_seasons[indexer_id].append(season)
 
@@ -671,7 +675,7 @@ class TraktChecker(object):
             for searched_season in unique_seasons[searched_show]:
                 episodes_list = []
 
-                for indexer_id, indexer, show_name, start_year, season, episode in data:
+                for indexer_id, indexer, show_name, start_year, season, episode in trakt_data:
                     if season == searched_season and indexer_id == searched_show:
                         episodes_list.append({'number': episode})
                 show = unique_shows[searched_show]
