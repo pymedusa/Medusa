@@ -49,7 +49,6 @@ from medusa import (
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
     ARCHIVED,
-    countryList,
     DOWNLOADED,
     FAILED,
     IGNORED,
@@ -62,6 +61,7 @@ from medusa.common import (
     UNAIRED,
     UNKNOWN,
     WANTED,
+    countryList,
     qualityPresets,
     statusStrings,
 )
@@ -1762,8 +1762,7 @@ class Series(TV):
         return [Quality.qualityStrings[v] for v in preferred]
 
     def get_all_possible_names(self, season=-1):
-        """
-        Figures out every possible variation of the name for a particular show.
+        """Get every possible variation of the name for a particular show.
 
         Includes indexer name, and any scene exception names, and country code
         at the end of the name (e.g. "Show Name (AU)".
@@ -1771,7 +1770,6 @@ class Series(TV):
         show: a Series object that we should get the names of
         Returns: all possible show names
         """
-
         show_names = get_scene_exceptions(self.indexerid, self.indexer, season)
         show_names.add(self.name)
 

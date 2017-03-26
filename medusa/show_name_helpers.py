@@ -21,9 +21,11 @@ import os
 import re
 
 from six import string_types
+
 from . import app, common, logger
+
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .scene_exceptions import get_scene_exceptions
+
 
 resultFilters = [
     "(dir|sub|nfo)fix",
