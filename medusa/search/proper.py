@@ -187,7 +187,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         final_propers = []
 
         # Keep only items from last 3 days in processed propers:
-        latest_proper = datetime.datetime.now() - datetime.timedelta(days=3)
+        latest_proper = datetime.datetime.now() - datetime.timedelta(days=app.PROPERS_SEARCH_DAYS)
         self.processed_propers = [p for p in self.processed_propers if p.get('date') >= latest_proper]
 
         # Get proper names from processed propers
