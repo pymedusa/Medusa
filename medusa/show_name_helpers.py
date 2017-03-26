@@ -22,7 +22,7 @@ import re
 
 from six import string_types
 
-from . import app, common, logger
+from . import app, logger
 
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
