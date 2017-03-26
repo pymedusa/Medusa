@@ -102,9 +102,6 @@ class RarbgProvider(TorrentProvider):
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
                 search_params['search_tvdb'] = self._get_tvdb_id()
-                if search_params['search_tvdb']:
-                    # If searching using tvdb, don't need to search using all scene names
-                    search_strings[mode] = search_strings[mode][:1]
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
