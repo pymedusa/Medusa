@@ -16,7 +16,7 @@
     % if app.PROCESS_METHOD == 'symlink':
 <div class="text-center">
 <div class="alert alert-danger upgrade-notification hidden-print" role="alert">
-    <span>WARNING: Your process method is SYMLINK. If you rename files, links will broken and you won't be able to seed</span>
+    <span>WARNING: Your current process method is SYMLINK. Renaming these files will break all symlinks in your seeding directory for this show</span>
 </div>
 </div>
     % endif
