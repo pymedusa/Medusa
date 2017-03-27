@@ -601,3 +601,5 @@ RECENTLY_DELETED = set()
 RELEASES_IN_PP = []
 
 PRIVACY_LEVEL = 'normal'
+
+PROPERS_SEARCH_INTERVAL = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}

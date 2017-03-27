@@ -1097,9 +1097,8 @@ class Application(object):
                                                                   threadName="BACKLOG",
                                                                   run_delay=update_interval)
 
-            search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
-            if app.CHECK_PROPERS_INTERVAL in search_intervals:
-                update_interval = datetime.timedelta(minutes=search_intervals[app.CHECK_PROPERS_INTERVAL])
+            if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
+                update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
                 run_at = None
             else:
                 update_interval = datetime.timedelta(hours=1)
