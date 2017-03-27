@@ -38,9 +38,6 @@ module.exports = function(grunt) { // eslint-disable-line xo/filename-case
                         'dist/css/bootstrap.min.css',
                         'dist/js/bootstrap.min.js'
                     ],
-                    'bootstrap-formhelpers': [
-                        'dist/js/bootstrap-formhelpers.min.js'
-                    ],
                     'isotope': [
                         'dist/isotope.pkgd.min.js'
                     ],

@@ -116,7 +116,9 @@ class Episode(TV):
              'scene_episode',
              'scene_absolute_number',
              'related_episodes',
-             'wanted_quality'}
+             'wanted_quality',
+             'loaded'
+             }
         )
         self.show = show
         self.name = ''
@@ -711,7 +713,7 @@ class Episode(TV):
                 self.show.airs,
                 self.show.network
             )
-        ).isoformat('T')
+        ).isoformat(b'T')
         data = OrderedDict([
             ('identifier', self.identifier),
             ('id', OrderedDict([
@@ -960,7 +962,8 @@ class Episode(TV):
                           b'is_proper': self.is_proper,
                           b'absolute_number': self.absolute_number,
                           b'version': self.version,
-                          b'release_group': self.release_group}
+                          b'release_group': self.release_group,
+                          b'manually_searched': self.manually_searched}
 
         control_value_dict = {b'showid': self.show.indexerid,
                               b'season': self.season,

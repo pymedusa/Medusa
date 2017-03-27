@@ -167,6 +167,7 @@ $.ajaxEpSearch = function(options) {
             url += '&down_cur_quality=1';
         }
 
+        // @TODO: Move to the API
         $.getJSON(url, function(data) {
             // if they failed then just put the red X
             if (data.result.toLowerCase() === 'failure') {

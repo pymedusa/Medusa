@@ -214,7 +214,7 @@ class TVmaze(BaseIndexer):
         """
         results = None
         if tvmaze_id:
-            logger.debug('Getting all show data for %s', [tvmaze_id])
+            logger.debug('Getting all show data for %s', tvmaze_id)
             results = self.tvmaze_api.get_show(maze_id=tvmaze_id)
 
         if not results:
@@ -232,7 +232,7 @@ class TVmaze(BaseIndexer):
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
         # Parse episode data
-        logger.debug('Getting all episodes of %s', [tvmaze_id])
+        logger.debug('Getting all episodes of %s', tvmaze_id)
         try:
             results = self.tvmaze_api.episode_list(tvmaze_id, specials=specials)
         except IDNotFound:
@@ -252,7 +252,7 @@ class TVmaze(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 logger.debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
+                use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
             else:
                 use_dvd = False
 
@@ -260,6 +260,11 @@ class TVmaze(BaseIndexer):
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
+                if self.config['dvdorder']:
+                    logger.warning('Episode doest not have DVD ordering available (season: %s, episode: %s). '
+                                   'Falling back to non-DVD order. '
+                                   'Please consider disable DVD ordering for the show with TVmaze ID: %s',
+                                   seasnum, epno, tvmaze_id)
 
             if seasnum is None or epno is None:
                 logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
@@ -285,7 +290,7 @@ class TVmaze(BaseIndexer):
         >>> t['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
-        u'http://theTMDB.com/banners/posters/76156-2.jpg'
+        u'http://thetvmaze.com/banners/posters/76156-2.jpg'
         >>>
 
         Any key starting with an underscore has been processed (not the raw
@@ -293,12 +298,12 @@ class TVmaze(BaseIndexer):
 
         This interface will be improved in future versions.
         """
-        logger.debug('Getting show banners for %s', [tvmaze_id])
+        logger.debug('Getting show banners for %s', tvmaze_id)
 
         try:
             image_medium = self.shows[tvmaze_id]['image_medium']
         except Exception:
-            logger.debug('Could not parse Poster for showid: %s', [tvmaze_id])
+            logger.debug('Could not parse Poster for showid: %s', tvmaze_id)
             return False
 
         # Set the poster (using the original uploaded poster for now, as the medium formated is 210x195
@@ -322,7 +327,7 @@ class TVmaze(BaseIndexer):
         """Parse Show and Season posters."""
         seasons = {}
         if tvmaze_id:
-            logger.debug('Getting all show data for %s', [tvmaze_id])
+            logger.debug('Getting all show data for %s', tvmaze_id)
             try:
                 seasons = self.tvmaze_api.show_seasons(maze_id=tvmaze_id)
             except BaseError as e:
@@ -342,16 +347,16 @@ class TVmaze(BaseIndexer):
 
     def _parse_actors(self, tvmaze_id):
         """Parsers actors XML, from
-        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
+        http://thetvmaze.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
 
         Actors are retrieved using t['show name]['_actors'], for example:
 
         >>> t = TVMaze(actors = True)
         >>> actors = t['scrubs']['_actors']
         >>> type(actors)
-        <class 'TMDB_api.Actors'>
+        <class 'tvmaze_api.Actors'>
         >>> type(actors[0])
-        <class 'TMDB_api.Actor'>
+        <class 'tvmaze_api.Actor'>
         >>> actors[0]
         <Actor "Zach Braff">
         >>> sorted(actors[0].keys())
@@ -359,12 +364,12 @@ class TVmaze(BaseIndexer):
         >>> actors[0]['name']
         u'Zach Braff'
         >>> actors[0]['image']
-        u'http://theTMDB.com/banners/actors/43640.jpg'
+        u'http://thetvmaze.com/banners/actors/43640.jpg'
 
         Any key starting with an underscore has been processed (not the raw
         data from the indexer)
         """
-        logger.debug('Getting actors for %s', [tvmaze_id])
+        logger.debug('Getting actors for %s', tvmaze_id)
         try:
             actors = self.tvmaze_api.show_cast(tvmaze_id)
         except CastNotFound:
@@ -386,7 +391,7 @@ class TVmaze(BaseIndexer):
         self._set_show_data(tvmaze_id, '_actors', cur_actors)
 
     def _get_show_data(self, tvmaze_id, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Takes a series ID, gets the epInfo URL and parses the TheTMDB json response
+        """Takes a series ID, gets the epInfo URL and parses the tvmaze json response
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]
         """
@@ -489,18 +494,17 @@ class TVmaze(BaseIndexer):
         :returns: A dict with externals, including the tvmaze id.
         """
         mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
-        externals = {}
         for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
             if kwargs.get(external_id):
                 try:
                     result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})
                     if result:
-                        externals = result.externals
-                        externals[external_id] = result.id
-                        return {mapping[external_id]: external_value
-                                for external_id, external_value
-                                in externals.items()
-                                if external_value and mapping.get(external_id)}
+                        externals = {mapping[tvmaze_external_id]: external_value
+                                     for tvmaze_external_id, external_value
+                                     in result.externals.items()
+                                     if external_value and mapping.get(tvmaze_external_id)}
+                        externals['tvmaze_id'] = result.maze_id
+                        return externals
                 except ShowNotFound:
                     logger.debug('Could not get tvmaze externals using external key %s and id %s',
                                  external_id, kwargs.get(external_id))
@@ -508,4 +512,4 @@ class TVmaze(BaseIndexer):
                 except BaseError as e:
                     logger.warning('Could not get tvmaze externals. Cause: %s', e)
                     continue
-        return externals
+        return {}

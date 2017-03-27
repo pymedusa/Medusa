@@ -10,6 +10,8 @@
     import re
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
+<div class="row">
+<div class="col-md-12 horizontal-scroll">
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
@@ -163,15 +165,7 @@
                 <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center" class="triggerhighlight">
-            <%
-                display_status = cur_show.status
-                if None is not display_status:
-                    if re.search(r'(?i)(?:new|returning)\s*series', cur_show.status):
-                        display_status = 'Continuing'
-                    elif re.search('(?i)(?:nded)', cur_show.status):
-                        display_status = 'Ended'
-            %>
-            ${display_status}
+            ${cur_show.status}
             </td>
             <td align="center" class="triggerhighlight">
                 <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>
@@ -182,3 +176,5 @@
     </tbody>
 </table>
 % endfor
+</div> <!-- table -->
+</div> <!-- row -->

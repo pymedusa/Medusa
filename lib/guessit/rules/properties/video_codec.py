@@ -18,7 +18,7 @@ def video_codec():
     :rtype: Rebulk
     """
     rebulk = Rebulk().regex_defaults(flags=re.IGNORECASE, abbreviations=[dash]).string_defaults(ignore_case=True)
-    rebulk.defaults(name="video_codec", tags='format-suffix')
+    rebulk.defaults(name="video_codec", tags=['format-suffix', 'streaming_service.suffix'])
 
     rebulk.regex(r"Rv\d{2}", value="Real")
     rebulk.regex("Mpeg2", value="Mpeg2")
@@ -26,12 +26,14 @@ def video_codec():
     rebulk.regex("XviD", value="XviD")
     rebulk.regex("[hx]-?264(?:-?AVC(HD)?)?", "MPEG-?4(?:-?AVC(HD)?)", "AVC(?:HD)?", value="h264")
     rebulk.regex("[hx]-?265(?:-?HEVC)?", "HEVC", value="h265")
+    rebulk.regex('(?P<video_codec>hevc)(?P<video_profile>10)', value={'video_codec': 'h265', 'video_profile': '10bit'},
+                 tags=['video-codec-suffix'], children=True)
 
     # http://blog.mediacoderhq.com/h264-profiles-and-levels/
     # http://fr.wikipedia.org/wiki/H.264
     rebulk.defaults(name="video_profile", validator=seps_surround)
 
-    rebulk.regex('10.?bits?', 'Hi10P', value='10bit')
+    rebulk.regex('10.?bits?', 'Hi10P?', 'YUV420P10', value='10bit')
     rebulk.regex('8.?bits?', value='8bit')
 
     rebulk.string('BP', value='BP', tags='video_profile.rule')
@@ -62,7 +64,8 @@ class ValidateVideoCodec(Rule):
                     not matches.at_index(codec.start - 1, lambda match: 'video-codec-prefix' in match.tags):
                 ret.append(codec)
                 continue
-            if not seps_after(codec):
+            if not seps_after(codec) and \
+                    not matches.at_index(codec.end + 1, lambda match: 'video-codec-suffix' in match.tags):
                 ret.append(codec)
                 continue
         return ret

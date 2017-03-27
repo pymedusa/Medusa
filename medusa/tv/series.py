@@ -61,6 +61,7 @@ from medusa.common import (
     UNAIRED,
     UNKNOWN,
     WANTED,
+    countryList,
     qualityPresets,
     statusStrings,
 )
@@ -78,13 +79,14 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
-from medusa.helper.externals import get_externals
+from medusa.helpers.externals import get_externals
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     indexerConfig,
+    indexer_id_to_slug,
     mappings,
-    reverse_mappings,
+    reverse_mappings
 )
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
@@ -133,7 +135,8 @@ class Series(TV):
         :param lang:
         :type lang: str
         """
-        super(Series, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
+        super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
+                                                          'external', 'imdb_info'})
         self.name = ''
         self.imdb_id = ''
         self.network = ''
@@ -266,7 +269,7 @@ class Series(TV):
     @property
     def indexer_slug(self):
         """Return the slug name of the show. Example: tvdb1234."""
-        return '{name}{indexerid}'.format(name=self.indexer_name, indexerid=self.indexerid)
+        return indexer_id_to_slug(self.indexer, self.indexerid)
 
     @location.setter
     def location(self, value):
@@ -902,10 +905,13 @@ class Series(TV):
         results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
 
         for result in results:
-            if result[0] == self.indexer:
-                self.externals[mappings[result[2]]] = result[3]
-            else:
-                self.externals[mappings[result[0]]] = result[1]
+            try:
+                if result[b'indexer'] == self.indexer:
+                    self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+                else:
+                    self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
+            except KeyError as e:
+                logger.error(u'Indexer not supported in current mappings: {id}', id=e.message)
 
         return self.externals
 
@@ -1217,7 +1223,7 @@ class Series(TV):
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
-        self.runtime = getattr(indexed_show, 'runtime', '')
+        self.runtime = int(getattr(indexed_show, 'runtime', 0))
 
         # set the externals, using the result from the indexer.
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
@@ -1277,7 +1283,7 @@ class Series(TV):
             'genres': '|'.join(imdb_obj.genres or ''),
             'countries': '',
             'country_codes': '',
-            'rating': imdb_obj.rating or '',
+            'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
             'certificates': imdb_obj.certification or '',
@@ -1418,7 +1424,7 @@ class Series(TV):
             return False
 
         # Let's get some fresh indexer info, as we might need it later on.
-        self.create_indexer()
+        # self.create_indexer()
 
         # load from dir
         self.load_episodes_from_dir()
@@ -1758,6 +1764,45 @@ class Series(TV):
 
         return [Quality.qualityStrings[v] for v in preferred]
 
+    def get_all_possible_names(self, season=-1):
+        """Get every possible variation of the name for a particular show.
+
+        Includes indexer name, and any scene exception names, and country code
+        at the end of the name (e.g. "Show Name (AU)".
+
+        show: a Series object that we should get the names of
+        Returns: all possible show names
+        """
+        show_names = get_scene_exceptions(self.indexerid, self.indexer, season)
+        show_names.add(self.name)
+
+        new_show_names = set()
+
+        if not self.is_anime:
+            country_list = {}
+            # add the country list
+            country_list.update(countryList)
+            # add the reversed mapping of the country list
+            country_list.update({v: k for k, v in countryList.items()})
+
+            for name in show_names:
+                if not name:
+                    continue
+
+                # if we have "Show Name Australia" or "Show Name (Australia)"
+                # this will add "Show Name (AU)" for any countries defined in
+                # common.countryList (and vice versa)
+                for country in country_list:
+                    pattern_1 = ' {0}'.format(country)
+                    pattern_2 = ' ({0})'.format(country)
+                    replacement = ' ({0})'.format(country_list[country])
+                    if name.endswith(pattern_1):
+                        new_show_names.add(name.replace(pattern_1, replacement))
+                    elif name.endswith(pattern_2):
+                        new_show_names.add(name.replace(pattern_2, replacement))
+
+        return show_names.union(new_show_names)
+
     @staticmethod
     def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
@@ -1823,13 +1868,13 @@ class Series(TV):
                          new_quality=Quality.qualityStrings[quality])
             return True
 
-        should_replace, msg = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
-                                                     preferred_qualities, download_current_quality,
-                                                     forced_search, manually_searched)
+        should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
+                                                        preferred_qualities, download_current_quality,
+                                                        forced_search, manually_searched)
         logger.debug(u"{id}: '{show}' {ep} status is: '{status}'. {action} result with quality '{new_quality}'. "
-                     u"Reason: {msg}", id=self.indexerid, show=self.name, ep=episode_num(season, episode),
+                     u"Reason: {reason}", id=self.indexerid, show=self.name, ep=episode_num(season, episode),
                      status=ep_status_text, action='Accepting' if should_replace else 'Ignoring',
-                     new_quality=Quality.qualityStrings[quality], msg=msg)
+                     new_quality=Quality.qualityStrings[quality], reason=reason)
         return should_replace
 
     def get_overview(self, ep_status, backlog_mode=False, manually_searched=False):
