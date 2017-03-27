@@ -20,7 +20,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 6
+CURRENT_MINOR_DB_VERSION = 7
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -333,7 +333,7 @@ class InitialSchema(db.SchemaUpgrade):
                 "CREATE TABLE blacklist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE whitelist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE xem_refresh (indexer TEXT, indexer_id INTEGER PRIMARY KEY, last_refreshed INTEGER);",
-                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC, PRIMARY KEY (indexer_id, indexer));",
+                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer INTEGER, mindexer_id INTEGER, mindexer INTEGER, PRIMARY KEY (indexer_id, indexer, mindexer));",
                 "CREATE UNIQUE INDEX idx_indexer_id ON tv_shows(indexer_id);",
                 "CREATE INDEX idx_showid ON tv_episodes(showid);",
                 "CREATE INDEX idx_sta_epi_air ON tv_episodes(status, episode, airdate);",
@@ -583,4 +583,26 @@ class AddResourceSize(AddPlot):
         if not self.hasColumn("history", "size"):
             self.addColumn("history", "size", 'NUMERIC', -1)
 
+        self.inc_minor_version()
+
+
+class AddPKIndexerMapping(AddResourceSize):
+    """Add PK to mindexer column in indexer_mapping table."""
+
+    def test(self):
+        """Test if the version is at least 44.7"""
+        return self.connection.version >= (44, 7)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Adding PK to mindexer column in indexer_mapping table')
+        self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
+        self.connection.action("CREATE TABLE IF NOT EXISTS new_indexer_mapping"
+                               "(indexer_id INTEGER, indexer INTEGER, mindexer_id INTEGER, mindexer INTEGER,"
+                               "PRIMARY KEY (indexer_id, indexer, mindexer));")
+        self.connection.action("INSERT INTO new_indexer_mapping SELECT * FROM indexer_mapping;")
+        self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
+        self.connection.action("ALTER TABLE new_indexer_mapping RENAME TO indexer_mapping;")
+        self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
         self.inc_minor_version()
