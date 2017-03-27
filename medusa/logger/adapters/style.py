@@ -27,7 +27,10 @@ class BraceMessage(object):
                 args = []
                 kwargs = self.args[0]
 
-        return self.msg.format(*args, **kwargs)
+        try:
+            return self.msg.format(*args, **kwargs)
+        except IndexError:
+            return self.msg.format(kwargs)
 
     def __repr__(self):
         """Convert to class representation."""
