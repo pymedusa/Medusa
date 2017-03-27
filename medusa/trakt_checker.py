@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 
 import datetime
 
-from traktor import AuthException, ServerBusy, TokenExpiredException, TraktApi, TraktException
+from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 from . import app, db, logger, ui
 from .common import Quality, SKIPPED, WANTED
@@ -110,7 +110,7 @@ class TraktChecker(object):
         """Find show in Trakt library."""
         try:
             trakt_library = self._request('sync/collection/shows') or []
-        except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+        except (TraktException, AuthException, TokenExpiredException) as e:
             logger.log("Unable to retrieve shows from Trakt collection. Error: {error}".format
                        (error=e.message), logger.DEBUG)
 
@@ -149,13 +149,13 @@ class TraktChecker(object):
             # Remove all episodes from the Trakt collection for this show
             try:
                 self.remove_episode_trakt_collection(filter_show=show_obj)
-            except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+            except (TraktException, AuthException, TokenExpiredException) as e:
                 logger.log("Unable to remove all episodes from show '{show}' from Trakt library. Error: {error}".format
                            (show=show_obj.name, error=e.message), logger.DEBUG)
 
             try:
                 self._request('sync/collection/remove', data, method='POST')
-            except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+            except (TraktException, AuthException, TokenExpiredException) as e:
                 logger.log("Unable to remove show '{show}' from Trakt library. Error: {error}".format
                            (show=show_obj.name, error=e.message), logger.DEBUG)
 
@@ -188,7 +188,7 @@ class TraktChecker(object):
 
             try:
                 self._request('sync/collection', data, method='POST')
-            except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+            except (TraktException, AuthException, TokenExpiredException) as e:
                 logger.log("Unable to add show '{show}' to Trakt library. Error: {error}".format
                            (show=show_obj.name, error=e.message), logger.DEBUG)
                 return
@@ -242,7 +242,7 @@ class TraktChecker(object):
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/collection/remove', data, method='POST')
                         self._get_show_collection()
-                    except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+                    except (TraktException, AuthException, TokenExpiredException) as e:
                         logger.log("Unable to remove episode '{show}' {ep} from Trakt collection. Error: {error}".format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode']),
@@ -287,7 +287,7 @@ class TraktChecker(object):
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/collection', data, method='POST')
                         self._get_show_collection()
-                    except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+                    except (TraktException, AuthException, TokenExpiredException) as e:
                         logger.log("Unable to add episode '{show}' {ep} to Trakt collection. Error: {error}".format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode']),
@@ -350,7 +350,7 @@ class TraktChecker(object):
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/watchlist/remove', data, method='POST')
                         self._get_episode_watchlist()
-                    except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+                    except (TraktException, AuthException, TokenExpiredException) as e:
                         logger.log("Unable to remove episode '{show}' {ep} from Trakt watchlist. Error: {error}".format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode']),
@@ -393,7 +393,7 @@ class TraktChecker(object):
                         data = self.trakt_bulk_data_generate(trakt_data)
                         self._request('sync/watchlist', data, method='POST')
                         self._get_episode_watchlist()
-                    except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+                    except (TraktException, AuthException, TokenExpiredException) as e:
                         logger.log('Unable to add episode to Trakt watchlist. '
                                    'Error: {error}'.format(error=e.message), logger.DEBUG)
                         logger.log("Unable to add episode '{show}' {ep} to Trakt watchlist. Error: {error}".format
@@ -419,7 +419,7 @@ class TraktChecker(object):
                     try:
                         data = {'shows': trakt_data}
                         self._request('sync/watchlist', data, method='POST')
-                    except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+                    except (TraktException, AuthException, TokenExpiredException) as e:
                         logger.log("Unable to add show '{show}' to Trakt watchlist. Error: {error}".format
                                    (show=show_obj.name, error=e.message), logger.INFO)
                     self._get_show_watchlist()
@@ -441,7 +441,7 @@ class TraktChecker(object):
 
                         try:
                             progress = self._request('shows/{0}/progress/watched'.format(trakt_id or show.imdb_id)) or []
-                        except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+                        except (TraktException, AuthException, TokenExpiredException) as e:
                             logger.log("Unable to check if show '{show}' is ended/completed. Error: {error}".format
                                        (show=show.name, error=e.message), logger.DEBUG)
                             continue
@@ -622,7 +622,7 @@ class TraktChecker(object):
         """Get shows watchlist."""
         try:
             self.show_watchlist = self._request('sync/watchlist/shows')
-        except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+        except (TraktException, AuthException, TokenExpiredException) as e:
             logger.log(u'Unable to retrieve shows from Trakt watchlist. Error: {error}'.format
                        (error=e.message), logger.DEBUG)
             return False
@@ -632,7 +632,7 @@ class TraktChecker(object):
         """Get episodes watchlist."""
         try:
             self.episode_watchlist = self._request('sync/watchlist/episodes')
-        except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+        except (TraktException, AuthException, TokenExpiredException) as e:
             logger.log(u'Unable to retrieve episodes from Trakt watchlist. Error: {error}'.format
                        (error=e.message), logger.DEBUG)
             return False
@@ -642,7 +642,7 @@ class TraktChecker(object):
         """Get show collection."""
         try:
             self.collection_list = self._request('sync/collection/shows')
-        except (TraktException, AuthException, ServerBusy, TokenExpiredException) as e:
+        except (TraktException, AuthException, TokenExpiredException) as e:
             logger.log(u"Unable to retrieve shows from Trakt collection. Error: {error}".format
                        (error=e.message), logger.DEBUG)
             return False

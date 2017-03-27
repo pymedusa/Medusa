@@ -17,9 +17,7 @@
 
 from __future__ import absolute_import
 
-from .exceptions import (TraktException, AuthException, ServerBusy, MissingTokenException,
-                         TraktIOError, TraktConnectionException, TimeoutException,
-                         UnavailableException, ResourceUnavailable, TraktTooManyRedirects,
-                         TokenExpiredException)
+from .exceptions import (TraktException, AuthException, MissingTokenException, UnavailableException,
+                         ResourceUnavailable, TokenExpiredException)
 
 from .trakt import TraktApi

@@ -24,7 +24,7 @@ from medusa import app, logger
 from medusa.helpers import get_title_without_year
 from medusa.indexers.indexer_config import get_trakt_indexer
 
-from traktor import AuthException, ServerBusy, TraktApi, TraktException
+from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 
 class Notifier(object):
@@ -97,7 +97,7 @@ class Notifier(object):
                 # update library
                 trakt_api.request('sync/collection', data, method='POST')
 
-            except (TraktException, AuthException, ServerBusy) as error:
+            except (TokenExpiredException, TraktException, AuthException) as error:
                 logger.log('Unable to update Trakt: {0}'.format(error.message), logger.DEBUG)
 
     @staticmethod
@@ -182,7 +182,7 @@ class Notifier(object):
 
                 trakt_api.request(trakt_url, data, method='POST')
 
-            except (TraktException, AuthException, ServerBusy) as error:
+            except (TokenExpiredException, TraktException, AuthException) as error:
                 logger.log('Unable to update Trakt watchlist: {0}'.format(error.message), logger.DEBUG)
                 return False
 
@@ -253,6 +253,6 @@ class Notifier(object):
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except (TraktException, AuthException, ServerBusy) as error:
+        except (TokenExpiredException, TraktException, AuthException) as error:
             logger.log('Unable to test TRAKT: {0}'.format(error.message), logger.WARNING)
             return 'Test notice failed to Trakt: {0}'.format(error.message)
