@@ -1048,8 +1048,8 @@ class Series(TV):
                     if not cur_ep:
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
-                    logger.log(u'{indexerid}: Unable to figure out what this file is, skipping {filepath}',
-                               indexerid=self.indexerid, filepath=filepath)
+                    logger.warning(u'{indexerid}: Unable to figure out what this file is. Skipping {filepath}',
+                                   indexerid=self.indexerid, filepath=filepath)
                     continue
 
             else:
@@ -1272,7 +1272,7 @@ class Series(TV):
         # If the show has no year, IMDb returned something we don't want
         if not imdb_obj.year:
             logger.debug(u'{id}: IMDb returned invalid info for {imdb_id}, skipping update.',
-                         id=self.indexerid, imdb_id=self.imdbid)
+                         id=self.indexerid, imdb_id=self.imdb_id)
             return
 
         self.imdb_info = {
@@ -1715,7 +1715,8 @@ class Series(TV):
                 ('seasons', OrderedDict([]))
             ]))
             episodes = self.get_all_episodes()
-            result['seasons'] = [list(v) for _, v in groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+            result['seasons'] = [list(v) for _, v in groupby([ep.to_json() for ep in episodes],
+                                                             lambda item: item['season'])]
             result['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
