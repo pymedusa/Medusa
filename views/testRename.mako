@@ -13,6 +13,13 @@
 <script type="text/javascript" src="js/test-rename.js"></script>
 </%block>
 <%block name="content">
+    % if app.PROCESS_METHOD == 'symlink':
+<div class="text-center">
+<div class="alert alert-danger upgrade-notification hidden-print" role="alert">
+    <span>WARNING: Your process method is SYMLINK. If you rename files, links will broken and you won't be able to seed</span>
+</div>
+</div>
+    % endif
 <input type="hidden" id="showID" value="${show.indexerid}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
