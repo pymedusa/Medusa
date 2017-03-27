@@ -499,12 +499,10 @@ class TVmaze(BaseIndexer):
                 try:
                     result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})
                     if result:
-                        externals = result.externals
-                        externals[external_id] = result.id
-                        externals = {mapping[external_id]: external_value
-                                     for external_id, external_value
-                                     in externals.items()
-                                     if external_value and mapping.get(external_id)}
+                        externals = {mapping[tvmaze_external_id]: external_value
+                                     for tvmaze_external_id, external_value
+                                     in result.externals.items()
+                                     if external_value and mapping.get(tvmaze_external_id)}
                         externals['tvmaze_id'] = result.maze_id
                         return externals
                 except ShowNotFound:

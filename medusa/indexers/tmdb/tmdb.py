@@ -610,9 +610,9 @@ class Tmdb(BaseIndexer):
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
                     externals['tmdb_id'] = result['tv_results'][0]['id']
 
-                    externals = {external_id: external_value
-                                 for external_id, external_value
+                    externals = {tmdb_external_id: external_value
+                                 for tmdb_external_id, external_value
                                  in externals.items()
-                                 if external_value and external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
+                                 if external_value and tmdb_external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
                     return externals
         return {}
