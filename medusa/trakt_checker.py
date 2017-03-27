@@ -246,7 +246,7 @@ class TraktChecker(object):
                         logger.log("Unable to remove episode '{show}' {ep} from Trakt collection. Error: {error}".format
                                    (show=cur_episode[b'show_name'],
                                     ep=episode_num(cur_episode[b'season'], cur_episode[b'episode']),
-                                    error=e.message), logger.INFO)
+                                    error=e.message), logger.DEBUG)
 
     def add_episode_trakt_collection(self):
         """Add all existing episodes to Trakt collections."""
