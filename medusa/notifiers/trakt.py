@@ -1,3 +1,4 @@
+"""Trakt notifier module."""
 # coding=utf-8
 
 # Author: Dieter Blomme <dieterblomme@gmail.com>
@@ -31,24 +32,28 @@ class Notifier(object):
     """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
     def notify_snatch(self, ep_name, is_proper):
+        """Trakt don't support this method."""
         pass
 
     def notify_download(self, ep_name):
+        """Trakt don't support this method."""
         pass
 
     def notify_subtitle_download(self, ep_name, lang):
+        """Trakt don't support this method."""
         pass
 
     def notify_git_update(self, new_version):
+        """Trakt don't support this method."""
         pass
 
     def notify_login(self, ipaddress=''):
+        """Trakt don't support this method."""
         pass
 
     @staticmethod
     def update_library(ep_obj):
-        """
-        Sends a request to trakt indicating that the given episode is part of our library.
+        """Send a request to trakt indicating that the given episode is part of our library.
 
         ep_obj: The Episode object to add to trakt
         """
@@ -102,9 +107,7 @@ class Notifier(object):
 
     @staticmethod
     def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
-
-        """
-        Sends a request to trakt indicating that the given episode is part of our library.
+        """Send a request to trakt indicating that the given episode is part of our library.
 
         show_obj: The Series object to add to trakt
         s: season number
@@ -190,49 +193,46 @@ class Notifier(object):
 
     @staticmethod
     def trakt_show_data_generate(data):
-
-        showList = []
+        """Build the JSON structure to send back to Trakt."""
+        show_list = []
         for indexer, indexerid, title, year in data:
             show = {'title': title, 'year': year, 'ids': {}}
             show['ids'][get_trakt_indexer(indexer)] = indexerid
-            showList.append(show)
+            show_list.append(show)
 
-        post_data = {'shows': showList}
+        post_data = {'shows': show_list}
 
         return post_data
 
     @staticmethod
     def trakt_episode_data_generate(data):
-
+        """Build the JSON structure to send back to Trakt."""
         # Find how many unique season we have
-        uniqueSeasons = []
+        unique_seasons = []
         for season, episode in data:
-            if season not in uniqueSeasons:
-                uniqueSeasons.append(season)
+            if season not in unique_seasons:
+                unique_seasons.append(season)
 
         # build the query
-        seasonsList = []
-        for searchedSeason in uniqueSeasons:
-            episodesList = []
+        seasons_list = []
+        for searchedSeason in unique_seasons:
+            episodes_list = []
             for season, episode in data:
                 if season == searchedSeason:
-                    episodesList.append({'number': episode})
-            seasonsList.append({'number': searchedSeason, 'episodes': episodesList})
+                    episodes_list.append({'number': episode})
+            seasons_list.append({'number': searchedSeason, 'episodes': episodes_list})
 
-        post_data = {'seasons': seasonsList}
+        post_data = {'seasons': seasons_list}
 
         return post_data
 
     @staticmethod
     def test_notify(username, blacklist_name=None):
-        """
-        Sends a test notification to trakt with the given authentication info and returns a boolean
-        representing success.
+        """Send a test notification to trakt with the given authentication info and returns a boolean.
 
         api: The api string to use
         username: The username to use
         blacklist_name: slug of trakt list used to hide not interested show
-
         Returns: True if the request succeeded, False otherwise
         """
         try:
