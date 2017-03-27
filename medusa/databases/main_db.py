@@ -235,7 +235,6 @@ class MainSanityCheck(db.DBSanityCheck):
             'planned': 'Continuing',
             'in production': 'Continuing',
             'pilot': 'Continuing',
-            'returning series': 'Continuing',
             'cancelled': 'Ended',
             '': 'Unknown',
         }
