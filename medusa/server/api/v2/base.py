@@ -7,7 +7,7 @@ import json
 import operator
 import traceback
 
-from datetime import datetime
+from datetime import date, datetime
 from babelfish.language import Language
 import jwt
 from medusa import app
@@ -84,26 +84,29 @@ class BaseRequestHandler(RequestHandler):
                                                         'X-Requested-With, X-CSRF-Token, X-Api-Key, X-Medusa-Server')
         self.set_header('Access-Control-Allow-Methods', ', '.join(self.DEFAULT_ALLOWED_METHODS + self.allowed_methods))
 
-    def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, **kwargs):
+    def api_finish(self, status=None, error=None, data=None, headers=None, stream=None, content_type=None, **kwargs):
         """End the api request writing error or data to http response."""
+        content_type = content_type or 'application/json; charset=UTF-8'
         if headers is not None:
             for header in headers:
                 self.set_header(header, headers[header])
         if error is not None and status is not None:
-            self.set_header('content-type', 'application/json')
             self.set_status(status)
+            self.set_header('content-type', content_type)
             self.finish({
                 'error': error
             })
         else:
             self.set_status(status or 200)
             if data is not None:
-                self.set_header('content-type', 'application/json')
-                self.finish(json.JSONEncoder(default=json_string_encoder).encode(data))
+                self.set_header('content-type', content_type)
+                self.finish(json.JSONEncoder(default=json_default_encoder).encode(data))
             elif stream:
                 # This is mainly for assets
+                self.set_header('content-type', content_type)
                 self.finish(stream)
-            elif kwargs:
+            elif kwargs and 'chunk' in kwargs:
+                self.set_header('content-type', content_type)
                 self.finish(kwargs)
 
     @classmethod
@@ -141,8 +144,8 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
-    def _ok(self, data=None, headers=None, stream=None):
-        self.api_finish(200, data=data, headers=headers, stream=stream)
+    def _ok(self, data=None, headers=None, stream=None, content_type=None):
+        self.api_finish(200, data=data, headers=headers, stream=stream, content_type=content_type)
 
     def _created(self, data=None, identifier=None):
         if identifier is not None:
@@ -201,7 +204,7 @@ class BaseRequestHandler(RequestHandler):
             'X-Pagination-Limit': arg_limit
         }
 
-        first_page = None if arg_page <= 1 else 1
+        first_page = arg_page if arg_page > 0 else 1
         previous_page = None if arg_page <= 1 else arg_page - 1
         if data_generator:
             results = list(data_generator())[:arg_limit]
@@ -229,12 +232,12 @@ class BaseRequestHandler(RequestHandler):
             if page is None:
                 continue
 
-            link = '<{path}?page={page}&limit={limit}>; rel="{rel}"'.format(
-                path=self.request.path, page=page, limit=arg_limit, rel=rel)
+            delimiter = '&' if self.request.query_arguments else '?'
+            link = '<{uri}{delimiter}page={page}&limit={limit}>; rel="{rel}"'.format(
+                uri=self.request.uri, delimiter=delimiter, page=page, limit=arg_limit, rel=rel)
             links.append(link)
 
-        if links:
-            self.set_header('Link', ', '.join(links))
+        self.set_header('Link', ', '.join(links))
 
         return self._ok(data=results, headers=headers)
 
@@ -286,10 +289,16 @@ class NotFoundHandler(BaseRequestHandler):
         return r'{base}(/?.*)'.format(base=base), cls
 
 
-def json_string_encoder(o):
+def json_default_encoder(o):
     """Convert properties to string."""
     if isinstance(o, Language):
         return getattr(o, 'name')
+
+    if isinstance(o, set):
+        return list(o)
+
+    if isinstance(o, date):
+        return o.isoformat()
 
     return text_type(o)
 

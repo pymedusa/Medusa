@@ -24,9 +24,6 @@ import os.path
 import re
 import time
 
-from collections import (
-    OrderedDict,
-)
 from datetime import date, datetime
 import knowit
 
@@ -52,6 +49,7 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
+from medusa.essentials.dictionary import OrderedPredicateDict
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -315,6 +313,27 @@ class Episode(TV):
                      id=self.show.indexerid, location=value)
         self._location = value
         self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
+
+    @property
+    def indexer_name(self):
+        """Return the indexer name identifier. Example: tvdb."""
+        return indexerConfig[self.indexer].get('identifier')
+
+    @property
+    def air_date(self):
+        """Return air date from the episode."""
+        return sbdatetime.convert_to_setting(
+            network_timezones.parse_date_time(
+                date.toordinal(self.airdate),
+                self.show.airs,
+                self.show.network
+            )
+        ).isoformat(b'T')
+
+    @property
+    def status_name(self):
+        """Return the status name."""
+        return statusStrings[Quality.split_composite_status(self.status).status]
 
     def is_location_valid(self, location=None):
         """Whether the location is a valid file.
@@ -809,60 +828,54 @@ class Episode(TV):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        indexer_name = indexerConfig[self.indexer]['identifier']
-        parsed_airdate = sbdatetime.convert_to_setting(
-            network_timezones.parse_date_time(
-                datetime.toordinal(self.airdate),
-                self.show.airs,
-                self.show.network
-            )
-        ).isoformat(b'T')
-        data = OrderedDict([
-            ('identifier', self.identifier),
-            ('id', OrderedDict([
-                (indexer_name, self.indexerid),
-            ])),
-            ('season', self.season),
-            ('episode', self.episode),
-            ('absoluteNumber', self.absolute_number),
-            ('airDate', parsed_airdate),
-            ('title', self.name),
-            ('description', self.description),
-            ('content', []),
-            ('subtitles', self.subtitles),
-            ('status', statusStrings[Quality.split_composite_status(self.status).status]),
-            ('release', OrderedDict([
-                ('name', self.release_name),
-                ('group', self.release_group),
-                ('proper', self.is_proper),
-                ('version', self.version),
-            ])),
-            ('scene', OrderedDict([
-                ('season', self.scene_season),
-                ('episode', self.scene_episode),
-                ('absoluteNumber', self.scene_absolute_number),
-            ])),
-            ('file', OrderedDict([
-                ('location', self.location),
-                ('size', self.file_size),
-            ])),
-        ])
+        data = OrderedPredicateDict()
+        data['identifier'] = self.identifier
+        data['id'] = {self.indexer_name: self.indexerid}
+        data['season'] = self.season
+        data['episode'] = self.episode
+
+        if self.absolute_number:
+            data['absoluteNumber'] = self.absolute_number
+
+        data['airDate'] = self.air_date
+        data['title'] = self.name
+        data['description'] = self.description
+        data['content'] = []
+        data['title'] = self.name
+        data['subtitles'] = self.subtitles
+        data['status'] = self.status_name
+        data['release'] = OrderedPredicateDict()
+        data['release']['name'] = self.release_name
+        data['release']['group'] = self.release_group
+        data['release']['proper'] = self.is_proper
+        data['release']['version'] = self.version
+        data['scene'] = OrderedPredicateDict()
+        data['scene']['season'] = self.scene_season
+        data['scene']['episode'] = self.scene_episode
+
+        if self.scene_absolute_number:
+            data['scene']['absoluteNumber'] = self.scene_absolute_number
+
+        data['file'] = OrderedPredicateDict()
+        data['file']['location'] = self.location
+        if self.file_size:
+            data['file']['size'] = self.file_size
+
         if self.hasnfo:
             data['content'].append('NFO')
         if self.hastbn:
             data['content'].append('thumbnail')
 
         if detailed:
-            data.update(OrderedDict([
-                ('statistics', OrderedDict([
-                    ('subtitleSearch', OrderedDict([
-                        ('last', self.subtitles_lastsearch),
-                        ('count', self.subtitles_searchcount),
-                    ])),
-                ])),
-                ('wantedQualities', self.wanted_quality),
-                ('relatedEpisodes', [ep.identifier() for ep in self.related_episodes]),
-            ]))
+            data['statistics'] = {
+                'subtitleSearch': {
+                    'last': self.subtitles_lastsearch,
+                    'count': self.subtitles_searchcount
+                }
+            }
+            data['wantedQualities'] = self.wanted_quality
+            data['wantedQualities'] = [ep.identifier() for ep in self.related_episodes]
+
         return data
 
     def create_meta_files(self):

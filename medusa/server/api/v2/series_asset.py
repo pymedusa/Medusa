@@ -33,5 +33,4 @@ class SeriesAssetHandler(BaseRequestHandler):
         if not asset:
             return self._not_found('Asset not found')
 
-        self.set_header('Content-Type', asset.get_media_type())
-        self._ok(stream=asset.get_media())
+        self._ok(stream=asset.get_media(), content_type=asset.get_media_type())

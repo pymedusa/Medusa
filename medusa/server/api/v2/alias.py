@@ -2,6 +2,7 @@
 """Request handler for alias (scene exceptions)."""
 
 from medusa import db
+from medusa.essentials.dictionary import OrderedPredicateDict
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 from tornado.escape import json_decode
@@ -62,14 +63,17 @@ class AliasHandler(BaseRequestHandler):
         if sql_where:
             sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])
 
-        data = cache_db_con.select(sql_base, params)
+        sql_results = cache_db_con.select(sql_base, params)
 
-        data = [{'id': row[0],
-                 'series': SeriesIdentifier.from_id(row[1], row[2]).slug,
-                 'name': row[3],
-                 'season': row[4] if row[4] >= 0 else None,
-                 'type': 'local' if row[5] else None}
-                for row in data]
+        data = []
+        for item in sql_results:
+            d = OrderedPredicateDict()
+            d['id'] = item[0]
+            d['series'] = SeriesIdentifier.from_id(item[1], item[2]).slug
+            d['name'] = item[3]
+            d['season'] = item[4] if item[4] >= 0 else None
+            d['type'] = 'local' if item[5] else None
+            data.append(d)
 
         if not identifier:
             return self._paginate(data, sort='id')
@@ -94,7 +98,7 @@ class AliasHandler(BaseRequestHandler):
         data = json_decode(self.request.body)
 
         if not data or not all([data.get('id'), data.get('series'), data.get('name'),
-                                data.get('season', None), data.get('type')]) or data['id'] != identifier:
+                                data.get('type')]) or data['id'] != identifier:
             return self._bad_request('Invalid request body')
 
         series_identifier = SeriesIdentifier.from_slug(data.get('series'))
@@ -128,7 +132,7 @@ class AliasHandler(BaseRequestHandler):
 
         data = json_decode(self.request.body)
 
-        if not data or not all([data.get('series'), data.get('name'), data.get('season', None),
+        if not data or not all([data.get('series'), data.get('name'),
                                 data.get('type')]) or 'id' in data or data['type'] != 'local':
             return self._bad_request('Invalid request body')
 

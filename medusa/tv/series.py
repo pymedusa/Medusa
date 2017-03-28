@@ -29,7 +29,6 @@ import stat
 import traceback
 import warnings
 from collections import (
-    OrderedDict,
     namedtuple,
 )
 from itertools import groupby
@@ -65,6 +64,7 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
+from medusa.essentials.dictionary import OrderedPredicateDict
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
@@ -81,6 +81,7 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.externals import get_externals
+from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
@@ -154,6 +155,12 @@ class SeriesIdentifier(object):
         """Slug."""
         return str(self)
 
+    @property
+    def api(self):
+        """Api."""
+        indexer_api = indexerApi(self.indexer.id)
+        return indexer_api.indexer(**indexer_api.api_params)
+
     def __bool__(self):
         """Magic method."""
         return self.indexer is not None and self.id is not None
@@ -211,7 +218,7 @@ class Series(TV):
         self.quality = quality or int(app.QUALITY_DEFAULT)
         self.flatten_folders = flatten_folders or int(app.FLATTEN_FOLDERS_DEFAULT)
         self.status = 'Unknown'
-        self.airs = ''
+        self._airs = ''
         self.start_year = 0
         self.paused = 0
         self.air_by_date = 0
@@ -259,6 +266,25 @@ class Series(TV):
         result = Show.find(app.showList, identifier.id, identifier.indexer.id)
         if result and (not predicate or predicate(result)):
             return result
+
+    @classmethod
+    def from_identifier(cls, identifier):
+        """Create a series object from its identifier."""
+        return Series(identifier.indexer.id, identifier.id)
+
+    # TODO: Make this the single entry to add new series
+    @classmethod
+    def save_series(cls, identifier):
+        """Save the specified series to medusa."""
+        if not cls.find_by_identifier(identifier):
+            api = identifier.api
+            series = cls.from_identifier(identifier)
+            series.load_from_indexer(tvapi=api)
+            series.load_imdb_info()
+            app.showList.append(series)
+            series.save_to_db()
+            series.load_episodes_from_indexer(tvapi=api)
+            return series
 
     @property
     def identifier(self):
@@ -362,7 +388,7 @@ class Series(TV):
 
     @property
     def indexer_slug(self):
-        """Return the slug name of the show. Example: tvdb1234."""
+        """Return the slug name of the series. Example: tvdb1234."""
         return indexer_id_to_slug(self.indexer, self.indexerid)
 
     @location.setter
@@ -420,6 +446,114 @@ class Series(TV):
     def subtitle_flag(self):
         """Subtitle flag."""
         return subtitles.code_from_code(self.lang) if self.lang else ''
+
+    @property
+    def show_type(self):
+        """Return show type."""
+        return 'sports' if self.is_sports else ('anime' if self.is_anime else 'series')
+
+    @property
+    def imdb_year(self):
+        """Return series year."""
+        return self.imdb_info.get('year')
+
+    @property
+    def imdb_runtime(self):
+        """Return series runtime."""
+        return self.imdb_info.get('runtimes')
+
+    @property
+    def imdb_akas(self):
+        """Return genres akas dict."""
+        akas = {}
+        for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
+            if '::' in x:
+                val, key = x.split('::')
+                akas[key] = val
+        return akas
+
+    @property
+    def imdb_countries(self):
+        """Return country codes."""
+        return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
+
+    @property
+    def imdb_plot(self):
+        """Return series plot."""
+        return self.imdb_info.get('plot', '')
+
+    @property
+    def imdb_genres(self):
+        """Return series genres."""
+        return self.imdb_info.get('genres', '')
+
+    @property
+    def imdb_votes(self):
+        """Return series votes."""
+        return self.imdb_info.get('votes')
+
+    @property
+    def imdb_rating(self):
+        """Return series rating."""
+        return self.imdb_info.get('rating')
+
+    @property
+    def imdb_certificates(self):
+        """Return series certificates."""
+        return self.imdb_info.get('certificates')
+
+    @property
+    def next_airdate(self):
+        """Return next airdate."""
+        return (
+            sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
+            if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
+        )
+
+    @property
+    def genres(self):
+        """Return genres list."""
+        return list({i for i in (self.genre or '').split('|') if i} |
+                    {i for i in self.imdb_genres.replace('Sci-Fi', 'Science-Fiction').split('|') if i})
+
+    @property
+    def airs(self):
+        """Return episode time that series usually airs."""
+        return self._airs
+
+    @airs.setter
+    def airs(self, value):
+        """Set episode time that series usually airs."""
+        self._airs = text_type(value).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()
+
+    @property
+    def poster(self):
+        """Return poster path."""
+        poster = ImageCache.poster_path(self.indexerid)
+        if os.path.isfile(poster):
+            return poster
+
+    @property
+    def banner(self):
+        """Return banner path."""
+        banner = ImageCache.banner_path(self.indexerid)
+        if os.path.isfile(banner):
+            return banner
+
+    @property
+    def aliases(self):
+        """Return series aliases."""
+        return self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)
+
+    @property
+    def release_ignore_words(self):
+        """Return release ignore words."""
+        return [v for v in (self.rls_ignore_words or '').split(',') if v]
+
+    @property
+    def release_required_words(self):
+        """Return release ignore words."""
+        return [v for v in (self.rls_require_words or '').split(',') if v]
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -1340,7 +1474,7 @@ class Series(TV):
 
         self.status = getattr(indexed_show, 'status', 'Unknown')
 
-        self.plot = getattr(indexed_show, 'overview', '') or self.get_plot()
+        self.plot = getattr(indexed_show, 'overview', '') or self.imdb_plot
 
         self._save_externals_to_db()
 
@@ -1736,109 +1870,73 @@ class Series(TV):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        indexer_name = self.indexer_slug
         bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
-        result = OrderedDict([
-            ('id', OrderedDict([
-                (indexer_name, self.indexerid),
-                ('imdb', str(self.imdb_id))
-            ])),
-            ('title', self.name),
-            ('indexer', indexer_name),  # e.g. tvdb
-            ('network', self.network),  # e.g. CBS
-            ('type', self.classification),  # e.g. Scripted
-            ('status', self.status),  # e.g. Continuing
-            ('airs', text_type(self.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()),
-            # e.g Thursday 8:00 PM
-            ('language', self.lang),
-            ('showType', 'sports' if self.is_sports else ('anime' if self.is_anime else 'series')),
-            ('akas', self.get_akas()),
-            ('year', OrderedDict([
-                ('start', self.imdb_info.get('year') or self.start_year),
-            ])),
-            ('nextAirDate', self.get_next_airdate()),
-            ('runtime', self.imdb_info.get('runtimes') or self.runtime),
-            ('genres', self.get_genres()),
-            ('rating', OrderedDict([])),
-            ('classification', self.imdb_info.get('certificates')),
-            ('cache', OrderedDict([])),
-            ('countries', self.get_countries()),
-            ('plot', self.get_plot()),
-            ('config', OrderedDict([
-                ('location', self.raw_location),
-                ('qualities', OrderedDict([
-                    ('allowed', self.get_allowed_qualities()),
-                    ('preferred', self.get_preferred_qualities()),
-                ])),
-                ('paused', bool(self.paused)),
-                ('airByDate', bool(self.air_by_date)),
-                ('subtitlesEnabled', bool(self.subtitles)),
-                ('dvdOrder', bool(self.dvd_order)),
-                ('flattenFolders', bool(self.flatten_folders)),
-                ('scene', self.is_scene),
-                ('defaultEpisodeStatus', statusStrings[self.default_ep_status]),
-                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)),
-                ('release', OrderedDict([
-                    ('blacklist', bw_list.blacklist),
-                    ('whitelist', bw_list.whitelist),
-                    ('ignoredWords', [v for v in (self.rls_ignore_words or '').split(',') if v]),
-                    ('requiredWords', [v for v in (self.rls_require_words or '').split(',') if v]),
-                ])),
-            ]))
-        ])
 
-        cache = image_cache.ImageCache()
-        if 'rating' in self.imdb_info and 'votes' in self.imdb_info:
-            result['rating']['imdb'] = OrderedDict([
-                ('stars', self.imdb_info.get('rating')),
-                ('votes', self.imdb_info.get('votes')),
-            ])
-        if os.path.isfile(cache.poster_path(self.indexerid)):
-            result['cache']['poster'] = cache.poster_path(self.indexerid)
-        if os.path.isfile(cache.banner_path(self.indexerid)):
-            result['cache']['banner'] = cache.banner_path(self.indexerid)
+        data = OrderedPredicateDict()
+        data['id'] = {
+            self.indexer_name: self.indexerid,
+            'imdb': text_type(self.imdb_id)
+        }
+        data['title'] = self.name
+        data['indexer'] = self.indexer_name  # e.g. tvdb
+        data['network'] = self.network  # e.g. CBS
+        data['type'] = self.classification  # e.g. Scripted
+        data['status'] = self.status  # e.g. Continuing
+        data['airs'] = self.airs  # e.g. Thursday 8:00 PM
+        data['language'] = self.lang
+        data['showType'] = self.show_type  # e.g. anime, sport, series
+        data['akas'] = self.imdb_akas
+        data['year'] = {
+            'start': self.imdb_year or self.start_year
+        }
+        data['nextAirDate'] = self.next_airdate
+        data['runtime'] = self.imdb_runtime or self.runtime
+        data['genres'] = self.genres
+
+        if self.imdb_rating and self.imdb_votes:
+            data['rating'] = {'imdb': {
+                'rating': self.imdb_rating,
+                'votes': self.imdb_votes
+            }}
+
+        data['classification'] = self.imdb_certificates
+        data['cache'] = OrderedPredicateDict()
+        data['cache']['poster'] = self.poster
+        data['cache']['banner'] = self.banner
+        data['countries'] = self.imdb_countries
+        data['plot'] = self.imdb_plot or self.plot
+        data['config'] = OrderedPredicateDict()
+        data['config']['location'] = self.raw_location
+        data['config']['qualities'] = {
+            'allowed': self.get_allowed_qualities(),
+            'preferred': self.get_preferred_qualities(),
+        }
+        data['config']['paused'] = bool(self.paused)
+        data['config']['airByDate'] = bool(self.air_by_date)
+        data['config']['subtitlesEnabled'] = bool(self.subtitles)
+        data['config']['dvdOrder'] = bool(self.dvd_order)
+        data['config']['flattenFolders'] = bool(self.flatten_folders)
+        data['config']['scene'] = self.is_scene
+        data['config']['paused'] = bool(self.paused)
+        data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
+        data['config']['aliases'] = self.aliases
+        data['config']['release'] = {
+            'blacklist': bw_list.blacklist,
+            'whitelist': bw_list.whitelist,
+            'ignoredWords': self.release_ignore_words,
+            'requiredWords': self.release_required_words,
+        }
 
         if detailed:
-            result.update(OrderedDict([
-                ('seasons', OrderedDict([]))
-            ]))
             episodes = self.get_all_episodes()
-            result['seasons'] = [list(v) for _, v in groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
-            result['episodeCount'] = len(episodes)
+            data['seasons'] = [list(v) for _, v in
+                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+            data['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
-                result['year']['end'] = last_episode.airdate.year
+                data['year']['end'] = last_episode.airdate.year
 
-        return result
-
-    def get_next_airdate(self):
-        """Return next airdate."""
-        return (
-            sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
-            if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
-        )
-
-    def get_genres(self):
-        """Return genres list."""
-        return list({v for v in (self.genre or '').split('|') if v} |
-                    {v for v in self.imdb_info.get('genres', '').replace('Sci-Fi', 'Science-Fiction').split('|') if v})
-
-    def get_akas(self):
-        """Return genres akas dict."""
-        akas = {}
-        for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
-            if '::' in x:
-                val, key = x.split('::')
-                akas[key] = val
-        return akas
-
-    def get_countries(self):
-        """Return country codes."""
-        return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
-
-    def get_plot(self):
-        """Return show plot."""
-        return self.imdb_info.get('plot', '')
+        return data
 
     def get_allowed_qualities(self):
         """Return allowed qualities."""

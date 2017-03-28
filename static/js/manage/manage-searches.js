@@ -9,17 +9,17 @@ MEDUSA.manage.manageSearches = function() {
         var medusaException = exceptions.data.filter(function(obj) {
             return obj.id === 'local';
         });
-        var cusExceptionDate = new Date(medusaException[0].lastUpdate * 1000).toLocaleDateString();
+        var cusExceptionDate = new Date(medusaException[0].lastRefresh * 1000).toLocaleDateString();
 
         var xemException = exceptions.data.filter(function(obj) {
             return obj.id === 'xem';
         });
-        var xemExceptionDate = new Date(xemException[0].lastUpdate * 1000).toLocaleDateString();
+        var xemExceptionDate = new Date(xemException[0].lastRefresh * 1000).toLocaleDateString();
 
         var anidbException = exceptions.data.filter(function(obj) {
             return obj.id === 'anidb';
         });
-        var anidbExceptionDate = new Date(anidbException[0].lastUpdate * 1000).toLocaleDateString();
+        var anidbExceptionDate = new Date(anidbException[0].lastRefresh * 1000).toLocaleDateString();
 
         var table = $('<ul class="simpleList"></ul>')
             .append(
