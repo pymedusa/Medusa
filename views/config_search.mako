@@ -50,9 +50,8 @@
                                         <span class="component-title">Check propers every:</span>
                                         <span class="component-desc">
                                             <select id="check_propers_interval" name="check_propers_interval" class="form-control input-sm">
-    <% check_propers_interval_text = {'daily': "24 hours", '4h': "4 hours", '90m': "90 mins", '45m': "45 mins", '15m': "15 mins"} %>
-    % for curInterval in ('daily', '4h', '90m', '45m', '15m'):
-                                                <option value="${curInterval}" ${'selected="selected"' if app.CHECK_PROPERS_INTERVAL == curInterval else ''}>${check_propers_interval_text[curInterval]}</option>
+    % for curInterval in app.PROPERS_SEARCH_INTERVAL.keys():
+                                                <option value="${curInterval}" ${'selected="selected"' if app.CHECK_PROPERS_INTERVAL == curInterval else ''}>${app.PROPERS_INTERVAL_LABELS[curInterval]}</option>
     % endfor
                                             </select>
                                         </span>
