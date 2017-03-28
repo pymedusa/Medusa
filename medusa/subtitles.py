@@ -25,7 +25,6 @@ import os
 import re
 import subprocess
 import time
-import traceback
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
@@ -439,12 +438,6 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     except IOError as error:
         if 'No space left on device' in ex(error):
             logger.warning(u'Not enough space on the drive to save subtitles')
-        else:
-            logger.warning(traceback.format_exc())
-    except Exception as error:
-        logger.debug(u'Exception: %s', error)
-        logger.info(u'Error occurred when downloading subtitles for: %s', video_path)
-        logger.error(traceback.format_exc())
 
     return []
 
@@ -704,13 +697,16 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         logger.debug(u'Found cached video information under key %s', key)
         return cached_payload['video']
 
+    video_path = _encode(video_path)
+    subtitles_dir = _encode(subtitles_dir or get_subtitles_dir(video_path))
+
+    logger.debug(u'Scanning video %s...', video_path)
+
     try:
-        video_path = _encode(video_path)
-        subtitles_dir = _encode(subtitles_dir or get_subtitles_dir(video_path))
-
-        logger.debug(u'Scanning video %s...', video_path)
         video = scan_video(video_path)
-
+    except ValueError as e:
+        logger.warning(u'Unable to scan video: %s. Error: %s', video_path, e.message)
+    else:
         # external subtitles
         if subtitles:
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
@@ -726,8 +722,6 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         logger.debug(u'Video information cached under key %s', key)
 
         return video
-    except Exception as error:
-        logger.info(u'Exception: %s', error)
 
 
 def get_subtitles_dir(video_path):
@@ -785,10 +779,11 @@ def delete_unwanted_subtitles(dirpath, filename):
     if language.opensubtitles not in app.SUBTITLES_LANGUAGES:
         try:
             os.remove(os.path.join(dirpath, filename))
+        except OSError as error:
+            logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
+        else:
             logger.debug(u"Deleted '%s' because we don't want subtitle language '%s'. We only want '%s' language(s)",
                          filename, language, ','.join(app.SUBTITLES_LANGUAGES))
-        except Exception as error:
-            logger.info(u"Couldn't delete subtitle: %s. Error: %s", filename, ex(error))
 
 
 class SubtitlesFinder(object):
@@ -999,44 +994,33 @@ class SubtitlesFinder(object):
             except ValueError:
                 lastsearched = datetime.datetime.min
 
-            try:
-                if not force:
-                    now = datetime.datetime.now()
-                    days = int(ep_to_sub['age'])
-                    delay_time = datetime.timedelta(hours=1 if days <= 10 else 8 if days <= 30 else 30 * 24)
-                    delay = lastsearched + delay_time - now
+            if not force:
+                now = datetime.datetime.now()
+                days = int(ep_to_sub['age'])
+                delay_time = datetime.timedelta(hours=1 if days <= 10 else 8 if days <= 30 else 30 * 24)
+                delay = lastsearched + delay_time - now
 
-                    # Search every hour until 10 days pass
-                    # After 10 days, search every 8 hours, after 30 days search once a month
-                    # Will always try an episode regardless of age for 3 times
-                    # The time resolution is minute
-                    # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
-                    if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
-                        logger.debug(u'Subtitle search for %s %s delayed for %s',
-                                     ep_to_sub['show_name'], ep_num, dhm(delay))
-                        continue
-
-                show_object = Show.find(app.showList, int(ep_to_sub['showid']))
-                if not show_object:
-                    logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
+                # Search every hour until 10 days pass
+                # After 10 days, search every 8 hours, after 30 days search once a month
+                # Will always try an episode regardless of age for 3 times
+                # The time resolution is minute
+                # Only delay is the it's bigger than one minute and avoid wrongly skipping the search slot.
+                if delay.total_seconds() > 60 and int(ep_to_sub['searchcount']) > 2:
+                    logger.debug(u'Subtitle search for %s %s delayed for %s',
+                                 ep_to_sub['show_name'], ep_num, dhm(delay))
                     continue
 
-                episode_object = show_object.get_episode(ep_to_sub['season'], ep_to_sub['episode'])
-                if isinstance(episode_object, str):
-                    logger.debug(u'%s %s not found in the database', ep_to_sub['show_name'], ep_num)
-                    continue
-
-                try:
-                    episode_object.download_subtitles()
-                except Exception as error:
-                    logger.error(u'Unable to find subtitles for %s %s. Error: %s',
-                                 ep_to_sub['show_name'], ep_num, ex(error))
-                    continue
-
-            except Exception as error:
-                logger.warning(u'Error while searching subtitles for %s %s. Error: %s',
-                               ep_to_sub['show_name'], ep_num, ex(error))
+            show_object = Show.find(app.showList, int(ep_to_sub['showid']))
+            if not show_object:
+                logger.debug(u'Show with ID %s not found in the database', ep_to_sub['showid'])
                 continue
+
+            episode_object = show_object.get_episode(ep_to_sub['season'], ep_to_sub['episode'])
+            if isinstance(episode_object, str):
+                logger.debug(u'%s %s not found in the database', ep_to_sub['show_name'], ep_num)
+                continue
+
+            episode_object.download_subtitles()
 
         logger.info(u'Finished checking for missed subtitles')
         self.amActive = False
