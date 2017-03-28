@@ -891,11 +891,11 @@ class SubtitlesFinder(object):
         :type force: bool
         """
         if self.amActive:
-            logger.debug(u"Subtitle finder is still running, not starting it again")
+            logger.debug(u'Subtitle finder is still running, not starting it again')
             return
 
         if not app.USE_SUBTITLES:
-            logger.warning(u"Subtitle search is disabled. Please enabled it")
+            logger.warning(u'Subtitle search is disabled. Please enabled it')
             return
 
         if not enabled_service_list():
