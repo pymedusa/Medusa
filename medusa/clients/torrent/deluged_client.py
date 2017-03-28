@@ -13,6 +13,7 @@ import logging
 from base64 import b64encode
 
 from medusa import app
+from medusa.clients.torrent.deluge_client import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -144,6 +145,25 @@ class DelugeDAPI(GenericClient):
             return True, 'Success: Connected and Authenticated'
         else:
             return False, 'Error: Unable to Authenticate!  Please check your config!'
+
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
+
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+        """
+        log.info('Checking DelugeD torrent status.')
+
+        if not self.connect():
+            return
+
+        torrent_data = self.drpc.get_all_torrents()
+        read_torrent_status(torrent_data)
+        # Commented for now
+        # for info_hash in to_remove:
+        #    self.remove_torrent(info_hash)
 
 
 class DelugeRPC(object):
@@ -399,5 +419,25 @@ class DelugeRPC(object):
             log.debug('DelugeD: Torrent already exists in Deluge')
             return info_hash
         return False
+
+    def get_all_torrents(self):
+        """Get all torrents in client.
+
+        :return:
+        :rtype: bool
+        """
+        try:
+            self.connect()
+            torrents_data = self.client.core.get_torrents_status({}, ('name', 'hash', 'progress', 'state',
+                                                                      'ratio', 'stop_ratio', 'is_seed', 'is_finished',
+                                                                      'paused', 'files')).get()
+        except Exception:
+            return False
+        else:
+            return torrents_data
+        finally:
+            if self.client:
+                self.disconnect()
+
 
 api = DelugeDAPI

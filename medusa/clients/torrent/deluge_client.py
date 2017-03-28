@@ -26,6 +26,79 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+def read_torrent_status(torrent_data):
+    """Read torrent status from Deluge and Deluged client."""
+    found_torrents = False
+    info_hash_to_remove = []
+    for torrent in torrent_data.items():
+        info_hash = str(torrent[0])
+        details = torrent[1]
+        if not is_info_hash_in_history(info_hash):
+            continue
+        found_torrents = True
+
+        to_remove = False
+        for i in details['files']:
+            # Check if media was processed
+            # OR check hash in case of RARed torrents
+            if is_already_processed_media(i['path']) or is_info_hash_processed(info_hash):
+                to_remove = True
+
+        # Don't need to check status if we are not going to remove it.
+        if not to_remove:
+            log.info('Torrent not yet post-processed. Skipping: {torrent}',
+                     {'torrent': details['name']})
+            continue
+
+        status = 'busy'
+        if details['is_finished']:
+            status = 'completed'
+        elif details['is_seed']:
+            status = 'seeding'
+        elif details['paused']:
+            status = 'paused'
+        else:
+            status = details['state']
+
+        if status == 'completed':
+            log.info(
+                'Torrent completed and reached minimum'
+                ' ratio: [{ratio:.3f}/{ratio_limit:.3f}] or'
+                ' seed idle limit'
+                ' Removing it: [{name}]',
+                ratio=details['ratio'],
+                ratio_limit=torrent['stop_ratio'],
+                name=torrent['name']
+            )
+            info_hash_to_remove.append(info_hash)
+        elif status == 'seeding':
+            if float(details['ratio']) < float(details['stop_ratio']):
+                log.info(
+                    'Torrent did not reach minimum'
+                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
+                    ' Keeping it: [{name}]',
+                    ratio=torrent['ratio'],
+                    ratio_limit=torrent['stop_ratio'],
+                    name=torrent['name']
+                )
+            else:
+                log.info(
+                    'Torrent completed and reached minimum ratio but it'
+                    ' was force started again. Current'
+                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
+                    ' Keeping it: [{name}]',
+                    ratio=torrent['uploadRatio'],
+                    ratio_limit=torrent['seedRatioLimit'],
+                    name=torrent['name']
+                )
+        else:
+            log.info('Torrent is {status}. Keeping it: [{name}]', status=status, name=details['name'])
+
+    if not found_torrents:
+        log.info('No torrents found that were snatched by Medusa')
+    return info_hash_to_remove
+
+
 class DelugeAPI(GenericClient):
     """Deluge API class."""
 
@@ -394,76 +467,11 @@ class DelugeAPI(GenericClient):
                 log.info('Error while fetching torrents status')
                 return
             else:
-                found_torrents = False
                 torrent_data = self.response.json()['result']
-
-        for torrent in torrent_data.items():
-            info_hash = str(torrent[0])
-            details = torrent[1]
-            if not is_info_hash_in_history(info_hash):
-                continue
-            found_torrents = True
-
-            to_remove = False
-            for i in details['files']:
-                # Check if media was processed
-                # OR check hash in case of RARed torrents
-                if is_already_processed_media(i['path']) or is_info_hash_processed(info_hash):
-                    to_remove = True
-
-            # Don't need to check status if we are not going to remove it.
-            if not to_remove:
-                log.info('Torrent not yet post-processed. Skipping: {torrent}',
-                         {'torrent': details['name']})
-                continue
-
-            status = 'busy'
-            if details['is_finished']:
-                status = 'completed'
-            elif details['is_seed']:
-                status = 'seeding'
-            elif details['paused']:
-                status = 'paused'
-            else:
-                status = details['state']
-
-            if status == 'completed':
-                log.info(
-                    'Torrent completed and reached minimum'
-                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}] or'
-                    ' seed idle limit'
-                    ' Removing it: [{name}]',
-                    ratio=details['ratio'],
-                    ratio_limit=torrent['stop_ratio'],
-                    name=torrent['name']
-                )
+                self.read_torrent_status(torrent_data)
                 # Commented for now
-                # self.remove_torrent(info_hash)
-            elif status == 'seeding':
-                if float(details['ratio']) < float(details['stop_ratio']):
-                    log.info(
-                        'Torrent did not reach minimum'
-                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
-                        ' Keeping it: [{name}]',
-                        ratio=torrent['ratio'],
-                        ratio_limit=torrent['stop_ratio'],
-                        name=torrent['name']
-                    )
-                else:
-                    log.info(
-                        'Torrent completed and reached minimum ratio but it'
-                        ' was force started again. Current'
-                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
-                        ' Keeping it: [{name}]',
-                        ratio=torrent['uploadRatio'],
-                        ratio_limit=torrent['seedRatioLimit'],
-                        name=torrent['name']
-                    )
-            else:
-                log.info('Torrent is {status}. Keeping it: [{name}]', status=status, name=details['name'])
-
-        if not found_torrents:
-            log.info('No torrents found that were snatched by Medusa')
+                # for info_hash in to_remove:
+                #    self.remove_torrent(info_hash)
 
 
 api = DelugeAPI
