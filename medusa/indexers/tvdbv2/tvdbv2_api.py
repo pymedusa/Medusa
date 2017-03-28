@@ -310,9 +310,9 @@ class TVDBv2(BaseIndexer):
             if use_dvd:
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
                 if self.config['dvdorder']:
-                    logger.warning('Episode doest not have DVD ordering available (season: %s, episode: %s). '
+                    logger.warning("Episode doesn't have DVD order available (season: %s, episode: %s). "
                                    'Falling back to non-DVD order. '
-                                   'Please consider disable DVD ordering for the show with TMDB ID: %s',
+                                   'Please consider disabling DVD order for the show with TMDB ID: %s',
                                    seasnum, epno, tvdb_id)
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')

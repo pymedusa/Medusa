@@ -191,7 +191,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         self.processed_propers = [p for p in self.processed_propers if p.get('date') >= latest_proper]
 
         # Get proper names from processed propers
-        processed_propers_names = [proper.name for proper in self.processed_propers]
+        processed_propers_names = [proper.get('name') for proper in self.processed_propers if proper.get('name')]
 
         for cur_proper in sorted_propers:
 

@@ -19,7 +19,12 @@ from __future__ import unicode_literals
 
 import os
 import shutil
+import socket
 import stat
+
+from medusa.clients import torrent
+
+import requests
 
 import shutil_custom
 
@@ -44,6 +49,7 @@ class ProcessResult(object):
         self._output = []
         self.directory = path
         self.process_method = process_method
+        self.resource_name = None
         self.result = True
         self.succeeded = True
         self.missedfiles = []
@@ -83,10 +89,11 @@ class ProcessResult(object):
     def paths(self):
         """Return the paths we are going to try to process."""
         if self.directory:
+            yield self.directory
+            if self.resource_name:
+                return
             for root, dirs, files in os.walk(self.directory):
                 del files  # unused variable
-                if self.directory == root:
-                    yield root
                 for folder in dirs:
                     path = os.path.join(root, folder)
                     yield path
@@ -108,12 +115,12 @@ class ProcessResult(object):
         logger.log(message, level)
         self._output.append(message)
 
-    def process(self, nzb_name=None, force=False, is_priority=None, delete_on=False, failed=False,
+    def process(self, resource_name=None, force=False, is_priority=None, delete_on=False, failed=False,
                 proc_type='auto', ignore_subs=False):
         """
         Scan through the files in the root directory and process whatever media files are found.
 
-        :param nzb_name: The NZB name which resulted in this folder being downloaded
+        :param resource_name: The resource that will be processed directly
         :param force: True to postprocess already postprocessed files
         :param is_priority: Boolean for whether or not is a priority download
         :param delete_on: Boolean for whether or not it should delete files
@@ -124,12 +131,15 @@ class ProcessResult(object):
         if not self.directory:
             return self.output
 
+        if resource_name:
+            self.resource_name = resource_name
+
         if app.POSTPONE_IF_NO_SUBS:
             self._log("Feature 'postpone post-processing if no subtitle available' is enabled.")
 
         for path in self.paths:
 
-            if not self.should_process(path, nzb_name, failed):
+            if not self.should_process(path, failed):
                 continue
 
             self.result = True
@@ -148,7 +158,7 @@ class ProcessResult(object):
 
                     self.prepare_files(dir_path, filelist, force)
 
-                    self.process_files(dir_path, nzb_name=nzb_name, force=force, is_priority=is_priority,
+                    self.process_files(dir_path, force=force, is_priority=is_priority,
                                        ignore_subs=ignore_subs)
 
                     # Always delete files if they are being moved or if it's explicitly wanted
@@ -186,14 +196,19 @@ class ProcessResult(object):
             for missedfile in self.missedfiles:
                 self._log('{0}'.format(missedfile), logger.WARNING)
 
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+            to_remove_hashes = app.RECENTLY_POSTPROCESSED.items()
+            for info_hash, release_names in to_remove_hashes:
+                if self.move_torrent_seeding_folder(info_hash, release_names):
+                    app.RECENTLY_POSTPROCESSED.pop(info_hash)
+
         return self.output
 
-    def should_process(self, path, nzb_name=None, failed=False):
+    def should_process(self, path, failed=False):
         """
         Determine if a directory should be processed.
 
         :param path: Path we want to verify
-        :param nzb_name: (optional) Name of the NZB file we are processing
         :param failed: (optional) Mark the directory as failed
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
@@ -216,7 +231,7 @@ class ProcessResult(object):
             return False
 
         if failed:
-            self.process_failed(path, nzb_name)
+            self.process_failed(path)
             self.missedfiles.append('{0}: Failed download'.format(folder))
             return False
 
@@ -237,13 +252,18 @@ class ProcessResult(object):
 
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
-        topdown = True if self.directory == path else False
-        for root, dirs, files in os.walk(path, topdown=topdown):
-            if files:
-                yield root, files
-            if topdown:
-                break
-            del dirs  # unused variable
+        # If resource_name is a file and not an NZB, process it directly
+        if self.resource_name and (not self.resource_name.endswith('.nzb') and
+                                   os.path.isfile(os.path.join(path, self.resource_name))):
+            yield path, [self.resource_name]
+        else:
+            topdown = True if self.directory == path else False
+            for root, dirs, files in os.walk(path, topdown=topdown):
+                if files:
+                    yield root, files
+                if topdown:
+                    break
+                del dirs  # unused variable
 
     def prepare_files(self, path, files, force=False):
         """Prepare files for post-processing."""
@@ -283,17 +303,17 @@ class ProcessResult(object):
         self.video_in_rar = video_in_rar
         self.unwanted_files = unwanted_files
 
-    def process_files(self, path, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
+    def process_files(self, path, force=False, is_priority=None, ignore_subs=False):
         """Post-process and delete the files in a given path."""
         # TODO: Replace this with something that works for multiple video files
-        if nzb_name and len(self.video_files) > 1:
-            nzb_name = None
+        if self.resource_name and len(self.video_files) > 1:
+            self.resource_name = None
 
         # Don't Link media when the media is extracted from a rar in the same path
         if self.process_method in ('hardlink', 'symlink') and self.video_in_rar:
-            self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_in_rar, force, is_priority, ignore_subs)
 
-            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name, force,
+            self.process_media(path, set(self.video_files) - set(self.video_in_rar), force,
                                is_priority, ignore_subs)
 
             if not self.postponed_no_subs:
@@ -302,9 +322,9 @@ class ProcessResult(object):
                 self.postponed_no_subs = False
 
         elif app.DELRARCONTENTS and self.video_in_rar:
-            self.process_media(path, self.video_in_rar, nzb_name, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_in_rar, force, is_priority, ignore_subs)
 
-            self.process_media(path, set(self.video_files) - set(self.video_in_rar), nzb_name,
+            self.process_media(path, set(self.video_files) - set(self.video_in_rar),
                                force, is_priority, ignore_subs)
 
             if not self.postponed_no_subs:
@@ -313,7 +333,7 @@ class ProcessResult(object):
                 self.postponed_no_subs = False
 
         else:
-            self.process_media(path, self.video_files, nzb_name, force, is_priority, ignore_subs)
+            self.process_media(path, self.video_files, force, is_priority, ignore_subs)
             self.postponed_no_subs = False
 
     @staticmethod
@@ -498,13 +518,12 @@ class ProcessResult(object):
                       "been processed, skipping: {0}".format(video_file), logger.DEBUG)
             return True
 
-    def process_media(self, path, video_files, nzb_name=None, force=False, is_priority=None, ignore_subs=False):
+    def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
         """
         Postprocess media files.
 
         :param processPath: Path to postprocess in
         :param videoFiles: Filenames to look for and postprocess
-        :param nzbName: Name of NZB file related
         :param force: Postprocess currently postprocessing file
         :param is_priority: Boolean, is this a priority download
         :param result: Previous results
@@ -520,11 +539,12 @@ class ProcessResult(object):
                 continue
 
             try:
-                processor = post_processor.PostProcessor(file_path, nzb_name, self.process_method, is_priority)
+                processor = post_processor.PostProcessor(file_path, self.resource_name,
+                                                         self.process_method, is_priority)
 
                 if app.POSTPONE_IF_NO_SUBS:
                     if not ignore_subs:
-                        if self.subtitles_enabled(file_path, nzb_name):
+                        if self.subtitles_enabled(file_path, self.resource_name):
                             embedded_subs = set() if app.IGNORE_EMBEDDED_SUBS else get_embedded_subtitles(file_path)
 
                             # We want to ignore embedded subtitles and video has at least one
@@ -570,13 +590,13 @@ class ProcessResult(object):
                 self.missedfiles.append('{0}: Processing failed: {1}'.format(file_path, process_fail_message))
                 self.succeeded = False
 
-    def process_failed(self, path, nzb_name=None):
+    def process_failed(self, path):
         """Process a download that did not complete correctly."""
         if app.USE_FAILED_DOWNLOADS:
             processor = None
 
             try:
-                processor = failed_processor.FailedProcessor(path, nzb_name)
+                processor = failed_processor.FailedProcessor(path, self.resource_name)
                 self.result = processor.process()
                 process_fail_message = ''
             except FailedPostProcessingFailedException as error:
@@ -591,10 +611,11 @@ class ProcessResult(object):
                     self._log('Deleted folder: {0}'.format(path), logger.DEBUG)
 
             if self.result:
-                self._log('Failed Download Processing succeeded: {0}, {1}'.format(nzb_name, path))
+                self._log('Failed Download Processing succeeded: {0}, {1}'.format
+                          (self.resource_name, path))
             else:
                 self._log('Failed Download Processing failed: {0}, {1}: {2}'.format
-                          (nzb_name, path, process_fail_message), logger.WARNING)
+                          (self.resource_name, path, process_fail_message), logger.WARNING)
 
     @staticmethod
     def subtitles_enabled(*args):
@@ -621,3 +642,43 @@ class ProcessResult(object):
                 logger.log('Not enough information to parse filename into a valid show. Consider adding scene '
                            'exceptions or improve naming for: {name}'.format(name=name), logger.WARNING)
         return False
+
+    @staticmethod
+    def move_torrent_seeding_folder(info_hash, release_names):
+        """Move torrent to a given seeding folder after PP."""
+        if not os.path.isdir(app.TORRENT_SEED_LOCATION):
+            logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
+                       logger.WARNING)
+            return False
+        else:
+            if release_names:
+                # Log 'release' or 'releases'
+                s = 's' if len(release_names) > 1 else ''
+                release_names = ', '.join(release_names)
+            else:
+                s = ''
+                release_names = 'N/A'
+            logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
+            torrent_moved = False
+            client = torrent.get_client_class(app.TORRENT_METHOD)()
+            try:
+                torrent_moved = client.move_torrent(info_hash)
+            except (requests.exceptions.RequestException, socket.gaierror) as e:
+                logger.log("Could't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
+                           "to: '{path}'. Error: {error}".format
+                           (release=release_names, hash=info_hash, error=e.message, path=app.TORRENT_SEED_LOCATION, s=s),
+                           logger.WARNING)
+                return False
+            except AttributeError:
+                logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
+                return True
+            if torrent_moved:
+                logger.log("Moved torrent for release{s} '{release}' with hash: {hash} to: '{path}'".format
+                           (release=release_names, hash=info_hash, path=app.TORRENT_SEED_LOCATION, s=s),
+                           logger.WARNING)
+                return True
+            else:
+                logger.log("Could not move torrent for release{s} '{release}' with hash: {hash} to: '{path}'. "
+                           "Please check logs.".format(release=release_names, hash=info_hash, s=s,
+                                                       path=app.TORRENT_SEED_LOCATION), logger.WARNING)
+                return False
