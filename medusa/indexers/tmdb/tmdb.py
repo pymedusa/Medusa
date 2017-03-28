@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 class Tmdb(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
-    t = tmdb()
-    t['Scrubs'][1][24]['episodename']
+    indexer_api = tmdb()
+    indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
@@ -300,8 +300,8 @@ class Tmdb(BaseIndexer):
 
         http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
         images are retrieved using t['show name]['_banners'], for example:
-        >>> t = TMDB(images = True)
-        >>> t['scrubs']['_banners'].keys()
+        >>> indexer_api = TMDB(images = True)
+        >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://theTMDB.com/banners/posters/76156-2.jpg'
@@ -396,8 +396,8 @@ class Tmdb(BaseIndexer):
 
         From http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
         Actors are retrieved using t['show name]['_actors'], for example:
-        >>> t = TMDB(actors = True)
-        >>> actors = t['scrubs']['_actors']
+        >>> indexer_api = TMDB(actors = True)
+        >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
         <class 'TMDB_api.Actors'>
         >>> type(actors[0])

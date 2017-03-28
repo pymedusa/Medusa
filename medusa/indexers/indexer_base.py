@@ -407,8 +407,8 @@ class Season(dict):
     def search(self, term=None, key=None):
         """Search all episodes in season, returns a list of matching Episode instances.
 
-        >>> t = Tvdb()
-        >>> t['scrubs'][1].search('first day')
+        >>> indexer_api = Tvdb()
+        >>> indexer_api['scrubs'][1].search('first day')
         [<Episode 01x01 - My First Day>]
         >>>
 

@@ -372,8 +372,8 @@ class QueueItemAdd(ShowQueueItem):
 
             logger.log(u"" + str(indexerApi(self.indexer).name) + ": " + repr(lINDEXER_API_PARMS))
 
-            t = indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
-            s = t[self.indexer_id]
+            indexer_api = indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
+            s = indexer_api[self.indexer_id]
 
             # Let's try to create the show Dir if it's not provided. This way we force the show dir
             # to build build using the Indexers provided series name

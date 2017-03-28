@@ -105,15 +105,14 @@ class NameParser(object):
 
             if season_number is None or not episode_numbers:
                 logger.debug('Show {name} has no season or episodes, using indexer...', name=result.show.name)
-                indexer_api = indexerApi(result.show.indexer)
                 try:
-                    indexer_api_params = indexer_api.api_params.copy()
+                    indexer_api_params = indexerApi(result.show.indexer).api_params.copy()
 
                     if result.show.lang:
                         indexer_api_params['language'] = result.show.lang
 
-                    t = indexerApi(result.show.indexer).indexer(**indexer_api_params)
-                    tv_episode = t[result.show.indexerid].aired_on(result.air_date)[0]
+                    indexer_api = indexerApi(result.show.indexer).indexer(**indexer_api_params)
+                    tv_episode = indexer_api[result.show.indexerid].aired_on(result.air_date)[0]
 
                     season_number = int(tv_episode['seasonnumber'])
                     episode_numbers = [int(tv_episode['episodenumber'])]

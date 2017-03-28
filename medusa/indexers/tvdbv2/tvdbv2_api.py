@@ -36,8 +36,8 @@ logger = logging.getLogger(__name__)
 class TVDBv2(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
-    >>> t = tvdbv2()
-    >>> t['Scrubs'][1][24]['episodename']
+    >>> indexer_api = tvdbv2()
+    >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
@@ -378,8 +378,8 @@ class TVDBv2(BaseIndexer):
         From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
         images are retrieved using t['show name]['_banners'], for example:
 
-        >>> t = Tvdb(images = True)
-        >>> t['scrubs']['_banners'].keys()
+        >>> indexer_api = Tvdb(images = True)
+        >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season', 'seasonwide']
         For a Poster
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
@@ -471,8 +471,8 @@ class TVDBv2(BaseIndexer):
         From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
         Actors are retrieved using t['show name]['_actors'], for example:
 
-        >>> t = Tvdb(actors = True)
-        >>> actors = t['scrubs']['_actors']
+        >>> indexer_api = Tvdb(actors = True)
+        >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
         <class 'tvdb_api.Actors'>
         >>> type(actors[0])
