@@ -774,7 +774,7 @@ def delete_unwanted_subtitles(dirpath, filename):
         return
 
     code = filename.rsplit('.', 2)[1].lower().replace('_', '-')
-    language = from_code(code, unknown='') or from_ietf_code(code, unknown='und')
+    language = from_code(code, unknown='') or from_ietf_code(code)
 
     if language.opensubtitles not in app.SUBTITLES_LANGUAGES:
         try:
@@ -891,11 +891,11 @@ class SubtitlesFinder(object):
         :type force: bool
         """
         if self.amActive:
-            logger.log(u"Subtitle finder is still running, not starting it again", logger.DEBUG)
+            logger.debug(u"Subtitle finder is still running, not starting it again")
             return
 
         if not app.USE_SUBTITLES:
-            logger.log(u"Subtitle search is disabled. Please enabled it", logger.WARNING)
+            logger.warning(u"Subtitle search is disabled. Please enabled it")
             return
 
         if not enabled_service_list():
@@ -906,17 +906,18 @@ class SubtitlesFinder(object):
         self.amActive = True
 
         def dhm(td):
-            days = td.days
-            hours = td.seconds // 60 ** 2
-            minutes = (td.seconds // 60) % 60
-            ret = (u'', '{} days, '.format(days))[days > 0] + \
-                  (u'', '{} hours, '.format(hours))[hours > 0] + \
-                  (u'', '{} minutes'.format(minutes))[minutes > 0]
-            if days == 1:
+            """Create the string for subtitles delay."""
+            days_delay = td.days
+            hours_delay = td.seconds // 60 ** 2
+            minutes_delay = (td.seconds // 60) % 60
+            ret = (u'', '{days} days, '.format(days=days_delay))[days_delay > 0] + \
+                  (u'', '{hours} hours, '.format(hours=hours_delay))[hours_delay > 0] + \
+                  (u'', '{minutes} minutes'.format(minutes=minutes_delay))[minutes_delay > 0]
+            if days_delay == 1:
                 ret = ret.replace('days', 'day')
-            if hours == 1:
+            if hours_delay == 1:
                 ret = ret.replace('hours', 'hour')
-            if minutes == 1:
+            if minutes_delay == 1:
                 ret = ret.replace('minutes', 'minute')
             return ret.rstrip(', ')
 
