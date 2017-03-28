@@ -8,6 +8,7 @@ from medusa import (
     app,
     db,
 )
+from medusa.essentials.dictionary import OrderedPredicateDict
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,
@@ -74,118 +75,105 @@ class ConfigHandler(BaseRequestHandler):
         if identifier and identifier != 'main':
             return self._not_found('Config not found')
 
-        config_data = {
-            'anonRedirect': app.ANON_REDIRECT,
-            'animeSplitHome': app.ANIME_SPLIT_HOME,
-            'comingEpsSort': app.COMING_EPS_SORT,
-            'datePreset': app.DATE_PRESET,
-            'fuzzyDating': app.FUZZY_DATING,
-            'themeName': app.THEME_NAME,
-            'posterSortby': app.POSTER_SORTBY,
-            'posterSortdir': app.POSTER_SORTDIR,
-            'rootDirs': app.ROOT_DIRS,
-            'sortArticle': app.SORT_ARTICLE,
-            'timePreset': app.TIME_PRESET,
-            'trimZero': app.TRIM_ZERO,
-            'fanartBackground': app.FANART_BACKGROUND,
-            'fanartBackgroundOpacity': float(app.FANART_BACKGROUND_OPACITY or 0),
-            'branch': app.BRANCH,
-            'commitHash': app.CUR_COMMIT_HASH,
-            'release': app.APP_VERSION,
-            'sslVersion': app.OPENSSL_VERSION,
-            'pythonVersion': sys.version,
-            'databaseVersion': {
-                'major': app.MAJOR_DB_VERSION,
-                'minor': app.MINOR_DB_VERSION
-            },
-            'os': platform.platform(),
-            'locale': '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE]),
-            'localUser': app.OS_USER or 'Unknown',
-            'programDir': app.PROG_DIR,
-            'configFile': app.CONFIG_FILE,
-            'dbFilename': db.dbFilename(),
-            'cacheDir': app.CACHE_DIR,
-            'logDir': app.LOG_DIR,
-            'appArgs': app.MY_ARGS,
-            'webRoot': app.WEB_ROOT,
-            'githubUrl': app.GITHUB_IO_URL,
-            'wikiUrl': app.WIKI_URL,
-            'sourceUrl': app.APPLICATION_URL,
-            'downloadUrl': app.DOWNLOAD_URL,
-            'subtitlesMulti': app.SUBTITLES_MULTI,
-            'namingForceFolders': app.NAMING_FORCE_FOLDERS,
-            'subtitles': {
-                'enabled': bool(app.USE_SUBTITLES)
-            },
-            'kodi': {
-                'enabled': bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
-            },
-            'plex': {
-                'server': {
-                    'enabled': bool(app.USE_PLEX_SERVER),
-                    'notify': {
-                        'snatch': bool(app.PLEX_NOTIFY_ONSNATCH),
-                        'download': bool(app.PLEX_NOTIFY_ONDOWNLOAD),
-                        'subtitleDownload': bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
-                    },
-                    'updateLibrary': bool(app.PLEX_UPDATE_LIBRARY),
-                    'host': app.PLEX_SERVER_HOST,
-                    'token': app.PLEX_SERVER_TOKEN,
-                    'username': app.PLEX_SERVER_USERNAME,
-                    'password': app.PLEX_SERVER_PASSWORD
-                },
-                'client': {
-                    'enabled': bool(app.USE_PLEX_CLIENT),
-                    'username': app.PLEX_CLIENT_USERNAME,
-                    'password': app.PLEX_CLIENT_PASSWORD,
-                    'host': app.PLEX_CLIENT_HOST
-                }
-            },
-            'emby': {
-                'enabled': bool(app.USE_EMBY)
-            },
-            'torrents': {
-                'enabled': bool(app.USE_TORRENTS),
-                'method': app.TORRENT_METHOD,
-                'username': app.TORRENT_USERNAME,
-                'password': app.TORRENT_PASSWORD,
-                'label': app.TORRENT_LABEL,
-                'labelAnime': app.TORRENT_LABEL_ANIME,
-                'verifySSL': app.TORRENT_VERIFY_CERT,
-                'path': app.TORRENT_PATH,
-                'seedTime': app.TORRENT_SEED_TIME,
-                'paused': app.TORRENT_PAUSED,
-                'highBandwidth': app.TORRENT_HIGH_BANDWIDTH,
-                'host': app.TORRENT_HOST,
-                'rpcurl': app.TORRENT_RPCURL,
-                'authType': app.TORRENT_AUTH_TYPE
-            },
-            'nzb': {
-                'enabled': bool(app.USE_NZBS),
-                'username': app.NZBGET_USERNAME,
-                'password': app.NZBGET_PASSWORD,
-                # app.NZBGET_CATEGORY
-                # app.NZBGET_CATEGORY_BACKLOG
-                # app.NZBGET_CATEGORY_ANIME
-                # app.NZBGET_CATEGORY_ANIME_BACKLOG
-                'host': app.NZBGET_HOST,
-                'priority': app.NZBGET_PRIORITY
-            },
-            'layout': {
-                'schedule': app.COMING_EPS_LAYOUT,
-                'history': app.HISTORY_LAYOUT,
-                'home': app.HOME_LAYOUT,
-                'show': {
-                    'allSeasons': bool(app.DISPLAY_ALL_SEASONS),
-                    'specials': bool(app.DISPLAY_SHOW_SPECIALS)
-                }
-            },
-            'selectedRootIndex': int(app.SELECTED_ROOT) if app.SELECTED_ROOT else None,
-            'backlogOverview': {
-                'period': app.BACKLOG_PERIOD,
-                'status': app.BACKLOG_STATUS
-            }
-        }
+        config_data = OrderedPredicateDict()
+        config_data['anonRedirect'] = app.ANON_REDIRECT
+        config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
+        config_data['comingEpsSort'] = app.COMING_EPS_SORT
+        config_data['datePreset'] = app.DATE_PRESET
+        config_data['fuzzyDating'] = app.FUZZY_DATING
+        config_data['themeName'] = app.THEME_NAME
+        config_data['posterSortby'] = app.POSTER_SORTBY
+        config_data['posterSortdir'] = app.POSTER_SORTDIR
+        config_data['rootDirs'] = app.ROOT_DIRS
+        config_data['sortArticle'] = app.SORT_ARTICLE
+        config_data['timePreset'] = app.TIME_PRESET
+        config_data['trimZero'] = app.TRIM_ZERO
+        config_data['fanartBackground'] = app.FANART_BACKGROUND
+        config_data['fanartBackgroundOpacity'] = float(app.FANART_BACKGROUND_OPACITY or 0)
+        config_data['branch'] = app.BRANCH
+        config_data['commitHash'] = app.CUR_COMMIT_HASH
+        config_data['release'] = app.APP_VERSION
+        config_data['sslVersion'] = app.OPENSSL_VERSION
+        config_data['pythonVersion'] = sys.version
+        config_data['databaseVersion'] = OrderedPredicateDict()
+        config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
+        config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
+        config_data['os'] = platform.platform()
+        config_data['locale'] = '.'.join([text_type(loc or 'Unknown') for loc in app.LOCALE])
+        config_data['localUser'] = app.OS_USER or 'Unknown'
+        config_data['programDir'] = app.PROG_DIR
+        config_data['configFile'] = app.CONFIG_FILE
+        config_data['dbFilename'] = db.dbFilename()
+        config_data['cacheDir'] = app.CACHE_DIR
+        config_data['logDir'] = app.LOG_DIR
+        config_data['appArgs'] = app.MY_ARGS
+        config_data['webRoot'] = app.WEB_ROOT
+        config_data['githubUrl'] = app.GITHUB_IO_URL
+        config_data['wikiUrl'] = app.WIKI_URL
+        config_data['sourceUrl'] = app.APPLICATION_URL
+        config_data['downloadUrl'] = app.DOWNLOAD_URL
+        config_data['subtitlesMulti'] = app.SUBTITLES_MULTI
+        config_data['namingForceFolders'] = app.NAMING_FORCE_FOLDERS
+        config_data['subtitles'] = OrderedPredicateDict()
+        config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
+        config_data['kodi'] = OrderedPredicateDict()
+        config_data['kodi']['enabled'] = bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
+        config_data['plex'] = OrderedPredicateDict()
+        config_data['plex']['server'] = OrderedPredicateDict()
+        config_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
+        config_data['plex']['server']['notify'] = OrderedPredicateDict()
+        config_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
+        config_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
+        config_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        config_data['plex']['server']['updateLibrary'] = bool(app.PLEX_UPDATE_LIBRARY)
+        config_data['plex']['server']['host'] = app.PLEX_SERVER_HOST
+        config_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
+        config_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
+        config_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
+        config_data['plex']['client'] = OrderedPredicateDict()
+        config_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
+        config_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
+        config_data['plex']['client']['password'] = app.PLEX_CLIENT_PASSWORD
+        config_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
+        config_data['emby'] = OrderedPredicateDict()
+        config_data['emby']['enabled'] = bool(app.USE_EMBY)
+        config_data['torrents'] = OrderedPredicateDict()
+        config_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
+        config_data['torrents']['method'] = app.TORRENT_METHOD
+        config_data['torrents']['username'] = app.TORRENT_USERNAME
+        config_data['torrents']['password'] = app.TORRENT_PASSWORD
+        config_data['torrents']['label'] = app.TORRENT_LABEL
+        config_data['torrents']['labelAnime'] = app.TORRENT_LABEL_ANIME
+        config_data['torrents']['verifySSL'] = app.TORRENT_VERIFY_CERT
+        config_data['torrents']['path'] = app.TORRENT_PATH
+        config_data['torrents']['seedTime'] = app.TORRENT_SEED_TIME
+        config_data['torrents']['paused'] = app.TORRENT_PAUSED
+        config_data['torrents']['highBandwidth'] = app.TORRENT_HIGH_BANDWIDTH
+        config_data['torrents']['host'] = app.TORRENT_HOST
+        config_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
+        config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
+        config_data['nzb'] = OrderedPredicateDict()
+        config_data['nzb']['enabled'] = bool(app.USE_NZBS)
+        config_data['nzb']['username'] = app.NZBGET_USERNAME
+        config_data['nzb']['password'] = app.NZBGET_PASSWORD
+        # app.NZBGET_CATEGORY
+        # app.NZBGET_CATEGORY_BACKLOG
+        # app.NZBGET_CATEGORY_ANIME
+        # app.NZBGET_CATEGORY_ANIME_BACKLOG
+        config_data['nzb']['host'] = app.NZBGET_HOST
+        config_data['nzb']['priority'] = app.NZBGET_PRIORITY
+        config_data['layout'] = OrderedPredicateDict()
+        config_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
+        config_data['layout']['history'] = app.HISTORY_LAYOUT
+        config_data['layout']['home'] = app.HOME_LAYOUT
+        config_data['layout']['show'] = OrderedPredicateDict()
+        config_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
+        config_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
+        config_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT else None
+        config_data['backlogOverview'] = OrderedPredicateDict()
+        config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
+        config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
 
         if not identifier:
             return self._paginate([config_data])

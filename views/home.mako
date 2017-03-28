@@ -13,7 +13,7 @@
 </%block>
 <%block name="content">
 <%!
-    random_show = choice(app.showList)
+    random_show = choice(app.showList) if app.showList else None
 %>
 <input type="hidden" id="showID" value="${random_show.indexerid if app.showList else ''}" />
 <input type="hidden" id="series_slug" value="${random_show.slug if app.showList else ''}" />

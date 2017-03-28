@@ -13,8 +13,8 @@ def find_alias_sources(predicate=None):
     mapping = {'local': 'custom_exceptions'}
     for identifier in ('local', 'xem', 'anidb'):
         if not predicate or predicate(identifier):
-            data.append({'id': identifier,
-                         'lastUpdate': get_last_refresh(mapping.get(identifier, identifier))[0]['last_refreshed']})
+            last_refresh = get_last_refresh(mapping.get(identifier, identifier))[0]['last_refreshed']
+            data.append({'id': identifier, 'lastRefresh': last_refresh})
 
     return data
 
@@ -86,7 +86,7 @@ class AliasSourceOperationHandler(BaseRequestHandler):
 
         if data['type'] == 'REFRESH':
             retrieve_exceptions(force=True, exception_type=types[identifier])
-            data['creation'] = datetime.now()
+            data['creation'] = datetime.utcnow().isoformat()[:-3] + 'Z'
             return self._created(data=data)
 
         return self._bad_request('Operation not supported')

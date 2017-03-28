@@ -51,12 +51,35 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._ok(data)
 
-    def patch(self, identifier):
-        """Patch series."""
+    def post(self, series_slug=None, path_param=None):
+        """Add a new series."""
+        if series_slug is not None:
+            return self._bad_request('Series slug should not be specified')
+
+        data = json_decode(self.request.body)
+        if not data or 'id' not in data:
+            return self._bad_request('Invalid series data')
+
+        ids = {k: v for k, v in data['id'].items() if k != 'imdb'}
+        if len(ids) != 1:
+            return self._bad_request('Only 1 indexer identifier should be specified')
+
+        identifier = SeriesIdentifier.from_slug('{slug}{id}'.format(slug=ids.keys()[0], id=ids.values()[0]))
         if not identifier:
+            return self._bad_request('Invalid series identifier')
+
+        series = Series.save_series(identifier)
+        if not series:
+            return self._conflict('Unable to add series')
+
+        return self._created(series.to_json(), identifier=identifier.slug)
+
+    def patch(self, series_slug, path_param=None):
+        """Patch series."""
+        if not series_slug:
             return self._method_not_allowed('Patching multiple series are not allowed')
 
-        identifier = SeriesIdentifier.from_slug(identifier)
+        identifier = SeriesIdentifier.from_slug(series_slug)
         if not identifier:
             return self._bad_request('Invalid series identifier')
 
@@ -78,12 +101,12 @@ class SeriesHandler(BaseRequestHandler):
 
         return self._ok(done)
 
-    def delete(self, identifier):
+    def delete(self, series_slug, path_param=None):
         """Delete the series."""
-        if not identifier:
+        if not series_slug:
             return self._method_not_allowed('Deleting multiple series are not allowed')
 
-        identifier = SeriesIdentifier.from_slug(identifier)
+        identifier = SeriesIdentifier.from_slug(series_slug)
         if not identifier:
             return self._bad_request('Invalid series identifier')
 
