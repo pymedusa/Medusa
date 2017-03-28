@@ -366,13 +366,13 @@ class QueueItemAdd(ShowQueueItem):
 
         # make sure the Indexer IDs are valid
         try:
-            lINDEXER_API_PARMS = indexerApi(self.indexer).api_params.copy()
+            l_indexer_api_params = indexerApi(self.indexer).api_params.copy()
             if self.lang:
-                lINDEXER_API_PARMS['language'] = self.lang
+                l_indexer_api_params['language'] = self.lang
 
-            logger.log(u"" + str(indexerApi(self.indexer).name) + ": " + repr(lINDEXER_API_PARMS))
+            logger.log(u"" + str(indexerApi(self.indexer).name) + ": " + repr(l_indexer_api_params))
 
-            indexer_api = indexerApi(self.indexer).indexer(**lINDEXER_API_PARMS)
+            indexer_api = indexerApi(self.indexer).indexer(**l_indexer_api_params)
             s = indexer_api[self.indexer_id]
 
             # Let's try to create the show Dir if it's not provided. This way we force the show dir
@@ -468,7 +468,7 @@ class QueueItemAdd(ShowQueueItem):
 
         try:
             newShow = Series(self.indexer, self.indexer_id, self.lang)
-            newShow.load_from_indexer(t)
+            newShow.load_from_indexer(indexer_api)
 
             self.show = newShow
 
@@ -548,7 +548,7 @@ class QueueItemAdd(ShowQueueItem):
         app.showList.append(self.show)
 
         try:
-            self.show.load_episodes_from_indexer(tvapi=t)
+            self.show.load_episodes_from_indexer(tvapi=indexer_api)
         except Exception as e:
             logger.log(
                 u"Error with " + indexerApi(self.show.indexer).name + ", not creating episode list: " + e.message,

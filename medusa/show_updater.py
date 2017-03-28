@@ -112,7 +112,7 @@ class ShowUpdater(object):
                     continue
 
             # These are the criteria for performing a full show refresh.
-            if any([not hasattr(t, 'get_last_updated_seasons'),
+            if any([not hasattr(indexer_api, 'get_last_updated_seasons'),
                     not last_update,
                     last_update < time.time() - 604800 * update_max_weeks]):
                 # no entry in lastUpdate, or last update was too long ago,
