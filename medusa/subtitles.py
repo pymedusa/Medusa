@@ -398,48 +398,42 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         logger.debug(u'Episode already has all needed subtitles, skipping %s %s', show_name, ep_num)
         return []
 
-    try:
-        logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
-        video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
-                          embedded_subtitles=embedded_subtitles, release_name=release_name)
-        if not video:
-            logger.info(u'Exception caught in subliminal.scan_video for %s', video_path)
-            return []
+    logger.debug(u'Checking subtitle candidates for %s %s (%s)', show_name, ep_num, os.path.basename(video_path))
+    video = get_video(tv_episode, video_path, subtitles_dir=subtitles_dir, subtitles=subtitles,
+                      embedded_subtitles=embedded_subtitles, release_name=release_name)
+    if not video:
+        logger.info(u'Exception caught in subliminal.scan_video for %s', video_path)
+        return []
 
-        if app.SUBTITLES_PRE_SCRIPTS:
-            run_subs_pre_scripts(video_path)
+    if app.SUBTITLES_PRE_SCRIPTS:
+        run_subs_pre_scripts(video_path)
 
-        pool = get_provider_pool()
-        subtitles_list = pool.list_subtitles(video, languages)
-        for provider in pool.providers:
-            if provider in pool.discarded_providers:
-                logger.debug(u'Could not search in %s provider. Discarding for now', provider)
+    pool = get_provider_pool()
+    subtitles_list = pool.list_subtitles(video, languages)
+    for provider in pool.providers:
+        if provider in pool.discarded_providers:
+            logger.debug(u'Could not search in %s provider. Discarding for now', provider)
 
-        if not subtitles_list:
-            logger.info(u'No subtitles found for %s', os.path.basename(video_path))
-            return []
+    if not subtitles_list:
+        logger.info(u'No subtitles found for %s', os.path.basename(video_path))
+        return []
 
-        min_score = get_min_score()
-        scored_subtitles = score_subtitles(subtitles_list, video)
-        for subtitle, score in scored_subtitles:
-            logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
-                subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
+    min_score = get_min_score()
+    scored_subtitles = score_subtitles(subtitles_list, video)
+    for subtitle, score in scored_subtitles:
+        logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
+            subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
 
-        found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
-                                                       hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
-                                                       min_score=min_score, only_one=not app.SUBTITLES_MULTI)
+    found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
+                                                   hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
+                                                   min_score=min_score, only_one=not app.SUBTITLES_MULTI)
 
-        if not found_subtitles:
-            logger.info(u'No subtitles found for %s with a minimum score of %d',
-                        os.path.basename(video_path), min_score)
-            return []
+    if not found_subtitles:
+        logger.info(u'No subtitles found for %s with a minimum score of %d',
+                    os.path.basename(video_path), min_score)
+        return []
 
-        return save_subs(tv_episode, video, found_subtitles, video_path=video_path)
-    except IOError as error:
-        if 'No space left on device' in ex(error):
-            logger.warning(u'Not enough space on the drive to save subtitles')
-
-    return []
+    return save_subs(tv_episode, video, found_subtitles, video_path=video_path)
 
 
 def save_subs(tv_episode, video, found_subtitles, video_path=None):
