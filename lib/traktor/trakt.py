@@ -1,3 +1,4 @@
+"""Traktor Trakt module."""
 # coding=utf-8
 #
 # URL: https://medusa.github.io
@@ -17,13 +18,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import time
 import json
 import logging
-import requests
+import time
+
 import certifi
-from .exceptions import (MissingTokenException, AuthException, UnavailableException, ResourceUnavailable,
-                         TraktException, TokenExpiredException)
+
+import requests
+
+from .exceptions import (AuthException, MissingTokenException, ResourceUnavailable,
+                         TokenExpiredException, TraktException, UnavailableException)
 
 
 log = logging.getLogger(__name__)
@@ -31,8 +35,10 @@ log.addHandler(logging.NullHandler())
 
 
 class TraktApi(object):
-    """A base class to use for recommended shows client API's"""
+    """A base class to use for recommended shows client API's."""
+
     def __init__(self, headers=None, timeout=None, api_url=None, auth_url=None, ssl_verify=None, **trakt_settings):
+        """Initialize TraktApi class."""
         headers = {
             'Content-Type': 'application/json',
             'trakt-api-version': '2',
@@ -51,8 +57,7 @@ class TraktApi(object):
         self.trakt_settings = trakt_settings
 
     def get_token(self, refresh_token=None, trakt_pin=None, count=0):
-        """function or refreshing a trakt token"""
-
+        """Function or refreshing a trakt token."""
         if count > 3:
             self.access_token = ''
             return False, False
@@ -88,8 +93,7 @@ class TraktApi(object):
         return None, None
 
     def request(self, path, data=None, headers=None, url=None, method='GET', count=0):
-        """function for performing the trakt request"""
-
+        """Function for performing the trakt request."""
         if not self.access_token and count >= 2:
             raise MissingTokenException(u'You must get a Trakt TOKEN. Check your Trakt settings')
 
@@ -159,7 +163,7 @@ class TraktApi(object):
         return resp
 
     def validate_account(self):
-        """function for validation of trakt account"""
+        """Function for validation of trakt account."""
         resp = self.request('users/settings')
 
         if 'account' in resp:
