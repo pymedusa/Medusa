@@ -67,6 +67,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         self.amActive = True
 
         # If force we should ignore existing processed propers
+        current_processed_propers = []
         if force:
             current_processed_propers = self.processed_propers
             self.processed_propers = []
@@ -82,14 +83,15 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         run_at = ''
         if None is app.proper_finder_scheduler.start_time:
-            run_in = app.proper_finder_scheduler.lastRun + app.proper_finder_scheduler.cycleTime - datetime.datetime.now()
+            run_in = app.proper_finder_scheduler.lastRun + \
+                     app.proper_finder_scheduler.cycleTime - datetime.datetime.now()
             hours, remainder = divmod(run_in.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             run_at = ', next check in approx. {0}'.format(
                 '{0}h, {1}m'.format(hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
 
         # Restore processed propers and add new ones to the end of the list
-        if force:
+        if current_processed_propers:
             current_processed_propers.extend(set(self.processed_propers).difference(set(current_processed_propers)))
             self.processed_propers = current_processed_propers
 
@@ -130,7 +132,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         # Loop through the providers, and search for releases
         for cur_provider in providers:
-            threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
+            threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
+                                                                               provider=cur_provider.name)
 
             logger.log('Searching for any new PROPER releases from {provider}'.format
                        (provider=cur_provider.name))
@@ -158,12 +161,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                            (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except requests_exceptions.ContentDecodingError as e:
-                logger.log('Content-Encoding was gzip, but content was not compressed while searching for propers in {provider}, skipping: {error}'.format
+                logger.log('Content-Encoding was gzip, but content was not compressed while'
+                           ' searching for propers in {provider}, sipping: {error}'.format
                            (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except Exception as e:
-                if 'ECONNRESET' in e or (hasattr(e, 'errno') and e.errno == errno.ECONNRESET):
-                    logger.log('Connection reset by peer while searching for propers in {provider}, skipping: {error}'.format
+                if 'ECONNRESET' in e or getattr(e, 'errno') == errno.ECONNRESET:
+                    logger.log('Connection reset by peer while searching for propers in {provider}. '
+                               'Skipping: {error}'.format
                                (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 else:
                     logger.log('Unknown exception while searching for propers in {provider}, skipping: {error}'.format
@@ -314,9 +319,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
                     continue
 
-            # if the show is in our list and there hasn't been a proper already added for that particular episode then add it to our list of propers
-            if best_result.indexerid != -1 and (best_result.indexerid, best_result.season, best_result.episode) not in map(
-                    operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
+            # if the show is in our list and there hasn't been a proper already added for that particular episode
+            # then add it to our list of propers
+            if best_result.indexerid != -1 and (best_result.indexerid, best_result.season, best_result.episode) not in \
+                    map(operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
                 logger.log('Found a desired proper: {name}'.format(name=best_result.name))
                 final_propers.append(best_result)
 
@@ -421,7 +427,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         try:
             last_proper_search = datetime.date.fromordinal(int(sql_results[0][b'last_proper_search']))
-        except Exception:
+        except StandardError:
             return datetime.date.fromordinal(1)
 
         return last_proper_search
