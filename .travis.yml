@@ -8,6 +8,7 @@ branches:
 install:
   - pip install --upgrade pip
   - pip install --upgrade tox
+  - pip install dredd_hooks
   - nvm install 6.9.1
   - nvm use 6.9.1
   - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
