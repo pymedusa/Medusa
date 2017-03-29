@@ -631,4 +631,4 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
-        # self.inc_minor_version()
+        self.inc_minor_version()
