@@ -84,7 +84,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         run_at = ''
         if None is app.proper_finder_scheduler.start_time:
             run_in = app.proper_finder_scheduler.lastRun + \
-                     app.proper_finder_scheduler.cycleTime - datetime.datetime.now()
+                app.proper_finder_scheduler.cycleTime - datetime.datetime.now()
             hours, remainder = divmod(run_in.seconds, 3600)
             minutes, seconds = divmod(remainder, 60)
             run_at = ', next check in approx. {0}'.format(
