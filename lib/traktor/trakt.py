@@ -125,23 +125,25 @@ class TraktApi(object):
                 if self.get_token(refresh_token=True, count=count):
                     return self.request(path, data, headers, url, method)
                 else:
-                    log.warning(u'Unauthorized. Please check your Trakt settings')
-                    raise AuthException(u'Unauthorized. Please check your Trakt settings')
+                    log_message = u'Unauthorized. Please check your Trakt settings'
+                    log.warning(log_message)
+                    raise AuthException(log_message)
             elif code in (None, 500, 501, 503, 504, 520, 521, 522):
                 # Report Trakt as unavailable when Timeout to connect (no status code)
                 # http://docs.trakt.apiary.io/#introduction/status-codes
-                log.debug(u"Trakt may have some issues and it's unavailable. Try again later please")
-                raise UnavailableException(u"Trakt may have some issues and it\'s unavailable. Try again later please")
+                raise UnavailableException(u"Trakt may have some issues and it's unavailable. Try again later please")
             elif code == 404:
-                log.error(u'Trakt error (404) the resource does not exist: %s', url + path)
-                raise ResourceUnavailable(u'Trakt error (404) the resource does not exist: %s', url + path)
+                log_message = u'Trakt error (404) Not found - the resource does not exist: %s' % url + path
+                log.error(log_message)
+                raise ResourceUnavailable(log_message)
             elif code == 410:
-                log.error(u'Trakt error (410) Expired - the tokens have expired, restart the process: %s', url + path)
-                raise TokenExpiredException(u'Trakt error (410) Expired - the tokens have expired, '
-                                            u'Get a new one: %s', url + path)
+                log_message = u'Trakt error (410) Expired - the tokens have expired. Get a new one'
+                log.warning(log_message)
+                raise TokenExpiredException(log_message)
             else:
-                log.error(u'Unknown Trakt request exception. Code error: %s', code)
-                raise TraktException(u'Unknown Trakt request exception. Code error: %s', code)
+                log_message = u'Unknown Trakt request exception. Error: %s' % code if code else e
+                log.error(log_message)
+                raise TraktException(log_message)
 
         # check and confirm trakt call did not fail
         if isinstance(resp, dict) and resp.get('status', False) == 'failure':
