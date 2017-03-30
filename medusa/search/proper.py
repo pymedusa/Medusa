@@ -427,7 +427,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         try:
             last_proper_search = datetime.date.fromordinal(int(sql_results[0][b'last_proper_search']))
-        except StandardError:
+        except (IndexError, KeyError, TypeError, ValueError):
             return datetime.date.fromordinal(1)
 
         return last_proper_search
