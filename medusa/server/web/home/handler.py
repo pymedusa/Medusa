@@ -1926,7 +1926,10 @@ class Home(WebRoot):
                         logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
                         ep_obj.manually_searched = False
 
-                    ep_obj.status = int(status)
+                    # Only in failed_history we set to FAILED.
+                    # We need current snatched quality to log 'quality' column in failed action in history
+                    if int(status) != FAILED:
+                        ep_obj.status = int(status)
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
