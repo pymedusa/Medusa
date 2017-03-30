@@ -1888,7 +1888,8 @@ class Home(WebRoot):
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
-                if int(status) in [WANTED, FAILED]:
+                status = int(status)
+                if status in [WANTED, FAILED]:
                     # figure out what episodes are wanted so we can backlog them
                     if ep_obj.season in segments:
                         segments[ep_obj.season].append(ep_obj)
@@ -1903,7 +1904,7 @@ class Home(WebRoot):
                         continue
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-                    if all([int(status) in Quality.DOWNLOADED,
+                    if all([status in Quality.DOWNLOADED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
                             not os.path.isfile(ep_obj.location)]):
                         logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
@@ -1911,25 +1912,25 @@ class Home(WebRoot):
                                    (episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([int(status) == FAILED,
+                    if all([status == FAILED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Refusing to change status of {episode} to FAILED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([int(status) == WANTED,
+                    if all([status == WANTED,
                             ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
                         ep_obj.release_name = ''
 
-                    if ep_obj.manually_searched and int(status) == WANTED:
+                    if ep_obj.manually_searched and status == WANTED:
                         logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
                         ep_obj.manually_searched = False
 
                     # Only in failed_history we set to FAILED.
                     # We need current snatched quality to log 'quality' column in failed action in history
-                    if int(status) != FAILED:
-                        ep_obj.status = int(status)
+                    if status != FAILED:
+                        ep_obj.status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
@@ -1939,9 +1940,9 @@ class Home(WebRoot):
             data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                if int(status) in [WANTED, FAILED]:
+                if status in [WANTED, FAILED]:
                     upd = 'Add'
-                elif int(status) in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
+                elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
                     upd = 'Remove'
 
                 logger.log(u'{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format
@@ -1954,7 +1955,7 @@ class Home(WebRoot):
                 main_db_con = db.DBConnection()
                 main_db_con.mass_action(sql_l)
 
-        if int(status) == WANTED and not show_obj.paused:
+        if status == WANTED and not show_obj.paused:
             msg = 'Backlog was automatically started for the following seasons of <b>{show}</b>:<br>'.format(show=show_obj.name)
             msg += '<ul>'
 
@@ -1971,12 +1972,12 @@ class Home(WebRoot):
 
             if segments:
                 ui.notifications.message('Backlog started', msg)
-        elif int(status) == WANTED and show_obj.paused:
+        elif status == WANTED and show_obj.paused:
             logger.log(u'Some episodes were set to wanted, but {show} is paused. '
                        u'Not adding to Backlog until show is unpaused'.format
                        (show=show_obj.name))
 
-        if int(status) == FAILED:
+        if status == FAILED:
             msg = 'Retrying Search was automatically started for the following season of <b>{show}</b>:<br>'.format(show=show_obj.name)
             msg += '<ul>'
 
