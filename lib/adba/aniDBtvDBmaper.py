@@ -34,7 +34,8 @@ class TvDBMap:
     def _get_x_for_y(self, xValue, x, y):
         # print("searching "+x+" with the value "+str(xValue)+" and want to give back "+y)
         x_value = str(xValue)
-        for anime in self.xmlMap.findall("anime"):
+        animes = self.xmlMap.findall("anime") if self.xmlMap else []
+        for anime in animes:
             try:
                 if anime.get(x, False) == x_value:
                     return int(anime.get(y, 0))
@@ -47,8 +48,8 @@ class TvDBMap:
         # TODO: implement
         season = 0
         episode = 0
-
-        for anime in self.xmlMap.findall("anime"):
+        animes = self.xmlMap.findall("anime") if self.xmlMap else []
+        for anime in animes:
             if int(anime.get("anidbid", False)) == anidb_id:
                 default_season = int(anime.get("defaulttvdbseason", 1))
 
