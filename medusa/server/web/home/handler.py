@@ -1576,7 +1576,7 @@ class Home(WebRoot):
             # Check if we should erase parsed cached results f or that show
             do_erase_parsed_cache = False
             for item in ['scene', 'anime', 'sports', 'air_by_date', 'dvd_order']:
-                if getattr(show_obj, item) != ast.literal_eval(item):
+                if getattr(show_obj, item) != ast.parse(item):
                     do_erase_parsed_cache = True
                     # Break if at least one was changed
                     break
