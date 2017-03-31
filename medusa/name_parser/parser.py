@@ -146,10 +146,10 @@ class NameParser(object):
 
             for episode_number in episode_numbers:
                 s = season_number
-                error = episode_number
+                episode = episode_number
 
                 if result.show.is_scene:
-                    (s, error) = scene_numbering.get_indexer_numbering(
+                    (s, episode) = scene_numbering.get_indexer_numbering(
                         result.show.indexerid,
                         result.show.indexer,
                         season_number,
@@ -157,9 +157,9 @@ class NameParser(object):
                     )
                     log.debug(
                         'Scene numbering enabled series {name}, using indexer numbering: {ep}',
-                        {'name': result.show.name, 'ep': episode_num(s, error)}
+                        {'name': result.show.name, 'ep': episode_num(s, episode)}
                     )
-                new_episode_numbers.append(error)
+                new_episode_numbers.append(episode)
                 new_season_numbers.append(s)
 
         elif result.show.is_anime and result.is_anime:
@@ -175,23 +175,23 @@ class NameParser(object):
                                                                        True, scene_season)
 
                 # Translate the absolute episode number, back to the indexers season and episode.
-                (s, error) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
+                (s, episode) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                 log.debug(
                     'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                    {'name': result.show.name, 'absolute': a, 'ep': episode_num(s, error, 'absolute')}
+                    {'name': result.show.name, 'absolute': a, 'ep': episode_num(s, episode, 'absolute')}
                 )
 
                 new_absolute_numbers.append(a)
-                new_episode_numbers.extend(error)
+                new_episode_numbers.extend(episode)
                 new_season_numbers.append(s)
 
         elif result.season_number and result.episode_numbers:
             for episode_number in result.episode_numbers:
                 s = result.season_number
-                error = episode_number
+                episode = episode_number
 
                 if result.show.is_scene:
-                    (s, error) = scene_numbering.get_indexer_numbering(
+                    (s, episode) = scene_numbering.get_indexer_numbering(
                         result.show.indexerid,
                         result.show.indexer,
                         result.season_number,
@@ -199,19 +199,19 @@ class NameParser(object):
                     )
                     log.debug(
                         'Scene numbering enabled series {name} using indexer numbering: {ep}',
-                        {'name': result.show.name, 'ep': episode_num(s, error)}
+                        {'name': result.show.name, 'ep': episode_num(s, episode)}
                     )
 
                 if result.show.is_anime:
-                    a = helpers.get_absolute_number_from_season_and_episode(result.show, s, error)
+                    a = helpers.get_absolute_number_from_season_and_episode(result.show, s, episode)
                     if a:
                         new_absolute_numbers.append(a)
                         log.debug(
                             'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
-                            {'name': result.show.name, 'absolute': a, 'ep': episode_num(s, error, 'absolute')}
+                            {'name': result.show.name, 'absolute': a, 'ep': episode_num(s, episode, 'absolute')}
                         )
 
-                new_episode_numbers.append(error)
+                new_episode_numbers.append(episode)
                 new_season_numbers.append(s)
 
         # need to do a quick sanity check heregex.  It's possible that we now have episodes
