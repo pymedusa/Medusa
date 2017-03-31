@@ -5,8 +5,6 @@ import os
 import posixpath
 import re
 
-import socket
-
 from datetime import date
 
 from imdbpie import imdbpie
@@ -99,7 +97,7 @@ class ImdbPopular(object):
                 recommended_show = self._create_recommended_show(show)
                 if recommended_show:
                     result.append(recommended_show)
-            except (RequestException, socket.gaierror):
+            except RequestException:
                 logger.log(u'Could not connect to indexers to check if you already have '
                            u'this show in your library: {show} ({year})'.format
                            (show=show['name'], year=show['name']), logger.WARNING)
