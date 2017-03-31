@@ -36,6 +36,20 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 from requests.auth import AuthBase
 from requests.compat import quote, urljoin
 
+EPISODE_MAP = {
+    0: 936, 1: 937, 2: 938, 3: 939, 4: 940, 5: 941, 6: 942, 7: 943, 8: 944, 9: 946, 10: 947, 11: 948, 12: 949, 13: 950,
+    14: 951, 15: 952, 16: 954, 17: 953, 18: 955, 19: 956, 20: 957, 21: 958, 22: 959, 23: 960, 24: 961, 25: 962, 26: 963,
+    27: 964, 28: 965, 29: 966, 30: 967, 31: 1088, 32: 1089, 33: 1090, 34: 1091, 35: 1092, 36: 1093, 37: 1094, 38: 1095,
+    39: 1096, 40: 1097, 41: 1098, 42: 1099, 43: 1100, 44: 1101, 45: 1102, 46: 1103, 47: 1104, 48: 1105, 49: 1106,
+    50: 1107, 51: 1108, 52: 1109, 53: 1110, 54: 1111, 55: 1112, 56: 1113, 57: 1114, 58: 1115, 59: 1116, 60: 1117,
+}
+
+SEASON_MAP = {
+    1: 968, 2: 969, 3: 970, 4: 971, 5: 972, 6: 973, 7: 974, 8: 975, 9: 976, 10: 977, 11: 978, 12: 979, 13: 980, 14: 981,
+    15: 982, 16: 983, 17: 984, 18: 985, 19: 986, 20: 987, 21: 988, 22: 989, 23: 990, 24: 991, 25: 994, 26: 992, 27: 993,
+    28: 995, 29: 996, 30: 997,
+}
+
 
 class T411Provider(TorrentProvider):
     """T411 Torrent provider."""
@@ -73,10 +87,37 @@ class T411Provider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
+    def _get_season_search_strings(self, episode):
+        """Get season search strings."""
+        if not episode:
+            return []
+        search_string = {
+            'Season': []
+        }
+
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+            if not episode.show.air_by_date or not episode.show.sports or not episode.show.anime:
+                search_string['Season'].append((show_name, episode.scene_season, episode.scene_episode,))
+        return [search_string]
+
+    def _get_episode_search_strings(self, episode, add_string=''):
+        """Get episode search strings."""
+        if not episode:
+            return []
+
+        search_string = {
+            'Episode': []
+        }
+
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+            if not episode.show.air_by_date or not episode.show.sports or not episode.show.anime:
+                search_string['Episode'].append((show_name, episode.scene_season, episode.scene_episode,))
+        return [search_string]
+
     def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.
 
-        :param search_strings: A dict with mode (key) and the search value (value)
+        :param search_strings: tuple with season and episode
         :param age: Not used
         :param ep_obj: Not used
         :returns: A list of search results (structure)
@@ -92,20 +133,31 @@ class T411Provider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    show_name = search_string[0]
+                    season = search_string[1]
+                    episode = search_string[2]
+                    logger.log('Search params: Name: {show}. Season: {season} Episode: {episode}'.format
+                               (show=show_name, season=season, episode=episode),
+                               logger.DEBUG)
                     if self.confirmed:
                         logger.log('Searching only confirmed torrents', logger.DEBUG)
 
                     # use string formatting to safely coerce the search term
                     # to unicode then utf-8 encode the unicode string
-                    term = '{term}'.format(term=search_string).encode('utf-8')
+                    term = '{term}'.format(term=show_name).encode('utf-8')
                     # build the search URL
                     search_url = self.urls['search'].format(
                         search=quote(term)  # URL encode the search term
                     )
                     categories = self.subcategories
                     search_params.update({'limit': 100})
+
+                    # Search using season and episode specific params
+                    if mode == 'Season':
+                        search_params.update({'term[46][]': EPISODE_MAP.get(0)})
+                    else:
+                        search_params.update({'term[46][]': EPISODE_MAP.get(episode)})
+                    search_params.update({'term[45][]': SEASON_MAP.get(season)})
                 else:
                     search_url = self.urls['rss']
                     # Using None as a category removes it as a search param
