@@ -3,9 +3,9 @@
 """Externals helper functions."""
 
 import logging
-from medusa import app
+from medusa import app, db
 from medusa.indexers.indexer_api import indexerApi
-from medusa.indexers.indexer_config import indexerConfig
+from medusa.indexers.indexer_config import indexerConfig, mappings
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
 from traktor import TokenExpiredException, TraktApi, TraktException
@@ -163,3 +163,33 @@ def check_existing_shows(indexed_show, indexer):
                                                    'Please remove the show, before you can add it through {2}.'
                                                    .format(show.name, indexerApi(show.indexer).name,
                                                            indexerApi(indexer).name))
+
+
+def load_externals_from_db(indexer=None, indexer_id=None):
+    """Load and recreate the indexers external id's.
+
+    :param indexer: Optional pass indexer id, else use the current shows indexer.
+    :type indexer: int
+    :param indexer_id: Optional pass indexer id, else use the current shows indexer.
+    :type indexer_id: int
+    """
+    externals = {}
+
+    main_db_con = db.DBConnection()
+    sql = (b'SELECT indexer, indexer_id, mindexer, mindexer_id '
+           b'FROM indexer_mapping '
+           b'WHERE (indexer = ? AND indexer_id = ?) '
+           b'OR (mindexer = ? AND mindexer_id = ?)')
+
+    results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
+
+    for result in results:
+        try:
+            if result[b'indexer'] == indexer:
+                externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+            else:
+                externals[mappings[result[b'indexer']]] = result[b'indexer_id']
+        except KeyError as e:
+            log.error(u'Indexer not supported in current mappings: {id}', {'id': e.message})
+
+    return externals
