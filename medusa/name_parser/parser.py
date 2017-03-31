@@ -145,11 +145,11 @@ class NameParser(object):
                     episode_numbers = []
 
             for episode_number in episode_numbers:
-                s = season_number
+                season = season_number
                 episode = episode_number
 
                 if result.show.is_scene:
-                    (s, episode) = scene_numbering.get_indexer_numbering(
+                    (season, episode) = scene_numbering.get_indexer_numbering(
                         result.show.indexerid,
                         result.show.indexer,
                         season_number,
@@ -157,10 +157,10 @@ class NameParser(object):
                     )
                     log.debug(
                         'Scene numbering enabled series {name}, using indexer numbering: {ep}',
-                        {'name': result.show.name, 'ep': episode_num(s, episode)}
+                        {'name': result.show.name, 'ep': episode_num(season, episode)}
                     )
                 new_episode_numbers.append(episode)
-                new_season_numbers.append(s)
+                new_season_numbers.append(season)
 
         elif result.show.is_anime and result.is_anime:
             log.debug('Scene numbering enabled series {name} is anime',
@@ -175,23 +175,23 @@ class NameParser(object):
                                                                        True, scene_season)
 
                 # Translate the absolute episode number, back to the indexers season and episode.
-                (s, episode) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
+                (season, episode) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                 log.debug(
                     'Scene numbering enabled series {name} using indexer for absolute {absolute}: {ep}',
-                    {'name': result.show.name, 'absolute': a, 'ep': episode_num(s, episode, 'absolute')}
+                    {'name': result.show.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
                 )
 
                 new_absolute_numbers.append(a)
                 new_episode_numbers.extend(episode)
-                new_season_numbers.append(s)
+                new_season_numbers.append(season)
 
         elif result.season_number and result.episode_numbers:
             for episode_number in result.episode_numbers:
-                s = result.season_number
+                season = result.season_number
                 episode = episode_number
 
                 if result.show.is_scene:
-                    (s, episode) = scene_numbering.get_indexer_numbering(
+                    (season, episode) = scene_numbering.get_indexer_numbering(
                         result.show.indexerid,
                         result.show.indexer,
                         result.season_number,
@@ -199,20 +199,20 @@ class NameParser(object):
                     )
                     log.debug(
                         'Scene numbering enabled series {name} using indexer numbering: {ep}',
-                        {'name': result.show.name, 'ep': episode_num(s, episode)}
+                        {'name': result.show.name, 'ep': episode_num(season, episode)}
                     )
 
                 if result.show.is_anime:
-                    a = helpers.get_absolute_number_from_season_and_episode(result.show, s, episode)
+                    a = helpers.get_absolute_number_from_season_and_episode(result.show, season, episode)
                     if a:
                         new_absolute_numbers.append(a)
                         log.debug(
                             'Scene numbering enabled anime {name} using indexer with absolute {absolute}: {ep}',
-                            {'name': result.show.name, 'absolute': a, 'ep': episode_num(s, episode, 'absolute')}
+                            {'name': result.show.name, 'absolute': a, 'ep': episode_num(season, episode, 'absolute')}
                         )
 
                 new_episode_numbers.append(episode)
-                new_season_numbers.append(s)
+                new_season_numbers.append(season)
 
         # need to do a quick sanity check heregex.  It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
