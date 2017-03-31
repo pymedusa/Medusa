@@ -7,7 +7,9 @@ import json
 import os
 import re
 
-import requests
+import socket
+
+from requests import RequestException
 
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
@@ -308,7 +310,7 @@ class HomeAddShows(Home):
 
         try:
             recommended_shows = ImdbPopular().fetch_popular_shows()
-        except (StandardError, requests.RequestException) as e:
+        except (RequestException, socket.gaierror, StandardError) as e:
             recommended_shows = None
 
         return t.render(title="Popular Shows", header="Popular Shows",
