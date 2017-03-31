@@ -21,7 +21,7 @@ import os
 import posixpath
 
 from ... import app, helpers
-
+from profilehooks import profile
 
 class MissingTvdbMapping(Exception):
     """Exception used when a show can't be mapped to a tvdb indexer id."""

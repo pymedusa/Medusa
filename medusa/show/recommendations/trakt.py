@@ -28,6 +28,7 @@ from ...helper.exceptions import MultipleShowObjectsException, ex
 from ...indexers.indexer_api import indexerApi
 from ...indexers.indexer_config import INDEXER_TVDBV2
 
+from profilehooks import profile
 
 class MissingPosterList(list):
     """Smart custom list, with a cache expiration.
@@ -90,6 +91,7 @@ class TraktPopular(object):
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
+    @profile(immediate=True)
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(self,
@@ -123,7 +125,8 @@ class TraktPopular(object):
             use_default = self.default_img_src
             logger.log('Missing poster on TheTVDB, cause: %r' % e, logger.DEBUG)
 
-        rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        if not use_default:
+            rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
