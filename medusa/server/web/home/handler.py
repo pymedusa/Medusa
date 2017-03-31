@@ -1573,6 +1573,14 @@ class Home(WebRoot):
                     logger.log("Unable to refresh show '{show}': {error}".format
                                (show=show_obj.name, error=e.message), logger.WARNING)
 
+            # Check if we should erase parsed cached results f or that show
+            do_erase_parsed_cache = False
+            for item in ['scene', 'anime', 'sports', 'air_by_date', 'dvd_order']:
+                if getattr(show_obj, item) != eval(item):
+                    do_erase_parsed_cache = True
+                    # Break if at least one was changed
+                    break
+
             show_obj.paused = paused
             show_obj.scene = scene
             show_obj.anime = anime
@@ -1620,7 +1628,7 @@ class Home(WebRoot):
                         app.show_queue_scheduler.action.refreshShow(show_obj)
                     except CantRefreshShowException as e:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}': {error}".format
+                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
                                    (show=show_obj.name, error=e.message), logger.WARNING)
 
             # Save all settings changed while in show_obj.lock
@@ -1645,7 +1653,7 @@ class Home(WebRoot):
                 logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-        if do_update_scene_numbering:
+        if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
@@ -1654,8 +1662,20 @@ class Home(WebRoot):
                 logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-            # Must erase cached results when toggling scene numbering
+            # Must erase cached DB results when toggling scene numbering
             self.erase_cache(show_obj)
+
+            # Erase parsed cached names as we are changing scene numbering
+            show_obj.flush_episodes()
+            show_obj.erase_cached_parser()
+
+            # Need to refresh show as we updated scene numbering or changed show format
+            try:
+                app.show_queue_scheduler.action.refreshShow(show_obj)
+            except CantRefreshShowException as e:
+                errors += 1
+                logger.log("Unable to refresh show '{show}'. You must manually refresh!. Error: {error}".format
+                           (show=show_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors
