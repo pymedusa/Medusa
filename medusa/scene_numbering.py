@@ -223,6 +223,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
     # Reload data from DB so that cache and db are in sync
     show = Show.find(app.showList, indexer_id)
     show.flush_episodes()
+    show.erase_cached_parser()
 
 
 def find_xem_numbering(indexer_id, indexer, season, episode):

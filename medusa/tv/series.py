@@ -556,6 +556,10 @@ class Series(TV):
                 self.episodes[cur_season][cur_ep] = None
                 del my_ep
 
+    def erase_cached_parser(self):
+        """Erase parsed results because user changed xem numbering."""
+        NameParser().unparse(self.indexer, self.indexerid)
+
     def get_all_seasons(self, last_airdate=False):
         """Retrieve a dictionary of seasons with the number of episodes, using the episodes table.
 

@@ -252,6 +252,10 @@ class NameParser(object):
 
         return result
 
+    def unparse(self, indexer, indexer_id):
+        """Unparse all names from given indexer and indexer_id."""
+        name_parser_cache.remove(indexer, indexer_id)
+
     def parse(self, name, cache_result=True):
         """Parse the name into a ParseResult.
 
@@ -490,6 +494,16 @@ class NameParserCache(object):
         if name in self.cache:
             log.debug('Using cached parse result for {name}', {'name': name})
             return self.cache[name]
+
+    def remove(self, indexer, indexer_id):
+        """Remove cache item given indexer and indexer_id."""
+        if not indexer or not indexer_id:
+            return
+        to_remove = (cached_name for cached_name, cached_parsed_result in self.cache.items() if
+                     cached_parsed_result.show.indexer == indexer and cached_parsed_result.show.indexerid == indexer_id)
+        for item in to_remove:
+            self.cache.popitem(item)
+            logger.debug('Removed parsed cached result for release: {release}'.format(release=item))
 
 
 name_parser_cache = NameParserCache()
