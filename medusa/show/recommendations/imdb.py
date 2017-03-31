@@ -135,5 +135,3 @@ class ImdbPopular(object):
                                                      matches[3], matches[4])
         else:
             return image_url
-import requests
-requests.HTTPError
