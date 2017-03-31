@@ -400,4 +400,3 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
     @staticmethod
     def _sanitize_name(name):
         return re.sub(r'[._\-]', ' ', name).lower()
-
