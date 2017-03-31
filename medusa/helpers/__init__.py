@@ -1279,7 +1279,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
 
     except (requests.exceptions.RequestException, socket.gaierror) as error:
         log.debug(u'Error requesting url {url}. Error: {msg}',
-                  {'url': url, 'err_msg': error})
+                  {'url': url, 'msg': error})
         return None
     except Exception as error:
         if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):

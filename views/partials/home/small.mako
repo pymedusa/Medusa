@@ -158,6 +158,11 @@
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                     </a>
                 % endif
+                % if cur_show.externals.get('trakt_id'):
+                    <a href="${anon_url('https://trakt.tv/shows/', cur_show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                    </a>
+                % endif
                 <a href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
                     <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                 </a>
