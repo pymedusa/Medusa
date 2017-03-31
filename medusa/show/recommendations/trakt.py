@@ -28,7 +28,6 @@ from ...helper.exceptions import MultipleShowObjectsException, ex
 from ...indexers.indexer_api import indexerApi
 from ...indexers.indexer_config import INDEXER_TVDBV2
 
-from profilehooks import profile
 
 class MissingPosterList(list):
     """Smart custom list, with a cache expiration.
@@ -91,7 +90,6 @@ class TraktPopular(object):
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)
         self.tvdb_api_v2 = indexerApi(INDEXER_TVDBV2).indexer()
 
-    @profile(immediate=True)
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
         rec_show = RecommendedShow(self,
