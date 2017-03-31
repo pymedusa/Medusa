@@ -16,8 +16,8 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-import requests
 import time
+import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.rest import ApiException
@@ -110,9 +110,9 @@ class TraktPopular(object):
         try:
             if not missing_posters.has(show_obj['show']['ids']['tvdb']):
                 image = self.check_cache_for_poster(show_obj['show']['ids']['tvdb']) or \
-                        self.tvdb_api_v2.series_api.series_id_images_query_get(
-                            show_obj['show']['ids']['tvdb'], key_type='poster'
-                        ).data[0].file_name
+                    self.tvdb_api_v2.series_api.series_id_images_query_get(
+                        show_obj['show']['ids']['tvdb'], key_type='poster'
+                    ).data[0].file_name
             else:
                 logger.log('CACHE: Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.INFO)
                 use_default = self.default_img_src
