@@ -73,8 +73,8 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         show = None
 
         for db_episode in episodes_from_db:
+            show_id = int(db_episode[b'showid'])
             try:
-                show_id = int(db_episode[b'showid'])
                 if not show or show_id != show.indexerid:
                     show = Show.find(app.showList, show_id)
 
