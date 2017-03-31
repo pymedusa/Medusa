@@ -1,30 +1,18 @@
 # coding=utf-8
 
-# Author: Dieter Blomme <dieterblomme@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
-
 from __future__ import unicode_literals
 
-from medusa import app, logger
+import logging
+
+from medusa import app
 from medusa.helpers import get_title_without_year
 from medusa.indexers.indexer_config import get_trakt_indexer
+from medusa.logger.adapters.style import BraceAdapter
 
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -98,7 +86,7 @@ class Notifier(object):
                 trakt_api.request('sync/collection', data, method='POST')
 
             except (TraktException, AuthException, ServerBusy) as error:
-                logger.log('Unable to update Trakt: {0}'.format(error.message), logger.DEBUG)
+                log.debug('Unable to update Trakt: {0}', error.message)
 
     @staticmethod
     def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
@@ -144,9 +132,10 @@ class Notifier(object):
                 elif data_show is not None:
                     data.update(data_show)
                 else:
-                    logger.log("There's a coding problem contact developer. "
-                               "It's needed to be provided at least one of the two: data_show or show_obj",
-                               logger.WARNING)
+                    log.warning(
+                        "There's a coding problem contact developer. It's needed to be provided at"
+                        " least one of the two: data_show or show_obj",
+                    )
                     return False
 
                 if data_episode is not None:
@@ -183,7 +172,7 @@ class Notifier(object):
                 trakt_api.request(trakt_url, data, method='POST')
 
             except (TraktException, AuthException, ServerBusy) as error:
-                logger.log('Unable to update Trakt watchlist: {0}'.format(error.message), logger.DEBUG)
+                log.debug('Unable to update Trakt watchlist: {0}', error.message)
                 return False
 
         return True
@@ -254,5 +243,5 @@ class Notifier(object):
             else:
                 return 'Test notice sent successfully to Trakt'
         except (TraktException, AuthException, ServerBusy) as error:
-            logger.log('Unable to test TRAKT: {0}'.format(error.message), logger.WARNING)
+            log.warning('Unable to test TRAKT: {0}', error.message)
             return 'Test notice failed to Trakt: {0}'.format(error.message)
