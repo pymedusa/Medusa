@@ -16,17 +16,17 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
-import time
 import requests
+import time
 from simpleanidb import Anidb
-from lib.traktor import (TokenExpiredException, TraktApi, TraktException)
+from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.rest import ApiException
 from .recommended import RecommendedShow
 from ... import app, logger
 from ...helper.common import try_int
 from ...helper.exceptions import MultipleShowObjectsException, ex
-from ...indexers.indexer_config import INDEXER_TVDBV2
 from ...indexers.indexer_api import indexerApi
+from ...indexers.indexer_config import INDEXER_TVDBV2
 
 
 class MissingPosterList(list):
@@ -35,6 +35,7 @@ class MissingPosterList(list):
     A list used to store the trakt shows that do not have a poster on tvdb. This will prevent searches for posters
     that have recently been searched using the tvdb's api, and resulted in a 404.
     """
+
     def __init__(self, items=None, cache_timeout=3600, implicit_clean=False):
         """Initialize the MissingPosterList.
 
@@ -59,8 +60,12 @@ class MissingPosterList(list):
         self.__init__(new_list, self.cache_timeout, self.implicit_clean)
 
     def has(self, value):
-        """Because we store the items as tuples for ex. (timeout, item), we need a smarter method to check if an item
-        is already in the list.
+        """Check if the value is in the list.
+
+        We need a smarter method to check if an item is already in the list. This will return a list with items that
+        match the value.
+        :param value: The value to check for.
+        :return: A list of tuples with matches. For example: (141234234, '12342').
         """
         if self.implicit_clean:
             self.clean()
