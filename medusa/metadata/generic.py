@@ -31,7 +31,6 @@ from ..indexers.indexer_api import indexerApi
 from ..indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from ..indexers.indexer_exceptions import IndexerException, IndexerShowNotFound
 from ..metadata import helpers as metadata_helpers
-from ..show_name_helpers import allPossibleShowNames
 
 try:
     import xml.etree.cElementTree as etree
@@ -954,7 +953,7 @@ class GenericMetadata(object):
 
         try:
             search = tmdb.Search()
-            for show_name in allPossibleShowNames(show):
+            for show_name in show.get_all_possible_names():
                 for result in search.collection(query=show_name)['results'] + search.tv(query=show_name)['results']:
                     if types[img_type] and getattr(result, types[img_type]):
                         return "{0}{1}{2}".format(base_url, max_size, result[types[img_type]])

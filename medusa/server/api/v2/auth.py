@@ -17,7 +17,8 @@ class AuthHandler(BaseRequestHandler):
     def set_default_headers(self):
         """Set default CORS headers."""
         super(AuthHandler, self).set_default_headers()
-        self.set_header('X-Medusa-Server', app.APP_VERSION)
+        if app.APP_VERSION:
+            self.set_header('X-Medusa-Server', app.APP_VERSION)
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     def prepare(self):

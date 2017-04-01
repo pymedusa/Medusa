@@ -261,7 +261,7 @@ class Tmdb(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 logger.debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
+                use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
             else:
                 use_dvd = False
 
@@ -269,6 +269,11 @@ class Tmdb(BaseIndexer):
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
+                if self.config['dvdorder']:
+                    logger.warning("Episode doesn't have DVD order available (season: %s, episode: %s). "
+                                   'Falling back to non-DVD order. '
+                                   'Please consider disabling DVD order for the show with TMDB ID: %s',
+                                   seasnum, epno, tmdb_id)
 
             if seasnum is None or epno is None:
                 logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
@@ -589,7 +594,7 @@ class Tmdb(BaseIndexer):
         return show_season_updates
 
     def get_id_by_external(self, **kwargs):
-        """Search tvmaze for a show, using an external id.
+        """Search tmdb for a show, using an external id.
 
         Accepts as kwargs, so you'l need to add the externals as key/values.
         :param tvrage_id: The tvrage id.
@@ -605,9 +610,9 @@ class Tmdb(BaseIndexer):
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
                     externals['tmdb_id'] = result['tv_results'][0]['id']
 
-                    externals = {external_id: external_value
-                                 for external_id, external_value
+                    externals = {tmdb_external_id: external_value
+                                 for tmdb_external_id, external_value
                                  in externals.items()
-                                 if external_value and external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
+                                 if external_value and tmdb_external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
                     return externals
         return {}

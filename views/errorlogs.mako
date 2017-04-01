@@ -13,7 +13,9 @@ pre {
 </style>
 </%block>
 <%block name="content">
+
 <%
+    from mako.filters import html_escape
     if logLevel == logger.WARNING:
         errors = classes.WarningViewer.errors
         title = 'WARNING logs'
@@ -33,14 +35,12 @@ pre {
 </div>
 
 <div class="row wide">
-    <div class="col-md-12">
+<div class="col-md-12">
 <pre>
 % if errors:
-% for logline in errors[:500]:
-<span>${logline}</span>
-% endfor
+${'\n'.join([html_escape(logline) for logline in errors[:500]])}
 % else:
-<span>There are no events to display.</span>
+There are no events to display.
 % endif
 </pre>
 </div>

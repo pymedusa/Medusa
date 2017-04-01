@@ -51,7 +51,9 @@ class StyleAdapter(logging.LoggerAdapter):
         :param kwargs:
         :return:
         """
-        return BraceMessage(msg, (), kwargs), {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
+        reserved = {k: kwargs[k] for k in self.reserved_keywords if k in kwargs}
+        kwargs = {k: kwargs[k] for k in kwargs if k not in self.reserved_keywords}
+        return BraceMessage(msg, (), kwargs), reserved
 
 
 class BraceMessage(object):

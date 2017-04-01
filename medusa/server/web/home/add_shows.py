@@ -7,6 +7,8 @@ import json
 import os
 import re
 
+from requests import RequestException
+
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems
@@ -89,8 +91,8 @@ class HomeAddShows(Home):
                     indexer_results = t[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
-                except IndexerException as msg:
-                    logger.log(u'Error searching for show: {error}'.format(error=msg))
+                except IndexerException as e:
+                    logger.log(u'Error searching for show: {error}'.format(error=e.message))
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
@@ -166,17 +168,6 @@ class HomeAddShows(Home):
                 for cur_provider in app.metadata_provider_dict.values():
                     if not (indexer_id and show_name):
                         (indexer_id, show_name, indexer) = cur_provider.retrieveShowMetadata(cur_path)
-
-                        # default to TVDB if indexer was not detected
-                        if show_name and not (indexer or indexer_id):
-                            (_, idxr, i) = helpers.search_indexer_for_show_id(show_name, indexer, indexer_id)
-
-                            # set indexer and indexer_id from found info
-                            if not indexer and idxr:
-                                indexer = idxr
-
-                            if not indexer_id and i:
-                                indexer_id = i
 
                 cur_dir['existing_info'] = (indexer_id, show_name, indexer)
 
@@ -317,8 +308,7 @@ class HomeAddShows(Home):
 
         try:
             recommended_shows = ImdbPopular().fetch_popular_shows()
-        except Exception as e:
-            # print traceback.format_exc()
+        except (RequestException, StandardError) as e:
             recommended_shows = None
 
         return t.render(title="Popular Shows", header="Popular Shows",

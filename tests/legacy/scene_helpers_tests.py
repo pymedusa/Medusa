@@ -23,7 +23,7 @@ class SceneTests(test.AppTestDBCase):
         show = Show(1, indexerid)
         show.name = name
 
-        result = show_name_helpers.allPossibleShowNames(show)
+        result = show.get_all_possible_names(show)
         self.assertTrue(len(set(expected).intersection(set(result))) == len(expected))
 
     def _test_filter_bad_releases(self, name, expected):
