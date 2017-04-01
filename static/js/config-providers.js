@@ -85,7 +85,8 @@ $(document).ready(function() { // eslint-disable-line max-lines
         $(this).makeNewznabProviderString();
     };
 
-    $.fn.addTorrentRssProvider = function(id, name, url, cookies, title_tag) { // eslint-disable-line max-params camelcase
+    // eslint-disable-next-line max-params
+    $.fn.addTorrentRssProvider = function(id, name, url, cookies, title_tag) { // eslint-disable-line camelcase
         var newData = [name, url, cookies, title_tag]; // eslint-disable-line camelcase
         torrentRssProviders[id] = newData;
 
