@@ -217,19 +217,17 @@ class NameParser(object):
         # need to do a quick sanity check heregex.  It's possible that we now have episodes
         # from more than one season (by tvdb numbering), and this is just too much
         # for the application, so we'd need to flag it.
-        new_season_numbers = list(set(new_season_numbers))  # remove duplicates
+        new_season_numbers = sorted(set(new_season_numbers))  # remove duplicates
         if len(new_season_numbers) > 1:
             raise InvalidNameException('Scene numbering results episodes from seasons {seasons}, (i.e. more than one) '
                                        'and Medusa does not support this. Sorry.'.format(seasons=new_season_numbers))
 
         # If guess it's possible that we'd have duplicate episodes too,
         # so lets eliminate them
-        new_episode_numbers = list(set(new_episode_numbers))
-        new_episode_numbers.sort()
+        new_episode_numbers = sorted(set(new_episode_numbers))
 
         # maybe even duplicate absolute numbers so why not do them as well
-        new_absolute_numbers = list(set(new_absolute_numbers))
-        new_absolute_numbers.sort()
+        new_absolute_numbers = sorted(set(new_absolute_numbers))
 
         if new_absolute_numbers:
             result.ab_episode_numbers = new_absolute_numbers
