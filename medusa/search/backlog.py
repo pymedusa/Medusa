@@ -90,7 +90,8 @@ class BacklogSearcher(object):
         from_date = datetime.date.fromordinal(1)
 
         if not which_shows and self.forced:
-            log.info(u'Running limited backlog search on missed episodes from last {0} days'.format(app.BACKLOG_DAYS))
+            log.info(u'Running limited backlog search on missed episodes from last {0} days',
+                     app.BACKLOG_DAYS)
             from_date = datetime.date.today() - datetime.timedelta(days=app.BACKLOG_DAYS)
         else:
             log.info(u'Running full backlog search on missed episodes for selected shows')
@@ -110,7 +111,7 @@ class BacklogSearcher(object):
                 app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:
-                log.debug(u'Nothing needs to be downloaded for {0}, skipping', cur_show.name)
+                log.debug(u'Nothing needs to be downloaded for {0!r}, skipping', cur_show.name)
 
         # don't consider this an actual backlog search if we only did recent eps
         # or if we only did certain shows
