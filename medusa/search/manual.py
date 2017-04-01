@@ -172,7 +172,8 @@ def collect_episodes_from_search_thread(show):
     return episodes
 
 
-def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None, season=None, episode=None, manual_search_type=None, **search_show):  # pylint: disable=too-many-locals,unused-argument
+def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None,
+                               season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
     show = show
     season = season
