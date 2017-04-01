@@ -1,20 +1,4 @@
 # coding=utf-8
-# This file is part of Medusa.
-#
-
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -25,11 +9,13 @@ import traceback
 
 from fnmatch import fnmatch
 
+from medusa import app
+
 from six import PY3, text_type
 
-from .. import app
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 if PY3:
     long = int
@@ -309,8 +295,8 @@ def try_int(candidate, default_value=0):
     try:
         return int(candidate)
     except (ValueError, TypeError):
-        if candidate and ("," in candidate or "." in candidate):
-            logger.error(u"Failed parsing provider. Traceback: %r" % traceback.format_exc())
+        if candidate and (',' in candidate or '.' in candidate):
+            log.error(u'Failed parsing provider. Traceback: %r', traceback.format_exc())
         return default_value
 
 

@@ -28,7 +28,6 @@ from medusa import (
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-from medusa.show_name_helpers import allPossibleShowNames
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -338,7 +337,7 @@ class AnimeBytes(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -349,7 +348,7 @@ class AnimeBytes(TorrentProvider):
             'Season': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

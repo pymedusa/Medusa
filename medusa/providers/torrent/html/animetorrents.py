@@ -31,7 +31,6 @@ from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
 from medusa.helper.exceptions import AuthException
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-from medusa.show_name_helpers import allPossibleShowNames
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
@@ -256,7 +255,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             episode.scene_season
         )
 
-        for show_name in allPossibleShowNames(episode.show, episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             if show_name in season_scene_names:
                 episode_season = int(episode.scene_episode)
             else:
@@ -278,7 +277,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             'Season': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.season):
+        for show_name in episode.show.get_all_possible_names(season=episode.season):
             search_string['Season'].append(show_name)
 
         return [search_string]

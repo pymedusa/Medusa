@@ -22,20 +22,48 @@ import errno
 import os
 import threading
 import traceback
-
 from socket import timeout as socket_timeout
 
-import requests
-
-from .. import (
-    app, clients, common, db, failed_history, helpers, history, logger,
-    name_cache, notifiers, nzb_splitter, nzbget, sab, show_name_helpers, ui
+from medusa import (
+    app,
+    common,
+    db,
+    failed_history,
+    helpers,
+    history,
+    logger,
+    name_cache,
+    notifiers,
+    nzb_splitter,
+    show_name_helpers,
+    ui,
 )
-from ..common import MULTI_EP_RESULT, Quality, SEASON_RESULT, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, UNKNOWN
-from ..helper.common import enabled_providers, episode_num
-from ..helper.exceptions import AuthException, ex
-from ..providers import sorted_provider_list
-from ..providers.generic_provider import GenericProvider
+from medusa.clients import torrent
+from medusa.clients.nzb import (
+    nzbget,
+    sab,
+)
+from medusa.common import (
+    MULTI_EP_RESULT,
+    Quality,
+    SEASON_RESULT,
+    SNATCHED,
+    SNATCHED_BEST,
+    SNATCHED_PROPER,
+    UNKNOWN,
+)
+from medusa.helper.common import (
+    enabled_providers,
+    episode_num,
+)
+from medusa.helper.exceptions import (
+    AuthException,
+    ex,
+)
+from medusa.providers import sorted_provider_list
+from medusa.providers.generic_provider import GenericProvider
+
+import requests
 
 
 def _download_result(result):
@@ -114,7 +142,7 @@ def snatch_episode(result):
         if app.NZB_METHOD == "blackhole":
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == "sabnzbd":
-            result_downloaded = sab.sendNZB(result)
+            result_downloaded = sab.send_nzb(result)
         elif app.NZB_METHOD == "nzbget":
             result_downloaded = nzbget.sendNZB(result, is_proper)
         else:
@@ -132,7 +160,7 @@ def snatch_episode(result):
                     result.content = result.provider.get_url(result.url, returns='content')
 
             if result.content or result.url.startswith('magnet'):
-                client = clients.get_client_class(app.TORRENT_METHOD)()
+                client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
                 logger.log(u"Torrent file content is empty", logger.WARNING)
@@ -189,20 +217,14 @@ def snatch_episode(result):
             sql_l.append(curEpObj.get_sql())
 
         if curEpObj.status not in Quality.DOWNLOADED:
-            # TODO: Remove this broad catch when all notifiers handle exceptions
-            try:
-                notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
-                if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
-                        result.leechers not in (-1, None)]):
-                    notifiers.notify_snatch("{0} with {1} seeders and {2} leechers from {3}".format
-                                            (notify_message, result.seeders,
-                                             result.leechers, result.provider.name), is_proper)
-                else:
-                    notifiers.notify_snatch("{0} from {1}".format(notify_message, result.provider.name), is_proper)
-            except Exception as e:
-                # Without this, when notification fail, it crashes the snatch thread and Medusa will
-                # keep snatching until notification is sent
-                logger.log(u"Failed to send snatch notification. Error: {0}".format(e), logger.DEBUG)
+            notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
+            if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
+                    result.leechers not in (-1, None)]):
+                notifiers.notify_snatch(u'{0} with {1} seeders and {2} leechers from {3}'.format
+                                        (notify_message, result.seeders,
+                                         result.leechers, result.provider.name), is_proper)
+            else:
+                notifiers.notify_snatch(u'{0} from {1}'.format(notify_message, result.provider.name), is_proper)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
                 trakt_data.append((curEpObj.season, curEpObj.episode))
@@ -212,7 +234,7 @@ def snatch_episode(result):
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
         if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update="add")
+            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update='add')
 
     if sql_l:
         main_db_con = db.DBConnection()
@@ -231,7 +253,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
     """
     results = results if isinstance(results, list) else [results]
 
-    logger.log(u"Picking the best result out of " + str([x.name for x in results]), logger.DEBUG)
+    logger.log(u'Picking the best result out of ' + str([x.name for x in results]), logger.DEBUG)
 
     best_result = None
 
@@ -245,12 +267,12 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             if not show.release_groups.is_valid(cur_result):
                 continue
 
-        logger.log(u"Quality of " + cur_result.name + u" is " + Quality.qualityStrings[cur_result.quality])
+        logger.log(u'Quality of ' + cur_result.name + u' is ' + Quality.qualityStrings[cur_result.quality])
 
         allowed_qualities, preferred_qualities = show.current_qualities
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
-            logger.log(cur_result.name + u" is a quality we know we don't want, rejecting it", logger.DEBUG)
+            logger.log(cur_result.name + u' is an unwanted quality, rejecting it', logger.DEBUG)
             continue
 
         # If doesnt have min seeders OR min leechers then discard it

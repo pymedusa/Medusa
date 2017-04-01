@@ -69,8 +69,8 @@ class TVDBv2(BaseIndexer):
             access_token = auth_api.login_post(authentication_string)
             auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
         except ApiException as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s',%s)", e.reason, e.status)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s' (%s)" % (e.reason, e.status))
+            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
+            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
         except (MaxRetryError, RequestError) as e:
             logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
             raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
@@ -154,7 +154,7 @@ class TVDBv2(BaseIndexer):
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
         except ApiException as e:
             raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: %s (%s)' % (e.reason, e.status)
+                'Show search failed in getting a result with reason: %s' % e.reason
             )
         except (MaxRetryError, RequestError) as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)
@@ -290,17 +290,26 @@ class TVDBv2(BaseIndexer):
         for cur_ep in episodes:
             if self.config['dvdorder']:
                 logger.debug('Using DVD ordering.')
-                use_dvd = cur_ep['dvd_season'] is not None and cur_ep['dvd_episodenumber'] is not None
+                use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
             else:
                 use_dvd = False
 
             if use_dvd:
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
+                if self.config['dvdorder']:
+                    logger.warning("Episode doesn't have DVD order available (season: %s, episode: %s). "
+                                   'Falling back to non-DVD order. '
+                                   'Please consider disabling DVD order for the show with TMDB ID: %s',
+                                   seasnum, epno, tvdb_id)
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                logger.warning('An episode has incomplete season/episode number (season: %r, episode: %r)', seasnum, epno)
+                logger.warning('This episode has incomplete information. The season or episode number '
+                               '(season: %s, episode: %s) is missing. '
+                               'to get rid of this warning, you will have to contact tvdb through their forums '
+                               'and have them fix the specific episode.',
+                               seasnum, epno)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
@@ -558,9 +567,10 @@ class TVDBv2(BaseIndexer):
         try:
             while updates and count < weeks:
                 updates = self.updates_api.updated_query_get(from_time).data
-                last_update_ts = max(x.last_updated for x in updates)
-                from_time = last_update_ts
-                total_updates += [int(_.id) for _ in updates]
+                if updates is not None:
+                    last_update_ts = max(x.last_updated for x in updates)
+                    from_time = last_update_ts
+                    total_updates += [int(_.id) for _ in updates]
                 count += 1
         except (ApiException, MaxRetryError, RequestError) as e:
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
@@ -592,6 +602,14 @@ class TVDBv2(BaseIndexer):
             episodes = self._download_episodes(show_id)
 
             for episode in episodes['episode']:
+                if episode.get('seasonnumber') is None or episode.get('episodenumber') is None:
+                    logger.warning('This episode has incomplete information. The season or episode number '
+                                   '(season: %s, episode: %s) is missing. '
+                                   'to get rid of this warning, you will have to contact tvdb through their forums '
+                                   'and have them fix the specific episode.',
+                                   episode.get('seasonnumber'), episode.get('episodenumber'))
+                    continue
+
                 if int(episode['lastupdated']) > from_time:
                     total_updates.append(int(episode['seasonnumber']))
 

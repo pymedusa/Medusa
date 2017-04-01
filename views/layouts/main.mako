@@ -38,6 +38,7 @@
         }
         </style>
         <link rel="stylesheet" type="text/css" href="css/vender.min.css?${sbPID}"/>
+        <link rel="stylesheet" type="text/css" href="css/bootstrap-formhelpers.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/browser.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
@@ -62,15 +63,11 @@
             <%include file="/partials/footer.mako" />
         </div>
         <script type="text/javascript" src="js/vender${('.min', '')[app.DEVELOPER]}.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/loglevel.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/bootstrap-formhelpers.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/fix-broken-ie.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.cookiejar.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.form.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.json-2.2.min.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/jquery.selectboxes.min.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/formwizard.js?${sbPID}"></script>
-        <script type="text/javascript" src="js/lib/timeago.js?${sbPID}"></script>
         <script type="text/javascript" src="js/lib/axios.min.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/lib/lazyload.js?${sbPID}"></script>
         <script type="text/javascript" src="js/parsers.js?${sbPID}"></script>
         <script type="text/javascript" src="js/root-dirs.js?${sbPID}"></script>
         <script type="text/javascript" src="js/api.js?${sbPID}"></script>
@@ -111,11 +108,11 @@
         <script type="text/javascript" src="js/manage/mass-edit.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed.js?${sbPID}"></script>
         <script type="text/javascript" src="js/manage/subtitle-missed-post-process.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/manage/manage-searches.js?${sbPID}"></script>
         <script type="text/javascript" src="js/history/index.js?${sbPID}"></script>
 
         <script type="text/javascript" src="js/errorlogs/viewlogs.js?${sbPID}"></script>
 
-        <script type="text/javascript" src="js/lib/jquery.scrolltopcontrol-1.1.js?${sbPID}"></script>
         <script type="text/javascript" src="js/browser.js?${sbPID}"></script>
         <script type="text/javascript" src="js/ajax-notifications.js?${sbPID}"></script>
         <%block name="scripts" />
