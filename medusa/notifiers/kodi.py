@@ -407,7 +407,7 @@ class Notifier(object):
                 log.debug(u'{0} JSON response: {1}', dest_app, result)
                 return result  # need to return response for parsing
             except ValueError as e:
-                log.warning(u'Unable to decode JSON: {}', response.read())
+                log.warning(u'Unable to decode JSON: {0}', response.read())
                 return False
 
         except IOError as e:
@@ -554,7 +554,7 @@ class Notifier(object):
                 log.warning(u'No valid path found for {0} with ID: {1} on {2}', showName, tvshowid, host)
                 return False
 
-            log.debug(u'KODI Updating {} on {} at {}', showName, host, path)
+            log.debug(u'KODI Updating {0} on {1} at {2}', showName, host, path)
             updateCommand = json.dumps({
                 'jsonrpc': '2.0',
                 'method': 'VideoLibrary.Scan',
