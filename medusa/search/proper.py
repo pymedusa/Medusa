@@ -400,3 +400,33 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
     @staticmethod
     def _sanitize_name(name):
         return re.sub(r'[._\-]', ' ', name).lower()
+
+    @staticmethod
+    def _set_last_proper_search(when):
+        """Record last propersearch in DB.
+
+        :param when: When was the last proper search
+        """
+        logger.log('Setting the last Proper search in the DB to {0}'.format(when), logger.DEBUG)
+
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select(b'SELECT last_proper_search FROM info')
+
+        if not sql_results:
+            main_db_con.action(b'INSERT INTO info (last_backlog, last_indexer, last_proper_search) VALUES (?,?,?)',
+                               [0, 0, str(when)])
+        else:
+            main_db_con.action(b'UPDATE info SET last_proper_search={0}'.format(when))
+
+    @staticmethod
+    def _get_last_proper_search():
+        """Find last propersearch from DB."""
+        main_db_con = db.DBConnection()
+        sql_results = main_db_con.select(b'SELECT last_proper_search FROM info')
+
+        try:
+            last_proper_search = datetime.date.fromordinal(int(sql_results[0][b'last_proper_search']))
+        except Exception:
+            return datetime.date.fromordinal(1)
+
+        return last_proper_search
