@@ -403,8 +403,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _set_last_proper_search(when):
-        """
-        Record last propersearch in DB.
+        """Record last propersearch in DB.
+
         :param when: When was the last proper search
         """
         logger.log('Setting the last Proper search in the DB to {0}'.format(when), logger.DEBUG)
