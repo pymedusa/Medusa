@@ -62,6 +62,8 @@ $(document).ready(function() {
             }
         });
 
+        var totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr]).length; // eslint-disable-line no-useless-call
+
         if (deleteCount >= 1) {
             $.confirm({
                 title: 'Delete Shows',
@@ -76,7 +78,7 @@ $(document).ready(function() {
                             deleteArr.push($(this).attr('id').split('-')[1]);
                         }
                     });
-                    if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+                    if (totalCount === 0) {
                         return false;
                     }
                     var params = $.param({
@@ -93,7 +95,7 @@ $(document).ready(function() {
                 }
             });
         }
-        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+        if (totalCount === 0) {
             return false;
         }
         var params = $.param({

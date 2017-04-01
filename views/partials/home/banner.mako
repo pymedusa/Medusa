@@ -139,13 +139,13 @@
                 <span style="display: none;">${cur_show.name}</span>
                 <div class="imgbanner banner">
                     <a href="home/displayShow?show=${cur_show.indexerid}">
-                    <img asset="show/${cur_show.indexerid}?type=banner" class="banner" alt="${cur_show.indexerid}" title="${cur_show.name}"/>
+                    <img src="images/banner.png" lazy="on" asset="show/${cur_show.indexerid}?type=banner" class="banner" alt="${cur_show.indexerid}" title="${cur_show.name}"/>
                     </a>
                 </div>
             </td>
             <td align="center">
             % if cur_show.network:
-                <span title="${cur_show.network}" class="hidden-print"><img id="network" width="54" height="27" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
+                <span title="${cur_show.network}" class="hidden-print"><img id="network" class="show-network-image" width="54" height="27" src="images/network/nonetwork.png" lazy="on" asset="show/${cur_show.indexerid}?type=network" alt="${cur_show.network}" title="${cur_show.network}" /></span>
                 <span class="visible-print-inline">${cur_show.network}</span>
             % else:
                 <span title="No Network" class="hidden-print"><img id="network" width="54" height="27" src="images/network/nonetwork.png" alt="No Network" title="No Network" /></span>
@@ -156,6 +156,11 @@
                 % if cur_show.imdb_id:
                     <a href="${anon_url('http://www.imdb.com/title/', cur_show.imdb_id)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_show.imdb_id}">
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
+                    </a>
+                % endif
+                % if cur_show.externals.get('trakt_id'):
+                    <a href="${anon_url('https://trakt.tv/shows/', cur_show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
                     </a>
                 % endif
                 <a href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
@@ -175,15 +180,7 @@
                 <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center">
-            <%
-                display_status = cur_show.status
-                if None is not display_status:
-                    if re.search(r'(?i)(?:new|returning)\s*series', cur_show.status):
-                        display_status = 'Continuing'
-                    elif re.search('(?i)(?:nded)', cur_show.status):
-                        display_status = 'Ended'
-            %>
-            ${display_status}
+            ${cur_show.status}
             </td>
             <td align="center">
                 <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>

@@ -9,7 +9,6 @@ from rebulk import Rebulk
 from rebulk.rules import Rule, RemoveMatch
 
 from ...rules.common import seps, dash
-from ...rules.common.validators import seps_surround
 
 
 def streaming_service():
@@ -19,7 +18,7 @@ def streaming_service():
     :rtype: Rebulk
     """
     rebulk = Rebulk().string_defaults(ignore_case=True).regex_defaults(flags=re.IGNORECASE, abbreviations=[dash])
-    rebulk.defaults(name='streaming_service', validator=seps_surround)
+    rebulk.defaults(name='streaming_service', tags=['format-prefix'])
 
     rebulk.string('AE', 'A&E', value='A&E')
     rebulk.string('AMBC', value='ABC')
@@ -55,6 +54,7 @@ def streaming_service():
     rebulk.string('NFL', value='NFL')
     rebulk.string('NICK', 'Nickelodeon', value='Nickelodeon')
     rebulk.string('NF', 'Netflix', value='Netflix')
+    rebulk.string('iTunes', value='iTunes')
     rebulk.string('RTE', value='RTÉ One')
     rebulk.string('SESO', 'SeeSo', value='SeeSo')
     rebulk.string('SPKE', 'SpikeTV', 'Spike TV', value='Spike TV')
@@ -89,14 +89,20 @@ class ValidateStreamingService(Rule):
         """
         to_remove = []
         for service in matches.named('streaming_service'):
-            next_match = matches.next(service, predicate=lambda match: match.name == 'format', index=0)
-            if next_match and not matches.holes(service.end, next_match.start,
-                                                predicate=lambda match: match.value.strip(seps)):
-                if service.value == 'Comedy Central':
-                    # Current match is a valid streaming service, removing invalid closed caption (CC) matches
-                    to_remove.extend(matches.named('other', predicate=lambda match: match.value == 'CC'))
+            next_match = matches.next(service, lambda match: 'streaming_service.suffix' in match.tags, 0)
+            previous_match = matches.previous(service, lambda match: 'streaming_service.prefix' in match.tags, 0)
+            has_other = service.initiator and service.initiator.children.named('other')
+
+            if not has_other and \
+                (not next_match or matches.holes(service.end, next_match.start,
+                                                 predicate=lambda match: match.value.strip(seps))) and \
+                (not previous_match or matches.holes(previous_match.end, service.start,
+                                                     predicate=lambda match: match.value.strip(seps))):
+                to_remove.append(service)
                 continue
 
-            to_remove.append(service)
+            if service.value == 'Comedy Central':
+                # Current match is a valid streaming service, removing invalid closed caption (CC) matches
+                to_remove.extend(matches.named('other', predicate=lambda match: match.value == 'CC'))
 
         return to_remove

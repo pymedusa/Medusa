@@ -20,8 +20,7 @@
 import logging
 
 import app
-
-from . import clients
+from medusa.clients import torrent
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class TorrentChecker(object):
         self.amActive = True
 
         try:
-            client = clients.get_client_class(app.TORRENT_METHOD)()
+            client = torrent.get_client_class(app.TORRENT_METHOD)()
             client.remove_ratio_reached()
         except Exception as e:
             logger.debug('Failed to check torrent status. Error: {error}', error=e)

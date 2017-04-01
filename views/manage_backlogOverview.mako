@@ -1,10 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
 <%!
     from medusa import app
-    import datetime
-    from medusa.common import ARCHIVED, DOWNLOADED,Overview, Quality, qualityPresets, statusStrings
-    from medusa.helper.common import episode_num
-    from medusa import sbdatetime, network_timezones
+    from medusa.common import ARCHIVED, DOWNLOADED, Overview, Quality, qualityPresets, statusStrings
+    from medusa import sbdatetime
 %>
 <%block name="scripts">
 <script type="text/javascript">
@@ -25,18 +23,35 @@
     </div>
 <%
     totalWanted = totalQual = 0
-    backLogShows = sorted([x for x in app.showList if showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED]], key=lambda x: x.name)
+    backLogShows = sorted([x for x in app.showList if x.paused == 0 and showCounts[x.indexerid][Overview.QUAL] + showCounts[x.indexerid][Overview.WANTED]], key=lambda x: x.name)
     for cur_show in backLogShows:
         totalWanted += showCounts[cur_show.indexerid][Overview.WANTED]
         totalQual += showCounts[cur_show.indexerid][Overview.QUAL]
 %>
     <div class="clearfix"></div>
     <div class="row col-md-12">
-        <div class="col-md-6">
-            <div class="col-md-12">Jump to Show: <select id="pickShow" class="form-control-inline input-sm-custom">
+        <div class="col-md-12">
+            <div class="show-option pull-left">Jump to Show:
+                <select id="pickShow" class="form-control-inline input-sm-custom">
                 % for cur_show in backLogShows:
                     <option value="${cur_show.indexerid}">${cur_show.name}</option>
                 % endfor
+                </select>
+            </div>
+            <div class="show-option pull-left">Period:
+                <select id="backlog_period" class="form-control-inline input-sm-custom">
+                    <option value="all" ${'selected="selected"' if app.BACKLOG_PERIOD == 'all' else ''}>All</option>
+                    <option value="one_day" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_day' else ''}>Last 24h</option>
+                    <option value="three_days" ${'selected="selected"' if app.BACKLOG_PERIOD == 'three_days' else ''}>Last 3 days</option>
+                    <option value="one_week" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_week' else ''}>Last 7 days</option>
+                    <option value="one_month" ${'selected="selected"' if app.BACKLOG_PERIOD == 'one_month' else ''}>Last 30 days</option>
+                </select>
+            </div>
+            <div class="show-option pull-left">Status:
+                <select id="backlog_status" class="form-control-inline input-sm-custom">
+                    <option value="all" ${'selected="selected"' if app.BACKLOG_STATUS == 'all' else ''}>All</option>
+                    <option value="quality" ${'selected="selected"' if app.BACKLOG_STATUS == 'quality' else ''}>Quality</option>
+                    <option value="wanted" ${'selected="selected"' if app.BACKLOG_STATUS == 'wanted' else ''}>Wanted</option>
                 </select>
             </div>
         </div>
@@ -62,13 +77,13 @@
             <tr class="seasonheader" id="show-${cur_show.indexerid}">
                 <td class="row-seasonheader" colspan="5" style="vertical-align: bottom; width: auto;">
                     <div class="col-md-12">
-                        <div class="col-md-8 left-30">
+                        <div class="col-md-6 left-30">
                             <h3 style="display: inline;"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></h3>
                              % if cur_show.quality in qualityPresets:
                                 &nbsp;&nbsp;&nbsp;&nbsp;<i>Quality:</i>&nbsp;&nbsp;${renderQualityPill(cur_show.quality)}
                              % endif
                         </div>
-                        <div class="col-md-4 pull-right right-30">
+                        <div class="col-md-6 pull-right right-30">
                             <div class="top-5 bottom-5 pull-right">
                                 % if showCounts[cur_show.indexerid][Overview.WANTED] > 0:
                                 <span class="listing-key wanted">Wanted: <b>${showCounts[cur_show.indexerid][Overview.WANTED]}</b></span>
@@ -111,14 +126,11 @@
             </tr>
             % for cur_result in showSQLResults[cur_show.indexerid]:
                 <%
-                    whichStr = episode_num(cur_result['season'], cur_result['episode']) or episode_num(cur_result['season'], cur_result['episode'], numbering='absolute')
-                    if whichStr not in showCats[cur_show.indexerid] or showCats[cur_show.indexerid][whichStr] not in (Overview.QUAL, Overview.WANTED):
-                        continue
                     old_status, old_quality = Quality.split_composite_status(cur_result['status'])
                     archived_status = Quality.composite_status(ARCHIVED, old_quality)
                 %>
-                <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][whichStr]]}">
-                    <td class="tableleft" align="center">${whichStr}</td>
+                <tr class="seasonstyle ${Overview.overviewStrings[showCats[cur_show.indexerid][cur_result["episode_string"]]]}">
+                    <td class="tableleft" align="center">${cur_result["episode_string"]}</td>
                     <td class="col-status">
                         % if old_quality != Quality.NONE:
                             ${statusStrings[old_status]} ${renderQualityPill(old_quality)}
@@ -130,16 +142,9 @@
                         ${cur_result["name"]}
                     </td>
                     <td>
-                        <% epResult = cur_result %>
                         <% show = cur_show %>
-                        % if int(epResult['airdate']) != 1:
-                            ## Lets do this exactly like ComingEpisodes and History
-                            ## Avoid issues with dateutil's _isdst on Windows but still provide air dates
-                            <% airDate = datetime.datetime.fromordinal(epResult['airdate']) %>
-                            % if airDate.year >= 1970 or show.network:
-                                <% airDate = sbdatetime.sbdatetime.convert_to_setting(network_timezones.parse_date_time(epResult['airdate'], show.airs, show.network)) %>
-                            % endif
-                            <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
+                        % if cur_result['airdate']:
+                            <time datetime="${cur_result['airdate'].isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(cur_result['airdate'])}</time>
                         % else:
                             Never
                         % endif

@@ -47,7 +47,7 @@ class ExtraTorrentProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://extratorrent.cc'
+        self.url = 'http://extra.to'
         self.custom_url = None
 
         # Proper Strings

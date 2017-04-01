@@ -21,7 +21,8 @@ from __future__ import print_function
 import unittest
 
 from medusa.common import ANY, HD, HD1080p, HD720p, Quality, SD
-from medusa.helper.quality import get_quality_string
+from medusa.helpers.quality import get_quality_string
+
 from six import iteritems
 
 
