@@ -23,4 +23,5 @@ MEDUSA.addShows.trendingShows = function() {
 
     $.initAddShowById();
     $.initBlackListShowById();
+    $.rootDirCheck();
 };

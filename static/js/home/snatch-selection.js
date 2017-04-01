@@ -1,20 +1,20 @@
 MEDUSA.home.snatchSelection = function() {
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();
-        if ($(this).html() === "..show less") {
-            $(this).html("..show more");
+        if ($(this).html() === '..show less') {
+            $(this).html('..show more');
         } else {
-            $(this).html("..show less");
+            $(this).html('..show less');
         }
         moveSummaryBackground();
     });
 
     // adjust the summary background position and size on page load and resize
     function moveSummaryBackground() {
-        var height = $("#summary").height() + 10;
-        var top = $("#summary").offset().top + 5;
-        $("#summaryBackground").height(height);
-        $("#summaryBackground").offset({ top: top, left: 0});
+        var height = $('#summary').height() + 10;
+        var top = $('#summary').offset().top + 5;
+        $('#summaryBackground').height(height);
+        $('#summaryBackground').offset({top: top, left: 0});
     }
 
     $(window).resize(function() {
@@ -40,7 +40,8 @@ MEDUSA.home.snatchSelection = function() {
 
     $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
         updateSpinner(loadingTxt);
-        $(this).load(path + ' #container', function(response, status) {
+        $('#manualSearchMeta').load(path + ' #manualSearchMeta meta');
+        $(this).load(path + ' #manualSearchTbody tr', function(response, status) {
             if (status === 'error') {
                 updateSpinner(errorTxt, false);
             }
@@ -99,10 +100,10 @@ MEDUSA.home.snatchSelection = function() {
         var data = $('meta[data-last-prov-updates]').data('last-prov-updates');
         var manualSearchType = $('meta[data-last-prov-updates]').attr('data-manual-search-type');
 
-        var urlParams =  show + '&season=' + season + '&episode=' + episode;
+        var urlParams = show + '&season=' + season + '&episode=' + episode;
 
-        if (manualSearchType == 'season') {
-            urlParams += '&manual_search_type=' + manualSearchType
+        if (manualSearchType === 'season') {
+            urlParams += '&manual_search_type=' + manualSearchType;
         }
 
         if (!$.isNumeric(show) || !$.isNumeric(season) || !$.isNumeric(episode)) {
@@ -112,7 +113,7 @@ MEDUSA.home.snatchSelection = function() {
         }
 
         self.refreshResults = function() {
-            $('#wrapper').loadContainer(
+            $('#manualSearchTbody').loadContainer(
                     'home/snatchSelection?show=' + urlParams,
                     'Loading new search results...',
                     'Time out, refresh page to try again',
@@ -137,31 +138,29 @@ MEDUSA.home.snatchSelection = function() {
             },
             timeout: 15000 // timeout after 15s
         }).done(function(data) {
+            // @TODO: Combine the lower if statements
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);
-                initTableSorter('#srchresults');
             }
             if (data.result === 'searching') {
                 // ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode is being searched, please wait......', true);
-                initTableSorter('#srchresults');
             }
             if (data.result === 'queued') {
                 // ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
-                initTableSorter('#srchresults');
             }
             if (data.result === 'finished') {
                 // ep search is finished
                 updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
-                initTableSorter('#srchresults');
+                $('#srchresults').trigger('update', true);
                 $('[datetime]').timeago();
             }
             if (data.result === 'error') {
@@ -169,7 +168,6 @@ MEDUSA.home.snatchSelection = function() {
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
-                initTableSorter('#srchresults');
             }
         });
     }
@@ -204,7 +202,6 @@ MEDUSA.home.snatchSelection = function() {
 
     // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
     // "Show History" button to show or hide the snatch/download/failed history for a manual searched episode or pack.
-    initTableSorter('#showTable');
 
     $('#popover').popover({
         placement: 'bottom',
@@ -222,6 +219,7 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $(function() {
+        initTableSorter('#srchresults');
         moveSummaryBackground();
         $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Show History');

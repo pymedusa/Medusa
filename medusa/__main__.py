@@ -76,6 +76,7 @@ from .config import (
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from .providers.generic_provider import GenericProvider
 from .providers.nzb.newznab import NewznabProvider
 from .providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -290,7 +291,7 @@ class Application(object):
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
 
-        app.CFG = ConfigObj(app.CONFIG_FILE)
+        app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
         # Initialize the config and our threads
         self.initialize(console_logging=self.console_logging)
@@ -390,8 +391,10 @@ class Application(object):
             app.ENCRYPTION_SECRET = check_setting_str(app.CFG, 'General', 'encryption_secret', helpers.generate_cookie_secret(), censor_log='low')
 
             # git login info
+            app.GIT_AUTH_TYPE = check_setting_int(app.CFG, 'General', 'git_auth_type', 0)
             app.GIT_USERNAME = check_setting_str(app.CFG, 'General', 'git_username', '')
             app.GIT_PASSWORD = check_setting_str(app.CFG, 'General', 'git_password', '', censor_log='low')
+            app.GIT_TOKEN = check_setting_str(app.CFG, 'General', 'git_token', '', censor_log='low')
             app.DEVELOPER = bool(check_setting_int(app.CFG, 'General', 'developer', 0))
 
             # debugging
@@ -644,6 +647,7 @@ class Application(object):
             app.TORRENT_VERIFY_CERT = bool(check_setting_int(app.CFG, 'TORRENT', 'torrent_verify_cert', 0))
             app.TORRENT_RPCURL = check_setting_str(app.CFG, 'TORRENT', 'torrent_rpcurl', 'transmission')
             app.TORRENT_AUTH_TYPE = check_setting_str(app.CFG, 'TORRENT', 'torrent_auth_type', '')
+            app.TORRENT_SEED_LOCATION = check_setting_str(app.CFG, 'TORRENT', 'torrent_seed_location', '')
 
             app.USE_KODI = bool(check_setting_int(app.CFG, 'KODI', 'use_kodi', 0))
             app.KODI_ALWAYS_ON = bool(check_setting_int(app.CFG, 'KODI', 'kodi_always_on', 1))
@@ -773,7 +777,10 @@ class Application(object):
             app.TRAKT_USE_RECOMMENDED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_use_recommended', 0))
             app.TRAKT_SYNC = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync', 0))
             app.TRAKT_SYNC_REMOVE = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_remove', 0))
-            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', 1)
+            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', INDEXER_TVDBV2)
+            if app.TRAKT_DEFAULT_INDEXER == INDEXER_TVMAZE:
+                # Trakt doesn't support TVMAZE. Default to TVDB
+                app.TRAKT_DEFAULT_INDEXER = INDEXER_TVDBV2
             app.TRAKT_TIMEOUT = check_setting_int(app.CFG, 'Trakt', 'trakt_timeout', 30)
             app.TRAKT_BLACKLIST_NAME = check_setting_str(app.CFG, 'Trakt', 'trakt_blacklist_name', '')
 
@@ -911,6 +918,9 @@ class Application(object):
             app.RELEASES_IN_PP = []
             app.GIT_REMOTE_BRANCHES = []
             app.KODI_LIBRARY_CLEAN_PENDING = False
+            app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
+            app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
+            app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
 
             # reconfigure the logger
             app_logger.reconfigure()
@@ -1087,9 +1097,8 @@ class Application(object):
                                                                   threadName="BACKLOG",
                                                                   run_delay=update_interval)
 
-            search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
-            if app.CHECK_PROPERS_INTERVAL in search_intervals:
-                update_interval = datetime.timedelta(minutes=search_intervals[app.CHECK_PROPERS_INTERVAL])
+            if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
+                update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
                 run_at = None
             else:
                 update_interval = datetime.timedelta(hours=1)
@@ -1324,8 +1333,10 @@ class Application(object):
         # For passwords you must include the word `password` in the item_name
         # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
         new_config['General'] = {}
+        new_config['General']['git_auth_type'] = app.GIT_AUTH_TYPE
         new_config['General']['git_username'] = app.GIT_USERNAME
         new_config['General']['git_password'] = helpers.encrypt(app.GIT_PASSWORD, app.ENCRYPTION_VERSION)
+        new_config['General']['git_token'] = helpers.encrypt(app.GIT_TOKEN, app.ENCRYPTION_VERSION)
         new_config['General']['git_reset'] = int(app.GIT_RESET)
         new_config['General']['git_reset_branches'] = ','.join(app.GIT_RESET_BRANCHES)
         new_config['General']['branch'] = app.BRANCH
@@ -1466,6 +1477,9 @@ class Application(object):
         new_config['General']['display_all_seasons'] = int(app.DISPLAY_ALL_SEASONS)
         new_config['General']['news_last_read'] = app.NEWS_LAST_READ
         new_config['General']['broken_providers'] = helpers.get_broken_providers() or app.BROKEN_PROVIDERS
+        new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
+        new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
+        new_config['General']['backlog_status'] = app.BACKLOG_STATUS
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
@@ -1556,6 +1570,7 @@ class Application(object):
         new_config['TORRENT']['torrent_verify_cert'] = int(app.TORRENT_VERIFY_CERT)
         new_config['TORRENT']['torrent_rpcurl'] = app.TORRENT_RPCURL
         new_config['TORRENT']['torrent_auth_type'] = app.TORRENT_AUTH_TYPE
+        new_config['TORRENT']['torrent_seed_location'] = app.TORRENT_SEED_LOCATION
 
         new_config['KODI'] = {}
         new_config['KODI']['use_kodi'] = int(app.USE_KODI)

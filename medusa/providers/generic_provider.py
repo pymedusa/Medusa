@@ -60,7 +60,6 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.show_name_helpers import allPossibleShowNames
 
 from requests.utils import add_dict_to_cookiejar
 
@@ -500,7 +499,7 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
@@ -548,7 +547,7 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.season):
+        for show_name in episode.show.get_all_possible_names(season=episode.season):
             episode_string = show_name + ' '
 
             if episode.show.air_by_date or episode.show.sports:

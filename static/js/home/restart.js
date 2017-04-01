@@ -2,6 +2,7 @@ MEDUSA.home.restart = function() {
     var currentPid = $('.messages').attr('current-pid');
     var defaultPage = $('.messages').attr('default-page');
     var checkIsAlive = setInterval(function() {
+        // @TODO: Move to API
         $.get('home/is_alive/', function(data) {
             if (data.msg.toLowerCase() === 'nope') {
                 // if it's still initializing then just wait and try again

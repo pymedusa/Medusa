@@ -90,7 +90,6 @@ class SearchApi(object):
         query_params = {}
         if 'name' in params:
             query_params['name'] = params['name']
-            print('search called on name: %s' % query_params['name'])
         if 'imdb_id' in params:
             query_params['imdbId'] = params['imdb_id']
         if 'zap2it_id' in params:

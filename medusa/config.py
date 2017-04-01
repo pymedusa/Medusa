@@ -24,8 +24,9 @@ import re
 from requests.compat import urlsplit
 from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
-from . import app, common, db, helpers, logger, naming
+from . import app, common, db, helpers, logger, naming, scheduler
 from .helper.common import try_int
+from .version_checker import CheckVersion
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
@@ -235,6 +236,26 @@ def change_BACKLOG_FREQUENCY(freq):
     app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
 
 
+def change_PROPERS_FREQUENCY(check_propers_interval):
+    """
+    Change frequency of backlog thread
+
+    :param freq: New frequency
+    """
+    if not app.DOWNLOAD_PROPERS:
+        return
+
+    if app.CHECK_PROPERS_INTERVAL == check_propers_interval:
+        return
+
+    if check_propers_interval in app.PROPERS_SEARCH_INTERVAL:
+        update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[check_propers_interval])
+    else:
+        update_interval = datetime.timedelta(hours=1)
+    app.CHECK_PROPERS_INTERVAL = check_propers_interval
+    app.proper_finder_scheduler.cycleTime = update_interval
+
+
 def change_UPDATE_FREQUENCY(freq):
     """
     Change frequency of daily updater thread
@@ -283,6 +304,7 @@ def change_VERSION_NOTIFY(version_notify):
 
     :param version_notify: New frequency
     """
+
     oldSetting = app.VERSION_NOTIFY
 
     app.VERSION_NOTIFY = version_notify
@@ -292,6 +314,19 @@ def change_VERSION_NOTIFY(version_notify):
 
     if oldSetting is False and version_notify is True:
         app.version_check_scheduler.forceRun()
+
+
+def change_GIT_PATH():
+    """
+    Recreate the version_check scheduler when GIT_PATH is changed.
+    Force a run to clear or set any error messages.
+    """
+    app.version_check_scheduler = None
+    app.version_check_scheduler = scheduler.Scheduler(
+        CheckVersion(), cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY), threadName="CHECKVERSION", silent=False)
+    app.version_check_scheduler.enable = True
+    app.version_check_scheduler.start()
+    app.version_check_scheduler.forceRun()
 
 
 def change_DOWNLOAD_PROPERS(download_propers):
