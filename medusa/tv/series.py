@@ -955,8 +955,9 @@ class Series(TV):
                     self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
                 else:
                     self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
-            except KeyError as e:
-                logger.error(u'Indexer not supported in current mappings: {id}', id=e.message)
+            except KeyError as error:
+                log.error(u'Indexer not supported in current mappings: {id}',
+                          {'id': error.message})
 
         return self.externals
 
