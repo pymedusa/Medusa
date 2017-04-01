@@ -1,32 +1,38 @@
 # coding=utf-8
 
-# Author: Dustyn Gibson <miigotu@gmail.com>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 import logging
 import socket
 
 from medusa import app
-from medusa.notifiers import boxcar2, emailnotify, emby, freemobile, growl, kodi, libnotify, nma, nmj, nmjv2, plex, prowl, pushalot, pushbullet, pushover, \
-    pytivo, synoindex, synology_notifier, telegram, trakt, tweet
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.notifiers import (
+    boxcar2,
+    emailnotify,
+    emby,
+    freemobile,
+    growl,
+    kodi,
+    libnotify,
+    nma,
+    nmj,
+    nmjv2,
+    plex,
+    prowl,
+    pushalot,
+    pushbullet,
+    pushover,
+    pytivo,
+    synoindex,
+    synology_notifier,
+    telegram,
+    trakt,
+    tweet,
+)
 
 from requests.exceptions import RequestException
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 # home theater / nas
 kodi_notifier = kodi.Notifier()
@@ -82,24 +88,24 @@ def notify_download(ep_name):
     for n in notifiers:
         try:
             n.notify_download(ep_name)
-        except (RequestException, socket.gaierror) as e:
-            logger.debug(u'Unable to send download notification. Error: {error}', error=e.message)
+        except (RequestException, socket.gaierror) as error:
+            log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
 def notify_subtitle_download(ep_name, lang):
     for n in notifiers:
         try:
             n.notify_subtitle_download(ep_name, lang)
-        except (RequestException, socket.gaierror) as e:
-            logger.debug(u'Unable to send download notification. Error: {error}', error=e.message)
+        except (RequestException, socket.gaierror) as error:
+            log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
 def notify_snatch(ep_name, is_proper):
     for n in notifiers:
         try:
             n.notify_snatch(ep_name, is_proper)
-        except (RequestException, socket.gaierror) as e:
-            logger.debug(u'Unable to send snatch notification. Error: {error}', error=e.message)
+        except (RequestException, socket.gaierror) as error:
+            log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 
 
 def notify_git_update(new_version=""):
@@ -107,8 +113,8 @@ def notify_git_update(new_version=""):
         if app.NOTIFY_ON_UPDATE:
             try:
                 n.notify_git_update(new_version)
-            except (RequestException, socket.gaierror) as e:
-                logger.debug(u'Unable to send new update notification. Error: {error}', error=e.message)
+            except (RequestException, socket.gaierror) as error:
+                log.debug(u'Unable to send new update notification. Error: {0}', error.message)
 
 
 def notify_login(ipaddress):
@@ -116,5 +122,5 @@ def notify_login(ipaddress):
         if app.NOTIFY_ON_LOGIN:
             try:
                 n.notify_login(ipaddress)
-            except (RequestException, socket.gaierror) as e:
-                logger.debug(u'Unable to new login notification. Error: {error}', error=e.message)
+            except (RequestException, socket.gaierror) as error:
+                log.debug(u'Unable to new login notification. Error: {0}', error.message)
