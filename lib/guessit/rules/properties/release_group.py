@@ -5,7 +5,7 @@ release_group property
 """
 import copy
 
-from rebulk import Rebulk, Rule, AppendMatch
+from rebulk import Rebulk, Rule, AppendMatch, RemoveMatch
 
 from ..common import seps
 from ..common.expected import build_expected_function
@@ -63,7 +63,7 @@ def clean_groupname(string):
 
 _scene_previous_names = ['video_codec', 'format', 'video_api', 'audio_codec', 'audio_profile', 'video_profile',
                          'audio_channels', 'screen_size', 'other', 'container', 'language', 'subtitle_language',
-                         'subtitle_language.suffix', 'subtitle_language.prefix']
+                         'subtitle_language.suffix', 'subtitle_language.prefix', 'language.suffix']
 
 _scene_previous_tags = ['release-group-prefix']
 
@@ -155,12 +155,13 @@ class AnimeReleaseGroup(Rule):
     ...[ReleaseGroup] Something.mkv
     """
     dependency = [SceneReleaseGroup, TitleFromPosition]
-    consequence = AppendMatch
+    consequence = [RemoveMatch, AppendMatch]
 
     properties = {'release_group': [None]}
 
     def when(self, matches, context):
-        ret = []
+        to_remove = []
+        to_append = []
 
         # If a release_group is found before, ignore this kind of release_group rule.
         if matches.named('release_group'):
@@ -173,19 +174,23 @@ class AnimeReleaseGroup(Rule):
         for filepart in marker_sorted(matches.markers.named('path'), matches):
 
             # pylint:disable=bad-continuation
-            empty_group_marker = matches.markers \
-                .range(filepart.start, filepart.end, lambda marker: (marker.name == 'group'
-                                                                     and not matches.range(marker.start, marker.end)
-                                                                     and marker.value.strip(seps)
-                                                                     and not int_coercable(marker.value.strip(seps))),
-                       0)
+            empty_group = matches.markers.range(filepart.start,
+                                                filepart.end,
+                                                lambda marker: (marker.name == 'group'
+                                                                and not matches.range(marker.start, marker.end,
+                                                                                      lambda m:
+                                                                                      'weak-language' not in m.tags)
+                                                                and marker.value.strip(seps)
+                                                                and not int_coercable(marker.value.strip(seps))), 0)
 
-            if empty_group_marker:
-                group = copy.copy(empty_group_marker)
+            if empty_group:
+                group = copy.copy(empty_group)
                 group.marker = False
                 group.raw_start += 1
                 group.raw_end -= 1
                 group.tags = ['anime']
                 group.name = 'release_group'
-                ret.append(group)
-        return ret
+                to_append.append(group)
+                to_remove.extend(matches.range(empty_group.start, empty_group.end,
+                                               lambda m: 'weak-language' in m.tags))
+        return to_remove, to_append

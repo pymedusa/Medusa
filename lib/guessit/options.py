@@ -81,11 +81,14 @@ def build_argument_parser():
     return opts
 
 
-def parse_options(options=None):
+def parse_options(options=None, api=False):
     """
     Parse given option string
+
     :param options:
     :type options:
+    :param api
+    :type boolean
     :return:
     :rtype:
     """
@@ -93,7 +96,10 @@ def parse_options(options=None):
         args = shlex.split(options)
         options = vars(argument_parser.parse_args(args))
     elif options is None:
-        options = vars(argument_parser.parse_args())
+        if api:
+            options = {}
+        else:
+            options = vars(argument_parser.parse_args())
     elif not isinstance(options, dict):
         options = vars(argument_parser.parse_args(options))
     return options

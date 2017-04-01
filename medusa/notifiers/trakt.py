@@ -20,10 +20,11 @@
 
 from __future__ import unicode_literals
 
+from medusa import app, logger
+from medusa.helpers import get_title_without_year
+from medusa.indexers.indexer_config import get_trakt_indexer
+
 from traktor import AuthException, ServerBusy, TraktApi, TraktException
-from .. import app, logger
-from ..helper.exceptions import ex
-from ..indexers.indexer_api import indexerApi
 
 
 class Notifier(object):
@@ -51,8 +52,10 @@ class Notifier(object):
 
         ep_obj: The Episode object to add to trakt
         """
+        # Check if TRAKT supports that indexer
+        if not get_trakt_indexer(ep_obj.show.indexer):
+            return
 
-        trakt_id = indexerApi(ep_obj.show.indexer).config['trakt_id']
         # Create a trakt settings dict
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
@@ -64,20 +67,18 @@ class Notifier(object):
         if app.USE_TRAKT:
             try:
                 # URL parameters
+                title = get_title_without_year(ep_obj.show.name, ep_obj.show.start_year)
                 data = {
                     'shows': [
                         {
-                            'title': ep_obj.show.name,
+                            'title': title,
                             'year': ep_obj.show.start_year,
                             'ids': {},
                         }
                     ]
                 }
 
-                if trakt_id == 'tvdb_id':
-                    data['shows'][0]['ids']['tvdb'] = ep_obj.show.indexerid
-                else:
-                    data['shows'][0]['ids']['tvrage'] = ep_obj.show.indexerid
+                data['shows'][0]['ids'][get_trakt_indexer(ep_obj.show.indexer)] = ep_obj.show.indexerid
 
                 if app.TRAKT_SYNC_WATCHLIST:
                     if app.TRAKT_REMOVE_SERIESLIST:
@@ -96,8 +97,8 @@ class Notifier(object):
                 # update library
                 trakt_api.request('sync/collection', data, method='POST')
 
-            except (TraktException, AuthException, ServerBusy) as trakt_ex:
-                logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
+            except (TraktException, AuthException, ServerBusy) as error:
+                logger.log('Unable to update Trakt: {0}'.format(error.message), logger.DEBUG)
 
     @staticmethod
     def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
@@ -112,6 +113,9 @@ class Notifier(object):
         data_episode: structured object of episodes trakt type
         update: type o action add or remove
         """
+        # Check if TRAKT supports that indexer
+        if not get_trakt_indexer(show_obj.indexer):
+            return
 
         trakt_settings = {'trakt_api_secret': app.TRAKT_API_SECRET,
                           'trakt_api_key': app.TRAKT_API_KEY,
@@ -126,21 +130,17 @@ class Notifier(object):
             try:
                 # URL parameters
                 if show_obj is not None:
-                    trakt_id = indexerApi(show_obj.indexer).config['trakt_id']
+                    title = get_title_without_year(show_obj.name, show_obj.start_year)
                     data = {
                         'shows': [
                             {
-                                'title': show_obj.name,
+                                'title': title,
                                 'year': show_obj.start_year,
                                 'ids': {},
                             }
                         ]
                     }
-
-                    if trakt_id == 'tvdb_id':
-                        data['shows'][0]['ids']['tvdb'] = show_obj.indexerid
-                    else:
-                        data['shows'][0]['ids']['tvrage'] = show_obj.indexerid
+                    data['shows'][0]['ids'][get_trakt_indexer(show_obj.indexer)] = show_obj.indexerid
                 elif data_show is not None:
                     data.update(data_show)
                 else:
@@ -182,8 +182,8 @@ class Notifier(object):
 
                 trakt_api.request(trakt_url, data, method='POST')
 
-            except (TraktException, AuthException, ServerBusy) as trakt_ex:
-                logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
+            except (TraktException, AuthException, ServerBusy) as error:
+                logger.log('Unable to update Trakt watchlist: {0}'.format(error.message), logger.DEBUG)
                 return False
 
         return True
@@ -193,12 +193,8 @@ class Notifier(object):
 
         showList = []
         for indexer, indexerid, title, year in data:
-            trakt_id = indexerApi(indexer).config['trakt_id']
             show = {'title': title, 'year': year, 'ids': {}}
-            if trakt_id == 'tvdb_id':
-                show['ids']['tvdb'] = indexerid
-            else:
-                show['ids']['tvrage'] = indexerid
+            show['ids'][get_trakt_indexer(indexer)] = indexerid
             showList.append(show)
 
         post_data = {'shows': showList}
@@ -257,6 +253,6 @@ class Notifier(object):
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except (TraktException, AuthException, ServerBusy) as trakt_ex:
-            logger.log('Could not connect to Trakt service: {0}'.format(ex(trakt_ex)), logger.WARNING)
-            return 'Test notice failed to Trakt: {0}'.format(ex(trakt_ex))
+        except (TraktException, AuthException, ServerBusy) as error:
+            logger.log('Unable to test TRAKT: {0}'.format(error.message), logger.WARNING)
+            return 'Test notice failed to Trakt: {0}'.format(error.message)
