@@ -29,6 +29,7 @@ import time
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
 import knowit
+from medusa.subtitle_providers.utils import hash_itasa
 from six import iteritems, string_types, text_type
 from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
                         scan_video)
@@ -710,6 +711,12 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     except ValueError as e:
         logger.warning(u'Unable to scan video: %s. Error: %s', video_path, e.message)
     else:
+
+        # Add hash of our custom provider Itasa
+        video.size = os.path.getsize(video_path)
+        if video.size > 10485760:
+            video.hashes['itasa'] = hash_itasa(video_path)
+
         # external subtitles
         if subtitles:
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())
