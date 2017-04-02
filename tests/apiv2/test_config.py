@@ -5,7 +5,7 @@ import platform
 import sys
 
 from medusa import app, db
-from medusa.essentials.dictionary import OrderedPredicateDict
+from medusa.helper.collections import NonEmptyDict
 
 import pytest
 from tornado.httpclient import HTTPError
@@ -19,7 +19,7 @@ def config(monkeypatch, app_config):
     app_config('LOCALE', (None, 'ABC'))
     app_locale = 'Unknown.ABC'
 
-    config_data = OrderedPredicateDict()
+    config_data = NonEmptyDict()
     config_data['anonRedirect'] = app.ANON_REDIRECT
     config_data['animeSplitHome'] = app.ANIME_SPLIT_HOME
     config_data['comingEpsSort'] = app.COMING_EPS_SORT
@@ -39,7 +39,7 @@ def config(monkeypatch, app_config):
     config_data['release'] = app.APP_VERSION
     config_data['sslVersion'] = app.OPENSSL_VERSION
     config_data['pythonVersion'] = sys.version
-    config_data['databaseVersion'] = OrderedPredicateDict()
+    config_data['databaseVersion'] = NonEmptyDict()
     config_data['databaseVersion']['major'] = app.MAJOR_DB_VERSION
     config_data['databaseVersion']['minor'] = app.MINOR_DB_VERSION
     config_data['os'] = platform.platform()
@@ -58,14 +58,14 @@ def config(monkeypatch, app_config):
     config_data['downloadUrl'] = app.DOWNLOAD_URL
     config_data['subtitlesMulti'] = app.SUBTITLES_MULTI
     config_data['namingForceFolders'] = app.NAMING_FORCE_FOLDERS
-    config_data['subtitles'] = OrderedPredicateDict()
+    config_data['subtitles'] = NonEmptyDict()
     config_data['subtitles']['enabled'] = bool(app.USE_SUBTITLES)
-    config_data['kodi'] = OrderedPredicateDict()
+    config_data['kodi'] = NonEmptyDict()
     config_data['kodi']['enabled'] = bool(app.USE_KODI and app.KODI_UPDATE_LIBRARY)
-    config_data['plex'] = OrderedPredicateDict()
-    config_data['plex']['server'] = OrderedPredicateDict()
+    config_data['plex'] = NonEmptyDict()
+    config_data['plex']['server'] = NonEmptyDict()
     config_data['plex']['server']['enabled'] = bool(app.USE_PLEX_SERVER)
-    config_data['plex']['server']['notify'] = OrderedPredicateDict()
+    config_data['plex']['server']['notify'] = NonEmptyDict()
     config_data['plex']['server']['notify']['snatch'] = bool(app.PLEX_NOTIFY_ONSNATCH)
     config_data['plex']['server']['notify']['download'] = bool(app.PLEX_NOTIFY_ONDOWNLOAD)
     config_data['plex']['server']['notify']['subtitleDownload'] = bool(app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD)
@@ -75,14 +75,14 @@ def config(monkeypatch, app_config):
     config_data['plex']['server']['token'] = app.PLEX_SERVER_TOKEN
     config_data['plex']['server']['username'] = app.PLEX_SERVER_USERNAME
     config_data['plex']['server']['password'] = app.PLEX_SERVER_PASSWORD
-    config_data['plex']['client'] = OrderedPredicateDict()
+    config_data['plex']['client'] = NonEmptyDict()
     config_data['plex']['client']['enabled'] = bool(app.USE_PLEX_CLIENT)
     config_data['plex']['client']['username'] = app.PLEX_CLIENT_USERNAME
     config_data['plex']['client']['password'] = app.PLEX_CLIENT_PASSWORD
     config_data['plex']['client']['host'] = app.PLEX_CLIENT_HOST
-    config_data['emby'] = OrderedPredicateDict()
+    config_data['emby'] = NonEmptyDict()
     config_data['emby']['enabled'] = bool(app.USE_EMBY)
-    config_data['torrents'] = OrderedPredicateDict()
+    config_data['torrents'] = NonEmptyDict()
     config_data['torrents']['enabled'] = bool(app.USE_TORRENTS)
     config_data['torrents']['method'] = app.TORRENT_METHOD
     config_data['torrents']['username'] = app.TORRENT_USERNAME
@@ -97,7 +97,7 @@ def config(monkeypatch, app_config):
     config_data['torrents']['host'] = app.TORRENT_HOST
     config_data['torrents']['rpcurl'] = app.TORRENT_RPCURL
     config_data['torrents']['authType'] = app.TORRENT_AUTH_TYPE
-    config_data['nzb'] = OrderedPredicateDict()
+    config_data['nzb'] = NonEmptyDict()
     config_data['nzb']['enabled'] = bool(app.USE_NZBS)
     config_data['nzb']['username'] = app.NZBGET_USERNAME
     config_data['nzb']['password'] = app.NZBGET_PASSWORD
@@ -107,15 +107,15 @@ def config(monkeypatch, app_config):
     # app.NZBGET_CATEGORY_ANIME_BACKLOG
     config_data['nzb']['host'] = app.NZBGET_HOST
     config_data['nzb']['priority'] = app.NZBGET_PRIORITY
-    config_data['layout'] = OrderedPredicateDict()
+    config_data['layout'] = NonEmptyDict()
     config_data['layout']['schedule'] = app.COMING_EPS_LAYOUT
     config_data['layout']['history'] = app.HISTORY_LAYOUT
     config_data['layout']['home'] = app.HOME_LAYOUT
-    config_data['layout']['show'] = OrderedPredicateDict()
+    config_data['layout']['show'] = NonEmptyDict()
     config_data['layout']['show']['allSeasons'] = bool(app.DISPLAY_ALL_SEASONS)
     config_data['layout']['show']['specials'] = bool(app.DISPLAY_SHOW_SPECIALS)
     config_data['selectedRootIndex'] = int(app.SELECTED_ROOT) if app.SELECTED_ROOT else None
-    config_data['backlogOverview'] = OrderedPredicateDict()
+    config_data['backlogOverview'] = NonEmptyDict()
     config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
     config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
 

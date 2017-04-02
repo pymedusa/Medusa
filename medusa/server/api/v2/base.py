@@ -12,6 +12,7 @@ from babelfish.language import Language
 import jwt
 from medusa import app
 from six import string_types, text_type
+from tornado.httpclient import HTTPError
 from tornado.web import RequestHandler
 
 
@@ -144,6 +145,12 @@ class BaseRequestHandler(RequestHandler):
 
         return cls.create_url(base, cls.name, *(cls.identifier, cls.path_param)), cls
 
+    def _handle_request_exception(self, e):
+        if isinstance(e, HTTPError):
+            self.api_finish(e.code, e.message)
+        else:
+            super(BaseRequestHandler, self)._handle_request_exception(e)
+
     def _ok(self, data=None, headers=None, stream=None, content_type=None):
         self.api_finish(200, data=data, headers=headers, stream=stream, content_type=content_type)
 
@@ -183,17 +190,39 @@ class BaseRequestHandler(RequestHandler):
     def _not_implemented(self):
         self.api_finish(501)
 
+    @classmethod
+    def _raise_bad_request_error(cls, error):
+        raise HTTPError(400, error)
+
     def _get_sort(self, default):
         return self.get_argument('sort', default=default)
 
     def _get_sort_order(self, default='asc'):
-        return self.get_argument('order', default=default).lower()
+        value = self.get_argument('order', default=default).lower()
+        if value not in ('asc', 'desc'):
+            self._raise_bad_request_error('Invalid sort order parameter')
+
+        return value
 
     def _get_page(self):
-        return max(1, int(self.get_argument('page', default=1)))
+        try:
+            page = int(self.get_argument('page', default=1))
+            if page < 1:
+                self._raise_bad_request_error('Invalid page parameter')
+
+            return page
+        except ValueError:
+            self._raise_bad_request_error('Invalid page parameter')
 
     def _get_limit(self, default=20, maximum=1000):
-        return min(max(1, int(self.get_argument('limit', default=default))), maximum)
+        try:
+            limit = self._parse(self.get_argument('limit', default=default))
+            if limit < 1 or limit > maximum:
+                self._raise_bad_request_error('Invalid limit parameter')
+
+            return limit
+        except ValueError:
+            self._raise_bad_request_error('Invalid limit parameter')
 
     def _paginate(self, data=None, data_generator=None, sort=None):
         arg_page = self._get_page()
@@ -217,7 +246,11 @@ class BaseRequestHandler(RequestHandler):
             end = start + arg_limit
             results = data
             if arg_sort:
-                results = sorted(results, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
+                try:
+                    results = sorted(results, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
+                except KeyError:
+                    return self._bad_request('Invalid sort query parameter')
+
             count = len(results)
             headers['X-Pagination-Count'] = count
             results = results[start:end]
@@ -251,7 +284,10 @@ class BaseRequestHandler(RequestHandler):
         :return:
         """
         if value is not None:
-            return function(value)
+            try:
+                return function(value)
+            except ValueError:
+                cls._raise_bad_request_error('Invalid value {value!r}'.format(value=value))
 
     @classmethod
     def _parse_boolean(cls, value):

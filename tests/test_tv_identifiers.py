@@ -92,52 +92,31 @@ def test_series_identifier(p):
 @pytest.mark.parametrize('p', [
     {  # p0: s1
         'identifier': 's1',
-        'expected': 's01',
-        'expected_season': 1,
-        'expected_episode': None,
-        'expected_air_date': None,
+        'expected': None,
     },
     {  # p1: s01
         'identifier': 's01',
-        'expected': 's01',
-        'expected_season': 1,
-        'expected_episode': None,
-        'expected_air_date': None,
+        'expected': None,
     },
     {  # p2: S01
         'identifier': 'S01',
-        'expected': 's01',
-        'expected_season': 1,
-        'expected_episode': None,
-        'expected_air_date': None,
+        'expected': None,
     },
     {  # p3: s12
         'identifier': 's12',
-        'expected': 's12',
-        'expected_season': 12,
-        'expected_episode': None,
-        'expected_air_date': None,
+        'expected': None,
     },
     {  # p4: s123
         'identifier': 's123',
-        'expected': 's123',
-        'expected_season': 123,
-        'expected_episode': None,
-        'expected_air_date': None,
+        'expected': None,
     },
     {  # p5: s1234
         'identifier': 's1234',
-        'expected': 's1234',
-        'expected_season': 1234,
-        'expected_episode': None,
-        'expected_air_date': None,
+        'expected': None,
     },
     {  # p6: s12345
         'identifier': 's12345',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
     {  # p7: e2
         'identifier': 'e2',
@@ -170,9 +149,6 @@ def test_series_identifier(p):
     {  # p11: e1234
         'identifier': 'e1234',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
     {  # p12: E15
         'identifier': 'E15',
@@ -205,53 +181,38 @@ def test_series_identifier(p):
     {  # p16: 2017-17-16 (invalid date)
         'identifier': '2017-17-16',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
     {  # p17: Invalid
         'identifier': 's01e022017-07-16',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
     {  # p18: Invalid
         'identifier': '22017-07-16',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
     {  # p19: Invalid
         'identifier': 'ss01',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
     {  # p20: Invalid
         'identifier': 'ee01',
         'expected': None,
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': None,
     },
 ])
 def test_episode_identifier(p):
     # Given
     identifier = p['identifier']
     expected = p['expected']
-    expected_season = p['expected_season']
-    expected_episode = p['expected_episode']
-    expected_air_date = p['expected_air_date']
+    expected_season = p.get('expected_season')
+    expected_episode = p.get('expected_episode')
+    expected_air_date = p.get('expected_air_date')
 
     # When
     actual = EpisodeIdentifier.from_identifier(identifier)
 
     # Then
     if expected is None:
-        assert actual is None
+        assert not actual
     else:
         assert actual
         assert expected == actual

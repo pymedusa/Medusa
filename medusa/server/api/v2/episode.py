@@ -15,7 +15,7 @@ class EpisodeHandler(BaseRequestHandler):
     #: resource name
     name = 'episode'
     #: identifier
-    identifier = ('identifier', r'(?:\d{4}-\d{2}-\d{2})|(?:s\d{1,4})|(?:s\d{1,4})(?:e\d{1,3})|(?:e\d{1,3})')
+    identifier = ('identifier', r'[\w-]+')
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods

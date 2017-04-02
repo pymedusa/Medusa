@@ -153,7 +153,8 @@ def slug_to_indexer_id(slug):
     if not slug:
         return None, None
     result = re.compile(r'([a-z]+)([0-9]+)').match(slug)
-    return indexer_name_to_id(result.group(1)), int(result.group(2))
+    if result:
+        return indexer_name_to_id(result.group(1)), int(result.group(2))
 
 
 def get_trakt_indexer(indexer):

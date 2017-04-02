@@ -64,7 +64,7 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.essentials.dictionary import OrderedPredicateDict
+from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
@@ -112,6 +112,7 @@ from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
 from six import string_types, text_type
+from tvdbapiv2.rest import ApiException
 
 try:
     from send2trash import send2trash
@@ -141,9 +142,11 @@ class SeriesIdentifier(object):
     @classmethod
     def from_slug(cls, slug):
         """Create SeriesIdentifier from slug. E.g.: tvdb1234."""
-        indexer, indexer_id = slug_to_indexer_id(slug)
-        if indexer is not None:
-            return SeriesIdentifier(Indexer(indexer), indexer_id)
+        result = slug_to_indexer_id(slug)
+        if result is not None:
+            indexer, indexer_id = result
+            if indexer is not None and indexer_id is not None:
+                return SeriesIdentifier(Indexer(indexer), indexer_id)
 
     @classmethod
     def from_id(cls, indexer, indexer_id):
@@ -274,17 +277,18 @@ class Series(TV):
 
     # TODO: Make this the single entry to add new series
     @classmethod
-    def save_series(cls, identifier):
+    def save_series(cls, series):
         """Save the specified series to medusa."""
-        if not cls.find_by_identifier(identifier):
-            api = identifier.api
-            series = cls.from_identifier(identifier)
+        try:
+            api = series.identifier.api
             series.load_from_indexer(tvapi=api)
             series.load_imdb_info()
             app.showList.append(series)
             series.save_to_db()
             series.load_episodes_from_indexer(tvapi=api)
             return series
+        except ApiException as e:
+            logger.warning('Unable to load series from indexer: {0!r}'.format(e))
 
     @property
     def identifier(self):
@@ -1871,11 +1875,10 @@ class Series(TV):
         """Return JSON representation."""
         bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
 
-        data = OrderedPredicateDict()
-        data['id'] = {
-            self.indexer_name: self.indexerid,
-            'imdb': text_type(self.imdb_id)
-        }
+        data = NonEmptyDict()
+        data['id'] = NonEmptyDict()
+        data['id'][self.indexer_name] = self.indexerid
+        data['id']['imdb'] = text_type(self.imdb_id)
         data['title'] = self.name
         data['indexer'] = self.indexer_name  # e.g. tvdb
         data['network'] = self.network  # e.g. CBS
@@ -1885,31 +1888,28 @@ class Series(TV):
         data['language'] = self.lang
         data['showType'] = self.show_type  # e.g. anime, sport, series
         data['akas'] = self.imdb_akas
-        data['year'] = {
-            'start': self.imdb_year or self.start_year
-        }
+        data['year'] = NonEmptyDict()
+        data['year']['start'] = self.imdb_year or self.start_year
         data['nextAirDate'] = self.next_airdate
         data['runtime'] = self.imdb_runtime or self.runtime
         data['genres'] = self.genres
-
+        data['rating'] = NonEmptyDict()
         if self.imdb_rating and self.imdb_votes:
-            data['rating'] = {'imdb': {
-                'rating': self.imdb_rating,
-                'votes': self.imdb_votes
-            }}
+            data['rating']['imdb'] = NonEmptyDict()
+            data['rating']['imdb']['rating'] = self.imdb_rating
+            data['rating']['imdb']['votes'] = self.imdb_votes
 
         data['classification'] = self.imdb_certificates
-        data['cache'] = OrderedPredicateDict()
+        data['cache'] = NonEmptyDict()
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
         data['countries'] = self.imdb_countries
         data['plot'] = self.imdb_plot or self.plot
-        data['config'] = OrderedPredicateDict()
+        data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location
-        data['config']['qualities'] = {
-            'allowed': self.get_allowed_qualities(),
-            'preferred': self.get_preferred_qualities(),
-        }
+        data['config']['qualities'] = NonEmptyDict()
+        data['config']['qualities']['allowed'] = self.get_allowed_qualities()
+        data['config']['qualities']['preferred'] = self.get_preferred_qualities()
         data['config']['paused'] = bool(self.paused)
         data['config']['airByDate'] = bool(self.air_by_date)
         data['config']['subtitlesEnabled'] = bool(self.subtitles)
@@ -1919,12 +1919,11 @@ class Series(TV):
         data['config']['paused'] = bool(self.paused)
         data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
         data['config']['aliases'] = self.aliases
-        data['config']['release'] = {
-            'blacklist': bw_list.blacklist,
-            'whitelist': bw_list.whitelist,
-            'ignoredWords': self.release_ignore_words,
-            'requiredWords': self.release_required_words,
-        }
+        data['config']['release'] = NonEmptyDict()
+        data['config']['release']['blacklist'] = bw_list.blacklist
+        data['config']['release']['whitelist'] = bw_list.whitelist
+        data['config']['release']['ignoredWords'] = self.release_ignore_words
+        data['config']['release']['requiredWords'] = self.release_required_words
 
         if detailed:
             episodes = self.get_all_episodes()
