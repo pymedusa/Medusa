@@ -195,14 +195,17 @@ class BaseRequestHandler(RequestHandler):
         raise HTTPError(400, error)
 
     def _get_sort(self, default):
-        return self.get_argument('sort', default=default)
+        values = self.get_argument('sort', default=default)
+        if values:
+            results = []
+            for value in values.split(','):
+                reverse = value.startswith('-')
+                if reverse or value.startswith('+'):
+                    value = value[1:]
 
-    def _get_sort_order(self, default='asc'):
-        value = self.get_argument('order', default=default).lower()
-        if value not in ('asc', 'desc'):
-            self._raise_bad_request_error('Invalid sort order parameter')
+                results.append((value, reverse))
 
-        return value
+            return results
 
     def _get_page(self):
         try:
@@ -241,13 +244,13 @@ class BaseRequestHandler(RequestHandler):
             last_page = None
         else:
             arg_sort = self._get_sort(default=sort)
-            arg_sort_order = self._get_sort_order()
             start = (arg_page - 1) * arg_limit
             end = start + arg_limit
             results = data
             if arg_sort:
                 try:
-                    results = sorted(results, key=operator.itemgetter(arg_sort), reverse=arg_sort_order == 'desc')
+                    for field, reverse in reversed(arg_sort):
+                        results = sorted(results, key=operator.itemgetter(field), reverse=reverse)
                 except KeyError:
                     return self._bad_request('Invalid sort query parameter')
 
