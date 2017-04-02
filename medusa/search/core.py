@@ -68,13 +68,13 @@ def _download_result(result):
         return False
 
     # nzbs with an URL can just be downloaded from the provider
-    if result.resultType == 'nzb':
+    if result.resultType == u'nzb':
         new_result = res_provider.download_result(result)
     # if it's an nzb data result
-    elif result.resultType == 'nzbdata':
+    elif result.resultType == u'nzbdata':
 
         # get the final file path to the nzb
-        file_name = os.path.join(app.NZB_DIR, result.name + '.nzb')
+        file_name = os.path.join(app.NZB_DIR, result.name + u'.nzb')
 
         log.info(u'Saving NZB to {0}', file_name)
 
@@ -82,7 +82,7 @@ def _download_result(result):
 
         # save the data to disk
         try:
-            with open(file_name, 'w') as fileOut:
+            with open(file_name, u'w') as fileOut:
                 fileOut.write(result.extraInfo[0])
 
             helpers.chmod_as_parent(file_name)
@@ -90,7 +90,7 @@ def _download_result(result):
         except EnvironmentError as e:
             log.error(u'Error trying to save NZB to black hole: {0}', ex(e))
             new_result = False
-    elif result.resultType == 'torrent':
+    elif result.resultType == u'torrent':
         new_result = res_provider.download_result(result)
     else:
         log.error(u'Invalid provider type - this is a coding error, report it please')
@@ -123,39 +123,39 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith('magnet') or result.url.endswith('torrent'):
-        result.resultType = 'torrent'
+    if result.url.startswith(u'magnet') or result.url.endswith(u'torrent'):
+        result.resultType = u'torrent'
 
     # NZBs can be sent straight to SAB or saved to disk
-    if result.resultType in ('nzb', 'nzbdata'):
-        if app.NZB_METHOD == 'blackhole':
+    if result.resultType in (u'nzb', u'nzbdata'):
+        if app.NZB_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
-        elif app.NZB_METHOD == 'sabnzbd':
+        elif app.NZB_METHOD == u'sabnzbd':
             result_downloaded = sab.send_nzb(result)
-        elif app.NZB_METHOD == 'nzbget':
+        elif app.NZB_METHOD == u'nzbget':
             result_downloaded = nzbget.sendNZB(result, is_proper)
         else:
             log.error(u'Unknown NZB action specified in config: {0}', app.NZB_METHOD)
             result_downloaded = False
 
     # Torrents can be sent to clients or saved to disk
-    elif result.resultType == 'torrent':
+    elif result.resultType == u'torrent':
         # torrents are saved to disk when blackhole mode
-        if app.TORRENT_METHOD == 'blackhole':
+        if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
-            if not result.content and not result.url.startswith('magnet'):
+            if not result.content and not result.url.startswith(u'magnet'):
                 if result.provider.login():
-                    result.content = result.provider.get_url(result.url, returns='content')
+                    result.content = result.provider.get_url(result.url, returns=u'content')
 
-            if result.content or result.url.startswith('magnet'):
+            if result.content or result.url.startswith(u'magnet'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
                 log.warning(u'Torrent file content is empty')
                 result_downloaded = False
     else:
-        log.error(u'Unknown result type, unable to download it: {!r}', result.resultType)
+        log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
         result_downloaded = False
 
     if not result_downloaded:
@@ -164,7 +164,7 @@ def snatch_episode(result):
     if app.USE_FAILED_DOWNLOADS:
         failed_history.log_snatch(result)
 
-    ui.notifications.message('Episode snatched', result.name)
+    ui.notifications.message(u'Episode snatched', result.name)
 
     history.log_snatch(result)
 
@@ -192,7 +192,7 @@ def snatch_episode(result):
             # Need to reset subtitle settings because it's a different file
             curEpObj.subtitles = list()
             curEpObj.subtitles_searchcount = 0
-            curEpObj.subtitles_lastsearch = '0001-01-01 00:00:00'
+            curEpObj.subtitles_lastsearch = u'0001-01-01 00:00:00'
 
             # Need to store the correct is_proper. Not use the old one
             curEpObj.is_proper = True if result.proper_tags else False
@@ -206,7 +206,7 @@ def snatch_episode(result):
             sql_l.append(curEpObj.get_sql())
 
         if curEpObj.status not in Quality.DOWNLOADED:
-            notify_message = curEpObj.formatted_filename('%SN - %Sx%0E - %EN - %QN')
+            notify_message = curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN')
             if all([app.SEEDERS_LEECHERS_IN_NOTIFY, result.seeders not in (-1, None),
                     result.leechers not in (-1, None)]):
                 notifiers.notify_snatch(u'{0} with {1} seeders and {2} leechers from {3}'.format
@@ -226,7 +226,7 @@ def snatch_episode(result):
     if trakt_data:
         data_episode = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
         if data_episode:
-            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update='add')
+            notifiers.trakt_notifier.update_watchlist(result.show, data_episode=data_episode, update=u'add')
 
     if sql_l:
         main_db_con = db.DBConnection()
@@ -269,7 +269,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         # If doesnt have min seeders OR min leechers then discard it
         if cur_result.seeders not in (-1, None) and cur_result.leechers not in (-1, None) \
-            and hasattr(cur_result.provider, 'minseed') and hasattr(cur_result.provider, 'minleech') \
+            and hasattr(cur_result.provider, u'minseed') and hasattr(cur_result.provider, u'minleech') \
             and (int(cur_result.seeders) < int(cur_result.provider.minseed) or
                  int(cur_result.leechers) < int(cur_result.provider.minleech)):
             log.info(
@@ -298,17 +298,17 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
         if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
             continue
 
-        if hasattr(cur_result, 'size'):
+        if hasattr(cur_result, u'size'):
             if app.USE_FAILED_DOWNLOADS and failed_history.has_failed(cur_result.name, cur_result.size,
                                                                       cur_result.provider.name):
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
         preferred_words = ''
         if app.PREFERRED_WORDS:
-            preferred_words = app.PREFERRED_WORDS.lower().split(',')
+            preferred_words = app.PREFERRED_WORDS.lower().split(u',')
         undesired_words = ''
         if app.UNDESIRED_WORDS:
-            undesired_words = app.UNDESIRED_WORDS.lower().split(',')
+            undesired_words = app.UNDESIRED_WORDS.lower().split(u',')
 
         if not best_result:
             best_result = cur_result
@@ -321,10 +321,10 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
                 best_result = cur_result
-            elif 'internal' in best_result.name.lower() and 'internal' not in cur_result.name.lower():
+            elif u'internal' in best_result.name.lower() and u'internal' not in cur_result.name.lower():
                 log.info(u'Preferring {0} (normal instead of internal)', cur_result.name)
                 best_result = cur_result
-            elif 'xvid' in best_result.name.lower() and 'x264' in cur_result.name.lower():
+            elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
                 log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
             if any(ext in best_result.name.lower() and ext not in cur_result.name.lower() for ext in undesired_words):
@@ -381,19 +381,19 @@ def wanted_episodes(show, from_date):
 
     # check through the list of statuses to see if we want any
     for result in sql_results:
-        _, cur_quality = common.Quality.split_composite_status(int(result['status'] or UNKNOWN))
-        should_search, should_search_reason = Quality.should_search(result['status'], show, result['manually_searched'])
+        _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNKNOWN))
+        should_search, should_search_reason = Quality.should_search(result[b'status'], show, result[b'manually_searched'])
         if not should_search:
             continue
         else:
             log.debug(
                 u'Searching for {show} {ep}. Reason: {reason}', {
-                    'show': show.name,
-                    'ep': episode_num(result['season'], result['episode']),
-                    'reason': should_search_reason,
+                    u'show': show.name,
+                    u'ep': episode_num(result[b'season'], result[b'episode']),
+                    u'reason': should_search_reason,
                 }
             )
-        ep_obj = show.get_episode(result['season'], result['episode'])
+        ep_obj = show.get_episode(result[b'season'], result[b'episode'])
         ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
         wanted.append(ep_obj)
 
@@ -428,15 +428,15 @@ def search_for_needed_episodes():
 
     original_thread_name = threading.currentThread().name
 
-    providers = enabled_providers('daily')
-    log.info('Using daily search providers')
+    providers = enabled_providers(u'daily')
+    log.info(u'Using daily search providers')
     for cur_provider in providers:
-        threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
+        threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
                                                                            provider=cur_provider.name)
         cur_provider.cache.update_cache()
 
     for cur_provider in providers:
-        threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
+        threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
                                                                            provider=cur_provider.name)
         try:
             cur_found_results = cur_provider.search_rss(episodes)
@@ -481,7 +481,7 @@ def search_for_needed_episodes():
 
 
 def search_providers(show, episodes, forced_search=False, down_cur_quality=False,
-                     manual_search=False, manual_search_type='episode'):
+                     manual_search=False, manual_search_type=u'episode'):
     """
     Walk providers for information on shows.
 
@@ -505,18 +505,18 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
     original_thread_name = threading.currentThread().name
 
     if manual_search:
-        log.info('Using manual search providers')
+        log.info(u'Using manual search providers')
         providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_manualsearch]
     else:
-        log.info('Using backlog search providers')
+        log.info(u'Using backlog search providers')
         providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
                      if x.is_active() and x.enable_backlog]
 
     threading.currentThread().name = original_thread_name
 
     for cur_provider in providers:
-        threading.currentThread().name = original_thread_name + ' :: [' + cur_provider.name + ']'
+        threading.currentThread().name = original_thread_name + u' :: [' + cur_provider.name + u']'
 
         if cur_provider.anime_only and not show.is_anime:
             log.debug(u'{0} is not an anime, skipping', show.name)
@@ -528,16 +528,16 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
         search_mode = cur_provider.search_mode
 
         # Always search for episode when manually searching when in sponly
-        if search_mode == 'sponly' and (forced_search or manual_search):
-            search_mode = 'eponly'
+        if search_mode == u'sponly' and (forced_search or manual_search):
+            search_mode = u'eponly'
 
-        if manual_search and manual_search_type == 'season':
-            search_mode = 'sponly'
+        if manual_search and manual_search_type == u'season':
+            search_mode = u'sponly'
 
         while True:
             search_count += 1
 
-            if search_mode == 'eponly':
+            if search_mode == u'eponly':
                 log.info(u'Performing episode search for {0}', show.name)
             else:
                 log.info(u'Performing season pack search for {0}', show.name)
@@ -569,7 +569,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                           u' Error: {1!r}', cur_provider.name, ex(error))
                 break
             except Exception as error:
-                if 'ECONNRESET' in error or (hasattr(error, 'errno') and error.errno == errno.ECONNRESET):
+                if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
                     log.warning(u'Connection reseted by peer while searching {0}. Error: {1!r}',
                                 cur_provider.name, ex(error))
                 else:
@@ -589,7 +589,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                         found_results[cur_provider.name][cur_ep] = search_results[cur_ep]
 
                     # Sort the list by seeders if possible
-                    if cur_provider.provider_type == 'torrent' or getattr(cur_provider, 'torznab', None):
+                    if cur_provider.provider_type == u'torrent' or getattr(cur_provider, u'torznab', None):
                         found_results[cur_provider.name][cur_ep].sort(key=lambda d: int(d.seeders), reverse=True)
 
                 break
@@ -597,15 +597,15 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 break
 
             # Dont fallback when doing manual season search
-            if manual_search_type == 'season':
+            if manual_search_type == u'season':
                 break
 
-            if search_mode == 'sponly':
+            if search_mode == u'sponly':
                 log.debug(u'Fallback episode search initiated')
-                search_mode = 'eponly'
+                search_mode = u'eponly'
             else:
                 log.debug(u'Fallback season pack search initiate')
-                search_mode = 'sponly'
+                search_mode = u'sponly'
 
         # skip to next provider if we have no results to process
         if not found_results[cur_provider.name]:
@@ -614,7 +614,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
         # Update the cache if a manual search is being run
         if manual_search:
             # Let's create a list with episodes that we where looking for
-            if manual_search_type == 'season':
+            if manual_search_type == u'season':
                 # If season search type, we only want season packs
                 searched_episode_list = [SEASON_RESULT]
             else:
@@ -656,7 +656,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 ' AND ( season IN ( {0} ) )'.format(','.join(searched_seasons)),
                 [show.indexerid]
             )
-            all_eps = [int(x['episode']) for x in selection]
+            all_eps = [int(x[b'episode']) for x in selection]
             log.debug(u'Episode list: {0}', all_eps)
 
             all_wanted = True
