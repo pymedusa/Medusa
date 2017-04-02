@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import datetime
 import io
 import logging
@@ -198,8 +200,8 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 log.info(
-                    u'Unable to find episode {ep_num} on {indexer}...'
-                    u' has it been removed? Should I delete from db?', {
+                    'Unable to find episode {ep_num} on {indexer}...'
+                    ' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
                         'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
@@ -287,13 +289,13 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     if not episode_name.text:
                         episode_name.text = ep_to_write.name
                     else:
-                        episode_name.text = u', '.join([episode_name.text, ep_to_write.name])
+                        episode_name.text = ', '.join([episode_name.text, ep_to_write.name])
 
                 if ep_to_write.description:
                     if not overview.text:
                         overview.text = ep_to_write.description
                     else:
-                        overview.text = u'\r'.join([overview.text, ep_to_write.description])
+                        overview.text = '\r'.join([overview.text, ep_to_write.description])
 
         # Make it purdy
         helpers.indent_xml(root_node)
@@ -328,15 +330,15 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
         try:
             if not os.path.isdir(nfo_file_dir):
                 log.debug(
-                    u'Metadata directory did not exist, creating it at {location}',
-                    {'path': nfo_file_dir}
+                    'Metadata directory did not exist, creating it at {location}',
+                    {'location': nfo_file_dir}
                 )
                 os.makedirs(nfo_file_dir)
                 helpers.chmod_as_parent(nfo_file_dir)
 
             log.debug(
-                u'Writing show nfo file to {location}',
-                {'path': nfo_file_dir}
+                'Writing show nfo file to {location}',
+                {'location': nfo_file_dir}
             )
 
             nfo_file = io.open(nfo_file_path, 'wb')
@@ -346,8 +348,8 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             helpers.chmod_as_parent(nfo_file_path)
         except IOError as error:
             log.error(
-                u'Unable to write file to {path} - are you sure the folder is writable? {error}',
-                {'path': nfo_file_path, 'error': ex(error)}
+                'Unable to write file to {location} - are you sure the folder is writable? {error}',
+                {'location': nfo_file_path, 'error': ex(error)}
             )
             return False
 
@@ -380,13 +382,13 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         try:
             if not os.path.isdir(nfo_file_dir):
-                log.debug(u'Metadata directory did not exist, creating it at {location}',
-                          {'path': nfo_file_dir})
+                log.debug('Metadata directory did not exist, creating it at {location}',
+                          {'location': nfo_file_dir})
                 os.makedirs(nfo_file_dir)
                 helpers.chmod_as_parent(nfo_file_dir)
 
-            log.debug(u'Writing episode nfo file to {location}',
-                      {'path': nfo_file_path})
+            log.debug('Writing episode nfo file to {location}',
+                      {'location': nfo_file_path})
 
             with io.open(nfo_file_path, 'wb') as nfo_file:
                 # Calling encode directly, b/c often descriptions have wonky characters.
@@ -395,8 +397,8 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             helpers.chmod_as_parent(nfo_file_path)
 
         except IOError as e:
-            log.error(u'Unable to write file to {path} - are you sure the folder is writable? {error}',
-                      {'path': nfo_file_path, 'error': ex(e)})
+            log.error('Unable to write file to {location} - are you sure the folder is writable? {error}',
+                      {'location': nfo_file_path, 'error': ex(e)})
             return False
 
         return True
