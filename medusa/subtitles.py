@@ -49,10 +49,14 @@ logger = logging.getLogger(__name__)
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
 
-provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
+basename = __name__.split('.')[0]
+
 provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
-basename = __name__.split('.')[0]
+# Use our custom providers
+provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
+provider_manager.register('legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
+
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
 refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
 
