@@ -55,7 +55,7 @@ provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiPr
 
 # Use our custom providers
 provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
-provider_manager.register('legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
+provider_manager.register('legendastv2 = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
 
 refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
 refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
@@ -65,10 +65,14 @@ video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
 episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
+provider_mapping = {
+    'legendastv': 'legendastv2'
+}
+
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
     'itasa': 'http://www.italiansubs.net',
-    'legendastv': 'http://www.legendas.tv',
+    'legendastv2': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
     'podnapisi': 'http://www.podnapisi.net',
@@ -96,6 +100,7 @@ def sorted_service_list():
 
     current_index = 0
     for current_service in app.SUBTITLES_SERVICES_LIST:
+        current_service = provider_mapping.get(current_service, current_service)
         if current_service in provider_manager.names():
             new_list.append({'name': current_service,
                              'url': PROVIDER_URLS[current_service]
@@ -501,8 +506,8 @@ def get_provider_pool():
                                      'password': app.ADDIC7ED_PASS},
                         'itasa': {'username': app.ITASA_USER,
                                   'password': app.ITASA_PASS},
-                        'legendastv': {'username': app.LEGENDASTV_USER,
-                                       'password': app.LEGENDASTV_PASS},
+                        'legendastv2': {'username': app.LEGENDASTV_USER,
+                                        'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
                                           'password': app.OPENSUBTITLES_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)

@@ -24,7 +24,8 @@ from subliminal.video import Episode, Movie
 
 logger = logging.getLogger(__name__)
 
-language_converters.register('legendastv = subliminal.converters.legendastv:LegendasTVConverter')
+# Already registered in subliminal
+# language_converters.register('legendastv = subliminal.converters.legendastv:LegendasTVConverter')
 
 # Configure :mod:`rarfile` to use the same path separator as :mod:`zipfile`
 rarfile.PATH_SEP = '/'
