@@ -78,7 +78,6 @@ paths:
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/order'
       responses:
         200:
           $ref: '#/responses/pagination'
@@ -228,7 +227,6 @@ paths:
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/order'
       responses:
         200:
           $ref: '#/responses/pagination'
@@ -242,7 +240,7 @@ paths:
           description: Invalid series id or pagination parameters
           x-request:
             query-params:
-              order: abc
+              sort: abc
         404:
           $ref: '#/responses/error'
           description: Series not found
@@ -420,7 +418,6 @@ paths:
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/order'
       responses:
         200:
           $ref: '#/responses/pagination'
@@ -589,7 +586,6 @@ paths:
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/order'
       responses:
         200:
           $ref: '#/responses/pagination'
@@ -691,7 +687,6 @@ paths:
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/order'
       responses:
         200:
           $ref: '#/responses/pagination'
@@ -762,7 +757,6 @@ paths:
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/order'
       responses:
         200:
           $ref: '#/responses/pagination_stream'
@@ -1701,13 +1695,7 @@ parameters:
     name: sort
     in: query
     required: false
-    description: The field to be used while sorting.
-    type: string
-  order:
-    name: order
-    in: query
-    required: false
-    description: Ascending (asc) or Descending (desc) sort order. Default is asc
+    description: The field (or list of fields) to be used while sorting. Use + or - prefix to define sorting order.
     type: string
   series-id:
     name: series-id
