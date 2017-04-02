@@ -123,8 +123,7 @@ class TraktPopular(object):
             use_default = self.default_img_src
             logger.log('Missing poster on TheTVDB, cause: %r' % e, logger.DEBUG)
 
-        if not use_default:
-            rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
