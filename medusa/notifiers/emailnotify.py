@@ -53,7 +53,7 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Snatched</h3><br>'
-                        '<p>Show: <b>{}</b></p><br><p>Episode: <b>{}</b></p><br><br>'
+                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format
@@ -100,7 +100,7 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Downloaded</h3><br>'
-                        '<p>Show: <b>{}</b></p><br><p>Episode: <b>{}</b></p><br><br>'
+                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format
@@ -147,8 +147,8 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Subtitle Downloaded</h3><br>'
-                        '<p>Show: <b>{}</b></p><br><p>Episode: <b>{}</b></p><br>'
-                        '<p>Language: <b>{}</b></p><br><br>'
+                        '<p>Show: <b>{0}</b></p><br><p>Episode: <b>{1}</b></p><br>'
+                        '<p>Language: <b>{2}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format
@@ -188,7 +188,7 @@ class Notifier(object):
                     msg.attach(MIMEText(
                         '<body style="font-family:Helvetica, Arial, sans-serif;">'
                         '<h3>Medusa Notification - Updated</h3><br>'
-                        '<p>Commit: <b>{}</b></p><br><br>'
+                        '<p>Commit: <b>{0}</b></p><br><br>'
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format
@@ -200,7 +200,7 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Medusa updated')
 
-                msg[b'Subject'] = 'Updated: {}'.format(new_version)
+                msg[b'Subject'] = 'Updated: {0}'.format(new_version)
                 msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
                 msg[b'Date'] = formatdate(localtime=True)
@@ -238,7 +238,7 @@ class Notifier(object):
                     except Exception:
                         msg = MIMEText('Medusa Remote Login')
 
-                msg[b'Subject'] = 'New Login from IP: {}'.format(ipaddress)
+                msg[b'Subject'] = 'New Login from IP: {0}'.format(ipaddress)
                 msg[b'From'] = app.EMAIL_FROM
                 msg[b'To'] = ','.join(to)
                 msg[b'Date'] = formatdate(localtime=True)
@@ -300,7 +300,7 @@ class Notifier(object):
         except Exception as error:
             log.warning('Exception generated while sending e-mail: {0}', error)
             # logger.log(traceback.format_exc(), logger.DEBUG)
-            self.last_err = '{}'.format(error)
+            self.last_err = '{0}'.format(error)
             return False
 
         if smtpDebug:
@@ -321,7 +321,7 @@ class Notifier(object):
             srv.quit()
             return True
         except Exception as error:
-            self.last_err = '{}'.format(error)
+            self.last_err = '{0}'.format(error)
             return False
 
     @staticmethod
