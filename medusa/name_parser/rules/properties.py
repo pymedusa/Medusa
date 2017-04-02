@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """Properties: This section contains additional properties to be guessed by guessit."""
+
 import re
 
 from guessit.reutils import build_or_pattern
