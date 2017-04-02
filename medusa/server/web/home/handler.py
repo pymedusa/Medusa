@@ -1667,7 +1667,7 @@ class Home(WebRoot):
 
             # Erase parsed cached names as we are changing scene numbering
             show_obj.flush_episodes()
-            show_obj.erase_cached_parser()
+            show_obj.erase_cached_parse()
 
             # Need to refresh show as we updated scene numbering or changed show format
             try:

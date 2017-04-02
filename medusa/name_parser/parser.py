@@ -252,8 +252,9 @@ class NameParser(object):
 
         return result
 
-    def unparse(self, indexer, indexer_id):
-        """Unparse all names from given indexer and indexer_id."""
+    @staticmethod
+    def erase_cached_parse(indexer, indexer_id):
+        """Remove all names from given indexer and indexer_id."""
         name_parser_cache.remove(indexer, indexer_id)
 
     def parse(self, name, cache_result=True):
