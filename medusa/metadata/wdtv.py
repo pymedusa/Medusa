@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import datetime
 import logging
 import os
@@ -9,6 +11,7 @@ from medusa import helpers
 from medusa.helper.common import dateFormat, episode_num as ep_num, replace_extension
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import generic
 
 try:
@@ -16,7 +19,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as etree
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
@@ -58,9 +61,7 @@ class WDTVMetadata(generic.GenericMetadata):
                                          season_all_banner)
 
         self.name = 'WDTV'
-
         self._ep_nfo_extension = 'xml'
-
         self.poster_name = 'folder.jpg'
 
         # web-ui metadata template
@@ -150,11 +151,11 @@ class WDTVMetadata(generic.GenericMetadata):
                 break
 
         if not season_dir:
-            log.debug(u'Unable to find a season directory for season {0}', season)
+            log.debug('Unable to find a season directory for season {0}', season)
             return None
 
-        log.debug(u'Using {path}/folder.jpg as season dir for season {x}',
-                  {'path': season_dir, 'x': season})
+        log.debug('Using {location}/folder.jpg as season dir for season {number}',
+                  {'location': season_dir, 'number': season})
 
         return os.path.join(show_obj.location, season_dir, 'folder.jpg')
 
@@ -181,8 +182,8 @@ class WDTVMetadata(generic.GenericMetadata):
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 log.info(
-                    u'Unable to find episode {x} on {indexer}... has it been removed? Should I delete from db?', {
-                        'x': ep_num(ep_to_write.season, ep_to_write.episode),
+                    'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
+                        'number': ep_num(ep_to_write.season, ep_to_write.episode),
                         'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
                 )
@@ -271,5 +272,5 @@ class WDTVMetadata(generic.GenericMetadata):
         return data
 
 
-# present a standard 'interface' from the module
+# present a standard interface from the module
 metadata_class = WDTVMetadata
