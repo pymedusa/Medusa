@@ -6,9 +6,10 @@ from collections import Mapping
 from urllib import urlencode
 
 import dredd_hooks as hooks
-from six import string_types
 
+from six import string_types
 import yaml
+
 
 api_description = None
 
@@ -24,7 +25,7 @@ def load_api_description(transactions):
     """Load api description."""
     global api_description
     with open(transactions[0]['origin']['filename'], 'r') as stream:
-        api_description = yaml.load(stream)
+        api_description = yaml.safe_load(stream)
 
 
 @hooks.before_each
