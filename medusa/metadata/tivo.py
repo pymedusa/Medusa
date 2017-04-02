@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from __future__ import unicode_literals
+
 import datetime
 import io
 import logging
@@ -168,8 +170,8 @@ class TIVOMetadata(generic.GenericMetadata):
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
                 log.debug(
-                    u'Unable to find episode {x} on {indexer}... has it been removed? Should I delete from db?', {
-                        'x': episode_num(ep_to_write.season, ep_to_write.episode),
+                    u'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
+                        'number': episode_num(ep_to_write.season, ep_to_write.episode),
                         'indexer': indexerApi(ep_obj.show.indexer).name,
                     }
                 )
@@ -308,7 +310,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         except EnvironmentError as e:
             log.error(
-                u'Unable to write file to {path} - are you sure the folder is writable? {exception}',
+                u'Unable to write file to {path} - are you sure the folder is writable? {error}',
                 {'path': nfo_file_path, 'error': ex(e)}
             )
             return False
