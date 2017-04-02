@@ -432,12 +432,12 @@ def search_for_needed_episodes():
     log.info(u'Using daily search providers')
     for cur_provider in providers:
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
-                                                                           provider=cur_provider.name)
+                                                                            provider=cur_provider.name)
         cur_provider.cache.update_cache()
 
     for cur_provider in providers:
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
-                                                                           provider=cur_provider.name)
+                                                                            provider=cur_provider.name)
         try:
             cur_found_results = cur_provider.search_rss(episodes)
         except AuthException as error:
