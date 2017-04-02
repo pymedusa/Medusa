@@ -2,7 +2,7 @@
 """Request handler for alias (scene exceptions)."""
 
 from medusa import db
-from medusa.essentials.dictionary import OrderedPredicateDict
+from medusa.helper.collections import NonEmptyDict
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 from tornado.escape import json_decode
@@ -45,7 +45,9 @@ class AliasHandler(BaseRequestHandler):
                 return self._bad_request('Invalid series')
 
             season = self._parse(self.get_query_argument('season', None))
-            exception_type = self.get_query_argument('type', None) == 'local'
+            exception_type = self.get_query_argument('type', None)
+            if exception_type and exception_type not in ('local', ):
+                return self._bad_request('Invalid type')
 
             if series_identifier:
                 sql_where.append(b'indexer')
@@ -56,9 +58,9 @@ class AliasHandler(BaseRequestHandler):
                 sql_where.append(b'season')
                 params += [season]
 
-            if exception_type:
+            if exception_type == 'local':
                 sql_where.append(b'custom')
-                params += [exception_type]
+                params += [1]
 
         if sql_where:
             sql_base += b' WHERE ' + b' AND '.join([where + b' = ? ' for where in sql_where])
@@ -67,7 +69,7 @@ class AliasHandler(BaseRequestHandler):
 
         data = []
         for item in sql_results:
-            d = OrderedPredicateDict()
+            d = NonEmptyDict()
             d['id'] = item[0]
             d['series'] = SeriesIdentifier.from_id(item[1], item[2]).slug
             d['name'] = item[3]

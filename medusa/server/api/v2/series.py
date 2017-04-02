@@ -12,7 +12,7 @@ class SeriesHandler(BaseRequestHandler):
     #: resource name
     name = 'series'
     #: identifier
-    identifier = ('series_slug', r'[a-z]+\d+')
+    identifier = ('series_slug', r'\w+')
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
@@ -68,9 +68,13 @@ class SeriesHandler(BaseRequestHandler):
         if not identifier:
             return self._bad_request('Invalid series identifier')
 
-        series = Series.save_series(identifier)
-        if not series:
-            return self._conflict('Unable to add series')
+        series = Series.find_by_identifier(identifier)
+        if series:
+            return self._conflict('Series already exist added')
+
+        series = Series.from_identifier(identifier)
+        if not Series.save_series(series):
+            return self._not_found('Series not found in the specified indexer')
 
         return self._created(series.to_json(), identifier=identifier.slug)
 
@@ -88,6 +92,10 @@ class SeriesHandler(BaseRequestHandler):
             return self._not_found('Series not found')
 
         data = json_decode(self.request.body)
+        indexer_id = data.get('id', {}).get(identifier.indexer.slug)
+        if indexer_id is not None and indexer_id != identifier.id:
+            return self._bad_request('Conflicting series identifier')
+
         done = {}
         for key, value in data.items():
             if key == 'pause':

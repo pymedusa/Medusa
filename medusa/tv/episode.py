@@ -49,7 +49,7 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
-from medusa.essentials.dictionary import OrderedPredicateDict
+from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -132,7 +132,8 @@ class EpisodeIdentifier(object):
 
     def __bool__(self):
         """Magic method."""
-        return self.season is not None or self.episode is not None or self.air_date is not None
+        return (self.season is not None and self.episode is not None) or (
+            self.episode is not None or self.air_date is not None)
 
     __nonzero__ = __bool__
 
@@ -237,11 +238,14 @@ class Episode(TV):
         """
         if identifier.episode is not None:
             if identifier.season is not None:
-                episode = series.get_episode(season=identifier.season, episode=identifier.episode, should_cache=False)
+                episode = series.get_episode(season=identifier.season, episode=identifier.episode,
+                                             should_cache=False, no_create=True)
             else:
-                episode = series.get_episode(absolute_number=identifier.episode, should_cache=False)
+                episode = series.get_episode(absolute_number=identifier.episode,
+                                             should_cache=False, no_create=True)
         elif identifier.air_date:
-            episode = series.get_episode(air_date=identifier.air_date, should_cache=False)
+            episode = series.get_episode(air_date=identifier.air_date,
+                                         should_cache=False, no_create=True)
         else:
             # if this happens then it's a bug!
             raise ValueError
@@ -828,7 +832,7 @@ class Episode(TV):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        data = OrderedPredicateDict()
+        data = NonEmptyDict()
         data['identifier'] = self.identifier
         data['id'] = {self.indexer_name: self.indexerid}
         data['season'] = self.season
@@ -844,19 +848,19 @@ class Episode(TV):
         data['title'] = self.name
         data['subtitles'] = self.subtitles
         data['status'] = self.status_name
-        data['release'] = OrderedPredicateDict()
+        data['release'] = NonEmptyDict()
         data['release']['name'] = self.release_name
         data['release']['group'] = self.release_group
         data['release']['proper'] = self.is_proper
         data['release']['version'] = self.version
-        data['scene'] = OrderedPredicateDict()
+        data['scene'] = NonEmptyDict()
         data['scene']['season'] = self.scene_season
         data['scene']['episode'] = self.scene_episode
 
         if self.scene_absolute_number:
             data['scene']['absoluteNumber'] = self.scene_absolute_number
 
-        data['file'] = OrderedPredicateDict()
+        data['file'] = NonEmptyDict()
         data['file']['location'] = self.location
         if self.file_size:
             data['file']['size'] = self.file_size
@@ -867,12 +871,10 @@ class Episode(TV):
             data['content'].append('thumbnail')
 
         if detailed:
-            data['statistics'] = {
-                'subtitleSearch': {
-                    'last': self.subtitles_lastsearch,
-                    'count': self.subtitles_searchcount
-                }
-            }
+            data['statistics'] = NonEmptyDict()
+            data['statistics']['subtitleSearch'] = NonEmptyDict()
+            data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
+            data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
             data['wantedQualities'] = self.wanted_quality
             data['wantedQualities'] = [ep.identifier() for ep in self.related_episodes]
 

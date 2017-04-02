@@ -1,91 +1,138 @@
 """Dredd hook."""
 import ConfigParser
 import json
+import urlparse
+from collections import Mapping
+from urllib import urlencode
 
 import dredd_hooks as hooks
+from six import string_types
 
-web_username = 'testuser'
-web_password = 'testpass'
-api_key = '1234567890ABCDEF1234567890ABCDEF'
+import yaml
 
-stash = {}
+api_description = None
 
-
-@hooks.before_each
-def add_api_key(transaction):
-    """Add api key."""
-    transaction['request']['headers']['x-api-key'] = api_key
+stash = {
+    'web-username': 'testuser',
+    'web-password': 'testpass',
+    'api-key': '1234567890ABCDEF1234567890ABCDEF',
+}
 
 
-@hooks.before('/api/v2/authenticate'
-              ' > Return a JWT for the provided user. This is required for all other routes'
-              ' > 200'
-              ' > application/json; charset=UTF-8')
-def add_auth(transaction):
-    """Add auth."""
-    del transaction['request']['headers']['x-api-key']
-    data = json.loads(transaction['request']['body'])
-    data['username'] = web_username
-    data['password'] = web_password
-    transaction['request']['body'] = json.dumps(data)
+@hooks.before_all
+def load_api_description(transactions):
+    """Load api description."""
+    global api_description
+    with open(transactions[0]['origin']['filename'], 'r') as stream:
+        api_description = yaml.load(stream)
 
 
 @hooks.before_each
-def skip_body_validation(transaction):
-    """Skip body validation when no body is expected."""
+def configure_transaction(transaction):
+    """Configure request based on x- property values for each response code."""
+    base_path = api_description['basePath']
+
+    path = transaction['origin']['resourceName']
+    method = transaction['request']['method']
+    status_code = int(transaction['expected']['statusCode'])
+    response = api_description['paths'][path[len(base_path):]][method.lower()]['responses'][status_code]
+
+    # Whether we should skip this test
+    transaction['skip'] = response.get('x-disabled', False)
+
+    # Add api-key
+    if not response.get('x-no-api-key', False):
+        transaction['request']['headers']['x-api-key'] = stash['api-key']
+
+    # If no body is expected, skip body validation
     expected = transaction['expected']
     expected_content_type = expected['headers'].get('Content-Type')
     expected_status_code = int(expected['statusCode'])
-    # print(transaction['name'])
-    if not expected_content_type or expected_status_code == 204:
-        print('Skipping body validation for "{name}".'.format(name=transaction['name']))
+    if expected_status_code == 204 or response.get('x-expect', {}).get('no-body', False):
         del expected['body']
-
-        if 'schema' in transaction['expected']:
-            print('Skipping schema validation for "{name}".'.format(name=transaction['name']))
-            del expected['schema']
-
         if expected_content_type:
-            print('Skipping content-type validation for "{name}".'.format(name=transaction['name']))
+            print('Skipping content-type validation for {name!r}.'.format(name=transaction['name']))
             del expected['headers']['Content-Type']
 
+    # Keep stash configuration in the transaction to be executed in an after hook
+    transaction['x-stash'] = response.get('x-stash') or {}
 
-@hooks.before('/api/v2/series/{id}/operation > Create an operation that relates to a specific series > 201 > '
-              'application/json; charset=UTF-8')
-def before_post_series_operation(transaction):
-    """Skip the following operation: http 201 - ARCHIVE_EPISODES."""
-    transaction['skip'] = True
+    # Change request based on x-request configuration
+    url = transaction['fullPath']
+    parsed_url = urlparse.urlparse(url)
+    parsed_params = urlparse.parse_qs(parsed_url.query)
+    parsed_path = parsed_url.path
+
+    request = response.get('x-request', {})
+    body = request.get('body')
+    if body is not None:
+        transaction['request']['body'] = json.dumps(evaluate(body))
+
+    path_params = request.get('path-params')
+    if path_params:
+        params = {}
+        resource_parts = path.split('/')
+        for i, part in enumerate(url.split('/')):
+            if not part:
+                continue
+
+            resource_part = resource_parts[i]
+            if resource_part[0] == '{' and resource_part[-1] == '}':
+                params[resource_part[1:-1]] = part
+
+        params.update(path_params)
+        new_url = path
+        for name, value in params.items():
+            value = evaluate(value)
+            new_url = new_url.replace('{' + name + '}', str(value))
+
+        replace_url(transaction, new_url)
+
+    query_params = request.get('query-params')
+    if query_params:
+        for name, value in query_params.items():
+            query_params[name] = evaluate(value)
+
+        query_params = dict(parsed_params, **query_params)
+        new_url = parsed_path if not query_params else parsed_path + '?' + urlencode(query_params)
+
+        replace_url(transaction, new_url)
 
 
-@hooks.before('/api/v2/log > Log a message > 201 > application/json; charset=UTF-8')
-def post_log_no_body(transaction):
-    """Skip body validation when creating a log message."""
-    del transaction['expected']['body']
-    del transaction['expected']['headers']['Content-Type']
+@hooks.after_each
+def stash_values(transaction):
+    """Stash values."""
+    if 'real' in transaction and 'bodySchema' in transaction['expected']:
+        body = json.loads(transaction['real']['body']) if transaction['real']['body'] else None
+        headers = transaction['real']['headers']
+        for name, value in transaction['x-stash'].items():
+            value = evaluate(value, {'body': body, 'headers': headers})
+            print('Stashing {name}: {value!r}'.format(name=name, value=value))
+            stash[name] = value
 
 
-@hooks.after('/api/v2/alias > Create a new alias > 201 > application/json; charset=UTF-8')
-def stash_alias_id(transaction):
-    """Stash alias id."""
-    data = json.loads(transaction['real']['body'])
-    stash['alias_id'] = data['id']
+def replace_url(transaction, new_url):
+    """Replace with a new URL."""
+    transaction['fullPath'] = new_url
+    transaction['request']['uri'] = new_url
+    transaction['id'] = transaction['request']['method'] + ' ' + new_url
 
 
-@hooks.before('/api/v2/alias/{id} > Replace alias data > 204 > application/json; charset=UTF-8')
-def before_put_alias(transaction):
-    """Replace alias id with the stashed one."""
-    transaction['fullPath'] = transaction['fullPath'].replace('123456', str(stash['alias_id']))
-    transaction['request']['uri'] = transaction['fullPath']
-    data = json.loads(transaction['request']['body'])
-    data['id'] = stash['alias_id']
-    transaction['request']['body'] = json.dumps(data)
+def evaluate(expression, context=None):
+    """Evaluate the expression value."""
+    context = context or {'stash': stash}
+    if isinstance(expression, string_types) and expression.startswith('${') and expression.endswith('}'):
+        value = eval(expression[2:-1], context)
+        print('Expression {expression} evaluated to {value!r}'.format(expression=expression, value=value))
+        return value
+    elif isinstance(expression, Mapping):
+        for key, value in expression.items():
+            expression[key] = evaluate(value, context=context)
+    elif isinstance(expression, list):
+        for i, value in enumerate(expression):
+            expression[i] = evaluate(value, context=context)
 
-
-@hooks.before('/api/v2/alias/{id} > Delete an alias > 204 > application/json; charset=UTF-8')
-def before_delete_alias(transaction):
-    """Replace alias id with the stashed one."""
-    transaction['fullPath'] = transaction['fullPath'].replace('123456', str(stash['alias_id']))
-    transaction['request']['uri'] = transaction['fullPath']
+    return expression
 
 
 def start():
@@ -109,9 +156,9 @@ def start():
     config = ConfigParser.RawConfigParser()
     config.read('config.ini')
     config.add_section('General')
-    config.set('General', 'web_username', web_username)
-    config.set('General', 'web_password', web_password)
-    config.set('General', 'api_key', api_key)
+    config.set('General', 'web_username', stash['web-username'])
+    config.set('General', 'web_password', stash['web-password'])
+    config.set('General', 'api_key', stash['api-key'])
     with open('config.ini', 'wb') as configfile:
         config.write(configfile)
 
