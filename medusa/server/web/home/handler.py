@@ -1573,12 +1573,13 @@ class Home(WebRoot):
                     logger.log("Unable to refresh show '{show}': {error}".format
                                (show=show_obj.name, error=e.message), logger.WARNING)
 
-            # Check if we should erase parsed cached results f or that show
+            # Check if we should erase parsed cached results for that show
             do_erase_parsed_cache = False
-            for item in ['scene', 'anime', 'sports', 'air_by_date', 'dvd_order']:
-                if getattr(show_obj, item) != ast.parse(item):
+            for item in [('scene', scene), ('anime', anime), ('sports', sports),
+                         ('air_by_date', air_by_date), ('dvd_order', dvd_order)]:
+                if getattr(show_obj, item[0]) != item[1]:
                     do_erase_parsed_cache = True
-                    # Break if at least one was changed
+                    # Break if at least one setting was changed
                     break
 
             show_obj.paused = paused
