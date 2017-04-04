@@ -679,10 +679,8 @@ class GenericProvider(object):
                 return {'result': True,
                         'message': ''}
 
-            else:  # Else is not needed, but placed it here for readability
-                ui.notifications.message('Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                                         'No Cookies added from ui for provider: {0}'.format(self.name))
-                return {'result': False,
+            else:  # Cookies not set. Don't need to check cookies
+                return {'result': True,
                         'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
         return {'result': False,
