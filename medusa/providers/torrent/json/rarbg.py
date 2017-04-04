@@ -52,7 +52,7 @@ class RarbgProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['{{PROPER|REPACK}}']
+        self.proper_strings = ['{{PROPER|REPACK|REAL|RERIP}}']
 
         # Miscellaneous Options
         self.ranked = None
