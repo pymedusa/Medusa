@@ -598,7 +598,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
             elif not cur_provider.search_fallback or search_count == 2:
                 break
 
-            # Dont fallback when doing manual season search
+            # Don't fallback when doing manual season search
             if manual_search_type == 'season':
                 break
 

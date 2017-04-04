@@ -392,7 +392,7 @@ class HomeAddShows(Home):
         if Show.find(app.showList, int(indexer_id)):
             return
 
-        # Sanitize the paramater allowed_qualities and preferred_qualities. As these would normally be passed as lists
+        # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
         if any_qualities:
             any_qualities = any_qualities.split(',')
         else:
