@@ -54,7 +54,7 @@ class Notifier(object):
             log.debug(u'Found NMJ database {0} on device {1}', database, device)
             app.NMJ_DATABASE = database
         else:
-            log.warning(u'Could not get current NMJ database on {}, NMJ is probably not running!', host)
+            log.warning(u'Could not get current NMJ database on {0}, NMJ is probably not running!', host)
             return False
 
         # if the device is a remote host then try to parse the mounting URL and save it to the config
@@ -117,7 +117,7 @@ class Notifier(object):
                     log.warning(u'NMJ: Problem with Popcorn Hour on host {0}: {1}', host, error.code)
                 return False
             except Exception as error:
-                log.error(u'NMJ: Unknown exception: {}', ex(error))
+                log.error(u'NMJ: Unknown exception: {0}', ex(error))
                 return False
 
         # build up the request URL and parameters
