@@ -1,27 +1,15 @@
 # coding=utf-8
 
-# Author: Sebastien Erard <sebastien_erard@hotmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+import logging
 import os
 import subprocess
 
-from .. import app, logger
-from ..helper.exceptions import ex
+from medusa import app
+from medusa.helper.exceptions import ex
+from medusa.logger.adapters.style import BraceAdapter
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -37,7 +25,7 @@ class Notifier(object):
     def notify_git_update(self, new_version):
         pass
 
-    def notify_login(self, ipaddress=""):
+    def notify_login(self, ipaddress=''):
         pass
 
     def moveFolder(self, old_path, new_path):
@@ -50,15 +38,15 @@ class Notifier(object):
         if app.USE_SYNOINDEX:
             synoindex_cmd = ['/usr/syno/bin/synoindex', '-N', os.path.abspath(new_path),
                              os.path.abspath(old_path)]
-            logger.log(u"Executing command " + str(synoindex_cmd), logger.DEBUG)
-            logger.log(u"Absolute path to command: " + os.path.abspath(synoindex_cmd[0]), logger.DEBUG)
+            log.debug(u'Executing command {0}', synoindex_cmd)
+            log.debug(u'Absolute path to command: {0}', os.path.abspath(synoindex_cmd[0]))
             try:
                 p = subprocess.Popen(synoindex_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                      cwd=app.PROG_DIR)
                 out, _ = p.communicate()
-                logger.log(u"Script result: " + str(out), logger.DEBUG)
+                log.debug(u'Script result: {0}', out)
             except OSError as e:
-                logger.log(u"Unable to run synoindex: " + ex(e), logger.ERROR)
+                log.error(u'Unable to run synoindex: {0}', ex(e))
 
     def deleteFolder(self, cur_path):
         self.makeObject('-D', cur_path)
@@ -75,12 +63,12 @@ class Notifier(object):
     def makeObject(self, cmd_arg, cur_path):
         if app.USE_SYNOINDEX:
             synoindex_cmd = ['/usr/syno/bin/synoindex', cmd_arg, os.path.abspath(cur_path)]
-            logger.log(u"Executing command " + str(synoindex_cmd), logger.DEBUG)
-            logger.log(u"Absolute path to command: " + os.path.abspath(synoindex_cmd[0]), logger.DEBUG)
+            log.debug(u'Executing command {0}', synoindex_cmd)
+            log.debug(u'Absolute path to command: {0}', os.path.abspath(synoindex_cmd[0]))
             try:
                 p = subprocess.Popen(synoindex_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                      cwd=app.PROG_DIR)
                 out, _ = p.communicate()
-                logger.log(u"Script result: " + str(out), logger.DEBUG)
+                log.debug(u'Script result: {0}', out)
             except OSError as e:
-                logger.log(u"Unable to run synoindex: " + ex(e), logger.ERROR)
+                log.error(u'Unable to run synoindex: {0}', ex(e))
