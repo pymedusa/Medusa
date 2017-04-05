@@ -20,7 +20,7 @@
 import datetime
 
 import db
-from .common import FAILED, Quality, SNATCHED, SUBTITLED
+from .common import FAILED, Quality, SNATCHED, SNATCHED_PROPER, SUBTITLED
 from .helper.encoding import ss
 from .show.history import History
 
@@ -76,7 +76,7 @@ def log_snatch(searchResult):
         else:
             provider = "unknown"
 
-        action = Quality.composite_status(SNATCHED, searchResult.quality)
+        action = Quality.composite_status(SNATCHED_PROPER if curEpObj.is_proper else SNATCHED, searchResult.quality)
 
         resource = searchResult.name
 
