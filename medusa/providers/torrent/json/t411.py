@@ -32,6 +32,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+from medusa.scene_exceptions import get_scene_exceptions
 
 from requests.auth import AuthBase
 from requests.compat import quote, urljoin
@@ -96,8 +97,17 @@ class T411Provider(TorrentProvider):
         }
 
         for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
-            if not episode.show.air_by_date or not episode.show.sports or not episode.show.anime:
-                search_string['Season'].append((show_name, episode.scene_season, episode.scene_episode,))
+            episode_string = show_name + ' '
+
+            if episode.show.air_by_date or episode.show.sports:
+                episode_string += str(episode.airdate).split('-')[0]
+            elif episode.show.anime:
+                episode_string += 'Season'
+            else:
+                # Custom string for param search
+                episode_string = (show_name, episode.scene_season, episode.scene_episode,)
+
+            search_string['Season'].append(episode_string.strip())
         return [search_string]
 
     def _get_episode_search_strings(self, episode, add_string=''):
@@ -110,8 +120,30 @@ class T411Provider(TorrentProvider):
         }
 
         for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
-            if not episode.show.air_by_date or not episode.show.sports or not episode.show.anime:
-                search_string['Episode'].append((show_name, episode.scene_season, episode.scene_episode,))
+            episode_string = show_name + self.search_separator
+            if episode.show.air_by_date:
+                episode_string += str(episode.airdate).replace('-', ' ')
+            elif episode.show.sports:
+                episode_string += str(episode.airdate).replace('-', ' ')
+                episode_string += ('|', ' ')[len(self.proper_strings) > 1]
+                episode_string += episode.airdate.strftime('%b')
+            elif episode.show.anime:
+                # If the showname is a season scene exception, we want to use the indexer episode number.
+                if (episode.scene_season > 1 and
+                    show_name in get_scene_exceptions(episode.show.indexerid,
+                                                      episode.show.indexer,
+                                                      episode.scene_season)):
+                    # This is apparently a season exception, let's use the scene_episode instead of absolute
+                    ep = episode.scene_episode
+                else:
+                    ep = episode.scene_absolute_number
+                episode_string += '{episode:0>2}'.format(episode=ep)
+            else:
+                # Custom string for param search
+                episode_string = (show_name, episode.scene_season, episode.scene_episode,)
+
+            search_string['Episode'].append(episode_string.strip())
+
         return [search_string]
 
     def search(self, search_strings, age=0, ep_obj=None):
@@ -133,12 +165,18 @@ class T411Provider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    show_name = search_string[0]
-                    season = search_string[1]
-                    episode = search_string[2]
-                    logger.log('Search params: Name: {show}. Season: {season} Episode: {episode}'.format
-                               (show=show_name, season=season, episode=episode),
-                               logger.DEBUG)
+                    season = episode = None
+                    if isinstance(search_string, tuple):
+                        show_name = search_string[0]
+                        season = search_string[1]
+                        episode = search_string[2]
+                        logger.log('Search params: Name: {show}. Season: {season} Episode: {episode}'.format
+                                   (show=show_name, season=season, episode=episode),
+                                   logger.DEBUG)
+                    else:
+                        show_name = search_string
+                        logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
+
                     if self.confirmed:
                         logger.log('Searching only confirmed torrents', logger.DEBUG)
 
@@ -152,12 +190,13 @@ class T411Provider(TorrentProvider):
                     categories = self.subcategories
                     search_params.update({'limit': 100})
 
-                    # Search using season and episode specific params
-                    if mode == 'Season':
-                        search_params.update({'term[46][]': EPISODE_MAP.get(0)})
-                    else:
-                        search_params.update({'term[46][]': EPISODE_MAP.get(episode)})
-                    search_params.update({'term[45][]': SEASON_MAP.get(season)})
+                    # Search using season and episode specific params only for normal episodes
+                    if season and episode:
+                        if mode == 'Season':
+                            search_params.update({'term[46][]': EPISODE_MAP.get(0)})
+                        else:
+                            search_params.update({'term[46][]': EPISODE_MAP.get(episode)})
+                        search_params.update({'term[45][]': SEASON_MAP.get(season)})
                 else:
                     search_url = self.urls['rss']
                     # Using None as a category removes it as a search param
