@@ -45,7 +45,7 @@ class MainSanityCheck(db.DBSanityCheck):
 
         # Replace only the last two digits with 09 (SNATCHED_PROPER) instead of 02 (SNATCHED)
         self.connection.select(u'UPDATE history '
-                               u'SET action = substr(action, 1, length(action) - 2) || "09"'
+                               u'SET action = (action + 7)'
                                u'WHERE action LIKE "%02" and proper_tags is not ""')
 
     def clean_null_indexer_mappings(self):
