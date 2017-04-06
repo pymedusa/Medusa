@@ -1,3 +1,5 @@
+# coding=utf-8
+
 """TVShow and TVEpisode classes."""
 
 import datetime

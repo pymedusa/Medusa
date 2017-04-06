@@ -1,26 +1,14 @@
 # coding=utf-8
 
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 import cgi
+import logging
 import os
 
-from .. import app, common, logger
+from medusa import app, common
+from medusa.logger.adapters.style import BraceAdapter
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def diagnose():
@@ -68,15 +56,15 @@ class Notifier(object):
         try:
             from gi.repository import Notify
         except ImportError:
-            logger.log(u"Unable to import Notify from gi.repository. libnotify notifications won't work.", logger.ERROR)
+            log.error(u"Unable to import Notify from gi.repository. libnotify notifications won't work.")
             return False
         try:
             from gi.repository import GObject
         except ImportError:
-            logger.log(u"Unable to import GObject from gi.repository. We can't catch a GError in display.", logger.ERROR)
+            log.error(u"Unable to import GObject from gi.repository. We can't catch a GError in display.")
             return False
         if not Notify.init('Medusa'):
-            logger.log(u"Initialization of Notify failed. libnotify notifications won't work.", logger.ERROR)
+            log.error(u"Initialization of Notify failed. libnotify notifications won't work.")
             return False
         self.Notify = Notify
         self.gobject = GObject

@@ -1,26 +1,14 @@
 # coding=utf-8
 
-# Author: Maciej Olesinski (https://github.com/molesinski/)
-# Based on prowl.py by Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 from __future__ import unicode_literals
 
-from .. import app, common, helpers, logger
+import logging
+
+from medusa import app, common, helpers
+from medusa.logger.adapters.style import BraceAdapter
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -84,9 +72,9 @@ class Notifier(object):
 
         pushalot_authorizationtoken = pushalot_authorizationtoken or app.PUSHALOT_AUTHORIZATIONTOKEN
 
-        logger.log('Pushalot event: {}'.format(event), logger.DEBUG)
-        logger.log('Pushalot message: {}'.format(message), logger.DEBUG)
-        logger.log('Pushalot api: {}'.format(pushalot_authorizationtoken), logger.DEBUG)
+        log.debug('Pushalot event: {0}', event)
+        log.debug('Pushalot message: {0}', message)
+        log.debug('Pushalot api: {0}', pushalot_authorizationtoken)
 
         post_data = {
             'AuthorizationToken': pushalot_authorizationtoken,
@@ -104,11 +92,12 @@ class Notifier(object):
 
         success = jdata.pop('Success', False)
         if success:
-            logger.log('Pushalot notifications sent.', logger.DEBUG)
+            log.debug('Pushalot notifications sent.')
         else:
-            logger.log('Pushalot notification failed: {} {}'.format(
+            log.error(
+                'Pushalot notification failed: {0} {1}',
                 jdata.get('Status', ''),
                 jdata.get('Description', 'Unknown')
-            ), logger.ERROR)
+            )
 
         return success

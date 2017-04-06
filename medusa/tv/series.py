@@ -709,7 +709,7 @@ class Series(TV):
                 if self.subtitles:
                     try:
                         cur_episode.refresh_subtitles()
-                    except Exception:
+                    except OSError:
                         logger.info(u'{id}: Could not refresh subtitles', id=self.indexerid)
                         logger.debug(traceback.format_exc())
 
@@ -1505,7 +1505,7 @@ class Series(TV):
                         for related_file in related_files:
                             try:
                                 os.remove(related_file)
-                            except Exception as e:
+                            except OSError as e:
                                 logger.warning(
                                     u'{id}: Could not delete associated file: {related_file}. Error: {error_msg}',
                                     id=self.indexerid, related_file=related_file, error_msg=e
@@ -1527,21 +1527,14 @@ class Series(TV):
 
         logger.debug(u'{id}: Downloading subtitles for {show}', id=self.indexerid, show=self.name)
 
-        try:
-            episodes = self.get_all_episodes(has_location=True)
-            if not episodes:
-                logger.debug(u'{id}: No episodes to download subtitles for {show}',
-                             id=self.indexerid, show=self.name)
-                return
+        episodes = self.get_all_episodes(has_location=True)
+        if not episodes:
+            logger.debug(u'{id}: No episodes to download subtitles for {show}',
+                         id=self.indexerid, show=self.name)
+            return
 
-            for episode in episodes:
-                episode.download_subtitles()
-
-        # TODO: Change into a non catch all exception.
-        except Exception:
-            logger.warning(u'{id}: Error occurred when downloading subtitles for show {show}',
-                           id=self.indexerid, show=self.name)
-            logger.error(traceback.format_exc())
+        for episode in episodes:
+            episode.download_subtitles()
 
     def save_to_db(self):
         """Save to database."""
