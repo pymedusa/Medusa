@@ -21,13 +21,7 @@ Copyright 2015 SmartBear Software
 from __future__ import absolute_import
 
 from requests.packages.urllib3.util import make_headers
-
-try:
-    import httplib
-except ImportError:
-    # for python3
-    import http.client as httplib
-
+from six.moves.http_client import HTTPConnection
 import sys
 import logging
 
@@ -157,14 +151,14 @@ class Configuration(object):
             for _, logger in iteritems(self.logger):
                 logger.setLevel(logging.DEBUG)
             # turn on httplib debug
-            httplib.HTTPConnection.debuglevel = 1
+            HTTPConnection.debuglevel = 1
         else:
             # if debug status is False, turn off debug logging,
             # setting log level to default `logging.WARNING`
             for _, logger in iteritems(self.logger):
                 logger.setLevel(logging.WARNING)
             # turn off httplib debug
-            httplib.HTTPConnection.debuglevel = 0
+            HTTPConnection.debuglevel = 0
 
     @property
     def logger_format(self):
