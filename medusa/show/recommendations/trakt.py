@@ -20,7 +20,7 @@ import time
 import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
-from tvdbapiv2.rest import ApiException
+from tvdbapiv2.exceptions import ApiException
 from .recommended import RecommendedShow
 from ... import app, logger
 from ...helper.common import try_int

@@ -23,7 +23,7 @@ from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
-from tvdbapiv2.rest import ApiException
+from tvdbapiv2.exceptions import ApiException
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
@@ -62,7 +62,10 @@ class TVDBv2(BaseIndexer):
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
         apikey = '0629B785CE550C8D'
-        tvdb_client = ApiClient(api_base_url, session=self.session, api_key=apikey)
+        try:
+            tvdb_client = ApiClient(api_base_url, session=self.session, api_key=apikey)
+        except ApiException as error:
+            raise IndexerUnavailable(error)
 
         self.search_api = SearchApi(tvdb_client)
         self.series_api = SeriesApi(tvdb_client)
