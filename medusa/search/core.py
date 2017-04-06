@@ -444,8 +444,8 @@ def search_for_needed_episodes():
             log.error(u'Authentication error: {0}', ex(error))
             continue
         except Exception as error:
-            log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
             log.debug(traceback.format_exc())
+            log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
             continue
 
         did_search = True
@@ -573,9 +573,9 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                     log.warning(u'Connection reseted by peer while searching {0}. Error: {1!r}',
                                 cur_provider.name, ex(error))
                 else:
+                    log.debug(traceback.format_exc())
                     log.error(u'Unknown exception while searching {0}. Error: {1!r}',
                               cur_provider.name, ex(error))
-                    log.debug(traceback.format_exc())
                 break
 
             did_search = True
