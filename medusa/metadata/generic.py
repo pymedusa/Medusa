@@ -805,7 +805,7 @@ class GenericMetadata(object):
             return result
 
         if ('seasonwide' not in indexer_show_obj['_banners'] or
-                'original' not in indexer_show_obj['_banners']['season'] or
+                'original' not in indexer_show_obj['_banners']['seasonwide'] or
                 season not in indexer_show_obj['_banners']['seasonwide']['original']):
             return result
 
