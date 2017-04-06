@@ -101,13 +101,15 @@ class T411Provider(TorrentProvider):
 
             if episode.show.air_by_date or episode.show.sports:
                 episode_string += str(episode.airdate).split('-')[0]
+                episode_string = episode_string.strip()
             elif episode.show.anime:
                 episode_string += 'Season'
+                episode_string = episode_string.strip()
             else:
                 # Custom string for param search
                 episode_string = (show_name, episode.scene_season, episode.scene_episode,)
 
-            search_string['Season'].append(episode_string.strip())
+            search_string['Season'].append(episode_string)
         return [search_string]
 
     def _get_episode_search_strings(self, episode, add_string=''):
@@ -123,10 +125,12 @@ class T411Provider(TorrentProvider):
             episode_string = show_name + self.search_separator
             if episode.show.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
+                episode_string = episode_string.strip()
             elif episode.show.sports:
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
+                episode_string = episode_string.strip()
             elif episode.show.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
@@ -138,11 +142,12 @@ class T411Provider(TorrentProvider):
                 else:
                     ep = episode.scene_absolute_number
                 episode_string += '{episode:0>2}'.format(episode=ep)
+                episode_string = episode_string.strip()
             else:
                 # Custom string for param search
                 episode_string = (show_name, episode.scene_season, episode.scene_episode,)
 
-            search_string['Episode'].append(episode_string.strip())
+            search_string['Episode'].append(episode_string)
 
         return [search_string]
 
