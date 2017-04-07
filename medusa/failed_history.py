@@ -271,19 +271,19 @@ def find_release(ep_obj):
 
     # Clear old snatches for this release if any exist
     failed_db_con = db.DBConnection('failed.db')
-    # failed_db_con.action(
-    #     'DELETE FROM history '
-    #     'WHERE showid = {0}'
-    #     ' AND season = {1}'
-    #     ' AND episode = {2}'
-    #     ' AND date < ( SELECT max(date)'
-    #     '              FROM history'
-    #     '              WHERE showid = {0}'
-    #     '               AND season = {1}'
-    #     '               AND episode = {2}'
-    #     '             )'.format
-    #     (ep_obj.show.indexerid, ep_obj.season, ep_obj.episode)
-    # )
+    failed_db_con.action(
+        'DELETE FROM history '
+        'WHERE showid = {0}'
+        ' AND season = {1}'
+        ' AND episode = {2}'
+        ' AND date < ( SELECT max(date)'
+        '              FROM history'
+        '              WHERE showid = {0}'
+        '               AND season = {1}'
+        '               AND episode = {2}'
+        '             )'.format
+        (ep_obj.show.indexerid, ep_obj.season, ep_obj.episode)
+    )
 
     # Search for release in snatch history
     results = failed_db_con.select(
