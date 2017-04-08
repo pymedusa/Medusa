@@ -23,7 +23,7 @@ from __future__ import absolute_import
 from requests.exceptions import RequestException
 from . import models  # Used through eval.
 from .rest import RESTClientObject
-from .exceptions import ApiException, MissingAuthentication
+from .exceptions import MissingAuthentication
 
 import os
 import re
@@ -38,8 +38,8 @@ from datetime import datetime
 from datetime import date
 
 # python 2 and python 3 compatibility library
-from six import iteritems
-from .auth.tvdb import TVDBAuth, TVDBUserAuth
+from six import iteritems, text_type
+from .auth.tvdb import TVDBAuth
 from .configuration import Configuration
 from .exceptions import ApiException
 
@@ -100,7 +100,7 @@ class ApiClient(object):
         if path_params:
             path_params = self.sanitize_for_serialization(path_params)
             for k, v in iteritems(path_params):
-                replacement = (str(self.to_path_value(v)))
+                replacement = text_type(self.to_path_value(v))
                 resource_path = resource_path.\
                     replace('{' + k + '}', replacement)
 
