@@ -68,8 +68,7 @@ class UpdatesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['from_time', 'to_time', 'accept_language']
-        all_params.append('callback')
+        all_params = ['from_time', 'to_time', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -150,8 +149,7 @@ class UpdatesApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):

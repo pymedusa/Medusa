@@ -65,8 +65,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -137,8 +136,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -210,8 +208,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -289,8 +286,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -367,8 +363,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -440,8 +435,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['item_type']
-        all_params.append('callback')
+        all_params = ['item_type', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -514,8 +508,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -588,8 +581,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['item_type', 'item_id']
-        all_params.append('callback')
+        all_params = ['item_type', 'item_id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -674,8 +666,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['item_type', 'item_id', 'item_rating']
-        all_params.append('callback')
+        all_params = ['item_type', 'item_id', 'item_rating', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):

@@ -69,8 +69,7 @@ class SearchApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name', 'imdb_id', 'zap2it_id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['name', 'imdb_id', 'zap2it_id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -148,8 +147,7 @@ class SearchApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):

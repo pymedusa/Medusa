@@ -66,8 +66,7 @@ class AuthenticationApi(object):
                  returns the request thread.
         """
 
-        all_params = ['authentication_string']
-        all_params.append('callback')
+        all_params = ['authentication_string', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -144,8 +143,7 @@ class AuthenticationApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):

@@ -65,8 +65,7 @@ class LanguagesApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -138,8 +137,7 @@ class LanguagesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
