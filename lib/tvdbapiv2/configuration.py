@@ -69,8 +69,9 @@ class Configuration(object):
         self.password = ""
 
         # Logging Settings
-        self.logger = {}
-        self.logger["package_logger"] = logging.getLogger("swagger_client")
+        self.logger = {
+            "package_logger": logging.getLogger("swagger_client")
+        }
         # Log format
         self.logger_format = '%(asctime)s %(levelname)s %(message)s'
         # Log stream handler
