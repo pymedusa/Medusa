@@ -39,10 +39,7 @@ class TVDBAuth(JWTBearerAuth):
     @property
     def token(self):
         """The JWT."""
-        return getattr(self, '_token', None)
-
-    @token.setter
-    def token(self, value):
+        value = getattr(self, '_token', None)
         if not value or self.is_expired:
             try:
                 value = self.login().json().get('token')
@@ -53,6 +50,10 @@ class TVDBAuth(JWTBearerAuth):
                 value = self.refresh().json().get('token')
             except ValueError:
                 value = None
+        return value
+
+    @token.setter
+    def token(self, value):
         setattr(self, '_token', value)
 
     @property
