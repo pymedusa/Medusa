@@ -19,9 +19,6 @@ Copyright 2015 SmartBear Software
 
 from __future__ import absolute_import
 
-import sys
-import os
-
 # python 2 and python 3 compatibility library
 from six import iteritems
 
