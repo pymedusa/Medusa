@@ -78,7 +78,6 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-
         resource_path = '/user'.replace('{format}', 'json')
         method = 'GET'
 
@@ -94,13 +93,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -151,7 +150,6 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-
         resource_path = '/user/favorites'.replace('{format}', 'json')
         method = 'GET'
 
@@ -167,13 +165,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -246,13 +244,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -325,13 +323,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -382,7 +380,6 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-
         resource_path = '/user/ratings'.replace('{format}', 'json')
         method = 'GET'
 
@@ -398,13 +395,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -456,7 +453,6 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-
         resource_path = '/user/ratings/query'.replace('{format}', 'json')
         method = 'GET'
 
@@ -474,13 +470,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -531,7 +527,6 @@ class UsersApi(object):
             params[key] = val
         del params['kwargs']
 
-
         resource_path = '/user/ratings/query/params'.replace('{format}', 'json')
         method = 'GET'
 
@@ -547,13 +542,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -632,13 +627,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -723,13 +718,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
