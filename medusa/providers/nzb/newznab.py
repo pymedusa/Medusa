@@ -89,7 +89,7 @@ class NewznabProvider(NZBProvider):
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tv.Cache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
