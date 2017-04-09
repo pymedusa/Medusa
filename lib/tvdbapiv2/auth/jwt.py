@@ -11,7 +11,6 @@ import json
 import logging
 
 from base64 import urlsafe_b64decode
-import requests
 import requests.auth
 from six import text_type
 
@@ -25,7 +24,6 @@ class JWTBearerAuth(requests.auth.AuthBase):
     def __init__(self, token=None):
         """Create a new request auth with a JWT token."""
         self.token = token
-        log.debug('New auth created: {auth!r}'.format(auth=self))
 
     @property
     def auth_header(self):
@@ -35,9 +33,20 @@ class JWTBearerAuth(requests.auth.AuthBase):
         }
 
     @property
+    def token(self):
+        """The JWT token."""
+        return getattr(self, '_token', None)
+
+    @token.setter
+    def token(self, value):
+        if self.token != value:
+            setattr(self, '_token', value)
+            setattr(self, '_payload', jwt_payload(value))
+
+    @property
     def payload(self):
         """The JWT payload."""
-        return jwt_payload(self.token)
+        return getattr(self, '_payload', {})
 
     def __eq__(self, other):
         """Allow comparison of Auth objects."""
@@ -49,11 +58,11 @@ class JWTBearerAuth(requests.auth.AuthBase):
         """Allow comparison of Auth objects."""
         return not self == other
 
-    def __call__(self, r=requests.Request()):
+    def __call__(self, request):
         """Apply authentication to the current request."""
         log.debug('Adding JWT Bearer token to request')
-        r.headers.update(self.auth_header)
-        return r
+        request.headers.update(self.auth_header)
+        return request
 
     def __repr__(self):
         return '{obj.__class__.__name__}({obj.token!r})'.format(obj=self)

@@ -30,5 +30,5 @@ class ApiException(Exception):
         return error_message
 
 
-class MissingAuthentication(ApiException):
-    """Raised when the api client is initialized without an api_key or token passed."""
+class AuthError(ApiException):
+    """Authentication failed."""

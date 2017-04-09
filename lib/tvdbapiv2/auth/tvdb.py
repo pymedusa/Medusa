@@ -10,6 +10,7 @@ from time import time
 import requests
 
 from .jwt import JWTBearerAuth
+from ..exceptions import AuthError
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -17,17 +18,13 @@ log.addHandler(logging.NullHandler())
 
 class TVDBAuth(JWTBearerAuth):
     """Attaches JWT Bearer Authentication to a TVDB request."""
-    # TODO: Add logic to refresh the auth
 
-    url = {
-        'login': 'https://api.thetvdb.com/login',
-        'refresh': 'https://api.thetvdb.com/refresh_token',
-    }
+    refresh_window = 7200  # seconds
 
     def __init__(self, api_key=None, token=None):
         """Create a new TVDB request auth."""
-        self.api_key = api_key
         super(TVDBAuth, self).__init__(token)
+        self.api_key = api_key
 
     @property
     def authorization(self):
@@ -37,49 +34,83 @@ class TVDBAuth(JWTBearerAuth):
         }
 
     @property
-    def token(self):
-        """The JWT."""
-        value = getattr(self, '_token', None)
-        if not value or self.is_expired:
-            try:
-                value = self.login().json().get('token')
-            except ValueError:
-                value = None
-        elif self.expiration - time() < 7200:  # less than 2 hrs left
-            try:
-                value = self.refresh().json().get('token')
-            except ValueError:
-                value = None
-        return value
-
-    @token.setter
-    def token(self, value):
-        setattr(self, '_token', value)
-
-    @property
     def expiration(self):
+        """Authentication expiration in epoch time."""
         return self.payload.get('exp', time())
 
     @property
+    def time_remaining(self):
+        """Remaining authentication time in seconds."""
+        return max(self.expiration - time(), 0)
+
+    @property
     def is_expired(self):
+        """True if authentication has expired, else False."""
         return self.expiration <= time()
 
+    def _get_token(self, response):
+        try:
+            data = response.json()
+        except ValueError as error:
+            log.warning('Failed to extract token: {msg}'.format(msg=error))
+        else:
+            self.token = data['token']
+        finally:
+            return response
+
     def login(self):
-        """Acquire a JSON Web Token from TVDB."""
+        """Acquire a JSON Web Token."""
         log.debug('Acquiring a TVDB JWT')
-        return requests.post(self.url['login'], json=self.authorization)
+        if not self.api_key:
+            raise AuthError('Missing API key')
+        response = requests.post(
+            'https://api.thetvdb.com/login',
+            json=self.authorization,
+        )
+        try:
+            self._get_token(response)
+        finally:
+            return response
 
     def refresh(self):
-        """Refresh a JSON Web Token from TVDB."""
+        """Refresh a JSON Web Token."""
+
         log.debug('Refreshing a TVDB JWT')
-        return requests.get(self.url['refresh'])
+
+        if not self.token:
+            log.debug('No token to refresh')
+            return self.login()
+        elif self.is_expired:
+            log.debug('Token has expired')
+            return self.login()
+
+        response = requests.get(
+            'https://api.thetvdb.com/refresh_token',
+            headers=self.auth_header,
+        )
+
+        try:
+            self._get_token(response)
+        finally:
+            return response
+
+    def authenticate(self):
+        """Acquire or refresh a JSON Web Token."""
+        if not self.token or self.is_expired:
+            self.login()
+        elif self.time_remaining < self.refresh_window:
+            self.refresh()
+
+    def __call__(self, request):
+        self.authenticate()
+        return super(TVDBAuth, self).__call__(request)
 
     def __repr__(self):
         representation = '{obj.__class__.__name__}(api_key={obj.api_key!r})'
         return representation.format(obj=self)
 
 
-class TVDBUserAuth(TVDBAuth):
+class TVDBUser(TVDBAuth):
     """
     Attaches a users JWT Bearer Authentication to a TVDB request.
 
@@ -89,9 +120,9 @@ class TVDBUserAuth(TVDBAuth):
 
     def __init__(self, api_key=None, username=None, account_id=None):
         """Create a new TVDB request auth with a users credentials."""
+        super(TVDBUser, self).__init__(api_key)
         self.username = username
         self.account_id = account_id
-        super(TVDBUserAuth, self).__init__(api_key)
 
     @property
     def authorization(self):
@@ -100,12 +131,13 @@ class TVDBUserAuth(TVDBAuth):
             'username': self.username,
             'userkey': self.account_id,
         }
-        result.update(super(TVDBUserAuth, self).authorization)
+        result.update(super(TVDBUser, self).authorization)
         return result
 
     def __repr__(self):
         representation = (
-            '{obj.__class__.__name__}('
+            '{obj.__class__.__name__}'
+            '('
             'api_key={obj.api_key!r}, '
             'username={obj.username!r}, '
             'account_id={obj.account_id!r}'

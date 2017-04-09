@@ -23,7 +23,7 @@ from __future__ import absolute_import
 from requests.exceptions import RequestException
 from . import models  # Used through eval.
 from .rest import RESTClientObject
-from .exceptions import MissingAuthentication
+from .exceptions import AuthError
 
 import os
 import re
@@ -68,7 +68,7 @@ class ApiClient(object):
         """
         self.session = session or requests.session()
         if not api_key and not token:
-            raise MissingAuthentication('Please provide an api_key or token to authenticate.')
+            raise AuthError('Please provide an api_key or token to authenticate.')
 
         try:
             self.session.auth = TVDBAuth(api_key=api_key, token=token)
