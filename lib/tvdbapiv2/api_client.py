@@ -70,12 +70,7 @@ class ApiClient(object):
         if not api_key and not token:
             raise AuthError('Please provide an api_key or token to authenticate.')
 
-        try:
-            self.session.auth = TVDBAuth(api_key=api_key, token=token)
-        except RequestException as error:
-            msg = "{0}\n{1}".format(type(error).__name__, str(error))
-            raise ApiException(status=0, reason=msg)
-
+        self.session.auth = TVDBAuth(api_key=api_key, token=token)
         self.rest_client = RESTClientObject(session=self.session)
 
         if host is None:

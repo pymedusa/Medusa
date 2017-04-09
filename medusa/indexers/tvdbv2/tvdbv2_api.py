@@ -62,10 +62,7 @@ class TVDBv2(BaseIndexer):
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
         apikey = '0629B785CE550C8D'
-        try:
-            tvdb_client = ApiClient(api_base_url, session=self.session, api_key=apikey)
-        except ApiException as error:
-            raise IndexerUnavailable(error)
+        tvdb_client = ApiClient(api_base_url, session=self.session, api_key=apikey)
 
         self.search_api = SearchApi(tvdb_client)
         self.series_api = SeriesApi(tvdb_client)
