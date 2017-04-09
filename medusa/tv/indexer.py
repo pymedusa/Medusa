@@ -2,10 +2,10 @@
 """Indexer class."""
 
 from medusa.indexers.indexer_config import indexer_id_to_name, indexer_name_to_id
-import six
+from medusa.tv.base import Identifier
 
 
-class Indexer(object):
+class Indexer(Identifier):
     """Represent an Indexer with id and slug name."""
 
     def __init__(self, identifier):
@@ -33,11 +33,9 @@ class Indexer(object):
         """Slug name."""
         return indexer_id_to_name(self.id)
 
-    def __bool__(self):
+    def __nonzero__(self):
         """Magic method bool."""
         return self.id is not None
-
-    __nonzero__ = __bool__
 
     def __repr__(self):
         """Magic method."""
@@ -49,18 +47,8 @@ class Indexer(object):
 
     def __hash__(self):
         """Magic method."""
-        return hash(str(self))
+        return hash(self.id)
 
     def __eq__(self, other):
         """Magic method."""
-        if isinstance(other, six.string_types):
-            return str(self) == other
-        if isinstance(other, int):
-            return self.id == other
-        if not isinstance(other, Indexer):
-            return False
-        return self.id == other.id
-
-    def __ne__(self, other):
-        """Magic method."""
-        return not self == other
+        return isinstance(other, Indexer) and self.id == other.id

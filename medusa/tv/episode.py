@@ -84,9 +84,7 @@ from medusa.scene_numbering import (
     get_scene_numbering,
     xem_refresh,
 )
-from medusa.tv.base import TV
-
-from six import string_types
+from medusa.tv.base import Identifier, TV
 
 try:
     import xml.etree.cElementTree as ETree
@@ -96,86 +94,131 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class EpisodeIdentifier(object):
-    """Episode Identifier with season/episode/air date."""
+class EpisodeNumber(Identifier):
+    """Episode Number: season/episode, absolute or air by date."""
 
     date_fmt = '%Y-%m-%d'
     regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
-                       r'(?:(?:s(?P<season>\d{1,4}))?(?:e(?P<episode>\d{1,3}))?))\b', re.IGNORECASE)
-
-    def __init__(self, season=None, episode=None, air_date=None):
-        """Constructor.
-
-        :param season:
-        :type season: int
-        :param episode:
-        :type episode: int
-        :param air_date:
-        :type air_date: datetime
-        """
-        self.season = season
-        self.episode = episode
-        self.air_date = air_date
+                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,2}))|'
+                       r'(?:e(?P<abs_episode>\d{1,3})))\b', re.IGNORECASE)
 
     @classmethod
-    def from_identifier(cls, slug):
-        """Create identifier from slug. E.g.: s01e02."""
+    def from_slug(cls, slug):
+        """Create episode number from slug. E.g.: s01e02."""
         match = cls.regex.match(slug)
         if match:
             try:
                 result = {k: int(v) if k != 'air_date' else datetime.strptime(v, cls.date_fmt)
                           for k, v in match.groupdict().items() if v is not None}
                 if result:
-                    return EpisodeIdentifier(**result)
+                    if 'air_date' in result:
+                        return AirByDateNumber(**result)
+                    if 'season' in result and 'episode' in result:
+                        return RelativeNumber(**result)
+                    if 'abs_episode' in result:
+                        return AbsoluteNumber(**result)
             except ValueError:
                 pass
 
-    def __bool__(self):
-        """Magic method."""
-        return (self.season is not None and self.episode is not None) or (
-            self.episode is not None or self.air_date is not None)
 
-    __nonzero__ = __bool__
+class RelativeNumber(Identifier):
+    """Regular episode number: season and episode."""
+
+    def __init__(self, season, episode):
+        """Constructor.
+
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        """
+        self.season = season
+        self.episode = episode
+
+    def __nonzero__(self):
+        """Magic method."""
+        return self.season is not None and self.episode is not None
 
     def __repr__(self):
         """Magic method."""
-        s = ''
-        if self.season is not None:
-            s += 's{0:02d}'.format(self.season)
-        if self.episode is not None:
-            s += 'e{0:02d}'.format(self.episode)
-        if self.air_date is not None:
-            s += '{0!r}'.format(self.air_date)
-        return '<EpisodeIdentifier [{0}]>'.format(s)
+        return '<RelativeNumber [s{0:02d}e{1:02d}]>'.format(self.season, self.episode)
 
     def __str__(self):
         """Magic method."""
-        if self.episode is not None:
-            if self.season is None:
-                return 'e{0:02d}'.format(self.episode)
-            return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
-        if self.air_date is not None:
-            if self.season is not None:
-                raise ValueError('aid_date is set, season should be None')
-            return self.air_date.strftime(self.date_fmt)
-
-        return 's{0:02d}'.format(self.season)
+        return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
 
     def __hash__(self):
         """Magic method."""
-        return hash(str(self))
+        return hash((self.season, self.episode))
 
     def __eq__(self, other):
         """Magic method."""
-        if isinstance(other, string_types):
-            return str(self) == other
-        if not isinstance(other, EpisodeIdentifier):
-            return False
-        return self.season == other.season and self.episode == other.episode and self.air_date == other.air_date
+        return isinstance(other, RelativeNumber) and (
+            self.season == other.season and self.episode == other.episode)
 
-    def __ne__(self, other):
+
+class AbsoluteNumber(EpisodeNumber):
+    """Episode number class that handles absolute episode numbers."""
+
+    def __init__(self, abs_episode):
+        """Constructor.
+
+        :param abs_episode:
+        :type abs_episode: int
+        """
+        self.episode = abs_episode
+
+    def __nonzero__(self):
         """Magic method."""
-        return not self == other
+        return self.episode is not None
+
+    def __repr__(self):
+        """Magic method."""
+        return '<AbsoluteNumber [e{0:02d}]>'.format(self.episode)
+
+    def __str__(self):
+        """Magic method."""
+        return 'e{0:02d}'.format(self.episode)
+
+    def __hash__(self):
+        """Magic method."""
+        return hash(self.episode)
+
+    def __eq__(self, other):
+        """Magic method."""
+        return isinstance(other, AbsoluteNumber) and self.episode == other.episode
+
+
+class AirByDateNumber(EpisodeNumber):
+    """Episode number class that handles air-by-date episode numbers."""
+
+    def __init__(self, air_date):
+        """Constructor.
+
+        :param air_date:
+        :type air_date: datetime
+        """
+        self.air_date = air_date
+
+    def __nonzero__(self):
+        """Magic method."""
+        return self.air_date is not None
+
+    def __repr__(self):
+        """Magic method."""
+        return '<AirByDateNumber [{0!r}]>'.format(self.air_date)
+
+    def __str__(self):
+        """Magic method."""
+        return self.air_date.strftime(self.date_fmt)
+
+    def __hash__(self):
+        """Magic method."""
+        return hash(self.air_date)
+
+    def __eq__(self, other):
+        """Magic method."""
+        return isinstance(other, AirByDateNumber) and self.air_date == other.air_date
 
 
 class Episode(TV):
@@ -226,25 +269,25 @@ class Episode(TV):
             self.check_for_meta_files()
 
     @classmethod
-    def find_by_identifier(cls, series, identifier):
-        """Find Episode based on identifier.
+    def find_by_series_and_episode(cls, series, episode_number):
+        """Find Episode based on series and episode number.
 
         :param series:
         :type series: medusa.tv.series.Series
-        :param identifier:
-        :type identifier: EpisodeIdentifier
+        :param episode_number:
+        :type episode_number: EpisodeNumber
         :return:
         :rtype: medusa.tv.Episode
         """
-        if identifier.episode is not None:
-            if identifier.season is not None:
-                episode = series.get_episode(season=identifier.season, episode=identifier.episode,
-                                             should_cache=False, no_create=True)
-            else:
-                episode = series.get_episode(absolute_number=identifier.episode,
-                                             should_cache=False, no_create=True)
-        elif identifier.air_date:
-            episode = series.get_episode(air_date=identifier.air_date,
+        if isinstance(episode_number, RelativeNumber):
+            episode = series.get_episode(season=episode_number.season, episode=episode_number.episode,
+                                         should_cache=False, no_create=True)
+        elif isinstance(episode_number, AbsoluteNumber):
+            episode = series.get_episode(absolute_number=episode_number.episode,
+                                         should_cache=False, no_create=True)
+
+        elif isinstance(episode_number, AirByDateNumber):
+            episode = series.get_episode(air_date=episode_number.air_date,
                                          should_cache=False, no_create=True)
         else:
             # if this happens then it's a bug!

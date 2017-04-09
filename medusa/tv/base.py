@@ -6,6 +6,20 @@ import threading
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 
 
+class Identifier(object):
+    """Base identifier class."""
+
+    def __nonzero__(self):
+        """Magic method."""
+        raise NotImplemented
+
+    __bool__ = __nonzero__
+
+    def __ne__(self, other):
+        """Magic method."""
+        return not self == other
+
+
 class TV(object):
     """Base class for Series and Episode."""
 
