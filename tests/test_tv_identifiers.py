@@ -3,7 +3,7 @@
 
 from datetime import datetime
 
-from medusa.tv.episode import EpisodeIdentifier
+from medusa.tv.episode import AbsoluteNumber, AirByDateNumber, EpisodeNumber, RelativeNumber
 from medusa.tv.indexer import Indexer
 from medusa.tv.series import SeriesIdentifier
 import pytest
@@ -12,15 +12,15 @@ import pytest
 @pytest.mark.parametrize('p', [
     {  # p0: tvdb
         'slug': 'tvdb',
-        'expected': 1,
+        'expected': Indexer(1),
     },
     {  # p1: tvmaze
         'slug': 'tvmaze',
-        'expected': 3,
+        'expected': Indexer(3),
     },
     {  # p2: tmdb
         'slug': 'tmdb',
-        'expected': 4,
+        'expected': Indexer(4),
     },
     {  # p3: invalid one
         'slug': 'another',
@@ -40,175 +40,142 @@ def test_indexer_identifier(p):
         assert actual is None
     else:
         assert actual
-        assert slug == actual
         assert expected == actual
-        assert Indexer(expected) == actual
-        assert Indexer(expected + 1) != actual
-        assert float(expected) != actual
+        assert Indexer(expected.id + 1) != actual
+        assert expected.id != actual
 
 
 @pytest.mark.parametrize('p', [
     {  # p0: tvdb
         'slug': 'tvdb1234',
-        'expected_indexer': 1,
-        'expected_indexer_id': 1234
+        'expected': SeriesIdentifier(Indexer(1), 1234),
     },
     {  # p1: tvmaze
         'slug': 'tvmaze567',
-        'expected_indexer': 3,
-        'expected_indexer_id': 567
+        'expected': SeriesIdentifier(Indexer(3), 567),
     },
     {  # p2: tmdb
         'slug': 'tmdb89',
-        'expected_indexer': 4,
-        'expected_indexer_id': 89
+        'expected': SeriesIdentifier(Indexer(4), 89),
     },
     {  # p3: invalid one
         'slug': 'another1122',
-        'expected_indexer': None,
-        'expected_indexer_id': None
+        'expected': None,
     }
 ])
 def test_series_identifier(p):
     # Given
     slug = p['slug']
-    expected_indexer = p['expected_indexer']
-    expected_indexer_id = p['expected_indexer_id']
+    expected = p['expected']
 
     # When
     actual = SeriesIdentifier.from_slug(slug)
 
     # Then
-    if expected_indexer is None:
+    if expected is None:
         assert actual is None
     else:
         assert actual
-        assert slug == actual
-        assert expected_indexer == actual.indexer
-        assert expected_indexer_id == actual.id
-        assert expected_indexer != actual
+        assert expected == actual
+        assert expected.id == actual.id
+        assert expected.indexer == actual.indexer
+        assert expected.id != actual
+        assert expected.indexer != actual
 
 
 @pytest.mark.parametrize('p', [
     {  # p0: s1
-        'identifier': 's1',
+        'slug': 's1',
         'expected': None,
     },
     {  # p1: s01
-        'identifier': 's01',
+        'slug': 's01',
         'expected': None,
     },
     {  # p2: S01
-        'identifier': 'S01',
+        'slug': 'S01',
         'expected': None,
     },
     {  # p3: s12
-        'identifier': 's12',
+        'slug': 's12',
         'expected': None,
     },
     {  # p4: s123
-        'identifier': 's123',
+        'slug': 's123',
         'expected': None,
     },
     {  # p5: s1234
-        'identifier': 's1234',
+        'slug': 's1234',
         'expected': None,
     },
     {  # p6: s12345
-        'identifier': 's12345',
+        'slug': 's12345',
         'expected': None,
     },
     {  # p7: e2
-        'identifier': 'e2',
-        'expected': 'e02',
-        'expected_season': None,
-        'expected_episode': 2,
-        'expected_air_date': None,
+        'slug': 'e2',
+        'expected': AbsoluteNumber(2),
     },
     {  # p8: e02
-        'identifier': 'e02',
-        'expected': 'e02',
-        'expected_season': None,
-        'expected_episode': 2,
-        'expected_air_date': None,
+        'slug': 'e02',
+        'expected': AbsoluteNumber(2),
     },
     {  # p9: e12
-        'identifier': 'e12',
-        'expected': 'e12',
-        'expected_season': None,
-        'expected_episode': 12,
-        'expected_air_date': None,
+        'slug': 'e12',
+        'expected': AbsoluteNumber(12),
     },
     {  # p10: e123
-        'identifier': 'e123',
-        'expected': 'e123',
-        'expected_season': None,
-        'expected_episode': 123,
-        'expected_air_date': None,
+        'slug': 'e123',
+        'expected': AbsoluteNumber(123),
     },
     {  # p11: e1234
-        'identifier': 'e1234',
+        'slug': 'e1234',
         'expected': None,
     },
     {  # p12: E15
-        'identifier': 'E15',
-        'expected': 'e15',
-        'expected_season': None,
-        'expected_episode': 15,
-        'expected_air_date': None,
+        'slug': 'E15',
+        'expected': AbsoluteNumber(15),
     },
     {  # p13: s01e02
-        'identifier': 's01e02',
-        'expected': 's01e02',
-        'expected_season': 1,
-        'expected_episode': 2,
-        'expected_air_date': None,
+        'slug': 's01e02',
+        'expected': RelativeNumber(1, 2),
     },
     {  # p14: s2017e02
-        'identifier': 's2017e02',
-        'expected': 's2017e02',
-        'expected_season': 2017,
-        'expected_episode': 2,
-        'expected_air_date': None,
+        'slug': 's2017e02',
+        'expected': RelativeNumber(2017, 2),
     },
     {  # p15: 2017-07-16
-        'identifier': '2017-07-16',
-        'expected': '2017-07-16',
-        'expected_season': None,
-        'expected_episode': None,
-        'expected_air_date': datetime.strptime('2017-07-16', '%Y-%m-%d'),
+        'slug': '2017-07-16',
+        'expected': AirByDateNumber(datetime(year=2017, month=7, day=16)),
     },
     {  # p16: 2017-17-16 (invalid date)
-        'identifier': '2017-17-16',
+        'slug': '2017-17-16',
         'expected': None,
     },
     {  # p17: Invalid
-        'identifier': 's01e022017-07-16',
+        'slug': 's01e022017-07-16',
         'expected': None,
     },
     {  # p18: Invalid
-        'identifier': '22017-07-16',
+        'slug': '22017-07-16',
         'expected': None,
     },
     {  # p19: Invalid
-        'identifier': 'ss01',
+        'slug': 'ss01',
         'expected': None,
     },
     {  # p20: Invalid
-        'identifier': 'ee01',
+        'slug': 'ee01',
         'expected': None,
     },
 ])
 def test_episode_identifier(p):
     # Given
-    identifier = p['identifier']
+    slug = p['slug']
     expected = p['expected']
-    expected_season = p.get('expected_season')
-    expected_episode = p.get('expected_episode')
-    expected_air_date = p.get('expected_air_date')
 
     # When
-    actual = EpisodeIdentifier.from_identifier(identifier)
+    actual = EpisodeNumber.from_slug(slug)
 
     # Then
     if expected is None:
@@ -216,7 +183,4 @@ def test_episode_identifier(p):
     else:
         assert actual
         assert expected == actual
-        assert expected_season == actual.season
-        assert expected_episode == actual.episode
-        assert expected_air_date == actual.air_date
-        assert expected_season != actual
+        assert slug != actual

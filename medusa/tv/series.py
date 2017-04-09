@@ -107,11 +107,11 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.tv.base import TV
+from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
-from six import string_types, text_type
+from six import text_type
 from tvdbapiv2.rest import ApiException
 
 try:
@@ -125,7 +125,7 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 logger = logging.getLogger(__name__)
 
 
-class SeriesIdentifier(object):
+class SeriesIdentifier(Identifier):
     """Series identifier with indexer and indexer id."""
 
     def __init__(self, indexer, identifier):
@@ -164,11 +164,9 @@ class SeriesIdentifier(object):
         indexer_api = indexerApi(self.indexer.id)
         return indexer_api.indexer(**indexer_api.api_params)
 
-    def __bool__(self):
+    def __nonzero__(self):
         """Magic method."""
         return self.indexer is not None and self.id is not None
-
-    __nonzero__ = __bool__
 
     def __repr__(self):
         """Magic method."""
@@ -180,19 +178,11 @@ class SeriesIdentifier(object):
 
     def __hash__(self):
         """Magic method."""
-        return hash(str(self))
+        return hash((self.indexer, self.id))
 
     def __eq__(self, other):
         """Magic method."""
-        if isinstance(other, string_types):
-            return str(self) == other
-        if not isinstance(other, SeriesIdentifier):
-            return False
-        return self.indexer == other.indexer and self.id == other.id
-
-    def __ne__(self, other):
-        """Magic method."""
-        return not self == other
+        return isinstance(other, SeriesIdentifier) and self.indexer == other.indexer and self.id == other.id
 
 
 class Series(TV):

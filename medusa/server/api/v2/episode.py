@@ -3,7 +3,7 @@
 
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.server.api.v2.series import SeriesHandler
-from medusa.tv.episode import Episode, EpisodeIdentifier
+from medusa.tv.episode import Episode, EpisodeNumber
 from medusa.tv.series import Series, SeriesIdentifier
 
 
@@ -15,17 +15,17 @@ class EpisodeHandler(BaseRequestHandler):
     #: resource name
     name = 'episode'
     #: identifier
-    identifier = ('identifier', r'[\w-]+')
+    identifier = ('episode_slug', r'[\w-]+')
     #: path param
     path_param = ('path_param', r'\w+')
     #: allowed HTTP methods
     allowed_methods = ('GET', )
 
-    def get(self, series_slug, identifier, path_param):
+    def get(self, series_slug, episode_slug, path_param):
         """Query episode information.
 
         :param series_slug: series slug. E.g.: tvdb1234
-        :param identifier:
+        :param episode_number:
         :param path_param:
         """
         series_identifier = SeriesIdentifier.from_slug(series_slug)
@@ -36,17 +36,17 @@ class EpisodeHandler(BaseRequestHandler):
         if not series:
             return self._not_found('Series not found')
 
-        if not identifier:
+        if not episode_slug:
             detailed = self._parse_boolean(self.get_argument('detailed', default=False))
             season = self._parse(self.get_argument('season', None), int)
             data = [e.to_json(detailed=detailed) for e in series.get_all_episodes(season=season)]
             return self._paginate(data, sort='airDate')
 
-        identifier = EpisodeIdentifier.from_identifier(identifier)
-        if not identifier:
-            return self._bad_request('Invalid episode identifier')
+        episode_number = EpisodeNumber.from_slug(episode_slug)
+        if not episode_number:
+            return self._bad_request('Invalid episode number')
 
-        episode = Episode.find_by_identifier(series, identifier)
+        episode = Episode.find_by_series_and_episode(series, episode_number)
         if not episode:
             return self._not_found('Episode not found')
 
