@@ -1,47 +1,39 @@
 daily:
-  mode: RSS
-  search_strings: ['']
-  data:
-    - seeders: 1
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
       pubdate:
-      title: Carson.Daly.2016.12.13.Simone.Biles.HDTV.x264-CROOKS[ettv]
-      torrent_hash:
+      title: You.Me.Her.S02E06.720p.HDTV.x264-KILLERS[ettv]
       leechers: 0
-      link: http://extratorrent.cc/download/5354297/Carson.Daly.2016.12.13.Simone.Biles.HDTV.x264-CROOKS%5Bettv%5D.torrent
-      size: 198663208
-
-    - seeders: 1
+      link: magnet:?xt=urn:btih:af55bf8be86210457a0d101d7e770a1e61cb846f
+      size: 562022437
+    - seeders: 0
       pubdate:
-      title: Jimmy.Kimmel.2016.12.13.Rami.Malek.HDTV.x264-CROOKS[ettv]
-      torrent_hash:
+      title: You.Me.Her.S02E06.HDTV.x264-KILLERS[ettv]
       leechers: 0
-      link: http://extratorrent.cc/download/5354250/Jimmy.Kimmel.2016.12.13.Rami.Malek.HDTV.x264-CROOKS%5Bettv%5D.torrent
-      size: 443254046
-
-    - seeders: 2
+      link: magnet:?xt=urn:btih:d7bc7253d8a04cbe2e6773be2b285974d81a5578
+      size: 150715487
+    - seeders: 0
       pubdate:
-      title: The.Weekly.With.Charlie.Pickering.2016.12.14.Yearly.Special.360p.LDTV.ABC.AU.WEBRIP.[MPup]
-      torrent_hash:
-      leechers: 5
-      link: http://extratorrent.cc/download/5354245/The.Weekly.With.Charlie.Pickering.2016.12.14.Yearly.Special.360p.LDTV.ABC.AU.WEBRIP.%5BMPup%5D.torrent
-      size: 242745344
+      title: Homeland Season 6 Complete HDTV x264 [i_c]
+      leechers: 0
+      link: magnet:?xt=urn:btih:fb6ead48417421cf41485cf2cb4900e24da18feb
+      size: 2971221329
 
 backlog:
-  mode: Episode
-  search_strings: ['Arrow S05E07']
-  data:
-    - seeders: 49
+  search_strings:
+    Episode: ['Arrow S05E07']
+  results:
+    - seeders: 437
       pubdate:
-      title: Elementary S05E07 (1080p WEBRip x265 HEVC 10bit AAC 5.1 Qman) [UTR]
-      torrent_hash:
-      leechers: 14
-      link: http://extratorrent.cc/download/5309682/Elementary+S05E07+%281080p+WEBRip+x265+HEVC+10bit+AAC+5.1+Qman%29+%5BUTR%5D.torrent
-      size: 379081195
-
-    - seeders: 219
+      title: Arrow.S05E07.HDTV.Subtitulado.Esp.SC.avi
+      leechers: 60
+      link: magnet:?xt=urn:btih:bafb0dbda0c6235da7303c5a68173eef7e808040
+      size: 363382784
+    - seeders: 115
       pubdate:
-      title: Elementary.S05E07.1080p.HDTV.x264[state]
-      torrent_hash:
-      leechers: 45
-      link: http://extratorrent.cc/download/5305486/Elementary.S05E07.1080p.HDTV.x264%5Bstate%5D.torrent
-      size: 455375585
+      title: Arrow S05E07 (1080p WEB-DL x265 HEVC 10bit AC3 5.1 Qman) [UTR]
+      leechers: 5
+      link: magnet:?xt=urn:btih:e109ec44fd5b1d9906ebd8fc4ccfe4d17955d9ad
+      size: 895857940

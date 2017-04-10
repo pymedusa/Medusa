@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 from collections import namedtuple
 
-from medusa.providers.torrent import extratorrent
+from medusa.providers.torrent import extratorrent, thepiratebay, zooqle
 
 import pytest
 
@@ -14,18 +14,18 @@ import yaml
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
-__providers__ = (extratorrent,)
+
+PROVIDERS = (extratorrent, thepiratebay, zooqle)
 
 
 @pytest.fixture(scope='session')
 def providers():
-
     Provider = namedtuple('Provider', 'name type klass data')
     providers = [Provider(name=provider.__name__.rpartition('.')[2],
                           type=provider.__name__.split('.', 3)[2],
                           klass=provider.__dict__.get('provider'),
                           data={})
-                 for provider in __providers__]
+                 for provider in PROVIDERS]
 
     for provider in providers:
 

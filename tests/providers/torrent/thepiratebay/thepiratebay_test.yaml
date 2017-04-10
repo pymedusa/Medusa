@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
+      pubdate:
+      title: NCIS.Los.Angeles.S08E04.1080p.AMZN.WEBRip.DD5.1.x264-ViSUM
+      leechers: 0
+      link: magnet:?xt=urn:btih:e228cf237128f18cec761f89342f88a1da9e8226
+      size: 3983582167
+    - seeders: 1
+      pubdate:
+      title: Billions.S02E08.1080p.HDTV.x264-aAF
+      leechers: 0
+      link: magnet:?xt=urn:btih:eb565a8f872cf9471d1929d7e1e5c8796291bb7c
+      size: 4606352424
+    - seeders: 1
+      pubdate:
+      title: Wolfblood.S05E07.XviD-AFG
+      leechers: 0
+      link: magnet:?xt=urn:btih:d2d1c9f6d713636be18ee3d7f8e59cdcf9a559e1
+      size: 343261839
+
+backlog:
+  search_strings:
+    Episode: ['Arrow S05E07']
+  results:
+    - seeders: 0
+      pubdate:
+      title: Arrow S05E07 Vigilante 1080p AMZN WEBRip HEVC DD5.1 x265
+      leechers: 0
+      link: magnet:?xt=urn:btih:1a8317696f560d19336d13dfaaa70048130c73ce
+      size: 645587271
+    - seeders: 1
+      pubdate:
+      title: Arrow.S05E07.1080p.WEB-DL.6CH.x265.HEVC-PSA
+      leechers: 3
+      link: magnet:?xt=urn:btih:d540765a1d0b49ec1c7bf6186c42d9e652500aaa
+      size: 524350914
