@@ -16,6 +16,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 
+import os
 import time
 import requests
 from simpleanidb import Anidb
@@ -216,7 +217,6 @@ class TraktPopular(object):
 
     def check_cache_for_poster(self, tvdb_id):
         """Verify if we already have a poster downloaded for this show."""
-        import os
         for image_file_name in os.listdir(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))):
             if os.path.isfile(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder, image_file_name))):
                 if str(tvdb_id) == image_file_name.split('-')[0]:
