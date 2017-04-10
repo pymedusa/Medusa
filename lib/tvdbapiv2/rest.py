@@ -51,7 +51,10 @@ class RESTClientObject(object):
 
         except RequestException as error:
             msg = "{0}\n{1}".format(type(error).__name__, str(error))
-            raise ApiException(status=0, reason=msg)
+            status = 0
+            if hasattr(error, 'response'):
+                status = error.response.status_code
+            raise ApiException(status=status, reason=msg)
         else:
             return r
 
