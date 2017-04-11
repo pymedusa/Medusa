@@ -26,12 +26,13 @@ from requests.exceptions import RequestException
 from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.exceptions import ApiException
 
+from medusa import ui
+from medusa.app import FALLBACK_PLEX_API_URL
+
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
                                   IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from ..indexer_ui import BaseUI, ConsoleUI
-from medusa import ui
-from medusa.app import FALLBACK_PLEX_API_URL
 
 logger = logging.getLogger(__name__)
 
@@ -329,18 +330,17 @@ class TVDBv2(BaseIndexer):
                     page = 1
                     last = 1
                     while page <= last:
-                        paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(tvdb_id, page=page,
-                                                                                      aired_season=season,
-                                                                                      accept_language=self.config[
-                                                                                          'language'])
+                        paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
+                            tvdb_id, page=page, aired_season=season, accept_language=self.config['language']
+                        )
                         results += paged_episodes.data
                         last = paged_episodes.links.last
                         page += 1
             else:
                 while page <= last:
-                    paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(tvdb_id, page=page,
-                                                                                  accept_language=self.config[
-                                                                                      'language'])
+                    paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
+                        tvdb_id, page=page, accept_language=self.config['language']
+                    )
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
@@ -485,12 +485,14 @@ class TVDBv2(BaseIndexer):
 
         # Let's get the different types of images available for this series
         try:
-            series_images_count = self.config['session'].series_api.series_id_images_get(sid, accept_language=self.config['language'])
+            series_images_count = self.config['session'].series_api.series_id_images_get(
+                sid, accept_language=self.config['language']
+            )
         except (ApiException, RequestException) as e:
             logger.info('Could not get image count for showid: %s with reason: %r', sid, e.message)
             return
 
-        for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
+        for image_type, image_count in self._object_to_dict(series_images_count).items():
             try:
                 if search_for_image_type and search_for_image_type != image_type:
                     # We want to use the 'poster' image also for the 'poster_thumb' type
@@ -503,8 +505,9 @@ class TVDBv2(BaseIndexer):
                 if image_type not in _images:
                     _images[image_type] = {}
 
-                images = self.config['session'].series_api.series_id_images_query_get(sid, key_type=image_type,
-                                                                    accept_language=self.config['language'])
+                images = self.config['session'].series_api.series_id_images_query_get(
+                    sid, key_type=image_type, accept_language=self.config['language']
+                )
                 for image in images.data:
                     # Store the images for each resolution available
                     # Always provide a resolution or 'original'.
