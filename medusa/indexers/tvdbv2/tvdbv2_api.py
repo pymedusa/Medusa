@@ -20,14 +20,14 @@ import datetime
 import logging
 from collections import OrderedDict
 
+from medusa import ui
+from medusa.app import FALLBACK_PLEX_API_URL
+
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.exceptions import ApiException
-
-from medusa import ui
-from medusa.app import FALLBACK_PLEX_API_URL
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,

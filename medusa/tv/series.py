@@ -1423,8 +1423,6 @@ class Series(TV):
         if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
 
-
-
         # load from dir
         self.load_episodes_from_dir()
 
