@@ -27,7 +27,11 @@ from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
+from tvdbapiv2.auth.tvdb import TVDBAuth
 from tvdbapiv2.exceptions import ApiException
+
+from medusa import ui
+from medusa.app import FALLBACK_PLEX_API_URL, TVDB_API_KEY
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
@@ -71,6 +75,7 @@ def plex_fallback(func):
             if (fallback_config['plex_fallback_time'] +
                     datetime.timedelta(hours=fallback_config['fallback_plex_timeout']) < datetime.datetime.now()):
                 session.api_client.host = API_BASE_TVDB
+                session.auth = TVDBAuth(api_key=TVDB_API_KEY)
             else:
                 logger.debug("Plex fallback still enabled.")
 
@@ -86,6 +91,7 @@ def plex_fallback(func):
 
         # If we got this far, it means we hit an exception, and we want to switch to the plex fallback.
         session.api_client.host = API_BASE_URL_FALLBACK
+        session.auth = TVDBAuth(api_key=TVDB_API_KEY, api_base=API_BASE_URL_FALLBACK)
 
         fallback_config['plex_fallback_time'] = datetime.datetime.now()
 
@@ -119,7 +125,7 @@ class TVDBv2(BaseIndexer):
 
         # client_id = ''  # (optional! Only required for the /user routes)
         # client_secret = ''  # (optional! Only required for the /user routes)
-        apikey = '0629B785CE550C8D'
+
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
@@ -137,12 +143,14 @@ class TVDBv2(BaseIndexer):
             self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timeout']
             self.config['session'].fallback_config['fallback_plex_notifications'] = kwargs['plex_fallback']['fallback_plex_notifications']
 
-        tvdb_client = ApiClient(self.config['api_base_url'], session=self.config['session'], api_key=apikey)
+        if not hasattr(self.config['session'], 'api_client'):
+            tvdb_client = ApiClient(self.config['api_base_url'], session=self.config['session'], api_key=TVDB_API_KEY)
+            self.config['session'].api_client = tvdb_client
+            self.config['session'].search_api = SearchApi(tvdb_client)
+            self.config['session'].series_api = SeriesApi(tvdb_client)
+            self.config['session'].updates_api = UpdatesApi(tvdb_client)
 
-        self.config['session'].api_client = tvdb_client
-        self.config['session'].search_api = SearchApi(tvdb_client)
-        self.config['session'].series_api = SeriesApi(tvdb_client)
-        self.config['session'].updates_api = UpdatesApi(tvdb_client)
+        self.config['session'].verify = False
 
         # An api to indexer series/episode object mapping
         self.series_map = {
