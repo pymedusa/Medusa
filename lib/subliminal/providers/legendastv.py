@@ -47,6 +47,9 @@ timestamp_re = re.compile(r'(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+) - (?P<hour
 #: Cache key for releases
 releases_key = __name__ + ':releases|{archive_id}'
 
+#: Cache key for archive name
+archive_name_key = __name__ + ':archive_name|{archive_id}'
+
 
 class LegendasTVArchive(object):
     """LegendasTV Archive.
@@ -389,9 +392,21 @@ class LegendasTVProvider(Provider):
                 # attempt to get the releases from the cache
                 releases = region.get(releases_key.format(archive_id=a.id), expiration_time=expiration_time)
 
+                # attempt to get the archive name from the cache
+                archive_name = region.get(archive_name_key.format(archive_id=a.id), expiration_time=expiration_time)
+
+                # Check if new releases were added to the archive
+                new_releases = False
+                if archive_name != NO_VALUE and a.name and archive_name != a.name:
+                    new_releases = True
+
                 # the releases are not in cache or cache is expired
-                if releases == NO_VALUE:
-                    logger.info('Releases not found in cache')
+                if new_releases or releases == NO_VALUE:
+
+                    if new_releases:
+                        logger.info('Releases found in cache but they are outdated')
+                    else:
+                        logger.info('Releases not found in cache')
 
                     # download archive
                     self.download_archive(a)
@@ -415,6 +430,9 @@ class LegendasTVProvider(Provider):
 
                     # cache the releases
                     region.set(releases_key.format(archive_id=a.id), releases)
+
+                    # cache the subtitle archive name
+                    region.set(archive_name_key.format(archive_id=a.id), a.name)
 
                 # iterate over releases
                 for r in releases:
