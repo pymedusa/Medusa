@@ -67,14 +67,13 @@ def plex_fallback(func):
 
         # Check if we need to revert to tvdb's api, because we exceed the fallback period.
         if fallback_config['api_base_url'] == API_BASE_URL_FALLBACK:
-            if fallback_config['fallback_plex_notifications']:
-                fallback_notification()
             if (fallback_config['plex_fallback_time'] +
                     datetime.timedelta(hours=fallback_config['fallback_plex_timeout']) < datetime.datetime.now()):
+                logger.debug("Disabling Plex fallback as fallback timeout was reached")
                 session.api_client.host = API_BASE_TVDB
                 session.auth = TVDBAuth(api_key=TVDB_API_KEY)
             else:
-                logger.debug("Plex fallback still enabled.")
+                logger.debug("Keeping Plex fallback enabled as fallback timeout not reached")
 
         try:
             # Run api request
@@ -93,7 +92,9 @@ def plex_fallback(func):
         fallback_config['plex_fallback_time'] = datetime.datetime.now()
 
         # Send notification back to user.
-        fallback_notification()
+        if fallback_config['fallback_plex_notifications']:
+            logger.warning("Enabling Plex fallback as TheTvdb.com API is having some connectivity issues")
+            fallback_notification()
         # Run api request
         return func(*args, **kwargs)
     return inner
