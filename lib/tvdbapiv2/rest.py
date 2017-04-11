@@ -21,6 +21,7 @@ https://www.dropbox.com/developers/core/sdks/python
 from __future__ import absolute_import
 
 import logging
+from contextlib2 import suppress
 from requests.exceptions import RequestException
 from .exceptions import ApiException
 
@@ -50,9 +51,9 @@ class RESTClientObject(object):
             r.raise_for_status()
 
         except RequestException as error:
-            msg = "{0}\n{1}".format(type(error).__name__, str(error))
             status = 0
-            if hasattr(error, 'response'):
+            msg = "{0}\n{1}".format(type(error).__name__, str(error))
+            with suppress(AttributeError):
                 status = error.response.status_code
             raise ApiException(status=status, reason=msg)
         else:
