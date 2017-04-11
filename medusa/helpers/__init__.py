@@ -1415,9 +1415,8 @@ def get_size(start_path='.'):
             try:
                 total_size += os.path.getsize(fp)
             except OSError as error:
-                log.error(u'Unable to get size for file {name} Error: {msg!r}',
-                          {'name': fp, 'msg': ex(error)})
-                log.debug(traceback.format_exc())
+                log.warning(u'Unable to get size for file {name} Error: {msg!r}',
+                            {'name': fp, 'msg': ex(error)})
     return total_size
 
 
