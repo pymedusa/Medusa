@@ -24,7 +24,7 @@
                 <table id="snatchhistory" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default" cellspacing="1" border="0" cellpadding="0">
                     <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                         <tr role="row">
-                            <th colspan="4" class="row-seasonheader">
+                            <th colspan="5" class="row-seasonheader">
                                 <h3>
                                     History
                                 </h3>
@@ -40,6 +40,7 @@
                             <th>Status</th>
                             <th>Provider/Group</th>
                             <th>Release</th>
+                            <th>Size</th>
                         </tr>
                     </tbody>
                     <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
@@ -61,13 +62,16 @@
                                 <td>
                                 ${item['resource_file']}
                                 </td>
+                                <td class="col-size">
+                                ${item['pretty_size']}
+                                </td>
                             </tr>
                         % endfor
                         <tr id="history-footer" class="tablesorter-no-sort border-bottom shadow">
-                            <th class="tablesorter-no-sort" colspan=4></th>
+                            <th class="tablesorter-no-sort" colspan="5"></th>
                         </tr>
                     </tbody>
-                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=4></td></tr></tbody>
+                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan="5"></td></tr></tbody>
                 </table>
             % endif
             <!-- add provider meta data -->
@@ -140,9 +144,9 @@
                     </tbody>
                     <tbody class="tablesorter-no-sort">
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
-                        <th class="tablesorter-no-sort" colspan=11></td>
+                        <th class="tablesorter-no-sort" colspan="11"></td>
                     </tr>
-                    <tr><th class="row-seasonheader" colspan=11></th></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan="11"></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->

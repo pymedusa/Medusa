@@ -27,9 +27,8 @@ from collections import OrderedDict
 
 import adba
 
-from medusa.clients import torrent
-
 import rarfile
+
 from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
@@ -727,25 +726,32 @@ class PostProcessor(object):
 
         return root_ep
 
+    def _quality_from_status(self, status):
+        """
+        Determine the quality of the file that is being post processed with its status.
+
+        :param status: The status related to the file we are post processing
+        :return: A quality value found in common.Quality
+        """
+        quality = common.Quality.UNKNOWN
+
+        if status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
+            _, quality = common.Quality.split_composite_status(status)
+            if quality != common.Quality.UNKNOWN:
+                self._log(u'The snatched status has a quality in it, using that: {0}'.format
+                          (common.Quality.qualityStrings[quality]), logger.DEBUG)
+                return quality
+
+        return quality
+
     def _get_quality(self, ep_obj):
         """
-        Determine the quality of the file that is being post processed.
-
-        First by checking if it is directly available in the Episode's status or
-        otherwise by parsing through the data available.
+        Determine the quality of the file that is being post processed with alternative methods.
 
         :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
         ep_quality = common.Quality.UNKNOWN
-
-        # Try getting quality from the episode (snatched) status first
-        if ep_obj.status in common.Quality.SNATCHED + common.Quality.SNATCHED_PROPER + common.Quality.SNATCHED_BEST:
-            _, ep_quality = common.Quality.split_composite_status(ep_obj.status)
-            if ep_quality != common.Quality.UNKNOWN:
-                self._log(u'The snatched status has a quality in it, using that: {0}'.format
-                          (common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
-                return ep_quality
 
         for resource_name, cur_name in self.item_resources.items():
 
@@ -1007,15 +1013,18 @@ class PostProcessor(object):
                       (common.Quality.qualityStrings[quality]), logger.DEBUG)
             new_ep_quality = quality
         else:
-            new_ep_quality = self._get_quality(ep_obj)
-
-        logger.log(u'Quality of the episode we are processing: {0}'.format
-                   (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
+            new_ep_quality = self._quality_from_status(ep_obj.status)
 
         # check snatched history to see if we should set the download as priority
         self._priority_from_history(show.indexerid, season, episodes, new_ep_quality)
         if self.in_history:
             self._log(u'This episode was found in history as SNATCHED.', logger.DEBUG)
+
+        if new_ep_quality == common.Quality.UNKNOWN:
+            new_ep_quality = self._get_quality(ep_obj)
+
+        logger.log(u'Quality of the episode we are processing: {0}'.format
+                   (common.Quality.qualityStrings[new_ep_quality]), logger.DEBUG)
 
         # see if this is a priority download (is it snatched, in history, PROPER, or BEST)
         priority_download = self._is_priority(old_ep_quality, new_ep_quality)
@@ -1237,54 +1246,31 @@ class PostProcessor(object):
 
         # log it to history episode and related episodes (multi-episode for example)
         for cur_ep in [ep_obj] + ep_obj.related_episodes:
-            history.logDownload(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
+            history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
-        # If any notification fails, don't stop post_processor
-        try:
-            # send notifications
-            notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
-
-            # do the library update for KODI
-            notifiers.kodi_notifier.update_library(ep_obj.show.name)
-
-            # do the library update for Plex
-            notifiers.plex_notifier.update_library(ep_obj)
-
-            # do the library update for EMBY
-            notifiers.emby_notifier.update_library(ep_obj.show)
-
-            # do the library update for NMJ
-            # nmj_notifier kicks off its library update when the notify_download is issued (inside notifiers)
-
-            # do the library update for Synology Indexer
-            notifiers.synoindex_notifier.addFile(ep_obj.location)
-
-            # do the library update for pyTivo
-            notifiers.pytivo_notifier.update_library(ep_obj)
-
-            # do the library update for Trakt
-            notifiers.trakt_notifier.update_library(ep_obj)
-        except Exception as e:
-            logger.log(u'Some notifications could not be sent. Error: {0!r}. '
-                       u'Continuing with post-processing...'.format(e))
+        # send notifications
+        notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        # do the library update for KODI
+        notifiers.kodi_notifier.update_library(ep_obj.show.name)
+        # do the library update for Plex
+        notifiers.plex_notifier.update_library(ep_obj)
+        # do the library update for EMBY
+        notifiers.emby_notifier.update_library(ep_obj.show)
+        # do the library update for NMJ
+        # nmj_notifier kicks off its library update when the notify_download is issued (inside notifiers)
+        # do the library update for Synology Indexer
+        notifiers.synoindex_notifier.addFile(ep_obj.location)
+        # do the library update for pyTivo
+        notifiers.pytivo_notifier.update_library(ep_obj)
+        # do the library update for Trakt
+        notifiers.trakt_notifier.update_library(ep_obj)
 
         self._run_extra_scripts(ep_obj)
 
-        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
-            logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
-            try:
-                client = torrent.get_client_class(app.TORRENT_METHOD)()
-                if self.info_hash and client.move_torrent(self.info_hash):
-                    logger.log("Moved torrent from '{release}' with hash: {hash} to: '{path}'".format
-                               (release=self.release_name, hash=self.info_hash, path=app.TORRENT_SEED_LOCATION),
-                               logger.WARNING)
-                else:
-                    logger.log("Could not move from '{release}' torrent with hash: {hash} to: '{path}'. "
-                               "Please check logs.".format(release=self.release_name, hash=self.info_hash,
-                                                           path=app.TORRENT_SEED_LOCATION), logger.WARNING)
-            except Exception as e:
-                logger.log("Failed to move from '{release}' torrent with hash: {hash} to: '{path}'."
-                           "Error: {error}".format(release=self.release_name, hash=self.info_hash,
-                                                   path=app.TORRENT_SEED_LOCATION, error=e), logger.DEBUG)
+        # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
+        if self.info_hash:
+            existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
+            existing_release_names.append(self.release_name)
+            app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
 
         return True

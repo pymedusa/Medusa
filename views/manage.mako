@@ -43,6 +43,7 @@
             <th class="col-legend">Scene</th>
             <th class="col-legend">Anime</th>
             <th class="col-legend">Season folders</th>
+            <th class="col-legend">DVD Order</th>
             <th class="col-legend">Paused</th>
             <th class="col-legend">Subtitle</th>
             <th class="col-legend">Default Ep Status</th>
@@ -61,7 +62,7 @@
     <tfoot>
         <tr>
             <td rowspan="1" colspan="2" class="align-center alt"><input class="btn pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-            <td rowspan="1" colspan="${(14, 15)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
+            <td rowspan="1" colspan="${(15, 16)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
         </tr>
     </tfoot>
     <tbody>
@@ -93,6 +94,7 @@
         <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
         <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
         <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.dvd_order) == 1]}" width="16" height="16" /></td>
         <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
         <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>
         <td class="triggerhighlight" align="center">${statusStrings[cur_show.default_ep_status]}</td>

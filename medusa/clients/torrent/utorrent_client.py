@@ -1,21 +1,5 @@
 # coding=utf-8
 
-# Authors: Mr_Orange <mr_orange@hotmail.it>, EchelonFour
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """uTorrent Client."""
 
 from __future__ import unicode_literals
@@ -25,12 +9,14 @@ import re
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 from six import iteritems
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class UTorrentAPI(GenericClient):
@@ -52,8 +38,8 @@ class UTorrentAPI(GenericClient):
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
         if cookies:
-            logger.debug('{name}: Received unused argument {arg}: {value}', name=self.name, arg='cookies',
-                         value=cookies)
+            log.debug('{name}: Received unused argument: cookies={value!r}',
+                      {'name': self.name, 'value': cookies})
 
         # Workaround for uTorrent 2.2.1
         # Need an OrderedDict but only supported in 2.7+

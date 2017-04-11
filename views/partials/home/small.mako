@@ -158,6 +158,11 @@
                         <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
                     </a>
                 % endif
+                % if cur_show.externals.get('trakt_id'):
+                    <a href="${anon_url('https://trakt.tv/shows/', cur_show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${cur_show.externals.get('trakt_id')}">
+                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                    </a>
+                % endif
                 <a href="${anon_url(indexerApi(cur_show.indexer).config['show_url'], cur_show.indexerid)}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="${indexerApi(cur_show.indexer).config['show_url']}${cur_show.indexerid}">
                     <img alt="${indexerApi(cur_show.indexer).name}" height="16" width="16" src="images/${indexerApi(cur_show.indexer).config['icon']}" />
                 </a>
@@ -175,15 +180,7 @@
                 <img src="images/${('no16.png', 'yes16.png')[bool(paused)]}" alt="${('No', 'Yes')[bool(paused)]}" width="16" height="16" />
             </td>
             <td align="center" class="min-cell-width">
-            <%
-                display_status = cur_show.status
-                if None is not display_status:
-                    if re.search(r'(?i)(?:new|returning)\s*series', cur_show.status):
-                        display_status = 'Continuing'
-                    elif re.search('(?i)(?:nded)', cur_show.status):
-                        display_status = 'Ended'
-            %>
-            ${display_status}
+            ${cur_show.status}
             </td>
             <td align="center" class="min-cell-width">
                 <% have_xem = bool(get_xem_numbering_for_show(cur_show.indexerid, cur_show.indexer, refresh_data=False)) %>

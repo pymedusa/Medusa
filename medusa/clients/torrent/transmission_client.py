@@ -1,21 +1,5 @@
 # coding=utf-8
 
-# Author: Mr_Orange <mr_orange@hotmail.it>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Transmission Client."""
 
 from __future__ import unicode_literals
@@ -33,11 +17,13 @@ from medusa.helpers import (
     is_info_hash_in_history,
     is_info_hash_processed,
 )
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class TransmissionAPI(GenericClient):
@@ -226,7 +212,7 @@ class TransmissionAPI(GenericClient):
         :return
         :rtype: bool
         """
-        if not app.TORRENT_SEED_LOCATION:
+        if not app.TORRENT_SEED_LOCATION or not info_hash:
             return
 
         arguments = {
@@ -263,27 +249,29 @@ class TransmissionAPI(GenericClient):
         isFinished = whether seeding finished (based on idle timeout or seed ratio)
         IsStalled =  Based on Tranmission setting "Transfer is stalled when inactive for"
         """
-        logger.info('Checking Transmission torrent status.')
+        log.info('Checking Transmission torrent status.')
 
         return_params = {
-            'fields': ['name', 'hashString', 'percentDone', 'status', 'isStalled', 'errorString', 'seedRatioLimit',
+            'fields': ['name', 'hashString', 'percentDone', 'status',
+                       'isStalled', 'errorString', 'seedRatioLimit',
                        'isFinished', 'uploadRatio', 'seedIdleLimit', 'files']
         }
 
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
 
         if not self._request(method='post', data=post_data):
-            logger.debug('Could not connect to Transmission. Check logs')
+            log.debug('Could not connect to Transmission. Check logs')
             return
 
         try:
             returned_data = json.loads(self.response.content)
         except ValueError:
-            logger.warning('Unexpected data received from Transmission: {resp}', resp=self.response.content)
+            log.warning('Unexpected data received from Transmission: {resp}',
+                        {'resp': self.response.content})
             return
 
         if not returned_data['result'] == 'success':
-            logger.debug('Nothing in queue or error')
+            log.debug('Nothing in queue or error')
             return
 
         found_torrents = False
@@ -296,14 +284,15 @@ class TransmissionAPI(GenericClient):
 
             to_remove = False
             for i in torrent['files']:
-                # Check if media was processed OR check hash in case of RARed torrents
+                # Check if media was processed
+                # OR check hash in case of RARed torrents
                 if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
                     to_remove = True
 
             # Don't need to check status if we are not going to remove it.
             if not to_remove:
-                logger.info("Torrent wasn't post-processed yet. Skipping: {torrent_name}",
-                            torrent_name=torrent['name'])
+                log.info('Torrent not yet post-processed. Skipping: {torrent}',
+                         {'torrent': torrent['name']})
                 continue
 
             status = 'busy'
@@ -321,39 +310,55 @@ class TransmissionAPI(GenericClient):
                 status = 'seeding'
 
             if status == 'completed':
-                logger.info("Torrent completed and reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}] or "
-                            "seed idle limit: [{seed_limit} min]. Removing it: [{name}]",
-                            ratio=torrent['uploadRatio'],
-                            ratio_limit=torrent['seedRatioLimit'],
-                            seed_limit=torrent['seedIdleLimit'],
-                            name=torrent['name'])
+                log.info(
+                    'Torrent completed and reached minimum'
+                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}] or'
+                    ' seed idle limit: [{seed_limit} min].'
+                    ' Removing it: [{name}]',
+                    ratio=torrent['uploadRatio'],
+                    ratio_limit=torrent['seedRatioLimit'],
+                    seed_limit=torrent['seedIdleLimit'],
+                    name=torrent['name']
+                )
                 self.remove_torrent(torrent['hashString'])
             elif status == 'stalled':
-                logger.warning("Torrent is stalled. Check it: [{name}]", name=torrent['name'])
+                log.warning('Torrent is stalled. Check it: [{name}]',
+                            name=torrent['name'])
             elif status == 'unregistered':
-                logger.warning("Torrent was unregistered from tracker. Check it: [{name}]", name=torrent['name'])
+                log.warning('Torrent was unregistered from tracker.'
+                            ' Check it: [{name}]', name=torrent['name'])
             elif status == 'seeding':
                 if float(torrent['uploadRatio']) < float(torrent['seedRatioLimit']):
-                    logger.info("Torrent didn't reached minimum ratio: [{ratio:.3f}/{ratio_limit:.3f}]. "
-                                "Keeping it: [{name}]",
-                                ratio=torrent['uploadRatio'],
-                                ratio_limit=torrent['seedRatioLimit'],
-                                name=torrent['name'])
+                    log.info(
+                        'Torrent did not reach minimum'
+                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
+                        ' Keeping it: [{name}]',
+                        ratio=torrent['uploadRatio'],
+                        ratio_limit=torrent['seedRatioLimit'],
+                        name=torrent['name']
+                    )
                 else:
-                    logger.info("Torrent completed and reached minimum ratio but it was force started again. "
-                                "Current ratio: [{ratio:.3f}/{ratio_limit:.3f}]. Keeping it: [{name}]",
-                                ratio=torrent['uploadRatio'],
-                                ratio_limit=torrent['seedRatioLimit'],
-                                name=torrent['name'])
+                    log.info(
+                        'Torrent completed and reached minimum ratio but it'
+                        ' was force started again. Current'
+                        ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
+                        ' Keeping it: [{name}]',
+                        ratio=torrent['uploadRatio'],
+                        ratio_limit=torrent['seedRatioLimit'],
+                        name=torrent['name']
+                    )
             elif status in ('stopped', 'busy'):
-                logger.info("Torrent is {status}. Keeping it: [{name}]", status=status, name=torrent['name'])
+                log.info('Torrent is {status}. Keeping it: [{name}]',
+                         status=status, name=torrent['name'])
             else:
-                logger.warning("Torrent has an unmapped status. Keeping it: [{name}]. Report torrent info: {info}",
-                               name=torrent['name'],
-                               info=torrent)
-
+                log.warning(
+                    'Torrent has an unmapped status. Keeping it: [{name}].'
+                    ' Report torrent info: {info}',
+                    name=torrent['name'],
+                    info=torrent
+                )
         if not found_torrents:
-            logger.info('No torrents found that were snatched by Medusa')
+            log.info('No torrents found that were snatched by Medusa')
 
 
 api = TransmissionAPI

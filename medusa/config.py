@@ -236,6 +236,26 @@ def change_BACKLOG_FREQUENCY(freq):
     app.backlog_search_scheduler.cycleTime = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
 
 
+def change_PROPERS_FREQUENCY(check_propers_interval):
+    """
+    Change frequency of backlog thread
+
+    :param freq: New frequency
+    """
+    if not app.DOWNLOAD_PROPERS:
+        return
+
+    if app.CHECK_PROPERS_INTERVAL == check_propers_interval:
+        return
+
+    if check_propers_interval in app.PROPERS_SEARCH_INTERVAL:
+        update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[check_propers_interval])
+    else:
+        update_interval = datetime.timedelta(hours=1)
+    app.CHECK_PROPERS_INTERVAL = check_propers_interval
+    app.proper_finder_scheduler.cycleTime = update_interval
+
+
 def change_UPDATE_FREQUENCY(freq):
     """
     Change frequency of daily updater thread

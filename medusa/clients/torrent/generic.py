@@ -3,20 +3,27 @@
 
 from __future__ import unicode_literals
 
+import logging
 import re
 import time
 import traceback
 from base64 import b16encode, b32decode
+
 from hashlib import sha1
 
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
 
-from medusa import app, db, helpers, logger
+from medusa import app, db, helpers
 from medusa.helper.common import http_code_description
+from medusa.logger.adapters.style import BraceAdapter
 
 import requests
 from six.moves.http_cookiejar import CookieJar
+
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class GenericClient(object):
@@ -53,50 +60,62 @@ class GenericClient(object):
             self.last_time = time.time()
             self._get_auth()
 
-        data_str = str(data)
-        logger.log('{name}: Requested a {method} connection to {url} with Params: {params} Data: {data}{etc}'.format
-                   (name=self.name, method=method.upper(), url=self.url,
-                    params=params, data=data_str[0:99],
-                    etc='...' if len(data_str) > 99 else ''), logger.DEBUG)
+        text = str(data)
+        log.debug(
+            '{name}: Requested a {method} connection to {url} with'
+            ' params: {params} Data: {data}', {
+                'name': self.name,
+                'method': method.upper(),
+                'url': self.url,
+                'params': params,
+                'data': text[0:99] + '...' if len(text) > 102 else text
+            }
+        )
 
         if not self.auth:
-            logger.log('{name}: Authentication Failed'.format(name=self.name), logger.WARNING)
+            log.warning('{name}: Authentication Failed', {'name': self.name})
 
             return False
         try:
             self.response = self.session.__getattribute__(method)(self.url, params=params, data=data, files=files,
                                                                   cookies=cookies, timeout=120, verify=False)
         except requests.exceptions.ConnectionError as msg:
-            logger.log('{name}: Unable to connect {error}'.format
-                       (name=self.name, error=msg), logger.ERROR)
+            log.error('{name}: Unable to connect {error}',
+                      {'name': self.name, 'error': msg})
             return False
         except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
-            logger.log('{name}: Invalid Host'.format(name=self.name), logger.ERROR)
+            log.error('{name}: Invalid Host', {'name': self.name})
             return False
         except requests.exceptions.HTTPError as msg:
-            logger.log('{name}: Invalid HTTP Request {error}'.format(name=self.name, error=msg), logger.ERROR)
+            log.error('{name}: Invalid HTTP Request {error}',
+                      {'name': self.name, 'error': msg})
             return False
         except requests.exceptions.Timeout as msg:
-            logger.log('{name}: Connection Timeout {error}'.format(name=self.name, error=msg), logger.WARNING)
+            log.warning('{name}: Connection Timeout {error}',
+                        {'name': self.name, 'error': msg})
             return False
         except Exception as msg:
-            logger.log('{name}: Unknown exception raised when send torrent to {name} : {error}'.format
-                       (name=self.name, error=msg), logger.ERROR)
+            log.error('{name}: Unknown exception raised when send torrent to'
+                      ' {name} : {error}', {'name': self.name, 'error': msg})
             return False
 
         if self.response.status_code == 401:
-            logger.log('{name}: Invalid Username or Password, check your config'.format
-                       (name=self.name), logger.ERROR)
+            log.error('{name}: Invalid Username or Password,'
+                      ' check your config', {'name': self.name})
             return False
 
         code_description = http_code_description(self.response.status_code)
 
         if code_description is not None:
-            logger.log('{name}: {code}'.format(name=self.name, code=code_description), logger.INFO)
+            log.info('{name}: {code}',
+                     {'name': self.name, 'code': code_description})
             return False
 
-        logger.log('{name}: Response to {method} request is {response}'.format
-                   (name=self.name, method=method.upper(), response=self.response.text), logger.DEBUG)
+        log.debug('{name}: Response to {method} request is {response}', {
+            'name': self.name,
+            'method': method.upper(),
+            'response': self.response.text
+        })
 
         return True
 
@@ -194,8 +213,10 @@ class GenericClient(object):
                 info = torrent_bdecode['info']
                 result.hash = sha1(bencode(info)).hexdigest()
             except (BTFailure, KeyError):
-                logger.log('Unable to bdecode torrent. Invalid torrent: {0}. Deleting cached result if exists'.format
-                           (result.name), logger.WARNING)
+                log.warning(
+                    'Unable to bdecode torrent. Invalid torrent: {name}. '
+                    'Deleting cached result if exists', {'name': result.name}
+                )
                 cache_db_con = db.DBConnection('cache.db')
                 cache_db_con.action(
                     b'DELETE FROM [{provider}] '
@@ -203,7 +224,7 @@ class GenericClient(object):
                     [result.name]
                 )
             except Exception:
-                logger.log(traceback.format_exc(), logger.ERROR)
+                log.error(traceback.format_exc())
 
         return result
 
@@ -217,11 +238,11 @@ class GenericClient(object):
         """
         r_code = False
 
-        logger.log('Calling {name} Client'.format(name=self.name), logger.DEBUG)
+        log.debug('Calling {name} Client', {'name': self.name})
 
         if not self.auth:
             if not self._get_auth():
-                logger.log('{name}: Authentication Failed'.format(name=self.name), logger.WARNING)
+                log.warning('{name}: Authentication Failed', {'name': self.name})
                 return r_code
 
         try:
@@ -240,31 +261,40 @@ class GenericClient(object):
                 r_code = self._add_torrent_file(result)
 
             if not r_code:
-                logger.log('{name}: Unable to send Torrent'.format(name=self.name), logger.WARNING)
+                log.warning('{name}: Unable to send Torrent',
+                            {'name': self.name})
                 return False
 
             if not self._set_torrent_pause(result):
-                logger.log('{name}: Unable to set the pause for Torrent'.format(name=self.name), logger.ERROR)
+                log.error('{name}: Unable to set the pause for Torrent',
+                          {'name': self.name})
 
             if not self._set_torrent_label(result):
-                logger.log('{name}: Unable to set the label for Torrent'.format(name=self.name), logger.ERROR)
+                log.error('{name}: Unable to set the label for Torrent',
+                          {'name': self.name})
 
             if not self._set_torrent_ratio(result):
-                logger.log('{name}: Unable to set the ratio for Torrent'.format(name=self.name), logger.ERROR)
+                log.error('{name}: Unable to set the ratio for Torrent',
+                          {'name': self.name})
 
             if not self._set_torrent_seed_time(result):
-                logger.log('{name}: Unable to set the seed time for Torrent'.format(name=self.name), logger.ERROR)
+                log.error('{name}: Unable to set the seed time for Torrent',
+                          {'name': self.name})
 
             if not self._set_torrent_path(result):
-                logger.log('{name}: Unable to set the path for Torrent'.format(name=self.name), logger.ERROR)
+                log.error('{name}: Unable to set the path for Torrent',
+                          {'name': self.name})
 
             if result.priority != 0 and not self._set_torrent_priority(result):
-                logger.log('{name}: Unable to set priority for Torrent'.format(name=self.name), logger.ERROR)
+                log.error('{name}: Unable to set priority for Torrent',
+                          {'name': self.name})
 
         except Exception as msg:
-            logger.log('{name}: Failed Sending Torrent'.format(name=self.name), logger.ERROR)
-            logger.log('{name}: Exception raised when sending torrent: {result}. Error: {error}'.format
-                       (name=self.name, result=result, error=msg), logger.DEBUG)
+            log.error('{name}: Failed Sending Torrent',
+                      {'name': self.name})
+            log.debug('{name}: Exception raised when sending torrent {result}.'
+                      ' Error: {error}',
+                      {'name': self.name, 'result': result, 'error': msg})
             return r_code
 
         return r_code

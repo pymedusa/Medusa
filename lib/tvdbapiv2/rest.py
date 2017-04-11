@@ -20,38 +20,17 @@ https://www.dropbox.com/developers/core/sdks/python
 """
 from __future__ import absolute_import
 
-import io
 import logging
+from contextlib2 import suppress
 from requests.exceptions import RequestException
-
+from .exceptions import ApiException
 
 logger = logging.getLogger(__name__)
 
 
-class RESTResponse(io.IOBase):
-
-    def __init__(self, resp):
-        self.requests_response = resp
-        self.status = resp.status_code
-        self.reason = resp.reason
-        self.data = resp.content
-
-    def getheaders(self):
-        """
-        Returns a dictionary of the response headers.
-        """
-        return self.requests_response.headers
-
-    def getheader(self, name, default=None):
-        """
-        Returns a given response header.
-        """
-        return self.requests_response.headers.get(name, default)
-
-
 class RESTClientObject(object):
 
-    def __init__(self, session=None):
+    def __init__(self, session):
         self.session = session
 
     def request(self, method, url, query_params=None, headers=None, body=None, post_params=None):
@@ -69,88 +48,56 @@ class RESTClientObject(object):
             else:
                 r = self.session.request(method, url, params=query_params, headers=headers)
 
-        except RequestException as e:
-            msg = "{0}\n{1}".format(type(e).__name__, str(e))
-            raise ApiException(status=0, reason=msg)
+            r.raise_for_status()
 
-        r = RESTResponse(r)
+        except RequestException as error:
+            status = 0
+            msg = "{0}\n{1}".format(type(error).__name__, str(error))
+            with suppress(AttributeError):
+                status = error.response.status_code
+            raise ApiException(status=status, reason=msg)
+        else:
+            return r
 
-        # log response body
-        logger.debug("response body: %s" % r.data)
-
-        if r.status not in range(200, 206):
-            raise ApiException(http_resp=r)
-
-        return r
-
-    def GET(self, url, headers=None, query_params=None):
+    def get(self, url, headers=None, query_params=None):
         return self.request("GET", url,
-                                     headers=headers,
-                                     query_params=query_params)
+                            headers=headers,
+                            query_params=query_params)
 
-    def HEAD(self, url, headers=None, query_params=None):
+    def head(self, url, headers=None, query_params=None):
         return self.request("HEAD", url,
                             headers=headers,
                             query_params=query_params)
 
-    def OPTIONS(self, url, headers=None, query_params=None, post_params=None, body=None):
+    def options(self, url, headers=None, query_params=None, post_params=None, body=None):
         return self.request("OPTIONS", url,
                             headers=headers,
                             query_params=query_params,
                             post_params=post_params,
                             body=body)
 
-    def DELETE(self, url, headers=None, query_params=None):
+    def delete(self, url, headers=None, query_params=None):
         return self.request("DELETE", url,
                             headers=headers,
                             query_params=query_params)
 
-    def POST(self, url, headers=None, query_params=None, post_params=None, body=None):
+    def post(self, url, headers=None, query_params=None, post_params=None, body=None):
         return self.request("POST", url,
                             headers=headers,
                             query_params=query_params,
                             post_params=post_params,
                             body=body)
 
-    def PUT(self, url, headers=None, query_params=None, post_params=None, body=None):
+    def put(self, url, headers=None, query_params=None, post_params=None, body=None):
         return self.request("PUT", url,
                             headers=headers,
                             query_params=query_params,
                             post_params=post_params,
                             body=body)
 
-    def PATCH(self, url, headers=None, query_params=None, post_params=None, body=None):
+    def patch(self, url, headers=None, query_params=None, post_params=None, body=None):
         return self.request("PATCH", url,
                             headers=headers,
                             query_params=query_params,
                             post_params=post_params,
                             body=body)
-
-
-class ApiException(Exception):
-
-    def __init__(self, status=None, reason=None, http_resp=None):
-        if http_resp:
-            self.status = http_resp.status
-            self.reason = http_resp.reason
-            self.body = http_resp.data
-            self.headers = http_resp.getheaders()
-        else:
-            self.status = status
-            self.reason = reason
-            self.body = None
-            self.headers = None
-
-    def __str__(self):
-        """
-        Custom error messages for exception
-        """
-        error_message = "({0})\n"\
-                        "Reason: {1}\n".format(self.status, self.reason)
-        if self.headers:
-            error_message += "HTTP response headers: {0}\n".format(self.headers)
-
-        if self.body:
-            error_message += "HTTP response body: {0}\n".format(self.body)
-
-        return error_message

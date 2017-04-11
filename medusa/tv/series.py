@@ -61,6 +61,7 @@ from medusa.common import (
     UNAIRED,
     UNKNOWN,
     WANTED,
+    countryList,
     qualityPresets,
     statusStrings,
 )
@@ -134,7 +135,8 @@ class Series(TV):
         :param lang:
         :type lang: str
         """
-        super(Series, self).__init__(indexer, indexerid, {'episodes', 'nextaired', 'release_groups'})
+        super(Series, self).__init__(indexer, indexerid, {'episodes', 'next_aired', 'release_groups', 'exceptions',
+                                                          'external', 'imdb_info'})
         self.name = ''
         self.imdb_id = ''
         self.network = ''
@@ -707,7 +709,7 @@ class Series(TV):
                 if self.subtitles:
                     try:
                         cur_episode.refresh_subtitles()
-                    except Exception:
+                    except OSError:
                         logger.info(u'{id}: Could not refresh subtitles', id=self.indexerid)
                         logger.debug(traceback.format_exc())
 
@@ -903,10 +905,13 @@ class Series(TV):
         results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
 
         for result in results:
-            if result[0] == self.indexer:
-                self.externals[mappings[result[2]]] = result[3]
-            else:
-                self.externals[mappings[result[0]]] = result[1]
+            try:
+                if result[b'indexer'] == self.indexer:
+                    self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
+                else:
+                    self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
+            except KeyError as e:
+                logger.error(u'Indexer not supported in current mappings: {id}', id=e.message)
 
         return self.externals
 
@@ -1418,8 +1423,7 @@ class Series(TV):
         if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
 
-        # # Let's get some fresh indexer info, as we might need it later on.
-        # self.create_indexer()
+
 
         # load from dir
         self.load_episodes_from_dir()
@@ -1500,7 +1504,7 @@ class Series(TV):
                         for related_file in related_files:
                             try:
                                 os.remove(related_file)
-                            except Exception as e:
+                            except OSError as e:
                                 logger.warning(
                                     u'{id}: Could not delete associated file: {related_file}. Error: {error_msg}',
                                     id=self.indexerid, related_file=related_file, error_msg=e
@@ -1522,21 +1526,14 @@ class Series(TV):
 
         logger.debug(u'{id}: Downloading subtitles for {show}', id=self.indexerid, show=self.name)
 
-        try:
-            episodes = self.get_all_episodes(has_location=True)
-            if not episodes:
-                logger.debug(u'{id}: No episodes to download subtitles for {show}',
-                             id=self.indexerid, show=self.name)
-                return
+        episodes = self.get_all_episodes(has_location=True)
+        if not episodes:
+            logger.debug(u'{id}: No episodes to download subtitles for {show}',
+                         id=self.indexerid, show=self.name)
+            return
 
-            for episode in episodes:
-                episode.download_subtitles()
-
-        # TODO: Change into a non catch all exception.
-        except Exception:
-            logger.warning(u'{id}: Error occurred when downloading subtitles for show {show}',
-                           id=self.indexerid, show=self.name)
-            logger.error(traceback.format_exc())
+        for episode in episodes:
+            episode.download_subtitles()
 
     def save_to_db(self):
         """Save to database."""
@@ -1758,6 +1755,45 @@ class Series(TV):
         preferred = Quality.split_quality(self.quality)[1]
 
         return [Quality.qualityStrings[v] for v in preferred]
+
+    def get_all_possible_names(self, season=-1):
+        """Get every possible variation of the name for a particular show.
+
+        Includes indexer name, and any scene exception names, and country code
+        at the end of the name (e.g. "Show Name (AU)".
+
+        show: a Series object that we should get the names of
+        Returns: all possible show names
+        """
+        show_names = get_scene_exceptions(self.indexerid, self.indexer, season)
+        show_names.add(self.name)
+
+        new_show_names = set()
+
+        if not self.is_anime:
+            country_list = {}
+            # add the country list
+            country_list.update(countryList)
+            # add the reversed mapping of the country list
+            country_list.update({v: k for k, v in countryList.items()})
+
+            for name in show_names:
+                if not name:
+                    continue
+
+                # if we have "Show Name Australia" or "Show Name (Australia)"
+                # this will add "Show Name (AU)" for any countries defined in
+                # common.countryList (and vice versa)
+                for country in country_list:
+                    pattern_1 = ' {0}'.format(country)
+                    pattern_2 = ' ({0})'.format(country)
+                    replacement = ' ({0})'.format(country_list[country])
+                    if name.endswith(pattern_1):
+                        new_show_names.add(name.replace(pattern_1, replacement))
+                    elif name.endswith(pattern_2):
+                        new_show_names.add(name.replace(pattern_2, replacement))
+
+        return show_names.union(new_show_names)
 
     @staticmethod
     def __qualities_to_string(qualities=None):

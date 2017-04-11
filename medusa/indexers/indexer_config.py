@@ -17,6 +17,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import re
+
 from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
@@ -42,8 +43,13 @@ INDEXER_TVMAZE = 3
 INDEXER_TMDB = 4
 EXTERNAL_IMDB = 10
 EXTERNAL_ANIDB = 11
+EXTERNAL_TRAKT = 12
 
-EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id', INDEXER_TVRAGE: 'tvrage_id'}
+EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
+                     INDEXER_TVRAGE: 'tvrage_id', EXTERNAL_TRAKT: 'trakt_id'}
+
+# trakt indexer name vs Medusa indexer
+TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
 indexerConfig = {
     INDEXER_TVDBV2: {
@@ -59,7 +65,6 @@ indexerConfig = {
                               'fallback_plex_timer': None,  # Amount of hours to fallback to tvdb api.
                               'fallback_plex_notifications': None}  # Enable notifications.
         },
-        'trakt_id': 'tvdb_id',
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
@@ -78,7 +83,6 @@ indexerConfig = {
             'use_zip': True,
             'session': make_session(cache_etags=False),
         },
-        'trakt_id': 'tvdb_id',
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvmaze.json'.format(base_url=BASE_PYMEDUSA_URL),
@@ -97,7 +101,6 @@ indexerConfig = {
             'use_zip': True,
             'session': make_session(cache_etags=False),
         },
-        'trakt_id': 'tvdb_id',
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
         'base_url': 'https://www.themoviedb.org',
@@ -145,3 +148,11 @@ def slug_to_indexer_id(slug):
         return None, None
     result = re.compile(r'([a-z]+)([0-9]+)').match(slug)
     return indexer_name_to_id(result.group(1)), int(result.group(2))
+
+
+def get_trakt_indexer(indexer):
+    """Get trakt indexer name using given indexer number."""
+    for trakt_indexer in TRAKT_INDEXERS:
+        if TRAKT_INDEXERS[trakt_indexer] == indexer:
+            return trakt_indexer
+    return None

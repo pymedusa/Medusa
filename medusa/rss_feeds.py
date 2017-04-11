@@ -7,9 +7,8 @@ from feedparser.api import parse
 from medusa.helper.exceptions import ex
 from medusa.logger.adapters.style import BraceAdapter
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler)
-log = BraceAdapter(log)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def getFeed(url, params=None, request_hook=None):

@@ -1,28 +1,17 @@
 # coding=utf-8
 
-# Author: Rafael Silva <rpluto@gmail.com>
-# Author: Marvin Pinto <me@marvinp.ca>
-# Author: Dennis Lutter <lad1337@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """Boxcar2 module."""
+
 from __future__ import unicode_literals
 
-from .. import app, common, logger
-from ..helpers import get_url, make_session
+import logging
+
+from medusa import app, common
+from medusa.helpers import get_url, make_session
+from medusa.logger.adapters.style import BraceAdapter
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -60,10 +49,10 @@ class Notifier(object):
 
         response = get_url(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
         if not response:
-            logger.log('Boxcar2 notification failed.', logger.ERROR)
+            log.error('Boxcar2 notification failed.')
             return False
 
-        logger.log('Boxcar2 notification successful.', logger.DEBUG)
+        log.debug('Boxcar2 notification successful.')
         return True
 
     def notify_snatch(self, ep_name, is_proper):
@@ -103,11 +92,11 @@ class Notifier(object):
         accesstoken: to send to this device
         """
         if not app.USE_BOXCAR2:
-            logger.log('Notification for Boxcar2 not enabled, skipping this notification', logger.DEBUG)
+            log.debug('Notification for Boxcar2 not enabled, skipping this notification')
             return False
 
         accesstoken = accesstoken or app.BOXCAR2_ACCESSTOKEN
 
-        logger.log('Sending notification for {}'.format(message), logger.DEBUG)
+        log.debug('Sending notification for {0}', message)
 
         return self._send_boxcar2(message, title, accesstoken)

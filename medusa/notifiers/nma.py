@@ -1,12 +1,19 @@
 # coding=utf-8
 
+import logging
+
+from medusa import app, common
+from medusa.logger.adapters.style import BraceAdapter
+
 from pynma import pynma
-from .. import app, common, logger
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
     def test_notify(self, nma_api, nma_priority):
-        return self._sendNMA(nma_api, nma_priority, event="Test", message="Testing NMA settings from Medusa",
+        return self._sendNMA(nma_api, nma_priority, event='Test', message='Testing NMA settings from Medusa',
                              force=True)
 
     def notify_snatch(self, ep_name, is_proper):
@@ -22,15 +29,15 @@ class Notifier(object):
     def notify_subtitle_download(self, ep_name, lang):
         if app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                          message=ep_name + ": " + lang)
+                          message=ep_name + ': ' + lang)
 
-    def notify_git_update(self, new_version="??"):
+    def notify_git_update(self, new_version='??'):
         if app.USE_NMA:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._sendNMA(nma_api=None, nma_priority=None, event=title, message=update_text + new_version)
 
-    def notify_login(self, ipaddress=""):
+    def notify_login(self, ipaddress=''):
         if app.USE_NMA:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
@@ -58,12 +65,13 @@ class Notifier(object):
         if len(keys) > 1:
             batch = True
 
-        logger.log(u"NMA: Sending notice with details: event=\"%s\", message=\"%s\", priority=%s, batch=%s" % (event, message, nma_priority, batch), logger.DEBUG)
+        log.debug(u'NMA: Sending notice with details: event="{0}, message="{1}", priority={2}, batch={3}',
+                  event, message, nma_priority, batch)
         response = p.push(application=title, event=event, description=message, priority=nma_priority, batch_mode=batch)
 
         if not response[nma_api][u'code'] == u'200':
-            logger.log(u'Could not send notification to NotifyMyAndroid', logger.ERROR)
+            log.error(u'Could not send notification to NotifyMyAndroid')
             return False
         else:
-            logger.log(u"NMA: Notification sent to NotifyMyAndroid", logger.INFO)
+            log.info(u'NMA: Notification sent to NotifyMyAndroid')
             return True
