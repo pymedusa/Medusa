@@ -21,7 +21,7 @@ import logging
 from collections import OrderedDict
 
 from medusa import ui
-from medusa.app import FALLBACK_PLEX_API_URL
+from medusa.app import FALLBACK_PLEX_API_URL, TVDB_API_KEY
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
@@ -29,9 +29,6 @@ from requests.exceptions import RequestException
 from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
 from tvdbapiv2.auth.tvdb import TVDBAuth
 from tvdbapiv2.exceptions import ApiException
-
-from medusa import ui
-from medusa.app import FALLBACK_PLEX_API_URL, TVDB_API_KEY
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
 from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
@@ -125,7 +122,6 @@ class TVDBv2(BaseIndexer):
 
         # client_id = ''  # (optional! Only required for the /user routes)
         # client_secret = ''  # (optional! Only required for the /user routes)
-
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
