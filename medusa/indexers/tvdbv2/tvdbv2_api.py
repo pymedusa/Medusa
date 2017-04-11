@@ -125,19 +125,20 @@ class TVDBv2(BaseIndexer):
 
         # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
         # Currently only the session object is a singleton.
-        if not hasattr(self.config['session'], 'fallback_config'):
-            self.config['session'].fallback_config = {
-                'plex_fallback_time': datetime.datetime.now(),
-                'api_base_url': API_BASE_TVDB,
-                'fallback_plex_enable': kwargs['plex_fallback']['fallback_plex_enable'],
-                'fallback_plex_timeout': kwargs['plex_fallback']['fallback_plex_timeout'],
-                'fallback_plex_notifications': kwargs['plex_fallback']['fallback_plex_notifications']
-            }
-        else:
-            # Try to update some of the values
-            self.config['session'].fallback_config['fallback_plex_enable'] = kwargs['plex_fallback']['fallback_plex_enable']
-            self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timeout']
-            self.config['session'].fallback_config['fallback_plex_notifications'] = kwargs['plex_fallback']['fallback_plex_notifications']
+        if kwargs.get('plex_fallback'):
+            if not hasattr(self.config['session'], 'fallback_config'):
+                self.config['session'].fallback_config = {
+                    'plex_fallback_time': datetime.datetime.now(),
+                    'api_base_url': API_BASE_TVDB,
+                    'fallback_plex_enable': kwargs['plex_fallback']['fallback_plex_enable'],
+                    'fallback_plex_timeout': kwargs['plex_fallback']['fallback_plex_timeout'],
+                    'fallback_plex_notifications': kwargs['plex_fallback']['fallback_plex_notifications']
+                }
+            else:
+                # Try to update some of the values
+                self.config['session'].fallback_config['fallback_plex_enable'] = kwargs['plex_fallback']['fallback_plex_enable']
+                self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timeout']
+                self.config['session'].fallback_config['fallback_plex_notifications'] = kwargs['plex_fallback']['fallback_plex_notifications']
 
         if not hasattr(self.config['session'], 'api_client'):
             tvdb_client = ApiClient(self.config['api_base_url'], session=self.config['session'], api_key=TVDB_API_KEY)
@@ -145,8 +146,6 @@ class TVDBv2(BaseIndexer):
             self.config['session'].search_api = SearchApi(tvdb_client)
             self.config['session'].series_api = SeriesApi(tvdb_client)
             self.config['session'].updates_api = UpdatesApi(tvdb_client)
-
-        self.config['session'].verify = False
 
         # An api to indexer series/episode object mapping
         self.series_map = {

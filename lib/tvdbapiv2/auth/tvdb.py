@@ -68,7 +68,6 @@ class TVDBAuth(JWTBearerAuth):
         response = requests.post(
             urljoin(self.api_base, 'login'),
             json=self.authorization,
-            verify=False
         )
         try:
             self._get_token(response)
@@ -90,7 +89,6 @@ class TVDBAuth(JWTBearerAuth):
         response = requests.get(
             urljoin(self.api_base, 'refresh_token'),
             headers=self.auth_header,
-            verify=False,
         )
 
         try:
