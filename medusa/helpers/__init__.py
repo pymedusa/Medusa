@@ -1632,8 +1632,8 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
 
     s = None
     try:
-        t = indexerApi(indexer).indexer(**indexer_api_params)
-        s = t[int(indexer_id)]
+        indexer_api = indexerApi(indexer).indexer(**indexer_api_params)
+        s = indexer_api[int(indexer_id)]
     except IndexerException as msg:
         log.warning(
             'Show name unavailable for {name} id {id} in {language}:'

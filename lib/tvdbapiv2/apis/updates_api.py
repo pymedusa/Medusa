@@ -68,8 +68,7 @@ class UpdatesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['from_time', 'to_time', 'accept_language']
-        all_params.append('callback')
+        all_params = ['from_time', 'to_time', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -106,13 +105,13 @@ class UpdatesApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -150,8 +149,7 @@ class UpdatesApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -162,7 +160,6 @@ class UpdatesApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/updated/query/params'.replace('{format}', 'json')
         method = 'GET'
@@ -179,13 +176,13 @@ class UpdatesApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
