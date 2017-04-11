@@ -174,7 +174,7 @@ class RarbgProvider(TorrentProvider):
         for row in torrent_rows:
             try:
                 title = row.pop('title')
-                download_url = row.pop('download')
+                download_url = row.pop('download') + self._custom_trackers
                 if not all([title, download_url]):
                     continue
 
