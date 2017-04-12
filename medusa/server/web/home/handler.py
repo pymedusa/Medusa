@@ -1264,13 +1264,15 @@ class Home(WebRoot):
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
+                provider = None
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     i['status_color_style'] = 'snatched'
+                    providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 elif i['status'] == FAILED:
                     i['status_color_style'] = 'failed'
-                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                    providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 if provider is not None:
                     i['provider_name'] = provider.name
                     i['provider_img_link'] = 'images/providers/' + provider.image_name()
