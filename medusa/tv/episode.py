@@ -94,131 +94,199 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class EpisodeNumber(Identifier):
-    """Episode Number: season/episode, absolute or air by date."""
+class InvalidNumbering(AssertionError):
+    """Numbering is invalid"""
 
-    date_fmt = '%Y-%m-%d'
-    regex = re.compile(r'\b(?:(?P<air_date>\d{4}-\d{2}-\d{2})|'
-                       r'(?:s(?P<season>\d{1,4}))(?:e(?P<episode>\d{1,2}))|'
-                       r'(?:e(?P<abs_episode>\d{1,3})))\b', re.IGNORECASE)
+
+class EpisodeNumber(object):
+    """Base identifier class."""
+
+    _attrs = []
+
+    def __eq__(self, other):
+        """Compare episodes for equality."""
+        others = (
+            getattr(other, attr, NotImplemented)
+            for attr in self._attrs
+        )
+        return all(x==y for x,y in zip(self, others))
+
+    def __ne__(self, other):
+        """Check episodes for inequality."""
+        return not self == other
+
+    def __iter__(self):
+        for attr in self._attrs:
+            yield getattr(self, attr)
+
+    def __bool__(self):
+        """Check boolean value of episode numbering."""
+        return all(self)
+
+    __nonzero__ = __bool__
+
+    def __hash__(self):
+        """Use attributes to generate a hash."""
+        return hash(tuple(self))
+
+    def __str__(self):
+        """Convert to string."""
+        return ', '.join(
+            '{0}={1!r}'.format(
+                attr, getattr(self, attr)
+            )
+            for attr in self._attrs
+            if getattr(self, attr) != NotImplemented
+        )
+
+    def __repr__(self):
+        """Class representation."""
+        return '<{self.__class__.__name__} [{self!s}]>'.format(self=self)
 
     @classmethod
-    def from_slug(cls, slug):
-        """Create episode number from slug. E.g.: s01e02."""
-        match = cls.regex.match(slug)
-        if match:
-            try:
-                result = {k: int(v) if k != 'air_date' else datetime.strptime(v, cls.date_fmt)
-                          for k, v in match.groupdict().items() if v is not None}
-                if result:
-                    if 'air_date' in result:
-                        return AirByDateNumber(**result)
-                    if 'season' in result and 'episode' in result:
-                        return RelativeNumber(**result)
-                    if 'abs_episode' in result:
-                        return AbsoluteNumber(**result)
-            except ValueError:
-                pass
+    def parse(cls, number):
+        raise NotImplementedError
+
+    @classmethod
+    def from_string(cls, numbering):
+        return cls(**cls.parse(numbering))
 
 
-class RelativeNumber(Identifier):
-    """Regular episode number: season and episode."""
+class AbsoluteNumber(EpisodeNumber):
+    """Season-less episode number."""
+
+    _attrs = ['episode']
+
+    regex = re.compile(
+        r'(?:s(?P<season>\d{1,4}))?(?:e?(?P<episode>\d+))',
+        re.IGNORECASE
+    )
+
+    def __init__(self, episode, **kwargs):
+        """
+        Initialize an absolute numbering for an episode.
+
+        :param abs_episode:
+        :type abs_episode: int
+        """
+        self.season = kwargs.pop('season', NotImplemented)
+        self.episode = episode
+
+
+    @property
+    def season(self):
+        return NotImplemented
+
+    @season.setter
+    def season(self, value):
+        try:
+            assert value in (None, NotImplemented)
+        except AssertionError:
+            raise InvalidNumbering(
+                    'Invalid season for {0}: {1!r}'.format(
+                        self.__class__.__name__,
+                        value,
+                    )
+                )
+
+    @property
+    def episode(self):
+        return getattr(self, '_episode')
+
+    @episode.setter
+    def episode(self, value):
+        try:
+            setattr(self, '_episode', int(value))
+        except TypeError:
+            raise InvalidNumbering(
+                'Invalid season for {0}: {1!r}'.format(
+                    self.__class__.__name__,
+                    value,
+                )
+            )
+
+    def __str__(self):
+        """Magic method."""
+        return 'e{0:02d}'.format(self.episode)
+
+    @classmethod
+    def parse(cls, number, regex=None):
+        regex = regex or cls.regex
+        return regex.match(number).groupdict()
+
+
+class RelativeNumber(AbsoluteNumber):
+    """Standard episode number with season and episode."""
+
+    _attrs = 'season', 'episode'
 
     def __init__(self, season, episode):
-        """Constructor.
+        """
+        Initialize a relative numbering for an episode.
 
         :param season:
         :type season: int
         :param episode:
         :type episode: int
         """
-        self.season = season
-        self.episode = episode
+        super(RelativeNumber, self).__init__(episode)
 
-    def __nonzero__(self):
-        """Magic method."""
-        return self.season is not None and self.episode is not None
+    @property
+    def season(self):
+        return getattr(self, '_season')
 
-    def __repr__(self):
-        """Magic method."""
-        return '<RelativeNumber [s{0:02d}e{1:02d}]>'.format(self.season, self.episode)
+    @season.setter
+    def season(self, value):
+        try:
+            setattr(self, '_season', int(value))
+        except TypeError:
+            raise InvalidNumbering(
+                'Invalid season for {0}: {1!r}'.format(
+                    self.__class__.__name__,
+                    value,
+                )
+            )
 
     def __str__(self):
         """Magic method."""
         return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
 
-    def __hash__(self):
-        """Magic method."""
-        return hash((self.season, self.episode))
-
-    def __eq__(self, other):
-        """Magic method."""
-        return isinstance(other, RelativeNumber) and (
-            self.season == other.season and self.episode == other.episode)
-
-
-class AbsoluteNumber(EpisodeNumber):
-    """Episode number class that handles absolute episode numbers."""
-
-    def __init__(self, abs_episode):
-        """Constructor.
-
-        :param abs_episode:
-        :type abs_episode: int
-        """
-        self.episode = abs_episode
-
-    def __nonzero__(self):
-        """Magic method."""
-        return self.episode is not None
-
-    def __repr__(self):
-        """Magic method."""
-        return '<AbsoluteNumber [e{0:02d}]>'.format(self.episode)
-
-    def __str__(self):
-        """Magic method."""
-        return 'e{0:02d}'.format(self.episode)
-
-    def __hash__(self):
-        """Magic method."""
-        return hash(self.episode)
-
-    def __eq__(self, other):
-        """Magic method."""
-        return isinstance(other, AbsoluteNumber) and self.episode == other.episode
-
 
 class AirByDateNumber(EpisodeNumber):
-    """Episode number class that handles air-by-date episode numbers."""
+    """Air-by-date episode number."""
+
+    _attrs = ['air_date']
+    date_fmt = '%Y-%m-%d'
 
     def __init__(self, air_date):
-        """Constructor.
+        """
+        Initialize an air-by-date numbering for an episode.
 
         :param air_date:
         :type air_date: datetime
         """
         self.air_date = air_date
 
-    def __nonzero__(self):
-        """Magic method."""
-        return self.air_date is not None
-
-    def __repr__(self):
-        """Magic method."""
-        return '<AirByDateNumber [{0!r}]>'.format(self.air_date)
-
     def __str__(self):
         """Magic method."""
         return self.air_date.strftime(self.date_fmt)
 
-    def __hash__(self):
-        """Magic method."""
-        return hash(self.air_date)
+    @property
+    def air_date(self):
+        return getattr(self, '_air_date')
 
-    def __eq__(self, other):
-        """Magic method."""
-        return isinstance(other, AirByDateNumber) and self.air_date == other.air_date
+    @air_date.setter
+    def air_date(self, value):
+        if not isinstance(value, (date, datetime)):
+            value = datetime.strptime(value, self.date_fmt)
+        with supress(AttributeError):
+            value = value.date()
+        setattr(self, '_air_date', value)
+
+    @classmethod
+    def parse(cls, number, fmt=None):
+        date_fmt = fmt or cls.date_fmt
+        return {'air_date': datetime.strptime(number, date_fmt)}
 
 
 class Episode(TV):
