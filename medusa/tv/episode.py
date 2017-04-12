@@ -121,7 +121,7 @@ class EpisodeNumber(object):
 
     def __bool__(self):
         """Check boolean value of episode numbering."""
-        return all(self)
+        return any(self)
 
     __nonzero__ = __bool__
 
