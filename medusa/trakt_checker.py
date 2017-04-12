@@ -206,19 +206,21 @@ class TraktChecker(object):
                 logger.log(u"Synced Trakt collection", logger.DEBUG)
 
     def remove_episode_trakt_collection(self, filter_show=None):
-        """Remove episode from trakt collection."""
+        """Remove episode from trakt collection that no longer has media file (location)."""
         if app.TRAKT_SYNC_REMOVE and app.TRAKT_SYNC and app.USE_TRAKT:
 
             params = []
             main_db_con = db.DBConnection()
+            selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
                             b'e.season, e.episode, e.status ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid and e.location = ""'
+                            b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid and e.location = "" ' \
+                            b'AND e.status in ({0})'.format(','.join(selection_status))
             if filter_show:
                 sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
                 params = [filter_show.indexerid, filter_show.indexer]
 
-            sql_result = main_db_con.select(sql_selection, params)
+            sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED + params)
             episodes = [dict(e) for e in sql_result]
 
             if episodes:
@@ -249,15 +251,14 @@ class TraktChecker(object):
                                    (error=e.message), logger.INFO)
 
     def add_episode_trakt_collection(self):
-        """Add all existing episodes to Trakt collections."""
+        """Add all existing episodes to Trakt collections that has media file (location)."""
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
             selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid ' \
-                            b"AND e.status in ({0}) AND e.location <> ''" \
-                            b"AND s.paused = 0 AND e.season <> 0".format(','.join(selection_status))
+                            b"AND e.status in ({0}) AND e.location <> ''".format(','.join(selection_status))
 
             sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED)
             episodes = [dict(e) for e in sql_result]
@@ -396,7 +397,7 @@ class TraktChecker(object):
                                    (error=e.message), logger.INFO)
 
     def add_show_watchlist(self):
-        """Add show to Trakt watchlist."""
+        """Add show to Trakt watchlist if is in show list."""
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
             if app.showList:
                 trakt_data = []
