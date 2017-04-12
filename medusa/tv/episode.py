@@ -19,16 +19,12 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import logging
 import os.path
 import re
-import shutil
 import time
-from collections import (
-    OrderedDict,
-)
 
+from datetime import date, datetime
 import knowit
 
 from medusa import (
@@ -53,6 +49,7 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
+from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -87,20 +84,209 @@ from medusa.scene_numbering import (
     get_scene_numbering,
     xem_refresh,
 )
-from medusa.tv.base import TV
-
-import shutil_custom
+from medusa.tv.base import Identifier, TV
 
 try:
     import xml.etree.cElementTree as ETree
 except ImportError:
     import xml.etree.ElementTree as ETree
 
-shutil.copyfile = shutil_custom.copyfile_custom
-
-MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
-
 logger = logging.getLogger(__name__)
+
+
+class InvalidNumbering(AssertionError):
+    """Numbering is invalid"""
+
+
+class EpisodeNumber(object):
+    """Base identifier class."""
+
+    _attrs = []
+
+    def __eq__(self, other):
+        """Compare episodes for equality."""
+        others = (
+            getattr(other, attr, NotImplemented)
+            for attr in self._attrs
+        )
+        return all(x==y for x,y in zip(self, others))
+
+    def __ne__(self, other):
+        """Check episodes for inequality."""
+        return not self == other
+
+    def __iter__(self):
+        for attr in self._attrs:
+            yield getattr(self, attr)
+
+    def __bool__(self):
+        """Check boolean value of episode numbering."""
+        return any(self)
+
+    __nonzero__ = __bool__
+
+    def __hash__(self):
+        """Use attributes to generate a hash."""
+        return hash(tuple(self))
+
+    def __str__(self):
+        """Convert to string."""
+        return ', '.join(
+            '{0}={1!r}'.format(
+                attr, getattr(self, attr)
+            )
+            for attr in self._attrs
+            if getattr(self, attr) != NotImplemented
+        )
+
+    def __repr__(self):
+        """Class representation."""
+        return '<{self.__class__.__name__} [{self!s}]>'.format(self=self)
+
+    @classmethod
+    def parse(cls, number):
+        raise NotImplementedError
+
+    @classmethod
+    def from_string(cls, numbering):
+        return cls(**cls.parse(numbering))
+
+
+class AbsoluteNumber(EpisodeNumber):
+    """Season-less episode number."""
+
+    _attrs = ['episode']
+
+    regex = re.compile(
+        r'(?:s(?P<season>\d{1,4}))?(?:e?(?P<episode>\d+))',
+        re.IGNORECASE
+    )
+
+    def __init__(self, episode, **kwargs):
+        """
+        Initialize an absolute numbering for an episode.
+
+        :param abs_episode:
+        :type abs_episode: int
+        """
+        self.season = kwargs.pop('season', NotImplemented)
+        self.episode = episode
+
+
+    @property
+    def season(self):
+        return NotImplemented
+
+    @season.setter
+    def season(self, value):
+        try:
+            assert value in (None, NotImplemented)
+        except AssertionError:
+            raise InvalidNumbering(
+                    'Invalid season for {0}: {1!r}'.format(
+                        self.__class__.__name__,
+                        value,
+                    )
+                )
+
+    @property
+    def episode(self):
+        return getattr(self, '_episode')
+
+    @episode.setter
+    def episode(self, value):
+        try:
+            setattr(self, '_episode', int(value))
+        except TypeError:
+            raise InvalidNumbering(
+                'Invalid season for {0}: {1!r}'.format(
+                    self.__class__.__name__,
+                    value,
+                )
+            )
+
+    def __str__(self):
+        """Magic method."""
+        return 'e{0:02d}'.format(self.episode)
+
+    @classmethod
+    def parse(cls, number, regex=None):
+        regex = regex or cls.regex
+        return regex.match(number).groupdict()
+
+
+class RelativeNumber(AbsoluteNumber):
+    """Standard episode number with season and episode."""
+
+    _attrs = 'season', 'episode'
+
+    def __init__(self, season, episode):
+        """
+        Initialize a relative numbering for an episode.
+
+        :param season:
+        :type season: int
+        :param episode:
+        :type episode: int
+        """
+        super(RelativeNumber, self).__init__(episode)
+
+    @property
+    def season(self):
+        return getattr(self, '_season')
+
+    @season.setter
+    def season(self, value):
+        try:
+            setattr(self, '_season', int(value))
+        except TypeError:
+            raise InvalidNumbering(
+                'Invalid season for {0}: {1!r}'.format(
+                    self.__class__.__name__,
+                    value,
+                )
+            )
+
+    def __str__(self):
+        """Magic method."""
+        return 's{0:02d}e{1:02d}'.format(self.season, self.episode)
+
+
+class AirByDateNumber(EpisodeNumber):
+    """Air-by-date episode number."""
+
+    _attrs = ['air_date']
+    date_fmt = '%Y-%m-%d'
+
+    def __init__(self, air_date):
+        """
+        Initialize an air-by-date numbering for an episode.
+
+        :param air_date:
+        :type air_date: datetime
+        """
+        self.air_date = air_date
+
+    def __str__(self):
+        """Magic method."""
+        return self.air_date.strftime(self.date_fmt)
+
+    @property
+    def air_date(self):
+        return getattr(self, '_air_date')
+
+    @air_date.setter
+    def air_date(self, value):
+        if not isinstance(value, (date, datetime)):
+            value = datetime.strptime(value, self.date_fmt)
+        with supress(AttributeError):
+            value = value.date()
+        setattr(self, '_air_date', value)
+
+    @classmethod
+    def parse(cls, number, fmt=None):
+        date_fmt = fmt or cls.date_fmt
+        return {'air_date': datetime.strptime(number, date_fmt)}
 
 
 class Episode(TV):
@@ -128,8 +314,8 @@ class Episode(TV):
         self.description = ''
         self.subtitles = list()
         self.subtitles_searchcount = 0
-        self.subtitles_lastsearch = str(datetime.datetime.min)
-        self.airdate = datetime.date.fromordinal(1)
+        self.subtitles_lastsearch = str(datetime.min)
+        self.airdate = date.fromordinal(1)
         self.hasnfo = False
         self.hastbn = False
         self.status = UNKNOWN
@@ -149,6 +335,36 @@ class Episode(TV):
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
+
+    @classmethod
+    def find_by_series_and_episode(cls, series, episode_number):
+        """Find Episode based on series and episode number.
+
+        :param series:
+        :type series: medusa.tv.series.Series
+        :param episode_number:
+        :type episode_number: EpisodeNumber
+        :return:
+        :rtype: medusa.tv.Episode
+        """
+        if isinstance(episode_number, RelativeNumber):
+            episode = series.get_episode(season=episode_number.season, episode=episode_number.episode,
+                                         should_cache=False, no_create=True)
+        elif isinstance(episode_number, AbsoluteNumber):
+            episode = series.get_episode(absolute_number=episode_number.episode,
+                                         should_cache=False, no_create=True)
+
+        elif isinstance(episode_number, AirByDateNumber):
+            episode = series.get_episode(air_date=episode_number.air_date,
+                                         should_cache=False, no_create=True)
+        else:
+            # if this happens then it's a bug!
+            raise ValueError
+
+        if episode:
+            if not episode.loaded:
+                episode.load_from_db(episode.season, episode.episode)
+            return episode
 
     @staticmethod
     def from_filepath(filepath):
@@ -213,6 +429,27 @@ class Episode(TV):
         self._location = value
         self.file_size = os.path.getsize(value) if value and self.is_location_valid(value) else 0
 
+    @property
+    def indexer_name(self):
+        """Return the indexer name identifier. Example: tvdb."""
+        return indexerConfig[self.indexer].get('identifier')
+
+    @property
+    def air_date(self):
+        """Return air date from the episode."""
+        return sbdatetime.convert_to_setting(
+            network_timezones.parse_date_time(
+                date.toordinal(self.airdate),
+                self.show.airs,
+                self.show.network
+            )
+        ).isoformat(b'T')
+
+    @property
+    def status_name(self):
+        """Return the status name."""
+        return statusStrings[Quality.split_composite_status(self.status).status]
+
     def is_location_valid(self, location=None):
         """Whether the location is a valid file.
 
@@ -260,7 +497,7 @@ class Episode(TV):
             self.subtitles = subtitles.merge_subtitles(self.subtitles, new_subtitles)
 
         self.subtitles_searchcount += 1 if self.subtitles_searchcount else 1
-        self.subtitles_lastsearch = datetime.datetime.now().strftime(dateTimeFormat)
+        self.subtitles_lastsearch = datetime.now().strftime(dateTimeFormat)
         logger.debug('{id}: Saving last subtitles search to database', id=self.show.indexerid)
         self.save_to_db()
 
@@ -383,7 +620,7 @@ class Episode(TV):
                 self.subtitles = sql_results[0][b'subtitles'].split(',')
             self.subtitles_searchcount = sql_results[0][b'subtitles_searchcount']
             self.subtitles_lastsearch = sql_results[0][b'subtitles_lastsearch']
-            self.airdate = datetime.date.fromordinal(int(sql_results[0][b'airdate']))
+            self.airdate = date.fromordinal(int(sql_results[0][b'airdate']))
             self.status = int(sql_results[0][b'status'] or -1)
 
             # don't overwrite my location
@@ -517,11 +754,11 @@ class Episode(TV):
 
         firstaired = getattr(my_ep, 'firstaired', None)
         if not firstaired or firstaired == '0000-00-00':
-            firstaired = str(datetime.date.fromordinal(1))
+            firstaired = str(date.fromordinal(1))
         raw_airdate = [int(x) for x in firstaired.split('-')]
 
         try:
-            self.airdate = datetime.date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
+            self.airdate = date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
         except (ValueError, IndexError):
             logger.warning('{id}: Malformed air date of {aired} retrieved from {indexer} for {show} {ep}',
                            id=self.show.indexerid, aired=firstaired, indexer=indexerApi(self.indexer).name,
@@ -554,7 +791,7 @@ class Episode(TV):
                          status=statusStrings[self.status].upper(), location=self.location)
 
         if not os.path.isfile(self.location):
-            if (self.airdate >= datetime.date.today() or self.airdate == datetime.date.fromordinal(1)) and \
+            if (self.airdate >= date.today() or self.airdate == date.fromordinal(1)) and \
                     self.status in (UNAIRED, UNKNOWN, WANTED):
                 # Need to check if is UNAIRED otherwise code will step into second 'IF'
                 # and make episode as default_ep_status
@@ -675,9 +912,9 @@ class Episode(TV):
 
                     if ep_details.findtext('aired'):
                         raw_airdate = [int(x) for x in ep_details.findtext('aired').split('-')]
-                        self.airdate = datetime.date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
+                        self.airdate = date(raw_airdate[0], raw_airdate[1], raw_airdate[2])
                     else:
-                        self.airdate = datetime.date.fromordinal(1)
+                        self.airdate = date.fromordinal(1)
 
                     self.hasnfo = True
             else:
@@ -706,48 +943,52 @@ class Episode(TV):
 
     def to_json(self, detailed=True):
         """Return the json representation."""
-        indexer_name = indexerConfig[self.indexer]['identifier']
-        parsed_airdate = sbdatetime.convert_to_setting(
-            network_timezones.parse_date_time(
-                datetime.datetime.toordinal(self.airdate),
-                self.show.airs,
-                self.show.network
-            )
-        ).isoformat(b'T')
-        data = OrderedDict([
-            ('identifier', self.identifier),
-            ('id', OrderedDict([
-                (indexer_name, self.indexerid),
-            ])),
-            ('season', self.season),
-            ('episode', self.episode),
-            ('absoluteNumber', self.absolute_number),
-            ('airDate', parsed_airdate),
-            ('title', self.name),
-            ('description', self.description),
-            ('hasNfo', self.hasnfo),
-            ('hasTbn', self.hastbn),
-            ('subtitles', self.subtitles),
-            ('status', statusStrings[Quality.split_composite_status(self.status).status]),
-            ('releaseName', self.release_name),
-            ('isProper', self.is_proper),
-            ('version', self.version),
-            ('scene', OrderedDict([
-                ('season', self.scene_season),
-                ('episode', self.scene_episode),
-                ('absoluteNumber', self.scene_absolute_number),
-            ])),
-            ('location', self.location),
-            ('fileSize', self.file_size),
-        ])
+        data = NonEmptyDict()
+        data['identifier'] = self.identifier
+        data['id'] = {self.indexer_name: self.indexerid}
+        data['season'] = self.season
+        data['episode'] = self.episode
+
+        if self.absolute_number:
+            data['absoluteNumber'] = self.absolute_number
+
+        data['airDate'] = self.air_date
+        data['title'] = self.name
+        data['description'] = self.description
+        data['content'] = []
+        data['title'] = self.name
+        data['subtitles'] = self.subtitles
+        data['status'] = self.status_name
+        data['release'] = NonEmptyDict()
+        data['release']['name'] = self.release_name
+        data['release']['group'] = self.release_group
+        data['release']['proper'] = self.is_proper
+        data['release']['version'] = self.version
+        data['scene'] = NonEmptyDict()
+        data['scene']['season'] = self.scene_season
+        data['scene']['episode'] = self.scene_episode
+
+        if self.scene_absolute_number:
+            data['scene']['absoluteNumber'] = self.scene_absolute_number
+
+        data['file'] = NonEmptyDict()
+        data['file']['location'] = self.location
+        if self.file_size:
+            data['file']['size'] = self.file_size
+
+        if self.hasnfo:
+            data['content'].append('NFO')
+        if self.hastbn:
+            data['content'].append('thumbnail')
+
         if detailed:
-            data.update(OrderedDict([
-                ('releaseGroup', self.release_group),
-                ('subtitlesSearchCount', self.subtitles_searchcount),
-                ('subtitlesLastSearched', self.subtitles_lastsearch),
-                ('wantedQualities', self.wanted_quality),
-                ('relatedEpisodes', [ep.identifier() for ep in self.related_episodes]),
-            ]))
+            data['statistics'] = NonEmptyDict()
+            data['statistics']['subtitleSearch'] = NonEmptyDict()
+            data['statistics']['subtitleSearch']['last'] = self.subtitles_lastsearch
+            data['statistics']['subtitleSearch']['count'] = self.subtitles_searchcount
+            data['wantedQualities'] = self.wanted_quality
+            data['wantedQualities'] = [ep.identifier() for ep in self.related_episodes]
+
         return data
 
     def create_meta_files(self):
@@ -1150,9 +1391,9 @@ class Episode(TV):
             '%Y': str(self.airdate.year),
             '%M': str(self.airdate.month),
             '%D': str(self.airdate.day),
-            '%CY': str(datetime.date.today().year),
-            '%CM': str(datetime.date.today().month),
-            '%CD': str(datetime.date.today().day),
+            '%CY': str(date.today().year),
+            '%CM': str(date.today().month),
+            '%CD': str(date.today().day),
             '%0M': '%02d' % self.airdate.month,
             '%0D': '%02d' % self.airdate.day,
             '%RT': 'PROPER' if self.is_proper else '',
@@ -1533,7 +1774,7 @@ class Episode(TV):
             if app.FILE_TIMESTAMP_TIMEZONE == 'local':
                 airdatetime = airdatetime.astimezone(network_timezones.app_timezone)
 
-            filemtime = datetime.datetime.fromtimestamp(
+            filemtime = datetime.fromtimestamp(
                 os.path.getmtime(self.location)).replace(tzinfo=network_timezones.app_timezone)
 
             if filemtime != airdatetime:

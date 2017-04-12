@@ -1,11 +1,11 @@
 $(function() {
     $('.plotInfo').each(function() {
         var match = $(this).attr('id').match(/^plot_info_([\da-z]+)_(\d+)_(\d+)$/);
-        // http://localhost:8081/api/v2/show/tvdb83462/s01e01/description?api_key=xxx
+        // http://localhost:8081/api/v2/series/tvdb83462/episode/s01e01/description?api_key=xxx
         $(this).qtip({
             content: {
                 text: function(event, qt) {
-                    api.get('show/' + match[1] + '/s' + match[2] + 'e' + match[3] + '/description').then(function(response) {
+                    api.get('series/' + match[1] + '/episode/s' + match[2] + 'e' + match[3] + '/description').then(function(response) {
                         // Set the tooltip content upon successful retrieval
                         qt.set('content.text', response.data);
                     }, function(xhr) {

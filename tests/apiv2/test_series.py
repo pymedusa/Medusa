@@ -6,9 +6,9 @@ import pytest
 
 
 @pytest.mark.gen_test
-def test_show_get_no_shows(http_client, create_url, auth_headers):
+def test_show_get_no_series(http_client, create_url, auth_headers):
     # given
-    url = create_url('/show')
+    url = create_url('/series')
 
     # when
     response = yield http_client.fetch(url, **auth_headers)
