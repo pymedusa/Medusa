@@ -23,6 +23,7 @@ import traceback
 from operator import itemgetter
 
 from medusa import (
+    config,
     logger,
     tv,
 )
@@ -107,7 +108,11 @@ class T411Provider(TorrentProvider):
                 episode_string = episode_string.strip()
             else:
                 # Custom string for param search
-                episode_string = (show_name, episode.scene_season, episode.scene_episode,)
+                if episode.scene_season > max(SEASON_MAP):
+                    episode_string += 'S{season:0>2}'.format(season=episode.season)
+                    episode_string = episode_string.strip()
+                else:
+                    episode_string = (show_name, episode.scene_season, episode.scene_episode,)
 
             search_string['Season'].append(episode_string)
         return [search_string]
@@ -145,7 +150,14 @@ class T411Provider(TorrentProvider):
                 episode_string = episode_string.strip()
             else:
                 # Custom string for param search
-                episode_string = (show_name, episode.scene_season, episode.scene_episode,)
+                if episode.scene_season > max(SEASON_MAP) or episode.scene_episode > max(EPISODE_MAP):
+                    episode_string += config.naming_ep_type[2] % {
+                        'seasonnumber': episode.scene_season,
+                        'episodenumber': episode.scene_episode,
+                    }
+                    episode_string = episode_string.strip()
+                else:
+                    episode_string = (show_name, episode.scene_season, episode.scene_episode,)
 
             search_string['Episode'].append(episode_string)
 
