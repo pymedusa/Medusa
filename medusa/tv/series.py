@@ -1049,7 +1049,7 @@ class Series(TV):
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
                     logger.error(u'{indexerid}: Unable to figure out what this file is, skipping {filepath}',
-                               indexerid=self.indexerid, filepath=filepath)
+                                 indexerid=self.indexerid, filepath=filepath)
                     continue
 
             else:
