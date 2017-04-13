@@ -153,7 +153,7 @@ class T411Provider(TorrentProvider):
 
     def search(self, search_strings, age=0, ep_obj=None):
         """Search a provider and parse the results.
-        
+
         Provider has specific params for season and episode so:
         - If is a normal episode/season search it will use URL params for season and episode.
           In this case search string will be a list of tuples: [(show, season, episode)]
