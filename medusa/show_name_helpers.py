@@ -16,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-import fnmatch
-import os
 import re
 
 from six import string_types
@@ -94,43 +92,3 @@ def filterBadReleases(name, parse=True):
         logger.log(u"Unwanted scene release: {0}. Contains unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
         return False
     return True
-
-
-def determineReleaseName(dir_name=None, nzb_name=None):
-    """Determine a release name from an nzb and/or folder name."""
-
-    if nzb_name is not None:
-        logger.log(u"Using nzb_name for release name.")
-        return nzb_name.rpartition('.')[0]
-
-    if dir_name is None:
-        return None
-
-    # try to get the release name from nzb/nfo
-    file_types = ["*.nzb", "*.nfo"]
-
-    for search in file_types:
-
-        reg_expr = re.compile(fnmatch.translate(search), re.IGNORECASE)
-        files = [file_name for file_name in os.listdir(dir_name) if
-                 os.path.isfile(os.path.join(dir_name, file_name))]
-
-        results = [f for f in files if reg_expr.search(f)]
-
-        if len(results) == 1:
-            found_file = os.path.basename(results[0])
-            found_file = found_file.rpartition('.')[0]
-            if filterBadReleases(found_file):
-                logger.log(u"Release name (" + found_file + ") found from file (" + results[0] + ")")
-                return found_file.rpartition('.')[0]
-
-    # If that fails, we try the folder
-    folder = os.path.basename(dir_name)
-    if filterBadReleases(folder):
-        # NOTE: Multiple failed downloads will change the folder name.
-        # (e.g., appending #s)
-        # Should we handle that?
-        logger.log(u"Folder name (" + folder + ") appears to be a valid release name. Using it.", logger.DEBUG)
-        return folder
-
-    return None
