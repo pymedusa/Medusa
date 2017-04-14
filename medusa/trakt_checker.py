@@ -209,7 +209,7 @@ class TraktChecker(object):
         """Remove episode from trakt collection.
 
         For episodes that no longer have a media file (location)
-        :param filter_show: optional. Only remove from given shows
+        :param filter_show: optional. Only remove episodes from trakt collection for given shows
         """
         if app.TRAKT_SYNC_REMOVE and app.TRAKT_SYNC and app.USE_TRAKT:
 
