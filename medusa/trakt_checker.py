@@ -206,7 +206,11 @@ class TraktChecker(object):
                 logger.log(u"Synced Trakt collection", logger.DEBUG)
 
     def remove_episode_trakt_collection(self, filter_show=None):
-        """Remove episode from trakt collection that no longer has media file (location)."""
+        """Remove episode from trakt collection.
+
+        For episodes that no longer has media file (location)
+        :param filter_show: optional. Only remove from given shows
+        """
         if app.TRAKT_SYNC_REMOVE and app.TRAKT_SYNC and app.USE_TRAKT:
 
             params = []
@@ -251,7 +255,10 @@ class TraktChecker(object):
                                    (error=e.message), logger.INFO)
 
     def add_episode_trakt_collection(self):
-        """Add all existing episodes to Trakt collections that has media file (location)."""
+        """Add all existing episodes to Trakt collections.
+
+        For episodes that has media file (location)
+        """
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
