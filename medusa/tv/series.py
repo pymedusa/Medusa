@@ -1223,7 +1223,7 @@ class Series(TV):
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
-        self.runtime = int(getattr(indexed_show, 'runtime', 0))
+        self.runtime = int(getattr(indexed_show, 'runtime', 0) or 0)
 
         # set the externals, using the result from the indexer.
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
