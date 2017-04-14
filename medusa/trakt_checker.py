@@ -208,7 +208,7 @@ class TraktChecker(object):
     def remove_episode_trakt_collection(self, filter_show=None):
         """Remove episode from trakt collection.
 
-        For episodes that no longer has media file (location)
+        For episodes that no longer have a media file (location)
         :param filter_show: optional. Only remove from given shows
         """
         if app.TRAKT_SYNC_REMOVE and app.TRAKT_SYNC and app.USE_TRAKT:
@@ -257,7 +257,7 @@ class TraktChecker(object):
     def add_episode_trakt_collection(self):
         """Add all existing episodes to Trakt collections.
 
-        For episodes that has media file (location)
+        For episodes that have a media file (location)
         """
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
