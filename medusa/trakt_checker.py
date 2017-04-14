@@ -404,7 +404,10 @@ class TraktChecker(object):
                                    (error=e.message), logger.INFO)
 
     def add_show_watchlist(self):
-        """Add show to Trakt watchlist if is in show list."""
+        """Add show to Trakt watchlist.
+
+        It will add all shows from Medusa library
+        """
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
             if app.showList:
                 trakt_data = []
