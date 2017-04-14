@@ -1048,7 +1048,7 @@ class Series(TV):
                     if not cur_ep:
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
-                    logger.warning(u'{indexerid}: Unable to figure out what this file is, skipping {filepath}',
+                    logger.warning(u'{indexerid}: Episode not found for this show. Please full update show. Skipping {filepath}',
                                    indexerid=self.indexerid, filepath=filepath)
                     continue
 
