@@ -1269,10 +1269,10 @@ class Home(WebRoot):
                     i['status_color_style'] = 'downloaded'
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     i['status_color_style'] = 'snatched'
-                    providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 elif i['status'] == FAILED:
                     i['status_color_style'] = 'failed'
-                    providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 if provider is not None:
                     i['provider_name'] = provider.name
                     i['provider_img_link'] = 'images/providers/' + provider.image_name()
