@@ -1671,6 +1671,7 @@
                                 </div>
                                 <div class="testNotification" id="testTrakt-result">Click below to test.</div>
                                 <input type="button" class="btn" value="Test Trakt" id="testTrakt" />
+                                <input type="button" class="btn" value="Force Sync" id="forceSync" />
                                 <input type="submit" class="btn config_submitter" value="Save Changes" />
                             </div><!-- #content_use_trakt //-->
                         </fieldset><!-- .component-group-desc //-->
