@@ -24,8 +24,9 @@ MEDUSA.manage.failedDownloads = function() {
         window.location.href = $('base').attr('href') + 'manage/failedDownloads?toRemove=' + removeArr.join('|');
     });
 
-    if ($('.removeCheck').length !== 0) {
-        $('.removeCheck').each(function(name) {
+    var removeCheck = $('.removeCheck');
+    if (removeCheck.length !== 0) {
+        removeCheck.each(function(name) {
             var lastCheck = null;
             $(name).click(function(event) {
                 if (!lastCheck || !event.shiftKey) {

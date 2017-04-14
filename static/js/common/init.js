@@ -6,11 +6,11 @@ MEDUSA.common.init = function() {
     if (MEDUSA.config.fanartBackground) {
         var showID = $('#showID').attr('value');
         if (showID) {
-            let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
+            let asset = 'show/' + showID + '?type=fanart';
             let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
             $.backstretch(path);
-            $('.backstretch').css('top', backstretchOffset());
-            $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+            $('.backstretch').css('top', backstretchOffset())
+                             .css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
         }
     }
 
@@ -244,18 +244,15 @@ MEDUSA.common.init = function() {
     });
 
     $('.enabler').each(function() {
-        if (!$(this).prop('checked')) {
+        if ($(this).prop('checked') == false) {
             $('#content_' + $(this).attr('id')).hide();
-        }
-    });
-
-    $('.enabler').on('click', function() {
-        if ($(this).prop('checked')) {
-            $('#content_' + $(this).attr('id')).fadeIn('fast', 'linear');
-        } else {
-            $('#content_' + $(this).attr('id')).fadeOut('fast', 'linear');
-        }
-    });
+        }}).on('click', function() {
+            if ($(this).prop('checked')) {
+                $('#content_' + $(this).attr('id')).fadeIn('fast', 'linear');
+            } else {
+                $('#content_' + $(this).attr('id')).fadeOut('fast', 'linear');
+            }
+        });
 
     $('.addQTip').each(function() {
         $(this).css({
