@@ -21,24 +21,13 @@
 </div>
     % endif
 <input type="hidden" id="showID" value="${show.indexerid}" />
-% if not header is UNDEFINED:
-    <h1 class="header">${header}</h1>
-% else:
-    <h1 class="title">${title}</h1>
-% endif
-<h3>Preview of the proposed name changes</h3>
-<blockquote>
-% if int(show.air_by_date) == 1 and app.NAMING_CUSTOM_ABD:
-    ${app.NAMING_ABD_PATTERN}
-% elif int(show.sports) == 1 and app.NAMING_CUSTOM_SPORTS:
-    ${app.NAMING_SPORTS_PATTERN}
-% else:
-    ${app.NAMING_PATTERN}
-% endif
-</blockquote>
-<% cur_season = -1 %>
-<% odd = False%>
-<h2>All Seasons</h2>
+<div class="clearfix"></div><!-- div.clearfix //-->
+</div>
+<div class="clearfix"></div>
+<div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
+
+<%include file="/partials/showheader.mako"/>
+
 <div class="row">
     <div class="col-md-2">
     <table id="SelectAllTable" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
