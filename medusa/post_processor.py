@@ -165,7 +165,8 @@ class PostProcessor(object):
             ))
             return self.EXISTS_LARGER if new_size < old_size else self.EXISTS_SMALLER
 
-    def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False, subfolders=False):
+    def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False,
+                              subfolders=False, delete_unwanted=False):
         """
         For a given file path search for files in the same directory and return their absolute paths.
 
@@ -173,6 +174,7 @@ class PostProcessor(object):
         :param base_name_only: list only files with the same basename
         :param subtitles_only: list only subtitles
         :param subfolders: check subfolders while listing files
+        :param delete_unwanted: deleted unwanted files
         :return: A list containing all files which are associated to the given file
         """
         files = self._search_files(filepath, subfolders=subfolders, base_name_only=base_name_only)
@@ -212,7 +214,7 @@ class PostProcessor(object):
             if app.MOVE_ASSOCIATED_FILES:
                 allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
                 found_extension = helpers.get_extension(associated_file_path)
-                if found_extension and found_extension not in allowed_extensions:
+                if delete_unwanted and found_extension and found_extension not in allowed_extensions:
                     self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
                               (found_extension.upper()), logger.DEBUG)
                     if os.path.isfile(associated_file_path):
@@ -320,7 +322,8 @@ class PostProcessor(object):
 
         # figure out which files we want to delete
         if associated_files:
-            file_list += self.list_associated_files(file_path, base_name_only=True, subfolders=True)
+            file_list += self.list_associated_files(file_path, base_name_only=True,
+                                                    subfolders=True, delete_unwanted=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not deleting anything'.format
@@ -419,9 +422,9 @@ class PostProcessor(object):
 
         file_list = [file_path]
         if associated_files:
-            file_list += self.list_associated_files(file_path)
+            file_list += self.list_associated_files(file_path, delete_unwanted=True)
         elif subtitles:
-            file_list += self.list_associated_files(file_path, subtitles_only=True)
+            file_list += self.list_associated_files(file_path, subtitles_only=True, delete_unwanted=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not moving anything'.format
