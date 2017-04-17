@@ -752,8 +752,6 @@ class PostProcessor(object):
         :param ep_obj: The Episode object related to the file we are post processing
         :return: A quality value found in common.Quality
         """
-        ep_quality = common.Quality.UNKNOWN
-
         for resource_name, cur_name in self.item_resources.items():
 
             # Skip names that are falsey
