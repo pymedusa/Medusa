@@ -11,7 +11,7 @@ class Identifier(object):
 
     def __nonzero__(self):
         """Magic method."""
-        raise NotImplemented
+        raise NotImplementedError
 
     __bool__ = __nonzero__
 

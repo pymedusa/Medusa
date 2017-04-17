@@ -112,7 +112,6 @@ from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
 from six import text_type
-from tvdbapiv2.rest import ApiException
 
 try:
     from send2trash import send2trash
@@ -277,7 +276,7 @@ class Series(TV):
             series.save_to_db()
             series.load_episodes_from_indexer(tvapi=api)
             return series
-        except ApiException as e:
+        except IndexerException as e:
             logger.warning('Unable to load series from indexer: {0!r}'.format(e))
 
     @property
