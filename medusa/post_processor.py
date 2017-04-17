@@ -288,7 +288,7 @@ class PostProcessor(object):
     def _rar_basename(filepath, files):
         """Return the basename of the source rar archive if found."""
         videofile = os.path.basename(filepath)
-        rars = (x for x in files if os.path.isfile(x) and rarfile.is_rarfile(x))
+        rars = (x for x in files if rarfile.is_rarfile(x))
 
         for rar in rars:
             try:
@@ -361,7 +361,7 @@ class PostProcessor(object):
         changed_extension = None
         # file extension without leading dot
         extension = helpers.get_extension(filepath)
-        # initally set current extension as new extension
+        # initially set current extension as new extension
         new_extension = extension
 
         if is_subtitle(filepath):
@@ -372,6 +372,7 @@ class PostProcessor(object):
                     code = 'pt-BR'
                 new_extension = code + '.' + extension
                 changed_extension = True
+
         # replace nfo with nfo-orig to avoid conflicts
         elif extension == 'nfo' and app.NFO_RENAME:
             new_extension = 'nfo-orig'
