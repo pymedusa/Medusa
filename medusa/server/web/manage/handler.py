@@ -302,7 +302,7 @@ class Manage(Home, WebRoot):
                 if not tv_episode.show.subtitles:
                     continue
 
-                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path)
                 if related_files:
                     continue
 

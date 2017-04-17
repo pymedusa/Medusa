@@ -555,11 +555,8 @@ class ProcessResult(object):
                                 self._log('Found wanted embedded subtitles. '
                                           'Continuing the post-processing of this file: {0}'.format(video_file))
                             else:
-                                associated_files = processor.list_associated_files(file_path, subtitles_only=True)
-                                if not [filename
-                                        for filename in associated_files
-                                        if helpers.get_extension(filename)
-                                        in subtitle_extensions]:
+                                associated_subs = processor.list_associated_files(file_path, subtitles_only=True)
+                                if not associated_subs:
                                     self._log('No subtitles associated. Postponing the post-process of this file: '
                                               '{0}'.format(video_file), logger.DEBUG)
                                     self.postponed_no_subs = True

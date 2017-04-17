@@ -49,7 +49,6 @@ class PostProcessor(object):
     EXISTS_SAME = 2
     EXISTS_SMALLER = 3
     DOESNT_EXIST = 4
-
     IGNORED_FILESTRINGS = ['.AppleDouble', '.DS_Store']
 
     def __init__(self, file_path, nzb_name=None, process_method=None, is_priority=None):
@@ -61,41 +60,25 @@ class PostProcessor(object):
         """
         # absolute path to the folder that is being processed
         self.folder_path = os.path.dirname(os.path.abspath(file_path))
-
         # full path to file
         self.file_path = file_path
-
         # file name only
         self.file_name = os.path.basename(file_path)
-
         # relative path to the file that is being processed
         self.rel_path = self._get_rel_path()
-
         # name of the NZB that resulted in this folder
         self.nzb_name = nzb_name
-
         self.process_method = process_method if process_method else app.PROCESS_METHOD
-
         self.in_history = False
-
         self.release_group = None
-
         self.release_name = None
-
         self.is_proper = False
-
         self.is_priority = is_priority
-
         self.log = ''
-
         self.version = None
-
         self.anidbEpisode = None
-
         self.manually_searched = False
-
         self.info_hash = None
-
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
                                            ('nzb name', self.nzb_name)])
@@ -114,7 +97,6 @@ class PostProcessor(object):
         """Return the relative path to the file if possible, else the parent dir.
 
         :return: relative path to file or parent dir to file
-        :rtype: text_type
         """
         if app.TV_DOWNLOAD_DIR:
             try:
@@ -165,17 +147,17 @@ class PostProcessor(object):
             ))
             return self.EXISTS_LARGER if new_size < old_size else self.EXISTS_SMALLER
 
-    def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False, subfolders=False):
+    def list_associated_files(self, filepath, subfolders=None, subtitles_only=None, refine=None):
         """
-        For a given file path search for files in the same directory and return their absolute paths.
+        For a given file path search for associated files and return their absolute paths.
 
-        :param filepath: The file to check for associated files
-        :param base_name_only: list only files with the same basename
-        :param subtitles_only: list only subtitles
-        :param subfolders: check subfolders while listing files
+        :param filepath: path of the file to check for associated files
+        :param subfolders: also check subfolders while searching files
+        :param subtitles_only: list only associated subtitles
+        :param refine: refine the associated files with additional options
         :return: A list containing all files which are associated to the given file
         """
-        files = self._search_files(filepath, subfolders=subfolders, base_name_only=base_name_only)
+        files = self._search_files(filepath, subfolders=subfolders, base_name_only=True)
 
         # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
@@ -183,56 +165,58 @@ class PostProcessor(object):
         processed_names = (processed_file_name,)
         processed_names += filter(None, (self._rar_basename(filepath, files),))
 
-        # loop through all the files in the folder, and check if they are the same name
-        # even when the cases don't match
-        filelist = []
+        associated_files = set()
         for found_file in files:
 
-            file_name = os.path.basename(found_file).lower()
-
-            if file_name.startswith(processed_names):
-                filelist.append(found_file)
-
-        file_path_list = []
-        extensions_to_delete = []
-        for associated_file_path in filelist:
             # Exclude the video file we are post-processing
-            if associated_file_path == filepath:
+            if found_file == filepath:
                 continue
 
-            # Exclude .rar files from associated list
-            if re.search(r'(^.+\.(rar|r\d+)$)', associated_file_path):
+            # Exclude .rar files
+            if re.search(r'(^.+\.(rar|r\d+)$)', found_file):
                 continue
 
-            # Exlude non-subtitle files with the 'only subtitles' option
-            if subtitles_only and not is_subtitle(associated_file_path):
+            # Exclude non-subtitle files with the 'only subtitles' option
+            if subtitles_only and not is_subtitle(found_file):
                 continue
 
-            # Add the extensions that the user doesn't allow to the 'extensions_to_delete' list
-            if app.MOVE_ASSOCIATED_FILES:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-                found_extension = helpers.get_extension(associated_file_path)
-                if found_extension and found_extension not in allowed_extensions:
-                    self._log(u'Associated file extension not found in allowed extensions: .{0}'.format
-                              (found_extension.upper()), logger.DEBUG)
-                    if os.path.isfile(associated_file_path):
-                        extensions_to_delete.append(associated_file_path)
+            file_name = os.path.basename(found_file).lower()
+            if file_name.startswith(processed_names):
+                associated_files.add(found_file)
 
-            if os.path.isfile(associated_file_path):
-                file_path_list.append(associated_file_path)
-
-        if file_path_list:
+        if associated_files:
             self._log(u'Found the following associated files for {0}: {1}'.format
-                      (filepath, file_path_list), logger.DEBUG)
-            if extensions_to_delete:
-                # Rebuild the 'file_path_list' list only with the extensions the user allows
-                file_path_list = [associated_file for associated_file in file_path_list
-                                  if associated_file not in extensions_to_delete]
-                self._delete(extensions_to_delete)
+                      (filepath, associated_files), logger.DEBUG)
+            if refine:
+                associated_files = self._refine_associated_files(associated_files)
         else:
-            self._log(u'No associated files for {0} were found during this pass'.format(filepath), logger.DEBUG)
+            self._log(u'No associated files were found for {0}'.format(filepath), logger.DEBUG)
 
-        return file_path_list
+        return list(associated_files)
+
+    def _refine_associated_files(self, files):
+        allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+
+        files_to_delete = set()
+        for associated_file in files:
+
+            # "Delete associated files" setting
+            if app.MOVE_ASSOCIATED_FILES:
+                # "Keep associated file extensions" input box
+                if app.ALLOWED_EXTENSIONS:
+                    found_extension = helpers.get_extension(associated_file)
+                    if found_extension and found_extension not in allowed_extensions:
+                        files_to_delete.add(associated_file)
+                else:
+                    files_to_delete = files
+                    break
+
+        if files_to_delete:
+            self._log(u'Deleting following associated files: {0}'.format(files_to_delete), logger.DEBUG)
+            self._delete(list(files_to_delete))
+            files = files - files_to_delete
+
+        return files
 
     @staticmethod
     def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=None):
@@ -240,17 +224,11 @@ class PostProcessor(object):
         Search for files in a given path.
 
         :param path: path to file or folder (folder paths must end with slashes)
-        :type path: text_type
         :param pattern: pattern used to match the files
-        :type pattern: text_type
         :param subfolders: search for files in subfolders
-        :type subfolders: bool
         :param base_name_only: only match files with the same name
-        :type base_name_only: bool
         :param sort: return files sorted by size
-        :type sort: bool
         :return: list with found files or empty list
-        :rtype: list
         """
         directory = os.path.dirname(path)
 
@@ -295,42 +273,41 @@ class PostProcessor(object):
                 content = rarfile.RarFile(rar).namelist()
             except NeedFirstVolume:
                 continue
-            except RarError as e:
+            except RarError as error:
                 logger.log(u'An error occurred while reading the following RAR file: {name}. '
-                           u'Error: {message}'.format(name=rar, message=e), logger.WARNING)
+                           u'Error: {message}'.format(name=rar, message=error), logger.WARNING)
                 continue
             if videofile in content:
-                return os.path.splitext(os.path.basename(rar))[0]
+                return os.path.splitext(os.path.basename(rar))[0].lower()
 
-    def _delete(self, file_path, associated_files=False):
+    def _delete(self, files, associated_files=False):
         """
-        Delete the file and optionally all associated files.
+        Delete the file(s) and optionally all associated files.
 
-        :param file_path: The file to delete
+        :param files: path(s) to file(s) that should be deleted
         :param associated_files: True to delete all files which differ only by extension, False to leave them
         """
-        if not file_path:
+        if not files:
             return
 
-        # Check if file_path is a list, if not, make it one
-        if not isinstance(file_path, list):
-            file_list = [file_path]
+        # Check if files is a list, if not, make it one
+        if not isinstance(files, list):
+            file_list = [files]
         else:
-            file_list = file_path
+            file_list = files
 
-        # figure out which files we want to delete
-        if associated_files:
-            file_list += self.list_associated_files(file_path, base_name_only=True, subfolders=True)
+        # also delete associated files, works only for 1 file
+        if associated_files and len(files) == 1:
+            file_list += self.list_associated_files(files, subfolders=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not deleting anything'.format
-                      (file_path), logger.DEBUG)
+                      (files), logger.DEBUG)
             return
 
-        # delete the file and any other files which we want to delete
         for cur_file in file_list:
             if os.path.isfile(cur_file):
-                self._log(u'Deleting file {0}'.format(cur_file), logger.DEBUG)
+                self._log(u'Deleting file: {0}'.format(cur_file), logger.DEBUG)
                 # check first the read-only attribute
                 file_attribute = os.stat(cur_file)[0]
                 if not file_attribute & stat.S_IWRITE:
@@ -421,9 +398,9 @@ class PostProcessor(object):
 
         file_list = [file_path]
         if associated_files:
-            file_list += self.list_associated_files(file_path)
+            file_list += self.list_associated_files(file_path, refine=True)
         elif subtitles:
-            file_list += self.list_associated_files(file_path, subtitles_only=True)
+            file_list += self.list_associated_files(file_path, subtitles_only=True, refine=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not moving anything'.format
@@ -449,6 +426,7 @@ class PostProcessor(object):
         :param new_path: full show folder path where the file will be moved|copied|linked to
         :param new_base_name: The base filename (no extension) to use. Use None to keep the same name
         :param associated_files: Boolean, whether we should run the action in similarly-named files too
+        :param subtitles: Boolean, whether we should process subtitles too
         """
         def move(cur_file_path, new_file_path):
             self._log(u'Moving file from {0} to {1} '.format(cur_file_path, new_file_path), logger.DEBUG)

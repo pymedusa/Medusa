@@ -158,7 +158,8 @@ def test_list_associated_files(p, create_structure, monkeypatch):
     processor = TestPostProcessor(media_file)
 
     # When
-    found_associated_files = processor.list_associated_files(media_file, subtitles_only=subtitles_only, subfolders=subfolders)
+    found_associated_files = processor.list_associated_files(media_file, subfolders=subfolders,
+                                                             subtitles_only=subtitles_only, refine=refine)
     associated_files_basenames = [os.path.basename(i) for i in found_associated_files]
 
     # Then
