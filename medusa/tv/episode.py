@@ -280,23 +280,19 @@ class Episode(TV):
         :rtype: medusa.tv.Episode
         """
         if isinstance(episode_number, RelativeNumber):
-            episode = series.get_episode(season=episode_number.season, episode=episode_number.episode,
-                                         should_cache=False, no_create=True)
+            episode = series.get_episode(season=episode_number.season, episode=episode_number.episode)
         elif isinstance(episode_number, AbsoluteNumber):
-            episode = series.get_episode(absolute_number=episode_number.episode,
-                                         should_cache=False, no_create=True)
+            episode = series.get_episode(absolute_number=episode_number.episode)
 
         elif isinstance(episode_number, AirByDateNumber):
-            episode = series.get_episode(air_date=episode_number.air_date,
-                                         should_cache=False, no_create=True)
+            episode = series.get_episode(air_date=episode_number.air_date)
         else:
             # if this happens then it's a bug!
             raise ValueError
 
         if episode:
-            if not episode.loaded:
-                episode.load_from_db(episode.season, episode.episode)
-            return episode
+            if episode.loaded or episode.load_from_db(episode.season, episode.episode):
+                return episode
 
     @staticmethod
     def from_filepath(filepath):

@@ -711,7 +711,7 @@ class Series(TV):
         else:
             ep = Episode(self, season, episode)
 
-        if ep is not None and should_cache:
+        if ep is not None and ep.loaded and should_cache:
             self.episodes[season][episode] = ep
 
         return ep
