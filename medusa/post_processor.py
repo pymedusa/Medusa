@@ -339,8 +339,9 @@ class PostProcessor(object):
                               (cur_file), logger.DEBUG)
                     try:
                         os.chmod(cur_file, stat.S_IWRITE)
-                    except Exception:
-                        self._log(u'Cannot change permissions of {0}'.format(cur_file), logger.WARNING)
+                    except OSError as error:
+                        self._log(u'Cannot change permissions of {filename}. Error: {msg}'.format
+                                  (filename=cur_file, msg=error), logger.WARNING)
 
                 os.remove(cur_file)
 
