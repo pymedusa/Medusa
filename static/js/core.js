@@ -35,7 +35,8 @@ var UTIL = {
         var body = document.body;
         $('[asset]').each(function() {
             let asset = $(this).attr('asset');
-            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            let series = $(this).attr('series');
+            let path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
@@ -82,7 +83,7 @@ $.fn.extend({
 });
 
 if (!document.location.pathname.endsWith('/login/')) {
-    api.get('config').then(function(response) {
+    api.get('config/main').then(function(response) {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';

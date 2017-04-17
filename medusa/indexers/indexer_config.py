@@ -122,7 +122,16 @@ def indexer_name_to_id(indexer_name):
     :param indexer_name: Identifier of the indexer. Example: will return 1 for 'tvdb'.
     :return: The indexer id.
     """
-    return {v['identifier']: k for k, v in indexerConfig.items()}[indexer_name]
+    return {v['identifier']: k for k, v in indexerConfig.items()}.get(indexer_name)
+
+
+def indexer_id_to_name(indexer):
+    """Reverse translate the indexer identifier to it's id.
+
+    :param indexer: Indexer id. E.g.: 1.
+    :return: The indexer name. E.g.: tvdb
+    """
+    return indexerConfig[indexer]['identifier']
 
 
 def indexer_id_to_slug(indexer, indexer_id):
@@ -144,7 +153,8 @@ def slug_to_indexer_id(slug):
     if not slug:
         return None, None
     result = re.compile(r'([a-z]+)([0-9]+)').match(slug)
-    return indexer_name_to_id(result.group(1)), int(result.group(2))
+    if result:
+        return indexer_name_to_id(result.group(1)), int(result.group(2))
 
 
 def get_trakt_indexer(indexer):
