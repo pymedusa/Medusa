@@ -38,6 +38,9 @@ from medusa.scene_exceptions import get_scene_exceptions
 from requests.auth import AuthBase
 from requests.compat import quote, urljoin
 
+# Provider has custom params for season and episode search.
+# For example searching for season 1, need to pass param: term[45][]=968. Searching episode 9: term[46][]=946
+# Without this params, provider returns lot of bad results
 EPISODE_MAP = {
     0: 936, 1: 937, 2: 938, 3: 939, 4: 940, 5: 941, 6: 942, 7: 943, 8: 944, 9: 946, 10: 947, 11: 948, 12: 949, 13: 950,
     14: 951, 15: 952, 16: 954, 17: 953, 18: 955, 19: 956, 20: 957, 21: 958, 22: 959, 23: 960, 24: 961, 25: 962, 26: 963,
@@ -97,8 +100,9 @@ class T411Provider(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + ' '
+        for series in episode.show.get_all_possible_names(season=episode.scene_season):
+            episode_string = series + ' '
+            episode_params = None
 
             if episode.show.air_by_date or episode.show.sports:
                 episode_string += str(episode.airdate).split('-')[0]
@@ -107,14 +111,15 @@ class T411Provider(TorrentProvider):
                 episode_string += 'Season'
                 episode_string = episode_string.strip()
             else:
-                # Custom string for param search
+                # Chech if season and episode are within the mapped values. Otherwise use normal search
                 if episode.scene_season > max(SEASON_MAP):
                     episode_string += 'S{season:0>2}'.format(season=episode.season)
                     episode_string = episode_string.strip()
+                # Custom string for param search only
                 else:
-                    episode_string = (show_name, episode.scene_season, episode.scene_episode,)
+                    episode_params = (series, episode.scene_season, episode.scene_episode,)
 
-            search_string['Season'].append(episode_string)
+            search_string['Season'].append(episode_params or episode_string)
         return [search_string]
 
     def _get_episode_search_strings(self, episode, add_string=''):
@@ -126,8 +131,9 @@ class T411Provider(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + self.search_separator
+        for series in episode.show.get_all_possible_names(season=episode.scene_season):
+            episode_string = series + self.search_separator
+            episode_params = None
             if episode.show.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string = episode_string.strip()
@@ -137,11 +143,11 @@ class T411Provider(TorrentProvider):
                 episode_string += episode.airdate.strftime('%b')
                 episode_string = episode_string.strip()
             elif episode.show.anime:
-                # If the showname is a season scene exception, we want to use the indexer episode number.
+                # If the series is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                    show_name in get_scene_exceptions(episode.show.indexerid,
-                                                      episode.show.indexer,
-                                                      episode.scene_season)):
+                    series in get_scene_exceptions(episode.show.indexerid,
+                                                   episode.show.indexer,
+                                                   episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:
@@ -149,17 +155,18 @@ class T411Provider(TorrentProvider):
                 episode_string += '{episode:0>2}'.format(episode=ep)
                 episode_string = episode_string.strip()
             else:
-                # Custom string for param search
+                # Chech if season and episode are within the mapped values. Otherwise use normal search
                 if episode.scene_season > max(SEASON_MAP) or episode.scene_episode > max(EPISODE_MAP):
                     episode_string += config.naming_ep_type[2] % {
                         'seasonnumber': episode.scene_season,
                         'episodenumber': episode.scene_episode,
                     }
                     episode_string = episode_string.strip()
+                # Custom string for param search only
                 else:
-                    episode_string = (show_name, episode.scene_season, episode.scene_episode,)
+                    episode_params = (series, episode.scene_season, episode.scene_episode,)
 
-            search_string['Episode'].append(episode_string)
+            search_string['Episode'].append(episode_params or episode_string)
 
         return [search_string]
 
@@ -190,14 +197,14 @@ class T411Provider(TorrentProvider):
                 if mode != 'RSS':
                     season = episode = None
                     if isinstance(search_string, tuple):
-                        show_name = search_string[0]
+                        series = search_string[0]
                         season = search_string[1]
                         episode = search_string[2]
-                        logger.log('Search params: Name: {show}. Season: {season} Episode: {episode}'.format
-                                   (show=show_name, season=season, episode=episode),
+                        logger.log('Search params: Name: {series}. Season: {season} Episode: {episode}'.format
+                                   (series=series, season=season, episode=episode),
                                    logger.DEBUG)
                     else:
-                        show_name = search_string
+                        series = search_string
                         logger.log('Search string: {search}'.format(search=search_string), logger.DEBUG)
 
                     if self.confirmed:
@@ -205,7 +212,7 @@ class T411Provider(TorrentProvider):
 
                     # use string formatting to safely coerce the search term
                     # to unicode then utf-8 encode the unicode string
-                    term = '{term}'.format(term=show_name).encode('utf-8')
+                    term = '{term}'.format(term=series).encode('utf-8')
                     # build the search URL
                     search_url = self.urls['search'].format(
                         search=quote(term)  # URL encode the search term
