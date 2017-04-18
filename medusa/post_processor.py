@@ -66,7 +66,6 @@ class PostProcessor(object):
         self.file_name = os.path.basename(file_path)
         # relative path to the file that is being processed
         self.rel_path = self._get_rel_path()
-        # name of the NZB that resulted in this folder
         self.nzb_name = nzb_name
         self.process_method = process_method if process_method else app.PROCESS_METHOD
         self.in_history = False
@@ -157,7 +156,7 @@ class PostProcessor(object):
         :param refine: refine the associated files with additional options
         :return: A list containing all files which are associated to the given file
         """
-        files = self._search_files(filepath, subfolders=subfolders, base_name_only=True)
+        files = self._search_files(filepath, subfolders=subfolders, basename_only=True)
 
         # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
@@ -195,49 +194,54 @@ class PostProcessor(object):
         return list(associated_files)
 
     def _refine_associated_files(self, files):
-        allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+        """
+        Refine associated files with additional options.
 
+        :param files: set of associated files
+        :return: set containing the associated files left
+        """
         files_to_delete = set()
-        for associated_file in files:
 
-            # "Delete associated files" setting
-            if app.MOVE_ASSOCIATED_FILES:
-                # "Keep associated file extensions" input box
-                if app.ALLOWED_EXTENSIONS:
+        # "Delete associated files" setting
+        if app.MOVE_ASSOCIATED_FILES:
+            # "Keep associated file extensions" input box
+            if app.ALLOWED_EXTENSIONS:
+                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                for associated_file in files:
                     found_extension = helpers.get_extension(associated_file)
-                    if found_extension and found_extension not in allowed_extensions:
+                    if found_extension and found_extension.lower() not in allowed_extensions:
                         files_to_delete.add(associated_file)
-                else:
-                    files_to_delete = files
-                    break
+            else:
+                files_to_delete = files
 
         if files_to_delete:
             self._log(u'Deleting following associated files: {0}'.format(files_to_delete), logger.DEBUG)
             self._delete(list(files_to_delete))
-            files = files - files_to_delete
 
-        return files
+        return files - files_to_delete
 
     @staticmethod
-    def _search_files(path, pattern='*', subfolders=None, base_name_only=None, sort=None):
+    def _search_files(path, pattern='*', subfolders=None, basename_only=None, sort=None):
         """
         Search for files in a given path.
 
         :param path: path to file or folder (folder paths must end with slashes)
         :param pattern: pattern used to match the files
         :param subfolders: search for files in subfolders
-        :param base_name_only: only match files with the same name
+        :param basename_only: only match files with the same name
         :param sort: return files sorted by size
         :return: list with found files or empty list
         """
         directory = os.path.dirname(path)
 
-        if base_name_only:
+        if basename_only:
             if os.path.isfile(path):
                 new_pattern = os.path.splitext(os.path.basename(path))[0]
             elif os.path.isdir(path):
                 new_pattern = os.path.split(directory)[1]
             else:
+                logger.log(u'Basename match requires either a file or a directory. '
+                           u'{name} is not allowed.'.format(name=path), logger.ERROR)
                 return []
 
             if any(char in new_pattern for char in ['[', '?', '*']):
@@ -264,7 +268,7 @@ class PostProcessor(object):
 
     @staticmethod
     def _rar_basename(filepath, files):
-        """Return the basename of the source rar archive if found."""
+        """Return the lowercase basename of the source rar archive if found."""
         videofile = os.path.basename(filepath)
         rars = (x for x in files if rarfile.is_rarfile(x))
 
