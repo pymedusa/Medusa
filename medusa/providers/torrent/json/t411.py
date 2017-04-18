@@ -82,7 +82,24 @@ class T411Provider(TorrentProvider):
 
         # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
-        self.subcategories = [433, 637, 455, 639]
+        self.subcategories = [433, 637, 455, 639, 636]
+
+        """
+        Subcategories:
+        433: Série TV
+        637: Animation Série
+        455: Animation
+        639: Emission TV
+        636: Sport
+
+        Not used:
+        633: Concert
+        634: Documentaire
+        631: Film
+        635: Spectacle
+        402: Vidéo-clips
+        """
+
         self.confirmed = False
 
         # Torrent Stats
