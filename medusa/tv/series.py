@@ -1472,7 +1472,7 @@ class Series(TV):
         if getattr(indexed_show, 'firstaired', ''):
             self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
-        self.status = self.normalize_status(getattr(indexed_show, 'status', 'Unknown'))
+        self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 
         self.plot = getattr(indexed_show, 'overview', '') or self.imdb_plot
 
