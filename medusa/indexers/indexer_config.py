@@ -70,7 +70,6 @@ STATUS_MAP = {
     'in production': 'Continuing',
     'pilot': 'Continuing',
     'cancelled': 'Ended',
-    '': 'Unknown',
 }
 
 indexerConfig = {

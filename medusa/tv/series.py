@@ -552,9 +552,7 @@ class Series(TV):
     @staticmethod
     def normalize_status(series_status):
         """Return a normalized status given current indexer status."""
-        if not series_status:
-            return 'Unknown'
-        return STATUS_MAP.get(series_status.lower(), 'Unknown')
+        return STATUS_MAP.get(series_status.lower()) if series_status else 'Unknown'
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
