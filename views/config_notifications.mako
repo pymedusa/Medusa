@@ -1582,10 +1582,9 @@
                                         <span class="component-title">Sync libraries</span>
                                         <span class="component-desc">
                                             <input type="checkbox" class="enabler" name="trakt_sync" id="trakt_sync" ${'checked="checked"' if app.TRAKT_SYNC else ''}/>
-                                            <p>sync your Medusa show library(collection) with your trakt show library.</p>
-                                            <p><b>Note:</b> Don't enable this setting if you use Trakt addon in Kodi (or other script) that syncs library.</p>
-                                            <p>Kodi detects first that the episode got deleted and removes from collection.
-                                            Until Medusa detect episode got deleted, it will keep adding and Kodi will keep removing</p>
+                                            <p>Sync your Medusa show library with your Trakt collection.</p>
+                                            <p><b>Note:</b> Don't enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.</p>
+                                            <p>Kodi detects that the episode was deleted and removes from collection which causes Medusa to re-add it. This causes a loop between Medusa and Kodi adding and deleting the episode.</p>
                                         </span>
                                     </label>
                                 </div>
@@ -1596,7 +1595,7 @@
                                             <span class="component-desc">
                                                 <input type="checkbox" name="trakt_sync_remove" id="trakt_sync_remove" ${'checked="checked"' if app.TRAKT_SYNC_REMOVE else ''}/>
                                                 <p>Remove an Episode from your Trakt Collection if it is not in your Medusa Library.</p>
-                                                <p><b>Note:</b> Don't enable this setting if you use Trakt addon in Kodi (or other script) that syncs library.</p>
+                                                <p><b>Note:</b> Don't enable this setting if you use the Trakt addon for Kodi or any other script that syncs your library.</p>
                                             </span>
                                         </label>
                                      </div>
@@ -1606,9 +1605,9 @@
                                         <span class="component-title">Sync watchlist</span>
                                         <span class="component-desc">
                                             <input type="checkbox" class="enabler" name="trakt_sync_watchlist" id="trakt_sync_watchlist" ${'checked="checked"' if app.TRAKT_SYNC_WATCHLIST else ''}/>
-                                            <p>sync your Medusa show watchlist with your trakt show watchlist (either Show and Episode).</p>
+                                            <p>Sync your Medusa library with your Trakt Watchlist (either Show and Episode).</p>
                                             <p>Episode will be added on watch list when wanted or snatched and will be removed when downloaded </p>
-                                            <p><b>Note:</b> By design, Trakt auto remove episode and/or show from watchlist as soon you watched it.</p>
+                                            <p><b>Note:</b> By design, Trakt automatically removes episodes and/or shows from watchlist as soon you have watched them.</p>
                                         </span>
                                     </label>
                                 </div>
