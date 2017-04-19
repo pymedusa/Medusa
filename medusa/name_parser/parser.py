@@ -26,6 +26,8 @@ from medusa.indexers.indexer_exceptions import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
+from six import iteritems
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -500,7 +502,7 @@ class NameParserCache(object):
         """Remove cache item given indexer and indexer_id."""
         if not indexer or not indexer_id:
             return
-        to_remove = (cached_name for cached_name, cached_parsed_result in self.cache.iteritems() if
+        to_remove = (cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
                      cached_parsed_result.show.indexer == indexer and cached_parsed_result.show.indexerid == indexer_id)
         for item in to_remove:
             self.cache.popitem(item)
