@@ -51,6 +51,28 @@ EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
+STATUS_MAP = {
+    'returning series': 'Continuing',
+    'canceled/ended': 'Ended',
+    'tbd/on the bubble': 'Continuing',
+    'in development': 'Continuing',
+    'new series': 'Continuing',
+    'never aired': 'Ended',
+    'final season': 'Continuing',
+    'on hiatus': 'Continuing',
+    'pilot ordered': 'Continuing',
+    'pilot rejected': 'Ended',
+    'canceled': 'Ended',
+    'ended': 'Ended',
+    'to be determined': 'Continuing',
+    'running': 'Continuing',
+    'planned': 'Continuing',
+    'in production': 'Continuing',
+    'pilot': 'Continuing',
+    'cancelled': 'Ended',
+    '': 'Unknown',
+}
+
 indexerConfig = {
     INDEXER_TVDBV2: {
         'enabled': True,
