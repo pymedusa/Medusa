@@ -504,7 +504,7 @@ class NameParserCache(object):
                      cached_parsed_result.show.indexer == indexer and cached_parsed_result.show.indexerid == indexer_id)
         for item in to_remove:
             self.cache.popitem(item)
-            logger.debug('Removed parsed cached result for release: {release}'.format(release=item))
+            log.debug('Removed parsed cached result for release: {release}'.format(release=item))
 
 
 name_parser_cache = NameParserCache()

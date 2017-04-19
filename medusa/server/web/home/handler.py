@@ -1675,8 +1675,8 @@ class Home(WebRoot):
                 app.show_queue_scheduler.action.refreshShow(show_obj)
             except CantRefreshShowException as e:
                 errors += 1
-                logger.log("Unable to refresh show '{show}'. You must manually refresh!. Error: {error}".format
-                           (show=show_obj.name, error=e.message), logger.WARNING)
+                logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
+                           "Error: {error}".format(show=show_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors
