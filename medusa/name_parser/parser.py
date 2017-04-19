@@ -500,7 +500,7 @@ class NameParserCache(object):
         """Remove cache item given indexer and indexer_id."""
         if not indexer or not indexer_id:
             return
-        to_remove = (cached_name for cached_name, cached_parsed_result in self.cache.items() if
+        to_remove = (cached_name for cached_name, cached_parsed_result in self.cache.iteritems() if
                      cached_parsed_result.show.indexer == indexer and cached_parsed_result.show.indexerid == indexer_id)
         for item in to_remove:
             self.cache.popitem(item)
