@@ -85,6 +85,7 @@ from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
+    STATUS_MAP,
     indexerConfig,
     indexer_id_to_slug,
     mappings,
@@ -547,6 +548,12 @@ class Series(TV):
     def release_required_words(self):
         """Return release ignore words."""
         return [v for v in (self.rls_require_words or '').split(',') if v]
+
+    @staticmethod
+    def normalize_status(series_status):
+        """Return a normalized status given current indexer status."""
+        default_status = 'Unknown'
+        return STATUS_MAP.get(series_status.lower(), default_status) if series_status else default_status
 
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
@@ -1468,7 +1475,7 @@ class Series(TV):
         if getattr(indexed_show, 'firstaired', ''):
             self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
-        self.status = getattr(indexed_show, 'status', 'Unknown')
+        self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 
         self.plot = getattr(indexed_show, 'overview', '') or self.imdb_plot
 
