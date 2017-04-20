@@ -60555,7 +60555,7 @@ QTIP.defaults = {
 ;}));
 }( window, document ));
 
-/*! tablesorter (FORK) - updated 04-04-2017 (v2.28.7)*/
+/*! tablesorter (FORK) - updated 12-08-2016 (v2.28.1)*/
 /* Includes widgets ( storage,uitheme,columns,filter,stickyHeaders,resizable,saveSort ) */
 (function(factory) {
 	if (typeof define === 'function' && define.amd) {
@@ -60567,7 +60567,7 @@ QTIP.defaults = {
 	}
 }(function(jQuery) {
 
-/*! TableSorter (FORK) v2.28.7 *//*
+/*! TableSorter (FORK) v2.28.1 *//*
 * Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
@@ -60591,7 +60591,7 @@ QTIP.defaults = {
 	'use strict';
 	var ts = $.tablesorter = {
 
-		version : '2.28.7',
+		version : '2.28.1',
 
 		parsers : [],
 		widgets : [],
@@ -60931,17 +60931,7 @@ QTIP.defaults = {
 			.bind( 'sortReset' + namespace, function( e, callback ) {
 				e.stopPropagation();
 				// using this.config to ensure functions are getting a non-cached version of the config
-				ts.sortReset( this.config, function( table ) {
-					if (table.isApplyingWidgets) {
-						// multiple triggers in a row... filterReset, then sortReset - see #1361
-						// wait to update widgets
-						setTimeout( function() {
-							ts.applyWidget( table, '', callback );
-						}, 100 );
-					} else {
-						ts.applyWidget( table, '', callback );
-					}
-				});
+				ts.sortReset( this.config, callback );
 			})
 			.bind( 'updateAll' + namespace, function( e, resort, callback ) {
 				e.stopPropagation();
@@ -61010,7 +61000,7 @@ QTIP.defaults = {
 				var tmp = $.extend( true, {}, c.originalSettings );
 				// restore original settings; this clears out current settings, but does not clear
 				// values saved to storage.
-				c = $.extend( true, {}, ts.defaults, tmp );
+				c = $.extend( true, ts.defaults, tmp );
 				c.originalSettings = tmp;
 				this.hasInitialized = false;
 				// setup the entire table again
@@ -61245,9 +61235,8 @@ QTIP.defaults = {
 					for ( indx = 0; indx < max; indx++ ) {
 						header = c.$headerIndexed[ colIndex ];
 						if ( header && header.length ) {
-							// get column indexed table cell; adding true parameter fixes #1362 but
-							// it would break backwards compatibility...
-							configHeaders = ts.getColumnData( table, c.headers, colIndex ); // , true );
+							// get column indexed table cell
+							configHeaders = ts.getColumnData( table, c.headers, colIndex );
 							// get column parser/extractor
 							extractor = ts.getParserById( ts.getData( header, configHeaders, 'extractor' ) );
 							parser = ts.getParserById( ts.getData( header, configHeaders, 'sorter' ) );
@@ -62348,10 +62337,6 @@ QTIP.defaults = {
 			ts.setHeadersCss( c );
 			ts.multisort( c );
 			ts.appendCache( c );
-			var indx;
-			for (indx = 0; indx < c.columns; indx++) {
-				c.sortVars[ indx ].count = -1;
-			}
 			if ( $.isFunction( callback ) ) {
 				callback( c.table );
 			}
@@ -62494,15 +62479,14 @@ QTIP.defaults = {
 		},
 
 		applyWidgetOptions : function( table ) {
-			var indx, widget, wo,
+			var indx, widget,
 				c = table.config,
 				len = c.widgets.length;
 			if ( len ) {
 				for ( indx = 0; indx < len; indx++ ) {
 					widget = ts.getWidgetById( c.widgets[ indx ] );
 					if ( widget && widget.options ) {
-						wo = $.extend( {}, widget.options );
-						c.widgetOptions = $.extend( true, wo, c.widgetOptions );
+						c.widgetOptions = $.extend( true, {}, widget.options, c.widgetOptions );
 						// add widgetOptions to defaults for option validator
 						$.extend( true, ts.defaults.widgetOptions, widget.options );
 					}
@@ -62625,22 +62609,22 @@ QTIP.defaults = {
 					}
 				}
 				if ( c.debug && console.groupEnd ) { console.groupEnd(); }
+				// callback executed on init only
+				if ( !init && typeof callback === 'function' ) {
+					callback( table );
+				}
 			}
 			c.timerReady = setTimeout( function() {
 				table.isApplyingWidgets = false;
 				$.data( table, 'lastWidgetApplication', new Date() );
 				c.$table.triggerHandler( 'tablesorter-ready' );
-				// callback executed on init only
-				if ( !init && typeof callback === 'function' ) {
-					callback( table );
-				}
-				if ( c.debug ) {
-					widget = c.widgets.length;
-					console.log( 'Completed ' +
-						( init === true ? 'initializing ' : 'applying ' ) + widget +
-						' widget' + ( widget !== 1 ? 's' : '' ) + ts.benchmark( time ) );
-				}
 			}, 10 );
+			if ( c.debug ) {
+				widget = c.widgets.length;
+				console.log( 'Completed ' +
+					( init === true ? 'initializing ' : 'applying ' ) + widget +
+					' widget' + ( widget !== 1 ? 's' : '' ) + ts.benchmark( time ) );
+			}
 		},
 
 		removeWidget : function( table, name, refreshing ) {
@@ -63755,7 +63739,7 @@ QTIP.defaults = {
 
 })(jQuery);
 
-/*! Widget: filter - updated 4/4/2017 (v2.28.7) *//*
+/*! Widget: filter - updated 12/8/2016 (v2.28.1) *//*
  * Requires tablesorter v2.8+ and jQuery 1.7+
  * by Rob Garrison
  */
@@ -63826,7 +63810,7 @@ QTIP.defaults = {
 			var tbodyIndex, $tbody,
 				$table = c.$table,
 				$tbodies = c.$tbodies,
-				events = 'addRows updateCell update updateRows updateComplete appendCache filterReset filterAndSortReset filterEnd search '
+				events = 'addRows updateCell update updateRows updateComplete appendCache filterReset filterEnd search '
 					.split( ' ' ).join( c.namespace + 'filter ' );
 			$table
 				.removeClass( 'hasFilters' )
@@ -64167,7 +64151,7 @@ QTIP.defaults = {
 			}
 
 			txt = 'addRows updateCell update updateRows updateComplete appendCache filterReset ' +
-				'filterAndSortReset filterResetSaved filterEnd search '.split( ' ' ).join( c.namespace + 'filter ' );
+				'filterResetSaved filterEnd search '.split( ' ' ).join( c.namespace + 'filter ' );
 			c.$table.bind( txt, function( event, filter ) {
 				val = wo.filter_hideEmpty &&
 					$.isEmptyObject( c.cache ) &&
@@ -64178,16 +64162,9 @@ QTIP.defaults = {
 					event.stopPropagation();
 					tsf.buildDefault( table, true );
 				}
-				// Add filterAndSortReset - see #1361
-				if ( event.type === 'filterReset' || event.type === 'filterAndSortReset' ) {
+				if ( event.type === 'filterReset' ) {
 					c.$table.find( '.' + tscss.filter ).add( wo.filter_$externalFilters ).val( '' );
-					if ( event.type === 'filterAndSortReset' ) {
-						ts.sortReset( this.config, function() {
-							tsf.searching( table, [] );
-						});
-					} else {
-						tsf.searching( table, [] );
-					}
+					tsf.searching( table, [] );
 				} else if ( event.type === 'filterResetSaved' ) {
 					ts.storage( table, 'tablesorter-filters', '' );
 				} else if ( event.type === 'filterEnd' ) {
@@ -64647,7 +64624,7 @@ QTIP.defaults = {
 				wo = c.widgetOptions,
 				filterArray = $.isArray( filter ),
 				filters = ( filterArray ) ? filter : ts.getFilters( table, true ),
-				currentFilters = filters || []; // current filter values
+				combinedFilters = ( filters || [] ).join( '' ); // combined filter values
 			// prevent errors if delay init is set
 			if ( $.isEmptyObject( c.cache ) ) {
 				// update cache if delayInit set & pager has initialized ( after user initiates a search )
@@ -64661,10 +64638,7 @@ QTIP.defaults = {
 			// add filter array back into inputs
 			if ( filterArray ) {
 				ts.setFilters( table, filters, false, skipFirst !== true );
-				if ( !wo.filter_initialized ) {
-					c.lastSearch = [];
-					c.lastCombinedFilter = '';
-				}
+				if ( !wo.filter_initialized ) { c.lastCombinedFilter = ''; }
 			}
 			if ( wo.filter_hideFilters ) {
 				// show/hide filter row as needed
@@ -64674,11 +64648,11 @@ QTIP.defaults = {
 			}
 			// return if the last search is the same; but filter === false when updating the search
 			// see example-widget-filter.html filter toggle buttons
-			if ( c.lastSearch.join(',') === currentFilters.join(',') && filter !== false ) {
+			if ( c.lastCombinedFilter === combinedFilters && filter !== false ) {
 				return;
 			} else if ( filter === false ) {
 				// force filter refresh
-				c.lastCombinedFilter = '';
+				c.lastCombinedFilter = null;
 				c.lastSearch = [];
 			}
 			// define filter inside it is false
@@ -64695,11 +64669,11 @@ QTIP.defaults = {
 			if ( c.showProcessing ) {
 				// give it time for the processing icon to kick in
 				setTimeout( function() {
-					tsf.findRows( table, filters, currentFilters );
+					tsf.findRows( table, filters, combinedFilters );
 					return false;
 				}, 30 );
 			} else {
-				tsf.findRows( table, filters, currentFilters );
+				tsf.findRows( table, filters, combinedFilters );
 				return false;
 			}
 		},
@@ -65021,11 +64995,9 @@ QTIP.defaults = {
 			}
 			return showRow;
 		},
-		findRows: function( table, filters, currentFilters ) {
-			if (
-				table.config.lastSearch.join(',') === ( currentFilters || [] ).join(',') ||
-				!table.config.widgetOptions.filter_initialized
-			) {
+		findRows: function( table, filters, combinedFilters ) {
+			if ( table.config.lastCombinedFilter === combinedFilters ||
+				!table.config.widgetOptions.filter_initialized ) {
 				return;
 			}
 			var len, norm_rows, rowData, $rows, $row, rowIndex, tbodyIndex, $tbody, columnIndex,
@@ -65079,7 +65051,8 @@ QTIP.defaults = {
 			// filtered rows count
 			c.filteredRows = 0;
 			c.totalRows = 0;
-			currentFilters = ( storedFilters || [] );
+			// combindedFilters are undefined on init
+			combinedFilters = ( storedFilters || [] ).join( '' );
 
 			for ( tbodyIndex = 0; tbodyIndex < c.$tbodies.length; tbodyIndex++ ) {
 				$tbody = ts.processTbody( table, c.$tbodies.eq( tbodyIndex ), true );
@@ -65092,7 +65065,7 @@ QTIP.defaults = {
 					return el[ columnIndex ].$row.get();
 				}) );
 
-				if ( currentFilters.join('') === '' || wo.filter_serversideFiltering ) {
+				if ( combinedFilters === '' || wo.filter_serversideFiltering ) {
 					$rows
 						.removeClass( wo.filter_filteredRow )
 						.not( '.' + c.cssChildRow )
@@ -65267,8 +65240,7 @@ QTIP.defaults = {
 				c.totalRows += $rows.length;
 				ts.processTbody( table, $tbody, false );
 			}
-			// lastCombinedFilter is no longer used internally
-			c.lastCombinedFilter = storedFilters.join(''); // save last search
+			c.lastCombinedFilter = combinedFilters; // save last search
 			// don't save 'filters' directly since it may have altered ( AnyMatch column searches )
 			c.lastSearch = storedFilters;
 			c.$table.data( 'lastSearch', storedFilters );
@@ -65568,8 +65540,8 @@ QTIP.defaults = {
 		if ( ( getRaw !== true && wo && !wo.filter_columnFilters ) ||
 			// setFilters called, but last search is exactly the same as the current
 			// fixes issue #733 & #903 where calling update causes the input values to reset
-			( $.isArray(setFilters) && setFilters.join(',') === c.lastSearch.join(',') ) ) {
-			return $( table ).data( 'lastSearch' ) || [];
+			( $.isArray(setFilters) && setFilters.join('') === c.lastCombinedFilter ) ) {
+			return $( table ).data( 'lastSearch' );
 		}
 		if ( c ) {
 			if ( c.$filters ) {
@@ -65650,7 +65622,7 @@ QTIP.defaults = {
 
 })( jQuery );
 
-/*! Widget: stickyHeaders - updated 1/6/2017 (v2.28.4) *//*
+/*! Widget: stickyHeaders - updated 7/31/2016 (v2.27.0) *//*
  * Requires tablesorter v2.8+ and jQuery 1.4.3+
  * by Rob Garrison
  */
@@ -65713,7 +65685,7 @@ QTIP.defaults = {
 	// **************************
 	ts.addWidget({
 		id: 'stickyHeaders',
-		priority: 54, // sticky widget must be initialized after the filter & before pager widget!
+		priority: 55, // sticky widget must be initialized after the filter widget!
 		options: {
 			stickyHeaders : '',       // extra class name added to the sticky header row
 			stickyHeaders_appendTo : null, // jQuery selector or object to phycially attach the sticky headers
@@ -65953,7 +65925,7 @@ QTIP.defaults = {
 
 })(jQuery, window);
 
-/*! Widget: resizable - updated 1/28/2017 (v2.28.5) */
+/*! Widget: resizable - updated 6/28/2016 (v2.26.5) */
 /*jshint browser:true, jquery:true, unused:false */
 ;(function ($, window) {
 	'use strict';
@@ -65976,7 +65948,7 @@ QTIP.defaults = {
 			'.' + ts.css.resizableHandle + ' { position: absolute; display: inline-block; width: 8px;' +
 				'top: 1px; cursor: ew-resize; z-index: 3; user-select: none; -moz-user-select: none; }' +
 			'</style>';
-		$('head').append(s);
+		$(s).appendTo('body');
 	});
 
 	ts.resizable = {
@@ -66209,11 +66181,8 @@ QTIP.defaults = {
 
 			// right click to reset columns to default widths
 			c.$table
-				.bind( 'columnUpdate pagerComplete resizableUpdate '.split( ' ' ).join( namespace + ' ' ), function() {
+				.bind( 'columnUpdate' + namespace + ' pagerComplete' + namespace, function() {
 					ts.resizable.setHandlePosition( c, wo );
-				})
-				.bind( 'resizableReset' + namespace, function() {
-					ts.resizableReset( c.table );
 				})
 				.find( 'thead:first' )
 				.add( $( c.namespace + '_extra_table' ).find( 'thead:first' ) )
@@ -66425,9 +66394,7 @@ QTIP.defaults = {
 return jQuery.tablesorter;
 }));
 
-!function(a){"use strict";var b=a.tablesorter,c=b.columnSelector={queryAll:"@media only all { [columns] { display: none; } } ",queryBreak:"@media all and (min-width: [size]) { [columns] { display: table-cell; } } ",init:function(b,d,e){var f,g;if(f=a(e.columnSelector_layout),!f.find("input").add(f.filter("input")).length)return void(d.debug&&console.error("ColumnSelector: >> ERROR: Column Selector aborting, no input found in the layout! ***"));d.$table.addClass(d.namespace.slice(1)+"columnselector"),g=d.selector={$container:a(e.columnSelector_container||"<div>")},g.$style=a("<style></style>").prop("disabled",!0).appendTo("head"),g.$breakpoints=a("<style></style>").prop("disabled",!0).appendTo("head"),g.isInitializing=!0,c.setUpColspan(d,e),c.setupSelector(d,e),e.columnSelector_mediaquery&&c.setupBreakpoints(d,e),g.isInitializing=!1,g.$container.length?c.updateCols(d,e):d.debug&&console.warn("ColumnSelector: >> container not found"),d.$table.off("refreshColumnSelector.tscolsel").on("refreshColumnSelector.tscolsel",function(a,b,d){c.refreshColumns(this.config,b,d)})},refreshColumns:function(b,d,e){var f,g,h,i,j=b.selector,k=a.isArray(e||d),l=b.widgetOptions;if(void 0!==d&&null!==d&&j.$container.length){if("selectors"===d&&(j.$container.empty(),c.setupSelector(b,l),c.setupBreakpoints(b,l),void 0===e&&null!==e&&(e=j.auto)),k)for(g=e||d,a.each(g,function(a,b){g[a]=parseInt(b,10)}),f=0;f<b.columns;f++)i=a.inArray(f,g)>=0,h=j.$container.find("input[data-column="+f+"]"),h.length&&(h.prop("checked",i),j.states[f]=i);i=e===!0||d===!0||"auto"===d&&e!==!1,h=j.$container.find('input[data-column="auto"]').prop("checked",i),c.updateAuto(b,l,h)}else c.updateBreakpoints(b,l),c.updateCols(b,l);c.saveValues(b,l),c.adjustColspans(b,l)},setupSelector:function(d,e){var f,g,h,i,j,k,l,m=d.selector,n=m.$container,o=e.columnSelector_saveColumns&&b.storage,p=o?b.storage(d.table,"tablesorter-columnSelector"):[],q=o?b.storage(d.table,"tablesorter-columnSelector-auto"):{};for(m.auto=a.isEmptyObject(q)||"boolean"!==a.type(q.auto)?e.columnSelector_mediaqueryState:q.auto,m.states=[],m.$column=[],m.$wrapper=[],m.$checkbox=[],f=0;f<d.columns;f++)h=d.$headerIndexed[f],i=h.attr(e.columnSelector_priority)||1,k=h.attr("data-column"),j=b.getColumnData(d.table,d.headers,k),q=b.getData(h,j,"columnSelector"),isNaN(i)&&i.length>0||"disable"===q||e.columnSelector_columns[k]&&"disable"===e.columnSelector_columns[k]?m.states[k]=null:(m.states[k]=p&&void 0!==p[k]&&null!==p[k]?p[k]:void 0!==e.columnSelector_columns[k]&&null!==e.columnSelector_columns[k]?e.columnSelector_columns[k]:"true"===q||"false"!==q,m.$column[k]=a(this),n.length&&(g=h.attr(e.columnSelector_name)||h.text().trim(),"function"==typeof e.columnSelector_layoutCustomizer&&(l=h.find("."+b.css.headerIn),g=e.columnSelector_layoutCustomizer(l.length?l:h,g,parseInt(k,10))),m.$wrapper[k]=a(e.columnSelector_layout.replace(/\{name\}/g,g)).appendTo(n),m.$checkbox[k]=m.$wrapper[k].find("input").add(m.$wrapper[k].filter("input")).attr("data-column",k).toggleClass(e.columnSelector_cssChecked,m.states[k]).prop("checked",m.states[k]).on("change",function(){if(!m.isInitializing){var b=a(this).attr("data-column");if(!c.checkChange(d,this.checked))return this.checked=!this.checked,!1;d.selector.states[b]=this.checked,c.updateCols(d,e)}}).change()))},checkChange:function(a,b){for(var c=a.widgetOptions,d=c.columnSelector_maxVisible,e=c.columnSelector_minVisible,f=a.selector.states,g=f.length,h=0;g-- >=0;)f[g]&&h++;return!(b&null!==d&&h>=d||!b&&null!==e&&h<=e)},setupBreakpoints:function(b,d){var e=b.selector;d.columnSelector_mediaquery&&(e.lastIndex=-1,c.updateBreakpoints(b,d),b.$table.off("updateAll.tscolsel").on("updateAll.tscolsel",function(){c.setupSelector(b,d),c.setupBreakpoints(b,d),c.updateBreakpoints(b,d),c.updateCols(b,d)})),e.$container.length&&(d.columnSelector_mediaquery&&(e.$auto=a(d.columnSelector_layout.replace(/\{name\}/g,d.columnSelector_mediaqueryName)).prependTo(e.$container),e.$auto.find("input").add(e.$auto.filter("input")).attr("data-column","auto").prop("checked",e.auto).toggleClass(d.columnSelector_cssChecked,e.auto).on("change",function(){c.updateAuto(b,d,a(this))}).change()),b.$table.off("update.tscolsel").on("update.tscolsel",function(){c.updateCols(b,d)}))},updateAuto:function(b,d,e){var f=b.selector;f.auto=e.prop("checked")||!1,a.each(f.$checkbox,function(a,b){b&&(b[0].disabled=f.auto,f.$wrapper[a].toggleClass("disabled",f.auto))}),d.columnSelector_mediaquery&&c.updateBreakpoints(b,d),c.updateCols(b,d),b.selector.$popup&&b.selector.$popup.find(".tablesorter-column-selector").html(f.$container.html()).find("input").each(function(){var b=a(this).attr("data-column");a(this).prop("checked","auto"===b?f.auto:f.states[b])}),c.saveValues(b,d),c.adjustColspans(b,d),f.auto&&b.$table.triggerHandler(d.columnSelector_updated)},addSelectors:function(a,b){var c=[],d=" col:nth-child("+b+")";return c.push(a+d+","+a+"_extra_table"+d),d=' tr:not(.hasSpan) th[data-column="'+(b-1)+'"]',c.push(a+d+","+a+"_extra_table"+d),d=" tr:not(.hasSpan) td:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),d=" tr td:not("+a+'HasSpan)[data-column="'+(b-1)+'"]',c.push(a+d+","+a+"_extra_table"+d),c},updateBreakpoints:function(d,e){var f,g,h,i,j=[],k=d.selector,l=d.namespace+"columnselector",m=[],n="";if(e.columnSelector_mediaquery&&!k.auto)return k.$breakpoints.prop("disabled",!0),void k.$style.prop("disabled",!1);if(e.columnSelector_mediaqueryHidden)for(h=0;h<d.columns;h++)g=b.getColumnData(d.table,d.headers,h),j[h+1]="false"===b.getData(d.$headerIndexed[h],g,"columnSelector"),j[h+1]&&(m=m.concat(c.addSelectors(l,h+1)));for(f=0;f<e.columnSelector_maxPriorities;f++)i=[],d.$headers.filter("["+e.columnSelector_priority+"="+(f+1)+"]").each(function(){h=parseInt(a(this).attr("data-column"),10)+1,j[h]||(i=i.concat(c.addSelectors(l,h)))}),i.length&&(m=m.concat(i),n+=c.queryBreak.replace(/\[size\]/g,e.columnSelector_breakpoints[f]).replace(/\[columns\]/g,i.join(",")));k.$style&&k.$style.prop("disabled",!0),m.length&&k.$breakpoints.prop("disabled",!1).text(c.queryAll.replace(/\[columns\]/g,m.join(","))+n)},updateCols:function(b,d){if(!(d.columnSelector_mediaquery&&b.selector.auto||b.selector.isInitializing)){var e,f=b.selector,g=[],h=b.namespace+"columnselector";f.$container.find("input[data-column]").filter('[data-column!="auto"]').each(function(){this.checked||(e=parseInt(a(this).attr("data-column"),10)+1,g=g.concat(c.addSelectors(h,e))),a(this).toggleClass(d.columnSelector_cssChecked,this.checked)}),d.columnSelector_mediaquery&&f.$breakpoints.prop("disabled",!0),f.$style&&f.$style.prop("disabled",!1).text(g.length?g.join(",")+" { display: none; }":""),c.saveValues(b,d),c.adjustColspans(b,d),b.$table.triggerHandler(d.columnSelector_updated)}},setUpColspan:function(d,e){var f,g,h,i=a(window),j=!1,k=d.$table.add(a(d.namespace+"_extra_table")).children().children("tr").children("th, td"),l=k.length;for(f=0;f<l;f++)(g=k[f].colSpan)>1&&(j=!0,k.eq(f).addClass(d.namespace.slice(1)+"columnselectorHasSpan").attr("data-col-span",g),b.computeColumnIndex(k.eq(f).parent().addClass("hasSpan")));j&&e.columnSelector_mediaquery&&(h=d.namespace+"columnselector",i.off(h).on("resize"+h,b.window_resize).on("resizeEnd"+h,function(){i.off("resize"+h,b.window_resize),c.adjustColspans(d,e),i.on("resize"+h,b.window_resize)}))},adjustColspans:function(b,c){var d,e,f,g,h,i,j=b.selector,k=c.filter_filteredRow||"filtered",l=c.columnSelector_mediaquery&&j.auto,m=b.$table.children("thead, tfoot").children().children().add(a(b.namespace+"_extra_table").children("thead, tfoot").children().children()),n=m.length;for(d=0;d<n;d++)if(i=m.eq(d),f=parseInt(i.attr("data-column"),10)||i[0].cellIndex,g=parseInt(i.attr("data-col-span"),10)||1,h=f+g,g>1){for(e=f;e<h;e++)(!l&&j.states[e]===!1||l&&b.$headerIndexed[e]&&!b.$headerIndexed[e].is(":visible"))&&g--;g?i.removeClass(k)[0].colSpan=g:i.addClass(k)}else void 0!==j.states[f]&&null!==j.states[f]&&i.toggleClass(k,!j.states[f])},saveValues:function(a,c){if(c.columnSelector_saveColumns&&b.storage){var d=a.selector;b.storage(a.$table[0],"tablesorter-columnSelector-auto",{auto:d.auto}),b.storage(a.$table[0],"tablesorter-columnSelector",d.states)}},attachTo:function(b,d){b=a(b)[0];var e,f,g,h=b.config,i=a(d);i.length&&h&&(i.find(".tablesorter-column-selector").length||i.append('<span class="tablesorter-column-selector"></span>'),e=h.selector,f=h.widgetOptions,i.find(".tablesorter-column-selector").html(e.$container.html()).find("input").each(function(){var b=a(this).attr("data-column"),c="auto"===b?e.auto:e.states[b];a(this).toggleClass(f.columnSelector_cssChecked,c).prop("checked",c)}),e.$popup=i.on("change","input",function(){if(!e.isInitializing){if(!c.checkChange(h,this.checked))return this.checked=!this.checked,!1;g=a(this).toggleClass(f.columnSelector_cssChecked,this.checked).attr("data-column"),e.$container.find('input[data-column="'+g+'"]').prop("checked",this.checked).trigger("change")}}))}};b.window_resize=function(){b.timer_resize&&clearTimeout(b.timer_resize),b.timer_resize=setTimeout(function(){a(window).trigger("resizeEnd")},250)},b.addWidget({id:"columnSelector",priority:10,options:{columnSelector_container:null,columnSelector_columns:{},columnSelector_saveColumns:!0,columnSelector_layout:'<label><input type="checkbox">{name}</label>',columnSelector_layoutCustomizer:null,columnSelector_name:"data-selector-name",columnSelector_mediaquery:!0,columnSelector_mediaqueryName:"Auto: ",columnSelector_mediaqueryState:!0,columnSelector_mediaqueryHidden:!1,columnSelector_maxVisible:null,columnSelector_minVisible:null,columnSelector_breakpoints:["20em","30em","40em","50em","60em","70em"],columnSelector_maxPriorities:6,columnSelector_priority:"data-priority",columnSelector_cssChecked:"checked",columnSelector_updated:"columnUpdate"},init:function(a,b,d,e){c.init(a,d,e)},remove:function(b,c,d,e){var f=c.selector;f&&f.$container.empty(),!e&&f&&(f.$popup&&f.$popup.empty(),f.$style.remove(),f.$breakpoints.remove(),a(c.namespace+"columnselectorHasSpan").removeClass(d.filter_filteredRow||"filtered"),c.$table.off("updateAll.tscolsel update.tscolsel"))}})}(jQuery);
-/*! Widget: stickyHeaders - updated 1/6/2017 (v2.28.4) */
-!function(a,b){"use strict";var c=a.tablesorter||{};a.extend(c.css,{sticky:"tablesorter-stickyHeader",stickyVis:"tablesorter-sticky-visible",stickyHide:"tablesorter-sticky-hidden",stickyWrap:"tablesorter-sticky-wrapper"}),c.addHeaderResizeEvent=function(b,c,d){if(b=a(b)[0],b.config){var e={timer:250},f=a.extend({},e,d),g=b.config,h=g.widgetOptions,i=function(a){var b,c,d,e,f,i,j=g.$headers.length;for(h.resize_flag=!0,c=[],b=0;b<j;b++)d=g.$headers.eq(b),e=d.data("savedSizes")||[0,0],f=d[0].offsetWidth,i=d[0].offsetHeight,f===e[0]&&i===e[1]||(d.data("savedSizes",[f,i]),c.push(d[0]));c.length&&a!==!1&&g.$table.triggerHandler("resize",[c]),h.resize_flag=!1};if(clearInterval(h.resize_timer),c)return h.resize_flag=!1,!1;i(!1),h.resize_timer=setInterval(function(){h.resize_flag||i()},f.timer)}},c.addWidget({id:"stickyHeaders",priority:54,options:{stickyHeaders:"",stickyHeaders_appendTo:null,stickyHeaders_attachTo:null,stickyHeaders_xScroll:null,stickyHeaders_yScroll:null,stickyHeaders_offset:0,stickyHeaders_filteredToTop:!0,stickyHeaders_cloneId:"-sticky",stickyHeaders_addResizeEvent:!0,stickyHeaders_includeCaption:!0,stickyHeaders_zIndex:2},format:function(d,e,f){if(!(e.$table.hasClass("hasStickyHeaders")||a.inArray("filter",e.widgets)>=0&&!e.$table.hasClass("hasFilters"))){var g,h,i,j,k=e.$table,l=a(f.stickyHeaders_attachTo),m=e.namespace+"stickyheaders ",n=a(f.stickyHeaders_yScroll||f.stickyHeaders_attachTo||b),o=a(f.stickyHeaders_xScroll||f.stickyHeaders_attachTo||b),p=k.children("thead:first"),q=p.children("tr").not(".sticky-false").children(),r=k.children("tfoot"),s=isNaN(f.stickyHeaders_offset)?a(f.stickyHeaders_offset):"",t=s.length?s.height()||0:parseInt(f.stickyHeaders_offset,10)||0,u=k.parent().closest("."+c.css.table).hasClass("hasStickyHeaders")?k.parent().closest("table.tablesorter")[0].config.widgetOptions.$sticky.parent():[],v=u.length?u.height():0,w=f.$sticky=k.clone().addClass("containsStickyHeaders "+c.css.sticky+" "+f.stickyHeaders+" "+e.namespace.slice(1)+"_extra_table").wrap('<div class="'+c.css.stickyWrap+'">'),x=w.parent().addClass(c.css.stickyHide).css({position:l.length?"absolute":"fixed",padding:parseInt(w.parent().parent().css("padding-left"),10),top:t+v,left:0,visibility:"hidden",zIndex:f.stickyHeaders_zIndex||2}),y=w.children("thead:first"),z="",A=0,B=function(a,c){var d,e,f,g,h,i=a.filter(":visible"),j=i.length;for(d=0;d<j;d++)g=c.filter(":visible").eq(d),h=i.eq(d),"border-box"===h.css("box-sizing")?e=h.outerWidth():"collapse"===g.css("border-collapse")?b.getComputedStyle?e=parseFloat(b.getComputedStyle(h[0],null).width):(f=parseFloat(h.css("border-width")),e=h.outerWidth()-parseFloat(h.css("padding-left"))-parseFloat(h.css("padding-right"))-f):e=h.width(),g.css({width:e,"min-width":e,"max-width":e})},C=function(){t=s.length?s.height()||0:parseInt(f.stickyHeaders_offset,10)||0,A=0,x.css({left:l.length?parseInt(l.css("padding-left"),10)||0:k.offset().left-parseInt(k.css("margin-left"),10)-o.scrollLeft()-A,width:k.outerWidth()}),B(k,w),B(q,j)},D=function(b){if(k.is(":visible")){v=u.length?u.offset().top-n.scrollTop()+u.height():0;var d=k.offset(),e=a.isWindow(n[0]),g=a.isWindow(o[0]),h=l.length?e?n.scrollTop():n.offset().top:n.scrollTop(),i=f.stickyHeaders_includeCaption?0:k.children("caption").height()||0,j=h+t+v-i,m=k.height()-(x.height()+(r.height()||0))-i,p=j>d.top&&j<d.top+m?"visible":"hidden",q={visibility:p};l.length&&(q.top=e?j-l.offset().top:l.scrollTop()),g&&(q.left=k.offset().left-parseInt(k.css("margin-left"),10)-o.scrollLeft()-A),u.length&&(q.top=(q.top||0)+t+v),x.removeClass(c.css.stickyVis+" "+c.css.stickyHide).addClass("visible"===p?c.css.stickyVis:c.css.stickyHide).css(q),(p!==z||b)&&(C(),z=p)}};if(l.length&&!l.css("position")&&l.css("position","relative"),w.attr("id")&&(w[0].id+=f.stickyHeaders_cloneId),w.find("thead:gt(0), tr.sticky-false").hide(),w.find("tbody, tfoot").remove(),w.find("caption").toggle(f.stickyHeaders_includeCaption),j=y.children().children(),w.css({height:0,width:0,margin:0}),j.find("."+c.css.resizer).remove(),k.addClass("hasStickyHeaders").bind("pagerComplete"+m,function(){C()}),c.bindEvents(d,y.children().children("."+c.css.header)),f.stickyHeaders_appendTo?a(f.stickyHeaders_appendTo).append(x):k.after(x),e.onRenderHeader)for(i=y.children("tr").children(),h=i.length,g=0;g<h;g++)e.onRenderHeader.apply(i.eq(g),[g,e,w]);o.add(n).unbind("scroll resize ".split(" ").join(m).replace(/\s+/g," ")).bind("scroll resize ".split(" ").join(m),function(a){D("resize"===a.type)}),e.$table.unbind("stickyHeadersUpdate"+m).bind("stickyHeadersUpdate"+m,function(){D(!0)}),f.stickyHeaders_addResizeEvent&&c.addHeaderResizeEvent(d),k.hasClass("hasFilters")&&f.filter_columnFilters&&(k.bind("filterEnd"+m,function(){var d=a(document.activeElement).closest("td"),g=d.parent().children().index(d);x.hasClass(c.css.stickyVis)&&f.stickyHeaders_filteredToTop&&(b.scrollTo(0,k.position().top),g>=0&&e.$filters&&e.$filters.eq(g).find("a, select, input").filter(":visible").focus())}),c.filter.bindSearch(k,j.find("."+c.css.filter)),f.filter_hideFilters&&c.filter.hideFilters(e,w)),f.stickyHeaders_addResizeEvent&&k.bind("resize"+e.namespace+"stickyheaders",function(){C()}),k.triggerHandler("stickyHeadersInit")}},remove:function(d,e,f){var g=e.namespace+"stickyheaders ";e.$table.removeClass("hasStickyHeaders").unbind("pagerComplete resize filterEnd stickyHeadersUpdate ".split(" ").join(g).replace(/\s+/g," ")).next("."+c.css.stickyWrap).remove(),f.$sticky&&f.$sticky.length&&f.$sticky.remove(),a(b).add(f.stickyHeaders_xScroll).add(f.stickyHeaders_yScroll).add(f.stickyHeaders_attachTo).unbind("scroll resize ".split(" ").join(g).replace(/\s+/g," ")),c.addHeaderResizeEvent(d,!0)}})}(jQuery,window);
+!function(a){"use strict";var b=a.tablesorter,c=".tscolsel",d=b.columnSelector={queryAll:"@media only all { [columns] { display: none; } } ",queryBreak:"@media all and (min-width: [size]) { [columns] { display: table-cell; } } ",init:function(b,e,f){var g,h;return g=a(f.columnSelector_layout),g.find("input").add(g.filter("input")).length?(e.$table.addClass(e.namespace.slice(1)+"columnselector"),h=e.selector={$container:a(f.columnSelector_container||"<div>")},h.$style=a("<style></style>").prop("disabled",!0).appendTo("head"),h.$breakpoints=a("<style></style>").prop("disabled",!0).appendTo("head"),h.isInitializing=!0,d.setUpColspan(e,f),d.setupSelector(e,f),f.columnSelector_mediaquery&&d.setupBreakpoints(e,f),h.isInitializing=!1,h.$container.length?d.updateCols(e,f):e.debug&&console.warn("ColumnSelector: >> container not found"),void e.$table.off("refreshColumnSelector"+c).on("refreshColumnSelector"+c,function(a,b,c){d.refreshColumns(this.config,b,c)})):void(e.debug&&console.error("ColumnSelector: >> ERROR: Column Selector aborting, no input found in the layout! ***"))},refreshColumns:function(b,c,e){var f,g,h,i,j=b.selector,k=a.isArray(e||c),l=b.widgetOptions;if("undefined"!=typeof c&&null!==c&&j.$container.length){if("selectors"===c&&(j.$container.empty(),d.setupSelector(b,l),d.setupBreakpoints(b,l),"undefined"==typeof e&&null!==e&&(e=j.auto)),k)for(g=e||c,a.each(g,function(a,b){g[a]=parseInt(b,10)}),f=0;f<b.columns;f++)i=a.inArray(f,g)>=0,h=j.$container.find("input[data-column="+f+"]"),h.length&&(h.prop("checked",i),j.states[f]=i);i=e===!0||c===!0||"auto"===c&&e!==!1,h=j.$container.find('input[data-column="auto"]').prop("checked",i),d.updateAuto(b,l,h)}else d.updateBreakpoints(b,l),d.updateCols(b,l);d.saveValues(b,l),d.adjustColspans(b,l)},setupSelector:function(c,e){var f,g,h,i,j,k,l=c.selector,m=l.$container,n=e.columnSelector_saveColumns&&b.storage,o=n?b.storage(c.table,"tablesorter-columnSelector"):[],p=n?b.storage(c.table,"tablesorter-columnSelector-auto"):{};for(l.auto=a.isEmptyObject(p)||"boolean"!==a.type(p.auto)?e.columnSelector_mediaqueryState:p.auto,l.states=[],l.$column=[],l.$wrapper=[],l.$checkbox=[],f=0;f<c.columns;f++)h=c.$headerIndexed[f],i=h.attr(e.columnSelector_priority)||1,k=h.attr("data-column"),j=b.getColumnData(c.table,c.headers,k),p=b.getData(h,j,"columnSelector"),isNaN(i)&&i.length>0||"disable"===p||e.columnSelector_columns[k]&&"disable"===e.columnSelector_columns[k]?l.states[k]=null:(l.states[k]=o&&"undefined"!=typeof o[k]&&null!==o[k]?o[k]:"undefined"!=typeof e.columnSelector_columns[k]&&null!==e.columnSelector_columns[k]?e.columnSelector_columns[k]:"true"===p||"false"!==p,l.$column[k]=a(this),g=h.attr(e.columnSelector_name)||h.text(),m.length&&(l.$wrapper[k]=a(e.columnSelector_layout.replace(/\{name\}/g,g)).appendTo(m),l.$checkbox[k]=l.$wrapper[k].find("input").add(l.$wrapper[k].filter("input")).attr("data-column",k).toggleClass(e.columnSelector_cssChecked,l.states[k]).prop("checked",l.states[k]).on("change",function(){if(!l.isInitializing){var b=a(this).attr("data-column");if(!d.checkChange(c,this.checked))return this.checked=!this.checked,!1;c.selector.states[b]=this.checked,d.updateCols(c,e)}}).change()))},checkChange:function(a,b){for(var c=a.widgetOptions,d=c.columnSelector_maxVisible,e=c.columnSelector_minVisible,f=a.selector.states,g=f.length,h=0;g-- >=0;)f[g]&&h++;return!(b&null!==d&&h>=d||!b&&null!==e&&h<=e)},setupBreakpoints:function(b,e){var f=b.selector;e.columnSelector_mediaquery&&(f.lastIndex=-1,d.updateBreakpoints(b,e),b.$table.off("updateAll"+c).on("updateAll"+c,function(){d.setupSelector(b,e),d.setupBreakpoints(b,e),d.updateBreakpoints(b,e),d.updateCols(b,e)})),f.$container.length&&(e.columnSelector_mediaquery&&(f.$auto=a(e.columnSelector_layout.replace(/\{name\}/g,e.columnSelector_mediaqueryName)).prependTo(f.$container),f.$auto.find("input").add(f.$auto.filter("input")).attr("data-column","auto").prop("checked",f.auto).toggleClass(e.columnSelector_cssChecked,f.auto).on("change",function(){d.updateAuto(b,e,a(this))}).change()),b.$table.off("update"+c).on("update"+c,function(){d.updateCols(b,e)}))},updateAuto:function(b,c,e){var f=b.selector;f.auto=e.prop("checked")||!1,a.each(f.$checkbox,function(a,b){b&&(b[0].disabled=f.auto,f.$wrapper[a].toggleClass("disabled",f.auto))}),c.columnSelector_mediaquery&&d.updateBreakpoints(b,c),d.updateCols(b,c),b.selector.$popup&&b.selector.$popup.find(".tablesorter-column-selector").html(f.$container.html()).find("input").each(function(){var b=a(this).attr("data-column");a(this).prop("checked","auto"===b?f.auto:f.states[b])}),d.saveValues(b,c),d.adjustColspans(b,c),f.auto&&b.$table.triggerHandler(c.columnSelector_updated)},addSelectors:function(a,b){var c=[],d=" col:nth-child("+b+")";return c.push(a+d+","+a+"_extra_table"+d),d=" tr:not(.hasSpan) th:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),d=" tr:not(.hasSpan) td:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),d=" tr td:not("+a+'HasSpan)[data-column="'+(b-1)+'"]',c.push(a+d+","+a+"_extra_table"+d),c},updateBreakpoints:function(c,e){var f,g,h,i,j=[],k=c.selector,l=c.namespace+"columnselector",m=[],n="";if(e.columnSelector_mediaquery&&!k.auto)return k.$breakpoints.prop("disabled",!0),void k.$style.prop("disabled",!1);if(e.columnSelector_mediaqueryHidden)for(h=0;h<c.columns;h++)g=b.getColumnData(c.table,c.headers,h),j[h+1]="false"===b.getData(c.$headerIndexed[h],g,"columnSelector"),j[h+1]&&(m=m.concat(d.addSelectors(l,h+1)));for(f=0;f<e.columnSelector_maxPriorities;f++)i=[],c.$headers.filter("["+e.columnSelector_priority+"="+(f+1)+"]").each(function(){h=parseInt(a(this).attr("data-column"),10)+1,j[h]||(i=i.concat(d.addSelectors(l,h)))}),i.length&&(m=m.concat(i),n+=d.queryBreak.replace(/\[size\]/g,e.columnSelector_breakpoints[f]).replace(/\[columns\]/g,i.join(",")));k.$style&&k.$style.prop("disabled",!0),m.length&&k.$breakpoints.prop("disabled",!1).text(d.queryAll.replace(/\[columns\]/g,m.join(","))+n)},updateCols:function(b,c){if(!(c.columnSelector_mediaquery&&b.selector.auto||b.selector.isInitializing)){var e,f=b.selector,g=[],h=b.namespace+"columnselector";f.$container.find("input[data-column]").filter('[data-column!="auto"]').each(function(){this.checked||(e=parseInt(a(this).attr("data-column"),10)+1,g=g.concat(d.addSelectors(h,e))),a(this).toggleClass(c.columnSelector_cssChecked,this.checked)}),c.columnSelector_mediaquery&&f.$breakpoints.prop("disabled",!0),f.$style&&f.$style.prop("disabled",!1).text(g.length?g.join(",")+" { display: none; }":""),d.saveValues(b,c),d.adjustColspans(b,c),b.$table.triggerHandler(c.columnSelector_updated)}},setUpColspan:function(c,e){var f,g,h,i=a(window),j=!1,k=c.$table.add(a(c.namespace+"_extra_table")).children().children("tr").children("th, td"),l=k.length;for(f=0;f<l;f++)g=k[f].colSpan,g>1&&(j=!0,k.eq(f).addClass(c.namespace.slice(1)+"columnselectorHasSpan").attr("data-col-span",g),b.computeColumnIndex(k.eq(f).parent().addClass("hasSpan")));j&&e.columnSelector_mediaquery&&(h=c.namespace+"columnselector",i.off(h).on("resize"+h,b.window_resize).on("resizeEnd"+h,function(){i.off("resize"+h,b.window_resize),d.adjustColspans(c,e),i.on("resize"+h,b.window_resize)}))},adjustColspans:function(b,c){var d,e,f,g,h,i,j=b.selector,k=c.filter_filteredRow||"filtered",l=c.columnSelector_mediaquery&&j.auto,m=b.$table.children("thead, tfoot").children().children().add(a(b.namespace+"_extra_table").children("thead, tfoot").children().children()),n=m.length;for(d=0;d<n;d++)if(i=m.eq(d),f=parseInt(i.attr("data-column"),10)||i[0].cellIndex,g=parseInt(i.attr("data-col-span"),10)||1,h=f+g,g>1){for(e=f;e<h;e++)(!l&&j.states[e]===!1||l&&b.$headerIndexed[e]&&!b.$headerIndexed[e].is(":visible"))&&g--;g?i.removeClass(k)[0].colSpan=g:i.addClass(k)}else"undefined"!=typeof j.states[f]&&null!==j.states[f]&&i.toggleClass(k,!j.states[f])},saveValues:function(a,c){if(c.columnSelector_saveColumns&&b.storage){var d=a.selector;b.storage(a.$table[0],"tablesorter-columnSelector-auto",{auto:d.auto}),b.storage(a.$table[0],"tablesorter-columnSelector",d.states)}},attachTo:function(b,c){b=a(b)[0];var e,f,g,h=b.config,i=a(c);i.length&&h&&(i.find(".tablesorter-column-selector").length||i.append('<span class="tablesorter-column-selector"></span>'),e=h.selector,f=h.widgetOptions,i.find(".tablesorter-column-selector").html(e.$container.html()).find("input").each(function(){var b=a(this).attr("data-column"),c="auto"===b?e.auto:e.states[b];a(this).toggleClass(f.columnSelector_cssChecked,c).prop("checked",c)}),e.$popup=i.on("change","input",function(){if(!e.isInitializing){if(!d.checkChange(h,this.checked))return this.checked=!this.checked,!1;g=a(this).toggleClass(f.columnSelector_cssChecked,this.checked).attr("data-column"),e.$container.find('input[data-column="'+g+'"]').prop("checked",this.checked).trigger("change")}}))}};b.window_resize=function(){b.timer_resize&&clearTimeout(b.timer_resize),b.timer_resize=setTimeout(function(){a(window).trigger("resizeEnd")},250)},b.addWidget({id:"columnSelector",priority:10,options:{columnSelector_container:null,columnSelector_columns:{},columnSelector_saveColumns:!0,columnSelector_layout:'<label><input type="checkbox">{name}</label>',columnSelector_name:"data-selector-name",columnSelector_mediaquery:!0,columnSelector_mediaqueryName:"Auto: ",columnSelector_mediaqueryState:!0,columnSelector_mediaqueryHidden:!1,columnSelector_maxVisible:null,columnSelector_minVisible:null,columnSelector_breakpoints:["20em","30em","40em","50em","60em","70em"],columnSelector_maxPriorities:6,columnSelector_priority:"data-priority",columnSelector_cssChecked:"checked",columnSelector_updated:"columnUpdate"},init:function(a,b,c,e){d.init(a,c,e)},remove:function(b,d,e,f){var g=d.selector;g&&g.$container.empty(),!f&&g&&(g.$popup&&g.$popup.empty(),g.$style.remove(),g.$breakpoints.remove(),a(d.namespace+"columnselectorHasSpan").removeClass(e.filter_filteredRow||"filtered"),d.$table.off("updateAll"+c+" update"+c))}})}(jQuery);
 /**
  * Timeago is a jQuery plugin that makes it easy to support automatically
  * updating fuzzy timestamps (e.g. "4 minutes ago" or "about 1 day ago").
