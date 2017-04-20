@@ -367,7 +367,7 @@ def wanted_episodes(show, from_date):
     allowed_qualities, preferred_qualities = show.current_qualities
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
-    log.debug(u'Seeing if we need anything from ', show.name)
+    log.debug(u'Seeing if we need anything from {0}', show.name)
     con = db.DBConnection()
 
     sql_results = con.select(
@@ -549,7 +549,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 log.error(u'Authentication error: {0}', ex(error))
                 break
             except socket_timeout as error:
-                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {0!r}',
+                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {1!r}',
                           cur_provider.name, ex(error))
                 break
             except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as error:
