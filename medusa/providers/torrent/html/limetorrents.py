@@ -56,8 +56,9 @@ class LimeTorrentsProvider(TorrentProvider):
         self.urls = {
             'update': urljoin(self.url, '/post/updatestats.php'),
             'search': urljoin(self.url, '/search/tv/{query}/'),
-            'rss': urljoin(self.url, '/browse-torrents/TV-shows/date/{page}/'),
-            'tv': urljoin(self.url, '/browse-torrents/TV-shows/'),
+            # Original rss feed url, temporary offline. Replaced by the main Tv-show page.
+            # 'rss': urljoin(self.url, '/browse-torrents/TV-shows/date/{page}/'),
+            'rss': urljoin(self.url, '/browse-torrents/TV-shows/'),
         }
 
         # Proper Strings
@@ -97,8 +98,8 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     search_url = self.urls['search'].format(query=search_string)
                 else:
-                    search_url = self.urls['tv']
-                    #search_url = self.urls['rss'].format(page=1)
+                    # search_url = self.urls['rss'].format(page=1)
+                    search_url = self.urls['rss']
 
                 response = self.get_url(search_url, returns='response')
                 if not response or not response.text:
