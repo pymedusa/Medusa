@@ -1,54 +1,50 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
 
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Daily searcher module."""
 
 from __future__ import unicode_literals
 
+import logging
 import threading
 from datetime import date, datetime, timedelta
 
-from .queue import DailySearchQueueItem
-from .. import app, common, logger
-from ..db import DBConnection
-from ..helper.common import try_int
-from ..helper.exceptions import MultipleShowObjectsException
-from ..network_timezones import app_timezone, network_dict, parse_date_time, update_network_dict
-from ..show.show import Show
+from medusa import app, common
+from medusa.db import DBConnection
+from medusa.helper.common import try_int
+from medusa.helper.exceptions import MultipleShowObjectsException
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.network_timezones import (
+    app_timezone,
+    network_dict,
+    parse_date_time,
+    update_network_dict,
+)
+from medusa.search.queue import DailySearchQueueItem
+from medusa.show.show import Show
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class DailySearcher(object):  # pylint:disable=too-few-public-methods
     """Daily search class."""
 
     def __init__(self):
+        """Initialize the class."""
         self.lock = threading.Lock()
         self.amActive = False
 
     def run(self, force=False):  # pylint:disable=too-many-branches
         """
-        Runs the daily searcher, queuing selected episodes for search
+        Run the daily searcher, queuing selected episodes for search.
 
         :param force: Force search
         """
         if self.amActive:
-            logger.log('Daily search is still running, not starting it again', logger.DEBUG)
+            log.debug('Daily search is still running, not starting it again')
             return
         elif app.forced_search_queue_scheduler.action.is_forced_search_in_progress() and not force:
-            logger.log('Manual search is running. Can\'t start Daily search', logger.WARNING)
+            log.warning('Manual search is running. Unable to start Daily search')
             return
 
         self.amActive = True
@@ -73,8 +69,8 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         show = None
 
         for db_episode in episodes_from_db:
+            show_id = int(db_episode[b'showid'])
             try:
-                show_id = int(db_episode[b'showid'])
                 if not show or show_id != show.indexerid:
                     show = Show.find(app.showList, show_id)
 
@@ -83,7 +79,8 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
                     continue
 
             except MultipleShowObjectsException:
-                logger.log('ERROR: expected to find a single show matching {id}'.format(id=show_id))
+                log.info('ERROR: expected to find a single show matching {id}',
+                         {'id': show_id})
                 continue
 
             if show.airs and show.network:
@@ -98,11 +95,13 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
             cur_ep = show.get_episode(db_episode[b'season'], db_episode[b'episode'])
             with cur_ep.lock:
                 cur_ep.status = show.default_ep_status if cur_ep.season else common.SKIPPED
-                logger.log('Setting status ({status}) for show airing today: {name} {special}'.format(
-                    name=cur_ep.pretty_name(),
-                    status=common.statusStrings[cur_ep.status],
-                    special='(specials are not supported)' if not cur_ep.season else ''
-                ))
+                log.info(
+                    'Setting status ({status}) for show airing today: {name} {special}', {
+                        'name': cur_ep.pretty_name(),
+                        'status': common.statusStrings[cur_ep.status],
+                        'special': '(specials are not supported)' if not cur_ep.season else '',
+                    }
+                )
                 new_releases.append(cur_ep.get_sql())
 
         if new_releases:

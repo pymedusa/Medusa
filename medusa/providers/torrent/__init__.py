@@ -54,7 +54,6 @@ from .rss import (
 )
 
 from .xml import (
-    bitsnoop,
     torrentz2,
 )
 
@@ -64,5 +63,5 @@ __all__ = [
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
-    'bitsnoop', 'torrentz2', 'animetorrents'
+    'torrentz2', 'animetorrents'
 ]

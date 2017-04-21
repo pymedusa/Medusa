@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 
 import re
 
-from ..helper.common import try_int
-from ..recompiled import tags
+from medusa.helper.common import try_int
+from medusa.recompiled import tags
 
 
 class EpisodeTags(object):

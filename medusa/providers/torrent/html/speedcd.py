@@ -50,7 +50,10 @@ class SpeedCDProvider(TorrentProvider):
         # URLs
         self.url = 'https://speed.cd'
         self.urls = {
-            'login': urljoin(self.url, 'takeElogin.php'),
+            'login': [urljoin(self.url, 'take_login.php'),
+                      urljoin(self.url, 'takeElogin.php'),
+                      urljoin(self.url, 'takelogin.php')
+                      ],
             'search': urljoin(self.url, 'browse.php'),
         }
 
@@ -192,16 +195,19 @@ class SpeedCDProvider(TorrentProvider):
             'password': self.password,
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            return False
+        for login_url in self.urls['login']:
+            response = self.get_url(login_url, post_data=login_params, returns='response')
+            if not response or not response.text:
+                logger.log('Unable to connect to provider using login URL: {url}'.format(url=login_url), logger.DEBUG)
+                continue
 
-        if re.search('Incorrect username or Password. Please try again.', response.text):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            return False
+            if re.search('Incorrect username or Password. Please try again.', response.text):
+                logger.log('Invalid username or password. Check your settings', logger.WARNING)
+                return False
+            return True
 
-        return True
+        logger.log('Unable to connect to provider', logger.WARNING)
+        return
 
 
 provider = SpeedCDProvider()

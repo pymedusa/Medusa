@@ -4,6 +4,7 @@ from datetime import datetime
 
 import medusa.logger as sut
 from medusa.logger import DEBUG, INFO, LogLine, WARNING
+from medusa.logger.adapters.style import BraceAdapter
 import pytest
 
 from six import text_type
@@ -35,6 +36,33 @@ class TestStandardLoggingApi(object):
         message = p['message']
         args = p['args']
         kwargs = p['kwargs']
+
+        # When
+        logger.error(message, *args, **kwargs)
+
+        # Then
+        loglines = list(read_loglines)
+        assert len(loglines) == 1
+        assert loglines[0].message == p['expected']
+
+    @pytest.mark.parametrize('p', [
+        {  # p0: curly brackets style
+            'message': 'This is an example: {arg1} {arg2}',
+            'args': [{'arg1': 'hello', 'arg2': 'world'}],
+            'expected': 'This is an example: hello world'
+        },
+        {  # p1: Regression
+            'message': 'This is an example: {json}',
+            'args': [{'json': {'a': 1}}],
+            'expected': "This is an example: {'a': 1}"
+        },
+    ])
+    def test_logger__brace_adapter(self, logger, read_loglines, p):
+        # Given
+        logger = BraceAdapter(logger)
+        message = p['message']
+        args = p['args']
+        kwargs = p.get('kwargs', {})
 
         # When
         logger.error(message, *args, **kwargs)

@@ -28,7 +28,7 @@ def episodes():
     # pylint: disable=too-many-branches,too-many-statements,too-many-locals
     rebulk = Rebulk()
     rebulk.regex_defaults(flags=re.IGNORECASE).string_defaults(ignore_case=True)
-    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'])
+    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator', 'episodeMarker', 'seasonMarker'])
 
     def episodes_season_chain_breaker(matches):
         """
@@ -58,10 +58,12 @@ def episodes():
         :return:
         """
         if match.name == 'episode' and other.name in \
-                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date', 'year']:
+                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date', 'year'] \
+                and 'weak-audio_channels' not in other.tags:
             return match
         if match.name == 'season' and other.name in \
-                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date']:
+                ['screen_size', 'video_codec', 'audio_codec', 'audio_channels', 'container', 'date'] \
+                and 'weak-audio_channels' not in other.tags:
             return match
         if match.name in ['season', 'episode'] and other.name in ['season', 'episode'] \
                 and match.initiator != other.initiator:
@@ -75,8 +77,10 @@ def episodes():
     season_episode_seps.extend(seps)
     season_episode_seps.extend(['x', 'X', 'e', 'E'])
 
-    season_words = ['season', 'saison', 'serie', 'seasons', 'saisons', 'series']
-    episode_words = ['episode', 'episodes', 'eps', 'ep']
+    season_words = ['season', 'saison', 'seizoen', 'serie', 'seasons', 'saisons', 'series',
+                    'tem', 'temp', 'temporada', 'temporadas', 'stagione']
+    episode_words = ['episode', 'episodes', 'eps', 'ep', 'episodio',
+                     'episodios', 'capitulo', 'capitulos']
     of_words = ['of', 'sur']
     all_words = ['All']
     season_markers = ["S"]
@@ -140,8 +144,8 @@ def episodes():
                  validate_all=True,
                  validator={'__parent__': ordering_validator},
                  conflict_solver=season_episode_conflict_solver) \
-        .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)@?' +
-               build_or_pattern(episode_markers) + r'@?(?P<episode>\d+)',
+        .regex(build_or_pattern(season_markers, name='seasonMarker') + r'(?P<season>\d+)@?' +
+               build_or_pattern(episode_markers, name='episodeMarker') + r'@?(?P<episode>\d+)',
                validate_all=True,
                validator={'__parent__': seps_before}).repeater('+') \
         .regex(build_or_pattern(episode_markers + discrete_separators + range_separators,
@@ -150,13 +154,13 @@ def episodes():
                r'(?P<episode>\d+)').repeater('*') \
         .chain() \
         .regex(r'(?P<season>\d+)@?' +
-               build_or_pattern(season_ep_markers) +
+               build_or_pattern(season_ep_markers, name='episodeMarker') +
                r'@?(?P<episode>\d+)',
                validate_all=True,
                validator={'__parent__': seps_before}) \
         .chain() \
         .regex(r'(?P<season>\d+)@?' +
-               build_or_pattern(season_ep_markers) +
+               build_or_pattern(season_ep_markers, name='episodeMarker') +
                r'@?(?P<episode>\d+)',
                validate_all=True,
                validator={'__parent__': seps_before}) \
@@ -165,7 +169,7 @@ def episodes():
                                 escape=True) +
                r'(?P<episode>\d+)').repeater('*') \
         .chain() \
-        .regex(build_or_pattern(season_markers) + r'(?P<season>\d+)',
+        .regex(build_or_pattern(season_markers, name='seasonMarker') + r'(?P<season>\d+)',
                validate_all=True,
                validator={'__parent__': seps_before}) \
         .regex(build_or_pattern(season_markers + discrete_separators + range_separators,
@@ -177,9 +181,6 @@ def episodes():
     for episode_detail in ('Special', 'Bonus', 'Omake', 'Ova', 'Oav', 'Pilot', 'Unaired'):
         rebulk.string(episode_detail, value=episode_detail, name='episode_details')
     rebulk.regex(r'Extras?', name='episode_details', value='Extras')
-
-    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'],
-                    validate_all=True, validator={'__parent__': seps_surround}, children=True, private_parent=True)
 
     def validate_roman(match):
         """
@@ -193,8 +194,8 @@ def episodes():
             return True
         return seps_surround(match)
 
-    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'], validate_all=True,
-                    validator={'__parent__': seps_surround}, children=True, private_parent=True,
+    rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator', 'episodeMarker', 'seasonMarker'],
+                    validate_all=True, validator={'__parent__': seps_surround}, children=True, private_parent=True,
                     conflict_solver=season_episode_conflict_solver)
 
     rebulk.chain(abbreviations=[alt_dash],
@@ -203,19 +204,19 @@ def episodes():
                             'season': validate_roman,
                             'count': validate_roman}) \
         .defaults(validator=None) \
-        .regex(build_or_pattern(season_words) + '@?(?P<season>' + numeral + ')') \
+        .regex(build_or_pattern(season_words, name='seasonMarker') + '@?(?P<season>' + numeral + ')') \
         .regex(r'' + build_or_pattern(of_words) + '@?(?P<count>' + numeral + ')').repeater('?') \
-        .regex(r'@?(?P<seasonSeparator>' +
-               build_or_pattern(range_separators + discrete_separators + ['@'], escape=True) +
-               r')@?(?P<season>\d+)').repeater('*')
+        .regex(r'@?' + build_or_pattern(range_separators + discrete_separators + ['@'],
+                                        name='seasonSeparator', escape=True) +
+               r'@?(?P<season>\d+)').repeater('*')
 
-    rebulk.regex(build_or_pattern(episode_words) + r'-?(?P<episode>\d+)' +
+    rebulk.regex(build_or_pattern(episode_words, name='episodeMarker') + r'-?(?P<episode>\d+)' +
                  r'(?:v(?P<version>\d+))?' +
                  r'(?:-?' + build_or_pattern(of_words) + r'-?(?P<count>\d+))?',  # Episode 4
-                 abbreviations=[dash], formatter=int,
+                 abbreviations=[dash], formatter={'episode': int, 'version': int, 'count': int},
                  disabled=lambda context: context.get('type') == 'episode')
 
-    rebulk.regex(build_or_pattern(episode_words) + r'-?(?P<episode>' + numeral + ')' +
+    rebulk.regex(build_or_pattern(episode_words, name='episodeMarker') + r'-?(?P<episode>' + numeral + ')' +
                  r'(?:v(?P<version>\d+))?' +
                  r'(?:-?' + build_or_pattern(of_words) + r'-?(?P<count>\d+))?',  # Episode 4
                  abbreviations=[dash],
@@ -263,7 +264,7 @@ def episodes():
     # TODO: Enhance rebulk for validator to be used globally (season_episode_validator)
     rebulk.chain(formatter={'episode': int, 'version': int}) \
         .defaults(validator=None) \
-        .regex(r'e(?P<episode>\d{1,4})') \
+        .regex(r'(?P<episodeMarker>e)(?P<episode>\d{1,4})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>e|x|-)(?P<episode>\d{1,4})').repeater('*')
 
@@ -273,6 +274,14 @@ def episodes():
         .regex(r'ep-?(?P<episode>\d{1,4})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>ep|e|x|-)(?P<episode>\d{1,4})').repeater('*')
+
+    # cap 112, cap 112_114
+    rebulk.chain(abbreviations=[dash],
+                 tags=['see-pattern'],
+                 formatter={'season': int, 'episode': int}) \
+        .defaults(validator=None) \
+        .regex(r'(?P<seasonMarker>cap)-?(?P<season>\d{1,2})(?P<episode>\d{2})') \
+        .regex(r'(?P<episodeSeparator>-)(?P<season>\d{1,2})(?P<episode>\d{2})').repeater('?')
 
     # 102, 0102
     rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode', 'weak-duplicate'],
@@ -296,7 +305,8 @@ def episodes():
 
     rebulk.regex(r'Minisodes?', name='episode_format', value="Minisode")
 
-    rebulk.rules(EpisodeNumberSeparatorRange(range_separators),
+    rebulk.rules(RemoveInvalidSeason, RemoveInvalidEpisode,
+                 SeePatternRange(range_separators + ['_']), EpisodeNumberSeparatorRange(range_separators),
                  SeasonSeparatorRange(range_separators), RemoveWeakIfMovie, RemoveWeakIfSxxExx,
                  RemoveWeakDuplicate, EpisodeDetailValidator, RemoveDetachedEpisodeNumber, VersionValidator,
                  CountValidator, EpisodeSingleDigitValidator)
@@ -330,6 +340,41 @@ class CountValidator(Rule):
         return to_remove, episode_count, season_count
 
 
+class SeePatternRange(Rule):
+    """
+    Create matches for episode range for SEE pattern. E.g.: Cap.102_104
+    """
+    priority = 128
+    consequence = [RemoveMatch, AppendMatch]
+
+    def __init__(self, range_separators):
+        super(SeePatternRange, self).__init__()
+        self.range_separators = range_separators
+
+    def when(self, matches, context):
+        to_remove = []
+        to_append = []
+
+        for separator in matches.tagged('see-pattern', lambda m: m.name == 'episodeSeparator'):
+            previous_match = matches.previous(separator, lambda m: m.name == 'episode' and 'see-pattern' in m.tags, 0)
+            next_match = matches.next(separator, lambda m: m.name == 'season' and 'see-pattern' in m.tags, 0)
+            if not next_match:
+                continue
+
+            next_match = matches.next(next_match, lambda m: m.name == 'episode' and 'see-pattern' in m.tags, 0)
+            if previous_match and next_match and separator.value in self.range_separators:
+                to_remove.append(next_match)
+
+                for episode_number in range(previous_match.value + 1, next_match.value + 1):
+                    match = copy.copy(next_match)
+                    match.value = episode_number
+                    to_append.append(match)
+
+            to_remove.append(separator)
+
+        return to_remove, to_append
+
+
 class AbstractSeparatorRange(Rule):
     """
     Remove separator matches and create matches for season range.
@@ -351,10 +396,12 @@ class AbstractSeparatorRange(Rule):
             next_match = matches.next(separator, lambda match: match.name == self.property_name, 0)
 
             if previous_match and next_match and separator.value in self.range_separators:
+                to_remove.append(next_match)
                 for episode_number in range(previous_match.value + 1, next_match.value):
                     match = copy.copy(next_match)
                     match.value = episode_number
                     to_append.append(match)
+                to_append.append(next_match)
             to_remove.append(separator)
 
         previous_match = None
@@ -432,6 +479,71 @@ class RemoveWeakIfSxxExx(Rule):
                 to_remove.extend(matches.range(
                     filepart.start, filepart.end, predicate=lambda match: 'weak-movie' in match.tags))
         return to_remove
+
+
+class RemoveInvalidSeason(Rule):
+    """
+    Remove invalid season matches.
+    """
+    priority = 64
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        to_remove = []
+        for filepart in matches.markers.named('path'):
+            strong_season = matches.range(filepart.start, filepart.end, index=0,
+                                          predicate=lambda m: m.name == 'season'
+                                          and not m.private and 'SxxExx' in m.tags)
+            if strong_season:
+                if strong_season.initiator.children.named('episode'):
+                    for season in matches.range(strong_season.end, filepart.end,
+                                                predicate=lambda m: m.name == 'season' and not m.private):
+                        # remove weak season or seasons without episode matches
+                        if 'SxxExx' not in season.tags or not season.initiator.children.named('episode'):
+                            if season.initiator:
+                                to_remove.append(season.initiator)
+                                to_remove.extend(season.initiator.children)
+                            else:
+                                to_remove.append(season)
+
+        return to_remove
+
+
+class RemoveInvalidEpisode(Rule):
+    """
+    Remove invalid episode matches.
+    """
+    priority = 64
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        to_remove = []
+        for filepart in matches.markers.named('path'):
+            strong_episode = matches.range(filepart.start, filepart.end, index=0,
+                                           predicate=lambda m: m.name == 'episode'
+                                           and not m.private and 'SxxExx' in m.tags)
+            if strong_episode:
+                strong_ep_marker = RemoveInvalidEpisode.get_episode_prefix(matches, strong_episode)
+                for episode in matches.range(strong_episode.end, filepart.end,
+                                             predicate=lambda m: m.name == 'episode' and not m.private):
+                    ep_marker = RemoveInvalidEpisode.get_episode_prefix(matches, episode)
+                    if strong_ep_marker and ep_marker and strong_ep_marker.value.lower() != ep_marker.value.lower():
+                        if episode.initiator:
+                            to_remove.append(episode.initiator)
+                            to_remove.extend(episode.initiator.children)
+                        else:
+                            to_remove.append(ep_marker)
+                            to_remove.append(episode)
+
+        return to_remove
+
+    @staticmethod
+    def get_episode_prefix(matches, episode):
+        """
+        Return episode prefix: episodeMarker or episodeSeparator
+        """
+        return matches.previous(episode, index=0,
+                                predicate=lambda m: m.name in ('episodeMarker', 'episodeSeparator'))
 
 
 class RemoveWeakDuplicate(Rule):

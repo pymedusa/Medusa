@@ -6,6 +6,7 @@
     from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST, FAILED
     from medusa.common import Quality, qualityPresets, statusStrings, qualityPresetStrings, cpu_presets, MULTI_EP_STRINGS
     from medusa.indexers.indexer_api import indexerApi
+    from medusa.indexers.indexer_config import get_trakt_indexer
 %>
 <%block name="content">
 % if not header is UNDEFINED:
@@ -1564,8 +1565,13 @@
                                         <span class="component-title">Default indexer</span>
                                         <span class="component-desc">
                                             <select id="trakt_default_indexer" name="trakt_default_indexer" class="form-control input-sm">
-                                                % for indexer in indexerApi().indexers:
-                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexerApi().indexers[indexer]}</option>
+                                                <% indexers = indexerApi().indexers %>
+                                                % for indexer in indexers:
+                                                    <%
+                                                        if not get_trakt_indexer(indexer):
+                                                            continue
+                                                    %>
+                                                <option value="${indexer}" ${'selected="selected"' if app.TRAKT_DEFAULT_INDEXER == indexer else ''}>${indexers[indexer]}</option>
                                                 % endfor
                                             </select>
                                         </span>
@@ -1665,6 +1671,7 @@
                                 </div>
                                 <div class="testNotification" id="testTrakt-result">Click below to test.</div>
                                 <input type="button" class="btn" value="Test Trakt" id="testTrakt" />
+                                <input type="button" class="btn" value="Force Sync" id="forceSync" />
                                 <input type="submit" class="btn config_submitter" value="Save Changes" />
                             </div><!-- #content_use_trakt //-->
                         </fieldset><!-- .component-group-desc //-->

@@ -28,37 +28,38 @@ import traceback
 from collections import OrderedDict
 from datetime import date, datetime
 
-from requests.compat import unquote_plus
-from six import iteritems, text_type
-from tornado.web import RequestHandler
-from .... import (
+from medusa import (
     app, classes, db, helpers, image_cache, logger, network_timezones,
     process_tv, sbdatetime, subtitles, ui,
 )
-from ....common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
+from medusa.common import ARCHIVED, DOWNLOADED, FAILED, IGNORED, Overview, Quality, SKIPPED, SNATCHED, SNATCHED_PROPER, \
     UNAIRED, UNKNOWN, WANTED, \
     statusStrings
-from ....helper.common import (
+from medusa.helper.common import (
     dateFormat, dateTimeFormat, pretty_file_size, sanitize_filename,
     timeFormat, try_int,
 )
-from ....helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
-from ....helper.quality import get_quality_string
-from ....indexers.indexer_api import indexerApi
-from ....indexers.indexer_config import INDEXER_TVDBV2
-from ....indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
-from ....logger import filter_logline, read_loglines
-from ....media.banner import ShowBanner
-from ....media.fan_art import ShowFanArt
-from ....media.network_logo import ShowNetworkLogo
-from ....media.poster import ShowPoster
-from ....search.queue import BacklogQueueItem, ForcedSearchQueueItem
-from ....show.coming_episodes import ComingEpisodes
-from ....show.history import History
-from ....show.show import Show
-from ....system.restart import Restart
-from ....system.shutdown import Shutdown
-from ....version_checker import CheckVersion
+from medusa.helper.exceptions import CantUpdateShowException, ShowDirectoryNotFoundException, ex
+from medusa.helpers.quality import get_quality_string
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
+from medusa.logger import filter_logline, read_loglines
+from medusa.media.banner import ShowBanner
+from medusa.media.fan_art import ShowFanArt
+from medusa.media.network_logo import ShowNetworkLogo
+from medusa.media.poster import ShowPoster
+from medusa.search.queue import BacklogQueueItem, ForcedSearchQueueItem
+from medusa.show.coming_episodes import ComingEpisodes
+from medusa.show.history import History
+from medusa.show.show import Show
+from medusa.system.restart import Restart
+from medusa.system.shutdown import Shutdown
+from medusa.version_checker import CheckVersion
+
+from requests.compat import unquote_plus
+from six import iteritems, text_type
+from tornado.web import RequestHandler
 
 indexer_ids = ["indexerid", "tvdbid", "tvmazeid", "tmdbid"]
 
@@ -1275,9 +1276,10 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = "manual"
 
-        data = process_tv.processDir(self.path, process_method=self.process_method, force=self.force_replace,
-                                     is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
-                                     proc_type=self.type)
+        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
+            force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
+            failed=self.failed, proc_type=self.type
+        )
 
         if not self.return_data:
             data = ""
@@ -1617,10 +1619,10 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api_params['actors'] = False
                 indexer_api_params['custom_ui'] = classes.AllShowsListUI
 
-                t = indexerApi(_indexer).indexer(**indexer_api_params)
+                indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    api_data = t[str(self.name).encode()]
+                    api_data = indexer_api[str(self.name).encode()]
                 except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     continue
@@ -1642,10 +1644,10 @@ class CMD_SearchIndexers(ApiCall):
 
                 indexer_api_params['actors'] = False
 
-                t = indexerApi(_indexer).indexer(**indexer_api_params)
+                indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    my_show = t[int(self.indexerid)]
+                    my_show = indexer_api[int(self.indexerid)]
                 except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     return _responds(RESULT_SUCCESS, {"results": [], "langid": lang_id})

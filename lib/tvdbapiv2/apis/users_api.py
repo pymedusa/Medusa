@@ -19,9 +19,6 @@ Copyright 2015 SmartBear Software
 
 from __future__ import absolute_import
 
-import sys
-import os
-
 # python 2 and python 3 compatibility library
 from six import iteritems
 
@@ -65,8 +62,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -77,7 +73,6 @@ class UsersApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/user'.replace('{format}', 'json')
         method = 'GET'
@@ -94,13 +89,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -138,8 +133,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -150,7 +144,6 @@ class UsersApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/user/favorites'.replace('{format}', 'json')
         method = 'GET'
@@ -167,13 +160,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -212,8 +205,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -246,13 +238,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -291,8 +283,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -325,13 +316,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -369,8 +360,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -381,7 +371,6 @@ class UsersApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/user/ratings'.replace('{format}', 'json')
         method = 'GET'
@@ -398,13 +387,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -443,8 +432,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['item_type']
-        all_params.append('callback')
+        all_params = ['item_type', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -455,7 +443,6 @@ class UsersApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/user/ratings/query'.replace('{format}', 'json')
         method = 'GET'
@@ -474,13 +461,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -518,8 +505,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -530,7 +516,6 @@ class UsersApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/user/ratings/query/params'.replace('{format}', 'json')
         method = 'GET'
@@ -547,13 +532,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -593,8 +578,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['item_type', 'item_id']
-        all_params.append('callback')
+        all_params = ['item_type', 'item_id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -632,13 +616,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -679,8 +663,7 @@ class UsersApi(object):
                  returns the request thread.
         """
 
-        all_params = ['item_type', 'item_id', 'item_rating']
-        all_params.append('callback')
+        all_params = ['item_type', 'item_id', 'item_rating', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -723,13 +706,13 @@ class UsersApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting

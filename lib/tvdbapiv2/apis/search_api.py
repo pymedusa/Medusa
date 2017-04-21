@@ -69,8 +69,7 @@ class SearchApi(object):
                  returns the request thread.
         """
 
-        all_params = ['name', 'imdb_id', 'zap2it_id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['name', 'imdb_id', 'zap2it_id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -90,7 +89,6 @@ class SearchApi(object):
         query_params = {}
         if 'name' in params:
             query_params['name'] = params['name']
-            print('search called on name: %s' % query_params['name'])
         if 'imdb_id' in params:
             query_params['imdbId'] = params['imdb_id']
         if 'zap2it_id' in params:
@@ -106,13 +104,13 @@ class SearchApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting
@@ -149,8 +147,7 @@ class SearchApi(object):
                  returns the request thread.
         """
 
-        all_params = []
-        all_params.append('callback')
+        all_params = ['callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -161,7 +158,6 @@ class SearchApi(object):
                 )
             params[key] = val
         del params['kwargs']
-
 
         resource_path = '/search/series/params'.replace('{format}', 'json')
         method = 'GET'
@@ -178,13 +174,13 @@ class SearchApi(object):
         body_params = None
 
         # HTTP header `Accept`
-        header_params['Accept'] = self.api_client.\
+        header_params['Accept'] = self.api_client. \
             select_header_accept(['application/json'])
         if not header_params['Accept']:
             del header_params['Accept']
 
         # HTTP header `Content-Type`
-        header_params['Content-Type'] = self.api_client.\
+        header_params['Content-Type'] = self.api_client. \
             select_header_content_type(['application/json'])
 
         # Authentication setting

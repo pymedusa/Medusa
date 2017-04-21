@@ -14,6 +14,11 @@ MEDUSA.home.index = function() {
         });
     }, 500));
 
+    var imgLazyLoad = new LazyLoad({
+        // example of options object -> see options section
+        threshold: 500
+    });
+
     function resizePosters(newSize) {
         var fontSize;
         var logoWidth;
@@ -93,7 +98,7 @@ MEDUSA.home.index = function() {
     });
 
     $('#showListTableShows:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
-        debug: true,
+        debug: false,
         sortList: [[7, 1], [2, 0]],
         textExtraction: (function() {
             return {
@@ -183,6 +188,10 @@ MEDUSA.home.index = function() {
         },
         sortStable: true,
         sortAppend: [[2, 0]]
+    }).bind('sortEnd', function() {
+        imgLazyLoad.handleScroll();
+    }).bind('filterEnd', function() {
+        imgLazyLoad.handleScroll();
     });
 
     $('.show-grid').imagesLoaded(function() {
@@ -217,6 +226,9 @@ MEDUSA.home.index = function() {
                     return (indexer.length && parseInt(indexer, 10)) || Number.NEGATIVE_INFINITY;
                 }
             }
+        }).on('layoutComplete arrangeComplete removeComplete', function() {
+            imgLazyLoad.update();
+            imgLazyLoad.handleScroll();
         });
 
         // When posters are small enough to not display the .show-details
@@ -245,7 +257,7 @@ MEDUSA.home.index = function() {
                 popup.on('mouseleave', function() {
                     $(this).remove();
                 });
-                popup.css({zIndex: '9999'})
+                popup.css({zIndex: '9999'});
                 popup.appendTo('body');
 
                 var height = 438;
@@ -284,6 +296,8 @@ MEDUSA.home.index = function() {
                 clearTimeout(posterHoverTimer);
             }
         });
+        imgLazyLoad.update();
+        imgLazyLoad.handleScroll();
     });
 
     $('#postersort').on('change', function() {
@@ -308,16 +322,48 @@ MEDUSA.home.index = function() {
         }
     });
 
-    $('.show-option select').on('change', function(){
-        api.patch('config', {
+    $('.show-option .show-layout').on('change', function() {
+        api.patch('config/main', {
             layout: {
                 home: $(this).val()
             }
         }).then(function(response) {
             log.info(response);
             window.location.reload();
-        }).catch(function (error) {
-            log.info(error);
+        }).catch(function(err) {
+            log.info(err);
         });
     });
+
+    $('#showRootDir').on('change', function() {
+        api.patch('config/main', {
+            selectedRootIndex: $(this).val()
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function(err) {
+            log.info(err);
+        });
+    });
+
+    var rootDir = MEDUSA.config.rootDirs;
+    var rootDirIndex = MEDUSA.config.selectedRootIndex;
+    if (rootDir) {
+        var backendPieces = rootDir.split('|');
+        var backendDirs = backendPieces.slice(1);
+        if (backendDirs.length >= 2) {
+            $('#showRoot').show();
+            var item = ['All Folders'];
+            var rootDirOptions = item.concat(backendDirs);
+            $.each(rootDirOptions, function(i, item) {
+                $('#showRootDir').append($('<option>', {
+                    value: i - 1,
+                    text: item
+                }));
+            });
+            $('select#showRootDir').prop('selectedIndex', rootDirIndex + 1);
+        } else {
+            $('#showRoot').hide();
+        }
+    }
 };
