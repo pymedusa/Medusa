@@ -12,9 +12,7 @@
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
-<%!
-    random_show = choice(app.showList) if app.showList else None
-%>
+<% random_show = choice(app.showList) if app.showList else None %>
 <input type="hidden" id="showID" value="${random_show.indexerid if app.showList else ''}" />
 <input type="hidden" id="series_slug" value="${random_show.slug if app.showList else ''}" />
 <div class="row">
