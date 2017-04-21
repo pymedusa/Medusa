@@ -642,8 +642,7 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
-                                        <br>NOTE: A restart may be required to take effect.
-                                        <br>WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                        <br><b>NOTE:</b> Low: only passwords and api keys. Normal: also hide usernames. High: also hide hosts
                                     </span>
                                 </span>
                             </label>
