@@ -16,6 +16,7 @@ from medusa import (
     db,
     helpers,
     logger,
+    name_cache,
     notifiers,
     providers,
     subtitles,
@@ -1649,6 +1650,7 @@ class Home(WebRoot):
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
+                name_cache.build_name_cache(show_obj)
             except CantUpdateShowException:
                 errors += 1
                 logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
