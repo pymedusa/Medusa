@@ -22,7 +22,11 @@
         'Torrent Checker': 'torrent_checker_scheduler',
     }
 %>
-<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
+<%!
+    random_show = choice(app.showList)
+%>
+<input type="hidden" id="showID" value="${random_show.indexerid if app.showList else ''}" />
+<input type="hidden" id="series_slug" value="${random_show.slug if app.showList else ''}" />
 <div id="config-content">
     <h2 class="header">Scheduler</h2>
     <table id="schedulerStatusTable" class="tablesorter ${'fanartOpacity' if app.FANART_BACKGROUND else ''}" width="100%">

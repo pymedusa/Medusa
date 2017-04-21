@@ -31,9 +31,10 @@ from .search.queue import BacklogQueueItem
 from .show.show import Show
 
 
-def set_episode_to_wanted(show, s, e):
+def set_episode_to_wanted(show, season, episode):
     """Set an episode to wanted, only if it is currently skipped."""
-    ep_obj = show.get_episode(s, e, no_create=True)
+    # Episode must be loaded from DB to get current status and not default blank episode status
+    ep_obj = show.get_episode(season, episode)
     if ep_obj:
 
         with ep_obj.lock:
@@ -41,17 +42,18 @@ def set_episode_to_wanted(show, s, e):
                 return
 
             logger.log("Setting episode '{show}' {ep} to wanted".format
-                       (show=show.name, ep=episode_num(s, e)))
+                       (show=show.name, ep=episode_num(season, episode)))
             # figure out what segment the episode is in and remember it so we can backlog it
 
             ep_obj.status = WANTED
+            # As we created the episode and updated the status, need to save to DB
             ep_obj.save_to_db()
 
         cur_backlog_queue_item = BacklogQueueItem(show, [ep_obj])
         app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log("Starting backlog search for '{show}' {ep} because some episodes were set to wanted".format
-                   (show=show.name, ep=episode_num(s, e)))
+                   (show=show.name, ep=episode_num(season, episode)))
 
 
 class TraktChecker(object):
@@ -206,19 +208,25 @@ class TraktChecker(object):
                 logger.log(u"Synced Trakt collection", logger.DEBUG)
 
     def remove_episode_trakt_collection(self, filter_show=None):
-        """Remove episode from trakt collection."""
+        """Remove episode from trakt collection.
+
+        For episodes that no longer have a media file (location)
+        :param filter_show: optional. Only remove episodes from trakt collection for given shows
+        """
         if app.TRAKT_SYNC_REMOVE and app.TRAKT_SYNC and app.USE_TRAKT:
 
             params = []
             main_db_con = db.DBConnection()
+            selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name,' \
                             b'e.season, e.episode, e.status ' \
-                            b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid and e.location = ""'
+                            b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid and e.location = "" ' \
+                            b'AND e.status in ({0})'.format(','.join(selection_status))
             if filter_show:
                 sql_selection += b' AND s.indexer_id = ? AND e.indexer = ?'
                 params = [filter_show.indexerid, filter_show.indexer]
 
-            sql_result = main_db_con.select(sql_selection, params)
+            sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED + params)
             episodes = [dict(e) for e in sql_result]
 
             if episodes:
@@ -249,15 +257,17 @@ class TraktChecker(object):
                                    (error=e.message), logger.INFO)
 
     def add_episode_trakt_collection(self):
-        """Add all existing episodes to Trakt collections."""
+        """Add all existing episodes to Trakt collections.
+
+        For episodes that have a media file (location)
+        """
         if app.TRAKT_SYNC and app.USE_TRAKT:
 
             main_db_con = db.DBConnection()
             selection_status = ['?' for _ in Quality.DOWNLOADED + Quality.ARCHIVED]
             sql_selection = b'SELECT s.indexer, s.startyear, s.indexer_id, s.show_name, e.season, e.episode ' \
                             b'FROM tv_episodes AS e, tv_shows AS s WHERE s.indexer_id = e.showid ' \
-                            b"AND e.status in ({0}) AND e.location <> ''" \
-                            b"AND s.paused = 0 AND e.season <> 0".format(','.join(selection_status))
+                            b"AND e.status in ({0}) AND e.location <> ''".format(','.join(selection_status))
 
             sql_result = main_db_con.select(sql_selection, Quality.DOWNLOADED + Quality.ARCHIVED)
             episodes = [dict(e) for e in sql_result]
@@ -396,7 +406,10 @@ class TraktChecker(object):
                                    (error=e.message), logger.INFO)
 
     def add_show_watchlist(self):
-        """Add show to Trakt watchlist."""
+        """Add show to Trakt watchlist.
+
+        It will add all shows from Medusa library
+        """
         if app.TRAKT_SYNC_WATCHLIST and app.USE_TRAKT:
             if app.showList:
                 trakt_data = []

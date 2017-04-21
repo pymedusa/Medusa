@@ -34,7 +34,7 @@ from rarfile import Error as RarError, NeedFirstVolume
 from six import text_type
 
 from . import app, common, db, failed_history, helpers, history, logger, notifiers
-from .helper.common import episode_num, remove_extension
+from .helper.common import episode_num, pretty_file_size, remove_extension
 from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
                                 ShowDirectoryNotFoundException)
 from .helpers import is_subtitle, verify_freespace
@@ -127,43 +127,43 @@ class PostProcessor(object):
 
         return self.file_path
 
-    def _check_for_existing_file(self, existing_file):
+    def _compare_file_size(self, existing_file):
         """
-        Check if a file exists already.
+        Compare size to existing file.
 
-        If it does whether it's bigger or smaller than the file we are post processing.
-
-        :param existing_file: The file to compare to
+        :param existing_file: file to compare
         :return:
-            DOESNT_EXIST if the file doesn't exist
-            EXISTS_LARGER if the file exists and is larger than the file we are post processing
-            EXISTS_SMALLER if the file exists and is smaller than the file we are post processing
-            EXISTS_SAME if the file exists and is the same size as the file we are post processing
+            DOESNT_EXIST if file doesn't exist
+            EXISTS_LARGER if existing file is larger
+            EXISTS_SMALLER if existing file is smaller
+            EXISTS_SAME  if existing file is the same size
         """
-        if not existing_file:
+        new_size = os.path.getsize(self.file_path)
+
+        try:
+            old_size = os.path.getsize(existing_file)
+        except OSError:
+            self._log(u'New file: {}'.format(self.file_path))
+            self._log(u'New size: {}'.format(pretty_file_size(new_size)))
             self._log(u"There is no existing file so there's no worries about replacing it", logger.DEBUG)
-            return PostProcessor.DOESNT_EXIST
+            return self.DOESNT_EXIST
 
-        # if the new file exists, return the appropriate code depending on the size
-        if os.path.isfile(existing_file):
+        delta_size = new_size - old_size
 
-            # see if it's bigger than our old file
-            if os.path.getsize(existing_file) > os.path.getsize(self.file_path):
-                self._log(u'File {0} is larger than {1}'.format(existing_file, self.file_path), logger.DEBUG)
-                return PostProcessor.EXISTS_LARGER
+        self._log(u'Old file: {}'.format(existing_file))
+        self._log(u'New file: {}'.format(self.file_path))
+        self._log(u'Old size: {}'.format(pretty_file_size(old_size)))
+        self._log(u'New size: {}'.format(pretty_file_size(new_size)))
 
-            elif os.path.getsize(existing_file) == os.path.getsize(self.file_path):
-                self._log(u'File {0} is same size as {1}'.format(existing_file, self.file_path), logger.DEBUG)
-                return PostProcessor.EXISTS_SAME
-
-            else:
-                self._log(u'File {0} is smaller than {1}'.format(existing_file, self.file_path), logger.DEBUG)
-                return PostProcessor.EXISTS_SMALLER
-
+        if not delta_size:
+            self._log(u'New file is the same size.')
+            return self.EXISTS_SAME
         else:
-            self._log(u"File {0} doesn't exist so there's no worries about replacing it".format
-                      (existing_file), logger.DEBUG)
-            return PostProcessor.DOESNT_EXIST
+            self._log(u'New file is {size} {difference}'.format(
+                size=pretty_file_size(abs(delta_size)),
+                difference=u'smaller' if new_size < old_size else u'larger',
+            ))
+            return self.EXISTS_LARGER if new_size < old_size else self.EXISTS_SMALLER
 
     def list_associated_files(self, filepath, base_name_only=False, subtitles_only=False, subfolders=False):
         """
@@ -1036,7 +1036,7 @@ class PostProcessor(object):
         new_ep_version = version
 
         # check for an existing file
-        existing_file_status = self._check_for_existing_file(ep_obj.location)
+        existing_file_status = self._compare_file_size(ep_obj.location)
 
         if not priority_download:
             if existing_file_status == PostProcessor.EXISTS_SAME:

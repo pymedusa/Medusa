@@ -29,7 +29,6 @@ import stat
 import traceback
 import warnings
 from collections import (
-    OrderedDict,
     namedtuple,
 )
 from itertools import groupby
@@ -65,12 +64,14 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
+from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
     try_int,
 )
 from medusa.helper.exceptions import (
+    CantRemoveShowException,
     EpisodeDeletedException,
     EpisodeNotFoundException,
     MultipleShowObjectsException,
@@ -80,19 +81,25 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.helpers.externals import get_externals
+from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
+    STATUS_MAP,
     indexerConfig,
     indexer_id_to_slug,
     mappings,
-    reverse_mappings
-)
+    reverse_mappings,
+    slug_to_indexer_id)
 from medusa.indexers.indexer_exceptions import (
     IndexerAttributeNotFound,
     IndexerException,
     IndexerSeasonNotFound,
 )
+from medusa.media.banner import ShowBanner
+from medusa.media.fan_art import ShowFanArt
+from medusa.media.network_logo import ShowNetworkLogo
+from medusa.media.poster import ShowPoster
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
@@ -101,10 +108,9 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.tv.base import TV
+from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
-
-import shutil_custom
+from medusa.tv.indexer import Indexer
 
 from six import text_type
 
@@ -114,11 +120,69 @@ except ImportError:
     app.TRASH_REMOVE_SHOW = 0
 
 
-shutil.copyfile = shutil_custom.copyfile_custom
-
 MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 logger = logging.getLogger(__name__)
+
+
+class SeriesIdentifier(Identifier):
+    """Series identifier with indexer and indexer id."""
+
+    def __init__(self, indexer, identifier):
+        """Constructor.
+
+        :param indexer:
+        :type indexer: Indexer or int
+        :param identifier:
+        :type identifier: int
+        """
+        self.indexer = indexer if isinstance(indexer, Indexer) else Indexer.from_id(indexer)
+        self.id = identifier
+
+    @classmethod
+    def from_slug(cls, slug):
+        """Create SeriesIdentifier from slug. E.g.: tvdb1234."""
+        result = slug_to_indexer_id(slug)
+        if result is not None:
+            indexer, indexer_id = result
+            if indexer is not None and indexer_id is not None:
+                return SeriesIdentifier(Indexer(indexer), indexer_id)
+
+    @classmethod
+    def from_id(cls, indexer, indexer_id):
+        """Create SeriesIdentifier from tuple (indexer, indexer_id)."""
+        return SeriesIdentifier(indexer, indexer_id)
+
+    @property
+    def slug(self):
+        """Slug."""
+        return str(self)
+
+    @property
+    def api(self):
+        """Api."""
+        indexer_api = indexerApi(self.indexer.id)
+        return indexer_api.indexer(**indexer_api.api_params)
+
+    def __nonzero__(self):
+        """Magic method."""
+        return self.indexer is not None and self.id is not None
+
+    def __repr__(self):
+        """Magic method."""
+        return '<SeriesIdentifier [{0!r} - {1}]>'.format(self.indexer, self.id)
+
+    def __str__(self):
+        """Magic method."""
+        return '{0}{1}'.format(self.indexer, self.id)
+
+    def __hash__(self):
+        """Magic method."""
+        return hash((self.indexer, self.id))
+
+    def __eq__(self, other):
+        """Magic method."""
+        return isinstance(other, SeriesIdentifier) and self.indexer == other.indexer and self.id == other.id
 
 
 class Series(TV):
@@ -147,7 +211,7 @@ class Series(TV):
         self.quality = quality or int(app.QUALITY_DEFAULT)
         self.flatten_folders = flatten_folders or int(app.FLATTEN_FOLDERS_DEFAULT)
         self.status = 'Unknown'
-        self.airs = ''
+        self._airs = ''
         self.start_year = 0
         self.paused = 0
         self.air_by_date = 0
@@ -175,6 +239,56 @@ class Series(TV):
             raise MultipleShowObjectsException("Can't create a show if it already exists")
 
         self._load_from_db()
+
+    @classmethod
+    def find_series(cls, predicate=None):
+        """Find series based on given predicate."""
+        return [s for s in app.showList if s and (not predicate or predicate(s))]
+
+    @classmethod
+    def find_by_identifier(cls, identifier, predicate=None):
+        """Find series by its identifier and predicate.
+
+        :param identifier:
+        :type identifier: medusa.tv.series.SeriesIdentifier
+        :param predicate:
+        :type predicate: callable
+        :return:
+        :rtype:
+        """
+        result = Show.find(app.showList, identifier.id, identifier.indexer.id)
+        if result and (not predicate or predicate(result)):
+            return result
+
+    @classmethod
+    def from_identifier(cls, identifier):
+        """Create a series object from its identifier."""
+        return Series(identifier.indexer.id, identifier.id)
+
+    # TODO: Make this the single entry to add new series
+    @classmethod
+    def save_series(cls, series):
+        """Save the specified series to medusa."""
+        try:
+            api = series.identifier.api
+            series.load_from_indexer(tvapi=api)
+            series.load_imdb_info()
+            app.showList.append(series)
+            series.save_to_db()
+            series.load_episodes_from_indexer(tvapi=api)
+            return series
+        except IndexerException as e:
+            logger.warning('Unable to load series from indexer: {0!r}'.format(e))
+
+    @property
+    def identifier(self):
+        """Identifier."""
+        return SeriesIdentifier(self.indexer, self.indexerid)
+
+    @property
+    def slug(self):
+        """Slug."""
+        return self.identifier.slug
 
     @property
     def indexer_api(self):
@@ -268,7 +382,7 @@ class Series(TV):
 
     @property
     def indexer_slug(self):
-        """Return the slug name of the show. Example: tvdb1234."""
+        """Return the slug name of the series. Example: tvdb1234."""
         return indexer_id_to_slug(self.indexer, self.indexerid)
 
     @location.setter
@@ -327,6 +441,120 @@ class Series(TV):
         """Subtitle flag."""
         return subtitles.code_from_code(self.lang) if self.lang else ''
 
+    @property
+    def show_type(self):
+        """Return show type."""
+        return 'sports' if self.is_sports else ('anime' if self.is_anime else 'series')
+
+    @property
+    def imdb_year(self):
+        """Return series year."""
+        return self.imdb_info.get('year')
+
+    @property
+    def imdb_runtime(self):
+        """Return series runtime."""
+        return self.imdb_info.get('runtimes')
+
+    @property
+    def imdb_akas(self):
+        """Return genres akas dict."""
+        akas = {}
+        for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
+            if '::' in x:
+                val, key = x.split('::')
+                akas[key] = val
+        return akas
+
+    @property
+    def imdb_countries(self):
+        """Return country codes."""
+        return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
+
+    @property
+    def imdb_plot(self):
+        """Return series plot."""
+        return self.imdb_info.get('plot', '')
+
+    @property
+    def imdb_genres(self):
+        """Return series genres."""
+        return self.imdb_info.get('genres', '')
+
+    @property
+    def imdb_votes(self):
+        """Return series votes."""
+        return self.imdb_info.get('votes')
+
+    @property
+    def imdb_rating(self):
+        """Return series rating."""
+        return self.imdb_info.get('rating')
+
+    @property
+    def imdb_certificates(self):
+        """Return series certificates."""
+        return self.imdb_info.get('certificates')
+
+    @property
+    def next_airdate(self):
+        """Return next airdate."""
+        return (
+            sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
+            if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
+        )
+
+    @property
+    def genres(self):
+        """Return genres list."""
+        return list({i for i in (self.genre or '').split('|') if i} |
+                    {i for i in self.imdb_genres.replace('Sci-Fi', 'Science-Fiction').split('|') if i})
+
+    @property
+    def airs(self):
+        """Return episode time that series usually airs."""
+        return self._airs
+
+    @airs.setter
+    def airs(self, value):
+        """Set episode time that series usually airs."""
+        self._airs = text_type(value).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()
+
+    @property
+    def poster(self):
+        """Return poster path."""
+        poster = ImageCache.poster_path(self.indexerid)
+        if os.path.isfile(poster):
+            return poster
+
+    @property
+    def banner(self):
+        """Return banner path."""
+        banner = ImageCache.banner_path(self.indexerid)
+        if os.path.isfile(banner):
+            return banner
+
+    @property
+    def aliases(self):
+        """Return series aliases."""
+        return self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)
+
+    @property
+    def release_ignore_words(self):
+        """Return release ignore words."""
+        return [v for v in (self.rls_ignore_words or '').split(',') if v]
+
+    @property
+    def release_required_words(self):
+        """Return release ignore words."""
+        return [v for v in (self.rls_require_words or '').split(',') if v]
+
+    @staticmethod
+    def normalize_status(series_status):
+        """Return a normalized status given current indexer status."""
+        default_status = 'Unknown'
+        return STATUS_MAP.get(series_status.lower(), default_status) if series_status else default_status
+
     def flush_episodes(self):
         """Delete references to anything that's not in the internal lists."""
         for cur_season in self.episodes:
@@ -334,6 +562,10 @@ class Series(TV):
                 my_ep = self.episodes[cur_season][cur_ep]
                 self.episodes[cur_season][cur_ep] = None
                 del my_ep
+
+    def erase_cached_parse(self):
+        """Erase parsed cached results."""
+        NameParser().erase_cached_parse(self.indexer, self.indexerid)
 
     def get_all_seasons(self, last_airdate=False):
         """Retrieve a dictionary of seasons with the number of episodes, using the episodes table.
@@ -490,7 +722,7 @@ class Series(TV):
         else:
             ep = Episode(self, season, episode)
 
-        if ep is not None and should_cache:
+        if ep is not None and ep.loaded and should_cache:
             self.episodes[season][episode] = ep
 
         return ep
@@ -1048,8 +1280,8 @@ class Series(TV):
                     if not cur_ep:
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
-                    logger.log(u'{indexerid}: Unable to figure out what this file is, skipping {filepath}',
-                               indexerid=self.indexerid, filepath=filepath)
+                    logger.warning(u'{indexerid}: Unable to figure out what this file is, skipping {filepath}',
+                                   indexerid=self.indexerid, filepath=filepath)
                     continue
 
             else:
@@ -1223,7 +1455,7 @@ class Series(TV):
         self.classification = getattr(indexed_show, 'classification', 'Scripted')
         self.genre = getattr(indexed_show, 'genre', '')
         self.network = getattr(indexed_show, 'network', '')
-        self.runtime = int(getattr(indexed_show, 'runtime', 0))
+        self.runtime = int(getattr(indexed_show, 'runtime', 0) or 0)
 
         # set the externals, using the result from the indexer.
         self.externals = {k: v for k, v in getattr(indexed_show, 'externals', {}).items() if v}
@@ -1243,9 +1475,9 @@ class Series(TV):
         if getattr(indexed_show, 'firstaired', ''):
             self.start_year = int(str(indexed_show['firstaired']).split('-')[0])
 
-        self.status = getattr(indexed_show, 'status', 'Unknown')
+        self.status = self.normalize_status(getattr(indexed_show, 'status', None))
 
-        self.plot = getattr(indexed_show, 'overview', '') or self.get_plot()
+        self.plot = getattr(indexed_show, 'overview', '') or self.imdb_plot
 
         self._save_externals_to_db()
 
@@ -1272,7 +1504,7 @@ class Series(TV):
         # If the show has no year, IMDb returned something we don't want
         if not imdb_obj.year:
             logger.debug(u'{id}: IMDb returned invalid info for {imdb_id}, skipping update.',
-                         id=self.indexerid, imdb_id=self.imdbid)
+                         id=self.indexerid, imdb_id=self.imdb_id)
             return
 
         self.imdb_info = {
@@ -1641,109 +1873,68 @@ class Series(TV):
 
     def to_json(self, detailed=True):
         """Return JSON representation."""
-        indexer_name = self.indexer_slug
         bw_list = self.release_groups or BlackAndWhiteList(self.indexerid)
-        result = OrderedDict([
-            ('id', OrderedDict([
-                (indexer_name, self.indexerid),
-                ('imdb', str(self.imdb_id))
-            ])),
-            ('title', self.name),
-            ('indexer', indexer_name),  # e.g. tvdb
-            ('network', self.network),  # e.g. CBS
-            ('type', self.classification),  # e.g. Scripted
-            ('status', self.status),  # e.g. Continuing
-            ('airs', text_type(self.airs).replace('am', ' AM').replace('pm', ' PM').replace('  ', ' ').strip()),
-            # e.g Thursday 8:00 PM
-            ('language', self.lang),
-            ('showType', 'sports' if self.is_sports else ('anime' if self.is_anime else 'series')),
-            ('akas', self.get_akas()),
-            ('year', OrderedDict([
-                ('start', self.imdb_info.get('year') or self.start_year),
-            ])),
-            ('nextAirDate', self.get_next_airdate()),
-            ('runtime', self.imdb_info.get('runtimes') or self.runtime),
-            ('genres', self.get_genres()),
-            ('rating', OrderedDict([])),
-            ('classification', self.imdb_info.get('certificates')),
-            ('cache', OrderedDict([])),
-            ('countries', self.get_countries()),
-            ('plot', self.get_plot()),
-            ('config', OrderedDict([
-                ('location', self.raw_location),
-                ('qualities', OrderedDict([
-                    ('allowed', self.get_allowed_qualities()),
-                    ('preferred', self.get_preferred_qualities()),
-                ])),
-                ('paused', bool(self.paused)),
-                ('airByDate', bool(self.air_by_date)),
-                ('subtitlesEnabled', bool(self.subtitles)),
-                ('dvdOrder', bool(self.dvd_order)),
-                ('flattenFolders', bool(self.flatten_folders)),
-                ('scene', self.is_scene),
-                ('defaultEpisodeStatus', statusStrings[self.default_ep_status]),
-                ('aliases', self.exceptions or get_scene_exceptions(self.indexerid, self.indexer)),
-                ('release', OrderedDict([
-                    ('blacklist', bw_list.blacklist),
-                    ('whitelist', bw_list.whitelist),
-                    ('ignoredWords', [v for v in (self.rls_ignore_words or '').split(',') if v]),
-                    ('requiredWords', [v for v in (self.rls_require_words or '').split(',') if v]),
-                ])),
-            ]))
-        ])
 
-        cache = image_cache.ImageCache()
-        if 'rating' in self.imdb_info and 'votes' in self.imdb_info:
-            result['rating']['imdb'] = OrderedDict([
-                ('stars', self.imdb_info.get('rating')),
-                ('votes', self.imdb_info.get('votes')),
-            ])
-        if os.path.isfile(cache.poster_path(self.indexerid)):
-            result['cache']['poster'] = cache.poster_path(self.indexerid)
-        if os.path.isfile(cache.banner_path(self.indexerid)):
-            result['cache']['banner'] = cache.banner_path(self.indexerid)
+        data = NonEmptyDict()
+        data['id'] = NonEmptyDict()
+        data['id'][self.indexer_name] = self.indexerid
+        data['id']['imdb'] = text_type(self.imdb_id)
+        data['title'] = self.name
+        data['indexer'] = self.indexer_name  # e.g. tvdb
+        data['network'] = self.network  # e.g. CBS
+        data['type'] = self.classification  # e.g. Scripted
+        data['status'] = self.status  # e.g. Continuing
+        data['airs'] = self.airs  # e.g. Thursday 8:00 PM
+        data['language'] = self.lang
+        data['showType'] = self.show_type  # e.g. anime, sport, series
+        data['akas'] = self.imdb_akas
+        data['year'] = NonEmptyDict()
+        data['year']['start'] = self.imdb_year or self.start_year
+        data['nextAirDate'] = self.next_airdate
+        data['runtime'] = self.imdb_runtime or self.runtime
+        data['genres'] = self.genres
+        data['rating'] = NonEmptyDict()
+        if self.imdb_rating and self.imdb_votes:
+            data['rating']['imdb'] = NonEmptyDict()
+            data['rating']['imdb']['rating'] = self.imdb_rating
+            data['rating']['imdb']['votes'] = self.imdb_votes
+
+        data['classification'] = self.imdb_certificates
+        data['cache'] = NonEmptyDict()
+        data['cache']['poster'] = self.poster
+        data['cache']['banner'] = self.banner
+        data['countries'] = self.imdb_countries
+        data['plot'] = self.imdb_plot or self.plot
+        data['config'] = NonEmptyDict()
+        data['config']['location'] = self.raw_location
+        data['config']['qualities'] = NonEmptyDict()
+        data['config']['qualities']['allowed'] = self.get_allowed_qualities()
+        data['config']['qualities']['preferred'] = self.get_preferred_qualities()
+        data['config']['paused'] = bool(self.paused)
+        data['config']['airByDate'] = bool(self.air_by_date)
+        data['config']['subtitlesEnabled'] = bool(self.subtitles)
+        data['config']['dvdOrder'] = bool(self.dvd_order)
+        data['config']['flattenFolders'] = bool(self.flatten_folders)
+        data['config']['scene'] = self.is_scene
+        data['config']['paused'] = bool(self.paused)
+        data['config']['defaultEpisodeStatus'] = self.default_ep_status_name
+        data['config']['aliases'] = self.aliases
+        data['config']['release'] = NonEmptyDict()
+        data['config']['release']['blacklist'] = bw_list.blacklist
+        data['config']['release']['whitelist'] = bw_list.whitelist
+        data['config']['release']['ignoredWords'] = self.release_ignore_words
+        data['config']['release']['requiredWords'] = self.release_required_words
 
         if detailed:
-            result.update(OrderedDict([
-                ('seasons', OrderedDict([]))
-            ]))
             episodes = self.get_all_episodes()
-            result['seasons'] = [list(v) for _, v in groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
-            result['episodeCount'] = len(episodes)
+            data['seasons'] = [list(v) for _, v in
+                               groupby([ep.to_json() for ep in episodes], lambda item: item['season'])]
+            data['episodeCount'] = len(episodes)
             last_episode = episodes[-1] if episodes else None
             if self.status == 'Ended' and last_episode and last_episode.airdate:
-                result['year']['end'] = last_episode.airdate.year
+                data['year']['end'] = last_episode.airdate.year
 
-        return result
-
-    def get_next_airdate(self):
-        """Return next airdate."""
-        return (
-            sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
-            if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
-        )
-
-    def get_genres(self):
-        """Return genres list."""
-        return list({v for v in (self.genre or '').split('|') if v} |
-                    {v for v in self.imdb_info.get('genres', '').replace('Sci-Fi', 'Science-Fiction').split('|') if v})
-
-    def get_akas(self):
-        """Return genres akas dict."""
-        akas = {}
-        for x in [v for v in self.imdb_info.get('akas', '').split('|') if v]:
-            if '::' in x:
-                val, key = x.split('::')
-                akas[key] = val
-        return akas
-
-    def get_countries(self):
-        """Return country codes."""
-        return [v for v in self.imdb_info.get('country_codes', '').split('|') if v]
-
-    def get_plot(self):
-        """Return show plot."""
-        return self.imdb_info.get('plot', '')
+        return data
 
     def get_allowed_qualities(self):
         """Return allowed qualities."""
@@ -1965,3 +2156,35 @@ class Series(TV):
         else:
             logger.debug(u'No DOWNLOADED episodes for show ID: {show}', show=self.name)
             return False
+
+    def pause(self):
+        """Pause the series."""
+        self.paused = True
+        self.save_to_db()
+
+    def unpause(self):
+        """Unpause the series."""
+        self.paused = False
+        self.save_to_db()
+
+    def delete(self, remove_files):
+        """Delete the series."""
+        try:
+            app.show_queue_scheduler.action.removeShow(self, bool(remove_files))
+            return True
+        except CantRemoveShowException:
+            pass
+
+    def get_asset(self, asset_type):
+        """Get the specified asset for this series."""
+        asset_type = asset_type.lower()
+        media_format = ('normal', 'thumb')[asset_type in ('bannerthumb', 'posterthumb', 'small')]
+
+        if asset_type.startswith('banner'):
+            return ShowBanner(self.indexerid, media_format)
+        elif asset_type.startswith('fanart'):
+            return ShowFanArt(self.indexerid, media_format)
+        elif asset_type.startswith('poster'):
+            return ShowPoster(self.indexerid, media_format)
+        elif asset_type.startswith('network'):
+            return ShowNetworkLogo(self.indexerid, media_format)

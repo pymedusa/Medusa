@@ -56,15 +56,15 @@ class Notifier(object):
         try:
             from gi.repository import Notify
         except ImportError:
-            log.error(u"Unable to import Notify from gi.repository. libnotify notifications won't work.")
+            log.warning(u"Unable to import Notify from gi.repository. libnotify notifications won't work.")
             return False
         try:
             from gi.repository import GObject
         except ImportError:
-            log.error(u"Unable to import GObject from gi.repository. We can't catch a GError in display.")
+            log.warning(u"Unable to import GObject from gi.repository. We can't catch a GError in display.")
             return False
         if not Notify.init('Medusa'):
-            log.error(u"Initialization of Notify failed. libnotify notifications won't work.")
+            log.warning(u"Initialization of Notify failed. libnotify notifications won't work.")
             return False
         self.Notify = Notify
         self.gobject = GObject
