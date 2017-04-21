@@ -642,7 +642,9 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
+                                        <div class="clear-left">
                                         <br><b>NOTE:</b> Low: only passwords and api keys. Normal: also hide usernames. High: also hide hosts
+                                        </div>
                                     </span>
                                 </span>
                             </label>
