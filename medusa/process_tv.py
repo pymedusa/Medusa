@@ -32,7 +32,7 @@ from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
 from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
-from .helper.common import is_sync_file, subtitle_extensions
+from .helper.common import is_sync_file
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .subtitles import accept_any, accept_unknown, get_embedded_subtitles
