@@ -10,8 +10,11 @@
 % else:
     <h1 class="title">${title}</h1>
 % endif
-
-<div id="addShowPortal">
+<% can_add_shows = True if app.ROOT_DIRS.split('|')[0] else False %>
+% if not can_add_shows:
+    <a href="/config/general/" class="red-text">You must set a 'Show root directories' first before adding shows!</>
+% endif
+<div id="addShowPortal" class="class="${'hidden' if not can_add_shows else ''}>
     <br><br>
     <a href="addShows/trendingShows/?traktList=anticipated" id="btnNewShow" class="btn btn-large">
         <div class="button"><div class="add-list-icon-addtrakt"></div></div>
