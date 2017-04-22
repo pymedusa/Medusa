@@ -260,6 +260,7 @@ class Episode(TV):
             self.check_for_meta_files()
 
     def __setattr__(self, key, value):
+        """Set attribute values for deprecated attributes."""
         try:
             refactor = self.__refactored[key]
         except KeyError:
@@ -274,6 +275,7 @@ class Episode(TV):
             super(Episode, self).__setattr__(refactor, value)
 
     def __getattr__(self, item):
+        """Get attribute values for deprecated attributes."""
         try:
             return super(Episode, self).__getattribute__(item)
         except AttributeError as error:
