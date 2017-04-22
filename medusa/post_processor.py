@@ -146,29 +146,29 @@ class PostProcessor(object):
             ))
             return self.EXISTS_LARGER if new_size < old_size else self.EXISTS_SMALLER
 
-    def list_associated_files(self, filepath, subfolders=False, subtitles_only=False, refine=False):
+    def list_associated_files(self, file_path, subfolders=False, subtitles_only=False, refine=False):
         """
         For a given file path search for associated files and return their absolute paths.
 
-        :param filepath: path of the file to check for associated files
+        :param file_path: path of the file to check for associated files
         :param subfolders: also check subfolders while searching files
         :param subtitles_only: list only associated subtitles
         :param refine: refine the associated files with additional options
         :return: A list containing all files which are associated to the given file
         """
-        files = self._search_files(filepath, subfolders=subfolders)
+        files = self._search_files(file_path, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
-        processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
+        processed_file_name = os.path.splitext(os.path.basename(file_path))[0].lower()
 
         processed_names = (processed_file_name,)
-        processed_names += filter(None, (self._rar_basename(filepath, files),))
+        processed_names += filter(None, (self._rar_basename(file_path, files),))
 
         associated_files = set()
         for found_file in files:
 
             # Exclude the video file we are post-processing
-            if found_file == filepath:
+            if found_file == file_path:
                 continue
 
             # Exclude .rar files
@@ -185,11 +185,11 @@ class PostProcessor(object):
 
         if associated_files:
             self._log(u'Found the following associated files for {0}: {1}'.format
-                      (filepath, associated_files), logger.DEBUG)
+                      (file_path, associated_files), logger.DEBUG)
             if refine:
                 associated_files = self._refine_associated_files(associated_files)
         else:
-            self._log(u'No associated files were found for {0}'.format(filepath), logger.DEBUG)
+            self._log(u'No associated files were found for {0}'.format(file_path), logger.DEBUG)
 
         return list(associated_files)
 
@@ -267,9 +267,9 @@ class PostProcessor(object):
         return files
 
     @staticmethod
-    def _rar_basename(filepath, files):
+    def _rar_basename(file_path, files):
         """Return the lowercase basename of the source rar archive if found."""
-        videofile = os.path.basename(filepath)
+        videofile = os.path.basename(file_path)
         rars = (x for x in files if rarfile.is_rarfile(x))
 
         for rar in rars:
@@ -330,23 +330,23 @@ class PostProcessor(object):
                 notifiers.synoindex_notifier.deleteFile(cur_file)
 
     @staticmethod
-    def rename_associated_file(new_path, new_base_name, filepath):
+    def rename_associated_file(new_path, new_basename, file_path):
         """Rename associated file using media basename.
 
         :param new_path: full show folder path where the file will be moved|copied|linked to
-        :param new_base_name: the media base filename (no extension) to use during the rename
-        :param filepath: full path of the associated file
+        :param new_basename: the media base filename (no extension) to use during the rename
+        :param file_path: full path of the associated file
         :return: renamed full file path
         """
         # remember if the extension changed
         changed_extension = None
         # file extension without leading dot
-        extension = helpers.get_extension(filepath)
+        extension = helpers.get_extension(file_path)
         # initially set current extension as new extension
         new_extension = extension
 
-        if is_subtitle(filepath):
-            code = filepath.rsplit('.', 2)[1].lower().replace('_', '-')
+        if is_subtitle(file_path):
+            code = file_path.rsplit('.', 2)[1].lower().replace('_', '-')
             if from_code(code, unknown='') or from_ietf_code(code, unknown=''):
                 # TODO remove this hardcoded language
                 if code == 'pt-br':
@@ -360,16 +360,16 @@ class PostProcessor(object):
             changed_extension = True
 
         # rename file with new base name
-        if new_base_name:
-            new_file_name = new_base_name + '.' + new_extension
+        if new_basename:
+            new_file_name = new_basename + '.' + new_extension
         else:
             # current file name including extension
-            new_file_name = os.path.basename(filepath)
+            new_file_name = os.path.basename(file_path)
             # if we're not renaming we still need to change the extension sometimes
             if changed_extension:
                 new_file_name = new_file_name.replace(extension, new_extension)
 
-        if app.SUBTITLES_DIR and is_subtitle(filepath):
+        if app.SUBTITLES_DIR and is_subtitle(file_path):
             subs_new_path = os.path.join(new_path, app.SUBTITLES_DIR)
             dir_exists = helpers.make_dir(subs_new_path)
             if not dir_exists:
@@ -382,7 +382,7 @@ class PostProcessor(object):
 
         return new_file_path
 
-    def _combined_file_operation(self, file_path, new_path, new_base_name, associated_files=False,
+    def _combined_file_operation(self, file_path, new_path, new_basename, associated_files=False,
                                  action=None, subtitles=False, subtitle_action=None):
         """
         Perform a generic operation (move or copy) on a file.
@@ -391,7 +391,7 @@ class PostProcessor(object):
 
         :param file_path: The full path of the file to act on
         :param new_path: full show folder path where the file will be moved|copied|linked to
-        :param new_base_name: The base filename (no extension) to use during the action. Use None to keep the same name
+        :param new_basename: The base filename (no extension) to use during the action. Use None to keep the same name
         :param associated_files: Boolean, whether we should copy similarly-named files too
         :param action: function that takes an old path and new path and does an operation with them (move/copy/link)
         :param subtitles: Boolean, whether we should process subtitles too
@@ -412,7 +412,7 @@ class PostProcessor(object):
             return
 
         for cur_associated_file in file_list:
-            new_file_path = self.rename_associated_file(new_path, new_base_name, cur_associated_file)
+            new_file_path = self.rename_associated_file(new_path, new_basename, cur_associated_file)
 
             # If subtitle was downloaded from Medusa it can't be in the torrent folder, so we move it.
             # Otherwise when torrent+data gets removed, the folder won't be deleted because of subtitle
@@ -422,13 +422,13 @@ class PostProcessor(object):
 
             action(cur_associated_file, new_file_path)
 
-    def post_process_action(self, file_path, new_path, new_base_name, associated_files=False, subtitles=False):
+    def post_process_action(self, file_path, new_path, new_basename, associated_files=False, subtitles=False):
         """
         Run the given action on file and set proper permissions.
 
         :param file_path: The full path of the file to act on
         :param new_path: full show folder path where the file will be moved|copied|linked to
-        :param new_base_name: The base filename (no extension) to use. Use None to keep the same name
+        :param new_basename: The base filename (no extension) to use. Use None to keep the same name
         :param associated_files: Boolean, whether we should run the action in similarly-named files too
         :param subtitles: Boolean, whether we should process subtitles too
         """
@@ -476,7 +476,7 @@ class PostProcessor(object):
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
         subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move}.get(self.process_method)
-        self._combined_file_operation(file_path, new_path, new_base_name, associated_files,
+        self._combined_file_operation(file_path, new_path, new_basename, associated_files,
                                       action=action, subtitle_action=subtitle_action, subtitles=subtitles)
 
     @staticmethod
@@ -1166,12 +1166,12 @@ class PostProcessor(object):
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
             orig_extension = self.file_name.rpartition('.')[-1]
-            new_base_name = os.path.basename(proper_path)
-            new_file_name = new_base_name + '.' + orig_extension
+            new_basename = os.path.basename(proper_path)
+            new_file_name = new_basename + '.' + orig_extension
 
         else:
             # if we're not renaming then there's no new base name, we'll just use the existing name
-            new_base_name = None
+            new_basename = None
             new_file_name = self.file_name
 
         # add to anidb
@@ -1184,7 +1184,7 @@ class PostProcessor(object):
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
-                self.post_process_action(self.file_path, dest_path, new_base_name,
+                self.post_process_action(self.file_path, dest_path, new_basename,
                                          app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
