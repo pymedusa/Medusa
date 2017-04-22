@@ -1,26 +1,32 @@
 # coding=utf-8
-# Author: djoole <bobby.djoole@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Provider code for T411."""
+
+"""
+Torrent Provider T411.
+
+T411 has custom parameters for searching by term
+
+To add a term to a search you add the param term[id] where id is the number
+of the desired term, and the value is the categories desired for that term.
+Searching without terms returns lot of bad results.
+Commonly used term IDs are 45 (season) and 46 (episode).
+
+Examples
+--------
+Search using a single season (Season 1 - id 968):
+    requests.get(search_url, params={'term[45][]': 968})
+
+Search using a season and episode:
+    requests.get(search_url, params={'term[45][]':968, 'term[46][]': 936})
+"""
+
 from __future__ import unicode_literals
 
 import time
 import traceback
+from collections import namedtuple
 from operator import itemgetter
+
+from contextlib2 import suppress
 
 from medusa import (
     config,
@@ -38,9 +44,7 @@ from medusa.scene_exceptions import get_scene_exceptions
 from requests.auth import AuthBase
 from requests.compat import quote, urljoin
 
-# Provider has custom params for season and episode search.
-# For example searching for season 1, need to pass param: term[45][]=968. Searching episode 9: term[46][]=946
-# Without this params, provider returns lot of bad results
+# Map episode number to the T411 search term for that episode
 EPISODE_MAP = {
     0: 936, 1: 937, 2: 938, 3: 939, 4: 940, 5: 941, 6: 942, 7: 943, 8: 944, 9: 946, 10: 947, 11: 948, 12: 949, 13: 950,
     14: 951, 15: 952, 16: 954, 17: 953, 18: 955, 19: 956, 20: 957, 21: 958, 22: 959, 23: 960, 24: 961, 25: 962, 26: 963,
@@ -49,12 +53,12 @@ EPISODE_MAP = {
     50: 1107, 51: 1108, 52: 1109, 53: 1110, 54: 1111, 55: 1112, 56: 1113, 57: 1114, 58: 1115, 59: 1116, 60: 1117,
 }
 
+# Map season number to the T411 search term for that season
 SEASON_MAP = {
     1: 968, 2: 969, 3: 970, 4: 971, 5: 972, 6: 973, 7: 974, 8: 975, 9: 976, 10: 977, 11: 978, 12: 979, 13: 980, 14: 981,
     15: 982, 16: 983, 17: 984, 18: 985, 19: 986, 20: 987, 21: 988, 22: 989, 23: 990, 24: 991, 25: 994, 26: 992, 27: 993,
     28: 995, 29: 996, 30: 997,
 }
-
 
 class T411Provider(TorrentProvider):
     """T411 Torrent provider."""
@@ -82,23 +86,18 @@ class T411Provider(TorrentProvider):
 
         # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
-        self.subcategories = [433, 637, 455, 639, 636]
-
-        """
-        Subcategories:
-        433: Série TV
-        637: Animation Série
-        455: Animation
-        639: Emission TV
-        636: Sport
-
-        Not used:
-        633: Concert
-        634: Documentaire
-        631: Film
-        635: Spectacle
-        402: Vidéo-clips
-        """
+        self.subcategories = (
+            # 402,  # Video Clips (Vidéo-clips)
+            433,  # TV Series (Série TV)
+            455,  # Animation
+            # 631,  # Film
+            # 633,  # Concert
+            # 634,  # Documentary (Documentaire)
+            # 635,  # Show (Spectacle)
+            636,  # Sport
+            637,  # Animations (Animation Série)
+            639,  # TV Programs (Emission TV)
+        )
 
         self.confirmed = False
 
@@ -384,5 +383,46 @@ class T411Auth(AuthBase):
         r.headers['Authorization'] = self.token
         return r
 
+_BaseQuery = namedtuple('Query', ['name', 'season', 'episode', 'air_date'])
+
+class Query(_BaseQuery):
+    """A query item to search for."""
+    __slots__ = ()  # Required to keep subclass a tuple
+
+    # Using __new__ instead of __init__ since tuples are immutable
+    def __new__(cls, name, season=None, episode=None, air_date=None):
+        """Initialize a new query."""
+        # First argument of super().__new__ must be cls since __new__ is a static method
+        return super(Query, cls).__new__(cls, name, season, episode, air_date)
+
+    air_date_fmt = '%Y-%m-%d'
+
+    _str = {
+        # Various string formats for __str__ method
+        # The key is a tuple of bool values of attributes
+        # to determine if the format is valid:
+        #     bool(season), bool(episode), bool(air_date)
+
+        # Title s01e01  (Standard naming)
+        (True, True, False): '{self.name} s{self.season:0>2}e{self.episode:0>2}',
+        # Title s01  (Season)
+        (True, False, False): '{self.name} s{self.season:0>2}',
+        # Title e01  (Absolute numbered)
+        (False, True, False): '{self.name} e{self.episode:0>2}',
+        # Title YYYY-MM-DD  (Air by Date)
+        (False, False, True): '{self.name} {date}',
+    }
+
+    def __str__(self):
+        # Get the formatted air date, if one exists
+        date = None
+        with suppress(AttributeError):
+            date = self.air_date.strftime(self.air_date_fmt)
+
+        # Determine which format string to use
+        key = bool(self.season), bool(self.episode), bool(self.air_date)
+        _str = self._str.get(key, '{self.name}')
+
+        return _str.format(self=self, date=date)
 
 provider = T411Provider()
