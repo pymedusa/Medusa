@@ -452,11 +452,11 @@ def search_for_needed_episodes():
 
         # pick a single result for each episode, respecting existing results
         for cur_ep in cur_found_results:
-            if not cur_ep.show or cur_ep.show.paused:
+            if not cur_ep.series or cur_ep.series.paused:
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.show)
+            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.series)
 
             # if all results were rejected move on to the next episode
             if not best_result:
