@@ -1,23 +1,6 @@
 # coding=utf-8
 
-"""
-Torrent Provider T411.
-
-T411 has custom parameters for searching by term
-
-To add a term to a search you add the param term[id] where id is the number
-of the desired term, and the value is the categories desired for that term.
-Searching without terms returns lot of bad results.
-Commonly used term IDs are 45 (season) and 46 (episode).
-
-Examples
---------
-Search using a single season (Season 1 - id 968):
-    requests.get(search_url, params={'term[45][]': 968})
-
-Search using a season and episode:
-    requests.get(search_url, params={'term[45][]':968, 'term[46][]': 936})
-"""
+"""Torrent Provider T411."""
 
 from __future__ import unicode_literals
 
@@ -187,13 +170,30 @@ class T411Provider(TorrentProvider):
         return [search_string]
 
     def search(self, search_strings, age=0, ep_obj=None):
-        """Search a provider and parse the results.
+        """
+        Search T411 and parse the results.
 
-        Provider has specific params for season and episode so:
-        - If is a normal episode/season search it will use URL params for season and episode.
-          In this case search string will be a list of tuples: [(show, season, episode)]
-        - If is anime or sports or air-by-date it will use name search only (which is not a precise search)
-          In this case search string will be a list of strings
+        T411 has custom parameters for searching by term
+
+        To add a term to a search you add the param term[id] where id is the number
+        of the desired term, and the value is the categories desired for that term.
+        Commonly used term IDs are 45 (season) and 46 (episode).
+
+        For normal season and episode searches it will use the term parameters
+        season and episode term parameters for categories that support them.
+        For example:
+            # search for an entire season (term id for season 1 is 968)
+            requests.get(search_url, params={'term[45][]': 968})
+
+            # search for an episode (term id for season 1 is 968, for episode 1 is 936)
+            requests.get(search_url, params={'term[45][]':968, 'term[46][]': 936})
+
+        A normal string search, without terms, will be used in some cases. Searching
+        without terms returns lot of bad results, but is sometimes the only option.
+        Some examples of when a normal string search will be used is for air-by-date
+        series, season or episodes without a corresponding term id, or when searching
+        categories that do not support the specific term (e.g. the sports category
+        which does not support season and episode).
 
         :param search_strings: A dict with mode (key) and the search value (value).
         :param age: Not used
