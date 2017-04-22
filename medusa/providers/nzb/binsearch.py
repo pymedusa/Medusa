@@ -128,7 +128,7 @@ class BinSearchProvider(NZBProvider):
                         size = convert_size(torrent_size) or -1
                     download_url = "https://www.binsearch.info/?action=nzb&amp;{}=1".format(nzb_id)
                     date = attributes[5].get_text()
-                    print(size)
+                    detail_url = "https://www.binsearch.info/?q={0}".format(title)
                     pubdate_raw = parse(date)
                     pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
                     item = {
