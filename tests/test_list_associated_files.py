@@ -159,7 +159,7 @@ def test_list_associated_files(p, create_structure, monkeypatch):
 
     # When
     found_associated_files = processor.list_associated_files(media_file, subfolders=subfolders,
-                                                             subtitles_only=subtitles_only, refine=False)
+                                                             subtitles_only=subtitles_only, refine=True)
     associated_files_basenames = [os.path.basename(i) for i in found_associated_files]
 
     # Then
