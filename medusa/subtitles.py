@@ -31,8 +31,7 @@ from dogpile.cache.api import NO_VALUE
 import knowit
 from medusa.subtitle_providers.utils import hash_itasa
 from six import iteritems, string_types, text_type
-from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
-                        scan_video)
+from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
@@ -49,17 +48,6 @@ logger = logging.getLogger(__name__)
 
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
-
-basename = __name__.split('.')[0]
-
-provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
-
-# Use our custom providers
-provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
-provider_manager.register('legendastv2 = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
-
-refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
-refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
 
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
