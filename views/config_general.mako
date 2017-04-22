@@ -466,7 +466,7 @@
                                     blank = disabled
                                 <div class="clear-left">
                                 <p>Set a base URL, for use in reverse proxies.</p>
-                                <p><b>Note:</b> Must restart to have effect. Mind that old URL will not work.</p>
+                                <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
                                 </div>
                                 </span>
                             </label>
