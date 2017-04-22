@@ -299,7 +299,7 @@ class Manage(Home, WebRoot):
                 else:
                     continue
 
-                if not tv_episode.show.subtitles:
+                if not tv_episode.series.subtitles:
                     continue
 
                 related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
@@ -318,7 +318,7 @@ class Manage(Home, WebRoot):
                     age_unit = 'm'
                     age_value = age_minutes
 
-                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
+                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.series.indexerid, 'show_name': tv_episode.series.name,
                                            'season': tv_episode.season, 'episode': tv_episode.episode, 'status': status,
                                            'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
         app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
