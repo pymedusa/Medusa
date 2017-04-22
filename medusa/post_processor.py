@@ -302,7 +302,7 @@ class PostProcessor(object):
 
         # also delete associated files, works only for 1 file
         if associated_files and len(files) == 1:
-            file_list += self.list_associated_files(files, subfolders=True)
+            file_list += self.list_associated_files(files[0], subfolders=True)
 
         if not file_list:
             self._log(u'There were no files associated with {0}, not deleting anything'.format
