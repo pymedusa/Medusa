@@ -641,8 +641,8 @@ class Episode(TV):
             if cached_season:
                 my_ep = cached_season[episode]
             else:
-                show = self.series.indexer_api[self.series.indexerid]
-                my_ep = show[season][episode]
+                series = self.series.indexer_api[self.series.indexerid]
+                my_ep = series[season][episode]
 
         except (IndexerError, IOError) as e:
             logger.warning('{id}: {indexer} threw up an error: {error_msg}',
@@ -814,7 +814,7 @@ class Episode(TV):
 
             if os.path.isfile(nfo_file):
                 try:
-                    show_xml = ETree.ElementTree(file=nfo_file)
+                    series_xml = ETree.ElementTree(file=nfo_file)
                 except (SyntaxError, ValueError) as e:
                     logger.error('{id}: Error loading the NFO, backing up the NFO and skipping for now: {error_msg}',
                                  id=self.series.indexerid, error_msg=ex(e))
@@ -826,7 +826,7 @@ class Episode(TV):
                                        id=self.series.indexerid, error_msg=ex(e))
                     raise NoNFOException('Error in NFO format')
 
-                for ep_details in list(show_xml.iter('episodedetails')):
+                for ep_details in list(series_xml.iter('episodedetails')):
                     if (ep_details.findtext('season') is None or int(ep_details.findtext('season')) != self.season or
                             ep_details.findtext('episode') is None or
                             int(ep_details.findtext('episode')) != self.episode):
@@ -1253,14 +1253,14 @@ class Episode(TV):
                 name = remove_extension(name)
             return name
 
-        def release_group(show, name):
+        def release_group(series, name):
             if name:
                 name = remove_extension(name)
             else:
                 return ''
 
             try:
-                parse_result = NameParser(show=show, naming_pattern=True).parse(name)
+                parse_result = NameParser(show=series, naming_pattern=True).parse(name)
             except (InvalidNameException, InvalidShowException) as e:
                 logger.debug('Unable to parse release_group: {error_msg}', error_msg=ex(e))
                 return ''
@@ -1272,9 +1272,9 @@ class Episode(TV):
         _, ep_qual = Quality.split_composite_status(self.status)  # @UnusedVariable
 
         if app.NAMING_STRIP_YEAR:
-            show_name = re.sub(r'\(\d+\)$', '', self.series.name).rstrip()
+            series_name = re.sub(r'\(\d+\)$', '', self.series.name).rstrip()
         else:
-            show_name = self.series.name
+            series_name = self.series.name
 
         # try to get the release group
         rel_grp = {
@@ -1306,12 +1306,12 @@ class Episode(TV):
         # try to get the release encoder to comply with scene naming standards
         encoder = Quality.scene_quality_from_name(self.release_name.replace(rel_grp[relgrp], ''), ep_qual)
         if encoder:
-            logger.debug('Found codec for {series} {ep}', series=show_name, ep=ep_name)
+            logger.debug('Found codec for {series} {ep}', series=series_name, ep=ep_name)
 
         return {
-            '%SN': show_name,
-            '%S.N': dot(show_name),
-            '%S_N': us(show_name),
+            '%SN': series_name,
+            '%S.N': dot(series_name),
+            '%S_N': us(series_name),
             '%EN': ep_name,
             '%E.N': dot(ep_name),
             '%E_N': us(ep_name),
