@@ -215,10 +215,10 @@ class Episode(TV):
         'show': 'series',
     }
 
-    def __init__(self, show, season, episode, filepath=''):
+    def __init__(self, series, season, episode, filepath=''):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
-            int(show.indexer) if show else 0,
+            int(series.indexer) if series else 0,
             0,
             {'show',
              'scene_season',
@@ -229,7 +229,7 @@ class Episode(TV):
              'loaded'
              }
         )
-        self.series = show
+        self.series = series
         self.name = ''
         self.season = season
         self.episode = episode
@@ -255,7 +255,7 @@ class Episode(TV):
         self.related_episodes = []
         self.wanted_quality = []
         self.loaded = False
-        if show:
+        if series:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
 
