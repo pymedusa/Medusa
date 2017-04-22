@@ -146,7 +146,7 @@ class PostProcessor(object):
             ))
             return self.EXISTS_LARGER if new_size < old_size else self.EXISTS_SMALLER
 
-    def list_associated_files(self, filepath, subfolders=None, subtitles_only=None, refine=None):
+    def list_associated_files(self, filepath, subfolders=False, subtitles_only=False, refine=False):
         """
         For a given file path search for associated files and return their absolute paths.
 
@@ -156,7 +156,7 @@ class PostProcessor(object):
         :param refine: refine the associated files with additional options
         :return: A list containing all files which are associated to the given file
         """
-        files = self._search_files(filepath, subfolders=subfolders, basename_only=True)
+        files = self._search_files(filepath, subfolders=subfolders)
 
         # file path to the video file that is being processed (without extension)
         processed_file_name = os.path.splitext(os.path.basename(filepath))[0].lower()
@@ -221,7 +221,7 @@ class PostProcessor(object):
         return files - files_to_delete
 
     @staticmethod
-    def _search_files(path, pattern='*', subfolders=None, basename_only=None, sort=None):
+    def _search_files(path, pattern='*', subfolders=False, basename_only=False, sort=False):
         """
         Search for files in a given path.
 
