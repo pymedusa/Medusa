@@ -59,8 +59,6 @@ refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.for
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
-episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
-
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
     'itasa': 'http://www.italiansubs.net',
@@ -683,6 +681,7 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     :return: video
     :rtype: subliminal.video.Video
     """
+    episode_refiners = ('release', 'tvepisode', 'tvdb', 'omdb')
     key = video_key.format(video_path=video_path)
     payload = {'subtitles_dir': subtitles_dir, 'subtitles': subtitles, 'embedded_subtitles': embedded_subtitles,
                'release_name': release_name}
@@ -708,6 +707,9 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
         if embedded_subtitles is None:
             embedded_subtitles = bool(not app.IGNORE_EMBEDDED_SUBS and video_path.endswith('.mkv'))
 
+        #  Enzyme only when mkv
+        if video_path.endswith('mkv'):
+            episode_refiners += ('metadata',)
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
 
