@@ -11,7 +11,7 @@ from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import app, config, github_client, helpers, logger, ui
-from ....common import ARCHIVED, Quality, WANTED
+from ....common import Quality, WANTED
 from ....helper.common import try_int
 
 
@@ -74,7 +74,7 @@ class ConfigGeneral(Config):
         # Misc
         app.DOWNLOAD_URL = download_url
         app.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
-        app.EP_DEFAULT_DELETED_STATUS = try_int(ep_default_deleted_status, ARCHIVED)  # Default is ARCHIVED
+        app.EP_DEFAULT_DELETED_STATUS = int(ep_default_deleted_status)
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         config.change_SHOWUPDATE_HOUR(showupdate_hour)
@@ -94,7 +94,7 @@ class ConfigGeneral(Config):
         app.ANON_REDIRECT = anon_redirect
         app.PROXY_SETTING = proxy_setting
         app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
-        app.GIT_AUTH_TYPE = try_int(git_auth_type, 0)  # Default is 0 = username and password
+        app.GIT_AUTH_TYPE = int(git_auth_type)
         app.GIT_USERNAME = git_username
         app.GIT_PASSWORD = git_password
         app.GIT_TOKEN = git_token
@@ -110,10 +110,10 @@ class ConfigGeneral(Config):
 
         app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
         # app.LOG_DIR is set in config.change_LOG_DIR()
-        app.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)  # Default is 7 (days)
+        app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
         app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
-        app.WEB_PORT = try_int(web_port, 8081)  # Default is 8081
+        app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
         if config.checkbox_to_value(encryption_version) == 1:
             app.ENCRYPTION_VERSION = 2
