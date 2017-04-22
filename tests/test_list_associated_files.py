@@ -152,6 +152,7 @@ def test_list_associated_files(p, create_structure, monkeypatch):
     expected_associated_files = p['expected_associated_files']
     subtitles_only = p.get('subtitles_only', False)
     subfolders = p.get('subfolders', False)
+    refine = p.get('refine', True)
     monkeypatch.setattr(app, 'ALLOWED_EXTENSIONS', p['allowed_extensions'])
     monkeypatch.setattr(app, 'MOVE_ASSOCIATED_FILES', 1)
 
