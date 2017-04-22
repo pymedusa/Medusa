@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Episode classes."""
 
 from __future__ import unicode_literals
@@ -23,6 +8,8 @@ import logging
 import os.path
 import re
 import time
+import traceback
+import warnings
 
 from datetime import date, datetime
 import knowit
@@ -224,6 +211,10 @@ class AirByDateNumber(EpisodeNumber):
 class Episode(TV):
     """Represent a TV Show episode."""
 
+    __refactored = {
+        'show': 'series',
+    }
+
     def __init__(self, show, season, episode, filepath=''):
         """Instantiate a Episode with database information."""
         super(Episode, self).__init__(
@@ -238,7 +229,7 @@ class Episode(TV):
              'loaded'
              }
         )
-        self.show = show
+        self.series = show
         self.name = ''
         self.season = season
         self.episode = episode
@@ -267,6 +258,37 @@ class Episode(TV):
         if show:
             self._specify_episode(self.season, self.episode)
             self.check_for_meta_files()
+
+    def __setattr__(self, key, value):
+        try:
+            refactor = self.__refactored[key]
+        except KeyError:
+            super(Episode, self).__setattr__(key, value)
+        else:
+            warnings.warn(
+                '{item} is deprecated, use {refactor} instead \n{trace}'.format(
+                    item=key, refactor=refactor, trace=traceback.print_stack(),
+                ),
+                DeprecationWarning
+            )
+            super(Episode, self).__setattr__(refactor, value)
+
+    def __getattr__(self, item):
+        try:
+            return super(Episode, self).__getattribute__(item)
+        except AttributeError as error:
+            try:
+                refactor = self.__refactored[item]
+            except KeyError:
+                raise error
+            else:
+                warnings.warn(
+                    '{item} is deprecated, use {refactor} instead \n{trace}'.format(
+                        item=item, refactor=refactor, trace=traceback.print_stack(),
+                    ),
+                    DeprecationWarning
+                )
+                return super(Episode, self).__getattribute__(refactor)
 
     @classmethod
     def find_by_series_and_episode(cls, series, episode_number):
