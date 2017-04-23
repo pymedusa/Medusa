@@ -512,8 +512,8 @@ class GenericProvider(object):
             elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.show.indexerid,
-                                                          episode.show.indexer,
+                        show_name in get_scene_exceptions(episode.series.indexerid,
+                                                          episode.series.indexer,
                                                           episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
@@ -547,12 +547,12 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.series.get_all_possible_names(season=episode.season):
             episode_string = show_name + ' '
 
-            if episode.show.air_by_date or episode.show.sports:
+            if episode.series.air_by_date or episode.series.sports:
                 episode_string += str(episode.airdate).split('-')[0]
-            elif episode.show.anime:
+            elif episode.series.anime:
                 episode_string += 'Season'
             else:
                 episode_string += 'S{season:0>2}'.format(season=episode.season)

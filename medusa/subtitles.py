@@ -451,11 +451,11 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.show.name
+    show_name = tv_episode.series.name
     season = tv_episode.season
     episode = tv_episode.episode
     episode_name = tv_episode.name
-    show_indexerid = tv_episode.show.indexerid
+    show_indexerid = tv_episode.series.indexerid
     status = tv_episode.status
     subtitles_dir = get_subtitles_dir(video_path)
     saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
