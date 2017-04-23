@@ -188,8 +188,8 @@ class BTNProvider(TorrentProvider):
         searches = []
         season = 'Season' if mode == 'Season' else ''
 
-        air_by_date = ep_obj.show.air_by_date
-        sports = ep_obj.show.sports
+        air_by_date = ep_obj.series.air_by_date
+        sports = ep_obj.series.sports
 
         if not season_numbering and (air_by_date or sports):
             date_fmt = '%Y' if season else '%Y.%m.%d'
@@ -208,15 +208,15 @@ class BTNProvider(TorrentProvider):
         }
 
         # Search
-        if ep_obj.show.indexer == 1:
+        if ep_obj.series.indexer == 1:
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:
             name_exceptions = scene_exceptions.get_scene_exceptions(
-                ep_obj.show.indexerid,
-                ep_obj.show.indexer
+                ep_obj.series.indexerid,
+                ep_obj.series.indexer
             )
-            name_exceptions.add(ep_obj.show.name)
+            name_exceptions.add(ep_obj.series.name)
             for name in name_exceptions:
                 # Search by name if we don't have tvdb id
                 params['series'] = name

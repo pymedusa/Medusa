@@ -134,11 +134,11 @@ class HDBitsProvider(TorrentProvider):
         return title, url
 
     def _get_season_search_strings(self, ep_obj):
-        season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
+        season_search_string = [self._make_post_data_json(show=ep_obj.series, season=ep_obj)]
         return season_search_string
 
     def _get_episode_search_strings(self, ep_obj, add_string=''):
-        episode_search_string = [self._make_post_data_json(show=ep_obj.show, episode=ep_obj)]
+        episode_search_string = [self._make_post_data_json(show=ep_obj.series, episode=ep_obj)]
         return episode_search_string
 
     def _make_post_data_json(self, show=None, episode=None, season=None, search_term=None):

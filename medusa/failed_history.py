@@ -316,5 +316,5 @@ def find_release(ep_obj):
 
     # Release was not found
     logger.log(u'No releases found for {show} {ep}'.format
-               (show=ep_obj.show.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
+               (show=ep_obj.series.name, ep=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
     return release, provider
