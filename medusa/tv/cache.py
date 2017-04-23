@@ -441,7 +441,7 @@ class Cache(object):
                 b'WHERE indexerid = ? AND'
                 b'     season = ? AND'
                 b'     episodes LIKE ?'.format(name=self.provider_id),
-                [episode.show.indexerid, episode.season,
+                [episode.series.indexerid, episode.season,
                  b'%|{0}|%'.format(episode.episode)]
             )
         else:
