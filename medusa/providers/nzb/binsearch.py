@@ -121,7 +121,12 @@ class BinSearchProvider(NZBProvider):
                     title_re = title_regex.search(title)
                     # Try and get the the article subject from the wierd binsearch format
                     if title_re:
-                        title = title_re.group(1) if len(title_re.group(1)) > 3 or title_re.group(2) or attributes[2].find("span").get_text()
+                        if len(title_re.group(1)) > 3:
+                            title = title_re.group(1)
+                        elif len(title_re.group(2)) > 3:
+                            title = title_re.group(2)
+                        else:
+                            title = attributes[2].find("span").get_text()
                     if not all([title, nzb_id]):
                         continue
                     # Obtain the size from the "description"
