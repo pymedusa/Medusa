@@ -11,6 +11,7 @@ from six import text_type
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
+
 class BraceMessage(object):
     """Lazily convert a Brace-formatted message."""
 
