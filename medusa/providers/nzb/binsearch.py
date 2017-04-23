@@ -35,8 +35,8 @@ from medusa.providers.nzb.nzb_provider import NZBProvider
 from requests.compat import urljoin
 from pytimeparse import parse
 
-size_regex = re.compile(r'size: (.*)(?:\\xa0)(.*), parts', re.I) 
-title_regex = re.compile(r'\[? ?(.*?) ?\]? ?-? ?(?:-? ?\[.*] ?-)? ?\"(.*?)\" ?(?:yEnc)? ?\(*.*\)', re.I)
+size_regex = re.compile(r'size: (.*)(?:\\xa0)(.*), parts', re.I)
+title_regex = re.compile(r'\[? ]? ?(.*?) ?\]? ?-? ?(?:-? ?\[.*] ?-)? ?\"(.*?)\" ?(?:yEnc)? ?\(*.*\)', re.I)
 
 class BinSearchProvider(NZBProvider):
     """BinSearch Newznab provider."""
@@ -64,30 +64,31 @@ class BinSearchProvider(NZBProvider):
 
     def search(self, search_strings, age=0, ep_obj=None):
         results = []
-        if not self._check_auth():
-            return results
         search_params = {
             'adv_age': "",
             'xminsize': 20,
             'max': 250,
         }
+        groups = [1, 2]
 
         for mode in search_strings:
-            items = []
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
             for search_string in search_strings[mode]:
                 search_params['q'] = search_string
-                if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                for group in groups:
+                    # Try both "search in the most popular groups" & "search in the other groups" modes
+                    search_params['server'] = group
+                    if mode != 'RSS':
+                        logger.log('Search string: {search}'.format
+                                (search=search_string), logger.DEBUG)
 
-                response = self.get_url(self.urls['search'], params=search_params)
-                if not response:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    continue
+                    response = self.get_url(self.urls['search'], params=search_params)
+                    if not response:
+                        logger.log('No data returned from provider', logger.DEBUG)
+                        continue
 
-                results += self.parse(response.text, mode)
+                    results += self.parse(response.text, mode)
 
         return results
 
@@ -105,7 +106,7 @@ class BinSearchProvider(NZBProvider):
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('table', class_='xMenuT')
             torrent_rows = torrent_table.find("tbody").find("tr") if torrent_table else []
-            
+
             if len(torrent_rows) < 1:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
@@ -118,17 +119,22 @@ class BinSearchProvider(NZBProvider):
                     nzb_id = attributes[1].find("input")["name"]
                     title = attributes[2].find("span").get_text()
                     title_re = title_regex.search(title)
+                    # Try and get the the article subject from the wierd binsearch format
                     if title_re:
                         title = title_re.group(1) or title_re.group(2) or attributes[2].find("span").get_text()
                     if not all([title, nzb_id]):
                         continue
+                    # Obtain the size from the "description"
                     torrent_size = size_regex.search(str(attributes).encode("utf-8"))
                     if torrent_size:
                         torrent_size = "{0} {1}".format(torrent_size.group(1), torrent_size.group(2))
                         size = convert_size(torrent_size) or -1
                     download_url = "https://www.binsearch.info/?action=nzb&amp;{}=1".format(nzb_id)
+
+                    # For future use
+                    # detail_url = "https://www.binsearch.info/?q={0}".format(title)
+
                     date = attributes[5].get_text()
-                    detail_url = "https://www.binsearch.info/?q={0}".format(title)
                     pubdate_raw = parse(date)
                     pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
                     item = {
