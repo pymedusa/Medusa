@@ -348,7 +348,7 @@ def is_first_best_match(result):
     """
     log.debug(u'Checking if we should stop searching for a better quality for for episode {0}', result.name)
 
-    show_obj = result.episodes[0].show
+    show_obj = result.episodes[0].series
 
     _, preferred_qualities = show_obj.current_qualities
     # Don't pass allowed because we only want to check if this quality is wanted preferred.
