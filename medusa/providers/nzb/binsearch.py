@@ -36,7 +36,7 @@ from requests.compat import urljoin
 from pytimeparse import parse
 
 size_regex = re.compile(r'size: (.*)(?:\\xa0)(.*), parts', re.I)
-title_regex = re.compile(r'\[? ]? ?(.*?) ?\]? ?-? ?(?:-? ?\[.*] ?-)? ?\"(.*?)\" ?(?:yEnc)? ?\(*.*\)', re.I)
+title_regex = re.compile(r'(?:-\[ (.*) ?]-)?(?:\[\d*\/\d*])?(?: - )?"(.*)" (?:yEnc)?', re.I)
 
 class BinSearchProvider(NZBProvider):
     """BinSearch Newznab provider."""
@@ -134,6 +134,7 @@ class BinSearchProvider(NZBProvider):
                     if torrent_size:
                         torrent_size = "{0} {1}".format(torrent_size.group(1), torrent_size.group(2))
                         size = convert_size(torrent_size) or -1
+                        logger.log('Found size: {0} and converted size: {1}'.format(torrent_size, size), logger.DEBUG)
                     download_url = "https://www.binsearch.info/?action=nzb&amp;{}=1".format(nzb_id)
 
                     # For future use
