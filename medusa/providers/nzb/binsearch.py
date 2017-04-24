@@ -120,18 +120,18 @@ class BinSearchProvider(NZBProvider):
             rows = rows[row_offset:]
 
             for row in rows:
-                attributes = row.find_all("td")
+                attributes = dict(zip(labels, row('td')))
                 nzb_id = attributes[1].find("input")["name"]
-                title_field = attributes[2].find("span").text
+                title_field = attributes['subject'].find("span")
                 # Try and get the the article subject from the weird binsearch format
-                title = title_regex.search(title_field).group(1)
+                title = title_regex.search(title_field.text).group(1)
                 for extension in ('.nfo', '.par2', '.zip'):
                     # Strip extensions that aren't part of the file name
                     title = title.rstrip(extension)
                 if not all([title, nzb_id]):
                     continue
                 # Obtain the size from the "description"
-                torrent_size = size_regex.search(str(attributes).encode("utf-8"))
+                torrent_size = size_regex.search(attributes['subject'].text)
                 if torrent_size:
                     torrent_size = torrent_size.group(1)
                 size = convert_size(torrent_size, sep='\xa0') or -1
@@ -140,7 +140,7 @@ class BinSearchProvider(NZBProvider):
                 # For future use
                 # detail_url = "https://www.binsearch.info/?q={0}".format(title)
 
-                date = attributes[5].get_text()
+                date = attributes['age'].get_text(strip=True)
                 pubdate_raw = parse(date)
                 pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
                 item = {
