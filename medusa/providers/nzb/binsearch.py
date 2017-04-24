@@ -131,10 +131,10 @@ class BinSearchProvider(NZBProvider):
                 if not all([title, nzb_id]):
                     continue
                 # Obtain the size from the "description"
-                torrent_size = size_regex.search(attributes['subject'].text)
-                if torrent_size:
-                    torrent_size = torrent_size.group(1)
-                size = convert_size(torrent_size, sep='\xa0') or -1
+                size_field = size_regex.search(attributes['subject'].text)
+                if size_field:
+                    size_field = size_field.group(1)
+                size = convert_size(size_field, sep='\xa0') or -1
                 download_url = "https://www.binsearch.info/?action=nzb&{0}=1".format(nzb_id)
 
                 # For future use
