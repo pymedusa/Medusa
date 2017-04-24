@@ -105,7 +105,7 @@ class BinSearchProvider(NZBProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             table = html.find('table', class_='xMenuT')
-            rows = table.find("tbody").find("tr") if table else []
+            rows = table("tr") if table else []
 
             if len(rows) < 1:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
