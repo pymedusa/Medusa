@@ -119,43 +119,41 @@ class BinSearchProvider(NZBProvider):
             # Skip column headers
             rows = rows[2:]
 
-            for row in table:
-                cells = row('tr')[2:]
-                for cell in cells:
-                    attributes = cell.find_all("td")
-                    nzb_id = attributes[1].find("input")["name"]
-                    title_field = attributes[2].find("span").text
-                    # Try and get the the article subject from the weird binsearch format
-                    title = title_regex.search(title_field).group(1)
-                    for extension in ('.nfo', '.par2', '.zip'):
-                        # Strip extensions that aren't part of the file name
-                        title = title.rstrip(extension)
-                    if not all([title, nzb_id]):
-                        continue
-                    # Obtain the size from the "description"
-                    torrent_size = size_regex.search(str(attributes).encode("utf-8"))
-                    if torrent_size:
-                        torrent_size = torrent_size.group(1)
-                    size = convert_size(torrent_size, sep='\xa0') or -1
-                    download_url = "https://www.binsearch.info/?action=nzb&{0}=1".format(nzb_id)
+            for row in rows:
+                attributes = row.find_all("td")
+                nzb_id = attributes[1].find("input")["name"]
+                title_field = attributes[2].find("span").text
+                # Try and get the the article subject from the weird binsearch format
+                title = title_regex.search(title_field).group(1)
+                for extension in ('.nfo', '.par2', '.zip'):
+                    # Strip extensions that aren't part of the file name
+                    title = title.rstrip(extension)
+                if not all([title, nzb_id]):
+                    continue
+                # Obtain the size from the "description"
+                torrent_size = size_regex.search(str(attributes).encode("utf-8"))
+                if torrent_size:
+                    torrent_size = torrent_size.group(1)
+                size = convert_size(torrent_size, sep='\xa0') or -1
+                download_url = "https://www.binsearch.info/?action=nzb&{0}=1".format(nzb_id)
 
-                    # For future use
-                    # detail_url = "https://www.binsearch.info/?q={0}".format(title)
+                # For future use
+                # detail_url = "https://www.binsearch.info/?q={0}".format(title)
 
-                    date = attributes[5].get_text()
-                    pubdate_raw = parse(date)
-                    pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
-                    item = {
-                        'title': title,
-                        'link': download_url,
-                        'size': size,
-                        'pubdate': pubdate,
-                    }
-                    if mode != 'RSS':
-                        logger.log('Found result: {0}'.format
-                                   (title), logger.DEBUG)
+                date = attributes[5].get_text()
+                pubdate_raw = parse(date)
+                pubdate = '{0}'.format(datetime.datetime.now() - datetime.timedelta(seconds=pubdate_raw))
+                item = {
+                    'title': title,
+                    'link': download_url,
+                    'size': size,
+                    'pubdate': pubdate,
+                }
+                if mode != 'RSS':
+                    logger.log('Found result: {0}'.format
+                               (title), logger.DEBUG)
 
-                    items.append(item)
+                items.append(item)
 
         return items
 
