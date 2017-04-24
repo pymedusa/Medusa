@@ -1,32 +1,16 @@
 # coding=utf-8
 
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
-
 import ast
+import logging
 import socket
 import time
 
+from medusa import app, common, db
+from medusa.helper.encoding import ss
+from medusa.logger.adapters.style import BraceAdapter
+
 from requests.compat import urlencode
 from six.moves.http_client import HTTPException, HTTPSConnection
-from .. import app, common, db, logger
-from ..helper.encoding import ss
 
 try:
     # this only exists in 2.6
@@ -36,10 +20,13 @@ except ImportError:
     class SSLError(Exception):
         pass
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
 
 class Notifier(object):
     def test_notify(self, prowl_api, prowl_priority):
-        return self._send_prowl(prowl_api, prowl_priority, event="Test", message="Testing Prowl settings from Medusa", force=True)
+        return self._send_prowl(prowl_api, prowl_priority, event='Test', message='Testing Prowl settings from Medusa', force=True)
 
     def notify_snatch(self, ep_name, is_proper):
         ep_name = ss(ep_name)
@@ -47,11 +34,11 @@ class Notifier(object):
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
             if not recipients:
-                logger.log('Skipping prowl notify because there are no configured recipients', logger.DEBUG)
+                log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                                     message=ep_name + " :: " + time.strftime(app.DATE_PRESET + " " + app.TIME_PRESET))
+                                     message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
 
     def notify_download(self, ep_name):
         ep_name = ss(ep_name)
@@ -59,11 +46,11 @@ class Notifier(object):
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
             if not recipients:
-                logger.log('Skipping prowl notify because there are no configured recipients', logger.DEBUG)
+                log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                                     message=ep_name + " :: " + time.strftime(app.DATE_PRESET + " " + app.TIME_PRESET))
+                                     message=ep_name + ' :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
 
     def notify_subtitle_download(self, ep_name, lang):
         ep_name = ss(ep_name)
@@ -71,20 +58,20 @@ class Notifier(object):
             show = self._parse_episode(ep_name)
             recipients = self._generate_recipients(show)
             if not recipients:
-                logger.log('Skipping prowl notify because there are no configured recipients', logger.DEBUG)
+                log.debug('Skipping prowl notify because there are no configured recipients')
             else:
                 for api in recipients:
                     self._send_prowl(prowl_api=api, prowl_priority=None, event=common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD],
-                                     message=ep_name + " [" + lang + "] :: " + time.strftime(app.DATE_PRESET + " " + app.TIME_PRESET))
+                                     message=ep_name + ' [' + lang + '] :: ' + time.strftime(app.DATE_PRESET + ' ' + app.TIME_PRESET))
 
-    def notify_git_update(self, new_version="??"):
+    def notify_git_update(self, new_version='??'):
         if app.USE_PROWL:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._send_prowl(prowl_api=None, prowl_priority=None,
                              event=title, message=update_text + new_version)
 
-    def notify_login(self, ipaddress=""):
+    def notify_login(self, ipaddress=''):
         if app.USE_PROWL:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
@@ -105,7 +92,7 @@ class Notifier(object):
         # Grab the per-show-notification recipients
         if show is not None:
             for value in show:
-                for subs in mydb.select("SELECT notify_list FROM tv_shows WHERE show_name = ?", (value,)):
+                for subs in mydb.select('SELECT notify_list FROM tv_shows WHERE show_name = ?', (value,)):
                     if subs['notify_list']:
                         if subs['notify_list'][0] == '{':               # legacy format handling
                             entries = dict(ast.literal_eval(subs['notify_list']))
@@ -132,10 +119,10 @@ class Notifier(object):
 
         title = app.PROWL_MESSAGE_TITLE
 
-        logger.log(u"PROWL: Sending notice with details: title=\"%s\" event=\"%s\", message=\"%s\", priority=%s, api=%s"
-                   % (title, event, message, prowl_priority, prowl_api), logger.DEBUG)
+        log.debug(u'PROWL: Sending notice with details: title="{0}" event="{1}", message="{2}", priority={3}, api={4}',
+                  title, event, message, prowl_priority, prowl_api)
 
-        http_handler = HTTPSConnection("api.prowlapp.com")
+        http_handler = HTTPSConnection('api.prowlapp.com')
 
         data = {'apikey': prowl_api,
                 'application': title,
@@ -144,32 +131,32 @@ class Notifier(object):
                 'priority': prowl_priority}
 
         try:
-            http_handler.request("POST",
-                                 "/publicapi/add",
-                                 headers={'Content-type': "application/x-www-form-urlencoded"},
+            http_handler.request('POST',
+                                 '/publicapi/add',
+                                 headers={'Content-type': 'application/x-www-form-urlencoded'},
                                  body=urlencode(data))
         except (SSLError, HTTPException, socket.error):
-            logger.log(u"Prowl notification failed.", logger.ERROR)
+            log.error(u'Prowl notification failed.')
             return False
         response = http_handler.getresponse()
         request_status = response.status
 
         if request_status == 200:
-            logger.log(u"Prowl notifications sent.", logger.INFO)
+            log.info(u'Prowl notifications sent.')
             return True
         elif request_status == 401:
-            logger.log(u"Prowl auth failed: %s" % response.reason, logger.ERROR)
+            log.error(u'Prowl auth failed: {0}', response.reason)
             return False
         else:
-            logger.log(u"Prowl notification failed.", logger.ERROR)
+            log.error(u'Prowl notification failed.')
             return False
 
     @staticmethod
     def _parse_episode(ep_name):
         ep_name = ss(ep_name)
 
-        sep = " - "
+        sep = ' - '
         titles = ep_name.split(sep)
         titles.sort(key=len, reverse=True)
-        logger.log("TITLES: %s" % titles, logger.DEBUG)
+        log.debug('TITLES: {0}', titles)
         return titles

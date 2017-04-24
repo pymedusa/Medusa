@@ -1,54 +1,47 @@
+"""Trakt notifier module."""
 # coding=utf-8
-
-# Author: Dieter Blomme <dieterblomme@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 
 from __future__ import unicode_literals
 
-from medusa import app, logger
+import logging
+
+from medusa import app
 from medusa.helpers import get_title_without_year
 from medusa.indexers.indexer_config import get_trakt_indexer
+from medusa.logger.adapters.style import BraceAdapter
 
-from traktor import AuthException, ServerBusy, TraktApi, TraktException
+from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
     """A "notifier" for trakt.tv which keeps track of what has and hasn't been added to your library."""
 
     def notify_snatch(self, ep_name, is_proper):
+        """Trakt don't support this method."""
         pass
 
     def notify_download(self, ep_name):
+        """Trakt don't support this method."""
         pass
 
     def notify_subtitle_download(self, ep_name, lang):
+        """Trakt don't support this method."""
         pass
 
     def notify_git_update(self, new_version):
+        """Trakt don't support this method."""
         pass
 
     def notify_login(self, ipaddress=''):
+        """Trakt don't support this method."""
         pass
 
     @staticmethod
     def update_library(ep_obj):
-        """
-        Sends a request to trakt indicating that the given episode is part of our library.
+        """Send a request to trakt indicating that the given episode is part of our library.
 
         ep_obj: The Episode object to add to trakt
         """
@@ -97,14 +90,12 @@ class Notifier(object):
                 # update library
                 trakt_api.request('sync/collection', data, method='POST')
 
-            except (TraktException, AuthException, ServerBusy) as error:
-                logger.log('Unable to update Trakt: {0}'.format(error.message), logger.DEBUG)
+            except (TokenExpiredException, TraktException, AuthException) as error:
+                log.debug('Unable to update Trakt: {0}', error.message)
 
     @staticmethod
     def update_watchlist(show_obj=None, s=None, e=None, data_show=None, data_episode=None, update='add'):
-
-        """
-        Sends a request to trakt indicating that the given episode is part of our library.
+        """Send a request to trakt indicating that the given episode is part of our library.
 
         show_obj: The Series object to add to trakt
         s: season number
@@ -144,9 +135,10 @@ class Notifier(object):
                 elif data_show is not None:
                     data.update(data_show)
                 else:
-                    logger.log("There's a coding problem contact developer. "
-                               "It's needed to be provided at least one of the two: data_show or show_obj",
-                               logger.WARNING)
+                    log.warning(
+                        "There's a coding problem contact developer. It's needed to be provided at"
+                        " least one of the two: data_show or show_obj",
+                    )
                     return False
 
                 if data_episode is not None:
@@ -182,57 +174,54 @@ class Notifier(object):
 
                 trakt_api.request(trakt_url, data, method='POST')
 
-            except (TraktException, AuthException, ServerBusy) as error:
-                logger.log('Unable to update Trakt watchlist: {0}'.format(error.message), logger.DEBUG)
+            except (TokenExpiredException, TraktException, AuthException) as error:
+                log.debug('Unable to update Trakt watchlist: {0}', error.message)
                 return False
 
         return True
 
     @staticmethod
     def trakt_show_data_generate(data):
-
-        showList = []
+        """Build the JSON structure to send back to Trakt."""
+        show_list = []
         for indexer, indexerid, title, year in data:
             show = {'title': title, 'year': year, 'ids': {}}
             show['ids'][get_trakt_indexer(indexer)] = indexerid
-            showList.append(show)
+            show_list.append(show)
 
-        post_data = {'shows': showList}
+        post_data = {'shows': show_list}
 
         return post_data
 
     @staticmethod
     def trakt_episode_data_generate(data):
-
+        """Build the JSON structure to send back to Trakt."""
         # Find how many unique season we have
-        uniqueSeasons = []
+        unique_seasons = []
         for season, episode in data:
-            if season not in uniqueSeasons:
-                uniqueSeasons.append(season)
+            if season not in unique_seasons:
+                unique_seasons.append(season)
 
         # build the query
-        seasonsList = []
-        for searchedSeason in uniqueSeasons:
-            episodesList = []
+        seasons_list = []
+        for searchedSeason in unique_seasons:
+            episodes_list = []
             for season, episode in data:
                 if season == searchedSeason:
-                    episodesList.append({'number': episode})
-            seasonsList.append({'number': searchedSeason, 'episodes': episodesList})
+                    episodes_list.append({'number': episode})
+            seasons_list.append({'number': searchedSeason, 'episodes': episodes_list})
 
-        post_data = {'seasons': seasonsList}
+        post_data = {'seasons': seasons_list}
 
         return post_data
 
     @staticmethod
     def test_notify(username, blacklist_name=None):
-        """
-        Sends a test notification to trakt with the given authentication info and returns a boolean
-        representing success.
+        """Send a test notification to trakt with the given authentication info and returns a boolean.
 
         api: The api string to use
         username: The username to use
         blacklist_name: slug of trakt list used to hide not interested show
-
         Returns: True if the request succeeded, False otherwise
         """
         try:
@@ -253,6 +242,6 @@ class Notifier(object):
                     return "Trakt blacklist doesn't exists"
             else:
                 return 'Test notice sent successfully to Trakt'
-        except (TraktException, AuthException, ServerBusy) as error:
-            logger.log('Unable to test TRAKT: {0}'.format(error.message), logger.WARNING)
+        except (TokenExpiredException, TraktException, AuthException) as error:
+            log.warning('Unable to test TRAKT: {0}', error.message)
             return 'Test notice failed to Trakt: {0}'.format(error.message)

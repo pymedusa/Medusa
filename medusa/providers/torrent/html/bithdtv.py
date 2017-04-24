@@ -139,8 +139,8 @@ class BithdtvProvider(TorrentProvider):
                     continue
 
                 try:
-                    title = cells[2].find('a')['title']
-                    download_url = urljoin(self.url, cells[0].find('a')['href'])
+                    title = cells[2].find('a')['title'] if cells[2] else None
+                    download_url = urljoin(self.url, cells[0].find('a')['href']) if cells[0] else None
                     if not all([title, download_url]):
                         continue
 

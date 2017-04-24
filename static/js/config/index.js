@@ -5,7 +5,7 @@ MEDUSA.config.index = function() {
     }
 
     $('#theme_name').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             theme: {
                 name: $(this).val()
             }

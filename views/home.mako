@@ -12,7 +12,9 @@
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
-<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
+<% random_show = choice(app.showList) if app.showList else None %>
+<input type="hidden" id="showID" value="${random_show.indexerid if app.showList else ''}" />
+<input type="hidden" id="series_slug" value="${random_show.slug if app.showList else ''}" />
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">
         <div class="pull-right">
@@ -33,6 +35,7 @@
                         <option value="date" data-sort="setPosterSortBy/?sort=date"    ${'selected="selected" ' if app.POSTER_SORTBY=='date' else ''}>Next Episode</option>
                         <option value="network" data-sort="setPosterSortBy/?sort=network" ${'selected="selected" ' if app.POSTER_SORTBY=='network' else ''}>Network</option>
                         <option value="progress" data-sort="setPosterSortBy/?sort=progress" ${'selected="selected"' if app.POSTER_SORTBY=='progress' else ''}>Progress</option>
+                        <option value="indexer" data-sort="setPosterSortBy/?sort=indexer" ${'selected="selected" ' if app.POSTER_SORTBY=='indexer' else ''}>Indexer</option>
                   </select>
                 </div>
                 <div class="show-option pull-right">

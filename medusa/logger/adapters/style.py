@@ -8,6 +8,9 @@ import logging
 
 from six import text_type
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 class BraceMessage(object):
     """Lazily convert a Brace-formatted message."""
@@ -31,6 +34,9 @@ class BraceMessage(object):
             return self.msg.format(*args, **kwargs)
         except IndexError:
             return self.msg.format(kwargs)
+        except Exception:
+            log.exception('BraceMessage string formatting failed. Using representation instead.')
+            return repr(self)
 
     def __repr__(self):
         """Convert to class representation."""
