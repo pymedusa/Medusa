@@ -51,6 +51,28 @@ EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
+STATUS_MAP = {
+    'returning series': 'Continuing',
+    'canceled/ended': 'Ended',
+    'tbd/on the bubble': 'Continuing',
+    'in development': 'Continuing',
+    'new series': 'Continuing',
+    'never aired': 'Ended',
+    'final season': 'Continuing',
+    'on hiatus': 'Continuing',
+    'pilot ordered': 'Continuing',
+    'pilot rejected': 'Ended',
+    'canceled': 'Ended',
+    'ended': 'Ended',
+    'to be determined': 'Continuing',
+    'running': 'Continuing',
+    'planned': 'Continuing',
+    'in production': 'Continuing',
+    'pilot': 'Continuing',
+    'cancelled': 'Ended',
+    'continuing': 'Continuing'
+}
+
 indexerConfig = {
     INDEXER_TVDBV2: {
         'enabled': True,
@@ -122,7 +144,16 @@ def indexer_name_to_id(indexer_name):
     :param indexer_name: Identifier of the indexer. Example: will return 1 for 'tvdb'.
     :return: The indexer id.
     """
-    return {v['identifier']: k for k, v in indexerConfig.items()}[indexer_name]
+    return {v['identifier']: k for k, v in indexerConfig.items()}.get(indexer_name)
+
+
+def indexer_id_to_name(indexer):
+    """Reverse translate the indexer identifier to it's id.
+
+    :param indexer: Indexer id. E.g.: 1.
+    :return: The indexer name. E.g.: tvdb
+    """
+    return indexerConfig[indexer]['identifier']
 
 
 def indexer_id_to_slug(indexer, indexer_id):
@@ -144,7 +175,8 @@ def slug_to_indexer_id(slug):
     if not slug:
         return None, None
     result = re.compile(r'([a-z]+)([0-9]+)').match(slug)
-    return indexer_name_to_id(result.group(1)), int(result.group(2))
+    if result:
+        return indexer_name_to_id(result.group(1)), int(result.group(2))
 
 
 def get_trakt_indexer(indexer):

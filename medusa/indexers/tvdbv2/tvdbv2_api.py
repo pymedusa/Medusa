@@ -20,16 +20,15 @@ import logging
 from collections import OrderedDict
 
 from requests.compat import urljoin
-from requests.packages.urllib3.exceptions import MaxRetryError, RequestError
+from requests.exceptions import RequestException
 
-from tvdbapiv2 import (ApiClient, AuthenticationApi, SearchApi, SeriesApi, UpdatesApi)
-from tvdbapiv2.rest import ApiException
+from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
+from tvdbapiv2.exceptions import ApiException
 
 from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import (IndexerError, IndexerException, IndexerShowIncomplete, IndexerShowNotFound,
-                                  IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
+                                  IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from ..indexer_ui import BaseUI, ConsoleUI
-
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +36,8 @@ logger = logging.getLogger(__name__)
 class TVDBv2(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
-    >>> t = tvdbv2()
-    >>> t['Scrubs'][1][24]['episodename']
+    >>> indexer_api = tvdbv2()
+    >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
@@ -57,27 +56,17 @@ class TVDBv2(BaseIndexer):
         # Initiate the tvdb api v2
         api_base_url = 'https://api.thetvdb.com'
 
+        # Set the session.
+        self.session = self.config['session']
+
         # client_id = 'username'  # (optional! Only required for the /user routes)
         # client_secret = 'pass'  # (optional! Only required for the /user routes)
         apikey = '0629B785CE550C8D'
+        tvdb_client = ApiClient(api_base_url, session=self.session, api_key=apikey)
 
-        authentication_string = {'apikey': apikey, 'username': '', 'userpass': ''}
-
-        try:
-            unauthenticated_client = ApiClient(api_base_url)
-            auth_api = AuthenticationApi(unauthenticated_client)
-            access_token = auth_api.login_post(authentication_string)
-            auth_client = ApiClient(api_base_url, 'Authorization', 'Bearer ' + access_token.token)
-        except ApiException as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'", e.reason)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
-        except (MaxRetryError, RequestError) as e:
-            logger.warning("could not authenticate to the indexer TheTvdb.com, with reason '%s'.", e.reason)
-            raise IndexerUnavailable("Indexer unavailable with reason '%s'" % e.reason)
-
-        self.search_api = SearchApi(auth_client)
-        self.series_api = SeriesApi(auth_client)
-        self.updates_api = UpdatesApi(auth_client)
+        self.search_api = SearchApi(tvdb_client)
+        self.series_api = SeriesApi(tvdb_client)
+        self.updates_api = UpdatesApi(tvdb_client)
 
         # An api to indexer series/episode object mapping
         self.series_map = {
@@ -153,10 +142,15 @@ class TVDBv2(BaseIndexer):
         try:
             results = self.search_api.search_series_get(name=show, accept_language=request_language)
         except ApiException as e:
+            if e.status == 401:
+                raise IndexerAuthFailed(
+                    'Authentication failed, possible bad api key. reason: {reason} ({status})'
+                    .format(reason=e.reason, status=e.status)
+                )
             raise IndexerShowNotFound(
                 'Show search failed in getting a result with reason: %s' % e.reason
             )
-        except (MaxRetryError, RequestError) as e:
+        except RequestException as e:
             raise IndexerException('Show search failed in getting a result with error: %r' % e)
 
         if results:
@@ -194,9 +188,23 @@ class TVDBv2(BaseIndexer):
         :param tvdbv2_id: The shows tvdbv2 id
         :return: An ordered dict with the show searched for.
         """
+        results = None
         if tvdbv2_id:
             logger.debug('Getting all show data for %s', [tvdbv2_id])
-            results = self.series_api.series_id_get(tvdbv2_id, accept_language=request_language)
+            try:
+                results = self.series_api.series_id_get(tvdbv2_id, accept_language=request_language)
+            except ApiException as e:
+                if e.status == 401:
+                    raise IndexerAuthFailed(
+                        'Authentication failed, possible bad api key. reason: {reason} ({status})'
+                        .format(reason=e.reason, status=e.status)
+                    )
+                raise IndexerShowNotFound(
+                    'Show search failed in getting a result with reason: {reason} ({status})'
+                    .format(reason=e.reason, status=e.status)
+                )
+            except RequestException as e:
+                raise IndexerException('Show search failed in getting a result with error: %r' % e)
 
         if not results:
             return
@@ -259,12 +267,17 @@ class TVDBv2(BaseIndexer):
                     page += 1
         except ApiException as e:
             logger.debug('Error trying to index the episodes')
+            if e.status == 401:
+                raise IndexerAuthFailed(
+                    'Authentication failed, possible bad api key. reason: {reason} ({status})'
+                    .format(reason=e.reason, status=e.status)
+                )
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
                 'could not get any episodes. Did a {search_type} search. Exception: {ex}'.format
                 (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), ex=e)
             )
-        except (MaxRetryError, RequestError) as e:
+        except RequestException as e:
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
 
         if not results:
@@ -365,8 +378,8 @@ class TVDBv2(BaseIndexer):
         From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
         images are retrieved using t['show name]['_banners'], for example:
 
-        >>> t = Tvdb(images = True)
-        >>> t['scrubs']['_banners'].keys()
+        >>> indexer_api = Tvdb(images = True)
+        >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season', 'seasonwide']
         For a Poster
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
@@ -393,9 +406,9 @@ class TVDBv2(BaseIndexer):
         # Let's get the different types of images available for this series
         try:
             series_images_count = self.series_api.series_id_images_get(sid, accept_language=self.config['language'])
-        except Exception as e:
-            logger.debug('Could not get image count for showid: %s, with exception: %r', sid, e)
-            return False
+        except (ApiException, RequestException) as e:
+            logger.info('Could not get image count for showid: %s with reason: %r', sid, e.message)
+            return
 
         for image_type, image_count in self._object_to_dict(series_images_count).iteritems():
             try:
@@ -445,10 +458,9 @@ class TVDBv2(BaseIndexer):
                             v = self.config['artwork_prefix'] % v
 
                         base_path[k] = v
-
-            except Exception as e:
+            except (ApiException, RequestException) as e:
                 logger.warning('Could not parse Poster for showid: %s, with exception: %r', sid, e)
-                return False
+                return
 
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
@@ -459,8 +471,8 @@ class TVDBv2(BaseIndexer):
         From http://thetvdb.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
         Actors are retrieved using t['show name]['_actors'], for example:
 
-        >>> t = Tvdb(actors = True)
-        >>> actors = t['scrubs']['_actors']
+        >>> indexer_api = Tvdb(actors = True)
+        >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
         <class 'tvdb_api.Actors'>
         >>> type(actors[0])
@@ -572,8 +584,15 @@ class TVDBv2(BaseIndexer):
                     from_time = last_update_ts
                     total_updates += [int(_.id) for _ in updates]
                 count += 1
-        except (ApiException, MaxRetryError, RequestError) as e:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0!r}'.format(e))
+        except ApiException as e:
+            if e.status == 401:
+                raise IndexerAuthFailed(
+                    'Authentication failed, possible bad api key. reason: {reason} ({status})'
+                    .format(reason=e.reason, status=e.status)
+                )
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.message))
+        except RequestException as e:
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.message))
 
         if total_updates and filter_show_list:
             new_list = []

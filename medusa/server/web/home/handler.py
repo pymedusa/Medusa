@@ -16,6 +16,7 @@ from medusa import (
     db,
     helpers,
     logger,
+    name_cache,
     notifiers,
     providers,
     subtitles,
@@ -1264,13 +1265,15 @@ class Home(WebRoot):
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
+                provider = None
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     i['status_color_style'] = 'snatched'
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 elif i['status'] == FAILED:
                     i['status_color_style'] = 'failed'
-                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 if provider is not None:
                     i['provider_name'] = provider.name
                     i['provider_img_link'] = 'images/providers/' + provider.image_name()
@@ -1571,6 +1574,15 @@ class Home(WebRoot):
                     logger.log("Unable to refresh show '{show}': {error}".format
                                (show=show_obj.name, error=e.message), logger.WARNING)
 
+            # Check if we should erase parsed cached results for that show
+            do_erase_parsed_cache = False
+            for item in [('scene', scene), ('anime', anime), ('sports', sports),
+                         ('air_by_date', air_by_date), ('dvd_order', dvd_order)]:
+                if getattr(show_obj, item[0]) != item[1]:
+                    do_erase_parsed_cache = True
+                    # Break if at least one setting was changed
+                    break
+
             show_obj.paused = paused
             show_obj.scene = scene
             show_obj.anime = anime
@@ -1618,7 +1630,7 @@ class Home(WebRoot):
                         app.show_queue_scheduler.action.refreshShow(show_obj)
                     except CantRefreshShowException as e:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}': {error}".format
+                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
                                    (show=show_obj.name, error=e.message), logger.WARNING)
 
             # Save all settings changed while in show_obj.lock
@@ -1638,12 +1650,13 @@ class Home(WebRoot):
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
+                name_cache.build_name_cache(show_obj)
             except CantUpdateShowException:
                 errors += 1
                 logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-        if do_update_scene_numbering:
+        if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
@@ -1652,8 +1665,20 @@ class Home(WebRoot):
                 logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-            # Must erase cached results when toggling scene numbering
+            # Must erase cached DB results when toggling scene numbering
             self.erase_cache(show_obj)
+
+            # Erase parsed cached names as we are changing scene numbering
+            show_obj.flush_episodes()
+            show_obj.erase_cached_parse()
+
+            # Need to refresh show as we updated scene numbering or changed show format
+            try:
+                app.show_queue_scheduler.action.refreshShow(show_obj)
+            except CantRefreshShowException as e:
+                errors += 1
+                logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
+                           "Error: {error}".format(show=show_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors
@@ -1888,7 +1913,8 @@ class Home(WebRoot):
                 if not ep_obj:
                     return self._genericMessage('Error', 'Episode couldn\'t be retrieved')
 
-                if int(status) in [WANTED, FAILED]:
+                status = int(status)
+                if status in [WANTED, FAILED]:
                     # figure out what episodes are wanted so we can backlog them
                     if ep_obj.season in segments:
                         segments[ep_obj.season].append(ep_obj)
@@ -1903,7 +1929,7 @@ class Home(WebRoot):
                         continue
 
                     snatched_qualities = Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
-                    if all([int(status) in Quality.DOWNLOADED,
+                    if all([status in Quality.DOWNLOADED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + [IGNORED],
                             not os.path.isfile(ep_obj.location)]):
                         logger.log(u'Refusing to change status of {episode} to DOWNLOADED '
@@ -1911,22 +1937,25 @@ class Home(WebRoot):
                                    (episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([int(status) == FAILED,
+                    if all([status == FAILED,
                             ep_obj.status not in snatched_qualities + Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Refusing to change status of {episode} to FAILED '
                                    u'because it\'s not SNATCHED/DOWNLOADED'.format(episode=cur_ep), logger.WARNING)
                         continue
 
-                    if all([int(status) == WANTED,
+                    if all([status == WANTED,
                             ep_obj.status in Quality.DOWNLOADED + Quality.ARCHIVED]):
                         logger.log(u'Removing release_name for episode as as episode was changed to WANTED')
                         ep_obj.release_name = ''
 
-                    if ep_obj.manually_searched and int(status) == WANTED:
+                    if ep_obj.manually_searched and status == WANTED:
                         logger.log(u"Resetting 'manually searched' flag as episode was changed to WANTED", logger.DEBUG)
                         ep_obj.manually_searched = False
 
-                    ep_obj.status = int(status)
+                    # Only in failed_history we set to FAILED.
+                    # We need current snatched quality to log 'quality' column in failed action in history
+                    if status != FAILED:
+                        ep_obj.status = status
 
                     # mass add to database
                     sql_l.append(ep_obj.get_sql())
@@ -1936,9 +1965,9 @@ class Home(WebRoot):
             data = notifiers.trakt_notifier.trakt_episode_data_generate(trakt_data)
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
-                if int(status) in [WANTED, FAILED]:
+                if status in [WANTED, FAILED]:
                     upd = 'Add'
-                elif int(status) in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
+                elif status in [IGNORED, SKIPPED] + Quality.DOWNLOADED + Quality.ARCHIVED:
                     upd = 'Remove'
 
                 logger.log(u'{action} episodes, showid: indexerid {show.indexerid}, Title {show.name} to Watchlist'.format
@@ -1951,7 +1980,7 @@ class Home(WebRoot):
                 main_db_con = db.DBConnection()
                 main_db_con.mass_action(sql_l)
 
-        if int(status) == WANTED and not show_obj.paused:
+        if status == WANTED and not show_obj.paused:
             msg = 'Backlog was automatically started for the following seasons of <b>{show}</b>:<br>'.format(show=show_obj.name)
             msg += '<ul>'
 
@@ -1968,12 +1997,12 @@ class Home(WebRoot):
 
             if segments:
                 ui.notifications.message('Backlog started', msg)
-        elif int(status) == WANTED and show_obj.paused:
+        elif status == WANTED and show_obj.paused:
             logger.log(u'Some episodes were set to wanted, but {show} is paused. '
                        u'Not adding to Backlog until show is unpaused'.format
                        (show=show_obj.name))
 
-        if int(status) == FAILED:
+        if status == FAILED:
             msg = 'Retrying Search was automatically started for the following season of <b>{show}</b>:<br>'.format(show=show_obj.name)
             msg += '<ul>'
 

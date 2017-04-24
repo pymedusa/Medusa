@@ -24,7 +24,7 @@ from .nzb import (
     anizb, binsearch,
 )
 from .torrent import (
-    abnormal, alpharatio, animebytes, animetorrents, bitcannon, bithdtv, bitsnoop, btn, cpasbien, danishbits,
+    abnormal, alpharatio, animebytes, animetorrents, bitcannon, bithdtv, btn, cpasbien, danishbits,
     elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs, iptorrents,
     limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, sdbits, shazbat,
     speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
@@ -37,7 +37,7 @@ __all__ = [
     'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'cpasbien', 'morethantv', 't411', 'tokyotoshokan',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'transmitthenet', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
-    'hdspace', 'newpct', 'elitetorrent', 'bitsnoop', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb',
+    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb',
     'bithdtv', 'zooqle', 'animebytes', 'animetorrents'
 ]
 

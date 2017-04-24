@@ -38,7 +38,7 @@
         <td align="center">
             <select name="indexer">
                 % for curIndexer in indexerApi().indexers.items():
-                    <option value="${curIndexer[0]}" ${('selected="selected"', '')[curIndexer[0] == indexer] or curIndexer[0] == app.INDEXER_DEFAULT}>${curIndexer[1]}</option>
+                    <option value="${curIndexer[0]}" ${'selected="selected"' if curIndexer[0] == indexer or curIndexer[0] == app.INDEXER_DEFAULT else ''} >${curIndexer[1]}</option>
                 % endfor
             </select>
         </td>
