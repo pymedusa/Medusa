@@ -80,6 +80,7 @@ except ImportError:
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+
 class EpisodeNumber(Identifier):
     """Episode Number: season/episode, absolute or air by date."""
 
