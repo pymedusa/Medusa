@@ -43,6 +43,7 @@ SEASON_MAP = {
     28: 995, 29: 996, 30: 997,
 }
 
+
 class T411Provider(TorrentProvider):
     """T411 Torrent provider."""
 
@@ -383,10 +384,13 @@ class T411Auth(AuthBase):
         r.headers['Authorization'] = self.token
         return r
 
+
 _BaseQuery = namedtuple('Query', ['name', 'season', 'episode', 'air_date'])
+
 
 class Query(_BaseQuery):
     """A query item to search for."""
+
     __slots__ = ()  # Required to keep subclass a tuple
 
     # Using __new__ instead of __init__ since tuples are immutable
@@ -414,7 +418,7 @@ class Query(_BaseQuery):
     }
 
     def __str__(self):
-        # Get the formatted air date, if one exists
+        """Get the formatted air date, if one exists."""
         date = None
         with suppress(AttributeError):
             date = self.air_date.strftime(self.air_date_fmt)
@@ -424,5 +428,6 @@ class Query(_BaseQuery):
         _str = self._str.get(key, '{self.name}')
 
         return _str.format(self=self, date=date)
+
 
 provider = T411Provider()
