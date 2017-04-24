@@ -101,6 +101,10 @@ class BinSearchProvider(NZBProvider):
 
         :return: A list of items found
         """
+
+        def process_column_header(td):
+            return td.get_text(strip=True).lower()
+
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
