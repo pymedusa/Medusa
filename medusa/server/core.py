@@ -202,7 +202,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}'.format
+        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}/'.format
                    (scheme=protocol,
                     host=self.options['host'],
                     port=self.options['port'],
