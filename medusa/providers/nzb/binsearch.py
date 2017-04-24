@@ -130,7 +130,7 @@ class BinSearchProvider(NZBProvider):
                     if torrent_size:
                         torrent_size = torrent_size.group(1)
                     size = convert_size(torrent_size, sep='\xa0') or -1
-                    download_url = "https://www.binsearch.info/?action=nzb&{1}=1".format(nzb_id)
+                    download_url = "https://www.binsearch.info/?action=nzb&{0}=1".format(nzb_id)
 
                     # For future use
                     # detail_url = "https://www.binsearch.info/?q={0}".format(title)
