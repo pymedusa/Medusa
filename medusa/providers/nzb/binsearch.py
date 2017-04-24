@@ -35,7 +35,7 @@ from medusa.providers.nzb.nzb_provider import NZBProvider
 from requests.compat import urljoin
 from pytimeparse import parse
 
-size_regex = re.compile(r'size: (.*)(?:\\xa0)(.*), parts', re.I)
+size_regex = re.compile(r'size: (\d+\.\d+\xa0\w{2}), parts', re.I)
 title_regex = re.compile(r'\"([^\"]+)"', re.I)
 
 class BinSearchProvider(NZBProvider):
@@ -128,9 +128,8 @@ class BinSearchProvider(NZBProvider):
                     # Obtain the size from the "description"
                     torrent_size = size_regex.search(str(attributes).encode("utf-8"))
                     if torrent_size:
-                        torrent_size = "{0} {1}".format(torrent_size.group(1), torrent_size.group(2))
-                        size = convert_size(torrent_size) or -1
-                        logger.log('Found size: {0} and converted size: {1}'.format(torrent_size, size), logger.DEBUG)
+                        torrent_size = torrent_size.group(1)
+                    size = convert_size(torrent_size, sep='\xa0') or -1
                     download_url = "https://www.binsearch.info/?action=nzb&{1}=1".format(nzb_id)
 
                     # For future use
