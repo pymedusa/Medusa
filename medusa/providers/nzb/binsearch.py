@@ -65,7 +65,7 @@ class BinSearchProvider(NZBProvider):
     def search(self, search_strings, age=0, ep_obj=None):
         results = []
         search_params = {
-            'adv_age': "",
+            'adv_age': '',
             'xminsize': 20,
             'max': 250,
         }
@@ -77,7 +77,7 @@ class BinSearchProvider(NZBProvider):
             for search_string in search_strings[mode]:
                 search_params['q'] = search_string
                 for group in groups:
-                    # Try both "search in the most popular groups" & "search in the other groups" modes
+                    # Try both 'search in the most popular groups' & 'search in the other groups' modes
                     search_params['server'] = group
                     if mode != 'RSS':
                         logger.log('Search string: {search}'.format
@@ -105,7 +105,7 @@ class BinSearchProvider(NZBProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             table = html.find('table', class_='xMenuT')
-            rows = table("tr") if table else []
+            rows = table('tr') if table else []
             row_offset = 2
             if not len(rows) - row_offset:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
@@ -121,8 +121,8 @@ class BinSearchProvider(NZBProvider):
 
             for row in rows:
                 col = dict(zip(labels, row('td')))
-                nzb_id = col[1].find("input")["name"]
-                title_field = col['subject'].find("span")
+                nzb_id = col[1].find('input')['name']
+                title_field = col['subject'].find('span')
                 # Try and get the the article subject from the weird binsearch format
                 title = title_regex.search(title_field.text).group(1)
                 for extension in ('.nfo', '.par2', '.zip'):
@@ -130,15 +130,15 @@ class BinSearchProvider(NZBProvider):
                     title = title.rstrip(extension)
                 if not all([title, nzb_id]):
                     continue
-                # Obtain the size from the "description"
+                # Obtain the size from the 'description'
                 size_field = size_regex.search(col['subject'].text)
                 if size_field:
                     size_field = size_field.group(1)
                 size = convert_size(size_field, sep='\xa0') or -1
-                download_url = "https://www.binsearch.info/?action=nzb&{0}=1".format(nzb_id)
+                download_url = 'https://www.binsearch.info/?action=nzb&{0}=1'.format(nzb_id)
 
                 # For future use
-                # detail_url = "https://www.binsearch.info/?q={0}".format(title)
+                # detail_url = 'https://www.binsearch.info/?q={0}'.format(title)
 
                 date = col['age'].get_text(strip=True)
                 pubdate_raw = parse(date)
