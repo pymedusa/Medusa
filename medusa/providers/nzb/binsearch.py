@@ -111,7 +111,14 @@ class BinSearchProvider(NZBProvider):
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
+            headers = rows[0]('th')
+            # 0, 1, subject, poster, group, age
+            labels = [process_column_header(header) or idx
+                      for idx, header in enumerate(headers)]
+
             # Skip column headers
+            rows = rows[2:]
+
             for row in table:
                 cells = row('tr')[2:]
                 for cell in cells:
