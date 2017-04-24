@@ -716,7 +716,7 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="torrentrss_cookies">
                                 <span class="component-title">Cookies:</span>
-                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" disabled="disabled"/>
+                                <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" />
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>

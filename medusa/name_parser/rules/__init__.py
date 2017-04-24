@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """Guessit customization."""
 from guessit.api import default_api
-from ...name_parser.rules.properties import (
-    blacklist, container, format_, other,
+from medusa.name_parser.rules.properties import (
+    blacklist,
+    container,
+    format_,
+    other,
     screen_size
 )
-from ...name_parser.rules.rules import rules
+from medusa.name_parser.rules.rules import rules
 
 
 default_api.rebulk.rebulk(blacklist())

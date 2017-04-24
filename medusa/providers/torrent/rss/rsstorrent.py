@@ -171,7 +171,7 @@ class TorrentRssProvider(TorrentProvider):
             if not add_cookie.get('result'):
                 return add_cookie
 
-            data = self.cache._getRSSData()['entries']
+            data = self.cache._get_rss_data()['entries']
             if not data:
                 return {'result': False,
                         'message': 'No items found in the RSS feed {0}'.format(self.url)}
@@ -226,5 +226,4 @@ class TorrentRssCache(tv.Cache):
 
     def _get_rss_data(self):
         """Get RSS data."""
-        self.provider.add_cookies_from_ui()
         return self.get_rss_feed(self.provider.url)

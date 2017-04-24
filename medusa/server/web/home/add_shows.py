@@ -78,7 +78,7 @@ class HomeAddShows(Home):
             l_indexer_api_parms['language'] = lang
             l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
             try:
-                t = indexerApi(indexer).indexer(**l_indexer_api_parms)
+                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_parms)
             except IndexerUnavailable as msg:
                 logger.log(u'Could not initialize Indexer {indexer}: {error}'.
                            format(indexer=indexerApi(indexer).name, error=msg))
@@ -88,7 +88,7 @@ class HomeAddShows(Home):
                 search_terms, indexerApi(indexer).name), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
-                    indexer_results = t[searchTerm]
+                    indexer_results = indexer_api[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
                 except IndexerException as e:
@@ -392,7 +392,7 @@ class HomeAddShows(Home):
         if Show.find(app.showList, int(indexer_id)):
             return
 
-        # Sanitize the paramater allowed_qualities and preferred_qualities. As these would normally be passed as lists
+        # Sanitize the parameter allowed_qualities and preferred_qualities. As these would normally be passed as lists
         if any_qualities:
             any_qualities = any_qualities.split(',')
         else:

@@ -20,34 +20,28 @@ Copyright 2015 SmartBear Software
 
 from __future__ import absolute_import
 
-from . import models
+from requests.exceptions import RequestException
+from . import models  # Used through eval.
 from .rest import RESTClientObject
-from .rest import ApiException
+from .exceptions import AuthError
 
 import os
 import re
 import sys
-import urllib
 import json
 import mimetypes
-import random
 import tempfile
 import threading
+import requests
 
 from datetime import datetime
 from datetime import date
 
 # python 2 and python 3 compatibility library
-from six import iteritems
-
-try:
-    # for python3
-    from urllib.parse import quote
-except ImportError:
-    # for python2
-    from urllib import quote
-
+from six import iteritems, text_type
+from .auth.tvdb import TVDBAuth
 from .configuration import Configuration
+from .exceptions import ApiException
 
 
 class ApiClient(object):
@@ -67,39 +61,23 @@ class ApiClient(object):
     :param header_name: a header to pass when making calls to the API.
     :param header_value: a header value to pass when making calls to the API.
     """
-    def __init__(self, host=None, header_name=None, header_value=None, cookie=None):
+    def __init__(self, host=None, cookie=None, session=None, api_key=None, token=None):
 
         """
         Constructor of the class.
         """
-        self.rest_client = RESTClientObject()
-        self.default_headers = {}
-        if header_name is not None:
-            self.default_headers[header_name] = header_value
+        self.session = session or requests.session()
+        if not api_key and not token:
+            raise AuthError('Please provide an api_key or token to authenticate.')
+
+        self.session.auth = TVDBAuth(api_key=api_key, token=token)
+        self.rest_client = RESTClientObject(session=self.session)
+
         if host is None:
             self.host = Configuration().host
         else:
             self.host = host
         self.cookie = cookie
-        # Set default User-Agent.
-        self.user_agent = 'Python-Swagger/1.0.0'
-
-    @property
-    def user_agent(self):
-        """
-        Gets user agent.
-        """
-        return self.default_headers['User-Agent']
-
-    @user_agent.setter
-    def user_agent(self, value):
-        """
-        Sets user agent.
-        """
-        self.default_headers['User-Agent'] = value
-
-    def set_default_header(self, header_name, header_value):
-        self.default_headers[header_name] = header_value
 
     def __call_api(self, resource_path, method,
                    path_params=None, query_params=None, header_params=None,
@@ -108,7 +86,6 @@ class ApiClient(object):
 
         # headers parameters
         header_params = header_params or {}
-        header_params.update(self.default_headers)
         if self.cookie:
             header_params['Cookie'] = self.cookie
         if header_params:
@@ -118,7 +95,7 @@ class ApiClient(object):
         if path_params:
             path_params = self.sanitize_for_serialization(path_params)
             for k, v in iteritems(path_params):
-                replacement = quote(str(self.to_path_value(v)))
+                replacement = text_type(self.to_path_value(v))
                 resource_path = resource_path.\
                     replace('{' + k + '}', replacement)
 
@@ -237,9 +214,9 @@ class ApiClient(object):
 
         # fetch data from response object
         try:
-            data = json.loads(response.data)
+            data = json.loads(response.content)
         except ValueError:
-            data = response.data
+            data = response.content
 
         return self.__deserialize(data, response_type)
 
@@ -339,39 +316,39 @@ class ApiClient(object):
         Makes the HTTP request using RESTClient.
         """
         if method == "GET":
-            return self.rest_client.GET(url,
+            return self.rest_client.get(url,
                                         query_params=query_params,
                                         headers=headers)
         elif method == "HEAD":
-            return self.rest_client.HEAD(url,
+            return self.rest_client.head(url,
                                          query_params=query_params,
                                          headers=headers)
         elif method == "OPTIONS":
-            return self.rest_client.OPTIONS(url,
+            return self.rest_client.options(url,
                                             query_params=query_params,
                                             headers=headers,
                                             post_params=post_params,
                                             body=body)
         elif method == "POST":
-            return self.rest_client.POST(url,
+            return self.rest_client.post(url,
                                          query_params=query_params,
                                          headers=headers,
                                          post_params=post_params,
                                          body=body)
         elif method == "PUT":
-            return self.rest_client.PUT(url,
+            return self.rest_client.put(url,
                                         query_params=query_params,
                                         headers=headers,
                                         post_params=post_params,
                                         body=body)
         elif method == "PATCH":
-            return self.rest_client.PATCH(url,
+            return self.rest_client.patch(url,
                                           query_params=query_params,
                                           headers=headers,
                                           post_params=post_params,
                                           body=body)
         elif method == "DELETE":
-            return self.rest_client.DELETE(url,
+            return self.rest_client.delete(url,
                                            query_params=query_params,
                                            headers=headers)
         else:

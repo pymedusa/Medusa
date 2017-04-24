@@ -20,19 +20,13 @@ Copyright 2015 SmartBear Software
 
 from __future__ import absolute_import
 
-import base64
-from requests.packages import urllib3
-
-try:
-    import httplib
-except ImportError:
-    # for python3
-    import http.client as httplib
-
+from requests.packages.urllib3.util import make_headers
+from six.moves.http_client import HTTPConnection
 import sys
 import logging
 
 from six import iteritems
+
 
 def singleton(cls, *args, **kw):
     instances = {}
@@ -41,6 +35,7 @@ def singleton(cls, *args, **kw):
         if cls not in instances:
             instances[cls] = cls(*args, **kw)
         return instances[cls]
+
     return _singleton
 
 
@@ -73,11 +68,10 @@ class Configuration(object):
         # Password for HTTP basic authentication
         self.password = ""
 
-
         # Logging Settings
-        self.logger = {}
-        self.logger["package_logger"] = logging.getLogger("swagger_client")
-        self.logger["urllib3_logger"] = logging.getLogger("urllib3")
+        self.logger = {
+            "package_logger": logging.getLogger("swagger_client")
+        }
         # Log format
         self.logger_format = '%(asctime)s %(levelname)s %(message)s'
         # Log stream handler
@@ -158,14 +152,14 @@ class Configuration(object):
             for _, logger in iteritems(self.logger):
                 logger.setLevel(logging.DEBUG)
             # turn on httplib debug
-            httplib.HTTPConnection.debuglevel = 1
+            HTTPConnection.debuglevel = 1
         else:
             # if debug status is False, turn off debug logging,
             # setting log level to default `logging.WARNING`
             for _, logger in iteritems(self.logger):
                 logger.setLevel(logging.WARNING)
             # turn off httplib debug
-            httplib.HTTPConnection.debuglevel = 0
+            HTTPConnection.debuglevel = 0
 
     @property
     def logger_format(self):
@@ -205,8 +199,7 @@ class Configuration(object):
 
         :return: The token for basic HTTP authentication.
         """
-        return urllib3.util.make_headers(basic_auth=self.username + ':' + self.password)\
-                           .get('authorization')
+        return make_headers(basic_auth=self.username + ':' + self.password).get('authorization')
 
     def auth_settings(self):
         """
@@ -231,9 +224,9 @@ class Configuration(object):
 
         :return: The report for debugging.
         """
-        return "Python SDK Debug Report:\n"\
-               "OS: {env}\n"\
-               "Python Version: {pyversion}\n"\
-               "Version of the API: 1.2.0\n"\
-               "SDK Package Version: 1.0.0".\
-               format(env=sys.platform, pyversion=sys.version)
+        return "Python SDK Debug Report:\n" \
+               "OS: {env}\n" \
+               "Python Version: {pyversion}\n" \
+               "Version of the API: 1.2.0\n" \
+               "SDK Package Version: 1.0.0". \
+            format(env=sys.platform, pyversion=sys.version)

@@ -7,8 +7,9 @@ from datetime import timedelta
 from time import time
 
 from guessit.rules.common.date import valid_year
-from .rules import default_api
-from .. import app
+
+from medusa import app
+from medusa.name_parser.rules import default_api
 
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()

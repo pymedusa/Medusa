@@ -39,7 +39,8 @@ class ImageCache(object):
     def __del__(self):
         pass
 
-    def _cache_dir(self):
+    @classmethod
+    def _cache_dir(cls):
         """Build up the full path to the image cache directory."""
         return os.path.abspath(os.path.join(app.CACHE_DIR, 'images'))
 
@@ -47,7 +48,8 @@ class ImageCache(object):
         """Build up the full path to the thumbnails image cache directory."""
         return os.path.abspath(os.path.join(self._cache_dir(), 'thumbnails'))
 
-    def poster_path(self, indexer_id):
+    @classmethod
+    def poster_path(cls, indexer_id):
         """
         Build up the path to a poster cache for a given Indexer ID.
 
@@ -55,9 +57,10 @@ class ImageCache(object):
         :return: a full path to the cached poster file for the given Indexer ID
         """
         poster_file_name = '{0}.poster.jpg'.format(indexer_id)
-        return os.path.join(self._cache_dir(), poster_file_name)
+        return os.path.join(cls._cache_dir(), poster_file_name)
 
-    def banner_path(self, indexer_id):
+    @classmethod
+    def banner_path(cls, indexer_id):
         """
         Build up the path to a banner cache for a given Indexer ID.
 
@@ -65,7 +68,7 @@ class ImageCache(object):
         :return: a full path to the cached banner file for the given Indexer ID
         """
         banner_file_name = '{0}.banner.jpg'.format(indexer_id)
-        return os.path.join(self._cache_dir(), banner_file_name)
+        return os.path.join(cls._cache_dir(), banner_file_name)
 
     def fanart_path(self, indexer_id):
         """

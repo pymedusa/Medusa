@@ -481,7 +481,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
             name: name,
             url: url,
             cookies: cookies,
-            titleTag: titleTag
+            title_tag: titleTag // eslint-disable-line camelcase
         };
 
         // @TODO: Move to the API
