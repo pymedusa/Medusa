@@ -111,7 +111,7 @@ class BinSearchProvider(NZBProvider):
             table = html.find('table', class_='xMenuT')
             rows = table('tr') if table else []
             row_offset = 2
-            if not len(rows) - row_offset or not rows:
+            if  not rows or not len(rows) - row_offset:
                 logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
                 return items
 
@@ -129,7 +129,7 @@ class BinSearchProvider(NZBProvider):
                 title_field = col['subject'].find('span')
                 # Try and get the the article subject from the weird binsearch format
                 title = title_regex.search(title_field.text).group(1)
-                for extension in ('.nfo', '.par2', '.zip'):
+                for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb'):
                     # Strip extensions that aren't part of the file name
                     title = title.rstrip(extension)
                 if not all([title, nzb_id]):
