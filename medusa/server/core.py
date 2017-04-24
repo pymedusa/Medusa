@@ -14,6 +14,7 @@ from medusa.server.api.v2.auth import AuthHandler
 from medusa.server.api.v2.base import NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
+from medusa.server.api.v2.season import SeasonHandler
 from medusa.server.api.v2.log import LogHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
@@ -35,6 +36,9 @@ def get_apiv2_handlers(base):
         # Order: Most specific to most generic
         # /api/v2/series/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
+
+        # /api/v2/series/tvdb1234/season
+        SeasonHandler.create_app_handler(base),
 
         # /api/v2/series/tvdb1234/operation
         SeriesOperationHandler.create_app_handler(base),
