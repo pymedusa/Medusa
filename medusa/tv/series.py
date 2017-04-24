@@ -264,8 +264,8 @@ class Series(TV):
             series.save_to_db()
             series.load_episodes_from_indexer(tvapi=api)
             return series
-        except IndexerException as e:
-            logger.warning('Unable to load series from indexer: {0!r}'.format(e))
+        except IndexerException as error:
+            log.warning('Unable to load series from indexer: {0!r}'.format(error))
 
     @property
     def identifier(self):
