@@ -36,7 +36,7 @@ from requests.compat import urljoin
 from pytimeparse import parse
 
 size_regex = re.compile(r'size: (.*)(?:\\xa0)(.*), parts', re.I)
-title_regex = re.compile(r'(?:-\[ (.*) ?]-)?(?:\[\d*\/\d*])?(?: - )?"(.*)" (?:yEnc)?', re.I)
+title_regex = re.compile(r'\"([^\"]+)"', re.I)
 
 class BinSearchProvider(NZBProvider):
     """BinSearch Newznab provider."""
@@ -117,16 +117,12 @@ class BinSearchProvider(NZBProvider):
                 for cell in cells:
                     attributes = cell.find_all("td")
                     nzb_id = attributes[1].find("input")["name"]
-                    title = attributes[2].find("span").get_text()
-                    title_re = title_regex.search(title)
-                    # Try and get the the article subject from the wierd binsearch format
-                    if title_re:
-                        if len(title_re.group(1)) > 3:
-                            title = title_re.group(1)
-                        elif len(title_re.group(2)) > 3:
-                            title = title_re.group(2)
-                        else:
-                            title = attributes[2].find("span").get_text()
+                    title_field = attributes[2].find("span").text
+                    # Try and get the the article subject from the weird binsearch format
+                    title = title_regex.search(title_field).group(1)
+                    for extension in ('.nfo', '.par2', '.zip'):
+                        # Strip extensions that aren't part of the file name
+                        title = title.rstrip(extension)
                     if not all([title, nzb_id]):
                         continue
                     # Obtain the size from the "description"
