@@ -25,6 +25,7 @@ import re
 import time
 
 from datetime import date, datetime
+
 import knowit
 
 from medusa import (
@@ -973,6 +974,15 @@ class Episode(TV):
         main_db_con.action(sql, [self.show.indexerid, self.season, self.episode])
 
         raise EpisodeDeletedException()
+
+    def get_manual_search_results(self, manual_search_type='episode', show_all_results=0, perform_search=0):
+        """Retrieve manual search results from the cache database."""
+        from medusa.search.manual import get_provider_cache_results
+        data = {'manualSearch:': get_provider_cache_results(self.indexer, show_all_results=show_all_results,
+                                                            perform_search=perform_search, show=self.show.indexerid,
+                                                            season=self.season, episode=self.episode,
+                                                            manual_search_type=manual_search_type)}
+        return data
 
     def get_sql(self):
         """Create SQL queue for this episode if any of its data has been changed since the last save."""

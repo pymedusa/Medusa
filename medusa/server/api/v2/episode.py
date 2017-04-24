@@ -55,6 +55,8 @@ class EpisodeHandler(BaseRequestHandler):
         if path_param:
             if path_param == 'metadata':
                 data = episode.metadata() if episode.is_location_valid() else {}
+            elif path_param == 'releases':
+                data = episode.get_manual_search_results()
             elif path_param in data:
                 data = data[path_param]
             else:
