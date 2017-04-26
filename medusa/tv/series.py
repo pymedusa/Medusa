@@ -1731,9 +1731,9 @@ class Series(TV):
                         cur_loc, base_name_only=False, subfolders=True)
 
                     if related_files:
-                        logger.warning(u'{id}: Found hanging associated files for {show} {ep}, deleting: {files}',
-                                       id=self.indexerid, show=self.name, ep=episode_num(season, episode),
-                                       files=related_files)
+                        logger.info(u"{id}: Found hanging associated files for {show} {ep}, deleting: '{files}'",
+                                    id=self.indexerid, show=self.name, ep=episode_num(season, episode),
+                                    files=', '.join(related_files))
                         for related_file in related_files:
                             try:
                                 os.remove(related_file)
