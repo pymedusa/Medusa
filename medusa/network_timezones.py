@@ -67,7 +67,14 @@ def update_network_dict():
     network_list = dict(cache_db_con.select('SELECT * FROM network_timezones;'))
 
     queries = []
-    for network, timezone in iteritems(d):
+    remote_network_list = iteritems(d)
+
+    # Don't continue because if empty list, var `existing` be false for all networks, thus deleting all
+    if not remote_network_list:
+        logger.log(u'Unable to update network timezones as fetched network list is empty.', logger.WARNING)
+        return
+
+    for network, timezone in remote_network_list:
         existing = network in network_list
         if not existing:
             queries.append(['INSERT OR IGNORE INTO network_timezones VALUES (?,?);', [network, timezone]])
@@ -75,9 +82,11 @@ def update_network_dict():
             queries.append(['UPDATE OR IGNORE network_timezones SET timezone = ? WHERE network_name = ?;', [timezone, network]])
 
         if existing:
+            # if the network from cache DB is in the remote network, remove from the `to remove` list
             del network_list[network]
 
     if network_list:
+        # Delete all networks that are not in the remote network list
         purged = [x for x in network_list]
         queries.append(['DELETE FROM network_timezones WHERE network_name IN (%s);' % ','.join(['?'] * len(purged)), purged])
 
