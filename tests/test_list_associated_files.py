@@ -12,7 +12,7 @@ import pytest
 def _rar_basename(filepath, files):
     for found_file in files:
         if os.path.splitext(os.path.basename(found_file))[1] == '.rar':
-            return os.path.basename(os.path.splitext(os.path.basename(found_file))[0])
+            return os.path.basename(os.path.splitext(os.path.basename(found_file))[0].lower())
 
 
 @pytest.mark.parametrize('p', [
