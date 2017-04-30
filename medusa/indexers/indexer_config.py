@@ -61,9 +61,6 @@ indexerConfig = {
             'language': 'en',
             'use_zip': True,
             'session': make_session(cache_etags=False),
-            'plex_fallback': {'fallback_plex_enable': None,  # Enable plex fallback
-                              'fallback_plex_timer': None,  # Amount of hours to fallback to tvdb api.
-                              'fallback_plex_notifications': None}  # Enable notifications.
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',

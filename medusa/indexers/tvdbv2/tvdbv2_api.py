@@ -40,12 +40,6 @@ logger = logging.getLogger(__name__)
 API_BASE_TVDB = 'https://api.thetvdb.com'
 
 
-                logger.debug("Disabling Plex fallback as fallback timeout was reached")
-                logger.debug("Keeping Plex fallback enabled as fallback timeout not reached")
-        # Send notification back to user.
-        if fallback_config['fallback_plex_notifications']:
-            logger.warning("Enabling Plex fallback as TheTvdb.com API is having some connectivity issues")
-            fallback_notification()
 class TVDBv2(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
