@@ -19,8 +19,8 @@
 import os
 
 from medusa import app
-from medusa.indexers.indexer_config import indexerConfig, initConfig
 from medusa.helper.common import try_int
+from medusa.indexers.indexer_config import indexerConfig, initConfig
 from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
 
 

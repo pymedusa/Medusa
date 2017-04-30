@@ -16,20 +16,20 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """TVDB2 api module."""
-import datetime
+
 import logging
 from collections import OrderedDict
 
 from medusa.app import TVDB_API_KEY
-
-from requests.compat import urljoin
-from requests.exceptions import RequestException
 
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
                                                 IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
+
+from requests.compat import urljoin
+from requests.exceptions import RequestException
 
 from tvdbapiv2 import ApiClient, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException

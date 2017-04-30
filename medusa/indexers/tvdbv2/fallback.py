@@ -19,7 +19,9 @@ class PlexFallBackConfig(object):
     This will update the plex fallback config options, every time it is updated through the UI.
     If we wouldn't forcibly update this, we'd need to restart Medusa for it to take effect.
     """
+
     def __init__(self, func, *args, **kwargs):
+        """Initialize the PlexFallBackConfig decorator."""
         self.func = func
 
     def __get__(self, obj, objtype):
@@ -27,7 +29,7 @@ class PlexFallBackConfig(object):
         return functools.partial(self.__call__, obj)
 
     def __call__(self, *args, **kwargs):
-        # TVDB can fallback to Plex mirror
+        """Update the config every time we're accessing the indexerApi."""
         if args[0].indexer_id == 1:
             session = args[0].api_params.get('session')
             if not hasattr(session, 'fallback_config'):
@@ -58,7 +60,9 @@ class PlexFallback(object):
     If there are issues with tvdb the plex mirror will also only work for a limited amount of time. That is why we
     revert back to tvdb after an x amount of hours.
     """
-    def __init__(self, func, *args, **kwargs):
+
+    def __init__(self, func):
+        """Initialize the PlexFallback decorator."""
         self.func = func
 
     def __get__(self, obj, objtype):
@@ -66,6 +70,9 @@ class PlexFallback(object):
         return functools.partial(self.__call__, obj)
 
     def __call__(self, *args, **kwargs):
+        """Call the decorator just before we're accessing the tvdb apiv2 lib.
+
+        It will try to access TheTvdb's api endpoint, but on exception fall back to plex's."""
         session = args[0].config['session']
         fallback_config = session.fallback_config
 
@@ -73,15 +80,17 @@ class PlexFallback(object):
             return self.func(*args, **kwargs)
 
         def fallback_notification():
-            ui.notifications.error('Tvdb2.plex.tv fallback',
-                                   'You are currently using the tvdb2.plex.tx fallback, '
-                                   'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
-                                   .format(
-                                      time_left=divmod(((fallback_config['plex_fallback_time'] +
-                                                         datetime.timedelta(
-                                                             hours=fallback_config['fallback_plex_timeout'])) -
-                                                        datetime.datetime.now()).total_seconds(), 60)[0]
-                                   ))
+            ui.notifications.error(
+                'Tvdb2.plex.tv fallback',
+                'You are currently using the tvdb2.plex.tx fallback, '
+                'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
+                .format(
+                   time_left=divmod(((fallback_config['plex_fallback_time'] +
+                                      datetime.timedelta(
+                                          hours=fallback_config['fallback_plex_timeout']
+                                      )) - datetime.datetime.now()).total_seconds(), 60)[0]
+                )
+            )
 
         # Check if we need to revert to tvdb's api, because we exceed the fallback period.
         if fallback_config['api_base_url'] == app.FALLBACK_PLEX_API_URL:
