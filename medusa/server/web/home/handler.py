@@ -16,6 +16,7 @@ from medusa import (
     db,
     helpers,
     logger,
+    name_cache,
     notifiers,
     providers,
     subtitles,
@@ -1264,13 +1265,15 @@ class Home(WebRoot):
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
+                provider = None
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     i['status_color_style'] = 'snatched'
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 elif i['status'] == FAILED:
                     i['status_color_style'] = 'failed'
-                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 if provider is not None:
                     i['provider_name'] = provider.name
                     i['provider_img_link'] = 'images/providers/' + provider.image_name()
@@ -1571,6 +1574,15 @@ class Home(WebRoot):
                     logger.log("Unable to refresh show '{show}': {error}".format
                                (show=show_obj.name, error=e.message), logger.WARNING)
 
+            # Check if we should erase parsed cached results for that show
+            do_erase_parsed_cache = False
+            for item in [('scene', scene), ('anime', anime), ('sports', sports),
+                         ('air_by_date', air_by_date), ('dvd_order', dvd_order)]:
+                if getattr(show_obj, item[0]) != item[1]:
+                    do_erase_parsed_cache = True
+                    # Break if at least one setting was changed
+                    break
+
             show_obj.paused = paused
             show_obj.scene = scene
             show_obj.anime = anime
@@ -1618,7 +1630,7 @@ class Home(WebRoot):
                         app.show_queue_scheduler.action.refreshShow(show_obj)
                     except CantRefreshShowException as e:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}': {error}".format
+                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
                                    (show=show_obj.name, error=e.message), logger.WARNING)
 
             # Save all settings changed while in show_obj.lock
@@ -1638,12 +1650,13 @@ class Home(WebRoot):
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
+                name_cache.build_name_cache(show_obj)
             except CantUpdateShowException:
                 errors += 1
                 logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-        if do_update_scene_numbering:
+        if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
@@ -1652,8 +1665,20 @@ class Home(WebRoot):
                 logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-            # Must erase cached results when toggling scene numbering
+            # Must erase cached DB results when toggling scene numbering
             self.erase_cache(show_obj)
+
+            # Erase parsed cached names as we are changing scene numbering
+            show_obj.flush_episodes()
+            show_obj.erase_cached_parse()
+
+            # Need to refresh show as we updated scene numbering or changed show format
+            try:
+                app.show_queue_scheduler.action.refreshShow(show_obj)
+            except CantRefreshShowException as e:
+                errors += 1
+                logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
+                           "Error: {error}".format(show=show_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors

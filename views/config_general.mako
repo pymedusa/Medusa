@@ -679,8 +679,9 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
-                                        <br>NOTE: A restart may be required to take effect.
-                                        <br>WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                        <div class="clear-left">
+                                        <br><b>NOTE:</b> Low: minimal filtering to protect login credentials. Normal: default filtering. High: increased filtering for additional privacy
+                                        </div>
                                     </span>
                                 </span>
                             </label>

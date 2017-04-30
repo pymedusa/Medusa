@@ -675,7 +675,7 @@ class ProcessResult(object):
             if torrent_moved:
                 logger.log("Moved torrent for release{s} '{release}' with hash: {hash} to: '{path}'".format
                            (release=release_names, hash=info_hash, path=app.TORRENT_SEED_LOCATION, s=s),
-                           logger.WARNING)
+                           logger.DEBUG)
                 return True
             else:
                 logger.log("Could not move torrent for release{s} '{release}' with hash: {hash} to: '{path}'. "
