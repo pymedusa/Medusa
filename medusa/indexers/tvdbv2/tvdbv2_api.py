@@ -20,86 +20,32 @@ import datetime
 import logging
 from collections import OrderedDict
 
-from medusa import ui
-from medusa.app import FALLBACK_PLEX_API_URL, TVDB_API_KEY
+from medusa.app import TVDB_API_KEY
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
-from tvdbapiv2 import (ApiClient, SearchApi, SeriesApi, UpdatesApi)
-from tvdbapiv2.auth.tvdb import TVDBAuth
+from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
+                                                IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.tvdbv2.fallback import PlexFallback
+
+from tvdbapiv2 import ApiClient, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
-from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
-                                  IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
-from ..indexer_ui import BaseUI, ConsoleUI
 
 logger = logging.getLogger(__name__)
 
 API_BASE_TVDB = 'https://api.thetvdb.com'
-API_BASE_URL_FALLBACK = FALLBACK_PLEX_API_URL
 
 
-def plex_fallback(func):
-    """Fallback to plex if tvdb fails to connect.
-
-    Decorator that can be used to catch an exception and fallback to the plex proxy.
-    If there are issues with tvdb the plex mirror will also only work for a limited amount of time. That is why we
-    revert back to tvdb after an x amount of hours.
-    """
-    def inner(*args, **kwargs):
-        session = args[0].config['session']
-        fallback_config = session.fallback_config
-
-        if not session.fallback_config['fallback_plex_enable']:
-            return func(*args, **kwargs)
-
-        def fallback_notification():
-            ui.notifications.error('Tvdb2.plex.tv fallback',
-                                   'You are currently using the tvdb2.plex.tx fallback, '
-                                   'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
-                                   .format(
-                                       time_left=divmod(((fallback_config['plex_fallback_time'] +
-                                                          datetime.timedelta(hours=fallback_config['fallback_plex_timeout'])) -
-                                                         datetime.datetime.now()).total_seconds(), 60)[0]
-                                   ))
-
-        # Check if we need to revert to tvdb's api, because we exceed the fallback period.
-        if fallback_config['api_base_url'] == API_BASE_URL_FALLBACK:
-            if (fallback_config['plex_fallback_time'] +
-                    datetime.timedelta(hours=fallback_config['fallback_plex_timeout']) < datetime.datetime.now()):
                 logger.debug("Disabling Plex fallback as fallback timeout was reached")
-                session.api_client.host = API_BASE_TVDB
-                session.auth = TVDBAuth(api_key=TVDB_API_KEY)
-            else:
                 logger.debug("Keeping Plex fallback enabled as fallback timeout not reached")
-
-        try:
-            # Run api request
-            return func(*args, **kwargs)
-        except ApiException as e:
-            logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
-        except IndexerUnavailable as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
-        except Exception as e:
-            logger.warning("could not connect to TheTvdb.com, with reason '%s'", e.message)
-
-        # If we got this far, it means we hit an exception, and we want to switch to the plex fallback.
-        session.api_client.host = API_BASE_URL_FALLBACK
-        session.auth = TVDBAuth(api_key=TVDB_API_KEY, api_base=API_BASE_URL_FALLBACK)
-
-        fallback_config['plex_fallback_time'] = datetime.datetime.now()
-
         # Send notification back to user.
         if fallback_config['fallback_plex_notifications']:
             logger.warning("Enabling Plex fallback as TheTvdb.com API is having some connectivity issues")
             fallback_notification()
-        # Run api request
-        return func(*args, **kwargs)
-    return inner
-
-
 class TVDBv2(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name.
 
@@ -123,23 +69,6 @@ class TVDBv2(BaseIndexer):
 
         # client_id = ''  # (optional! Only required for the /user routes)
         # client_secret = ''  # (optional! Only required for the /user routes)
-
-        # TODO: This can be removed when we always have one TVDB indexer object for entire medusa.
-        # Currently only the session object is a singleton.
-        if kwargs.get('plex_fallback'):
-            if not hasattr(self.config['session'], 'fallback_config'):
-                self.config['session'].fallback_config = {
-                    'plex_fallback_time': datetime.datetime.now(),
-                    'api_base_url': API_BASE_TVDB,
-                    'fallback_plex_enable': kwargs['plex_fallback']['fallback_plex_enable'],
-                    'fallback_plex_timeout': kwargs['plex_fallback']['fallback_plex_timeout'],
-                    'fallback_plex_notifications': kwargs['plex_fallback']['fallback_plex_notifications']
-                }
-            else:
-                # Try to update some of the values
-                self.config['session'].fallback_config['fallback_plex_enable'] = kwargs['plex_fallback']['fallback_plex_enable']
-                self.config['session'].fallback_config['fallback_plex_timeout'] = kwargs['plex_fallback']['fallback_plex_timeout']
-                self.config['session'].fallback_config['fallback_plex_notifications'] = kwargs['plex_fallback']['fallback_plex_notifications']
 
         if not hasattr(self.config['session'], 'api_client'):
             tvdb_client = ApiClient(self.config['api_base_url'], session=self.config['session'], api_key=TVDB_API_KEY)
@@ -240,7 +169,7 @@ class TVDBv2(BaseIndexer):
             return OrderedDict({'data': None})
 
     # Tvdb implementation
-    @plex_fallback
+    @PlexFallback
     def search(self, series):
         """Search tvdbv2.com for the series name.
 
@@ -264,7 +193,7 @@ class TVDBv2(BaseIndexer):
 
         return OrderedDict({'series': cleaned_results})['series']
 
-    @plex_fallback
+    @PlexFallback
     def _get_show_by_id(self, tvdbv2_id, request_language='en'):  # pylint: disable=unused-argument
         """Retrieve tvdbv2 show information by tvdbv2 id, or if no tvdbv2 id provided by passed external id.
 
@@ -309,7 +238,7 @@ class TVDBv2(BaseIndexer):
         episodes = self._download_episodes(tvdb_id, specials=False, aired_season=None)
         return self._parse_episodes(tvdb_id, episodes)
 
-    @plex_fallback
+    @PlexFallback
     def _download_episodes(self, tvdb_id, specials=False, aired_season=None):
         """Download episodes for a given tvdb_id.
 
@@ -455,7 +384,7 @@ class TVDBv2(BaseIndexer):
 
         return ui.select_series(all_series)
 
-    @plex_fallback
+    @PlexFallback
     def _parse_images(self, sid):
         """Parse images XML.
 
@@ -552,7 +481,7 @@ class TVDBv2(BaseIndexer):
         self._save_images(sid, _images)
         self._set_show_data(sid, '_banners', _images)
 
-    @plex_fallback
+    @PlexFallback
     def _parse_actors(self, sid):
         """Parser actors XML.
 
@@ -652,7 +581,7 @@ class TVDBv2(BaseIndexer):
         return True
 
     # Public methods, usable separate from the default api's interface api['show_id']
-    @plex_fallback
+    @PlexFallback
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
         """Retrieve a list with updated shows.
 

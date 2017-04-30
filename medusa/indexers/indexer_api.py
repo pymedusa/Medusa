@@ -17,9 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from .indexer_config import indexerConfig, initConfig
-from .. import app
-from ..helper.common import try_int
+
+from medusa import app
+from medusa.indexers.indexer_config import indexerConfig, initConfig
+from medusa.helper.common import try_int
+from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
 
 
 class indexerApi(object):
@@ -29,6 +31,7 @@ class indexerApi(object):
     def __del__(self):
         pass
 
+    @PlexFallBackConfig
     def indexer(self, *args, **kwargs):
         if self.indexer_id:
             return indexerConfig[self.indexer_id]['module'](*args, **kwargs)
@@ -56,13 +59,6 @@ class indexerApi(object):
                 indexerConfig[self.indexer_id]['api_params']['cache'] = os.path.join(app.CACHE_DIR, 'indexers', self.name)
             if app.PROXY_SETTING and app.PROXY_INDEXERS:
                 indexerConfig[self.indexer_id]['api_params']['proxy'] = app.PROXY_SETTING
-            # TVDB can fallback to Plex mirror
-            if self.indexer_id == 1:
-                indexerConfig[self.indexer_id]['api_params']['plex_fallback'] = {
-                    'fallback_plex_enable': app.FALLBACK_PLEX_ENABLE,  # Enable plex fallback
-                    'fallback_plex_timeout': app.FALLBACK_PLEX_TIMEOUT,  # Amount of hours to fallback to tvdb api.
-                    'fallback_plex_notifications': app.FALLBACK_PLEX_NOTIFICATIONS  # Enable notifications.
-                }
 
             return indexerConfig[self.indexer_id]['api_params']
 
