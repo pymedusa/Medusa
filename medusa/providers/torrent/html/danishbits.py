@@ -168,7 +168,7 @@ class DanishbitsProvider(TorrentProvider):
                     if self.freeleech and not freeleech:
                         continue
 
-                    # \xc3\xb8 = ø                    
+                    # \xc3\xb8 = ø
                     torrent_size = cells[labels.index('St\xc3\xb8rrelse')].contents[0]
                     size = convert_size(torrent_size, units=units) or -1
 
