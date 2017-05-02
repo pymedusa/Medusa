@@ -11,7 +11,7 @@ from tornroutes import route
 
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import app, db, helpers, logger, network_timezones, post_processor, sbdatetime, subtitles, ui
+from .... import app, db, helpers, logger, network_timezones, sbdatetime, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -24,6 +24,7 @@ from ....helper.exceptions import (
 )
 from ....helpers import is_media_file
 from ....network_timezones import app_timezone
+from ....post_processor import PostProcessor
 from ....show.show import Show
 from ....tv import Episode
 
@@ -302,7 +303,7 @@ class Manage(Home, WebRoot):
                 if not tv_episode.series.subtitles:
                     continue
 
-                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                related_files = PostProcessor(video_path).list_associated_files(video_path, subtitles_only=True)
                 if related_files:
                     continue
 

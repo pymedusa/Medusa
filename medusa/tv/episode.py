@@ -1648,12 +1648,12 @@ class Episode(TV):
             return
 
         related_files = post_processor.PostProcessor(self.location).list_associated_files(
-            self.location, base_name_only=True, subfolders=True)
+            self.location, subfolders=True)
 
         # This is wrong. Cause of pp not moving subs.
         if self.series.subtitles and app.SUBTITLES_DIR != '':
             related_subs = post_processor.PostProcessor(
-                self.location).list_associated_files(app.SUBTITLES_DIR, subtitles_only=True, subfolders=True)
+                self.location).list_associated_files(app.SUBTITLES_DIR, subfolders=True, subtitles_only=True)
 
         logger.debug('{id} Files associated to {location}: {related_files}',
                      id=self.indexerid, location=self.location, related_files=related_files)
