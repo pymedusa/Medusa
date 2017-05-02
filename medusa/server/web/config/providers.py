@@ -295,7 +295,7 @@ class ConfigProviders(Config):
                     torrent_rss_provider_dict[cur_id].name = cur_name
                     torrent_rss_provider_dict[cur_id].url = cur_url
                     torrent_rss_provider_dict[cur_id].cookies = cur_cookies
-                    torrent_rss_provider_dict[cur_id].curTitleTAG = cur_title_tag
+                    torrent_rss_provider_dict[cur_id].cur_title_tag = cur_title_tag
                 else:
                     app.torrentRssProviderList.append(new_provider)
 
