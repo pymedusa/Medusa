@@ -438,9 +438,14 @@ class PostProcessor(object):
                 helpers.move_file(cur_file_path, new_file_path)
                 helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
-                self._log(u'Unable to move file {0} to {1}: {2!r}'.format
-                          (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
+                if getattr(e, 'errno', None) == 2:  # [Errno 2] No such file or directory
+                    self._log(u'Unable to move file {0} to {1} as it might be already moved'.format
+                              (cur_file_path, new_file_path), logger.WARNING)
+                    raise EpisodePostProcessingFailedException('File might be already moved.')
+                else:
+                    self._log(u'Unable to move file {0} to {1}: {2!r}'.format
+                              (cur_file_path, new_file_path, e), logger.ERROR)
+                    raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         def copy(cur_file_path, new_file_path):
             self._log(u'Copying file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -448,9 +453,14 @@ class PostProcessor(object):
                 helpers.copy_file(cur_file_path, new_file_path)
                 helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
-                self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
-                          (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
+                if getattr(e, 'errno', None) == 2:  # [Errno 2] No such file or directory
+                    self._log(u'Unable to copy file {0} to {1} as it might be already copied'.format
+                              (cur_file_path, new_file_path), logger.WARNING)
+                    raise EpisodePostProcessingFailedException('File might be already copied')
+                else:
+                    self._log(u'Unable to copy file {0} to {1}: {2!r}'.format
+                              (cur_file_path, new_file_path, e), logger.ERROR)
+                    raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
 
         def hardlink(cur_file_path, new_file_path):
             self._log(u'Hard linking file from {0} to {1}'.format(cur_file_path, new_file_path), logger.DEBUG)
@@ -458,9 +468,14 @@ class PostProcessor(object):
                 helpers.hardlink_file(cur_file_path, new_file_path)
                 helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
-                self._log(u'Unable to link file {0} to {1}: {2!r}'.format
-                          (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to hard link the files to their new home')
+                if getattr(e, 'errno', None) == 2:  # [Errno 2] No such file or directory
+                    self._log(u'Unable to hard link file {0} to {1} as it might be already hard linked'.format
+                              (cur_file_path, new_file_path), logger.WARNING)
+                    raise EpisodePostProcessingFailedException('File might be already hard linked')
+                else:
+                    self._log(u'Unable to hard link file {0} to {1}: {2!r}'.format
+                              (cur_file_path, new_file_path, e), logger.ERROR)
+                    raise EpisodePostProcessingFailedException('Unable to hard link the files to their new home')
 
         def symlink(cur_file_path, new_file_path):
             self._log(u'Moving then symbolic linking file from {0} to {1}'.format
@@ -469,9 +484,14 @@ class PostProcessor(object):
                 helpers.move_and_symlink_file(cur_file_path, new_file_path)
                 helpers.chmod_as_parent(new_file_path)
             except (IOError, OSError) as e:
-                self._log(u'Unable to link file {0} to {1}: {2!r}'.format
-                          (cur_file_path, new_file_path, e), logger.ERROR)
-                raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
+                if getattr(e, 'errno', None) == 2:  # [Errno 2] No such file or directory:
+                    self._log(u'Unable to move and symlink file {0} to {1} as it might be already moved'.format
+                              (cur_file_path, new_file_path), logger.WARNING)
+                    raise EpisodePostProcessingFailedException('File might be already moved and linked')
+                else:
+                    self._log(u'Unable to move and symlink file {0} to {1}: {2!r}'.format
+                              (cur_file_path, new_file_path, e), logger.ERROR)
+                    raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
         action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
         # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
