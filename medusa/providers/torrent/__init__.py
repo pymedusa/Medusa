@@ -29,7 +29,7 @@ from .html import (
     torrentbytes,
     torrentleech,
     torrentproject,
-    transmitthenet,
+    Nebulance,
     tvchaosuk,
     xthor,
     zooqle,
