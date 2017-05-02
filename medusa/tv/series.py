@@ -653,7 +653,7 @@ class Series(TV):
         return ep_list
 
     def get_episode(self, season=None, episode=None, filepath=None, no_create=False, absolute_number=None,
-                    air_date=None, should_cache=True):
+                    air_date=None, should_cache=True, get_status=False):
         """Return TVEpisode given the specified filter.
 
         :param season:
@@ -675,32 +675,42 @@ class Series(TV):
         """
         season = try_int(season, None)
         episode = try_int(episode, None)
+        status = UNKNOWN
         absolute_number = try_int(absolute_number, None)
 
         # if we get an anime get the real season and episode
-        if not season and not episode:
+        if (not season and not episode) or get_status:
             main_db_con = db.DBConnection()
             sql = None
             sql_args = None
             if self.is_anime and absolute_number:
-                sql = b'SELECT season, episode ' \
+                sql = b'SELECT season, episode, status ' \
                       b'FROM tv_episodes ' \
                       b'WHERE showid = ? AND absolute_number = ? AND season != 0'
                 sql_args = [self.indexerid, absolute_number]
                 logger.debug(u'{id}: Season and episode lookup for {show} using absolute number {absolute}',
                              id=self.indexerid, absolute=absolute_number, show=self.name)
             elif air_date:
-                sql = b'SELECT season, episode FROM tv_episodes WHERE showid = ? AND airdate = ?'
+                sql = b'SELECT season, episode, status FROM tv_episodes WHERE showid = ? AND airdate = ?'
                 sql_args = [self.indexerid, air_date.toordinal()]
                 logger.debug(u'{id}: Season and episode lookup for {show} using air date {air_date}',
                              id=self.indexerid, air_date=air_date, show=self.name)
+            elif season and episode and get_status:
+                sql = b'SELECT season, episode, status FROM tv_episodes WHERE showid = ? and season = ? and episode = ?'
+                sql_args = [self.indexerid, season, episode]
+                logger.debug(u'{id}: Status lookup for {show}',
+                             id=self.indexerid, show=self.name)
 
             sql_results = main_db_con.select(sql, sql_args) if sql else []
             if len(sql_results) == 1:
                 episode = int(sql_results[0][b'episode'])
                 season = int(sql_results[0][b'season'])
-                logger.debug(u'{id}: Found season and episode which is {show} {ep}',
-                             id=self.indexerid, show=self.name, ep=episode_num(season, episode))
+                status = int(sql_results[0][b'status'])
+                logger.debug(u'{id}: Found season and episode which is {show} {ep} and status {status}',
+                             id=self.indexerid,
+                             show=self.name,
+                             ep=episode_num(season, episode),
+                             status=statusStrings[status])
             elif len(sql_results) > 1:
                 logger.error(u'{id}: Multiple entries found in show: {show} ', id=self.indexerid, show=self.name)
 
@@ -718,9 +728,9 @@ class Series(TV):
             return None
 
         if filepath:
-            ep = Episode(self, season, episode, filepath)
+            ep = Episode(self, season, episode, filepath, status)
         else:
-            ep = Episode(self, season, episode)
+            ep = Episode(self, season, episode, status=status)
 
         if ep is not None and ep.loaded and should_cache:
             self.episodes[season][episode] = ep
@@ -1085,7 +1095,7 @@ class Series(TV):
                 if episode == 0:
                     continue
                 try:
-                    ep = self.get_episode(season, episode)
+                    ep = self.get_episode(season, episode, get_status=True)
                     if not ep:
                         raise EpisodeNotFoundException
                 except EpisodeNotFoundException:
