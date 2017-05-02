@@ -1031,7 +1031,7 @@ class Episode(TV):
                         b'  manually_searched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
-                        [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
+                        [self.indexerid, str(self.indexer), self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
                          self.show.indexerid, self.season, self.episode, self.absolute_number, self.version,
@@ -1066,7 +1066,7 @@ class Episode(TV):
                         b'  manually_searched = ? '
                         b'WHERE '
                         b'  episode_id = ?',
-                        [self.indexerid, self.indexer, self.name, self.description,
+                        [self.indexerid, str(self.indexer), self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
                          self.show.indexerid, self.season, self.episode, self.absolute_number, self.version,
@@ -1101,7 +1101,7 @@ class Episode(TV):
                     b'VALUES '
                     b'  ((SELECT episode_id FROM tv_episodes WHERE showid = ? AND season = ? AND episode = ?), '
                     b'  ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);',
-                    [self.show.indexerid, self.season, self.episode, self.indexerid, self.indexer, self.name,
+                    [self.show.indexerid, self.season, self.episode, self.indexerid, str(self.indexer), self.name,
                      self.description, ','.join(self.subtitles), self.subtitles_searchcount, self.subtitles_lastsearch,
                      self.airdate.toordinal(), self.hasnfo, self.hastbn, self.status, self.location, self.file_size,
                      self.release_name, self.is_proper, self.show.indexerid, self.season, self.episode,
@@ -1115,7 +1115,7 @@ class Episode(TV):
             return
 
         new_value_dict = {b'indexerid': self.indexerid,
-                          b'indexer': self.indexer,
+                          b'indexer': str(self.indexer),
                           b'name': self.name,
                           b'description': self.description,
                           b'subtitles': ','.join(self.subtitles),
