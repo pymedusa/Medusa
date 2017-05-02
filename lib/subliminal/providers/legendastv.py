@@ -44,6 +44,9 @@ rating_re = re.compile(r'nota (?P<rating>\d+)')
 #: Timestamp parsing regex
 timestamp_re = re.compile(r'(?P<day>\d+)/(?P<month>\d+)/(?P<year>\d+) - (?P<hour>\d+):(?P<minute>\d+)')
 
+#: Title with year/country regex
+title_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-Z]{2}))\))?$')
+
 #: Cache key for releases
 releases_key = __name__ + ':releases|{archive_id}'
 
@@ -121,8 +124,8 @@ class LegendasTVSubtitle(Subtitle):
             if video.series and sanitize(self.title) == sanitize(video.series):
                 matches.add('series')
 
-            # year (year is based on season air date hence the adjustment)
-            if video.original_series and self.year is None or video.year and video.year == self.year - self.season + 1:
+            # year
+            if video.original_series and self.year is None or video.year and video.year == self.year:
                 matches.add('year')
 
             # imdb_id
@@ -196,7 +199,8 @@ class LegendasTVProvider(Provider):
 
         self.session.close()
 
-    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    #  @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    #  As SHOW_EXPIRATION_TIME=3 weeks, a subtitle for a show can be missed if a new title is added before expiration
     def search_titles(self, title):
         """Search for titles matching the `title`.
 
@@ -219,12 +223,12 @@ class LegendasTVProvider(Provider):
             # extract id
             title_id = int(source['id_filme'])
 
-            # extract type and title
-            title = {'type': type_map[source['tipo']], 'title': source['dsc_nome']}
+            # extract type
+            title = {'type': type_map[source['tipo']]}
 
-            # extract year
-            if source['dsc_data_lancamento'] and source['dsc_data_lancamento'].isdigit():
-                title['year'] = int(source['dsc_data_lancamento'])
+            # extract title, year and country
+            name, year, country = title_re.match(source['dsc_nome']).groups()
+            title['title'] = name
 
             # extract imdb_id
             if source['id_imdb'] != '0':
@@ -243,6 +247,13 @@ class LegendasTVProvider(Provider):
                         title['season'] = int(match.group('season'))
                     else:
                         logger.warning('No season detected for title %d', title_id)
+
+            # extract year
+            if year:
+                title['year'] = int(year)
+            elif source['dsc_data_lancamento'] and source['dsc_data_lancamento'].isdigit():
+                # year is based on season air date hence the adjustment
+                title['year'] = int(source['dsc_data_lancamento']) - title.get('season', 1) + 1
 
             # add title
             titles[title_id] = title
@@ -346,16 +357,21 @@ class LegendasTVProvider(Provider):
         for title_id, t in titles.items():
             # discard mismatches on title
             if sanitize(t['title']) != sanitize(title):
+                logger.debug('Title id: %s sanitize did not matched: %s and %s', title_id, sanitize(t['title']), sanitize(title))
                 continue
 
             # episode
             if season and episode:
                 # discard mismatches on type
                 if t['type'] != 'episode':
+                    logger.debug('Title id: %s not an episode, discarding title', title_id)
                     continue
 
                 # discard mismatches on season
                 if 'season' not in t or t['season'] != season:
+                    if 'season' not in t:
+                        t['season'] = None
+                    logger.debug('Title id: %s season did not matched: %s and %s, discarding title', title_id, t['season'], season)
                     continue
             # movie
             else:
@@ -381,16 +397,18 @@ class LegendasTVProvider(Provider):
                 if season and episode:
                     # discard mismatches on episode in non-pack archives
                     if not a.pack and 'episode' in guess and guess['episode'] != episode:
+                        logger.debug('Episode in pack did not matched: %s and %s, discarding title', guess['episode'], episode)
                         continue
 
                 # compute an expiration time based on the archive timestamp
                 expiration_time = (datetime.utcnow().replace(tzinfo=pytz.utc) - a.timestamp).total_seconds()
 
                 # attempt to get the releases from the cache
-                releases = region.get(releases_key.format(archive_id=a.id), expiration_time=expiration_time)
+                # releases = region.get(releases_key.format(archive_id=a.id), expiration_time=expiration_time)
 
                 # the releases are not in cache or cache is expired
-                if releases == NO_VALUE:
+                # Force download of archive
+                if True or releases == NO_VALUE:
                     logger.info('Releases not found in cache')
 
                     # download archive
@@ -414,7 +432,8 @@ class LegendasTVProvider(Provider):
                         releases.append(name)
 
                     # cache the releases
-                    region.set(releases_key.format(archive_id=a.id), releases)
+                    # region.set(releases_key.format(archive_id=a.id), releases)
+                    # Disabled as the html timestamp is not updated when a new subtitle is added to the pack
 
                 # iterate over releases
                 for r in releases:
