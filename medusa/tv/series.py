@@ -1728,7 +1728,7 @@ class Series(TV):
                     logger.info(u'{id}: Looking for hanging associated files for: {show} {ep} in: {location}',
                                 id=self.indexerid, show=self.name, ep=episode_num(season, episode), location=cur_loc)
                     related_files = post_processor.PostProcessor(cur_loc).list_associated_files(
-                        cur_loc, base_name_only=False, subfolders=True)
+                        cur_loc, subfolders=True)
 
                     if related_files:
                         logger.info(u"{id}: Found hanging associated files for {show} {ep}, deleting: '{files}'",
