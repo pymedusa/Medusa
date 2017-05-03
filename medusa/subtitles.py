@@ -787,7 +787,7 @@ class SubtitlesFinder(object):
     """
 
     def __init__(self):
-        """Default constructor."""
+        """Initialize the default constructor."""
         self.amActive = False
 
     @staticmethod
