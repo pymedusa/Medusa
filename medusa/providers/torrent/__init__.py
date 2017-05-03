@@ -17,6 +17,7 @@ from .html import (
     iptorrents,
     limetorrents,
     morethantv,
+    nebulance,
     newpct,
     pretome,
     scc,
@@ -29,7 +30,6 @@ from .html import (
     torrentbytes,
     torrentleech,
     torrentproject,
-    Nebulance,
     tvchaosuk,
     xthor,
     zooqle,
@@ -61,7 +61,7 @@ __all__ = [
     'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent',
     'freshontv', 'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
+    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
     'torrentz2', 'animetorrents'
 ]
