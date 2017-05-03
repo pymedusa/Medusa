@@ -429,7 +429,7 @@ class Episode(dict):
     """Hold all episodes instances of a show."""
 
     def __init__(self, season=None):
-        """Initialize constructor with season attribute that points to the parent season."""
+        """Initialize class with season attribute that points to the parent season."""
         self.season = season
 
     def __repr__(self):
