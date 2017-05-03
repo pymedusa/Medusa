@@ -346,17 +346,17 @@ class Series(TV):
 
     @property
     def network_logo_name(self):
-        """The network logo name."""
+        """Get the network logo name."""
         return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').lower()
 
     @property
     def raw_location(self):
-        """The raw show location, unvalidated."""
+        """Get the raw show location, unvalidated."""
         return self._location
 
     @property
     def location(self):
-        """The show location."""
+        """Get the show location."""
         # no directory check needed if missing
         # show directories are created during post-processing
         if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
@@ -391,7 +391,7 @@ class Series(TV):
     @property
     def current_qualities(self):
         """
-        The show qualities.
+        Get the show qualities.
 
         :returns: A tuple of allowed and preferred qualities
         """
@@ -404,7 +404,7 @@ class Series(TV):
 
     @property
     def default_ep_status_name(self):
-        """Default episode status name."""
+        """Get the default episode status name."""
         return statusStrings[self.default_ep_status]
 
     @property
@@ -414,7 +414,7 @@ class Series(TV):
 
     def show_size(self, pretty=False):
         """
-        Deprecated method to get the size of the show on disk.
+        Get the size of the show on disk (deprecated).
 
         :param pretty: True if you want a pretty size. (e.g. 3 GB)
         :return:  Size of the show on disk.
@@ -1755,7 +1755,7 @@ class Series(TV):
         self.load_episodes_from_dir()
 
         # run through all locations from DB, check that they exist
-        log.debug(u'{id}: Loading all episodes from {show} with a location from the database',
+        log.debug(u"{id}: Loading all episodes from '{show}' with a location from the database",
                   {'id': self.indexerid, 'show': self.name})
 
         main_db_con = db.DBConnection()
@@ -1780,7 +1780,7 @@ class Series(TV):
                     raise EpisodeDeletedException
             except EpisodeDeletedException:
                 log.debug(
-                    u'{id:} Episode {show} {ep} was deleted while we were refreshing it,'
+                    u"{id:} Episode '{show}' {ep} was deleted while we were refreshing it,"
                     u' moving on to the next one', {
                         'id': self.indexerid,
                         'show': self.name,
@@ -1807,8 +1807,8 @@ class Series(TV):
                                 new_status = app.EP_DEFAULT_DELETED_STATUS
 
                             log.debug(
-                                u"{id}: Location for {show} {ep} doesn't exist and status is {old_status},"
-                                u" removing it and changing our status to '{status}'", {
+                                u"{id}: Location for '{show}' {ep} doesn't exist and current status is '{old_status}',"
+                                u" removing it and changing status to '{status}'", {
                                     'id': self.indexerid,
                                     'show': self.name,
                                     'ep': episode_num(season, episode),
@@ -1829,7 +1829,7 @@ class Series(TV):
                         sql_l.append(cur_ep.get_sql())
 
                     log.info(
-                        u'{id}: Looking for hanging associated files for: {show} {ep} in: {location}', {
+                        u"{id}: Looking for hanging associated files for: '{show}' {ep} in: {location}", {
                             'id': self.indexerid,
                             'show': self.name,
                             'ep': episode_num(season, episode),
@@ -1837,17 +1837,14 @@ class Series(TV):
                         }
                     )
                     related_files = post_processor.PostProcessor(cur_loc).list_associated_files(
-                        cur_loc, base_name_only=False, subfolders=True)
+                        cur_loc, subfolders=True)
 
                     if related_files:
-                        log.warning(
-                            u'{id}: Found hanging associated files for {show} {ep}, deleting: {files}', {
-                                'id': self.indexerid,
-                                'show': self.name,
-                                'ep': episode_num(season, episode),
-                                'files': related_files,
-                            }
-                        )
+                        logger.info(u"{id}: Found hanging associated files for '{show}' {ep}, deleting: '{files}'",
+                                    id=self.indexerid,
+                                    show=self.name,
+                                    ep=episode_num(season, episode),
+                                    files=', '.join(related_files))
                         for related_file in related_files:
                             try:
                                 os.remove(related_file)
@@ -1938,7 +1935,7 @@ class Series(TV):
         self.reset_dirty()
 
     def __str__(self):
-        """String representation.
+        """Represent a string.
 
         :return:
         :rtype: str

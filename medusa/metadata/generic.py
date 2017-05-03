@@ -733,13 +733,12 @@ class GenericMetadata(object):
 
     def _retrieve_show_image(self, image_type, show_obj, which=None):
         """
-        Gets an image URL from theTVDB.com and TMDB.com, downloads it and returns the data.
+        Get an image URL from theTVDB.com and TMDB.com, download it and returns the data.
 
-        image_type: type of image to retrieve (currently supported: fanart, poster, banner)
-        show_obj: a Series object to use when searching for the image
-        which: optional, a specific numbered poster to look for
-
-        Returns: the binary image data if available, or else None
+        :param image_type: type of image to retrieve (currently supported: fanart, poster, banner)
+        :param show_obj: a Series object to use when searching for the image
+        :param which: optional, a specific numbered poster to look for
+        :return: the binary image data if available, or else None
         """
         image_url = None
 

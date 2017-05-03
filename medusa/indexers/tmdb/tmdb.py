@@ -501,9 +501,10 @@ class Tmdb(BaseIndexer):
         return True
 
     def _get_series_season_updates(self, sid, start_date=None, end_date=None):
-        """"Retrieve all updates (show,season,episode) from TMDB.
+        """
+        Retrieve all updates (show,season,episode) from TMDB.
 
-        :returns: A list of updated seasons for a show id.
+        :return: A list of updated seasons for a show id.
         """
         results = []
         page = 1
@@ -521,7 +522,7 @@ class Tmdb(BaseIndexer):
         return set(results)
 
     def _get_all_updates(self, start_date=None, end_date=None):
-        """"Retrieve all updates (show,season,episode) from TMDB."""
+        """Retrieve all updates (show,season,episode) from TMDB."""
         results = []
         page = 1
         total_pages = 1
