@@ -851,7 +851,7 @@ class Episode(TV):
             self.hastbn = bool(os.path.isfile(replace_extension(nfo_file, 'tbn')))
 
     def __str__(self):
-        """String representation.
+        """Represent a string.
 
         :return:
         :rtype: unicode

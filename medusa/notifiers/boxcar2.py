@@ -34,10 +34,9 @@ class Notifier(object):
         title: The title of the message
         accesstoken: to send to this device
 
-        returns: True if the message succeeded, False otherwise
+        return: True if the message succeeded, False otherwise
         """
         # http://blog.boxcar.io/post/93211745502/boxcar-api-update-boxcar-api-update-icon-and
-
         post_data = {
             'user_credentials': accesstoken,
             'notification[title]': 'Medusa: {}: {}'.format(title, msg),
