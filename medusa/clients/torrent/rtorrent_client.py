@@ -1,28 +1,5 @@
 # coding=utf-8
-# Author: jkaberg <joel.kaberg@gmail.com>
-#
 
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
-
-# pylint: disable=line-too-long
-
-# based on fuzemans work
-# https://github.com/RuudBurger/CouchPotatoServer/blob/develop/couchpotato/core/downloaders/rtorrent/main.py
 """rTorrent Client."""
 
 from __future__ import unicode_literals
@@ -31,11 +8,13 @@ import logging
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
+from medusa.logger.adapters.style import BraceAdapter
 
 from rtorrent import RTorrent
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class RTorrentAPI(GenericClient):
@@ -98,8 +77,9 @@ class RTorrentAPI(GenericClient):
 
             # Start torrent
             torrent.start()
-        except Exception as error:
-            logger.warning('Error while sending torrent: {error!r}', error=error)
+        except Exception as msg:
+            log.warning('Error while sending torrent: {error!r}',
+                        {'error': msg})
             return False
         else:
             return True
@@ -130,7 +110,8 @@ class RTorrentAPI(GenericClient):
             # Start torrent
             torrent.start()
         except Exception as msg:
-            logger.warning('Error while sending torrent: {error!r}', error=msg)
+            log.warning('Error while sending torrent: {error!r}',
+                        {'error': msg})
             return False
         else:
             return True

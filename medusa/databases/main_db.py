@@ -8,20 +8,20 @@ import warnings
 
 from medusa import common, db, helpers, subtitles
 from medusa.helper.common import dateTimeFormat, episode_num
+from medusa.indexers.indexer_config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
 from six import iteritems
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
-log = BraceAdapter(log)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 5
+CURRENT_MINOR_DB_VERSION = 8
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -218,23 +218,7 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired["episode_id"]])
 
     def fix_indexer_show_statues(self):
-        status_map = {
-            'returning series': 'Continuing',
-            'canceled/ended': 'Ended',
-            'tbd/on the bubble': 'Continuing',
-            'in development': 'Continuing',
-            'new series': 'Continuing',
-            'never aired': 'Ended',
-            'final season': 'Continuing',
-            'on hiatus': 'Continuing',
-            'pilot ordered': 'Continuing',
-            'pilot rejected': 'Ended',
-            'canceled': 'Ended',
-            'ended': 'Ended',
-            '': 'Unknown',
-        }
-
-        for old_status, new_status in iteritems(status_map):
+        for old_status, new_status in iteritems(STATUS_MAP):
             self.connection.action("UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?", [new_status, old_status])
 
     def fix_episode_statuses(self):
@@ -323,11 +307,11 @@ class InitialSchema(db.SchemaUpgrade):
                 "CREATE TABLE info(last_backlog NUMERIC, last_indexer NUMERIC, last_proper_search NUMERIC);",
                 "CREATE TABLE scene_numbering(indexer TEXT, indexer_id INTEGER, season INTEGER, episode INTEGER, scene_season INTEGER, scene_episode INTEGER, absolute_number NUMERIC, scene_absolute_number NUMERIC, PRIMARY KEY(indexer_id, season, episode));",
                 "CREATE TABLE tv_shows(show_id INTEGER PRIMARY KEY, indexer_id NUMERIC, indexer NUMERIC, show_name TEXT, location TEXT, network TEXT, genre TEXT, classification TEXT, runtime NUMERIC, quality NUMERIC, airs TEXT, status TEXT, flatten_folders NUMERIC, paused NUMERIC, startyear NUMERIC, air_by_date NUMERIC, lang TEXT, subtitles NUMERIC, notify_list TEXT, imdb_id TEXT, last_update_indexer NUMERIC, dvdorder NUMERIC, archive_firstmatch NUMERIC, rls_require_words TEXT, rls_ignore_words TEXT, sports NUMERIC, anime NUMERIC, scene NUMERIC, default_ep_status NUMERIC DEFAULT -1);",
-                "CREATE TABLE tv_episodes(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid NUMERIC, indexer TEXT, name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT);",
+                "CREATE TABLE tv_episodes(episode_id INTEGER PRIMARY KEY, showid NUMERIC, indexerid INTEGER, indexer INTEGER, name TEXT, season NUMERIC, episode NUMERIC, description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, status NUMERIC, location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT, subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP, is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC, absolute_number NUMERIC, scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1, release_group TEXT);",
                 "CREATE TABLE blacklist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE whitelist (show_id INTEGER, range TEXT, keyword TEXT);",
                 "CREATE TABLE xem_refresh (indexer TEXT, indexer_id INTEGER PRIMARY KEY, last_refreshed INTEGER);",
-                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer NUMERIC, mindexer_id INTEGER, mindexer NUMERIC, PRIMARY KEY (indexer_id, indexer));",
+                "CREATE TABLE indexer_mapping (indexer_id INTEGER, indexer INTEGER, mindexer_id INTEGER, mindexer INTEGER, PRIMARY KEY (indexer_id, indexer, mindexer));",
                 "CREATE UNIQUE INDEX idx_indexer_id ON tv_shows(indexer_id);",
                 "CREATE INDEX idx_showid ON tv_episodes(showid);",
                 "CREATE INDEX idx_sta_epi_air ON tv_episodes(status, episode, airdate);",
@@ -558,4 +542,72 @@ class AddPlot(AddInfoHash):
         log.info(u'Adding column plot in tv_show')
         if not self.hasColumn('tv_shows', 'plot'):
             self.addColumn('tv_shows', 'plot', 'TEXT', None)
+        self.inc_minor_version()
+
+
+class AddResourceSize(AddPlot):
+    """Adds column size to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.6
+        """
+        return self.connection.version >= (44, 6)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u"Adding column size in history")
+        if not self.hasColumn("history", "size"):
+            self.addColumn("history", "size", 'NUMERIC', -1)
+
+        self.inc_minor_version()
+
+
+class AddPKIndexerMapping(AddResourceSize):
+    """Add PK to mindexer column in indexer_mapping table."""
+
+    def test(self):
+        """Test if the version is at least 44.7"""
+        return self.connection.version >= (44, 7)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Adding PK to mindexer column in indexer_mapping table')
+        self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
+        self.connection.action("CREATE TABLE IF NOT EXISTS new_indexer_mapping"
+                               "(indexer_id INTEGER, indexer INTEGER, mindexer_id INTEGER, mindexer INTEGER,"
+                               "PRIMARY KEY (indexer_id, indexer, mindexer));")
+        self.connection.action("INSERT INTO new_indexer_mapping SELECT * FROM indexer_mapping;")
+        self.connection.action("DROP TABLE IF EXISTS indexer_mapping;")
+        self.connection.action("ALTER TABLE new_indexer_mapping RENAME TO indexer_mapping;")
+        self.connection.action("DROP TABLE IF EXISTS new_indexer_mapping;")
+        self.inc_minor_version()
+
+
+class AddIndexerInteger(AddPKIndexerMapping):
+    """Make indexer as INTEGER in tv_episodes table."""
+
+    def test(self):
+        """Test if the version is at least 44.8"""
+        return self.connection.version >= (44, 8)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u'Make indexer and indexer_id as INTEGER in tv_episodes table')
+        self.connection.action("DROP TABLE IF EXISTS new_tv_episodes;")
+        self.connection.action("CREATE TABLE new_tv_episodes(episode_id INTEGER PRIMARY KEY, showid NUMERIC,"
+                               "indexerid INTEGER, indexer INTEGER, name TEXT, season NUMERIC, episode NUMERIC,"
+                               "description TEXT, airdate NUMERIC, hasnfo NUMERIC, hastbn NUMERIC, status NUMERIC,"
+                               "location TEXT, file_size NUMERIC, release_name TEXT, subtitles TEXT,"
+                               "subtitles_searchcount NUMERIC, subtitles_lastsearch TIMESTAMP,"
+                               "is_proper NUMERIC, scene_season NUMERIC, scene_episode NUMERIC,"
+                               "absolute_number NUMERIC, scene_absolute_number NUMERIC, version NUMERIC DEFAULT -1,"
+                               "release_group TEXT, manually_searched NUMERIC);")
+        self.connection.action("INSERT INTO new_tv_episodes SELECT * FROM tv_episodes;")
+        self.connection.action("DROP TABLE IF EXISTS tv_episodes;")
+        self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
+        self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
         self.inc_minor_version()

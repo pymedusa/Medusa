@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import logging
 
 import cfscrape
+
 import requests
 from requests.utils import dict_from_cookiejar
 
@@ -82,13 +83,9 @@ def cloudflare(resp, **kwargs):
 
 
 def sessioned(session):
-    """
-    Hook factory to add a session to a response.
-    """
+    """Hooks factory to add a session to a response."""
     def sessioned_response_hook(response, *args, **kwargs):
-        """
-        Returns a sessioned response.
-        """
+        """Return a sessioned response."""
         response.session = session
         return response
     return sessioned_response_hook

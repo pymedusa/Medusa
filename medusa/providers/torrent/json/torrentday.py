@@ -60,7 +60,18 @@ class TorrentDayProvider(TorrentProvider):
         self.enable_cookies = True
         self.cookies = ''
 
-        self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1},
+        # TV/480p - 24
+        # TV/Bluray - 32
+        # TV/DVD-R - 31
+        # TV/DVD-Rip - 33
+        # TV/Mobile - 46
+        # TV/Packs - 14
+        # TV/SD/x264 - 26
+        # TV/x264 - 7
+        # TV/x265 - 34
+        # TV/XviD - 2
+
+        self.categories = {'Season': {'c14': 1}, 'Episode': {'c2': 1, 'c7': 1, 'c24': 1, 'c26': 1, 'c31': 1, 'c32': 1, 'c33': 1, 'c34': 1, 'c46': 1},
                            'RSS': {'c2': 1, 'c26': 1, 'c7': 1, 'c24': 1, 'c14': 1}}
 
         # Torrent Stats

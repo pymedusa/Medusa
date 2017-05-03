@@ -56,11 +56,10 @@ from medusa.name_parser.parser import (
     InvalidShowException,
     NameParser,
 )
+from medusa.scene_exceptions import get_scene_exceptions
 from medusa.session.custom import PolicedSession
 from medusa.session.hooks import cloudflare
-from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.show_name_helpers import allPossibleShowNames
 
 from requests.utils import add_dict_to_cookiejar
 
@@ -511,7 +510,7 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.scene_season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
@@ -559,7 +558,7 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in allPossibleShowNames(episode.show, season=episode.season):
+        for show_name in episode.show.get_all_possible_names(season=episode.season):
             episode_string = show_name + ' '
 
             if episode.show.air_by_date or episode.show.sports:
@@ -691,10 +690,8 @@ class GenericProvider(object):
                 return {'result': True,
                         'message': ''}
 
-            else:  # Else is not needed, but placed it here for readability
-                ui.notifications.message('Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                                         'No Cookies added from ui for provider: {0}'.format(self.name))
-                return {'result': False,
+            else:  # Cookies not set. Don't need to check cookies
+                return {'result': True,
                         'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
         return {'result': False,

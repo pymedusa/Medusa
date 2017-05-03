@@ -24,7 +24,7 @@ from app import BASE_PYMEDUSA_URL
 from dateutil import tz
 from six import iteritems
 
-from . import db, helpers, logger
+from . import db, logger
 from .helper.common import try_int
 from .session.core import MedusaSession
 

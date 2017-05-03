@@ -100,16 +100,16 @@ class DBConnection(object):
         :return: query results
         """
         try:
+            cursor = self.connection.cursor()
             if not args:
-                sql_results = self.connection.cursor().execute(query)
+                sql_results = cursor.execute(query)
             else:
-                sql_results = self.connection.cursor().execute(query, args)
+                sql_results = cursor.execute(query, args)
             if fetchall:
                 return sql_results.fetchall()
             elif fetchone:
                 return sql_results.fetchone()
-            else:
-                return sql_results
+            return sql_results
         except sqlite3.OperationalError as e:
             # This errors user should be able to fix it.
             if 'unable to open database file' in e.args[0] or \

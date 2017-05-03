@@ -66,8 +66,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -147,8 +146,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -227,8 +225,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -307,8 +304,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'page']
-        all_params.append('callback')
+        all_params = ['id', 'page', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -395,8 +391,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'absolute_number', 'aired_season', 'aired_episode', 'dvd_season', 'dvd_episode', 'imdb_id', 'page', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'absolute_number', 'aired_season', 'aired_episode', 'dvd_season', 'dvd_episode', 'imdb_id', 'page', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -489,8 +484,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -567,8 +561,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id']
-        all_params.append('callback')
+        all_params = ['id', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -648,8 +641,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'keys', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'keys', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -735,8 +727,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -817,8 +808,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -902,8 +892,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'key_type', 'resolution', 'sub_key', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'key_type', 'resolution', 'sub_key', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):
@@ -990,8 +979,7 @@ class SeriesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):

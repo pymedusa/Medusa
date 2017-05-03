@@ -4,11 +4,15 @@ from __future__ import unicode_literals
 import os
 import posixpath
 import re
-import traceback
+
 from datetime import date
 
-from bs4 import BeautifulSoup
+from imdbpie import imdbpie
+
+from requests import RequestException
+
 from simpleanidb import Anidb
+
 from .recommended import RecommendedShow
 from ... import app, helpers, logger
 from ...indexers.indexer_config import INDEXER_TVDBV2
@@ -19,7 +23,7 @@ class ImdbPopular(object):
     """Gets a list of most popular TV series from imdb."""
 
     def __init__(self):
-        """Constructor for ImdbPopular."""
+        """Initialize class."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = MedusaSession()
         self.recommender = 'IMDB Popular'
@@ -61,47 +65,31 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
-        response = self.session.get(self.url, params=self.params, headers={'Referer': 'http://akas.imdb.com/'})
-        if not response or not response.text:
-            return None
+        imdb_api = imdbpie.Imdb()
+        imdb_result = imdb_api.popular_shows()
 
-        soup = BeautifulSoup(response.text, 'html5lib')
-        results = soup.find('div', class_='lister-list')
-        rows = results.find_all('div', class_='lister-item mode-advanced')
+        for imdb_show in imdb_result:
+            show = dict()
+            imdb_tt = imdb_show['tconst']
 
-        for row in rows:
-            show = {}
+            if imdb_tt:
+                show['imdb_tt'] = imdb_show['tconst']
+                show_details = imdb_api.get_title_by_id(imdb_tt)
 
-            image_div = row.find('div', class_='lister-item-image float-left')
-            if image_div:
-                image = image_div.find('img')
-                show['image_url_large'] = self.change_size(image['loadlate'])
-                show['image_path'] = posixpath.join('images', 'imdb_popular',
-                                                    os.path.basename(show['image_url_large']))
-                # self.cache_image(show['image_url_large'])
+                if show_details:
+                    show['year'] = getattr(show_details, 'year')
+                    show['name'] = getattr(show_details, 'title')
+                    show['image_url_large'] = getattr(show_details, 'cover_url')
+                    show['image_path'] = posixpath.join('images', 'imdb_popular',
+                                                        os.path.basename(show['image_url_large']))
+                    show['imdb_url'] = 'http://www.imdb.com/title/{imdb_tt}'.format(imdb_tt=imdb_tt)
+                    show['votes'] = getattr(show_details, 'votes', 0)
+                    show['outline'] = getattr(show_details, 'plot_outline', 'Not available')
+                    show['rating'] = getattr(show_details, 'rating', 0)
+                else:
+                    continue
 
-            content_div = row.find('div', class_='lister-item-content')
-            if content_div:
-                show_info = content_div.find('a')
-                show['name'] = show_info.get_text()
-                show['imdb_url'] = 'http://www.imdb.com' + show_info['href']
-                show['imdb_tt'] = row.find('div', class_='ribbonize')['data-tconst']
-                show['year'] = content_div.find('span', class_='lister-item-year text-muted unbold').get_text()[1:5]
-
-                rating_div = content_div.find('div', class_='ratings-bar')
-                if rating_div:
-                    rating_strong = rating_div.find('strong')
-                    if rating_strong:
-                        show['rating'] = rating_strong.get_text()
-
-                votes_p = content_div.find('p', class_='sort-num_votes-visible')
-                if votes_p:
-                    show['votes'] = votes_p.find('span', {'name': 'nv'}).get_text().replace(',', '')
-
-                text_p = content_div.find('p', class_='text-muted')
-                if text_p:
-                    show['outline'] = text_p.get_text(strip=True)
-
+            if all([show['year'], show['name'], show['imdb_tt']]):
                 popular_shows.append(show)
 
         result = []
@@ -110,9 +98,10 @@ class ImdbPopular(object):
                 recommended_show = self._create_recommended_show(show)
                 if recommended_show:
                     result.append(recommended_show)
-            except Exception:
-                logger.log(u'Could not parse IMDB show, with exception: {0!r}'.format
-                           (traceback.format_exc()), logger.WARNING)
+            except RequestException:
+                logger.log(u'Could not connect to indexers to check if you already have '
+                           u'this show in your library: {show} ({year})'.format
+                           (show=show['name'], year=show['name']), logger.WARNING)
 
         return result
 

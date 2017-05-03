@@ -51,7 +51,7 @@ def _create_fake_xml(items):
     xml += '</channel></rss>'
     return xml
 
-# pylint: disable=invalid-name
+
 search_items = []
 
 
@@ -112,6 +112,7 @@ def generator(tvdb_id, show_name, cur_data, force_search):
         # pylint: disable=no-member
         assert cur_data["b"] == best_result.name  # first is expected, second is chosen one
     return do_test
+
 
 if __name__ == '__main__':
     print("""

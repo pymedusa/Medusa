@@ -198,9 +198,9 @@ class NewpctProvider(TorrentProvider):
 
     def get_url(self, url, params=None, timeout=30, **kwargs):
         """
-        Previously we must parse the URL to get torrent file.
+        Parse URL to get the torrent file.
 
-        returns='content' when trying access to torrent info (For calling torrent client).
+        :return: 'content' when trying access to torrent info (For calling torrent client).
         """
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':

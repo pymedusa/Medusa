@@ -20,6 +20,7 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="showID" value="${show.indexerid}" />
+<input type="hidden" id="series_slug" value="${show.slug}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
 </div>
 <div class="clearfix"></div>
@@ -299,9 +300,11 @@
                     </td>
                 </tr>
             % endfor
+            % if sql_results:
                 <tr id="season-${epResult["season"]}-footer" class="seasoncols border-bottom shadow">
                     <th class="col-footer" colspan=15 align=left>Season contains ${epCount} episodes with total filesize: ${pretty_file_size(epSize)}</th>
                 </tr>
+            % endif
             </tbody>
             <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=15></th></tr></tbody>
         </table>

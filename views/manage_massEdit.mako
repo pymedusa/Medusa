@@ -207,6 +207,20 @@
                             </label>
                         </div>
                         <div class="field-pair">
+                            <label for="edit_dvd_order">
+                                <span class="component-title">DVD Order</span>
+                                <span class="component-desc">
+                                    <select id="edit_dvd_order" name="dvd_order" class="form-control form-control-inline input-sm">
+                                        <option value="keep" ${'selected="selected"' if dvd_order_value is None else ''}>&lt; Keep &gt;</option>
+                                        <option value="enable" ${'selected="selected"' if dvd_order_value == 1 else ''}>Yes</option>
+                                        <option value="disable" ${'selected="selected"' if dvd_order_value == 0 else ''}>No</option>
+                                    </select><br>
+                                    use the DVD order instead of the air order<br>
+                                    <span>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="field-pair">
                             <label for="edit_subtitles">
                                 <span class="component-title">Subtitles</span>
                                 <span class="component-desc">

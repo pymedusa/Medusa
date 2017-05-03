@@ -2,10 +2,11 @@
 
 from __future__ import unicode_literals
 
+import logging
+
+from functools import wraps
 from threading import Lock
 from time import time
-from functools import wraps
-import logging
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler)
@@ -17,6 +18,7 @@ class Throttle(object):
 
     Can be used as a decorator or an object.
     """
+
     def __init__(self, calls, seconds=1, burst=False):
         self.lock = Lock()
         self.limit = calls
@@ -75,7 +77,7 @@ class Throttle(object):
 
     def __call__(self, func, *args, **kwargs):
         """
-        Decorate a callable with a Throttle instance
+        Decorate a callable with a Throttle instance.
 
         :param func: target to throttle
         :param args: to pass to the callable
@@ -95,7 +97,8 @@ class Throttle(object):
         @wraps(func)
         def consumer(*args, **kwargs):
             """
-            Consume
+            Consume.
+
             :param args:
             :param kwargs:
             :return:
@@ -109,6 +112,6 @@ class Throttle(object):
                         log.debug('Throttling {func}'.format(func=name))
                 first_pass = False
             finish = time()
-            log.debug('Throttled for {x} seconds'.format(x=finish-start))
+            log.debug('Throttled for {x} seconds'.format(x=finish - start))
             return func(*args, **kwargs)
         return consumer

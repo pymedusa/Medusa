@@ -1,6 +1,7 @@
 # coding=utf-8
 """Configuration for pytest."""
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
 from babelfish.language import Language
@@ -38,7 +39,7 @@ def pytest_collection_modifyitems(config, items):
 
 
 def _construct_mapping(self, node, deep=False):
-    """Custom yaml map constructor to allow lists to be key of a map.
+    """Construct a custom yaml map to allow lists to be key of a map.
 
     :param self:
     :param node:
@@ -153,6 +154,31 @@ def create_file(tmpdir):
         f = tmpdir.ensure(filename)
         f.write_binary('\n'.join(lines or []))
         return str(f)
+
+    return create
+
+
+@pytest.fixture
+def create_dir(tmpdir):
+    def create(dirname):
+        f = tmpdir.ensure_dir(dirname)
+        return str(f)
+
+    return create
+
+
+@pytest.fixture
+def create_structure(tmpdir, create_file, create_dir):
+    def create(path, structure):
+        for element in structure:
+            if isinstance(element, dict):
+                for name, values in element.iteritems():
+                    path = os.path.join(path, name)
+                    create_dir(path)
+                    create(path, values)
+            else:
+                create_file(os.path.join(path, element))
+        return str(tmpdir)
 
     return create
 

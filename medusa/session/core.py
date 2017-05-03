@@ -2,16 +2,19 @@
 
 from __future__ import unicode_literals
 
-import certifi
 import errno
 import logging
-import requests
 import traceback
 
-from . import hooks
-from .. import app
-import medusa.common
+import certifi
+
 import factory
+
+import medusa.common
+from medusa import app
+from medusa.session import hooks
+
+import requests
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -23,6 +26,7 @@ class BaseSession(requests.Session):
     This is a Medusa base session, used to create and configure a session object with Medusa specific base
     values.
     """
+
     default_headers = {
         'User-Agent': medusa.common.USER_AGENT,
         'Accept-Encoding': 'gzip,deflate',

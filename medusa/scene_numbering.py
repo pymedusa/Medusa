@@ -25,7 +25,7 @@ import datetime
 import time
 import traceback
 
-from . import app, db, helpers, logger
+from . import app, db, logger
 from .helper.exceptions import ex
 from .indexers.indexer_api import indexerApi
 from .scene_exceptions import xem_session
@@ -223,6 +223,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
     # Reload data from DB so that cache and db are in sync
     show = Show.find(app.showList, indexer_id)
     show.flush_episodes()
+    show.erase_cached_parse()
 
 
 def find_xem_numbering(indexer_id, indexer, season, episode):

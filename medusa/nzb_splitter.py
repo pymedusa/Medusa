@@ -21,7 +21,7 @@
 
 import re
 
-from . import classes, helpers, logger
+from . import classes, logger
 from .helper.encoding import ss
 from .helper.exceptions import ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser

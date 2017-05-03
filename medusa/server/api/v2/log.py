@@ -3,54 +3,59 @@
 import json
 import logging
 
-from .base import BaseRequestHandler
-from ....logger import LOGGING_LEVELS, filter_logline, read_loglines
+from medusa.logger import LOGGING_LEVELS, filter_logline, read_loglines
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.server.api.v2.base import BaseRequestHandler
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
 
 
 class LogHandler(BaseRequestHandler):
     """Log request handler."""
 
-    def get(self, log_level):
-        """Query logs.
+    #: resource name
+    name = 'log'
+    #: identifier
+    identifier = None
+    #: allowed HTTP methods
+    allowed_methods = ('GET', 'POST', )
 
-        :param log_level:
-        :type log_level: str
-        """
-        log_level = log_level or 'INFO'
+    def get(self):
+        """Query logs."""
+        log_level = self.get_argument('level', 'INFO').upper()
+        if log_level not in LOGGING_LEVELS:
+            return self._bad_request('Invalid log level')
+
         arg_page = self._get_page()
         arg_limit = self._get_limit()
-        min_level = LOGGING_LEVELS[log_level.upper()]
+        min_level = LOGGING_LEVELS[log_level]
 
-        data = [line.to_json() for line in read_loglines(max_lines=arg_limit + arg_page,
-                                                         predicate=lambda l: filter_logline(l, min_level=min_level))]
-        start = (arg_page - 1) * arg_limit
-        end = start + arg_limit
-        data = data[start:end]
+        def data_generator():
+            """Read log lines based on the specified criteria."""
+            start = arg_limit * (arg_page - 1) + 1
+            for l in read_loglines(start_index=start, max_lines=arg_limit * arg_page,
+                                   predicate=lambda li: filter_logline(li, min_level=min_level)):
+                yield l.to_json()
 
-        self.api_finish(data=data, headers={
-            'X-Pagination-Page': arg_page,
-            'X-Pagination-Limit': arg_limit
-        })
+        return self._paginate(data_generator=data_generator)
 
-    def delete(self, log_level='ERROR'):
-        """Delete logs.
-
-        :param log_level:
-        """
-        self.api_finish()
-
-    def post(self, log_level):
+    def post(self):
         """Create a log line.
 
         By definition this method is NOT idempotent.
         """
         data = json.loads(self.request.body)
+        if not data or not all([data.get('message')]):
+            return self._bad_request('Invalid request')
+
+        data['level'] = data.get('level', 'INFO').upper()
+        if data['level'] not in LOGGING_LEVELS:
+            return self._bad_request('Invalid log level')
+
         message = data['message']
         args = data.get('args', [])
-        kwargs = data.get('kwargs', dict())
-        level = LOGGING_LEVELS[data.get('level', 'ERROR').upper()]
-        logger.log(level, message, exc_info=False, *args, **kwargs)
-        self.api_finish(status=201)
+        kwargs = data.get('kwargs', {})
+        level = LOGGING_LEVELS[data['level']]
+        log.log(level, message, exc_info=False, *args, **kwargs)
+        self._created()

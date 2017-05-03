@@ -1276,9 +1276,10 @@ class CMD_PostProcess(ApiCall):
         if not self.type:
             self.type = "manual"
 
-        data = process_tv.processDir(self.path, process_method=self.process_method, force=self.force_replace,
-                                     is_priority=self.is_priority, delete_on=self.delete_files, failed=self.failed,
-                                     proc_type=self.type)
+        data = process_tv.ProcessResult(self.path, process_method=self.process_method).process(
+            force=self.force_replace, is_priority=self.is_priority, delete_on=self.delete_files,
+            failed=self.failed, proc_type=self.type
+        )
 
         if not self.return_data:
             data = ""
@@ -1618,10 +1619,10 @@ class CMD_SearchIndexers(ApiCall):
                 indexer_api_params['actors'] = False
                 indexer_api_params['custom_ui'] = classes.AllShowsListUI
 
-                t = indexerApi(_indexer).indexer(**indexer_api_params)
+                indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    api_data = t[str(self.name).encode()]
+                    api_data = indexer_api[str(self.name).encode()]
                 except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     continue
@@ -1643,10 +1644,10 @@ class CMD_SearchIndexers(ApiCall):
 
                 indexer_api_params['actors'] = False
 
-                t = indexerApi(_indexer).indexer(**indexer_api_params)
+                indexer_api = indexerApi(_indexer).indexer(**indexer_api_params)
 
                 try:
-                    my_show = t[int(self.indexerid)]
+                    my_show = indexer_api[int(self.indexerid)]
                 except (IndexerShowNotFound, IndexerShowIncomplete, IndexerError):
                     logger.log(u"API :: Unable to find show with id " + str(self.indexerid), logger.WARNING)
                     return _responds(RESULT_SUCCESS, {"results": [], "langid": lang_id})

@@ -76,6 +76,7 @@ from .config import (
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from .providers.generic_provider import GenericProvider
 from .providers.nzb.newznab import NewznabProvider
 from .providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -776,7 +777,10 @@ class Application(object):
             app.TRAKT_USE_RECOMMENDED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_use_recommended', 0))
             app.TRAKT_SYNC = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync', 0))
             app.TRAKT_SYNC_REMOVE = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_remove', 0))
-            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', 1)
+            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', INDEXER_TVDBV2)
+            if app.TRAKT_DEFAULT_INDEXER == INDEXER_TVMAZE:
+                # Trakt doesn't support TVMAZE. Default to TVDB
+                app.TRAKT_DEFAULT_INDEXER = INDEXER_TVDBV2
             app.TRAKT_TIMEOUT = check_setting_int(app.CFG, 'Trakt', 'trakt_timeout', 30)
             app.TRAKT_BLACKLIST_NAME = check_setting_str(app.CFG, 'Trakt', 'trakt_blacklist_name', '')
 
@@ -1097,9 +1101,8 @@ class Application(object):
                                                                   threadName="BACKLOG",
                                                                   run_delay=update_interval)
 
-            search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
-            if app.CHECK_PROPERS_INTERVAL in search_intervals:
-                update_interval = datetime.timedelta(minutes=search_intervals[app.CHECK_PROPERS_INTERVAL])
+            if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
+                update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
                 run_at = None
             else:
                 update_interval = datetime.timedelta(hours=1)

@@ -249,12 +249,11 @@ class CheckVersion(object):
         """
         Determines how this copy of sr was installed.
 
-        returns: type of installation. Possible values are:
+        :return: type of installation. Possible values are:
             'win': any compiled windows build
             'git': running from source using git
             'source': running from source without git
         """
-
         # check if we're a windows build
         if app.BRANCH.startswith('build '):
             install_type = 'win'
@@ -267,13 +266,11 @@ class CheckVersion(object):
 
     def check_for_new_version(self, force=False):
         """
-        Checks the internet for a newer version.
+        Check the internet for a newer version.
 
-        returns: bool, True for new version or False for no new version.
-
-        force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
+        :force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
+        :return: bool, True for new version or False for no new version.
         """
-
         if not self.updater or (not app.VERSION_NOTIFY and not app.AUTO_UPDATE and not force):
             logger.log(u'Version checking is disabled, not checking for the newest version')
             app.NEWEST_VERSION_STRING = None
@@ -299,13 +296,11 @@ class CheckVersion(object):
 
     def check_for_new_news(self, force=False):
         """
-        Checks GitHub for the latest news.
+        Check GitHub for the latest news.
 
-        returns: unicode, a copy of the news
-
-        force: ignored
+        :return: unicode, a copy of the news
+        :force: ignored
         """
-
         # Grab a copy of the news
         logger.log(u'check_for_new_news: Checking GitHub for latest news.', logger.DEBUG)
         try:
@@ -522,9 +517,8 @@ class GitUpdateManager(UpdateManager):
 
         Uses git show to get commit version.
 
-        Returns: True for success or False for failure
+        :return: True for success or False for failure
         """
-
         output, _, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')  # @UnusedVariable
 
         if exit_status == 0 and output:

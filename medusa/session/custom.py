@@ -4,10 +4,13 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
-from ..bs4_parser import BS4Parser
+
 from core import MedusaSession
+
 from exceptions import (PolicedRequestDailyExceeded, PolicedRequestException, PolicedRequestInvalidConfiguration,
                         PolicedRequestScoreExceeded)
+
+from ..bs4_parser import BS4Parser
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +76,7 @@ class PolicedSession(MedusaSession):
             self.enabled_police_request_hooks.append(self.request_check_newznab_daily_reserved_calls)
 
     def request_counter(self, **store):
-        """Number of provider requests performed.
+        """Request number of provider requests performed.
 
         These are not all counted as api hits. As also logins, snatches and newznab capability requests are counted.
         """
@@ -118,8 +121,8 @@ class PolicedSession(MedusaSession):
         """Check if we reached reserved calls and if we do, don't request URL."""
         try:
             if not all([self.api_hit_limit, self.daily_reserve_calls]):
-                PolicedRequestInvalidConfiguration('Your missing the daily_reserve_search_mode paramater,'
-                                                  'which is needed to determin the used providers search type.')
+                PolicedRequestInvalidConfiguration('Your missing the daily_reserve_search_mode paramater, '
+                                                   'which is needed to determin the used providers search type.')
 
             self.daily_reserve_search_mode = kwargs.get('search_mode')
             if not self.daily_reserve_search_mode:
@@ -175,10 +178,10 @@ class RateLimitedSession(MedusaSession):
 
 
 class ThrottledSession(MedusaSession):
-    """
-    A Throttled Session that rate limits requests.
-    """
+    """A Throttled Session that rate limits requests."""
+
     def __init__(self, throttle, **kwargs):
+        """Initialize the class."""
         super(ThrottledSession, self).__init__(**kwargs)
         self.throttle = throttle
         if self.throttle:

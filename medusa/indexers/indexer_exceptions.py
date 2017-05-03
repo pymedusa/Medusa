@@ -70,3 +70,7 @@ class IndexerUnavailable(IndexerError):
 
 class IndexerShowAllreadyInLibrary(IndexerException):
     """The show is already in the library. Same show for multiple indexers, is not supported."""
+
+
+class IndexerAuthFailed(IndexerException):
+    """Indexer authentication exception."""

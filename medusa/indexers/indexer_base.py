@@ -146,8 +146,8 @@ class BaseIndexer(object):
 
         return os.path.join(tempfile.gettempdir(), 'tvdbv2_api-{0}'.format(uid))
 
-    def _get_show_data(self, sid, language):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Dummy _get_show_data method."""
+    def _get_show_data(self, sid, language):
+        """Return dummy _get_show_data method."""
         return None
 
     def _get_series(self, series):
@@ -351,7 +351,7 @@ class Show(dict):
             raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
 
     def aired_on(self, date):
-        """Helper menthod for searching and returning a list of episodes with the airdates."""
+        """Search and return a list of episodes with the airdates."""
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
             raise IndexerEpisodeNotFound('Could not find any episodes that aired on %s' % date)
@@ -407,8 +407,8 @@ class Season(dict):
     def search(self, term=None, key=None):
         """Search all episodes in season, returns a list of matching Episode instances.
 
-        >>> t = Tvdb()
-        >>> t['scrubs'][1].search('first day')
+        >>> indexer_api = Tvdb()
+        >>> indexer_api['scrubs'][1].search('first day')
         [<Episode 01x01 - My First Day>]
         >>>
 
@@ -428,8 +428,8 @@ class Season(dict):
 class Episode(dict):
     """Hold all episodes instances of a show."""
 
-    def __init__(self, season=None):  # pylint: disable=super-init-not-called
-        """The season attribute points to the parent season."""
+    def __init__(self, season=None):
+        """Initialize class with season attribute that points to the parent season."""
         self.season = season
 
     def __repr__(self):

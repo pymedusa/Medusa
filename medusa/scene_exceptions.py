@@ -353,7 +353,6 @@ def _get_xem_exceptions(force):
                 )
             )
 
-
             url = xem_url.format(indexer_api.config['xem_origin'])
             response = xem_session.get(xem_url, timeout=60)
             try:
