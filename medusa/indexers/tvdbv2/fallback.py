@@ -72,7 +72,8 @@ class PlexFallback(object):
     def __call__(self, *args, **kwargs):
         """Call the decorator just before we're accessing the tvdb apiv2 lib.
 
-        It will try to access TheTvdb's api endpoint, but on exception fall back to plex's."""
+        It will try to access TheTvdb's api endpoint, but on exception fall back to plex's.
+        """
         session = args[0].config['session']
         fallback_config = session.fallback_config
 
@@ -85,10 +86,9 @@ class PlexFallback(object):
                 'You are currently using the tvdb2.plex.tx fallback, '
                 'as tvdb source. Moving back to thetvdb.com in {time_left} minutes.'
                 .format(
-                   time_left=divmod(((fallback_config['plex_fallback_time'] +
-                                      datetime.timedelta(
-                                          hours=fallback_config['fallback_plex_timeout']
-                                      )) - datetime.datetime.now()).total_seconds(), 60)[0]
+                    time_left=divmod(((fallback_config['plex_fallback_time'] +
+                                       datetime.timedelta(hours=fallback_config['fallback_plex_timeout'])) -
+                                      datetime.datetime.now()).total_seconds(), 60)[0]
                 )
             )
 
