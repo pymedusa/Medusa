@@ -310,13 +310,13 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
         """
         A Queueitem used to queue Forced Searches and Manual Searches.
 
-        @param show: A show object
-        @param segment: A list of episode objects. Needs to be passed as list!
-        @param down_cur_quality: Not sure what it's used for. Maybe legacy.
-        @param manual_search: Passed as True (bool) when the search should be performed without automatially snatching a result
-        @param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
+        :param show: A show object
+        :param segment: A list of episode objects. Needs to be passed as list!
+        :param down_cur_quality: Not sure what it's used for. Maybe legacy.
+        :param manual_search: Passed as True (bool) when the search should be performed without automatially snatching a result
+        :param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
 
-        @return: The run() methods searches and snatches the episode(s) if possible.
+        :return: The run() methods searches and snatches the episode(s) if possible.
         Or only searches and saves results to cache tables.
         """
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
