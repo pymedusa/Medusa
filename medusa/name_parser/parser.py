@@ -38,7 +38,7 @@ class NameParser(object):
 
     def __init__(self, show=None, try_indexers=False, naming_pattern=False, parse_method=None,
                  allow_multi_season=False):
-        """The NameParser constructor.
+        """Initialize the constructor.
 
         :param show:
         :type show: medusa.tv.Series
@@ -346,7 +346,7 @@ class ParseResult(object):
 
     def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
                  air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
-        """The ParseResult constructor.
+        """Initialize the constructor.
 
         :param guess:
         :type guess: dict
@@ -470,7 +470,7 @@ class NameParserCache(object):
     """Name parser cache."""
 
     def __init__(self, max_size=1000):
-        """Initiate the cache with a maximum size."""
+        """Initialize the cache with a maximum size."""
         self.cache = OrderedDict()
         self.max_size = max_size
 
