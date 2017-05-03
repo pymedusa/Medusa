@@ -315,7 +315,7 @@ class Viewer(object):
     """Keep the Errors to be displayed in the UI."""
 
     def __init__(self):
-        """Initialize the default constructor."""
+        """Initialize class with the default constructor."""
         self._errors = dict()
 
     def add(self, logline):

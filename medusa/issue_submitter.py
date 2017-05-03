@@ -36,7 +36,7 @@ class IssueSubmitter(object):
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
     def __init__(self):
-        """Initialize the default constructor."""
+        """Initialize class with the default constructor."""
         self.running = False
 
     @staticmethod

@@ -38,7 +38,7 @@ class NameParser(object):
 
     def __init__(self, show=None, try_indexers=False, naming_pattern=False, parse_method=None,
                  allow_multi_season=False):
-        """Initialize the constructor.
+        """Initialize the class.
 
         :param show:
         :type show: medusa.tv.Series
@@ -346,7 +346,7 @@ class ParseResult(object):
 
     def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
                  air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
-        """Initialize the constructor.
+        """Initialize the class.
 
         :param guess:
         :type guess: dict
