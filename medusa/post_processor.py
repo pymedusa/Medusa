@@ -84,7 +84,7 @@ class PostProcessor(object):
 
     def _log(self, message, level=logger.INFO):
         """
-        A wrapper for the internal logger which also keeps track of messages and saves them to a string for later.
+        Wrap the internal logger which also keeps track of messages and saves them to a string for later.
 
         :param message: The string to log (unicode)
         :param level: The log level to use (optional)
@@ -93,7 +93,8 @@ class PostProcessor(object):
         self.log += message + '\n'
 
     def _get_rel_path(self):
-        """Return the relative path to the file if possible, else the parent dir.
+        """
+        Return the relative path to the file if possible, else the parent dir.
 
         :return: relative path to file or parent dir to file
         """
