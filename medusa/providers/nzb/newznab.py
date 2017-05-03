@@ -93,9 +93,9 @@ class NewznabProvider(NZBProvider):
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
-        Searche indexer using the params in search_strings, either for latest releases, or a string/id search.
+        Search indexer using the params in search_strings, either for latest releases, or a string/id search.
 
-        Returns: list of results in dict form
+        :return: list of results in dict form
         """
         results = []
         if not self._check_auth():
@@ -256,7 +256,7 @@ class NewznabProvider(NZBProvider):
         """
         Check that user has set their api key if it is needed.
 
-        Returns: True/False
+        :return: True/False
         """
         if self.needs_auth and not self.key:
             logger.log('Invalid api key. Check your settings', logger.WARNING)
@@ -268,7 +268,7 @@ class NewznabProvider(NZBProvider):
         """
         Check that the returned data is valid.
 
-        Returns: _check_auth if valid otherwise False if there is an error
+        :return: _check_auth if valid otherwise False if there is an error
         """
         if data('categories') + data('item'):
             return self._check_auth()
