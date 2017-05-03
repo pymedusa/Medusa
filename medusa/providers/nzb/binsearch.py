@@ -80,9 +80,8 @@ class BinSearchCache(tv.Cache):
         """
         Retrieve the title and URL data from the item XML node.
 
-        item: An elementtree.ElementTree element representing the <item> tag of the RSS feed
-
-        Returns: A tuple containing two strings representing title and URL respectively
+        :item: An elementtree.ElementTree element representing the <item> tag of the RSS feed
+        :return: A tuple containing two strings representing title and URL respectively
         """
         title = item.get('description')
         if title:

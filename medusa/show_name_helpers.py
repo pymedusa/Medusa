@@ -42,12 +42,11 @@ if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
 
 def containsAtLeastOneWord(name, words):
     """
-    Filters out results based on filter_words
+    Filter out results based on filter_words.
 
-    name: name to check
-    words : string of words separated by a ',' or list of words
-
-    Returns: False if the name doesn't contain any word of words list, or the found word from the list.
+    :param name: name to check
+    :param words: string of words separated by a ',' or list of words
+    :return: False if the name doesn't contain any word of words list, or the found word from the list.
     """
     if not (name and words):
         return False
@@ -71,14 +70,12 @@ def containsAtLeastOneWord(name, words):
 
 def filterBadReleases(name, parse=True):
     """
-    Filters out non-english and just all-around stupid releases by comparing them
+    Filter out non-english and just all-around stupid releases by comparing them
     to the resultFilters contents.
 
-    name: the release name to check
-
-    Returns: True if the release name is OK, False if it's bad.
+    :param name: the release name to check
+    :return: True if the release name is OK, False if it's bad.
     """
-
     try:
         if parse:
             NameParser().parse(name)

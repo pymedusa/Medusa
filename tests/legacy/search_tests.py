@@ -126,6 +126,7 @@ def generator(cur_data, cur_name, cur_provider):
 
     return do_test
 
+
 # TODO: py.test parameters
 if __name__ == '__main__':
     print("""

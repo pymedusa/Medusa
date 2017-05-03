@@ -22,7 +22,7 @@ class ImdbPopular(object):
     """Gets a list of most popular TV series from imdb."""
 
     def __init__(self):
-        """Constructor for ImdbPopular."""
+        """Initialize class."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
         self.session = helpers.make_session()
         self.recommender = 'IMDB Popular'

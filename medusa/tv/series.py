@@ -358,17 +358,17 @@ class Series(TV):
 
     @property
     def network_logo_name(self):
-        """The network logo name."""
+        """Get the network logo name."""
         return self.network.replace(u'\u00C9', 'e').replace(u'\u00E9', 'e').lower()
 
     @property
     def raw_location(self):
-        """The raw show location, unvalidated."""
+        """Get the raw show location, unvalidated."""
         return self._location
 
     @property
     def location(self):
-        """The show location."""
+        """Get the show location."""
         # no dir check needed if missing
         # show dirs are created during post-processing
         if app.CREATE_MISSING_SHOW_DIRS or self.is_location_valid():
@@ -402,7 +402,7 @@ class Series(TV):
     @property
     def current_qualities(self):
         """
-        The show qualities.
+        Get the show qualities.
 
         :returns: A tuple of allowed and preferred qualities
         """
@@ -415,7 +415,7 @@ class Series(TV):
 
     @property
     def default_ep_status_name(self):
-        """Default episode status name."""
+        """Get the default episode status name."""
         return statusStrings[self.default_ep_status]
 
     @property
@@ -425,7 +425,7 @@ class Series(TV):
 
     def show_size(self, pretty=False):
         """
-        Deprecated method to get the size of the show on disk.
+        Get the size of the show on disk (deprecated).
 
         :param pretty: True if you want a pretty size. (e.g. 3 GB)
         :return:  Size of the show on disk.
@@ -1725,7 +1725,7 @@ class Series(TV):
                     logger.info(u'{id}: Looking for hanging associated files for: {show} {ep} in: {location}',
                                 id=self.indexerid, show=self.name, ep=episode_num(season, episode), location=cur_loc)
                     related_files = post_processor.PostProcessor(cur_loc).list_associated_files(
-                        cur_loc, base_name_only=False, subfolders=True)
+                        cur_loc, subfolders=True)
 
                     if related_files:
                         logger.info(u"{id}: Found hanging associated files for {show} {ep}, deleting: '{files}'",
@@ -1815,7 +1815,7 @@ class Series(TV):
         self.reset_dirty()
 
     def __str__(self):
-        """String representation.
+        """Represent a string.
 
         :return:
         :rtype: str
