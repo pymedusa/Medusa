@@ -29,7 +29,7 @@ class QBittorrentAPI(GenericClient):
 
     @property
     def api(self):
-        """API property."""
+        """Get API version."""
         try:
             self.url = '{host}version/api'.format(host=self.host)
             version = int(self.session.get(self.url, verify=app.TORRENT_VERIFY_CERT).content)

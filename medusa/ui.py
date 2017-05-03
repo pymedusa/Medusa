@@ -55,9 +55,8 @@ class Notifications(object):
         Return all the available notifications in a list. Marks them all as seen
         as it returns them. Also removes timed out Notifications from the queue.
 
-        Returns: A list of Notification objects
+        :return: A list of Notification objects
         """
-
         # filter out expired notifications
         self._errors = [x for x in self._errors if not x.is_expired()]
         self._messages = [x for x in self._messages if not x.is_expired()]
