@@ -3,6 +3,7 @@
 """Provider code for HorribleSubs."""
 
 from __future__ import unicode_literals
+
 import traceback
 
 from medusa import (
@@ -11,6 +12,7 @@ from medusa import (
 )
 from medusa.bs4_parser import BS4Parser
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
 from requests.compat import urljoin
 
 
