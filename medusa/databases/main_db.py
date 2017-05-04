@@ -8,6 +8,7 @@ import warnings
 
 from medusa import common, db, helpers, subtitles
 from medusa.helper.common import dateTimeFormat, episode_num
+from medusa.indexers.indexer_config import STATUS_MAP
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import NameParser
 
@@ -217,29 +218,7 @@ class MainSanityCheck(db.DBSanityCheck):
                                    [common.UNAIRED, cur_unaired["episode_id"]])
 
     def fix_indexer_show_statues(self):
-        status_map = {
-            'returning series': 'Continuing',
-            'canceled/ended': 'Ended',
-            'tbd/on the bubble': 'Continuing',
-            'in development': 'Continuing',
-            'new series': 'Continuing',
-            'never aired': 'Ended',
-            'final season': 'Continuing',
-            'on hiatus': 'Continuing',
-            'pilot ordered': 'Continuing',
-            'pilot rejected': 'Ended',
-            'canceled': 'Ended',
-            'ended': 'Ended',
-            'to be determined': 'Continuing',
-            'running': 'Continuing',
-            'planned': 'Continuing',
-            'in production': 'Continuing',
-            'pilot': 'Continuing',
-            'cancelled': 'Ended',
-            '': 'Unknown',
-        }
-
-        for old_status, new_status in iteritems(status_map):
+        for old_status, new_status in iteritems(STATUS_MAP):
             self.connection.action("UPDATE tv_shows SET status = ? WHERE LOWER(status) = ?", [new_status, old_status])
 
     def fix_episode_statuses(self):

@@ -34,8 +34,8 @@ logger = logging.getLogger(__name__)
 
 class TVmaze(BaseIndexer):
     """Create easy-to-use interface to name of season/episode name
-    >>> t = tvmaze()
-    >>> t['Scrubs'][1][24]['episodename']
+    >>> indexer_api = tvmaze()
+    >>> indexer_api['Scrubs'][1][24]['episodename']
     u'My Last Day'
     """
 
@@ -286,8 +286,8 @@ class TVmaze(BaseIndexer):
 
         images are retrieved using t['show name]['_banners'], for example:
 
-        >>> t = TVMaze(images = True)
-        >>> t['scrubs']['_banners'].keys()
+        >>> indexer_api = TVMaze(images = True)
+        >>> indexer_api['scrubs']['_banners'].keys()
         ['fanart', 'poster', 'series', 'season']
         >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
         u'http://thetvmaze.com/banners/posters/76156-2.jpg'
@@ -351,8 +351,8 @@ class TVmaze(BaseIndexer):
 
         Actors are retrieved using t['show name]['_actors'], for example:
 
-        >>> t = TVMaze(actors = True)
-        >>> actors = t['scrubs']['_actors']
+        >>> indexer_api = TVMaze(actors = True)
+        >>> actors = indexer_api['scrubs']['_actors']
         >>> type(actors)
         <class 'tvmaze_api.Actors'>
         >>> type(actors[0])

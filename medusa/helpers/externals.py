@@ -3,12 +3,14 @@
 """Externals helper functions."""
 
 import logging
+
 from medusa import app, db
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig, mappings
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
-from traktor import TokenExpiredException, TraktApi, TraktException
+
+from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -19,20 +21,20 @@ def get_trakt_externals(externals):
 
     :param externals: Dictionary of key/value pairs with external id's.
     """
-    def trakt_request(api, url):
+    def trakt_request(api, trakt_url):
         """Perform the request and handle possible token refresh."""
         try:
-            result = api.request(url) or []
+            trakt_result = api.request(trakt_url) or []
             if api.access_token_refreshed:
                 app.TRAKT_ACCESS_TOKEN = api.access_token
                 app.TRAKT_REFRESH_TOKEN = api.refresh_token
                 app.instance.save_config()
-        except (TokenExpiredException, TraktException) as error:
+        except (AuthException, TraktException, TokenExpiredException) as e:
             log.info(u'Could not use Trakt to enrich with externals: {0}',
-                     error)
+                     e.message or e)
             return []
         else:
-            return result
+            return trakt_result
 
     trakt_settings = {'trakt_api_key': app.TRAKT_API_KEY,
                       'trakt_api_secret': app.TRAKT_API_SECRET,
@@ -108,7 +110,8 @@ def get_externals(show=None, indexer=None, indexed_show=None):
                     {'name': indexerApi(show.indexer).name, 'reason': error.message})
 
     # Try to update with the Trakt externals.
-    new_show_externals.update(get_trakt_externals(new_show_externals))
+    if app.USE_TRAKT:
+        new_show_externals.update(get_trakt_externals(new_show_externals))
 
     return new_show_externals
 

@@ -48,7 +48,7 @@ MEDUSA.history.index = function() {
     });
 
     $('.show-option select[name="layout"]').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             layout: {
                 history: $(this).val()
             }

@@ -12,6 +12,7 @@ from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
+
 from six import iteritems
 
 
@@ -165,5 +166,6 @@ class UTorrentAPI(GenericClient):
             'action': 'removedatatorrent',
             'hash': info_hash,
         })
+
 
 api = UTorrentAPI

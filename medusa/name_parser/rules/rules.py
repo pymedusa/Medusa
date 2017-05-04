@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 """Rules: This section contains rules that enhances guessit behavior.
 
 Coding guidelines:
@@ -25,6 +26,7 @@ according to our needs.
 have a fixed execution order, that's why the rules() method should add the rules in the correct order (explicit).
 *** Rebulk API relies on the match.value, if you change them you'll get exceptions.
 """
+
 import copy
 import logging
 import re
@@ -38,7 +40,7 @@ from rebulk.rebulk import Rebulk
 from rebulk.rules import AppendMatch, RemoveMatch, RenameMatch, Rule
 
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 simple_separator = ('.', 'and', ',.', '.,', '.,.', ',')
 range_separator = ('-', '~', '_-_', 'to', '.to.')
@@ -1220,8 +1222,8 @@ class AvoidMultipleValuesRule(Rule):
                     to_remove.extend(matches.named('title', predicate=lambda match: match.value != values[0].value))
                     continue
 
-                logger.info(u"Guessed more than one '%s' for '%s': %s",
-                            name, matches.input_string, u','.join(unique_values), exc_info=False)
+                log.info(u"Guessed more than one '%s' for '%s': %s",
+                         name, matches.input_string, u','.join(unique_values), exc_info=False)
                 to_remove.extend(values)
 
         return to_remove

@@ -1,27 +1,17 @@
-# -*- coding: utf-8 -*
-# Author: Pedro Correia (http://github.com/pedrocorreia/)
-# Based on pushalot.py by Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+# coding=utf-8
 
 from __future__ import unicode_literals
 
+import logging
 import re
+
+from medusa import app, common, helpers
+from medusa.logger.adapters.style import BraceAdapter
+
 from requests.compat import urljoin
-from .. import app, common, helpers, logger
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -31,7 +21,7 @@ class Notifier(object):
         self.url = 'https://api.pushbullet.com/v2/'
 
     def test_notify(self, pushbullet_api):
-        logger.log('Sending a test Pushbullet notification.', logger.DEBUG)
+        log.debug('Sending a test Pushbullet notification.')
         return self._sendPushbullet(
             pushbullet_api,
             event='Test',
@@ -40,7 +30,7 @@ class Notifier(object):
         )
 
     def get_devices(self, pushbullet_api):
-        logger.log('Testing Pushbullet authentication and retrieving the device list.', logger.DEBUG)
+        log.debug('Testing Pushbullet authentication and retrieving the device list.')
         headers = {'Access-Token': pushbullet_api,
                    'Content-Type': 'application/json'}
         try:
@@ -102,10 +92,10 @@ class Notifier(object):
         pushbullet_api = pushbullet_api or app.PUSHBULLET_API
         pushbullet_device = pushbullet_device or app.PUSHBULLET_DEVICE
 
-        logger.log('Pushbullet event: %r' % event, logger.DEBUG)
-        logger.log('Pushbullet message: %r' % message, logger.DEBUG)
-        logger.log('Pushbullet api: %r' % pushbullet_api, logger.DEBUG)
-        logger.log('Pushbullet devices: %r' % pushbullet_device, logger.DEBUG)
+        log.debug('Pushbullet event: {0!r}', event)
+        log.debug('Pushbullet message: {0!r}', message)
+        log.debug('Pushbullet api: {0!r}', pushbullet_api)
+        log.debug('Pushbullet devices: {0!r}', pushbullet_device)
 
         post_data = {
             'title': event,
@@ -124,16 +114,16 @@ class Notifier(object):
         try:
             response = r.json()
         except ValueError:
-            logger.log('Pushbullet notification failed. Could not parse pushbullet response.', logger.WARNING)
+            log.warning('Pushbullet notification failed. Could not parse pushbullet response.')
             push_result['error'] = 'Pushbullet notification failed. Could not parse pushbullet response.'
             return push_result
 
         failed = response.pop('error', {})
         if failed:
-            logger.log('Pushbullet notification failed: {0}'.format(failed.get('message')), logger.WARNING)
+            log.warning('Pushbullet notification failed: {0}', failed.get('message'))
             push_result['error'] = 'Pushbullet notification failed: {0}'.format(failed.get('message'))
         else:
-            logger.log('Pushbullet notification sent.', logger.DEBUG)
+            log.debug('Pushbullet notification sent.')
             push_result['success'] = True
 
         return push_result

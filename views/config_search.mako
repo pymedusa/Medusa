@@ -94,13 +94,13 @@
                                         </span>
                                 </label>
                             </div><!-- daily search frequency -->
-                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD != 'transmission' else ''}>
+                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD not in ('transmission', 'deluge', 'deluged') else ''}>
                                 <label for="remove_from_client">
                                     <span class="component-title">Remove torrents from client</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD == 'transmission' else ''}/>
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged') else ''}/>
                                         <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
-                                        <p><b>Note:</b> For now only Transmission is supported</p>
+                                        <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                     </span>
                                 </label>
                             </div>

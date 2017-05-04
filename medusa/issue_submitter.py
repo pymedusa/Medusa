@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
+
 from . import app, db
 from .classes import ErrorViewer
 from .github_client import authenticate, get_github_repo, token_authenticate
@@ -35,7 +36,7 @@ class IssueSubmitter(object):
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
     def __init__(self):
-        """Default constructor."""
+        """Initialize class with the default constructor."""
         self.running = False
 
     @staticmethod
