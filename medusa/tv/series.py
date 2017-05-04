@@ -82,7 +82,7 @@ from medusa.helper.exceptions import (
 )
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.image_cache import ImageCache
-rom medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
     INDEXER_TVRAGE,
     STATUS_MAP,
