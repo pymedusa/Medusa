@@ -418,7 +418,8 @@ class Query(_BaseQuery):
     }
 
     def __str__(self):
-        """Get the formatted air date, if one exists."""
+        """Return readable/formated search string."""
+        # Get the formatted air date, if one exists.
         date = None
         with suppress(AttributeError):
             date = self.air_date.strftime(self.air_date_fmt)
