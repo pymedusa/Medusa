@@ -191,11 +191,7 @@ class HDBitsProvider(TorrentProvider):
                         'season': season.scene_season,
                     }
         elif imdb_id:
-            if show.air_by_date:
-                post_data['imdb'] = {
-                    'id': imdb_id
-                }
-
+            post_data['imdb'] = {'id': imdb_id}
         if search_term:
             post_data['search'] = search_term
 
