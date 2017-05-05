@@ -24,6 +24,7 @@ from medusa import (
     tv,
 )
 from medusa.helper.exceptions import AuthException
+from medusa.indexers.indexer_config import mappings
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urlencode, urljoin
@@ -173,7 +174,7 @@ class HDBitsProvider(TorrentProvider):
                         'season': episode.scene_season,
                         'episode': episode.scene_episode
                     }
-                
+
             if season:
                 if show.air_by_date or show.sports:
                     post_data['tvdb'] = {
