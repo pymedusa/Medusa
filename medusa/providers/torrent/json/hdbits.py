@@ -149,9 +149,8 @@ class HDBitsProvider(TorrentProvider):
             'category': [2],
             # TV Category
         }
-        imdb_id = self.show.externals.get(mappings[10])
 
-        if ep_obj.show.indexer == 1:
+        if episode.show.indexerid == '1':
             if episode:
                 if show.air_by_date:
                     post_data['tvdb'] = {
@@ -193,6 +192,7 @@ class HDBitsProvider(TorrentProvider):
                     }
         elif imdb_id:
             post_data['imdb'] = {'id': imdb_id}
+            post_data['search'] = show
         if search_term:
             post_data['search'] = search_term
 
