@@ -150,6 +150,8 @@ class HDBitsProvider(TorrentProvider):
             # TV Category
         }
 
+        imdb_id = self.show.externals.get(mappings[10])
+
         if episode.show.indexerid == '1':
             if episode:
                 if show.air_by_date:
