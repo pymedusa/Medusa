@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 
 import traceback
 
+from dateutil import parser
+
 from medusa import (
     logger,
     tv,
@@ -84,7 +86,7 @@ class HorribleSubsProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html.find_all('div', class_='release-links')
+            torrent_rows = html.find_all(class_=['release-info', 'release-links'])
 
             # Continue only if at least one release is found
             if not torrent_rows:
@@ -93,6 +95,15 @@ class HorribleSubsProvider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
+                    if row['class'] == ['release-info']:
+                        pubdate = None
+                        # pubdate is only supported for non-daily searches
+                        if mode != 'RSS':
+                            # keep the date and strip the rest
+                            date = row.find('td', class_='rls-label').get_text()[1:9]
+                            pubdate = parser.parse(date)
+                        continue
+
                     title = row.find('td', class_='dl-label').get_text()
                     download_url = row.find('td', class_='dl-type hs-magnet-link').a.get('href')
                     if not all([title, download_url]):
@@ -112,7 +123,7 @@ class HorribleSubsProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
