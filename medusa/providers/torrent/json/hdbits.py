@@ -148,45 +148,52 @@ class HDBitsProvider(TorrentProvider):
             'category': [2],
             # TV Category
         }
+        imdb_id = self.show.externals.get(mappings[10])
 
-        if episode:
+        if ep_obj.show.indexer == 1:
+            if episode:
+                if show.air_by_date:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'episode': str(episode.airdate).replace('-', '|')
+                    }
+                elif show.sports:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'episode': episode.airdate.strftime('%b')
+                    }
+                elif show.anime:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'episode': "{0}".format(episode.scene_absolute_number)
+                    }
+                else:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'season': episode.scene_season,
+                        'episode': episode.scene_episode
+                    }
+                
+            if season:
+                if show.air_by_date or show.sports:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'season': str(season.airdate)[:7],
+                    }
+                elif show.anime:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'season': "{0}".format(season.scene_absolute_number),
+                    }
+                else:
+                    post_data['tvdb'] = {
+                        'id': show.indexerid,
+                        'season': season.scene_season,
+                    }
+        elif imdb_id:
             if show.air_by_date:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'episode': str(episode.airdate).replace('-', '|')
-                }
-            elif show.sports:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'episode': episode.airdate.strftime('%b')
-                }
-            elif show.anime:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'episode': "{0}".format(episode.scene_absolute_number)
-                }
-            else:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': episode.scene_season,
-                    'episode': episode.scene_episode
-                }
-
-        if season:
-            if show.air_by_date or show.sports:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': str(season.airdate)[:7],
-                }
-            elif show.anime:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': "{0}".format(season.scene_absolute_number),
-                }
-            else:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': season.scene_season,
+                post_data['imdb'] = {
+                    'id': imdb_id
                 }
 
         if search_term:
