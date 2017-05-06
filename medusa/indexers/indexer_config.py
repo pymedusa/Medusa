@@ -51,6 +51,28 @@ EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
 
+STATUS_MAP = {
+    'returning series': 'Continuing',
+    'canceled/ended': 'Ended',
+    'tbd/on the bubble': 'Continuing',
+    'in development': 'Continuing',
+    'new series': 'Continuing',
+    'never aired': 'Ended',
+    'final season': 'Continuing',
+    'on hiatus': 'Continuing',
+    'pilot ordered': 'Continuing',
+    'pilot rejected': 'Ended',
+    'canceled': 'Ended',
+    'ended': 'Ended',
+    'to be determined': 'Continuing',
+    'running': 'Continuing',
+    'planned': 'Continuing',
+    'in production': 'Continuing',
+    'pilot': 'Continuing',
+    'cancelled': 'Ended',
+    'continuing': 'Continuing'
+}
+
 indexerConfig = {
     INDEXER_TVDBV2: {
         'enabled': True,
@@ -135,7 +157,7 @@ def indexer_id_to_name(indexer):
 
 
 def indexer_id_to_slug(indexer, indexer_id):
-    """A utility function to translate a shows indexex and indexer id to a slug.
+    """Translate a shows indexex and indexer id to a slug.
 
     :param indexer: The indexer id. For example 1 for tvdb and 3 for tvmaze.
     :param indexer_id: The shows id, for the specific indexer.
@@ -145,7 +167,7 @@ def indexer_id_to_slug(indexer, indexer_id):
 
 
 def slug_to_indexer_id(slug):
-    """A utility function to translate a shows slug to it's indexer and indexer id.
+    """Translate a shows slug to it's indexer and indexer id.
 
     :param slug: the slug used for the indexer and indexer id.
     :return: A tuple with the indexer id and show id, for the specific indexer.

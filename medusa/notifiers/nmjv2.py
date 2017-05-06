@@ -41,13 +41,13 @@ class Notifier(object):
 
     def notify_settings(self, host, dbloc, instance):
         """
-        Retrieves the NMJv2 database location from Popcorn hour
+        Retrieve the NMJv2 database location from Popcorn hour
 
         host: The hostname/IP of the Popcorn Hour server
         dbloc: 'local' for PCH internal hard drive. 'network' for PCH network shares
         instance: Allows for selection of different DB in case of multiple databases
 
-        Returns: True if the settings were retrieved successfully, False otherwise
+        return: True if the settings were retrieved successfully, False otherwise
         """
         try:
             url_loc = 'http://{}:8008/file_operation?arg0=list_user_storage_file&arg1=&arg2={}&arg3=20&arg4=true&arg5=true&arg6=true&arg7=all&arg8=name_asc&arg9=false&arg10=false'.format(host, instance)
@@ -85,15 +85,14 @@ class Notifier(object):
 
     def _sendNMJ(self, host):
         """
-        Sends a NMJ update command to the specified machine
+        Send a NMJ update command to the specified machine
 
         host: The hostname/IP to send the request to (no port)
         database: The database to send the request to
         mount: The mount URL to use (optional)
 
-        Returns: True if the request succeeded, False otherwise
+        return: True if the request succeeded, False otherwise
         """
-
         # if a host is provided then attempt to open a handle to that URL
         try:
             url_scandir = 'http://' + host + ':8008/metadata_database?arg0=update_scandir&arg1=' + app.NMJv2_DATABASE + '&arg2=&arg3=update_all'

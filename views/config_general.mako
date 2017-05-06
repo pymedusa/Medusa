@@ -32,11 +32,11 @@
                     <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
                 </ul>
                 <div id="misc">
-                        <div class="component-group-desc">
-                            <h3>Misc</h3>
-                            <p>Startup options. Indexer options. Log and show file locations.</p>
-                            <p><b>Some options may require a manual restart to take effect.</b></p>
-                        </div>
+                    <div class="component-group-desc">
+                        <h3>Misc</h3>
+                        <p>Startup options. Indexer options. Log and show file locations.</p>
+                        <p><b>Some options may require a manual restart to take effect.</b></p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -458,6 +458,19 @@
                                 </span>
                             </label>
                         </div>
+                        <div class="field-pair">
+                            <label for="web_root">
+                                <span class="component-title">HTTP web root</span>
+                                <span class="component-desc">
+                                    <input type="text" name="web_root" id="web_root" value="${app.WEB_ROOT}" class="form-control input-sm input300" autocomplete="no" />
+                                    blank = disabled
+                                <div class="clear-left">
+                                <p>Set a base URL, for use in reverse proxies.</p>
+                                <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
+                                </div>
+                                </span>
+                            </label>
+                        </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /component-group2 //-->
@@ -642,8 +655,9 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
-                                        <br>NOTE: A restart may be required to take effect.
-                                        <br>WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                        <div class="clear-left">
+                                        <br><b>NOTE:</b> Low: minimal filtering to protect login credentials. Normal: default filtering. High: increased filtering for additional privacy
+                                        </div>
                                     </span>
                                 </span>
                             </label>

@@ -26,6 +26,8 @@ from medusa.indexers.indexer_exceptions import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
+from six import iteritems
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -36,7 +38,7 @@ class NameParser(object):
 
     def __init__(self, show=None, try_indexers=False, naming_pattern=False, parse_method=None,
                  allow_multi_season=False):
-        """The NameParser constructor.
+        """Initialize the class.
 
         :param show:
         :type show: medusa.tv.Series
@@ -252,6 +254,11 @@ class NameParser(object):
 
         return result
 
+    @staticmethod
+    def erase_cached_parse(indexer, indexer_id):
+        """Remove all names from given indexer and indexer_id."""
+        name_parser_cache.remove(indexer, indexer_id)
+
     def parse(self, name, cache_result=True):
         """Parse the name into a ParseResult.
 
@@ -339,7 +346,7 @@ class ParseResult(object):
 
     def __init__(self, guess, series_name=None, season_number=None, episode_numbers=None, ab_episode_numbers=None,
                  air_date=None, release_group=None, proper_tags=None, version=None, original_name=None):
-        """The ParseResult constructor.
+        """Initialize the class.
 
         :param guess:
         :type guess: dict
@@ -463,7 +470,7 @@ class NameParserCache(object):
     """Name parser cache."""
 
     def __init__(self, max_size=1000):
-        """Initiate the cache with a maximum size."""
+        """Initialize the cache with a maximum size."""
         self.cache = OrderedDict()
         self.max_size = max_size
 
@@ -490,6 +497,16 @@ class NameParserCache(object):
         if name in self.cache:
             log.debug('Using cached parse result for {name}', {'name': name})
             return self.cache[name]
+
+    def remove(self, indexer, indexer_id):
+        """Remove cache item given indexer and indexer_id."""
+        if not indexer or not indexer_id:
+            return
+        to_remove = (cached_name for cached_name, cached_parsed_result in iteritems(self.cache) if
+                     cached_parsed_result.show.indexer == indexer and cached_parsed_result.show.indexerid == indexer_id)
+        for item in to_remove:
+            self.cache.popitem(item)
+            log.debug('Removed parsed cached result for release: {release}'.format(release=item))
 
 
 name_parser_cache = NameParserCache()

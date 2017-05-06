@@ -20,6 +20,7 @@
 
 import logging
 import warnings
+
 from indexer_exceptions import IndexerUserAbort
 
 
@@ -50,10 +51,10 @@ class BaseUI(object):
 
 
 class ConsoleUI(BaseUI):
-    """Interactively allows the user to select a show from a console based UI."""
+    """Interactively allow the user to select a show from a console based UI."""
 
     def _display_series(self, all_series, limit=6):
-        """Helper function, lists series with corresponding ID."""
+        """List series with corresponding ID."""
         if limit is not None:
             toshow = all_series[:limit]
         else:

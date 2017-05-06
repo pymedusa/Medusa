@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 import os
 
 from github import GithubException
+
 from tornroutes import route
+
 from .handler import Config
 from ..core import PageTemplate
 from .... import app, config, github_client, helpers, logger, ui
@@ -66,13 +68,13 @@ class ConfigGeneral(Config):
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
                     display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
-                    dbdebug=None):
+                    dbdebug=None, web_root=None):
         results = []
 
         # Misc
         app.DOWNLOAD_URL = download_url
         app.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
-        app.EP_DEFAULT_DELETED_STATUS = ep_default_deleted_status
+        app.EP_DEFAULT_DELETED_STATUS = int(ep_default_deleted_status)
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         config.change_SHOWUPDATE_HOUR(showupdate_hour)
@@ -92,7 +94,7 @@ class ConfigGeneral(Config):
         app.ANON_REDIRECT = anon_redirect
         app.PROXY_SETTING = proxy_setting
         app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
-        app.GIT_AUTH_TYPE = try_int(git_auth_type)
+        app.GIT_AUTH_TYPE = int(git_auth_type)
         app.GIT_USERNAME = git_username
         app.GIT_PASSWORD = git_password
         app.GIT_TOKEN = git_token
@@ -108,10 +110,10 @@ class ConfigGeneral(Config):
 
         app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
         # app.LOG_DIR is set in config.change_LOG_DIR()
-        app.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)
+        app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
         app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
-        app.WEB_PORT = try_int(web_port)
+        app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
         if config.checkbox_to_value(encryption_version) == 1:
             app.ENCRYPTION_VERSION = 2
@@ -119,6 +121,7 @@ class ConfigGeneral(Config):
             app.ENCRYPTION_VERSION = 0
         app.WEB_USERNAME = web_username
         app.WEB_PASSWORD = web_password
+        app.WEB_ROOT = web_root
 
         app.DEBUG = config.checkbox_to_value(debug)
         app.DBDEBUG = config.checkbox_to_value(dbdebug)

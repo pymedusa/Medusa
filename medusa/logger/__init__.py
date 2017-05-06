@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
