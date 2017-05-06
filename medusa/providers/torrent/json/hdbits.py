@@ -24,7 +24,6 @@ from medusa import (
     tv,
 )
 from medusa.helper.exceptions import AuthException
-from medusa.indexers.indexer_config import mappings
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urlencode, urljoin
@@ -45,7 +44,7 @@ class HDBitsProvider(TorrentProvider):
         self.url = 'https://hdbits.org'
         self.urls = {
             'search': urljoin(self.url, '/api/torrents'),
-            'download': urljoin(self.url, '/download.php'),
+            'download': urljoin(self.url, '/download.php?{0}'),
         }
 
         # Proper Strings
@@ -58,7 +57,7 @@ class HDBitsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=15)  # only poll HDBits every 15 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # only poll HDBits every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -68,39 +67,42 @@ class HDBitsProvider(TorrentProvider):
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
-        # FIXME
+
         results = []
 
-        logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
+        logger.log('Search strings: {0}'.format(search_strings), logger.DEBUG)
 
         self._check_auth()
-        
+
         post_data = {
             'username': self.username,
             'passkey': self.passkey,
-            'category': [2],
-            # TV Category
+            'category': [2,3,5],    # (1 Movie, 2 TV, 3 Documentary, 4 Music, 5 Sport, 6 Audio Track, 7 XXX, 8 Misc/Demo) 
         }
 
+
         for mode in search_strings:
-            if mode != 'RSS':
-                post_data = search_strings
-        response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
-        if mode != 'RSS':
-            logger.log('Search string: {search}'.format
-                           (search=post_data), logger.DEBUG)
+            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
 
-        if not response or not response.content:
-            logger.log('No data returned from provider', logger.DEBUG)
-            return results
+            for search_string in search_strings[mode]:
+                if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                                   (search=search_string), logger.DEBUG)
+                    post_data['search'] = search_string
+                response = self.get_url(self.urls['search'], post_data=json.dumps(post_data), returns='response')
+                if not response or not response.content:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    return results
 
-        if not self._check_auth_from_data(response):
-            return results
-        try:
-            jdata = response.json()
-        except ValueError:  # also catches JSONDecodeError if simplejson is installed
-            logger.log('No data returned from provider', logger.DEBUG)
-            return results
+                if not self._check_auth_from_data(response):
+                    return results
+                try:
+                    jdata = response.json()
+                except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    return results
+
+                results += self.parse(jdata, None)
 
         results += self.parse(jdata, None)
 
@@ -123,7 +125,7 @@ class HDBitsProvider(TorrentProvider):
 
             title = row.get('name', '')
             torrent_id = row.get('id', '')
-            download_url = self.urls['download'] + '?' + urlencode({'id': torrent_id, 'passkey': self.passkey})
+            download_url = self.urls['download'].format(urlencode({'id': torrent_id, 'passkey': self.passkey}))
 
             if not all([title, download_url]):
                 continue
@@ -174,69 +176,5 @@ class HDBitsProvider(TorrentProvider):
                 logger.log('Invalid username or password. Check your settings', logger.WARNING)
 
         return True
-
-    def _get_season_search_strings(self, ep_obj):
-        season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
-        return season_search_string
-
-    def _get_episode_search_strings(self, ep_obj, add_string=''):
-        episode_search_string = [self._make_post_data_json(show=ep_obj.show, episode=ep_obj)]
-        return episode_search_string
-
-    def _make_post_data_json(self, show=None, episode=None, season=None, search_term=None):
-        post_data = {
-            'username': self.username,
-            'passkey': self.passkey,
-            'category': [2],
-            # TV Category
-        }
-
-        if show.indexerid == '1':
-            if episode:
-                if show.air_by_date:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'episode': str(episode.airdate).replace('-', '|')
-                    }
-                elif show.sports:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'episode': episode.airdate.strftime('%b')
-                    }
-                elif show.anime:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'episode': "{0}".format(episode.scene_absolute_number)
-                    }
-                else:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'season': episode.scene_season,
-                        'episode': episode.scene_episode
-                    }
-
-            if season:
-                if show.air_by_date or show.sports:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'season': str(season.airdate)[:7],
-                    }
-                elif show.anime:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'season': "{0}".format(season.scene_absolute_number),
-                    }
-                else:
-                    post_data['tvdb'] = {
-                        'id': show.indexerid,
-                        'season': season.scene_season,
-                    }
-        else:
-            if episode:
-                post_data['search'] = "{0} S{1}E{2}".format(show.name, str(episode.scene_season).zfill(2), str(episode.scene_episode).zfill(2))
-            elif season:
-                post_data['search'] = "{0} S{1}".format(show.name, str(season.scene_season).zfill(2))
-
-        return json.dumps(post_data)
 
 provider = HDBitsProvider()
