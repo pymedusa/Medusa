@@ -56,7 +56,7 @@ class HDBitsProvider(TorrentProvider):
         # Torrent Stats
 
         # Cache
-        self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
+        self.cache = tv.Cache(self, min_time=15)  # only poll HDBits every 15 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -74,7 +74,10 @@ class HDBitsProvider(TorrentProvider):
 
         self._check_auth()
 
-        response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
+        if mode != 'RSS':
+            response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
+        else:
+            response = self.get_url(self.urls['rss'], returns='response')
         if not response or not response.content:
             logger.log('No data returned from provider', logger.DEBUG)
             return results
