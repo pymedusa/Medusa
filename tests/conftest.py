@@ -39,7 +39,7 @@ def pytest_collection_modifyitems(config, items):
 
 
 def _construct_mapping(self, node, deep=False):
-    """Custom yaml map constructor to allow lists to be key of a map.
+    """Construct a custom yaml map to allow lists to be key of a map.
 
     :param self:
     :param node:

@@ -101,7 +101,7 @@ def _download_result(result):
 
 def snatch_episode(result):
     """
-    Internal logic necessary to actually snatch a result that has been found.
+    Snatch a result that has been found.
 
     :param result: SearchResult instance to be snatched.
     :return: boolean, True on success

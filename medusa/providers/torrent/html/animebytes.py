@@ -329,7 +329,7 @@ class AnimeBytes(TorrentProvider):
         return True
 
     def _get_episode_search_strings(self, episode, add_string=''):
-        """Method override because AnimeBytes doesnt support searching showname + episode number."""
+        """Override method because AnimeBytes doesn't support searching showname + episode number."""
         if not episode:
             return []
 
@@ -343,7 +343,7 @@ class AnimeBytes(TorrentProvider):
         return [search_string]
 
     def _get_season_search_strings(self, episode):
-        """Method override because AnimeBytes doesnt support searching showname + season number."""
+        """Override method because AnimeBytes doesn't support searching showname + season number."""
         search_string = {
             'Season': []
         }
