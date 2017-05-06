@@ -24,7 +24,7 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
-from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
+from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
 
@@ -149,6 +149,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # Webui login/logout handlers
             (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
             (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
+
+            (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
 
             # Web calendar handler (Needed because option Unprotected calendar)
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
