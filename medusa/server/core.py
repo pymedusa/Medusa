@@ -155,7 +155,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # Web calendar handler (Needed because option Unprotected calendar)
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
-            (r'{base}/vue/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), StaticFileHandler,
              {'path': self.options['vue_root'], 'default_filename': 'index.html'}),
 
             # webui handlers
