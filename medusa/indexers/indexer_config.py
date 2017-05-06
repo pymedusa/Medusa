@@ -157,7 +157,7 @@ def indexer_id_to_name(indexer):
 
 
 def indexer_id_to_slug(indexer, indexer_id):
-    """A utility function to translate a shows indexex and indexer id to a slug.
+    """Translate a shows indexex and indexer id to a slug.
 
     :param indexer: The indexer id. For example 1 for tvdb and 3 for tvmaze.
     :param indexer_id: The shows id, for the specific indexer.
@@ -167,7 +167,7 @@ def indexer_id_to_slug(indexer, indexer_id):
 
 
 def slug_to_indexer_id(slug):
-    """A utility function to translate a shows slug to it's indexer and indexer id.
+    """Translate a shows slug to it's indexer and indexer id.
 
     :param slug: the slug used for the indexer and indexer id.
     :return: A tuple with the indexer id and show id, for the specific indexer.

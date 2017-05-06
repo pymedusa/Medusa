@@ -24,7 +24,7 @@ class TV(object):
     """Base class for Series and Episode."""
 
     def __init__(self, indexer, indexerid, ignored_properties):
-        """Constructor with ignore_properties.
+        """Initialize class.
 
         :param indexer:
         :type indexer: int
@@ -66,7 +66,7 @@ class TV(object):
 
     @property
     def tvdb_id(self):
-        """The item's tvdb_id."""
+        """Get the item's tvdb_id."""
         if self.indexerid and self.indexer == INDEXER_TVDBV2:
             return self.indexerid
 
