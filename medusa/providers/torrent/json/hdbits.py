@@ -192,9 +192,11 @@ class HDBitsProvider(TorrentProvider):
                         'id': show.indexerid,
                         'season': season.scene_season,
                     }
-        elif imdb_id:
+        elif imdb_id:            
             post_data['imdb'] = {'id': imdb_id}
-            post_data['search'] = show
+            for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+                post_data['search'] = show_name
+                return json.dumps(post_data)
         if search_term:
             post_data['search'] = search_term
 
