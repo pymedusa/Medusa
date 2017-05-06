@@ -90,7 +90,7 @@ class HDBitsProvider(TorrentProvider):
                     return results
 
             if not self._check_auth_from_data(response):
-            return results
+                return results
 
             try:
                 jdata = response.json()
