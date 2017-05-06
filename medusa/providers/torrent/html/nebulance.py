@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-"""Provider code for TransmitTheNet."""
+"""Provider code for Nebulance."""
 from __future__ import unicode_literals
 
 import re
@@ -35,19 +35,19 @@ from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
 
-class TransmitTheNetProvider(TorrentProvider):
-    """TransmitTheNet Torrent provider."""
+class NebulanceProvider(TorrentProvider):
+    """Nebulance Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('TransmitTheNet')
+        super(self.__class__, self).__init__('Nebulance')
 
         # Credentials
         self.username = None
         self.password = None
 
         # URLs
-        self.url = 'https://transmithe.net/'
+        self.url = 'https://nebulance.io/'
         self.urls = {
             'login': urljoin(self.url, '/login.php'),
             'search': urljoin(self.url, '/torrents.php'),
@@ -223,4 +223,4 @@ class TransmitTheNetProvider(TorrentProvider):
         return True
 
 
-provider = TransmitTheNetProvider()
+provider = NebulanceProvider()

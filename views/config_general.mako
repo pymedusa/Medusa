@@ -495,6 +495,19 @@
                                 </span>
                             </label>
                         </div>
+                        <div class="field-pair">
+                            <label for="web_root">
+                                <span class="component-title">HTTP web root</span>
+                                <span class="component-desc">
+                                    <input type="text" name="web_root" id="web_root" value="${app.WEB_ROOT}" class="form-control input-sm input300" autocomplete="no" />
+                                    blank = disabled
+                                <div class="clear-left">
+                                <p>Set a base URL, for use in reverse proxies.</p>
+                                <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
+                                </div>
+                                </span>
+                            </label>
+                        </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /component-group2 //-->
