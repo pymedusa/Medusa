@@ -80,14 +80,14 @@ class HDBitsProvider(TorrentProvider):
             else:
                 response = self.get_url(self.urls['rss'], returns='response')
 
-            for search_params in searches:
-                if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
+
+            if mode != 'RSS':
+                logger.log('Search string: {search}'.format
                                (search=search_params), logger.DEBUG)
 
-                if not response or not response.content:
-                    logger.log('No data returned from provider', logger.DEBUG)
-                    return results
+            if not response or not response.content:
+                logger.log('No data returned from provider', logger.DEBUG)
+                return results
 
             if not self._check_auth_from_data(response):
                 return results
