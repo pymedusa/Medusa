@@ -205,25 +205,4 @@ class HDBitsProvider(TorrentProvider):
 
         return json.dumps(post_data)
 
-
-class HDBitsCache(tv.Cache):
-    """Provider cache class."""
-
-    def _get_rss_data(self):
-        """Get RSS data."""
-        self.search_params = None  # HDBits cache does not use search_params so set it to None
-        results = []
-
-        try:
-            parsed_json = self.provider.get_url(self.provider.urls['rss'],
-                                                post_data=self.provider._make_post_data_json(), returns='json')
-
-            if self.provider._check_auth_from_data(parsed_json):
-                results = parsed_json['data']
-        except Exception:
-            pass
-
-        return {'entries': results}
-
-
 provider = HDBitsProvider()
