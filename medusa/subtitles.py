@@ -811,7 +811,7 @@ class SubtitlesFinder(object):
 
         run_post_process = False
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
-            # Must ignore files that are being unpacked by NZB client
+            # Skip folders that are being used for unpacking
             if u'_UNPACK' in root.upper():
                 continue
             for filename in sorted(files):
