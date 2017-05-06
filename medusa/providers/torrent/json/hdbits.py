@@ -74,24 +74,31 @@ class HDBitsProvider(TorrentProvider):
 
         self._check_auth()
 
-        if mode != 'RSS':
-            response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
-        else:
-            response = self.get_url(self.urls['rss'], returns='response')
-        if not response or not response.content:
-            logger.log('No data returned from provider', logger.DEBUG)
+        for mode in search_strings:
+            if mode != 'RSS':
+                response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
+            else:
+                response = self.get_url(self.urls['rss'], returns='response')
+
+            for search_params in searches:
+                if mode != 'RSS':
+                    logger.log('Search string: {search}'.format
+                               (search=search_params), logger.DEBUG)
+
+                if not response or not response.content:
+                    logger.log('No data returned from provider', logger.DEBUG)
+                    return results
+
+            if not self._check_auth_from_data(response):
             return results
 
-        if not self._check_auth_from_data(response):
-            return results
+            try:
+                jdata = response.json()
+            except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                logger.log('No data returned from provider', logger.DEBUG)
+                return results
 
-        try:
-            jdata = response.json()
-        except ValueError:  # also catches JSONDecodeError if simplejson is installed
-            logger.log('No data returned from provider', logger.DEBUG)
-            return results
-
-        results += self.parse(jdata, None)
+            results += self.parse(jdata, None)
 
         return results
 
