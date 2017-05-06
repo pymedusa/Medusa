@@ -73,12 +73,19 @@ class HDBitsProvider(TorrentProvider):
         logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
 
         self._check_auth()
+        
+        post_data = {
+            'username': self.username,
+            'passkey': self.passkey,
+            'category': [2],
+            # TV Category
+        }
 
         for mode in search_strings:
             if mode != 'RSS':
                 response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
             else:
-                response = self.get_url(self.urls['rss'], returns='response')
+                response = self.get_url(self.urls['rss'], post_data=post_data, returns='response')
 
 
             if mode != 'RSS':
