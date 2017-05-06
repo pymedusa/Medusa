@@ -175,10 +175,6 @@ def collect_episodes_from_search_thread(show):
 def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    show = show
-    season = season
-    episode = episode
-    manual_search_type = manual_search_type
     sql_episode = '' if manual_search_type == 'season' else episode
 
     down_cur_quality = 0
