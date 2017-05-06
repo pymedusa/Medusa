@@ -10,6 +10,7 @@ import time
 import traceback
 
 from concurrent.futures import ThreadPoolExecutor
+from future.moves.urllib.parse import urlencode
 from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
@@ -413,6 +414,19 @@ class AuthenticatedStaticFileHandler(StaticFileHandler):
     def __init__(self, *args, **kwargs):
         super(AuthenticatedStaticFileHandler, self).__init__(*args, **kwargs)
 
-    @authenticated
+    def get_current_user(self):
+        if app.WEB_USERNAME and app.WEB_PASSWORD:
+            return self.get_secure_cookie(app.SECURE_TOKEN)
+        return True
+
     def get(self, *args, **kwargs):
-        super(AuthenticatedStaticFileHandler, self).__init__(*args, **kwargs)
+        if not self.get_current_user():
+            if self.request.method in ("GET", "HEAD"):
+                url = self.get_login_url()
+                if "?" not in url:
+                    next_url = self.request.uri
+                    url += "?" + urlencode(dict(next=next_url))
+                self.redirect(url)
+                return
+            raise HTTPError(403)
+        super(AuthenticatedStaticFileHandler, self).get(*args, **kwargs)
