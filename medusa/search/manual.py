@@ -172,13 +172,13 @@ def collect_episodes_from_search_thread(show):
     return episodes
 
 
-def get_provider_cache_results(indexer, show_all_results=0, perform_search=0, show=None,
-                               season=None, episode=None, manual_search_type='episode', **search_show):
+def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None,
+                               season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
-    if not (show and season and episode):
-        return provider_results
-
+    show = show
+    season = season
+    episode = episode
+    manual_search_type = manual_search_type
     sql_episode = '' if manual_search_type == 'season' else episode
 
     down_cur_quality = 0
@@ -190,6 +190,7 @@ def get_provider_cache_results(indexer, show_all_results=0, perform_search=0, sh
 
     main_db_con = db.DBConnection('cache.db')
 
+    provider_results = {'last_prov_updates': {}, 'error': {}, 'found_items': []}
     original_thread_name = threading.currentThread().name
 
     sql_total = []
