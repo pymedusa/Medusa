@@ -25,6 +25,7 @@ from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
+from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
 
@@ -155,7 +156,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # Web calendar handler (Needed because option Unprotected calendar)
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
-            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), StaticFileHandler,
+            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
              {'path': self.options['vue_root'], 'default_filename': 'index.html'}),
 
             # webui handlers

@@ -21,7 +21,7 @@ from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
-from tornado.web import HTTPError, RequestHandler, authenticated
+from tornado.web import HTTPError, RequestHandler, StaticFileHandler, authenticated
 from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
@@ -407,3 +407,12 @@ class UI(WebRoot):
             cur_notification_num += 1
 
         return json.dumps(messages)
+
+
+class AuthenticatedStaticFileHandler(StaticFileHandler):
+    def __init__(self, *args, **kwargs):
+        super(AuthenticatedStaticFileHandler, self).__init__(*args, **kwargs)
+
+    @authenticated
+    def get(self, *args, **kwargs):
+        super(AuthenticatedStaticFileHandler, self).__init__(*args, **kwargs)
