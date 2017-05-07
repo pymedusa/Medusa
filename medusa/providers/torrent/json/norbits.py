@@ -1,37 +1,26 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Norbits."""
+
 from __future__ import unicode_literals
 
 import json
+import logging
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
 from medusa.helper.exceptions import AuthException
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urlencode, urljoin
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class NorbitsProvider(TorrentProvider):
@@ -75,13 +64,13 @@ class NorbitsProvider(TorrentProvider):
         results = []
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
 
                 post_data = {
                     'username': self.username,
@@ -93,13 +82,13 @@ class NorbitsProvider(TorrentProvider):
                 response = self.get_url(self.urls['search'], post_data=json.dumps(post_data),
                                         returns='response')
                 if not response or not response.content:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 try:
                     jdata = response.json()
-                except ValueError:  # also catches JSONDecodeError if simplejson is installed
-                    logger.log('No data returned from provider', logger.DEBUG)
+                except ValueError:
+                    log.debug('No data returned from provider')
                     continue
 
                 if self._check_auth_from_data(jdata):
@@ -139,9 +128,9 @@ class NorbitsProvider(TorrentProvider):
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
-                        logger.log("Discarding torrent because it doesn't meet the "
-                                   "minimum seeders: {0}. Seeders: {1}".format
-                                   (title, seeders), logger.DEBUG)
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  " minimum seeders: {0}. Seeders: {1}",
+                                  title, seeders)
                     continue
 
                 size = convert_size(row.pop('size', -1), -1)
@@ -155,13 +144,13 @@ class NorbitsProvider(TorrentProvider):
                     'pubdate': None,
                 }
                 if mode != 'RSS':
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                           (traceback.format_exc()), logger.ERROR)
+                log.error('Failed parsing provider. Traceback: {0!r}',
+                          traceback.format_exc())
 
         return items
 
@@ -177,8 +166,8 @@ class NorbitsProvider(TorrentProvider):
         """Check that we are authenticated."""
         if 'status' in parsed_json and 'message' in parsed_json:
             if parsed_json.get('status') == 3:
-                logger.log('Invalid username or password. '
-                           'Check your settings', logger.WARNING)
+                log.warning('Invalid username or password.'
+                            ' Check your settings')
 
         return True
 
