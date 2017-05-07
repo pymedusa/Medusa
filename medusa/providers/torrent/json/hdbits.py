@@ -18,16 +18,17 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.helper.exceptions import AuthException
+from medusa.logger.style.adapter import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urlencode, urljoin
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 class HDBitsProvider(TorrentProvider):
     """HDBits Torrent provider."""
@@ -48,7 +49,7 @@ class HDBitsProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = []
+        self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
 
@@ -70,7 +71,8 @@ class HDBitsProvider(TorrentProvider):
 
         results = []
 
-        logger.log('Search strings: {0}'.format(search_strings), logger.DEBUG)
+        log.debug('Search strings {0}', search_strings)
+        #logger.log('Search strings: {0}'.format(search_strings), logger.DEBUG)
 
         self._check_auth()
 
@@ -81,16 +83,15 @@ class HDBitsProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode {0}', mode)
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                                   (search=search_string), logger.DEBUG)
+                    log.debug('Search string {search}', {'search': search_string})
                     post_data['search'] = search_string
                 response = self.get_url(self.urls['search'], post_data=json.dumps(post_data), returns='response')
                 if not response or not response.content:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     return results
 
                 if not self._check_auth_from_data(response):
@@ -98,7 +99,7 @@ class HDBitsProvider(TorrentProvider):
                 try:
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     return results
 
                 results += self.parse(jdata, None)
@@ -118,7 +119,7 @@ class HDBitsProvider(TorrentProvider):
 
         torrent_rows = data.get('data')
         if not torrent_rows:
-            logger.log("Resulting JSON from provider isn't correct, not parsing it", logger.ERROR)
+            log.error('Resulting JSON from provider isn\'t correct, not parsing it')
 
         for row in torrent_rows:
 
@@ -133,9 +134,7 @@ class HDBitsProvider(TorrentProvider):
 
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
-                logger.log("Discarding torrent because it doesn't meet the "
-                           "minimum seeders: {0}. Seeders: {1}".format
-                           (title, seeders), logger.DEBUG)
+                log.debug('Discarding torrent because it doesn\'t meet the minimum seeders: {0}. Seeders: {1}', title, seeders)
                 continue
 
             size = row.get('size') or -1
@@ -149,13 +148,7 @@ class HDBitsProvider(TorrentProvider):
                 'leechers': leechers,
                 'pubdate': pubdate,
             }
-            logger.log(
-                'Found result: {title} with {x} seeders'
-                ' and {y} leechers'.format(
-                    title=title, x=seeders, y=leechers
-                ),
-                logger.DEBUG
-            )
+            log.debug('Found result: {title} with {x} seeders and {y} leechers', {'title': title}, {'x': seeders}, {'y': leechers})
 
             items.append(item)
 
@@ -164,16 +157,16 @@ class HDBitsProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.username or not self.passkey:
-            raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
-
+            log.warning('Your authentication credentials for {provider} are missing, check your config.', {'provider': self.name})
+            return False
         return True
 
     def _check_auth_from_data(self, parsed_json):
 
         if 'status' in parsed_json and 'message' in parsed_json:
             if parsed_json.get('status') == 5:
-                logger.log('Invalid username or password. Check your settings', logger.WARNING)
-
+                log.warning('Invalid username or password. Check your settings')
+                return False
         return True
 
 provider = HDBitsProvider()
