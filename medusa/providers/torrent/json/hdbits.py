@@ -91,7 +91,7 @@ class HDBitsProvider(TorrentProvider):
                 response = self.get_url(self.urls['search'], post_data=json.dumps(post_data), returns='response')
                 if not response or not response.content:
                     log.debug('No data returned from provider')
-                    return results
+                    continue
 
                 if not self._check_auth_from_data(response):
                     return results
@@ -99,11 +99,9 @@ class HDBitsProvider(TorrentProvider):
                     jdata = response.json()
                 except ValueError:  # also catches JSONDecodeError if simplejson is installed
                     log.debug('No data returned from provider')
-                    return results
+                    continue
 
                 results += self.parse(jdata, None)
-
-        results += self.parse(jdata, None)
 
         return results
 
