@@ -661,7 +661,7 @@ class ProcessResult(object):
             try:
                 torrent_moved = client.move_torrent(info_hash)
             except (requests.exceptions.RequestException, socket.gaierror) as e:
-                logger.log("Could't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
+                logger.log("Couldn't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
                            "to: '{path}'. Error: {error}".format
                            (release=release_names, hash=info_hash, error=e.message, path=app.TORRENT_SEED_LOCATION, s=s),
                            logger.WARNING)
