@@ -1,20 +1,4 @@
 # coding=utf-8
-# Author: p0psicles
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
@@ -22,13 +6,16 @@ import logging
 from collections import OrderedDict
 from time import time
 
-from pytvmaze import TVMaze
-from pytvmaze.exceptions import BaseError, CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
-
-from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowNotFound
+from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.indexer_exceptions import (
+    IndexerError,
+    IndexerException,
+    IndexerShowNotFound,
+)
 from medusa.logger.adapters.style import BraceAdapter
 
+from pytvmaze import TVMaze
+from pytvmaze.exceptions import BaseError, CastNotFound, IDNotFound, ShowIndexError, ShowNotFound, UpdateNotFound
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
