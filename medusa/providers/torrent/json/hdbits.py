@@ -133,7 +133,10 @@ class HDBitsProvider(TorrentProvider):
 
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
-                log.debug('Discarding torrent because it doesn\'t meet the minimum seeders: {0}. Seeders: {1}', title, seeders)
+                log.debug(
+                    "Discarding torrent because it doesn't meet the"
+                    " minimum seeders: {0}. Seeders: {1}",
+                    title, seeders)
                 continue
 
             size = row.get('size') or -1
@@ -163,7 +166,8 @@ class HDBitsProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.username or not self.passkey:
-            log.warning('Your authentication credentials for {provider} are missing, check your config.', {'provider': self.name})
+            log.warning('Your authentication credentials for {provider} are missing,'
+                        ' check your config.', {'provider': self.name})
             return False
 
         return True
