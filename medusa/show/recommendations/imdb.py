@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import unicode_literals
 
+import logging
 import os
 import posixpath
 import re
@@ -14,9 +15,12 @@ from requests import RequestException
 from simpleanidb import Anidb
 
 from .recommended import RecommendedShow
-from ... import app, helpers, logger
+from ... import app, helpers
 from ...indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 class ImdbPopular(object):
     """Gets a list of most popular TV series from imdb."""
@@ -98,9 +102,11 @@ class ImdbPopular(object):
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:
-                logger.log(u'Could not connect to indexers to check if you already have '
-                           u'this show in your library: {show} ({year})'.format
-                           (show=show['name'], year=show['name']), logger.WARNING)
+                log.warning(
+                    u'Could not connect to indexers to check if you already have'
+                    u' this show in your library: {show} ({year})',
+                    {'show': show['name'], 'year': show['name']}
+                )
 
         return result
 
