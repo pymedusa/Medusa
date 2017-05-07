@@ -356,7 +356,7 @@ def hardlink_file(src_file, dest_file):
                 u'Failed to create hardlink of {source} at {destination}.'
                 u' Error: {error!r}. Copying instead', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )
