@@ -87,7 +87,7 @@ class HDBitsProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string {search}', {'search': search_string})
                     search_params['search'] = search_string
-                response = self.session.post(self.urls['search'], data=search_params)
+                response = self.session.post(self.urls['search'], json=search_params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
