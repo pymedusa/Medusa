@@ -1,32 +1,20 @@
 # coding=utf-8
-# Author: Mr_Orange
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Nyaa."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.helper.common import convert_size, try_int
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class NyaaProvider(TorrentProvider):
@@ -80,24 +68,24 @@ class NyaaProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                     if self.confirmed:
-                        logger.log('Searching only confirmed torrents', logger.DEBUG)
+                        log.debug('Searching only confirmed torrents')
 
                     search_params['term'] = search_string
                 data = self.cache.get_rss_feed(self.url, params=search_params)
                 if not data:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
                 if not data['entries']:
-                    logger.log('Data returned from provider does not contain any {0}torrents'.format(
-                        'confirmed ' if self.confirmed else ''), logger.DEBUG)
+                    log.debug('Data returned from provider does not contain any {0}torrents',
+                              'confirmed ' if self.confirmed else '')
                     continue
 
                 results += self.parse(data, mode)
@@ -124,8 +112,7 @@ class NyaaProvider(TorrentProvider):
 
                 item_info = self.regex.search(result['summary'])
                 if not item_info:
-                    logger.log('There was a problem parsing an item summary, skipping: {0}'.format
-                               (title), logger.DEBUG)
+                    log.debug('There was a problem parsing an item summary, skipping: {0}', title)
                     continue
 
                 seeders, leechers, torrent_size, verified = item_info.groups()
@@ -135,14 +122,13 @@ class NyaaProvider(TorrentProvider):
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
-                        logger.log("Discarding torrent because it doesn't meet the "
-                                   "minimum seeders: {0}. Seeders: {1}".format
-                                   (title, seeders), logger.DEBUG)
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  " minimum seeders: {0}. Seeders: {1}", title, seeders)
                     continue
 
                 if self.confirmed and not verified and mode != 'RSS':
-                    logger.log("Found result {0} but that doesn't seem like a verified"
-                               " result so I'm ignoring it".format(title), logger.DEBUG)
+                    log.debug("Found result {0} but that doesn't seem like a verified"
+                              " result so I'm ignoring it", title)
                     continue
 
                 size = convert_size(torrent_size) or -1
@@ -156,13 +142,13 @@ class NyaaProvider(TorrentProvider):
                     'pubdate': None,
                 }
                 if mode != 'RSS':
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                           (traceback.format_exc()), logger.ERROR)
+                log.error('Failed parsing provider. Traceback: {0!r}',
+                          traceback.format_exc())
 
         return items
 
