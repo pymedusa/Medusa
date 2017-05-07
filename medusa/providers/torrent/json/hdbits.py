@@ -22,7 +22,7 @@ import logging
 
 from medusa import tv
 from medusa.helper.exceptions import AuthException
-from medusa.logger.style.adapter import BraceAdapter
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urlencode, urljoin
