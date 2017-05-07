@@ -138,9 +138,9 @@ class NewpctProvider(TorrentProvider):
                 cells = row('td')
 
                 try:
-                    torrent_row = row.find('a')
-                    title = self._process_title(torrent_row.get('title', ''))
-                    download_url = torrent_row.get('href', '')
+                    torrent_anchor = row.find('a')
+                    title = self._process_title(torrent_anchor.get_text())
+                    download_url = torrent_anchor.get('href', '')
                     if not all([title, download_url]):
                         continue
 
@@ -170,13 +170,13 @@ class NewpctProvider(TorrentProvider):
 
     @staticmethod
     def _process_title(title):
-        # Remove literal from title
-        title = title.replace('Mas informacion sobre').strip() + '-NEWPCT x264'
+        # Add encoder and group to title
+        title = title.strip() + ' x264-NEWPCT'
 
         # Quality - Use re module to avoid case sensitive problems with replace
         title = re.sub(r'\[ALTA DEFINICION[^\[]*]', '720p HDTV', title, flags=re.IGNORECASE)
-        title = re.sub(r'\[(BluRay MicroHD|MicroHD 1080p)[^\[]*]', '1080p BlueRay', title, flags=re.IGNORECASE)
-        title = re.sub(r'\[(B[RD]rip|BLuRay)[^\[]*]', '720p BlueRay', title, flags=re.IGNORECASE)
+        title = re.sub(r'\[(BluRay MicroHD|MicroHD 1080p)[^\[]*]', '1080p BluRay', title, flags=re.IGNORECASE)
+        title = re.sub(r'\[(B[RD]rip|BLuRay)[^\[]*]', '720p BluRay', title, flags=re.IGNORECASE)
 
         # Language
         title = re.sub(r'\[(Spanish|Castellano|Español)[^\[]*]', 'SPANISH AUDIO', title, flags=re.IGNORECASE)
