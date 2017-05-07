@@ -1,4 +1,5 @@
 # coding=utf-8
+
 from __future__ import unicode_literals
 
 import logging
@@ -10,17 +11,17 @@ from datetime import date
 
 from imdbpie import imdbpie
 
-from requests import RequestException
-
-from simpleanidb import Anidb
-
-from .recommended import RecommendedShow
-from ... import app, helpers
-from ...indexers.indexer_config import INDEXER_TVDBV2
+from medusa import app, helpers
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.recommended import RecommendedShow
+
+from requests import RequestException
+from simpleanidb import Anidb
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
 
 class ImdbPopular(object):
     """Gets a list of most popular TV series from imdb."""
