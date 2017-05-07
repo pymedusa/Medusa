@@ -4,19 +4,21 @@
 
 from __future__ import unicode_literals
 
+import logging
 import traceback
 
 from dateutil import parser
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class AniDexProvider(TorrentProvider):
@@ -67,18 +69,19 @@ class AniDexProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
+
                     search_params.update({'filename': '{0}'.format(search_string)})
 
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode)
@@ -98,9 +101,10 @@ class AniDexProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             table_header = html.find('thead')
+
             # Continue only if at least one release is found
             if not table_header:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             table_spans = table_header.find_all('span')
@@ -125,9 +129,9 @@ class AniDexProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
                     torrent_size = cells[labels.index('File size')].get_text()
@@ -145,13 +149,13 @@ class AniDexProvider(TorrentProvider):
                         'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
