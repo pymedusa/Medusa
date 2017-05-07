@@ -6,12 +6,14 @@ import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from dateutil import parser
+
+from medusa.app import TMDB_API_KEY
+from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
+from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
+from medusa.logger.adapters.style import BraceAdapter
+
 from requests.exceptions import RequestException
 import tmdbsimple as tmdb
-from ..indexer_base import (Actor, Actors, BaseIndexer)
-from ..indexer_exceptions import IndexerError, IndexerException, IndexerShowIncomplete, IndexerUnavailable
-from ...app import TMDB_API_KEY
-from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
