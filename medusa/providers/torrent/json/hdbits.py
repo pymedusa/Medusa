@@ -77,9 +77,8 @@ class HDBitsProvider(TorrentProvider):
         post_data = {
             'username': self.username,
             'passkey': self.passkey,
-            'category': [2,3,5],    # (1 Movie, 2 TV, 3 Documentary, 4 Music, 5 Sport, 6 Audio Track, 7 XXX, 8 Misc/Demo) 
+            'category': [2, 3, 5],    # (1 Movie, 2 TV, 3 Documentary, 4 Music, 5 Sport, 6 Audio Track, 7 XXX, 8 Misc/Demo)
         }
-
 
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
@@ -178,3 +177,4 @@ class HDBitsProvider(TorrentProvider):
         return True
 
 provider = HDBitsProvider()
+
