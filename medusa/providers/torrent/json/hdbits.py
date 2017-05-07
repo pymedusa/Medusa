@@ -64,7 +64,7 @@ class HDBitsProvider(TorrentProvider):
         self._check_auth()
 
         # Search Params
-        post_data = {
+        search_params = {
             'username': self.username,
             'passkey': self.passkey,
             'category': [2, 3, 5],    # (1 Movie, 2 TV, 3 Documentary, 4 Music, 5 Sport, 6 Audio Track, 7 XXX, 8 Misc/Demo)
@@ -76,8 +76,8 @@ class HDBitsProvider(TorrentProvider):
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
                     log.debug('Search string {search}', {'search': search_string})
-                    post_data['search'] = search_string
-                response = self.get_url(self.urls['search'], post_data=json.dumps(post_data), returns='response')
+                    search_params['search'] = search_string
+                response = self.get_url(self.urls['search'], post_data=json.dumps(search_params), returns='response')
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
