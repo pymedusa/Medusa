@@ -1,6 +1,8 @@
 # coding=utf-8
+
 from __future__ import unicode_literals
 
+import logging
 import os
 import posixpath
 import re
@@ -9,13 +11,16 @@ from datetime import date
 
 from imdbpie import imdbpie
 
-from requests import RequestException
+from medusa import app, helpers
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.recommendations.recommended import RecommendedShow
 
+from requests import RequestException
 from simpleanidb import Anidb
 
-from .recommended import RecommendedShow
-from ... import app, helpers, logger
-from ...indexers.indexer_config import INDEXER_TVDBV2
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class ImdbPopular(object):
@@ -98,9 +103,11 @@ class ImdbPopular(object):
                 if recommended_show:
                     result.append(recommended_show)
             except RequestException:
-                logger.log(u'Could not connect to indexers to check if you already have '
-                           u'this show in your library: {show} ({year})'.format
-                           (show=show['name'], year=show['name']), logger.WARNING)
+                log.warning(
+                    u'Could not connect to indexers to check if you already have'
+                    u' this show in your library: {show} ({year})',
+                    {'show': show['name'], 'year': show['name']}
+                )
 
         return result
 
