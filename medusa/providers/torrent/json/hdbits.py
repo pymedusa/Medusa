@@ -4,11 +4,9 @@
 
 from __future__ import unicode_literals
 
-import json
 import logging
 
 from medusa import tv
-from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -68,14 +66,14 @@ class HDBitsProvider(TorrentProvider):
             'username': self.username,
             'passkey': self.passkey,
             'category': [
-                # 1, # Movie
-                2, # TV
-                3, # Documentary
-                # 4, # Music
-                5, # Sport
-                # 6, # Audio Track
-                # 7, # XXX
-                # 8, # Misc/Demo
+                # 1,  # Movie
+                2,  # TV
+                3,  # Documentary
+                # 4,  # Music
+                5,  # Sport
+                # 6,  # Audio Track
+                # 7,  # XXX
+                # 8,  # Misc/Demo
             ],
         }
 
@@ -118,7 +116,7 @@ class HDBitsProvider(TorrentProvider):
         torrent_rows = data.get('data')
 
         if not torrent_rows:
-            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+            log.debug('Data returned from provider does not contain any torrents')
             return items
 
         # Skip column headers
