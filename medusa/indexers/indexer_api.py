@@ -17,9 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from .indexer_config import indexerConfig, initConfig
-from .. import app
-from ..helper.common import try_int
+
+from medusa import app
+from medusa.helper.common import try_int
+from medusa.indexers.indexer_config import indexerConfig, initConfig
+from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
 
 
 class indexerApi(object):
@@ -29,6 +31,7 @@ class indexerApi(object):
     def __del__(self):
         pass
 
+    @PlexFallBackConfig
     def indexer(self, *args, **kwargs):
         if self.indexer_id:
             return indexerConfig[self.indexer_id]['module'](*args, **kwargs)
