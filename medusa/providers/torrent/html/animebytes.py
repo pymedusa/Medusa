@@ -31,7 +31,7 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
-from six.moves.urllib_parse import parse_qs
+
 
 SEASON_PACK = 1
 SINGLE_EP = 2
@@ -57,7 +57,6 @@ class AnimeBytes(TorrentProvider):
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'torrents.php'),
-            'download': urljoin(self.url, 'torrent/{torrent_id}/download/{passkey}'),
         }
 
         # Proper Strings
@@ -160,7 +159,7 @@ class AnimeBytes(TorrentProvider):
                     try:
                         show_name = row.find('span', class_='group_title').find_next('a').get_text()
                         show_table = row.find('table', class_='torrent_group')
-                        show_info = show_table('td')
+                        show_info = show_table.find_all('td')
 
                         # A type of release used to determine how to parse the release
                         # For example a SINGLE_EP should be parsed like:
@@ -182,15 +181,13 @@ class AnimeBytes(TorrentProvider):
                                 # Set skip next 4 rows, as they are useless
                                 rows_to_skip = 4
 
-                                hrefs = show_info[index]('a')
-                                params = parse_qs(hrefs[0].get('href', ''))
+                                hrefs = show_info[index].find_all('a')
+                                download_url = hrefs[0].get('href')
                                 properties_string = hrefs[1].get_text().rstrip(' |').replace('|', '.').replace(' ', '')
                                 # Hack for the h264 10bit stuff
                                 properties_string = properties_string.replace('h26410-bit', 'h264.hi10p')
                                 properties = properties_string.split('.')
-                                download_url = self.urls['download'].format(torrent_id=params['id'][0],
-                                                                            passkey=params['torrent_pass'][0])
-                                if not all([params, properties]):
+                                if not all([download_url, properties]):
                                     continue
 
                                 tags = '{torrent_source}.{torrent_container}.{torrent_codec}.{torrent_res}.' \
@@ -309,11 +306,27 @@ class AnimeBytes(TorrentProvider):
                 dict_from_cookiejar(self.session.cookies).get('session'):
             return True
 
+        # Get csrf_index and csrf_token
+        csrf_response = self.get_url(self.urls['login'], returns='response')
+        if not csrf_response or not csrf_response.text:
+            logger.log('Unable to connect to provider', logger.WARNING)
+            return False
+
+        with BS4Parser(csrf_response.text, 'html5lib') as html:
+            csrf_index = html.find('input', {'name': '_CSRF_INDEX'}).get('value')
+            csrf_token = html.find('input', {'name': '_CSRF_TOKEN'}).get('value')
+
+        if not all([csrf_index, csrf_token]):
+            logger.log("Unable to get csrf_index and csrf_token, can't login", logger.WARNING)
+            return False
+
         login_params = {
+            '_CSRF_INDEX': csrf_index,
+            '_CSRF_TOKEN': csrf_token,
             'username': self.username,
             'password': self.password,
-            'login': 'Log In!',
             'keeplogged': 'on',
+            'login': 'Log In!',
         }
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
