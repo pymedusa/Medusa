@@ -4,18 +4,20 @@
 
 from __future__ import unicode_literals
 
+import logging
 import traceback
 
 from dateutil import parser
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class HorribleSubsProvider(TorrentProvider):
@@ -52,7 +54,7 @@ class HorribleSubsProvider(TorrentProvider):
         results = []
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             search_params = {}
             search_url = self.urls['daily']
@@ -60,14 +62,15 @@ class HorribleSubsProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
+
                     search_params = {'value': '{0}'.format(search_string)}
                     search_url = self.urls['search']
 
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode)
@@ -90,7 +93,7 @@ class HorribleSubsProvider(TorrentProvider):
 
             # Continue only if at least one release is found
             if not torrent_rows:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             for row in torrent_rows:
@@ -126,13 +129,13 @@ class HorribleSubsProvider(TorrentProvider):
                         'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
