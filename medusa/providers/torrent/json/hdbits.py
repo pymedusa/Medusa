@@ -72,7 +72,6 @@ class HDBitsProvider(TorrentProvider):
         results = []
 
         log.debug('Search strings {0}', search_strings)
-        #logger.log('Search strings: {0}'.format(search_strings), logger.DEBUG)
 
         self._check_auth()
 
