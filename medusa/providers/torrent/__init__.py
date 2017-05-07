@@ -1,6 +1,8 @@
 # coding=utf-8
+
 """Initialize all torrent providers."""
-from .html import (
+
+from medusa.providers.torrent.html import (
     abnormal,
     alpharatio,
     animebytes,
@@ -35,7 +37,7 @@ from .html import (
     zooqle,
 )
 
-from .json import (
+from medusa.providers.torrent.json import (
     bitcannon,
     btn,
     hd4free,
@@ -46,14 +48,14 @@ from .json import (
     torrentday,
 )
 
-from .rss import (
+from medusa.providers.torrent.rss import (
     extratorrent,
     nyaatorrents,
     rsstorrent,
     shazbat,
 )
 
-from .xml import (
+from medusa.providers.torrent.xml import (
     torrentz2,
 )
 
