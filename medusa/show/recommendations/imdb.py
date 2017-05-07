@@ -14,7 +14,7 @@ from imdbpie import imdbpie
 from medusa import app, helpers
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.show.recommended import RecommendedShow
+from medusa.show.recommendations.recommended import RecommendedShow
 
 from requests import RequestException
 from simpleanidb import Anidb
