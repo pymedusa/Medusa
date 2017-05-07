@@ -34,7 +34,6 @@ from medusa.helper.common import (
     replace_extension,
     sanitize_filename,
 )
-from medusa.helper.exceptions import ex
 from medusa.helpers import (
     download_file,
     get_url,
@@ -57,6 +56,7 @@ log.logger.addHandler(logging.NullHandler())
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
+
 
 class GenericProvider(object):
     """Generic provider."""

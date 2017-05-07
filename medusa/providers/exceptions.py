@@ -2,6 +2,7 @@
 
 """Exceptions raised by Medusa providers."""
 
+
 class ProviderError(Exception):
     """A generic provider exception occurred."""
 
