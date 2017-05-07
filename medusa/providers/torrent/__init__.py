@@ -3,6 +3,7 @@
 from .html import (
     abnormal,
     alpharatio,
+    anidex,
     animebytes,
     animetorrents,
     bithdtv,
@@ -64,5 +65,5 @@ __all__ = [
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
-    'torrentz2', 'animetorrents', 'horriblesubs'
+    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex'
 ]

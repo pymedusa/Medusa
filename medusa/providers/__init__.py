@@ -26,6 +26,7 @@ from .nzb import (
 from .torrent import (
     abnormal,
     alpharatio,
+    anidex,
     animebytes,
     animetorrents,
     bitcannon,
@@ -77,8 +78,8 @@ __all__ = [
     'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'cpasbien', 'morethantv', 't411', 'tokyotoshokan',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'nebulance', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb',
-    'bithdtv', 'zooqle', 'animebytes', 'animetorrents', 'horriblesubs'
+    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb', 'bithdtv',
+    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex'
 ]
 
 
