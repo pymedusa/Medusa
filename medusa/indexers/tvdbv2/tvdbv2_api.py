@@ -6,21 +6,18 @@ import logging
 from collections import OrderedDict
 
 from medusa.app import TVDB_API_KEY
-
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
                                                 IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
 from tvdbapiv2 import ApiClient, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
-
-
-from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -521,7 +518,7 @@ class TVDBv2(BaseIndexer):
         else:
             log.debug(
                 'Configured language {0} override show language of {1}',
-                    self.config['language'], language,
+                self.config['language'], language,
             )
             get_show_in_language = self.config['language']
 
