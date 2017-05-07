@@ -67,13 +67,23 @@ class HDBitsProvider(TorrentProvider):
         search_params = {
             'username': self.username,
             'passkey': self.passkey,
-            'category': [2, 3, 5],    # (1 Movie, 2 TV, 3 Documentary, 4 Music, 5 Sport, 6 Audio Track, 7 XXX, 8 Misc/Demo)
+            'category': [
+                # 1, # Movie
+                2, # TV
+                3, # Documentary
+                # 4, # Music
+                5, # Sport
+                # 6, # Audio Track
+                # 7, # XXX
+                # 8, # Misc/Demo
+            ],
         }
 
         for mode in search_strings:
             log.debug('Search mode {0}', mode)
 
             for search_string in search_strings[mode]:
+
                 if mode != 'RSS':
                     log.debug('Search string {search}', {'search': search_string})
                     search_params['search'] = search_string
@@ -106,9 +116,12 @@ class HDBitsProvider(TorrentProvider):
         items = []
 
         torrent_rows = data.get('data')
-        if not torrent_rows:
-            log.error('Resulting JSON from provider isn\'t correct, not parsing it')
 
+        if not torrent_rows:
+            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+            return items
+
+        # Skip column headers
         for row in torrent_rows:
             title = row.get('name', '')
             torrent_id = row.get('id', '')
@@ -156,11 +169,12 @@ class HDBitsProvider(TorrentProvider):
         return True
 
     def _check_auth_from_data(self, parsed_json):
-
+        """Check that we are authenticated."""
         if 'status' in parsed_json and 'message' in parsed_json:
             if parsed_json.get('status') == 5:
                 log.warning('Invalid username or password. Check your settings')
                 return False
         return True
+
 
 provider = HDBitsProvider()
