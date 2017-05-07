@@ -9,17 +9,22 @@ import os
 import re
 import tempfile
 import time
-
 import warnings
-import requests
-from six import iteritems
-from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerSeasonNotFound,
-                                 IndexerSeasonUpdatesNotSupported, IndexerShowNotFound)
 
-from .indexer_ui import BaseUI, ConsoleUI
+from medusa.indexers.indexer_exceptions import (
+    IndexerAttributeNotFound,
+    IndexerEpisodeNotFound,
+    IndexerSeasonNotFound,
+    IndexerSeasonUpdatesNotSupported,
+    IndexerShowNotFound,
+)
+from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.logger.adapters.style import BraceAdapter
 
-logger = BraceAdapter(logging.getLogger(__name__))
+import requests
+from six import iteritems
+
+log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
@@ -146,22 +151,22 @@ class BaseIndexer(object):
         """
         all_series = self.search(series)
         if not all_series:
-            logger.debug('Series result returned zero')
+            log.debug('Series result returned zero')
             IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
 
         if not isinstance(all_series, list):
             all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
-            logger.debug('Using custom UI {0!r}', self.config['custom_ui'])
+            log.debug('Using custom UI {0!r}', self.config['custom_ui'])
             custom_ui = self.config['custom_ui']
             ui = custom_ui(config=self.config)
         else:
             if not self.config['interactive']:
-                logger.debug('Auto-selecting first search result using BaseUI')
+                log.debug('Auto-selecting first search result using BaseUI')
                 ui = BaseUI(config=self.config)
             else:
-                logger.debug('Interactively selecting show using ConsoleUI')
+                log.debug('Interactively selecting show using ConsoleUI')
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
         return ui.select_series(all_series)
