@@ -1,33 +1,22 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import unicode_literals
 
 import logging
 import traceback
 
+from medusa import app, helpers
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
+from medusa.session.core import MedusaSession
+
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
-from .recommended import (MissingTvdbMapping, RecommendedShow)
-from ... import app
-from ...indexers.indexer_config import INDEXER_TVDBV2
-from ...session.core import MedusaSession
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class AnidbPopular(object):  # pylint: disable=too-few-public-methods
@@ -48,7 +37,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         try:
             tvdb_id = self.anidb.aid_to_tvdb_id(show_obj.aid)
         except Exception:
-            logger.warning("Couldn't map aid [%s] to tvdbid ", show_obj.aid)
+            log.warning("Couldn't map AniDB id {0} to a TVDB id", show_obj.aid)
             return None
 
         # If the anime can't be mapped to a tvdb_id, return none, and move on to the next.
@@ -85,8 +74,8 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
 
         try:
             shows = self.anidb.get_list(list_type)
-        except GeneralError as e:
-            logger.warning('Could not connect to Anidb service: %s', e)
+        except GeneralError as error:
+            log.warning('Could not connect to AniDB service: {0}', error)
 
         for show in shows:
             try:
@@ -94,8 +83,8 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
                 if recommended_show:
                     result.append(recommended_show)
             except MissingTvdbMapping:
-                logger.info('Could not parse Anidb show %s, missing tvdb mapping', show.title)
+                log.info('Could not parse AniDB show {0}, missing tvdb mapping', show.title)
             except Exception:
-                logger.warning('Could not parse Anidb show, with exception: %s', traceback.format_exc())
+                log.warning('Could not parse AniDB show, with exception: {0}', traceback.format_exc())
 
         return result

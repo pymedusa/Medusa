@@ -1,41 +1,27 @@
 # coding=utf-8
-# Author: Idan Gutman
-# Modified by jkaberg, https://github.com/jkaberg for SceneAccess
-# Modified by 7ca for HDSpace
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for HDSpace."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class HDSpaceProvider(TorrentProvider):
@@ -90,18 +76,18 @@ class HDSpaceProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                     search_params['search'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text or 'please try later' in response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 # Search result page contains some invalid html that prevents html parser from returning all data.
@@ -110,7 +96,7 @@ class HDSpaceProvider(TorrentProvider):
                 try:
                     index = response.text.index('<div id="information"')
                 except ValueError:
-                    logger.log('Could not find main torrent table', logger.DEBUG)
+                    log.debug('Could not find main torrent table')
                     continue
 
                 results += self.parse(response.text[index:], mode)
@@ -130,12 +116,12 @@ class HDSpaceProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             if not html:
-                logger.log('No html data parsed from provider', logger.DEBUG)
+                log.debug('No html data parsed from provider')
                 return items
 
             torrents = html('tr')
             if not torrents or len(torrents) < 2:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             # Skip column headers
@@ -151,7 +137,7 @@ class HDSpaceProvider(TorrentProvider):
                     else:
                         title = row.find('td', class_='lista', attrs={'align': 'left'}).find('a').get_text()
                     dl_href = row.find('td', class_='lista', attrs={'width': '20',
-                                       'style': 'text-align: center;'}).find('a').get('href')
+                                                                    'style': 'text-align: center;'}).find('a').get('href')
                     download_url = urljoin(self.url, dl_href)
                     if not all([title, dl_href]):
                         continue
@@ -162,9 +148,9 @@ class HDSpaceProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
                     torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
@@ -179,13 +165,14 @@ class HDSpaceProvider(TorrentProvider):
                         'pubdate': None,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        pass
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
@@ -205,11 +192,11 @@ class HDSpaceProvider(TorrentProvider):
 
         response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         if re.search('Automatic log off after 15 minutes inactivity', response.text):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            log.warning('Invalid username or password. Check your settings')
             return False
 
         return True
@@ -217,7 +204,7 @@ class HDSpaceProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.username or not self.password:
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            log.warning('Invalid username or password. Check your settings')
 
         return True
 

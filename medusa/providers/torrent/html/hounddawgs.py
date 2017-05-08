@@ -1,39 +1,27 @@
 # coding=utf-8
-# Author: Idan Gutman
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for HoundDawgs."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class HoundDawgsProvider(TorrentProvider):
@@ -99,20 +87,20 @@ class HoundDawgsProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                     if self.ranked:
-                        logger.log('Searching only ranked torrents', logger.DEBUG)
+                        log.debug('Searching only ranked torrents')
 
                 search_params['searchstr'] = search_string
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
                 if not response.text:
                     continue
@@ -137,8 +125,8 @@ class HoundDawgsProvider(TorrentProvider):
 
             # Continue only if at least one release is found
             if not torrent_table:
-                logger.log('Data returned from provider does not contain any {0}torrents'.format(
-                           'ranked ' if self.ranked else ''), logger.DEBUG)
+                log.debug('Data returned from provider does not contain any {0}torrents',
+                          'ranked ' if self.ranked else '')
                 return items
 
             torrent_body = torrent_table.find('tbody')
@@ -154,7 +142,7 @@ class HoundDawgsProvider(TorrentProvider):
                     all_as = (torrent[1])('a')
                     notinternal = row.find('img', src='/static//common/user_upload.png')
                     if self.ranked and notinternal:
-                        logger.log('Found a user uploaded release, Ignoring it..', logger.DEBUG)
+                        log.debug('Found a user uploaded release, Ignoring it..')
                         continue
 
                     freeleech = row.find('img', src='/static//common/browse/freeleech.png')
@@ -172,9 +160,9 @@ class HoundDawgsProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
                     torrent_size = row.find('td', class_='nobr').find_next_sibling('td').string
@@ -190,13 +178,13 @@ class HoundDawgsProvider(TorrentProvider):
                         'pubdate': None,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
@@ -216,13 +204,13 @@ class HoundDawgsProvider(TorrentProvider):
         self.session.get(self.urls['base_url'])
         response = self.session.get(self.urls['login'], data=login_params)
         if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         if any([re.search('Dit brugernavn eller kodeord er forkert.', response.text),
                 re.search('<title>Login :: HoundDawgs</title>', response.text),
                 re.search('Dine cookies er ikke aktiveret.', response.text)], ):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            log.warning('Invalid username or password. Check your settings')
             return False
 
         return True

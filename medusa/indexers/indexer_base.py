@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: p0psicles
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Base class for indexer api's."""
 
 import cgi
@@ -24,19 +9,23 @@ import os
 import re
 import tempfile
 import time
-
 import warnings
+
+from medusa.indexers.indexer_exceptions import (
+    IndexerAttributeNotFound,
+    IndexerEpisodeNotFound,
+    IndexerSeasonNotFound,
+    IndexerSeasonUpdatesNotSupported,
+    IndexerShowNotFound,
+)
+from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
+from medusa.logger.adapters.style import BraceAdapter
+
 import requests
 from six import iteritems
-from .indexer_exceptions import (IndexerAttributeNotFound, IndexerEpisodeNotFound, IndexerSeasonNotFound,
-                                 IndexerSeasonUpdatesNotSupported, IndexerShowNotFound)
 
-from .indexer_ui import BaseUI, ConsoleUI
-
-
-def log():
-    """Log init."""
-    return logging.getLogger('indexer_base')
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class BaseIndexer(object):
@@ -91,7 +80,7 @@ class BaseIndexer(object):
             self.config['cache_enabled'] = True
             self.config['cache_location'] = cache
         else:
-            raise ValueError('Invalid value for Cache %r (type was %s)' % (cache, type(cache)))
+            raise ValueError('Invalid value for Cache {0!r} (type was {1})'.format(cache, type(cache)))
 
         self.config['session'] = session if session else requests.Session()
 
@@ -127,7 +116,7 @@ class BaseIndexer(object):
             self.config['language'] = 'en'
         else:
             if language not in self.config['valid_languages']:
-                raise ValueError('Invalid language %s, options are: %s' % (
+                raise ValueError('Invalid language {0}, options are: {1}'.format(
                     language, self.config['valid_languages']
                 ))
             else:
@@ -162,22 +151,22 @@ class BaseIndexer(object):
         """
         all_series = self.search(series)
         if not all_series:
-            log().debug('Series result returned zero')
+            log.debug('Series result returned zero')
             IndexerShowNotFound('Show search returned zero results (cannot find show on Indexer)')
 
         if not isinstance(all_series, list):
             all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
-            log().debug('Using custom UI %s', [repr(self.config['custom_ui'])])
+            log.debug('Using custom UI {0!r}', self.config['custom_ui'])
             custom_ui = self.config['custom_ui']
             ui = custom_ui(config=self.config)
         else:
             if not self.config['interactive']:
-                log().debug('Auto-selecting first search result using BaseUI')
+                log.debug('Auto-selecting first search result using BaseUI')
                 ui = BaseUI(config=self.config)
             else:
-                log().debug('Interactively selecting show using ConsoleUI')
+                log.debug('Interactively selecting show using ConsoleUI')
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
         return ui.select_series(all_series)
@@ -314,7 +303,7 @@ class Show(dict):
 
     def __repr__(self):
         """Represent a Show object."""
-        return '<Show %s (containing %s seasons)>' % (
+        return '<Show {0} (containing {1} seasons)>'.format(
             self.data.get(u'seriesname', 'instance'),
             len(self)
         )
@@ -344,17 +333,17 @@ class Show(dict):
         # Data wasn't found, raise appropriate error
         if isinstance(key, int) or key.isdigit():
             # Episode number x was not found
-            raise IndexerSeasonNotFound('Could not find season %s' % (repr(key)))
+            raise IndexerSeasonNotFound('Could not find season {0!r}'.format(key))
         else:
             # If it's not numeric, it must be an attribute name, which
             # doesn't exist, so attribute error.
-            raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
+            raise IndexerAttributeNotFound('Cannot find attribute {0!r}'.format(key))
 
     def aired_on(self, date):
         """Search and return a list of episodes with the airdates."""
         ret = self.search(str(date), 'firstaired')
         if len(ret) == 0:
-            raise IndexerEpisodeNotFound('Could not find any episodes that aired on %s' % date)
+            raise IndexerEpisodeNotFound('Could not find any episodes that aired on {0}'.format(date))
         return ret
 
     def search(self, term=None, key=None):
@@ -387,7 +376,7 @@ class Season(dict):
 
     def __repr__(self):
         """Representation of a season object."""
-        return '<Season instance (containing %s episodes)>' % (
+        return '<Season instance (containing {0} episodes)>'.format(
             len(self.keys())
         )
 
@@ -400,7 +389,7 @@ class Season(dict):
     def __getitem__(self, episode_number):
         """Get the episode dict by passing it as a dict key."""
         if episode_number not in self:
-            raise IndexerEpisodeNotFound('Could not find episode %s' % (repr(episode_number)))
+            raise IndexerEpisodeNotFound('Could not find episode {0!r}'.format(episode_number))
         else:
             return dict.__getitem__(self, episode_number)
 
@@ -437,10 +426,10 @@ class Episode(dict):
         seasno = int(self.get(u'seasonnumber', 0))
         epno = int(self.get(u'episodenumber', 0))
         epname = self.get(u'episodename')
-        if epname is not None:
-            return '<Episode %02dx%02d - %s>' % (seasno, epno, epname)
+        if epname:
+            return '<Episode {0:0>2}x{1:0>2} - {2}>'.format(seasno, epno, epname)
         else:
-            return '<Episode %02dx%02d>' % (seasno, epno)
+            return '<Episode {0:0>2}x{1:0>2}>'.format(seasno, epno)
 
     def __getattr__(self, key):
         """Get an attribute."""
@@ -453,7 +442,7 @@ class Episode(dict):
         try:
             return dict.__getitem__(self, key)
         except KeyError:
-            raise IndexerAttributeNotFound('Cannot find attribute %s' % (repr(key)))
+            raise IndexerAttributeNotFound('Cannot find attribute {0!r}'.format(key))
 
     def search(self, term=None, key=None):
         """Search episode data for term, if it matches, return the Episode (self).
@@ -510,4 +499,4 @@ class Actor(dict):
 
     def __repr__(self):
         """Representation of actor name."""
-        return '<Actor "%s">' % (self.get('name'))
+        return '<Actor {0!r}>'.format(self.get('name'))

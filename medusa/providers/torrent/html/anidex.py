@@ -1,19 +1,17 @@
 # coding=utf-8
 
-"""Provider code for TokyoToshokan."""
+"""Provider code for AniDex."""
 
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
+
+from dateutil import parser
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -23,35 +21,33 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class TokyoToshokanProvider(TorrentProvider):
-    """TokyoToshokan Torrent provider."""
+class AniDexProvider(TorrentProvider):
+    """AniDex Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('TokyoToshokan')
+        super(self.__class__, self).__init__('AniDex')
 
         # Credentials
         self.public = True
 
         # URLs
-        self.url = 'http://tokyotosho.info/'
+        self.url = 'https://anidex.info'
         self.urls = {
-            'search': urljoin(self.url, 'search.php'),
-            'rss': urljoin(self.url, 'rss.php'),
+            'search': urljoin(self.url, '/ajax/page.ajax.php'),
         }
 
-        # Proper Strings
-
         # Miscellaneous Options
-        self.supports_absolute_numbering = True
-        self.anime_only = True
+        self.headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=15)  # only poll TokyoToshokan every 15 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -63,12 +59,13 @@ class TokyoToshokanProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        if self.show and not self.show.is_anime:
-            return results
 
-        # Search Params
         search_params = {
-            'type': 1,  # get anime types
+            'page': 'torrents',
+            'category': 0,
+            'filename': '',
+            'limit': 50,
+            'offset': 0,
         }
 
         for mode in search_strings:
@@ -80,8 +77,9 @@ class TokyoToshokanProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_params['terms'] = search_string
-                response = self.session.get(self.urls['search'], params=search_params)
+                    search_params.update({'filename': '{0}'.format(search_string)})
+
+                response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -101,30 +99,32 @@ class TokyoToshokanProvider(TorrentProvider):
         """
         items = []
 
-        with BS4Parser(data, 'html5lib') as soup:
-            torrent_table = soup.find('table', class_='listing')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+        with BS4Parser(data, 'html5lib') as html:
+            table_header = html.find('thead')
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if not table_header:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            a = 1 if len(torrent_rows[0]('td')) < 2 else 0
+            table_spans = table_header.find_all('span')
+            # Skip 'Likes' to have the same amount of cells and labels
+            labels = [label.get('title') for label in table_spans if label.get('title') != 'Likes']
 
-            # Skip column headers
-            for top, bot in zip(torrent_rows[a::2], torrent_rows[a + 1::2]):
+            torrent_rows = html.find('tbody').find_all('tr')
+            for row in torrent_rows:
+                cells = row.find_all('td')
+
                 try:
-                    desc_top = top.find('td', class_='desc-top')
-                    title = desc_top.get_text(strip=True) if desc_top else None
-                    download_url = desc_top.find('a')['href'] if desc_top else None
+                    title = cells[labels.index('Filename')].span.get_text()
+                    download_url = cells[labels.index('Torrent')].a.get('href')
                     if not all([title, download_url]):
                         continue
 
-                    stats = bot.find('td', class_='stats').get_text(strip=True)
-                    sl = re.match(r'S:(?P<seeders>\d+)L:(?P<leechers>\d+)C:(?:\d+)ID:(?:\d+)', stats.replace(' ', ''))
-                    seeders = try_int(sl.group('seeders')) if sl else 0
-                    leechers = try_int(sl.group('leechers')) if sl else 0
+                    download_url = urljoin(self.url, download_url)
+
+                    seeders = cells[labels.index('Seeders')].get_text()
+                    leechers = cells[labels.index('Leechers')].get_text()
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -134,8 +134,11 @@ class TokyoToshokanProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    desc_bottom = bot.find('td', class_='desc-bot').get_text(strip=True)
-                    size = convert_size(desc_bottom.split('|')[1].strip('Size: ')) or -1
+                    torrent_size = cells[labels.index('File size')].get_text()
+                    size = convert_size(torrent_size) or -1
+
+                    date = cells[labels.index('Age')].get('title')
+                    pubdate = parser.parse(date)
 
                     item = {
                         'title': title,
@@ -143,7 +146,7 @@ class TokyoToshokanProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -157,4 +160,4 @@ class TokyoToshokanProvider(TorrentProvider):
         return items
 
 
-provider = TokyoToshokanProvider()
+provider = AniDexProvider()

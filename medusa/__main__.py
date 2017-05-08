@@ -922,6 +922,10 @@ class Application(object):
             app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
 
+            app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
+            app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
+            app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
+
             # reconfigure the logger
             app_logger.reconfigure()
 
@@ -1484,6 +1488,10 @@ class Application(object):
         new_config['General']['selected_root'] = int(app.SELECTED_ROOT)
         new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
         new_config['General']['backlog_status'] = app.BACKLOG_STATUS
+
+        new_config['General']['fallback_plex_enable'] = app.FALLBACK_PLEX_ENABLE
+        new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
+        new_config['General']['fallback_plex_timeout'] = app.FALLBACK_PLEX_TIMEOUT
 
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
