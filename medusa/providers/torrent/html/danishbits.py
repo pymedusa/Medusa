@@ -168,9 +168,11 @@ class DanishbitsProvider(TorrentProvider):
                     if self.freeleech and not freeleech:
                         continue
 
-                    torrent_size = cells[labels.index('Størrelse')].contents[0]
+                    # \xc3\xb8 = ø
+                    torrent_size = cells[labels.index('St\xc3\xb8rrelse')].contents[0]
                     size = convert_size(torrent_size, units=units) or -1
-                    pubdate_raw = cells[labels.index('Tilføjet')].find('span')['title']
+
+                    pubdate_raw = cells[labels.index('Tilf\xc3\xb8jet')].find('span')['title']
                     pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
 
                     item = {
