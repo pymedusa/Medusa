@@ -54,7 +54,7 @@ class TorrentLeechProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
 
@@ -78,8 +78,8 @@ class TorrentLeechProvider(TorrentProvider):
         if not self.login():
             return results
 
-        # TV, Episodes, BoxSets, Episodes HD, Animation, Anime, Cartoons
-        # 2,26,27,32,7,34,35
+        # TV, Episodes, BoxSets, Episodes HD, Animation, Anime, Cartoons, Foreign
+        # 2,26,27,32,7,34,35,44
 
         for mode in search_strings:
             logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
@@ -91,11 +91,11 @@ class TorrentLeechProvider(TorrentProvider):
                                (search=search_string), logger.DEBUG)
 
                     categories = ['2', '7', '35']
-                    categories += ['26', '32'] if mode == 'Episode' else ['27']
+                    categories += ['26', '32', '44'] if mode == 'Episode' else ['27']
                     if self.show and self.show.is_anime:
                         categories += ['34']
                 else:
-                    categories = ['2', '26', '27', '32', '7', '34', '35']
+                    categories = ['2', '26', '27', '32', '7', '34', '35', '44']
 
                 search_params = {
                     'categories': ','.join(categories),
