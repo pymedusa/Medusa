@@ -1,21 +1,10 @@
 # coding=utf-8
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Generic Provider."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 from base64 import b16encode, b32decode
 from collections import defaultdict
@@ -27,7 +16,6 @@ from random import shuffle
 from medusa import (
     app,
     config,
-    logger,
     tv,
     ui,
 )
@@ -46,13 +34,13 @@ from medusa.helper.common import (
     replace_extension,
     sanitize_filename,
 )
-from medusa.helper.exceptions import ex
 from medusa.helpers import (
     download_file,
     get_url,
     make_session,
 )
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
@@ -62,6 +50,9 @@ from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 
 from requests.utils import add_dict_to_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -131,8 +122,8 @@ class GenericProvider(object):
                     'Referer': '/'.join(url.split('/')[:3]) + '/'
                 })
 
-            logger.log('Downloading {result} from {provider} at {url}'.format
-                       (result=result.name, provider=self.name, url=url))
+            log.info('Downloading {result} from {provider} at {url}',
+                     {'result': result.name, 'provider': self.name, 'url': url})
 
             if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
                 filename = replace_extension(filename, GenericProvider.TORRENT)
@@ -143,11 +134,13 @@ class GenericProvider(object):
                              hooks={'response': self.get_url_hook}, verify=verify):
 
                 if self._verify_download(filename):
-                    logger.log('Saved {result} to {location}'.format(result=result.name, location=filename))
+                    log.info('Saved {result} to {location}',
+                             {'result': result.name, 'location': filename})
                     return True
 
         if urls:
-            logger.log('Failed to download any results for {result}'.format(result=result.name), logger.WARNING)
+            log.warning('Failed to download any results for {result}',
+                        {'result': result.name})
 
         return False
 
@@ -255,7 +248,7 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u"{error}".format(error=error), logger.DEBUG)
+                log.debug(error)
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
@@ -273,19 +266,18 @@ class GenericProvider(object):
                 if not (search_result.show.air_by_date or search_result.show.sports):
                     if search_mode == 'sponly':
                         if search_result.parsed_result.episode_numbers:
-                            logger.log(
-                                'This is supposed to be a season pack search but the result %s is not a valid '
-                                'season pack, skipping it' % search_result.name, logger.DEBUG
+                            log.debug(
+                                'This is supposed to be a season pack search but the result {0} is not a valid '
+                                'season pack, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
                         elif not [ep for ep in episodes if
                                   search_result.parsed_result.season_number == (ep.season, ep.scene_season)
                                   [ep.show.is_scene]]:
-                            logger.log(
-                                'This season result %s is for a season we are not searching for, '
-                                'skipping it' % search_result.name,
-                                logger.DEBUG
+                            log.debug(
+                                'This season result {0} is for a season we are not searching for, '
+                                'skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -293,18 +285,18 @@ class GenericProvider(object):
                         # I'm going to split these up for better readability
                         # Check if at least got a season parsed.
                         if search_result.parsed_result.season_number is None:
-                            logger.log(
-                                "The result %s doesn't seem to have a valid season that we are currently trying to "
-                                "snatch, skipping it" % search_result.name, logger.DEBUG
+                            log.debug(
+                                "The result {0} doesn't seem to have a valid season that we are currently trying to "
+                                "snatch, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
 
                         # Check if we at least got some episode numbers parsed.
                         if not search_result.parsed_result.episode_numbers:
-                            logger.log(
-                                "The result %s doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it" % search_result.name, logger.DEBUG
+                            log.debug(
+                                "The result {0} doesn't seem to match an episode that we are currently trying to "
+                                "snatch, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -315,9 +307,9 @@ class GenericProvider(object):
                                 (searched_episode.episode, searched_episode.scene_episode)
                                 [searched_episode.show.is_scene] in
                                 search_result.parsed_result.episode_numbers]:
-                            logger.log(
-                                "The result %s doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it" % search_result.name, logger.DEBUG
+                            log.debug(
+                                "The result {0} doesn't seem to match an episode that we are currently trying to "
+                                "snatch, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -332,9 +324,9 @@ class GenericProvider(object):
                     search_result.same_day_special = False
 
                     if not search_result.parsed_result.is_air_by_date:
-                        logger.log(
-                            "This is supposed to be a date search but the result %s didn't parse as one, "
-                            "skipping it" % search_result.name, logger.DEBUG
+                        log.debug(
+                            "This is supposed to be a date search but the result {0} didn't parse as one, "
+                            "skipping it", search_result.name
                         )
                         search_result.result_wanted = False
                         continue
@@ -357,9 +349,9 @@ class GenericProvider(object):
                                 search_result.actual_episodes = [int(sql_results[0][b'episode'])]
                                 search_result.same_day_special = True
                         elif len(sql_results) != 1:
-                            logger.log(
-                                "Tried to look up the date for the episode %s but the database didn't return proper "
-                                "results, skipping it" % search_result.name, logger.WARNING
+                            log.warning(
+                                "Tried to look up the date for the episode {0} but the database didn't return proper "
+                                "results, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -378,17 +370,17 @@ class GenericProvider(object):
                 cl.append(cache_result)
 
             if not search_result.result_wanted:
-                logger.log("We aren't interested in this result: %s with url: %s"
-                           % (search_result.name, search_result.url), logger.DEBUG)
+                log.debug("We aren't interested in this result: {0} with url: {1}",
+                          search_result.name, search_result.url)
                 continue
 
             if not manual_search:
                 # The second check, will loop through actual_episodes and check if there's anything useful in it.
                 if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
-                    logger.log('Ignoring result %s.' % search_result.name, logger.DEBUG)
+                    log.debug('Ignoring result {0}', search_result.name)
                     continue
 
-            logger.log('Found result %s at %s' % (search_result.name, search_result.url), logger.DEBUG)
+            log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
             episode_object = search_result.create_episode_object()
             # result = self.get_result(episode_object, search_result)
@@ -396,14 +388,14 @@ class GenericProvider(object):
 
             if not episode_object:
                 episode_number = SEASON_RESULT
-                logger.log('Separating full season result to check for later', logger.DEBUG)
+                log.debug('Separating full season result to check for later')
             elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
-                logger.log('Single episode result.', logger.DEBUG)
+                log.debug('Single episode result.')
             else:
                 episode_number = MULTI_EP_RESULT
-                logger.log('Separating multi-episode result to check for later - result contains episodes: {0}'.format
-                           (search_result.parsed_result.episode_numbers), logger.DEBUG)
+                log.debug('Separating multi-episode result to check for later - result contains episodes: {0}',
+                          search_result.parsed_result.episode_numbers)
 
             if episode_number not in results:
                 results[episode_number] = [search_result]
@@ -435,11 +427,10 @@ class GenericProvider(object):
     @staticmethod
     def get_url_hook(response, **kwargs):
         """Get URL hook."""
-        logger.log('{} URL: {} [Status: {}]'.format
-                   (response.request.method, response.request.url, response.status_code), logger.DEBUG)
+        log.debug('{0} URL: {1} [Status: {2}]', response.request.method, response.request.url, response.status_code)
 
         if response.request.method == 'POST':
-            logger.log('With post data: {}'.format(response.request.body), logger.DEBUG)
+            log.debug('With post data: {0}', response.request.body)
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
@@ -621,13 +612,13 @@ class GenericProvider(object):
                     info_hash = b16encode(b32decode(info_hash)).upper()
 
                 if not info_hash:
-                    logger.log('Unable to extract torrent hash from magnet: %s' % ex(result.url), logger.ERROR)
+                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
                     return urls, filename
 
                 urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
                 shuffle(urls)
             except Exception:
-                logger.log('Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)
+                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
                 return urls, filename
         else:
             urls = [result.url]
