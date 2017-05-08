@@ -1,32 +1,19 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for HDBits."""
+
 from __future__ import unicode_literals
 
-import json
+import logging
 
-from medusa import (
-    logger,
-    tv,
-)
-from medusa.helper.exceptions import AuthException
+from medusa import tv
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urlencode, urljoin
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class HDBitsProvider(TorrentProvider):
@@ -44,50 +31,75 @@ class HDBitsProvider(TorrentProvider):
         self.url = 'https://hdbits.org'
         self.urls = {
             'search': urljoin(self.url, '/api/torrents'),
-            'rss': urljoin(self.url, '/api/torrents'),
-            'download': urljoin(self.url, '/download.php'),
+            'download': urljoin(self.url, '/download.php?{0}'),
         }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK']
 
         # Miscellaneous Options
+        self.session.hooks.update({'response': self.get_url_hook})  # Enable URL logging
 
         # Torrent Stats
+        self.minseed = None
+        self.minleech = None
 
         # Cache
-        self.cache = HDBitsCache(self, min_time=15)  # only poll HDBits every 15 minutes max
+        self.cache = tv.Cache(self, min_time=10)  # Only poll HDBits every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 
-        :param search_strings: A dict with mode (key) and the search value (value)
+        :param search_strings: A dict with {mode: search value}
         :param age: Not used
         :param ep_obj: Not used
         :returns: A list of search results (structure)
         """
-        # FIXME
         results = []
 
-        logger.log('Search string: {0}'.format(search_strings), logger.DEBUG)
+        log.debug('Search strings {0}', search_strings)
 
         self._check_auth()
 
-        response = self.get_url(self.urls['search'], post_data=search_strings, returns='response')
-        if not response or not response.content:
-            logger.log('No data returned from provider', logger.DEBUG)
-            return results
+        # Search Params
+        search_params = {
+            'username': self.username,
+            'passkey': self.passkey,
+            'category': [
+                # 1,  # Movie
+                2,  # TV
+                3,  # Documentary
+                # 4,  # Music
+                5,  # Sport
+                # 6,  # Audio Track
+                # 7,  # XXX
+                # 8,  # Misc/Demo
+            ],
+        }
 
-        if not self._check_auth_from_data(response):
-            return results
+        for mode in search_strings:
+            log.debug('Search mode {0}', mode)
 
-        try:
-            jdata = response.json()
-        except ValueError:  # also catches JSONDecodeError if simplejson is installed
-            logger.log('No data returned from provider', logger.DEBUG)
-            return results
+            for search_string in search_strings[mode]:
 
-        results += self.parse(jdata, None)
+                if mode != 'RSS':
+                    log.debug('Search string {search}', {'search': search_string})
+                    search_params['search'] = search_string
+                response = self.session.post(self.urls['search'], json=search_params)
+                if not response or not response.content:
+                    log.debug('No data returned from provider')
+                    continue
+
+                if not self._check_auth_from_data(response):
+                    return results
+                try:
+                    jdata = response.json()
+                except ValueError:  # also catches JSONDecodeError if simplejson is installed
+                    log.debug('No data returned from provider')
+                    continue
+
+                results += self.parse(jdata, None)
 
         return results
 
@@ -103,116 +115,69 @@ class HDBitsProvider(TorrentProvider):
         items = []
 
         torrent_rows = data.get('data')
+
         if not torrent_rows:
-            logger.log("Resulting JSON from provider isn't correct, not parsing it", logger.ERROR)
+            log.debug('Data returned from provider does not contain any torrents')
+            return items
 
+        # Skip column headers
         for row in torrent_rows:
-            items.append(row)
+            title = row.get('name', '')
+            torrent_id = row.get('id', '')
+            download_url = self.urls['download'].format(urlencode({'id': torrent_id, 'passkey': self.passkey}))
+            if not all([title, download_url]):
+                continue
+            seeders = row.get('seeders', 1)
+            leechers = row.get('leechers', 0)
 
-        # FIXME SORTING
+            # Filter unseeded torrent
+            if seeders < min(self.minseed, 1):
+                log.debug(
+                    "Discarding torrent because it doesn't meet the"
+                    " minimum seeders: {0}. Seeders: {1}",
+                    title, seeders)
+                continue
+
+            size = row.get('size') or -1
+            pubdate = row.get('added', '')
+
+            item = {
+                'title': title,
+                'link': download_url,
+                'size': size,
+                'seeders': seeders,
+                'leechers': leechers,
+                'pubdate': pubdate,
+            }
+            log.debug(
+                'Found result: {title} with {x} seeders'
+                ' and {y} leechers', {
+                    'title': title,
+                    'x': seeders,
+                    'y': leechers
+                }
+            )
+
+            items.append(item)
+
         return items
 
     def _check_auth(self):
 
         if not self.username or not self.passkey:
-            raise AuthException('Your authentication credentials for ' + self.name + ' are missing, check your config.')
+            log.warning('Your authentication credentials for {provider} are missing,'
+                        ' check your config.', {'provider': self.name})
+            return False
 
         return True
 
     def _check_auth_from_data(self, parsed_json):
-
+        """Check that we are authenticated."""
         if 'status' in parsed_json and 'message' in parsed_json:
             if parsed_json.get('status') == 5:
-                logger.log('Invalid username or password. Check your settings', logger.WARNING)
-
+                log.warning('Invalid username or password. Check your settings')
+                return False
         return True
-
-    def _get_title_and_url(self, item):
-        title = item.get('name', '').replace(' ', '.')
-        url = self.urls['download'] + '?' + urlencode({'id': item['id'], 'passkey': self.passkey})
-
-        return title, url
-
-    def _get_season_search_strings(self, ep_obj):
-        season_search_string = [self._make_post_data_json(show=ep_obj.show, season=ep_obj)]
-        return season_search_string
-
-    def _get_episode_search_strings(self, ep_obj, add_string=''):
-        episode_search_string = [self._make_post_data_json(show=ep_obj.show, episode=ep_obj)]
-        return episode_search_string
-
-    def _make_post_data_json(self, show=None, episode=None, season=None, search_term=None):
-        post_data = {
-            'username': self.username,
-            'passkey': self.passkey,
-            'category': [2],
-            # TV Category
-        }
-
-        if episode:
-            if show.air_by_date:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'episode': str(episode.airdate).replace('-', '|')
-                }
-            elif show.sports:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'episode': episode.airdate.strftime('%b')
-                }
-            elif show.anime:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'episode': "{0}".format(episode.scene_absolute_number)
-                }
-            else:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': episode.scene_season,
-                    'episode': episode.scene_episode
-                }
-
-        if season:
-            if show.air_by_date or show.sports:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': str(season.airdate)[:7],
-                }
-            elif show.anime:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': "{0}".format(season.scene_absolute_number),
-                }
-            else:
-                post_data['tvdb'] = {
-                    'id': show.indexerid,
-                    'season': season.scene_season,
-                }
-
-        if search_term:
-            post_data['search'] = search_term
-
-        return json.dumps(post_data)
-
-
-class HDBitsCache(tv.Cache):
-    """Provider cache class."""
-
-    def _get_rss_data(self):
-        """Get RSS data."""
-        self.search_params = None  # HDBits cache does not use search_params so set it to None
-        results = []
-
-        try:
-            parsed_json = self.provider.get_url(self.provider.urls['rss'],
-                                                post_data=self.provider._make_post_data_json(), returns='json')
-
-            if self.provider._check_auth_from_data(parsed_json):
-                results = parsed_json['data']
-        except Exception:
-            pass
-
-        return {'entries': results}
 
 
 provider = HDBitsProvider()

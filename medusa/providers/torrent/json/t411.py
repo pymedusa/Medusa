@@ -51,7 +51,7 @@ class T411Provider(TorrentProvider):
         self.tokenLastUpdate = None
 
         # URLs
-        self.url = 'https://api.t411.ai'
+        self.url = 'https://api.t411.al'
         self.urls = {
             'search': urljoin(self.url, 'torrents/search/{search}'),
             'rss': urljoin(self.url, 'torrents/top/today'),

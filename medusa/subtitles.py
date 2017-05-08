@@ -787,7 +787,7 @@ class SubtitlesFinder(object):
     """
 
     def __init__(self):
-        """Default constructor."""
+        """Initialize class with the default constructor."""
         self.amActive = False
 
     @staticmethod
@@ -811,6 +811,9 @@ class SubtitlesFinder(object):
 
         run_post_process = False
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             for filename in sorted(files):
                 # Delete unwanted subtitles before downloading new ones
                 delete_unwanted_subtitles(root, filename)
@@ -872,7 +875,7 @@ class SubtitlesFinder(object):
             rar_files = [rar_file for rar_file in files if is_rar_file(rar_file)]
             if rar_files and app.UNPACK:
                 video_files = [video_file for video_file in files if is_media_file(video_file)]
-                if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
+                if u'_UNPACK' not in root.upper() and (not video_files or root == app.TV_DOWNLOAD_DIR):
                     logger.debug(u'Found rar files in post-process folder: %s', rar_files)
                     process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
             elif rar_files and not app.UNPACK:

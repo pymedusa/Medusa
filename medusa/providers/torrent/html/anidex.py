@@ -1,57 +1,53 @@
 # coding=utf-8
 
-"""Provider code for Pretome."""
+"""Provider code for AniDex."""
 
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
+
+from dateutil import parser
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import (
-    convert_size,
-    try_int,
-)
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class PretomeProvider(TorrentProvider):
-    """Pretome Torrent provider."""
+class AniDexProvider(TorrentProvider):
+    """AniDex Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Pretome')
+        super(self.__class__, self).__init__('AniDex')
 
         # Credentials
-        self.username = None
-        self.password = None
-        self.pin = None
+        self.public = True
 
         # URLs
-        self.url = 'https://pretome.info'
+        self.url = 'https://anidex.info'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php'),
+            'search': urljoin(self.url, '/ajax/page.ajax.php'),
         }
 
-        # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        # Miscellaneous Options
+        self.headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self)
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -63,14 +59,13 @@ class PretomeProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        if not self.login():
-            return results
 
-        # Search Params
         search_params = {
-            'search': '',
-            'st': 1,
-            'cat[]': 7,
+            'page': 'torrents',
+            'category': 0,
+            'filename': '',
+            'limit': 50,
+            'offset': 0,
         }
 
         for mode in search_strings:
@@ -82,7 +77,8 @@ class PretomeProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_params['search'] = search_string
+                    search_params.update({'filename': '{0}'.format(search_string)})
+
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -104,27 +100,31 @@ class PretomeProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
+            table_header = html.find('thead')
+
             # Continue only if at least one release is found
-            empty = html.find('h2', text='No .torrents fit this filter criteria')
-            if empty:
+            if not table_header:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            torrent_table = html.find('table', attrs={'style': 'border: none; width: 100%;'})
-            torrent_rows = torrent_table('tr', class_='browse') if torrent_table else []
+            table_spans = table_header.find_all('span')
+            # Skip 'Likes' to have the same amount of cells and labels
+            labels = [label.get('title') for label in table_spans if label.get('title') != 'Likes']
 
+            torrent_rows = html.find('tbody').find_all('tr')
             for row in torrent_rows:
-                cells = row('td')
+                cells = row.find_all('td')
 
                 try:
-                    title = cells[1].find('a').get('title')
-                    torrent_url = cells[2].find('a').get('href')
-                    download_url = urljoin(self.url, torrent_url)
-                    if not all([title, torrent_url]):
+                    title = cells[labels.index('Filename')].span.get_text()
+                    download_url = cells[labels.index('Torrent')].a.get('href')
+                    if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(cells[9].get_text(), 1)
-                    leechers = try_int(cells[10].get_text())
+                    download_url = urljoin(self.url, download_url)
+
+                    seeders = cells[labels.index('Seeders')].get_text()
+                    leechers = cells[labels.index('Leechers')].get_text()
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -134,8 +134,11 @@ class PretomeProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = self._norm_size(cells[7].get_text(strip=True))
+                    torrent_size = cells[labels.index('File size')].get_text()
                     size = convert_size(torrent_size) or -1
+
+                    date = cells[labels.index('Age')].get('title')
+                    pubdate = parser.parse(date)
 
                     item = {
                         'title': title,
@@ -143,7 +146,7 @@ class PretomeProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -156,40 +159,5 @@ class PretomeProvider(TorrentProvider):
 
         return items
 
-    def login(self):
-        """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
 
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'login_pin': self.pin,
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
-
-        if re.search('Username or password incorrect', response.text):
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        return True
-
-    def _check_auth(self):
-        if not all([self.username, self.password, self.pin]):
-            log.warning('Invalid username, password or pin. Check your settings')
-
-        return True
-
-    @staticmethod
-    def _norm_size(size_string):
-        """Normalize the size from the parsed string."""
-        if not size_string:
-            return size_string
-        return re.sub(r'(?P<unit>[A-Z]+)', ' \g<unit>', size_string)
-
-
-provider = PretomeProvider()
+provider = AniDexProvider()

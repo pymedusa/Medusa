@@ -614,3 +614,10 @@ PROPERS_INTERVAL_LABELS = {'daily': '24 hours',
                            '45m': '45 mins',
                            '15m': '15 mins'
                            }
+
+# Plex fallback settings
+FALLBACK_PLEX_ENABLE = True
+FALLBACK_PLEX_NOTIFICATIONS = True
+FALLBACK_PLEX_TIMEOUT = 3
+FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
+TVDB_API_KEY = '0629B785CE550C8D'
