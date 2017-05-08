@@ -14,20 +14,14 @@ from imdbpie import imdbpie
 from medusa import app, helpers
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import RecommendedShow
 
 from requests import RequestException
 from simpleanidb import Anidb
 
-<<<<<<< HEAD
-from .recommended import RecommendedShow
-from ... import app, helpers, logger
-from ...indexers.indexer_config import INDEXER_TVDBV2
-from ...session.core import MedusaSession
-=======
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
->>>>>>> remotes/origin/develop
 
 
 class ImdbPopular(object):
