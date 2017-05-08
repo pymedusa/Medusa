@@ -61,7 +61,7 @@ def update_network_dict():
         logger.log('Unable to build the network dictionary. Aborting update. Error: {error}'.format
                    (error=error), logger.WARNING)
         return
-    
+
     # Don't continue because if empty dict, var `existing` be false for all networks, thus deleting all
     if not remote_networks:
         logger.log(u'Unable to update network timezones as fetched network dict is empty', logger.WARNING)
