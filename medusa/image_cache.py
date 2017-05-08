@@ -156,7 +156,7 @@ class ImageCache(object):
             try:
                 os.remove(image_path)
             except OSError as e:
-                logger.log("Could't delete file: {image_path}. Please manually delete it. Error: {error_msg}".format
+                logger.log("Couldn't delete file: {image_path}. Please manually delete it. Error: {error_msg}".format
                            (image_path=image_path, error_msg=e), logger.WARNING)
             return
 
