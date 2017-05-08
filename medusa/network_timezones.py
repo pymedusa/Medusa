@@ -50,16 +50,21 @@ def update_network_dict():
         load_network_dict()
         return
 
-    d = {}
+    remote_networks = {}
     try:
         for line in response.text.splitlines():
             (key, val) = line.strip().rsplit(u':', 1)
             if key is None or val is None:
                 continue
-            d[key] = val
+            remote_networks[key] = val
     except (IOError, OSError) as error:
         logger.log('Unable to build the network dictionary. Aborting update. Error: {error}'.format
                    (error=error), logger.WARNING)
+        return
+    
+    # Don't continue because if empty dict, var `existing` be false for all networks, thus deleting all
+    if not remote_networks:
+        logger.log(u'Unable to update network timezones as fetched network dict is empty', logger.WARNING)
         return
 
     cache_db_con = db.DBConnection('cache.db')
@@ -67,14 +72,7 @@ def update_network_dict():
     network_list = dict(cache_db_con.select('SELECT * FROM network_timezones;'))
 
     queries = []
-    remote_network_list = iteritems(d)
-
-    # Don't continue because if empty list, var `existing` be false for all networks, thus deleting all
-    if not remote_network_list:
-        logger.log(u'Unable to update network timezones as fetched network list is empty.', logger.WARNING)
-        return
-
-    for network, timezone in remote_network_list:
+    for network, timezone in iteritems(remote_networks):
         existing = network in network_list
         if not existing:
             queries.append(['INSERT OR IGNORE INTO network_timezones VALUES (?,?);', [network, timezone]])
