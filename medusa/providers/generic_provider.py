@@ -45,7 +45,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.scene_exceptions import get_scene_exceptions
-from medusa.session.custom import PolicedSession
+from medusa.session.custom import MedusaSession
 from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
@@ -89,7 +89,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = PolicedSession(hooks=[cloudflare])
+        self.session = MedusaSession(hooks=[cloudflare])
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -438,8 +438,8 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
-        logger.log('providers.generic_provider.get_url() is deprecated, '
-                   'please rewrite your provider to make use of the PolicedSession session class.')
+        log.info('providers.generic_provider.get_url() is deprecated, '
+                 'please rewrite your provider to make use of the MedusaSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
 
         if not post_data:

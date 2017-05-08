@@ -34,7 +34,7 @@ class BaseSession(requests.Session):
 
 
 class MedusaSession(BaseSession):
-    """Base Session object.
+    """Medusa default Session object.
 
     This is a Medusa base session, used to create and configure a session object with Medusa specific base
     values.

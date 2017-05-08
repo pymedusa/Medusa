@@ -31,7 +31,7 @@ from medusa.indexers.indexer_config import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
-from medusa.session.custom import PolicedSession
+from medusa.session.custom import MedusaSession
 
 from requests.compat import urljoin
 import validators
@@ -85,7 +85,7 @@ class NewznabProvider(NZBProvider):
 
         # self.enable_daily_request_reserve = bool(daily_reserve_calls)
 
-        self.session = PolicedSession({'enable_api_hit_cooldown': enable_api_hit_cooldown,
+        self.session = MedusaSession({'enable_api_hit_cooldown': enable_api_hit_cooldown,
                                       'daily_reserve_calls': daily_reserve_calls})
 
         self.session.enable_api_hit_cooldown = self.enable_api_hit_cooldown = enable_api_hit_cooldown
