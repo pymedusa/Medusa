@@ -1066,7 +1066,7 @@ def real_path(path):
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
     indexer_lang = show.lang
 
     try:
@@ -1082,7 +1082,8 @@ def validate_show(show, season=None, episode=None):
             return show.indexer_api
 
         return show.indexer_api[show.indexerid][season][episode]
-    except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
+    except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
+        log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
         pass
 
 
