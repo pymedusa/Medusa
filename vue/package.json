@@ -5,7 +5,8 @@
         "test": "xo",
         "coverage": "nyc ava",
         "watchify": "watchify -p browserify-hmr src/main.js -o dist/build.js",
-        "build": "cross-env NODE_ENV=production browserify -g envify src/main.js | uglifyjs -c warnings=false -m > dist/build.js"
+        "build": "cross-env NODE_ENV=production browserify -g envify src/main.js | uglifyjs -c warnings=false -m > dist/build.js",
+        "update:snapshots": "ava --update-snapshots"
     },
     "dependencies": {
         "axios": "^0.15.3",
@@ -35,6 +36,7 @@
         "babel-plugin-transform-runtime": "^6.23.0",
         "babel-preset-stage-2": "^6.24.1",
         "bson": "^1.0.4",
+        "eslint-plugin-vue": "^2.0.1",
         "nyc": "^10.3.0",
         "require-extension-hooks": "^0.2.0",
         "transform-runtime": "^0.0.0",
@@ -63,6 +65,7 @@
             "vue"
         ],
         "extensions": [
+            "js",
             "vue"
         ]
     },

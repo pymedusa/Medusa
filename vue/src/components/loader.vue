@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
     <div class="spinner">
         <div class="rect1"></div>
         <div class="rect2"></div>
@@ -10,7 +10,7 @@
 
 <script>
 // Borrowed with <3 from http://tobiasahlin.com/spinkit/
-export default  {
+export default {
     name: 'loader',
     props: [
         'type' // @TODO: Add all of the spinner types
