@@ -4,7 +4,7 @@
     "scripts": {
         "test": "xo",
         "coverage": "nyc ava",
-        "watchify": "watchify -vd -p browserify-hmr -e src/main.js -o dist/build.js",
+        "watchify": "watchify -p browserify-hmr src/main.js -o dist/build.js",
         "build": "cross-env NODE_ENV=production browserify -g envify src/main.js | uglifyjs -c warnings=false -m > dist/build.js"
     },
     "dependencies": {
@@ -33,6 +33,7 @@
     "devDependencies": {
         "ava": "^0.19.1",
         "babel-plugin-transform-runtime": "^6.23.0",
+        "babel-preset-stage-2": "^6.24.1",
         "bson": "^1.0.4",
         "nyc": "^10.3.0",
         "require-extension-hooks": "^0.2.0",
@@ -57,6 +58,12 @@
         "envs": [
             "browser",
             "es6"
+        ],
+        "plugins": [
+            "vue"
+        ],
+        "extensions": [
+            "vue"
         ]
     },
     "ava": {
@@ -73,7 +80,8 @@
     },
     "babel": {
         "presets": [
-            "es2015"
+            "es2015",
+            "stage-2"
         ],
         "plugins": [
             "transform-runtime"
