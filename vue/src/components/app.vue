@@ -7,7 +7,6 @@
 
 <script>
 import loader from './loader.vue';
-import {getShows} from '../store/getters';
 
 export default {
     name: 'App',
@@ -23,11 +22,6 @@ export default {
     },
     components: {
         loader
-    },
-    vuex: {
-        getters: {
-            shows: getShows
-        }
     }
 };
 </script>

@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import {mapActions, mapGetters} from 'vuex';
 
 export default {
     name: 'Home',
@@ -21,7 +21,7 @@ export default {
                 id: '',
                 name: ''
             }
-        }
+        };
     },
     methods: {
         ...mapActions([
@@ -39,10 +39,10 @@ export default {
         ...mapGetters({
             shows: 'allShows'
         }),
-        ...mapGetters[
+        ...mapGetters([
             'showByName',
             'showById'
-        ]
+        ])
     }
 };
 </script>

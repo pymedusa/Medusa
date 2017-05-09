@@ -2,7 +2,8 @@
     "name": "Medusa",
     "private": true,
     "scripts": {
-        "test": "xo",
+        "test": "yarn lint && yarn coverage",
+        "lint": "xo",
         "coverage": "nyc ava",
         "watchify": "watchify -p browserify-hmr src/main.js -o dist/build.js",
         "build": "cross-env NODE_ENV=production browserify -g envify src/main.js | uglifyjs -c warnings=false -m > dist/build.js",

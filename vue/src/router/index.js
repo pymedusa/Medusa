@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import VueRouter from 'vue-router'
+import VueRouter from 'vue-router';
 
 import HomeComponent from '../components/home.vue';
 import NotFoundComponent from '../components/not-found.vue';
