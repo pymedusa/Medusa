@@ -162,7 +162,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            log.log("Discarding torrent because it doesn't meet the"
+                            log.debug("Discarding torrent because it doesn't meet the"
                                     " minimum seeders: {0}. Seeders: {1}",
                                     title, seeders)
                         continue
