@@ -4,8 +4,8 @@
 
 from __future__ import unicode_literals
 
-import logging
 import datetime
+import logging
 import re
 import traceback
 
@@ -82,7 +82,7 @@ class SDBitsProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            log.debug('Search mode: {0}', (mode), log.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
