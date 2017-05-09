@@ -23,7 +23,7 @@ from requests.compat import urljoin
 
 import validators
 
-log = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
