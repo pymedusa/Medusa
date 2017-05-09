@@ -1,4 +1,4 @@
-import * as types from './mutation-types'
+import * as types from './mutation-types';
 
 const addShow = ({commit}, show) => {
     commit(types.ADD_SHOW, {
