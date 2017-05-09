@@ -196,8 +196,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
              {'path': os.path.join(self.options['vue_root'], 'dist')}),
 
             # vue index.html
-            (r'{base}/vue/(.*)'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
-             {'path': os.path.join(self.options['vue_root'], 'index.html')}),
+            (r'{base}/vue/.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
     def _get_webui_routes(self):
