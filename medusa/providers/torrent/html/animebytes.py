@@ -297,7 +297,7 @@ class AnimeBytes(TorrentProvider):
         # Get csrf_index and csrf_token
         csrf_response = self.get_url(self.urls['login'], returns='response')
         if not csrf_response or not csrf_response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         with BS4Parser(csrf_response.text, 'html5lib') as html:
@@ -305,7 +305,7 @@ class AnimeBytes(TorrentProvider):
             csrf_token = html.find('input', {'name': '_CSRF_TOKEN'}).get('value')
 
         if not all([csrf_index, csrf_token]):
-            logger.log("Unable to get csrf_index and csrf_token, can't login", logger.WARNING)
+            log.warning("Unable to get csrf_index and csrf_token, can't login")
             return False
 
         login_params = {
