@@ -40,6 +40,7 @@
         "nyc": "^10.3.0",
         "require-extension-hooks": "^0.2.0",
         "transform-runtime": "^0.0.0",
+        "vuex": "^2.3.1",
         "watchify": "^3.4.0",
         "xo": "^0.18.1"
     },

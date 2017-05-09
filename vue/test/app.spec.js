@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import test from 'ava';
-import App from '../src/app.vue';
+import App from '../src/components/app.vue';
 import HomeComponent from '../src/components/home.vue';
 
 test('App should render', t => {
