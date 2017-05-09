@@ -156,9 +156,6 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             # Web calendar handler (Needed because option Unprotected calendar)
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
-            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
-             {'path': self.options['vue_root'], 'default_filename': 'index.html'}),
-
             # webui handlers
         ] + self._get_webui_routes())
 
@@ -192,7 +189,15 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root})
+             {'path': self.video_root}),
+
+            # vue dist
+            (r'{base}/vue/dist/(.*)'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'dist')}),
+
+            # vue index.html
+            (r'{base}/vue/(.*)'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'index.html')}),
         ])
 
     def _get_webui_routes(self):
