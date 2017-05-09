@@ -101,7 +101,7 @@ class RarbgProvider(TorrentProvider):
             else:
                 search_params['sort'] = self.sorting if self.sorting else 'seeders'
                 search_params['mode'] = 'search'
-                search_params['search_tvdb'] = self._get_tvdb_id() if ep_obj else None
+                search_params['search_tvdb'] = self._get_tvdb_id()
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
