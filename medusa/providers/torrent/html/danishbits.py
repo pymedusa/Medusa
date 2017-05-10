@@ -170,8 +170,8 @@ class DanishbitsProvider(TorrentProvider):
                         'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        log.log('Found result: {0} with {1} seeders and {2} leechers',
-                                title, seeders, leechers)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
