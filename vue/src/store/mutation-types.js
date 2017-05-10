@@ -1,2 +1,2 @@
-export const RECEIVE_SHOW = 'RECEIVE_SHOW';
-export const RECEIVE_SHOWS = 'RECEIVE_SHOWS';
+export const ADD_SERIES = 'ADD_SERIES';
+export const RECEIVE_SERIES = 'RECEIVE_SERIES';

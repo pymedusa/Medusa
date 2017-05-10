@@ -1,9 +1,9 @@
 import * as types from './mutation-types';
 
-const addShow = ({commit}, show) => {
-    commit(types.ADD_SHOW, {
-        id: show.id
+const addSeries = ({commit}, series) => {
+    commit(types.ADD_SERIES, {
+        id: series.id
     });
 };
 
-export default addShow;
+export default addSeries;
