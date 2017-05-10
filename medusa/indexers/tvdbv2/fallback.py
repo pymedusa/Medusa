@@ -5,7 +5,10 @@ import functools
 import logging
 
 from medusa import app, ui
-from medusa.indexers.indexer_exceptions import IndexerUnavailable
+from medusa.indexers.indexer_exceptions import (
+    IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete, IndexerShowNotFound,
+    IndexerShowNotFoundInLanguage, IndexerUnavailable
+)
 
 from tvdbapiv2.auth.tvdb import TVDBAuth
 from tvdbapiv2.exceptions import ApiException
@@ -105,6 +108,10 @@ class PlexFallback(object):
         try:
             # Run api request
             return self.func(*args, **kwargs)
+        # Valid exception, which we don't want to fall back on.
+        except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowIncomplete,
+                IndexerShowNotFound, IndexerShowNotFoundInLanguage):
+            raise
         except ApiException as e:
             logger.warning("could not connect to TheTvdb.com, reason '%s'", e.reason)
         except IndexerUnavailable as e:
