@@ -95,7 +95,7 @@ class TVChaosUKProvider(TorrentProvider):
                 search_params['keywords'] = search_string
                 response = self.get_url(self.urls['search'], post_data=search_params, returns='response')
                 if not response or not response.text:
-                    log.d('No data returned from provider')
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode, keywords=search_string)
