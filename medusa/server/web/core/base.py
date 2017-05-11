@@ -418,14 +418,6 @@ class AuthenticatedStaticFileHandler(StaticFileHandler):
             return self.get_secure_cookie(app.SECURE_TOKEN)
         return True
 
+    @authenticated
     def get(self, *args, **kwargs):
-        if not self.get_current_user():
-            if self.request.method in ("GET", "HEAD"):
-                url = self.get_login_url()
-                if "?" not in url:
-                    next_url = self.request.uri
-                    url += "?" + urlencode(dict(next=next_url))
-                self.redirect(url)
-                return
-            raise HTTPError(403)
         super(AuthenticatedStaticFileHandler, self).get(*args, **kwargs)
