@@ -1,32 +1,17 @@
 # coding=utf-8
-# Author: p0psicles
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """TVDB2 api module."""
 
 import logging
 from collections import OrderedDict
 
 from medusa.app import TVDB_API_KEY
-
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
                                                 IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
@@ -34,8 +19,8 @@ from requests.exceptions import RequestException
 from tvdbapiv2 import ApiClient, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
-
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 API_BASE_TVDB = 'https://api.thetvdb.com'
 
@@ -58,7 +43,7 @@ class TVDBv2(BaseIndexer):
         self.config['api_base_url'] = API_BASE_TVDB
 
         # Configure artwork prefix url
-        self.config['artwork_prefix'] = '%(base_url)s/banners/%%s' % self.config
+        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url=self.config['base_url'])
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
         # client_id = ''  # (optional! Only required for the /user routes)
@@ -128,12 +113,11 @@ class TVDBv2(BaseIndexer):
                         else:
                             return_dict[attribute] = value
 
-                    except Exception as e:
-                        logger.warning('Exception trying to parse attribute: %s, with exception: %s', attribute,
-                                       e.message)
+                    except Exception as error:
+                        log.warning('Exception trying to parse attribute: {0}, with exception: {1!r}', attribute, error)
                 parsed_response.append(return_dict)
             else:
-                logger.debug('Missing attribute map, cant parse to dict')
+                log.debug('Missing attribute map, cant parse to dict')
 
         return parsed_response if len(parsed_response) != 1 else parsed_response[0]
 
@@ -145,17 +129,18 @@ class TVDBv2(BaseIndexer):
         """
         try:
             results = self.config['session'].search_api.search_series_get(name=show, accept_language=request_language)
-        except ApiException as e:
-            if e.status == 401:
+        except ApiException as error:
+            if error.status == 401:
                 raise IndexerAuthFailed(
-                    'Authentication failed, possible bad api key. reason: {reason} ({status})'
-                    .format(reason=e.reason, status=e.status)
+                    'Authentication failed, possible bad api key. reason: {reason} ({status})'.format(
+                        reason=error.reason, status=error.status
+                    )
                 )
             raise IndexerShowNotFound(
-                'Show search failed in getting a result with reason: %s' % e.reason
+                'Show search failed in getting a result with reason: {0}'.format(error.reason)
             )
-        except RequestException as e:
-            raise IndexerException('Show search failed in getting a result with error: %s' % e.message)
+        except RequestException as error:
+            raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
 
         if results:
             return results
@@ -171,7 +156,7 @@ class TVDBv2(BaseIndexer):
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
         series = series.encode('utf-8')
-        logger.debug('Searching for show %s', [series])
+        log.debug('Searching for show: {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
 
@@ -196,21 +181,22 @@ class TVDBv2(BaseIndexer):
         """
         results = None
         if tvdbv2_id:
-            logger.debug('Getting all show data for %s', [tvdbv2_id])
+            log.debug('Getting all show data for {0}', tvdbv2_id)
             try:
                 results = self.config['session'].series_api.series_id_get(tvdbv2_id, accept_language=request_language)
-            except ApiException as e:
-                if e.status == 401:
+            except ApiException as error:
+                if error.status == 401:
                     raise IndexerAuthFailed(
                         'Authentication failed, possible bad api key. reason: {reason} ({status})'
-                        .format(reason=e.reason, status=e.status)
+                        .format(reason=error.reason, status=error.status)
                     )
                 raise IndexerShowNotFound(
-                    'Show search failed in getting a result with reason: {reason} ({status})'
-                    .format(reason=e.reason, status=e.status)
+                    'Show search failed in getting a result with reason: {reason} ({status})'.format(
+                        reason=error.reason, status=error.status
+                    )
                 )
-            except RequestException as e:
-                raise IndexerException('Show search failed in getting a result with error: %r' % e)
+            except RequestException as error:
+                raise IndexerException('Show search failed in getting a result with error: {0!r}'.format(error))
 
         if not results:
             return
@@ -246,7 +232,7 @@ class TVDBv2(BaseIndexer):
             aired_season = [aired_season] if not isinstance(aired_season, list) else aired_season
 
         # Parse episode data
-        logger.debug('Getting all episodes of %s', [tvdb_id])
+        log.debug('Getting all episodes of {0}', tvdb_id)
 
         # get paginated pages
         page = 1
@@ -272,7 +258,7 @@ class TVDBv2(BaseIndexer):
                     last = paged_episodes.links.last
                     page += 1
         except ApiException as e:
-            logger.debug('Error trying to index the episodes')
+            log.debug('Error trying to index the episodes')
             if e.status == 401:
                 raise IndexerAuthFailed(
                     'Authentication failed, possible bad api key. reason: {reason} ({status})'
@@ -287,7 +273,7 @@ class TVDBv2(BaseIndexer):
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {e}'.format(e=e.message))
 
         if not results:
-            logger.debug('Series results incomplete')
+            log.debug('Series results incomplete')
             raise IndexerShowIncomplete(
                 'Show episode search returned incomplete results, '
                 'could not get any episodes. Did a {search_type} search.'.format
@@ -308,7 +294,7 @@ class TVDBv2(BaseIndexer):
 
         for cur_ep in episodes:
             if self.config['dvdorder']:
-                logger.debug('Using DVD ordering.')
+                log.debug('Using DVD ordering.')
                 use_dvd = cur_ep.get('dvd_season') is not None and cur_ep.get('dvd_episodenumber') is not None
             else:
                 use_dvd = False
@@ -316,19 +302,17 @@ class TVDBv2(BaseIndexer):
             if use_dvd:
                 seasnum, epno = cur_ep.get('dvd_season'), cur_ep.get('dvd_episodenumber')
                 if self.config['dvdorder']:
-                    logger.warning("Episode doesn't have DVD order available (season: %s, episode: %s). "
-                                   'Falling back to non-DVD order. '
-                                   'Please consider disabling DVD order for the show with TMDB ID: %s',
-                                   seasnum, epno, tvdb_id)
+                    log.warning('No DVD order available for episode (season: {0}, episode: {1}). '
+                                'Falling back to non-DVD order. '
+                                'Please consider disabling DVD order for the show with TVDB ID: {2}',
+                                seasnum, epno, tvdb_id)
             else:
                 seasnum, epno = cur_ep.get('seasonnumber'), cur_ep.get('episodenumber')
 
             if seasnum is None or epno is None:
-                logger.warning('This episode has incomplete information. The season or episode number '
-                               '(season: %s, episode: %s) is missing. '
-                               'to get rid of this warning, you will have to contact tvdb through their forums '
-                               'and have them fix the specific episode.',
-                               seasnum, epno)
+                log.warning('Invalid episode numbering (season: {0!r}, episode: {1!r}) '
+                            'Contact TVDB forums to have it fixed',
+                            seasnum, epno)
                 continue  # Skip to next episode
 
             # float() is because https://github.com/dbr/tvnamer/issues/95 - should probably be fixed in TVDB data
@@ -358,22 +342,22 @@ class TVDBv2(BaseIndexer):
         """
         all_series = self.search(series)
         if not all_series:
-            logger.debug('Series result returned zero')
+            log.debug('Series result returned zero')
             IndexerShowNotFound('Show search returned zero results (cannot find show on TVDB)')
 
         if not isinstance(all_series, list):
             all_series = [all_series]
 
         if self.config['custom_ui'] is not None:
-            logger.debug('Using custom UI %s', [repr(self.config['custom_ui'])])
+            log.debug('Using custom UI {0!r}', self.config['custom_ui'])
             custom_ui = self.config['custom_ui']
             ui = custom_ui(config=self.config)
         else:
             if not self.config['interactive']:
-                logger.debug('Auto-selecting first search result using BaseUI')
+                log.debug('Auto-selecting first search result using BaseUI')
                 ui = BaseUI(config=self.config)
             else:
-                logger.debug('Interactively selecting show using ConsoleUI')
+                log.debug('Interactively selecting show using ConsoleUI')
                 ui = ConsoleUI(config=self.config)  # pylint: disable=redefined-variable-type
 
         return ui.select_series(all_series)
@@ -407,7 +391,7 @@ class TVDBv2(BaseIndexer):
 
         search_for_image_type = self.config['image_type']
 
-        logger.debug('Getting show banners for %s', sid)
+        log.debug('Getting show banners for {0}', sid)
         _images = {}
 
         # Let's get the different types of images available for this series
@@ -415,8 +399,8 @@ class TVDBv2(BaseIndexer):
             series_images_count = self.config['session'].series_api.series_id_images_get(
                 sid, accept_language=self.config['language']
             )
-        except (ApiException, RequestException) as e:
-            logger.info('Could not get image count for showid: %s with reason: %r', sid, e.message)
+        except (ApiException, RequestException) as error:
+            log.info('Could not get image count for show id: {0} with reason: {1!r}', sid, error.message)
             return
 
         for image_type, image_count in self._object_to_dict(series_images_count).items():
@@ -463,13 +447,13 @@ class TVDBv2(BaseIndexer):
                             continue
 
                         if k.endswith('path'):
-                            k = '_%s' % k
-                            logger.debug('Adding base url for image: %s', v)
+                            k = '_{0}'.format(k)
+                            log.debug('Adding base url for image: {0}', v)
                             v = self.config['artwork_prefix'] % v
 
                         base_path[k] = v
-            except (ApiException, RequestException) as e:
-                logger.warning('Could not parse Poster for showid: %s, with exception: %s', sid, e.message)
+            except (ApiException, RequestException) as error:
+                log.warning('Could not parse Poster for show id: {0}, with exception: {1!r}', sid, error)
                 return
 
         self._save_images(sid, _images)
@@ -500,12 +484,12 @@ class TVDBv2(BaseIndexer):
         Any key starting with an underscore has been processed (not the raw
         data from the XML)
         """
-        logger.debug('Getting actors for %s', sid)
+        log.debug('Getting actors for {0}', sid)
 
         actors = self.config['session'].series_api.series_id_actors_get(sid)
 
         if not actors or not actors.data:
-            logger.debug('Actors result returned zero')
+            log.debug('Actors result returned zero')
             return
 
         cur_actors = Actors()
@@ -527,27 +511,25 @@ class TVDBv2(BaseIndexer):
         shows[series_id][season_number][episode_number]
         """
         if self.config['language'] is None:
-            logger.debug('Config language is none, using show language')
+            log.debug('Config language is none, using show language')
             if language is None:
                 raise IndexerError("config['language'] was None, this should not happen")
             get_show_in_language = language
         else:
-            logger.debug(
-                'Configured language %s override show language of %s' % (
-                    self.config['language'],
-                    language
-                )
+            log.debug(
+                'Configured language {0} override show language of {1}',
+                self.config['language'], language,
             )
             get_show_in_language = self.config['language']
 
         # Parse show information
-        logger.debug('Getting all series data for %s' % sid)
+        log.debug('Getting all series data for {0}', sid)
 
         # Parse show information
         series_info = self._get_show_by_id(sid, request_language=get_show_in_language)
 
         if not series_info:
-            logger.debug('Series result returned zero')
+            log.debug('Series result returned zero')
             raise IndexerError('Series result returned zero')
 
         # get series data / add the base_url to the image urls
@@ -629,20 +611,19 @@ class TVDBv2(BaseIndexer):
             total_updates = []
             # Get the shows episodes using the GET /series/{id}/episodes route, and use the lastUpdated attribute
             # to check if the episodes season should be updated.
-            logger.debug('Getting episodes for {show_id}', show_id=show_id)
+            log.debug('Getting episodes for {0}', show_id)
             episodes = self._download_episodes(show_id)
 
             for episode in episodes['episode']:
-                if episode.get('seasonnumber') is None or episode.get('episodenumber') is None:
-                    logger.warning('This episode has incomplete information. The season or episode number '
-                                   '(season: %s, episode: %s) is missing. '
-                                   'to get rid of this warning, you will have to contact tvdb through their forums '
-                                   'and have them fix the specific episode.',
-                                   episode.get('seasonnumber'), episode.get('episodenumber'))
+                seasnum = episode.get('seasonnumber')
+                epno = episode.get('episodenumber')
+                if seasnum is None or epno is None:
+                    log.warning('Invalid episode numbering (season: {0!r}, episode: {1!r}) '
+                                'Contact TVDB forums to have it fixed', seasnum, epno)
                     continue
 
                 if int(episode['lastupdated']) > from_time:
-                    total_updates.append(int(episode['seasonnumber']))
+                    total_updates.append(int(seasnum))
 
             show_season_updates[show_id] = list(set(total_updates))
 
