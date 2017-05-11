@@ -21,7 +21,7 @@ from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
-from tornado.web import HTTPError, RequestHandler, StaticFileHandler, authenticated
+from tornado.web import HTTPError, RequestHandler, StaticFileHandler, addslash, authenticated
 from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
@@ -418,6 +418,7 @@ class AuthenticatedStaticFileHandler(StaticFileHandler):
             return self.get_secure_cookie(app.SECURE_TOKEN)
         return True
 
+    @addslash
     @authenticated
     def get(self, *args, **kwargs):
         super(AuthenticatedStaticFileHandler, self).get(*args, **kwargs)
