@@ -14,7 +14,7 @@ from mako.exceptions import RichTraceback
 from mako.lookup import TemplateLookup
 from mako.runtime import UNDEFINED
 from mako.template import Template as MakoTemplate
-from requests.compat import urlencode, urljoin
+from requests.compat import urljoin
 from six import binary_type, iteritems, text_type
 from tornado.concurrent import run_on_executor
 from tornado.escape import utf8
