@@ -1,5 +1,4 @@
 MEDUSA.manage.backlogOverview = function() {
-
     checkForcedSearch();
 
     function checkForcedSearch() {
@@ -43,14 +42,14 @@ MEDUSA.manage.backlogOverview = function() {
                     if (episodeStatus.indexOf('snatched') >= 0) {
                         img.prop('src', 'images/yes16.png');
                         setTimeout(function() {
-                            img.parent().parent().parent().remove()
-                        }, 3000)
+                            img.parent().parent().parent().remove();
+                        }, 3000);
                     } else {
                         img.prop('src', 'images/search16.png');
                     }
                 }
             }
-         });
+        });
     }
 
     $('#pickShow').on('change', function() {
@@ -60,7 +59,33 @@ MEDUSA.manage.backlogOverview = function() {
         }
     });
 
-    $('.forceBacklog').on('click', function(){
+    $('#backlog_period').on('change', function() {
+        api.patch('config/main', {
+            backlogOverview: {
+                period: $(this).val()
+            }
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function(err) {
+            log.error(err);
+        });
+    });
+
+    $('#backlog_status').on('change', function() {
+        api.patch('config/main', {
+            backlogOverview: {
+                status: $(this).val()
+            }
+        }).then(function(response) {
+            log.info(response);
+            window.location.reload();
+        }).catch(function(err) {
+            log.error(err);
+        });
+    });
+
+    $('.forceBacklog').on('click', function() {
         $.get($(this).attr('href'));
         $(this).text('Searching...');
         return false;
@@ -78,8 +103,8 @@ MEDUSA.manage.backlogOverview = function() {
             if (data.result.toLowerCase() === 'success') {
                 img.prop('src', 'images/yes16.png');
                 setTimeout(function() {
-                    img.parent().parent().parent().remove()
-                }, 3000)
+                    img.parent().parent().parent().remove();
+                }, 3000);
             } else {
                 img.prop('src', 'images/no16.png');
             }

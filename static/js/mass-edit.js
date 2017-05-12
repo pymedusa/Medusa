@@ -14,7 +14,8 @@ $(document).ready(function() {
         $('#display_new_root_dir_' + curIndex).html('<b>' + $(this).val() + '</b>');
     });
 
-    $('.edit_root_dir').on('click', function() {
+    $('.edit_root_dir').on('click', function(event) {
+        event.preventDefault();
         var curIndex = findDirIndex($(this).attr('id'));
         var initialDir = $('#new_root_dir_' + curIndex).val();
         $(this).nFileBrowser(editRootDir, {

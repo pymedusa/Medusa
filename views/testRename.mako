@@ -13,7 +13,15 @@
 <script type="text/javascript" src="js/test-rename.js"></script>
 </%block>
 <%block name="content">
+    % if app.PROCESS_METHOD == 'symlink':
+<div class="text-center">
+<div class="alert alert-danger upgrade-notification hidden-print" role="alert">
+    <span>WARNING: Your current process method is SYMLINK. Renaming these files will break all symlinks in your Post-Processor${('', '/Seeding')[app.TORRENT_SEED_LOCATION]} directory for this show</span>
+</div>
+</div>
+    % endif
 <input type="hidden" id="showID" value="${show.indexerid}" />
+<input type="hidden" id="series_slug" value="${show.slug}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:

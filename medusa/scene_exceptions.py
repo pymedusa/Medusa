@@ -68,6 +68,12 @@ def refresh_exceptions_cache():
     logger.info('Finished processing {x} scene exceptions.', x=len(exceptions))
 
 
+def get_last_refresh(ex_list):
+    """Get the last update timestamp for the specific scene exception list."""
+    cache_db_con = db.DBConnection('cache.db')
+    return cache_db_con.select(b'SELECT last_refreshed FROM scene_exceptions_refresh WHERE list = ?', [ex_list])
+
+
 def should_refresh(ex_list):
     """
     Check if we should refresh cache for items in ex_list.
@@ -76,14 +82,8 @@ def should_refresh(ex_list):
     :return: True if refresh is needed
     """
     max_refresh_age_secs = 86400  # 1 day
+    rows = get_last_refresh(ex_list)
 
-    cache_db_con = db.DBConnection('cache.db')
-    rows = cache_db_con.select(
-        b'SELECT last_refreshed '
-        b'FROM scene_exceptions_refresh '
-        b'WHERE list = ?',
-        [ex_list]
-    )
     if rows:
         last_refresh = int(rows[0][b'last_refreshed'])
         return int(time.time()) > last_refresh + max_refresh_age_secs
@@ -124,7 +124,7 @@ def get_all_scene_exceptions(indexer_id):
     :param indexer_id: ID to check
     :return: dict of exceptions (e.g. exceptions_cache[season][exception_name])
     """
-    return exceptions_cache.get(indexer_id, defaultdict(set))
+    return exceptions_cache.get(int(indexer_id), defaultdict(set))
 
 
 def get_scene_seasons(indexer_id):
@@ -135,7 +135,7 @@ def get_scene_seasons(indexer_id):
     :return: list of seasons.
     """
     warnings.warn('Use dict.keys() directly instead.', DeprecationWarning)
-    return exceptions_cache[indexer_id].keys()
+    return exceptions_cache[int(indexer_id)].keys()
 
 
 def get_scene_exception_by_name(show_name):
@@ -223,21 +223,28 @@ def update_scene_exceptions(indexer_id, indexer, scene_exceptions, season=-1):
             )
 
 
-def retrieve_exceptions():
+def retrieve_exceptions(force=False, exception_type=None):
     """
     Look up the exceptions from all sources.
 
     Parses the exceptions into a dict, and inserts them into the
     scene_exceptions table in cache.db. Also clears the scene name cache.
+    :param force: If enabled this will force the refresh of scene exceptions using the medusa exceptions,
+    xem exceptions and anidb exceptions.
+    :param exception_type: Only refresh a specific exception_type. Options are: 'medusa', 'anidb', 'xem'
     """
+    custom_exceptions = _get_custom_exceptions(force) if exception_type in ['custom_exceptions', None] else defaultdict(dict)
+    xem_exceptions = _get_xem_exceptions(force) if exception_type in ['xem', None] else defaultdict(dict)
+    anidb_exceptions = _get_anidb_exceptions(force) if exception_type in ['anidb', None] else defaultdict(dict)
+
     # Combined scene exceptions from all sources
     combined_exceptions = combine_exceptions(
         # Custom scene exceptions
-        _get_custom_exceptions(),
+        custom_exceptions,
         # XEM scene exceptions
-        _get_xem_exceptions(),
+        xem_exceptions,
         # AniDB scene exceptions
-        _get_anidb_exceptions(),
+        anidb_exceptions,
     )
 
     queries = []
@@ -281,10 +288,10 @@ def combine_exceptions(*scene_exceptions):
     return combined_ex
 
 
-def _get_custom_exceptions():
+def _get_custom_exceptions(force):
     custom_exceptions = defaultdict(dict)
 
-    if should_refresh('custom_exceptions'):
+    if force or should_refresh('custom_exceptions'):
         for indexer in indexerApi().indexers:
             try:
                 location = indexerApi(indexer).config['scene_loc']
@@ -331,11 +338,11 @@ def _get_custom_exceptions():
     return custom_exceptions
 
 
-def _get_xem_exceptions():
+def _get_xem_exceptions(force):
     xem_exceptions = defaultdict(dict)
     xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'
 
-    if should_refresh('xem'):
+    if force or should_refresh('xem'):
         for indexer in indexerApi().indexers:
             indexer_api = indexerApi(indexer)
 
@@ -391,12 +398,12 @@ def _get_xem_exceptions():
     return xem_exceptions
 
 
-def _get_anidb_exceptions():
+def _get_anidb_exceptions(force):
     anidb_exceptions = defaultdict(dict)
     # AniDB exceptions use TVDB as indexer
     exceptions = anidb_exceptions[INDEXER_TVDBV2]
 
-    if should_refresh('anidb'):
+    if force or should_refresh('anidb'):
         logger.info('Checking for scene exceptions updates from AniDB')
 
         for show in app.showList:

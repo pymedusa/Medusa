@@ -18,11 +18,12 @@
 
 from datetime import date, timedelta
 
+from medusa.helpers.quality import get_quality_string
+from medusa.tv.series import SeriesIdentifier
 from .. import app
 from ..common import IGNORED, Quality, UNAIRED, WANTED
 from ..db import DBConnection
 from ..helper.common import dateFormat, timeFormat
-from ..helper.quality import get_quality_string
 from ..network_timezones import parse_date_time
 from ..sbdatetime import sbdatetime
 
@@ -113,6 +114,7 @@ class ComingEpisodes(object):
         results = [dict(result) for result in results]
 
         for index, item in enumerate(results):
+            item['series_slug'] = str(SeriesIdentifier.from_id(int(item['indexer']), item['indexer_id']))
             results[index]['localtime'] = sbdatetime.convert_to_setting(
                 parse_date_time(item['airdate'], item['airs'], item['network']))
 

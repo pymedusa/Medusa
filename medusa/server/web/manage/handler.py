@@ -11,7 +11,7 @@ from tornroutes import route
 
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import app, db, helpers, logger, post_processor, subtitles, ui
+from .... import app, db, helpers, logger, network_timezones, sbdatetime, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -23,6 +23,8 @@ from ....helper.exceptions import (
     CantUpdateShowException,
 )
 from ....helpers import is_media_file
+from ....network_timezones import app_timezone
+from ....post_processor import PostProcessor
 from ....show.show import Show
 from ....tv import Episode
 
@@ -301,7 +303,7 @@ class Manage(Home, WebRoot):
                 if not tv_episode.show.subtitles:
                     continue
 
-                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                related_files = PostProcessor(video_path).list_associated_files(video_path, subtitles_only=True)
                 if related_files:
                     continue
 
@@ -341,40 +343,75 @@ class Manage(Home, WebRoot):
         show_cats = {}
         show_sql_results = {}
 
+        backlog_periods = {
+            'all': None,
+            'one_day': datetime.timedelta(days=1),
+            'three_days': datetime.timedelta(days=3),
+            'one_week': datetime.timedelta(days=7),
+            'one_month': datetime.timedelta(days=30),
+        }
+        backlog_period = backlog_periods.get(app.BACKLOG_PERIOD)
+
+        backlog_status = {
+            'all': [Overview.QUAL, Overview.WANTED],
+            'quality': [Overview.QUAL],
+            'wanted': [Overview.WANTED]
+        }
+        selected_backlog_status = backlog_status.get(app.BACKLOG_STATUS)
+
         main_db_con = db.DBConnection()
         for cur_show in app.showList:
+
+            if cur_show.paused:
+                continue
 
             ep_counts = {
                 Overview.WANTED: 0,
                 Overview.QUAL: 0,
-                Overview.GOOD: 0,
             }
             ep_cats = {}
 
             sql_results = main_db_con.select(
                 """
-                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched, e.status, s.quality
+                SELECT e.status, e.season, e.episode, e.name, e.airdate, e.manually_searched
                 FROM tv_episodes as e
-                JOIN tv_shows as s
                 WHERE e.season IS NOT NULL AND
-                      s.paused = 0 AND
-                      e.showid = s.indexer_id AND
-                      s.indexer_id = ?
+                      e.showid = ?
                 ORDER BY e.season DESC, e.episode DESC
                 """,
                 [cur_show.indexerid]
             )
-
-            for cur_result in sql_results:
+            filtered_episodes = []
+            backlogged_episodes = [dict(row) for row in sql_results]
+            for cur_result in backlogged_episodes:
                 cur_ep_cat = cur_show.get_overview(cur_result[b'status'], backlog_mode=True,
                                                    manually_searched=cur_result[b'manually_searched'])
                 if cur_ep_cat:
-                    ep_cats[u'{ep}'.format(ep=episode_num(cur_result[b'season'], cur_result[b'episode']))] = cur_ep_cat
-                    ep_counts[cur_ep_cat] += 1
+                    if cur_ep_cat in selected_backlog_status and cur_result[b'airdate'] != 1:
+                        air_date = datetime.datetime.fromordinal(cur_result[b'airdate'])
+                        if air_date.year >= 1970 or cur_show.network:
+                            air_date = sbdatetime.sbdatetime.convert_to_setting(
+                                network_timezones.parse_date_time(cur_result[b'airdate'],
+                                                                  cur_show.airs,
+                                                                  cur_show.network))
+                            if backlog_period and air_date < datetime.datetime.now(app_timezone) - backlog_period:
+                                continue
+                        else:
+                            air_date = None
+                        episode_string = u'{ep}'.format(ep=(episode_num(cur_result[b'season'],
+                                                                        cur_result[b'episode']) or
+                                                            episode_num(cur_result[b'season'],
+                                                                        cur_result[b'episode'],
+                                                                        numbering='absolute')))
+                        ep_cats[episode_string] = cur_ep_cat
+                        ep_counts[cur_ep_cat] += 1
+                        cur_result[b'airdate'] = air_date
+                        cur_result[b'episode_string'] = episode_string
+                        filtered_episodes.append(cur_result)
 
             show_counts[cur_show.indexerid] = ep_counts
             show_cats[cur_show.indexerid] = ep_cats
-            show_sql_results[cur_show.indexerid] = sql_results
+            show_sql_results[cur_show.indexerid] = filtered_episodes
 
         return t.render(
             showCounts=show_counts, showCats=show_cats,
@@ -424,6 +461,9 @@ class Manage(Home, WebRoot):
 
         air_by_date_all_same = True
         last_air_by_date = None
+
+        dvd_order_all_same = True
+        last_dvd_order = None
 
         root_dir_list = []
 
@@ -490,6 +530,12 @@ class Manage(Home, WebRoot):
                 else:
                     last_air_by_date = cur_show.air_by_date
 
+            if dvd_order_all_same:
+                if last_dvd_order not in (None, cur_show.dvd_order):
+                    dvd_order_all_same = False
+                else:
+                    last_dvd_order = cur_show.dvd_order
+
         default_ep_status_value = last_default_ep_status if default_ep_status_all_same else None
         paused_value = last_paused if paused_all_same else None
         anime_value = last_anime if anime_all_same else None
@@ -499,14 +545,15 @@ class Manage(Home, WebRoot):
         scene_value = last_scene if scene_all_same else None
         sports_value = last_sports if sports_all_same else None
         air_by_date_value = last_air_by_date if air_by_date_all_same else None
+        dvd_order_value = last_dvd_order if dvd_order_all_same else None
         root_dir_list = root_dir_list
 
-        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value,
+        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order_value=dvd_order_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
 
-    def massEditSubmit(self, paused=None, default_ep_status=None,
+    def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
@@ -521,10 +568,9 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        show_ids = toEdit.split('|')
-        errors = []
+        show_ids = toEdit.split('|') if toEdit else []
+        errors = 0
         for cur_show in show_ids:
-            cur_errors = []
             show_obj = Show.find(app.showList, int(cur_show))
             if not show_obj:
                 continue
@@ -573,6 +619,12 @@ class Manage(Home, WebRoot):
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
+            if dvd_order == 'keep':
+                new_dvd_order = show_obj.dvd_order
+            else:
+                new_dvd_order = True if dvd_order == 'enable' else False
+            new_dvd_order = 'on' if new_dvd_order else 'off'
+
             if flatten_folders == 'keep':
                 new_flatten_folders = show_obj.flatten_folders
             else:
@@ -593,31 +645,18 @@ class Manage(Home, WebRoot):
 
             exceptions_list = []
 
-            cur_errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
-                                        preferred_qualities, exceptions_list,
-                                        defaultEpStatus=new_default_ep_status,
-                                        flatten_folders=new_flatten_folders,
-                                        paused=new_paused, sports=new_sports,
-                                        subtitles=new_subtitles, anime=new_anime,
-                                        scene=new_scene, air_by_date=new_air_by_date,
-                                        directCall=True)
+            errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
+                                    preferred_qualities, exceptions_list,
+                                    defaultEpStatus=new_default_ep_status,
+                                    flatten_folders=new_flatten_folders,
+                                    paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
+                                    subtitles=new_subtitles, anime=new_anime,
+                                    scene=new_scene, air_by_date=new_air_by_date,
+                                    directCall=True)
 
-            if cur_errors:
-                logger.log(u'Errors: {errors}'.format(errors=cur_errors), logger.ERROR)
-                errors.append(
-                    '<b>{show}:</b>\n<ul>{errors}</ul>'.format(
-                        show=show_obj.name,
-                        errors=' '.join(['<li>{error}</li>'.format(error=error)
-                                         for error in cur_errors])
-                    )
-                )
         if errors:
-            ui.notifications.error(
-                '{num} error{s} while saving changes:'.format(
-                    num=len(errors),
-                    s='s' if len(errors) > 1 else ''),
-                ' '.join(errors)
-            )
+            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
+                                   (num=errors, s='s' if errors > 1 else ''))
 
         return self.redirect('/manage/')
 
@@ -674,30 +713,18 @@ class Manage(Home, WebRoot):
             ui.notifications.error('Errors encountered',
                                    '<br />\n'.join(errors))
 
-        def message_detail(title, items):
-            """
-            Create an unordered list of items with a title.
-            :return: The message if items else ''
-            """
-            return '' if not items else """
-                <br />
-                <b>{title}</b>
-                <br />
-                <ul>
-                  {list}
-                </ul>
-                """.format(title=title,
-                           list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
-                                           for cur_item in items]))
-
         message = ''
-        message += message_detail('Updates', updates)
-        message += message_detail('Refreshes', refreshes)
-        message += message_detail('Renames', renames)
-        message += message_detail('Subtitles', subtitles)
+        if updates:
+            message += '\nUpdates: {0}'.format(len(updates))
+        if refreshes:
+            message += '\nRefreshes: {0}'.format(len(refreshes))
+        if renames:
+            message += '\nRenames: {0}'.format(len(renames))
+        if subtitles:
+            message += '\nSubtitles: {0}'.format(len(subtitles))
 
         if message:
-            ui.notifications.message('The following actions were queued:', message)
+            ui.notifications.message('Queued actions:', message)
 
         return self.redirect('/manage/')
 

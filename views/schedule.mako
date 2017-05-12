@@ -17,8 +17,8 @@
 
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
-<input type="hidden" id="showID" value="${choice(results)['showid']}" />
+<input type="hidden" id="showID" value="${choice(results)['showid'] if results else ''}" />
+<input type="hidden" id="series_slug" value="${choice(results)['series_slug'] if results else ''}" />
 <div class="row">
     <div class="col-md-12">
         <h1 class="header">${header}</h1>
@@ -77,6 +77,7 @@
     </div>
 </div>
 
+<div class="horizontal-scroll">
 % if 'list' == layout:
 <!-- start list view //-->
 <% show_div = 'listing-default' %>
@@ -116,23 +117,23 @@
                 show_div = 'listing-default'
 %>
         <tr class="${show_div}">
-            <td align="center" nowrap="nowrap">
+            <td align="center" nowrap="nowrap" class="triggerhighlight">
                 <% airDate = sbdatetime.sbdatetime.convert_to_setting(cur_result['localtime']) %>
                 <time datetime="${airDate.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(airDate)}</time>
             </td>
-            <td align="center" nowrap="nowrap">
+            <td align="center" nowrap="nowrap" class="triggerhighlight">
                 <% ends = sbdatetime.sbdatetime.convert_to_setting(cur_ep_enddate) %>
                 <time datetime="${ends.isoformat('T')}" class="date">${sbdatetime.sbdatetime.sbfdatetime(ends)}</time>
             </td>
-            <td class="tvShow" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
+            <td class="tvShow triggerhighlight" nowrap="nowrap"><a href="home/displayShow?show=${cur_result['showid']}">${cur_result['show_name']}</a>
 % if bool(cur_result['paused']):
                 <span class="pause">[paused]</span>
 % endif
             </td>
-            <td nowrap="nowrap" align="center">
+            <td nowrap="nowrap" align="center" class="triggerhighlight">
                 ${'S%02iE%02i' % (int(cur_result['season']), int(cur_result['episode']))}
             </td>
-            <td>
+            <td class="triggerhighlight">
 % if cur_result['description']:
                 <img alt="" src="images/info32.png" height="16" width="16" class="plotInfo" id="plot_info_${str(mappings.get(cur_indexer).replace('_id', '')) + str(cur_result['showid'])}_${str(cur_result["season"])}_${str(cur_result["episode"])}" />
 % else:
@@ -140,16 +141,16 @@
 % endif
                 ${cur_result['name']}
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
                 ${cur_result['network']}
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
             ${run_time}min
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
                 ${renderQualityPill(cur_result['quality'], showTitle=True)}
             </td>
-            <td align="center" style="vertical-align: middle;">
+            <td align="center" style="vertical-align: middle;" class="triggerhighlight">
             % if cur_result['imdb_id']:
                 <a href="${anon_url('http://www.imdb.com/title/', cur_result['imdb_id'])}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="http://www.imdb.com/title/${cur_result['imdb_id']}">
                     <img alt="[imdb]" height="16" width="16" src="images/imdb.png" />
@@ -160,7 +161,7 @@
                     <img alt="${indexerApi(cur_indexer).name}" height="16" width="16" src="images/${indexerApi(cur_indexer).config['icon']}" />
                 </a>
             </td>
-            <td align="center">
+            <td align="center" class="triggerhighlight">
             <a class="epSearch" id="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forceUpdate-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/searchEpisode?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}"><img data-ep-search src="images/search16.png" width="16" height="16" alt="search" title="Forced Search" /></a>
             <a class="epManualSearch" id="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" name="forcedSearch-${cur_result['showid']}x${cur_result['season']}x${cur_result['episode']}" href="home/snatchSelection?show=${cur_result['showid']}&amp;season=${cur_result['season']}&amp;episode=${cur_result['episode']}&amp;manual_search_type=episode"><img data-ep-manual-search src="images/manualsearch.png" width="16" height="16" alt="search" title="Manual Search" /></a>
             </td>
@@ -270,7 +271,7 @@
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
                 <a href="home/displayShow?show=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" asset="show/${cur_result['showid']}?type=${(layout, 'posterThumb')[layout == 'poster']}"/>
+                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series="${cur_result['series_slug']}" asset="${(layout, 'posterThumb')[layout == 'poster']}"/>
                 </a>
             </th>
 % if 'banner' == layout:
@@ -356,7 +357,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" asset="show/${cur_result['showid']}?type=posterThumb" /></a>
+                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">
@@ -379,6 +380,7 @@
 <!-- end calender view //-->
 </div>
 % endif
+</div>
 <div class="clearfix"></div>
 </div>
 </div>

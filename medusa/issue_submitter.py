@@ -11,9 +11,10 @@ from datetime import datetime, timedelta
 
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
+
 from . import app, db
 from .classes import ErrorViewer
-from .github_client import authenticate, get_github_repo
+from .github_client import authenticate, get_github_repo, token_authenticate
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class IssueSubmitter(object):
     TITLE_PREFIX = '[APP SUBMITTED]: '
 
     def __init__(self):
-        """Default constructor."""
+        """Initialize class with the default constructor."""
         self.running = False
 
     @staticmethod
@@ -148,10 +149,14 @@ class IssueSubmitter(object):
         :return: user message and issue number
         :rtype: list of tuple(str, str)
         """
-        if not app.DEBUG or not app.GIT_USERNAME or not app.GIT_PASSWORD:
-            logger.warning(IssueSubmitter.INVALID_CONFIG)
-            return [(IssueSubmitter.INVALID_CONFIG, None)]
-
+        if app.GIT_AUTH_TYPE == 0:
+            if not app.DEBUG or not app.GIT_USERNAME or not app.GIT_PASSWORD:
+                logger.warning(IssueSubmitter.INVALID_CONFIG)
+                return [(IssueSubmitter.INVALID_CONFIG, None)]
+        else:
+            if not app.DEBUG or not app.GIT_TOKEN:
+                logger.warning(IssueSubmitter.INVALID_CONFIG)
+                return [(IssueSubmitter.INVALID_CONFIG, None)]
         if not ErrorViewer.errors:
             logger.info(IssueSubmitter.NO_ISSUES)
             return [(IssueSubmitter.NO_ISSUES, None)]
@@ -166,7 +171,10 @@ class IssueSubmitter(object):
 
         self.running = True
         try:
-            github = authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            if app.GIT_AUTH_TYPE == 0:
+                github = authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            else:
+                github = token_authenticate(app.GIT_TOKEN)
             if not github:
                 return [(IssueSubmitter.BAD_CREDENTIALS, None)]
 

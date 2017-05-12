@@ -7,8 +7,9 @@ from datetime import timedelta
 from time import time
 
 from guessit.rules.common.date import valid_year
-from .rules import default_api
-from .. import app
+
+from medusa import app
+from medusa.name_parser.rules import default_api
 
 
 EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
@@ -16,13 +17,9 @@ EXPECTED_TITLES_EXPIRATION_TIME = timedelta(days=1).total_seconds()
 # release group exception list
 expected_groups = [
     # release groups with numbers
-    # https://github.com/guessit-io/guessit/issues/294
     'TV2LAX9',
 
-    # https://github.com/guessit-io/guessit/issues/352
-    'S4L',
-
-    # https://github.com/guessit-io/guessit/issues/356
+    # episode titles in the wrong place
     'DHD',
 ]
 
@@ -30,6 +27,7 @@ allowed_languages = {
     'de',
     'en',
     'es',
+    'ca',
     'fr',
     'he',
     'hu',
@@ -42,6 +40,8 @@ allowed_languages = {
     'ru',
     'sv',
     'uk',
+    'mul',  # multi language
+    'und',  # undetermined
 }
 
 allowed_countries = {

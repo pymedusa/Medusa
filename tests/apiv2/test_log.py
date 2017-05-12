@@ -55,7 +55,7 @@ def test_log_get_pagination(http_client, create_url, auth_headers, logger, commi
 @pytest.mark.gen_test
 def test_log_post(monkeypatch, http_client, create_url, auth_headers, logger, read_loglines):
     # given
-    monkeypatch.setattr(log, 'logger', logger)
+    monkeypatch.setattr(log, 'log', logger)
     url = create_url('/log')
     body = {
         'message': 'Some %s {here}',

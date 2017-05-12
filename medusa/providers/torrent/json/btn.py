@@ -1,23 +1,10 @@
 # coding=utf-8
-# Author: Daniel Heimans
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <https://www.gnu.org/licenses/>.
+
 """Provider code for BTN."""
+
 from __future__ import unicode_literals
 
+import logging
 import socket
 import time
 
@@ -25,25 +12,26 @@ import jsonrpclib
 
 from medusa import (
     app,
-    logger,
     scene_exceptions,
     tv,
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import episode_num
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from six import itervalues
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+
+# API docs:
+# https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
+# https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
 
 class BTNProvider(TorrentProvider):
-    """BTN Torrent provider.
-
-    API docs:
-    https://web.archive.org/web/20160316073644/http://btnapps.net/docs.php
-    and
-    https://web.archive.org/web/20160425205926/http://btnapps.net/apigen/class-btnapi.html
-    """
+    """BTN Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
@@ -55,7 +43,7 @@ class BTNProvider(TorrentProvider):
         # URLs
         self.url = 'https://broadcasthe.net'
         self.urls = {
-            'base_url': 'https://api.btnapps.net',
+            'base_url': 'https://api.broadcasthe.net',
         }
 
         # Proper Strings
@@ -71,11 +59,11 @@ class BTNProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # Only poll BTN every 15 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):  # pylint:disable=too-many-locals
+    def search(self, search_strings, age=0, ep_obj=None):
         """
         Search a provider and parse the results.
 
-        :param search_strings: A dict with mode (key) and the search value (value)
+        :param search_strings: A dict with {mode: search value}
         :param age: Not used
         :param ep_obj: Not used
         :returns: A list of search results (structure)
@@ -90,22 +78,24 @@ class BTNProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             if mode != 'RSS':
-                if mode == 'Season':
-                    search_params = self._season_search_params(ep_obj)
-                else:
-                    search_params = self._episode_search_params(ep_obj)
-                logger.log('Search string: {search}'.format
-                           (search=search_params), logger.DEBUG)
+                searches = self._search_params(ep_obj, mode)
+            else:
+                searches = [search_params]
 
-            response = self._api_call(self.api_key, search_params)
-            if not response or response.get('results') == '0':
-                logger.log('No data returned from provider', logger.DEBUG)
-                continue
+            for search_params in searches:
+                if mode != 'RSS':
+                    log.debug('Search string: {search}',
+                              {'search': search_params})
 
-            results += self.parse(response.get('torrents', {}), mode)
+                response = self._api_call(search_params)
+                if not response or response.get('results') == '0':
+                    log.debug('No data returned from provider')
+                    continue
+
+                results += self.parse(response.get('torrents', {}), mode)
 
         return results
 
@@ -132,9 +122,9 @@ class BTNProvider(TorrentProvider):
 
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
-                logger.log("Discarding torrent because it doesn't meet the "
-                           "minimum seeders: {0}. Seeders: {1}".format
-                           (title, seeders), logger.DEBUG)
+                log.debug("Discarding torrent because it doesn't meet the"
+                          " minimum seeders: {0}. Seeders: {1}",
+                          title, seeders)
                 continue
 
             size = row.get('Size') or -1
@@ -147,8 +137,11 @@ class BTNProvider(TorrentProvider):
                 'leechers': leechers,
                 'pubdate': None,
             }
-            logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                       (title, seeders, leechers), logger.DEBUG)
+            log.debug(
+                'Found result: {title} with {x} seeders'
+                ' and {y} leechers',
+                {'title': title, 'x': seeders, 'y': leechers}
+            )
 
             items.append(item)
 
@@ -157,7 +150,7 @@ class BTNProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.api_key:
-            logger.log('Missing API key. Check your settings', logger.WARNING)
+            log.warning('Missing API key. Check your settings')
             return False
 
         return True
@@ -189,22 +182,37 @@ class BTNProvider(TorrentProvider):
         url = parsed_json.get('DownloadURL').replace('\\/', '/')
         return title, url
 
-    def _season_search_params(self, ep_obj):
+    def _search_params(self, ep_obj, mode, season_numbering=None):
 
-        search_params = []
-        current_params = {'category': 'Season'}
+        if not ep_obj:
+            return []
 
-        # Search for entire seasons: no need to do special things for air by date or sports shows
-        if ep_obj.show.air_by_date or ep_obj.show.sports:
-            # Search for the year of the air by date show
-            current_params['name'] = str(ep_obj.airdate).split('-')[0]
+        searches = []
+        season = 'Season' if mode == 'Season' else ''
+
+        air_by_date = ep_obj.show.air_by_date
+        sports = ep_obj.show.sports
+
+        if not season_numbering and (air_by_date or sports):
+            date_fmt = '%Y' if season else '%Y.%m.%d'
+            search_name = ep_obj.airdate.strftime(date_fmt)
         else:
-            current_params['name'] = 'Season {0}'.format(ep_obj.season)
+            search_name = '{type} {number}'.format(
+                type=season,
+                number=ep_obj.season if season else episode_num(
+                    ep_obj.season, ep_obj.episode
+                ),
+            ).strip()
+
+        params = {
+            'category': season or 'Episode',
+            'name': search_name,
+        }
 
         # Search
         if ep_obj.show.indexer == 1:
-            current_params['tvdb'] = self._get_tvdb_id()
-            search_params.append(current_params)
+            params['tvdb'] = self._get_tvdb_id()
+            searches.append(params)
         else:
             name_exceptions = scene_exceptions.get_scene_exceptions(
                 ep_obj.show.indexerid,
@@ -213,67 +221,43 @@ class BTNProvider(TorrentProvider):
             name_exceptions.add(ep_obj.show.name)
             for name in name_exceptions:
                 # Search by name if we don't have tvdb id
-                current_params['series'] = name
-                search_params.append(current_params)
+                params['series'] = name
+                searches.append(params)
 
-        return search_params
-
-    def _episode_search_params(self, ep_obj):
-
-        if not ep_obj:
-            return [{}]
-
-        to_return = []
-        search_params = {'category': 'Episode'}
-
-        # Episode
-        if ep_obj.show.air_by_date or ep_obj.show.sports:
-            date_str = str(ep_obj.airdate)
-            # BTN uses dots in dates, we just search for the date since that
-            # combined with the series identifier should result in just one episode
-            search_params['name'] = date_str.replace('-', '.')
-        else:
-            # Do a general name search for the episode, formatted like SXXEYY
-            search_params['name'] = '{ep}'.format(ep=episode_num(ep_obj.season, ep_obj.episode))
-
-        # Search
-        if ep_obj.show.indexer == 1:
-            search_params['tvdb'] = self._get_tvdb_id()
-            to_return.append(search_params)
-        else:
-            # Add new query string for every exception
-            name_exceptions = scene_exceptions.get_scene_exceptions(
-                ep_obj.show.indexerid,
-                ep_obj.show.indexer
+        # extend air by date searches to include season numbering
+        if air_by_date and not season_numbering:
+            searches.extend(
+                self._search_params(ep_obj, mode, season_numbering=True)
             )
-            name_exceptions.add(ep_obj.show.name)
-            for cur_exception in name_exceptions:
-                # Search by name if we don't have tvdb id
-                search_params['series'] = cur_exception
-                to_return.append(search_params)
 
-        return to_return
+        return searches
 
-    def _api_call(self, apikey, params=None, results_per_page=300, offset=0):
+    def _api_call(self, params=None, results_per_page=300, offset=0):
         """Call provider API."""
         parsed_json = {}
 
         try:
             server = jsonrpclib.Server(self.urls['base_url'])
-            parsed_json = server.getTorrents(apikey, params or {}, int(results_per_page), int(offset))
+            parsed_json = server.getTorrents(
+                self.api_key,
+                params or {},
+                int(results_per_page),
+                int(offset)
+            )
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message[1] == 'Invalid API Key':
-                logger.log('Incorrect authentication credentials.', logger.WARNING)
+                log.warning('Incorrect authentication credentials.')
             elif error.message[1] == 'Call Limit Exceeded':
-                logger.log('You have exceeded the limit of 150 calls per hour.', logger.WARNING)
+                log.warning('You have exceeded the limit of'
+                            ' 150 calls per hour.')
             else:
-                logger.log('JSON-RPC protocol error while accessing provider. Error: {msg!r}'.format
-                           (msg=error.message[1]), logger.ERROR)
+                log.error('JSON-RPC protocol error while accessing provider.'
+                          ' Error: {msg!r}', {'msg': error.message[1]})
 
         except (socket.error, socket.timeout, ValueError) as error:
-            logger.log('Error while accessing provider. Error: {msg}'.format
-                       (msg=error), logger.WARNING)
+            log.warning('Error while accessing provider.'
+                        ' Error: {msg}', {'msg': error})
         return parsed_json
 
 

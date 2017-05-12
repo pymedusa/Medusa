@@ -2,8 +2,6 @@
 
 """Exceptions raised by Medusa providers."""
 
-from __future__ import unicode_literals
-
 
 class ProviderError(Exception):
     """A generic provider exception occurred."""

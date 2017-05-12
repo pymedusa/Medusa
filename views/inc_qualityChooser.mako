@@ -39,13 +39,24 @@ selected = None
             </select>
         </div>
     </div>
-    <div id="quality_explanation">
+    <div id="qualityExplanation">
         <h5><b>Quality setting explanation:</b></h5>
-        <h5 id="allowed_text">This will download <b>any</b> of these qualities and then stops searching: <label id="allowed_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
-        <h5 id="preferred_text1">Downloads <b>any</b> of these qualities: <label id="allowed_preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
-        <h5 id="preferred_text2">But it will stop searching when one of these is downloaded:  <label id="preferred_explanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>   
+        <h5 id="allowedText">This will download <b>any</b> of these qualities and then stops searching: <label id="allowedExplanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities])}</label></h5>
+        <h5 id="preferredText1">Downloads <b>any</b> of these qualities: <label id="allowedPreferredExplanation">${', '.join([Quality.qualityStrings[i] for i in allowed_qualities + preferred_qualities])}</label></h5>
+        <h5 id="preferredText2">But it will stop searching when one of these is downloaded:  <label id="preferredExplanation">${', '.join([Quality.qualityStrings[i] for i in preferred_qualities])}</label></h5>
     </div>
     <div>
-        <h5 class="red-text" id="backlogged_episodes"></h5>
+        <h5 class="red-text" id="backloggedEpisodes"></h5>
+    </div>
+    <div id="archive" style="display: none;">
+        <h5>
+            <b>
+                Archive downloaded episodes that are not currently in <a target="_blank" href="manage/backlogOverview/"><font color="blue"><u>backlog</u>.</font></a>
+            </b>
+                <br />Avoids unnecessarily increasing your backlog
+            </br>
+        </h5>
+        <input class="btn btn-inline" type="button" id="archiveEpisodes" value="Archive episodes" />
+        <h5 id="archivedStatus"></h5>
     </div>
 </div>

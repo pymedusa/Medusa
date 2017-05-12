@@ -6,13 +6,32 @@ import os
 
 from guessit import guessit
 
-logger = logging.getLogger(__name__)
+from medusa.logger.adapters.style import BraceAdapter
 
-MOVIE_ATTRIBUTES = {'title': 'title', 'year': 'year', 'format': 'format', 'release_group': 'release_group',
-                    'resolution': 'screen_size', 'video_codec': 'video_codec', 'audio_codec': 'audio_codec'}
-EPISODE_ATTRIBUTES = {'series': 'title', 'season': 'season', 'episode': 'episode', 'title': 'episode_title',
-                      'year': 'year', 'format': 'format', 'release_group': 'release_group', 'resolution': 'screen_size',
-                      'video_codec': 'video_codec', 'audio_codec': 'audio_codec'}
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+MOVIE_ATTRIBUTES = {
+    'title': 'title',
+    'year': 'year',
+    'format': 'format',
+    'release_group': 'release_group',
+    'resolution': 'screen_size',
+    'video_codec': 'video_codec',
+    'audio_codec': 'audio_codec',
+}
+EPISODE_ATTRIBUTES = {
+    'series': 'title',
+    'season': 'season',
+    'episode': 'episode',
+    'title': 'episode_title',
+    'year': 'year',
+    'format': 'format',
+    'release_group': 'release_group',
+    'resolution': 'screen_size',
+    'video_codec': 'video_codec',
+    'audio_codec': 'audio_codec',
+}
 
 
 def refine(video, release_name=None, release_file=None, extension='release', **kwargs):
@@ -45,8 +64,8 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     :param str release_file: the release file to be used
     :param str extension: the release file extension.
     """
-    logger.debug('Starting release refiner [extension={extension}, release_name={name}, release_file={file}]',
-                 extension=extension, name=release_name, file=release_file)
+    log.debug('Starting release refiner [extension={extension}, release_name={name}, release_file={file}]',
+              {'extension': extension, 'name': release_name, 'file': release_file})
     dirpath, filename = os.path.split(video.name)
     dirpath = dirpath or '.'
     fileroot, fileext = os.path.splitext(filename)
@@ -54,11 +73,11 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
     release_name = get_release_name(release_file) or release_name
 
     if not release_name:
-        logger.debug('No release name for {video}', video=video.name)
+        log.debug('No release name for {video}', {'video': video.name})
         return
 
     release_path = os.path.join(dirpath, release_name + fileext)
-    logger.debug('Guessing using {path}', path=release_path)
+    log.debug('Guessing using {path}', {'path': release_path})
 
     guess = guessit(release_path)
     attributes = MOVIE_ATTRIBUTES if guess.get('type') == 'movie' else EPISODE_ATTRIBUTES
@@ -68,7 +87,8 @@ def refine(video, release_name=None, release_file=None, extension='release', **k
 
         if new_value and old_value != new_value:
             setattr(video, key, new_value)
-            logger.debug('Attribute {key} changed from {old} to {new}', key=key, old=old_value, new=new_value)
+            log.debug('Attribute {key} changed from {old} to {new}',
+                      {'key': key, 'old': old_value, 'new': new_value})
 
 
 def get_release_file(dirpath, filename, extension):
@@ -87,7 +107,7 @@ def get_release_file(dirpath, filename, extension):
 
     # skip if info file doesn't exist
     if os.path.isfile(release_file):
-        logger.debug('Found release file {file}', file=release_file)
+        log.debug('Found release file {file}', {'file': release_file})
         return release_file
 
 
@@ -107,6 +127,7 @@ def get_release_name(release_file):
 
     # skip if no release name was found
     if not release_name:
-        logger.warning('Release file {file} does not contain a release name', file=release_file)
+        log.warning('Release file {file} does not contain a release name',
+                    {'file': release_file})
 
     return release_name

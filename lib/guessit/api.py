@@ -100,7 +100,7 @@ class GuessItApi(object):
         :rtype:
         """
         try:
-            options = parse_options(options)
+            options = parse_options(options, True)
             result_decode = False
             result_encode = False
 

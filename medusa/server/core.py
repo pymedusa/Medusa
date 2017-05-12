@@ -5,6 +5,20 @@ from __future__ import unicode_literals
 import os
 import threading
 
+from medusa.server.api.v2.alias import AliasHandler
+from medusa.server.api.v2.alias_source import (
+    AliasSourceHandler,
+    AliasSourceOperationHandler,
+)
+from medusa.server.api.v2.auth import AuthHandler
+from medusa.server.api.v2.base import NotFoundHandler
+from medusa.server.api.v2.config import ConfigHandler
+from medusa.server.api.v2.episode import EpisodeHandler
+from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.series import SeriesHandler
+from medusa.server.api.v2.series_asset import SeriesAssetHandler
+from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
+from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
@@ -17,28 +31,39 @@ from ..helpers import create_https_certificates, generate_api_key
 
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
-    from .api.v2.config import ConfigHandler
-    from .api.v2.log import LogHandler
-    from .api.v2.show import ShowHandler
-    from .api.v2.auth import AuthHandler
-    from .api.v2.asset import AssetHandler
-    from .api.v2.base import NotFoundHandler
-
-    show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
-    # This has to accept season of 1-4 as some seasons are years. For example Formula 1
-    ep_id = r'(?:(?:s(?P<season>\d{1,4})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
-    query = r'(?P<query>[\w]+)'
-    query_extended = r'(?P<query>[\w \(\)%]+)'  # This also accepts the space char, () and %
-    log_level = r'(?P<log_level>[a-zA-Z]+)'
-    asset_group = r'(?P<asset_group>[a-zA-Z0-9]+)'
-
     return [
-        (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id, query=query), ShowHandler),
-        (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
-        (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
-        (r'{base}/authenticate(/?)'.format(base=base), AuthHandler),
-        (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group, query=query_extended), AssetHandler),
-        (r'{base}(/?.*)'.format(base=base), NotFoundHandler)
+        # Order: Most specific to most generic
+        # /api/v2/series/tvdb1234/episode
+        EpisodeHandler.create_app_handler(base),
+
+        # /api/v2/series/tvdb1234/operation
+        SeriesOperationHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234/asset
+        SeriesAssetHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234/legacy
+        SeriesLegacyHandler.create_app_handler(base),  # To be removed
+        # /api/v2/series/tvdb1234
+        SeriesHandler.create_app_handler(base),
+
+        # /api/v2/config
+        ConfigHandler.create_app_handler(base),
+
+        # /api/v2/log
+        LogHandler.create_app_handler(base),
+
+        # /api/v2/alias-source/xem/operation
+        AliasSourceOperationHandler.create_app_handler(base),
+        # /api/v2/alias-source
+        AliasSourceHandler.create_app_handler(base),
+
+        # /api/v2/alias
+        AliasHandler.create_app_handler(base),
+
+        # /api/v2/authenticate
+        AuthHandler.create_app_handler(base),
+
+        # Always keep this last!
+        NotFoundHandler.create_app_handler(base)
     ]
 
 
@@ -177,8 +202,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on {scheme}://{host}:{port}/'.format
-                   (scheme=protocol, host=self.options['host'], port=self.options['port']))
+        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}/'.format
+                   (scheme=protocol,
+                    host=self.options['host'],
+                    port=self.options['port'],
+                    web_root=self.options['web_root']))
 
         try:
             self.server.listen(self.options['port'], self.options['host'])

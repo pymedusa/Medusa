@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 import os
 
 from github import GithubException
+
 from tornroutes import route
+
 from .handler import Config
 from ..core import PageTemplate
 from .... import app, config, github_client, helpers, logger, ui
@@ -64,14 +66,16 @@ class ConfigGeneral(Config):
                     calendar_unprotected=None, calendar_icons=None, debug=None, ssl_verify=None, no_restart=None, coming_eps_missed_range=None,
                     fuzzy_dating=None, trim_zero=None, date_preset=None, date_preset_na=None, time_preset=None,
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
-                    git_reset=None, git_reset_branches=None, git_username=None, git_password=None, display_all_seasons=None, subliminal_log=None,
-                    privacy_level='normal', fanart_background=None, fanart_background_opacity=None, dbdebug=None):
+                    git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
+                    display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
+                    dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None):
+
         results = []
 
         # Misc
         app.DOWNLOAD_URL = download_url
         app.INDEXER_DEFAULT_LANGUAGE = indexerDefaultLang
-        app.EP_DEFAULT_DELETED_STATUS = ep_default_deleted_status
+        app.EP_DEFAULT_DELETED_STATUS = int(ep_default_deleted_status)
         app.SKIP_REMOVED_FILES = config.checkbox_to_value(skip_removed_files)
         app.LAUNCH_BROWSER = config.checkbox_to_value(launch_browser)
         config.change_SHOWUPDATE_HOUR(showupdate_hour)
@@ -91,11 +95,15 @@ class ConfigGeneral(Config):
         app.ANON_REDIRECT = anon_redirect
         app.PROXY_SETTING = proxy_setting
         app.PROXY_INDEXERS = config.checkbox_to_value(proxy_indexers)
+        app.GIT_AUTH_TYPE = int(git_auth_type)
         app.GIT_USERNAME = git_username
         app.GIT_PASSWORD = git_password
+        app.GIT_TOKEN = git_token
         app.GIT_RESET = config.checkbox_to_value(git_reset)
         app.GIT_RESET_BRANCHES = helpers.ensure_list(git_reset_branches)
-        app.GIT_PATH = git_path
+        if app.GIT_PATH != git_path:
+            app.GIT_PATH = git_path
+            config.change_GIT_PATH()
         app.GIT_REMOTE = git_remote
         app.CALENDAR_UNPROTECTED = config.checkbox_to_value(calendar_unprotected)
         app.CALENDAR_ICONS = config.checkbox_to_value(calendar_icons)
@@ -103,10 +111,10 @@ class ConfigGeneral(Config):
 
         app.SSL_VERIFY = config.checkbox_to_value(ssl_verify)
         # app.LOG_DIR is set in config.change_LOG_DIR()
-        app.COMING_EPS_MISSED_RANGE = try_int(coming_eps_missed_range, 7)
+        app.COMING_EPS_MISSED_RANGE = int(coming_eps_missed_range)
         app.DISPLAY_ALL_SEASONS = config.checkbox_to_value(display_all_seasons)
         app.NOTIFY_ON_LOGIN = config.checkbox_to_value(notify_on_login)
-        app.WEB_PORT = try_int(web_port)
+        app.WEB_PORT = int(web_port)
         app.WEB_IPV6 = config.checkbox_to_value(web_ipv6)
         if config.checkbox_to_value(encryption_version) == 1:
             app.ENCRYPTION_VERSION = 2
@@ -114,11 +122,17 @@ class ConfigGeneral(Config):
             app.ENCRYPTION_VERSION = 0
         app.WEB_USERNAME = web_username
         app.WEB_PASSWORD = web_password
+        app.WEB_ROOT = web_root
 
         app.DEBUG = config.checkbox_to_value(debug)
         app.DBDEBUG = config.checkbox_to_value(dbdebug)
         app.WEB_LOG = config.checkbox_to_value(web_log)
         app.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
+
+        # Added for tvdb / plex fallback
+        app.FALLBACK_PLEX_ENABLE = config.checkbox_to_value(fallback_plex_enable)
+        app.FALLBACK_PLEX_NOTIFICATIONS = config.checkbox_to_value(fallback_plex_notifications)
+        app.FALLBACK_PLEX_TIMEOUT = try_int(fallback_plex_timeout)
 
         if not config.change_LOG_DIR(log_dir):
             results += ['Unable to create directory {dir}, '
@@ -129,7 +143,12 @@ class ConfigGeneral(Config):
 
         # Validate github credentials
         try:
-            github_client.authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            if app.GIT_AUTH_TYPE == 0:
+                github_client.authenticate(app.GIT_USERNAME, app.GIT_PASSWORD)
+            else:
+                github = github_client.token_authenticate(app.GIT_TOKEN)
+                if app.GIT_USERNAME and app.GIT_USERNAME != github_client.get_user(gh=github):
+                    app.GIT_USERNAME = github_client.get_user(gh=github)
         except (GithubException, IOError):
             logger.log('Error while validating your Github credentials.', logger.WARNING)
 

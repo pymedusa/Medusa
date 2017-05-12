@@ -36,6 +36,12 @@
 ? +trueHD
 : audio_codec: TrueHD
 
+? +True-HD51
+? +trueHD51
+: audio_codec: TrueHD
+  audio_channels: '5.1'
+
+
 ? +DTS-HD
 : audio_codec: DTS
   audio_profile: HD
@@ -57,6 +63,7 @@
   audio_profile: LC
 
 ? +AAC2.0
+? +AAC20
 : audio_codec: AAC
   audio_channels: '2.0'
 
@@ -80,5 +87,9 @@
 : audio_channels: '1.0'
 
 ? DD5.1
+? DD51
 : audio_codec: DolbyDigital
   audio_channels: '5.1'
+
+? -51
+: audio_channels: '5.1'

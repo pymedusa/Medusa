@@ -10,24 +10,26 @@
   ],
   "dependencies": {
     "jquery": "3.0.0",
-    "bootstrap": "3.3.7",
-    "underscore": "^1.8.3",
-    "bootstrap-hover-dropdown": "2.2.1",
     "jquery-ui": "1.12.1",
-    "jquery-tokeninput": "^1.7.0",
-    "bootstrap3-typeahead": "4.0.2",
+    "bootstrap": "3.3.7",
     "jqueryui-touch-punch": "*",
+    "jquery-form": "4.0.1",
+    "jquery-tokeninput": "^1.7.0",
+    "jquery-confirm": "2.5.2",
+    "jquery-backstretch": "^2.1.15",
+    "bootstrap3-typeahead": "4.0.2",
+    "lodash": "4.17.4",
+    "underscore.string": "^3.3.4",
+    "loglevel": "1.4.1",
+    "timeago": "1.5.4",
     "pnotify": "2.1.0",
     "qtip2": "2.2.1",
-    "tablesorter": "jquery.tablesorter#2.24.5",
-    "jquery-confirm": "2.5.2",
-    "bootstrap-formhelpers": "2.3.0",
+    "tablesorter": "jquery.tablesorter#2.28.8",
     "isotope": "3.0.1",
-    "openSans": "https://google-fonts.azurewebsites.net/googleFonts/openSans?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic",
-    "jquery-backstretch-2": "^2.1.13"
+    "openSans": "https://google-fonts.azurewebsites.net/googleFonts/openSans?family=Open+Sans:400,300,300italic,400italic,600,600italic,700,700italic,800,800italic"
   },
   "resolutions": {
     "bootstrap": "3.3.7",
-    "jquery": "2.1.4"
+    "jquery": "3.0.0"
   }
 }

@@ -1,26 +1,118 @@
 MEDUSA.common.init = function() {
+    // Import underscore.string using it's mixin export.
+    _.mixin(s.exports());
+
+    // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
-        let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
-        let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
-        $.backstretch(path);
-        $('.backstretch').css('top',backstretchOffset());
-        $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+        var showID = $('#showID').attr('value');
+        if (showID) {
+            let path = apiRoot + 'series/' + $('#series_slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
+            $.backstretch(path);
+            $('.backstretch').css('top', backstretchOffset());
+            $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+        }
     }
 
     function backstretchOffset() {
         var offset = '90px';
-        if($("#sub-menu-container").length == 0) {
+        if ($('#sub-menu-container').length === 0) {
             offset = '50px';
         }
-        if ($(window).width() < 1281) {
+        if ($(window).width() < 1280) {
             offset = '50px';
         }
         return offset;
     }
 
     $(window).resize(function() {
-        $('.backstretch').css('top',backstretchOffset());
+        $('.backstretch').css('top', backstretchOffset());
     });
+
+    // Scroll Functions
+    function scrollTo(dest) {
+        $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
+    }
+
+    $(document).on('scroll', function() {
+        if ($(window).scrollTop() > 100) {
+            $('.scroll-top-wrapper').addClass('show');
+        } else {
+            $('.scroll-top-wrapper').removeClass('show');
+        }
+    });
+
+    $('.scroll-top-wrapper').on('click', function() {
+        scrollTo($('body'));
+    });
+
+    // Scroll to Anchor
+    $('a[href^="#season"]').on('click', function(e) {
+        e.preventDefault();
+        scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
+    });
+
+    // Hover Dropdown for Nav
+    $('ul.nav li.dropdown').hover(function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+    }, function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
+    });
+
+    // function to change luminance of #000000 color - used in triggerhighlighting
+    function colorLuminance(hex, lum) {
+        hex = String(hex).replace(/[^0-9a-f]/gi, '');
+        if (hex.length < 6) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        lum = lum || 0;
+        var rgb = '#';
+        var c;
+        var i;
+        for (i = 0; i < 3; i++) {
+            c = parseInt(hex.substr(i * 2, 2), 16);
+            c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+            rgb += ('00' + c).substr(c.length);
+        }
+        return rgb;
+    }
+
+    // function to convert rgb(0,0,0) into #000000
+    function rgb2hex(rgb) {
+        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        function hex(x) {
+            return ('0' + parseInt(x, 10).toString(16)).slice(-2);
+        }
+        return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+    }
+
+    var revertBackgroundColor; // used to revert back to original background-color after highlight
+    $('.triggerhighlight').on('mouseover', function() {
+        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
+        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // setting highlight background-color
+    }).on('mouseout', function() {
+        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
+    });
+
+    $.rootDirCheck = function() {
+        if ($('#rootDirs option:selected').length === 0) {
+            $('button[data-add-show]').prop('disabled', true);
+            if (!$('#configure_show_options').is(':checked')) {
+                $('#configure_show_options').prop('checked', true);
+                $('#content_configure_show_options').fadeIn('fast', 'linear');
+            }
+            if ($('#rootDirAlert').length === 0) {
+                $('#content-row').before('<div id="rootDirAlert"><div class="text-center">' +
+                  '<div class="alert alert-danger upgrade-notification hidden-print role="alert">' +
+                  '<strong>ERROR!</strong> Unable to add recommended shows.  Please set a default directory first.' +
+                  '</div></div></div>');
+            } else {
+                $('#rootDirAlert').show();
+            }
+        } else {
+            $('#rootDirAlert').hide();
+            $('button[data-add-show]').prop('disabled', false);
+        }
+    };
 
     $.confirm.options = {
         confirmButton: 'Yes',
@@ -179,7 +271,7 @@ MEDUSA.common.init = function() {
             },
             position: {
                 my: my,
-                at: at,
+                at: at
             },
             style: {
                 tip: {

@@ -113,7 +113,7 @@ def build_name_cache(show=None):
         # Add scene exceptions to name cache
         name_cache.update(names)
 
-        logger.log(u'Internal name cache for {show} set to: [{names}]'.format(
+        logger.log(u'Internal name cache for {show} set to: {names}'.format(
             show=show.name,
             names=names.keys()
         ), logger.DEBUG)

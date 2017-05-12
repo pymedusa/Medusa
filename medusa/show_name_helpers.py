@@ -21,9 +21,11 @@ import os
 import re
 
 from six import string_types
-from . import app, common, logger
+
+from . import app, logger
+
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .scene_exceptions import get_scene_exceptions
+
 
 resultFilters = [
     "(dir|sub|nfo)fix",
@@ -40,12 +42,11 @@ if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
 
 def containsAtLeastOneWord(name, words):
     """
-    Filters out results based on filter_words
+    Filter out results based on filter_words.
 
-    name: name to check
-    words : string of words separated by a ',' or list of words
-
-    Returns: False if the name doesn't contain any word of words list, or the found word from the list.
+    :param name: name to check
+    :param words: string of words separated by a ',' or list of words
+    :return: False if the name doesn't contain any word of words list, or the found word from the list.
     """
     if not (name and words):
         return False
@@ -69,14 +70,12 @@ def containsAtLeastOneWord(name, words):
 
 def filterBadReleases(name, parse=True):
     """
-    Filters out non-english and just all-around stupid releases by comparing them
+    Filter out non-english and just all-around stupid releases by comparing them
     to the resultFilters contents.
 
-    name: the release name to check
-
-    Returns: True if the release name is OK, False if it's bad.
+    :param name: the release name to check
+    :return: True if the release name is OK, False if it's bad.
     """
-
     try:
         if parse:
             NameParser().parse(name)
@@ -92,48 +91,6 @@ def filterBadReleases(name, parse=True):
         logger.log(u"Unwanted scene release: {0}. Contains unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
         return False
     return True
-
-
-def allPossibleShowNames(show, season=-1):
-    """
-    Figures out every possible variation of the name for a particular show.
-
-    Includes indexer name, and any scene exception names, and country code
-    at the end of the name (e.g. "Show Name (AU)".
-
-    show: a Series object that we should get the names of
-    Returns: all possible show names
-    """
-
-    show_names = get_scene_exceptions(show.indexerid, show.indexer, season)
-    show_names.add(show.name)
-
-    new_show_names = set()
-
-    if not show.is_anime:
-        country_list = {}
-        # add the country list
-        country_list.update(common.countryList)
-        # add the reversed mapping of the country list
-        country_list.update({v: k for k, v in common.countryList.items()})
-
-        for name in show_names:
-            if not name:
-                continue
-
-            # if we have "Show Name Australia" or "Show Name (Australia)"
-            # this will add "Show Name (AU)" for any countries defined in
-            # common.countryList (and vice versa)
-            for country in country_list:
-                pattern_1 = ' {0}'.format(country)
-                pattern_2 = ' ({0})'.format(country)
-                replacement = ' ({0})'.format(country_list[country])
-                if name.endswith(pattern_1):
-                    new_show_names.add(name.replace(pattern_1, replacement))
-                elif name.endswith(pattern_2):
-                    new_show_names.add(name.replace(pattern_2, replacement))
-
-    return show_names.union(new_show_names)
 
 
 def determineReleaseName(dir_name=None, nzb_name=None):

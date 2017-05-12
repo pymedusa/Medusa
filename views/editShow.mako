@@ -20,8 +20,8 @@
 % endif
 </%block>
 <%block name="content">
+<input type="hidden" id="series_slug" value="${show.slug}" />
 <input type="hidden" id="showID" value="${show.indexerid}" />
-<input type="hidden" id="showIndexerName" value="${mappings.get(show.indexer).replace('_id', '')}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
@@ -76,7 +76,7 @@
                             <label for="indexerLangSelect">
                                 <span class="component-title">Info Language</span>
                                 <span class="component-desc">
-                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
+                                    <select name="indexer_lang" id="indexerLangSelect" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language="${show.lang}" data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
                                     <div class="clear-left"><p>This only applies to episode filenames and the contents of metadata files.</p></div>
                                 </span>
                             </label>

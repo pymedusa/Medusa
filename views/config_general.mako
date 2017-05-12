@@ -32,22 +32,13 @@
                     <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
                 </ul>
                 <div id="misc">
-                        <div class="component-group-desc">
-                            <h3>Misc</h3>
-                            <p>Startup options. Indexer options. Log and show file locations.</p>
-                            <p><b>Some options may require a manual restart to take effect.</b></p>
-                        </div>
+                    <div class="component-group-desc">
+                        <h3>Misc</h3>
+                        <p>Startup options. Indexer options. Log and show file locations.</p>
+                        <p><b>Some options may require a manual restart to take effect.</b></p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="indexerDefaultLang">
-                                    <span class="component-title">Default Indexer Language</span>
-                                    <span class="component-desc">
-                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language=${app.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
-                                        <span>for adding shows and metadata providers</span>
-                                    </span>
-                                </label>
-                            </div>
                             <div class="field-pair">
                                 <label for="launch_browser">
                                     <span class="component-title">Launch browser</span>
@@ -69,16 +60,6 @@
                                             <option value="IRC" ${'selected="selected"' if app.DEFAULT_PAGE == 'IRC' else ''}>IRC</option>
                                         </select>
                                         <span>when launching Medusa interface</span>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label for="showupdate_hour">
-                                    <span class="component-title">Choose hour to update shows</span>
-                                    <span class="component-desc">
-                                        <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${app.SHOWUPDATE_HOUR}" class="form-control input-sm input75"/>
-                                        <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
-                                        <p>Note: minutes are randomized each time Medusa is started</p>
                                     </span>
                                 </label>
                             </div>
@@ -123,6 +104,52 @@
                                 </label>
                             </div>
                             <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Show root directories</span>
+                                    <span class="component-desc">
+                                        <p>where the files of shows are located</p>
+                                        <%include file="/inc_rootDirs.mako"/>
+                                    </span>
+                                </label>
+                            </div>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
+                    </div>
+                    <div class="component-group-desc">
+                        <h3>Indexer</h3>
+                        <p>Options for controlling the show indexers.</p>
+                    </div>
+                    <div class="component-group">
+                        <fieldset class="component-group-list">
+                            <div class="field-pair">
+                                <label for="indexerDefaultLang">
+                                    <span class="component-title">Default Indexer Language</span>
+                                    <span class="component-desc">
+                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language=${app.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
+                                        <span>for adding shows and metadata providers</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="showupdate_hour">
+                                    <span class="component-title">Choose hour to update shows</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${app.SHOWUPDATE_HOUR}" class="form-control input-sm input75"/>
+                                        <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
+                                        <p>Note: minutes are randomized each time Medusa is started</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="indexer_timeout">
+                                    <span class="component-title">Timeout show indexer at</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="10" step="1" name="indexer_timeout" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" class="form-control input-sm input75"/>
+                                        <p>seconds of inactivity when finding new shows (default:20)</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
                                 <label for="indexer_default">
                                     <span class="component-title">Use initial indexer set to</span>
                                     <span class="component-desc">
@@ -137,30 +164,40 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <label for="indexer_timeout">
-                                    <span class="component-title">Timeout show indexer at</span>
+                                <label for="fallback_plex_enable">
+                                    <span class="component-title">Enable fallback to plex</span>
                                     <span class="component-desc">
-                                        <input type="number" min="10" step="1" name="indexer_timeout" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" class="form-control input-sm input75"/>
-                                        <p>seconds of inactivity when finding new shows (default:20)</p>
+                                        <input type="checkbox" name="fallback_plex_enable" id="fallback_plex_enable" ${'checked="checked"' if app.FALLBACK_PLEX_ENABLE else ''}/>
+                                        <p>Plex provides a tvdb mirror, that can be utilized when Tvdb's api is unavailable.</p>
                                     </span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Show root directories</span>
+                                <label for="fallback_plex_notifications">
+                                    <span class="component-title">Enable fallback notifications</span>
                                     <span class="component-desc">
-                                        <p>where the files of shows are located</p>
-                                        <%include file="/inc_rootDirs.mako"/>
+                                        <input type="checkbox" name="fallback_plex_notifications" id="fallback_plex_notifications" ${'checked="checked"' if app.FALLBACK_PLEX_NOTIFICATIONS else ''}/>
+                                        <p>When this settings has been enabled, you may receive frequent notifications when falling back to the plex mirror.</p>
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <div class="field-pair">
+                                <label for="fallback_plex_timer">
+                                    <span class="component-title">Fallback duration</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="fallback_plex_timeout" id="fallback_plex_timeout" value="${app.FALLBACK_PLEX_TIMEOUT}" class="form-control input-sm input75"/>
+                                        <p>Amount of hours after we try to revert back to the thetvdb.com api url (default:3).</p>
+                                    </span>
+                                </label>
+                            </div>
+
                         </fieldset>
                     </div>
-                        <div class="component-group-desc">
-                            <h3>Updates</h3>
-                            <p>Options for software updates.</p>
-                        </div>
+
+                    <div class="component-group-desc">
+                        <h3>Updates</h3>
+                        <p>Options for software updates.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -220,7 +257,6 @@
                                         <option value="dark" ${'selected="selected"' if app.THEME_NAME == 'dark' else ''}>Dark</option>
                                         <option value="light" ${'selected="selected"' if app.THEME_NAME == 'light' else ''}>Light</option>
                                     </select>
-                                    <span class="red-text">for appearance to take effect, save then refresh your browser</span>
                                 </span>
                             </label>
                         </div>
@@ -459,6 +495,19 @@
                                 </span>
                             </label>
                         </div>
+                        <div class="field-pair">
+                            <label for="web_root">
+                                <span class="component-title">HTTP web root</span>
+                                <span class="component-desc">
+                                    <input type="text" name="web_root" id="web_root" value="${app.WEB_ROOT}" class="form-control input-sm input300" autocomplete="no" />
+                                    blank = disabled
+                                <div class="clear-left">
+                                <p>Set a base URL, for use in reverse proxies.</p>
+                                <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
+                                </div>
+                                </span>
+                            </label>
+                        </div>
                         <input type="submit" class="btn config_submitter" value="Save Changes" />
                     </fieldset>
                 </div><!-- /component-group2 //-->
@@ -643,8 +692,9 @@
                                     <span>
                                         Set the level of log-filtering.
                                         Normal (default).
-                                        <br>NOTE: A restart may be required to take effect.
-                                        <br>WARNING: Setting to "DISABLED" will show sensitive information such as passwords in the logs!
+                                        <div class="clear-left">
+                                        <br><b>NOTE:</b> Low: minimal filtering to protect login credentials. Normal: default filtering. High: increased filtering for additional privacy
+                                        </div>
                                     </span>
                                 </span>
                             </label>
@@ -689,23 +739,57 @@
                             </label>
                         </div>
                         <div class="field-pair">
-                            <label for="git_username">
-                                <span class="component-title">GitHub username</span>
+                            <label for="git_auth_type">
+                                <span class="component-title">GitHub authentication type:</span>
                                 <span class="component-desc">
-                                    <input type="text" name="git_username" id="git_username" value="${app.GIT_USERNAME}" class="form-control input-sm input300"
-                                           autocomplete="no" />
-                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    <input type="radio" name="git_auth_type" id="git_auth_type_basic" value="0" ${('', 'checked="checked"')[app.GIT_AUTH_TYPE == 0]}/>
+                                    <label>Username and password</label>
+                                </span>
+                                <span class="component-desc">
+                                    <input type="radio" name="git_auth_type" id="git_auth_type_token" value="1" ${('', 'checked="checked"')[app.GIT_AUTH_TYPE == 1]}/>
+                                    <label>Personal access token</label>
+                                </span>
+                                <span class="component-desc">
+                                    <div class="clear-left"><p>You must use a personal access token if you're using "two-factor authentication" on GitHub.</p></div>
                                 </span>
                             </label>
                         </div>
-                        <div class="field-pair">
-                            <label for="git_password">
-                                <span class="component-title">GitHub password</span>
-                                <span class="component-desc">
-                                    <input type="password" name="git_password" id="git_password" value="${app.GIT_PASSWORD}" class="form-control input-sm input300" autocomplete="no"/>
-                                    <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
-                                </span>
-                            </label>
+                        <div name="content_github_auth_type">
+                            <div class="field-pair">
+                                <label for="git_username">
+                                    <span class="component-title">GitHub username</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="git_username" id="git_username" value="${app.GIT_USERNAME}" class="form-control input-sm input300"
+                                               autocomplete="no" />
+                                        <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="git_password">
+                                    <span class="component-title">GitHub password</span>
+                                    <span class="component-desc">
+                                        <input type="password" name="git_password" id="git_password" value="${app.GIT_PASSWORD}" class="form-control input-sm input300" autocomplete="no"/>
+                                        <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div name="content_github_auth_type">
+                            <div class="field-pair">
+                                <label for="git_password">
+                                    <span class="component-title">GitHub personal access token</span>
+                                    <span class="component-desc">
+                                        <input type="text" name="git_token" id="git_token" value="${app.GIT_TOKEN}" class="form-control input-sm input350" autocapitalize="off" autocomplete="no" />
+                                         % if not app.GIT_TOKEN:
+                                            <input class="btn btn-inline" type="button" id="create_access_token" value="Generate Token">
+                                         % else:
+                                            <input class="btn btn-inline" type="button" id="manage_tokens" value="Manage Tokens">
+                                         % endif
+                                        <div class="clear-left"><p>*** (REQUIRED FOR SUBMITTING ISSUES) ***</p></div>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                         <div class="field-pair">
                             <label for="git_remote">

@@ -10,4 +10,5 @@ MEDUSA.addShows.recommendedShows = function() {
     $.initAddShowById();
     $.initBlackListShowById();
     $.initRemoteShowGrid();
+    $.rootDirCheck();
 };
