@@ -118,7 +118,7 @@ class CpasbienProvider(TorrentProvider):
                     torrent_size = row.find(class_='poid').get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = row.find('a')['title'].split("-")[1]
+                    pubdate_raw = row.find('a')['title'].split('-')[1]
                     pubdate = self._parse_pubdate(pubdate_raw)
 
                     item = {
