@@ -167,7 +167,7 @@ class LimeTorrentsProvider(TorrentProvider):
                     # Handle all date formats in the site
                     # Example: "7 days ago - in TV shows" or "16 minutes ago"
                     pubdate_raw = cells[1].get_text()
-                    pubdate_raw = pubdate_raw.split("ago")[0].split("+")[0].split("-")[0].replace("Last", "1")
+                    pubdate_raw = pubdate_raw.split("ago")[0].split("+")[0].split("-")[0].replace("Last", "1").replace("Yesterday", "24 Hours")
                     pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw)))\
                         if pubdate_raw else None
 
