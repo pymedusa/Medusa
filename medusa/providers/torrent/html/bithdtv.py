@@ -146,7 +146,7 @@ class BithdtvProvider(TorrentProvider):
                     torrent_size = cells[6].get_text(' ') if len(cells) > 6 else None
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = cells[5].get_text(" ")
+                    pubdate_raw = cells[5].get_text(' ')
                     pubdate = self._parse_pubdate(pubdate_raw)
 
                     item = {
