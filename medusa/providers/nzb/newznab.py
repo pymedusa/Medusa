@@ -10,8 +10,6 @@ import re
 import time
 import traceback
 
-from dateutil import parser
-
 from medusa import (
     app,
     tv,
@@ -203,10 +201,7 @@ class NewznabProvider(NZBProvider):
 
                             size = convert_size(item_size) or -1
                             pubdate_raw = item.pubdate.get_text(strip=True)
-                            try:
-                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
-                            except ValueError:
-                                pubdate = None
+                            pubdate = self._parse_pubdate(pubdate_raw)
 
                             item = {
                                 'title': title,

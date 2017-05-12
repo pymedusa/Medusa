@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
@@ -143,7 +141,7 @@ class HD4FreeProvider(TorrentProvider):
                 size = convert_size(torrent_size) or -1
 
                 pubdate_raw = torrent_rows[row]['added']
-                pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
+                pubdate = self._parse_pubdate(pubdate_raw)
 
                 item = {
                     'title': title,

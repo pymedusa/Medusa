@@ -118,13 +118,16 @@ class CpasbienProvider(TorrentProvider):
                     torrent_size = row.find(class_='poid').get_text(strip=True)
                     size = convert_size(torrent_size, units=units) or -1
 
+                    pubdate_raw = row.find('a')['title'].split("-")[1]
+                    pubdate = self._parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

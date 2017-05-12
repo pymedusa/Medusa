@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import logging
 import traceback
 
@@ -16,6 +17,8 @@ from medusa.helper.common import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from pytimeparse import parse
 
 import validators
 
@@ -143,13 +146,17 @@ class TorrentProjectProvider(TorrentProvider):
                     torrent_size = row.find('span', class_='bc torrent-size').get_text().rstrip()
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row.find('span', class_='bc cated').get_text()[:-4]
+                    pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw)))\
+                        if pubdate_raw else None
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

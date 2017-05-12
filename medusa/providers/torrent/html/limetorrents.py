@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import datetime
 import logging
 import re
 import traceback
@@ -11,6 +12,7 @@ import traceback
 from contextlib2 import suppress
 
 from medusa import tv
+
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
@@ -18,6 +20,8 @@ from medusa.helper.common import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+from pytimeparse import parse
 
 from requests.compat import urljoin
 from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
@@ -160,6 +164,13 @@ class LimeTorrentsProvider(TorrentProvider):
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''), 1)
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True).replace(',', ''))
 
+                    # Handle all date formats in the site
+                    # Example: "7 days ago - in TV shows" or "16 minutes ago"
+                    pubdate_raw = cells[1].get_text()
+                    pubdate_raw = pubdate_raw.split("ago")[0].split("+")[0].split("-")[0].replace("Last", "1")
+                    pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw)))\
+                        if pubdate_raw else None
+
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
                             log.debug("Discarding torrent because it doesn't meet the"
@@ -177,7 +188,7 @@ class LimeTorrentsProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
