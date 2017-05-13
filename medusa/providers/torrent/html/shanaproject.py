@@ -24,6 +24,7 @@ log.logger.addHandler(logging.NullHandler())
 
 class ShanaProjectProvider(TorrentProvider):
     """ShanaProject Torrent provider."""
+
     size_regex = re.compile('([\d.]+)(.*)')
 
     def __init__(self):
@@ -184,5 +185,6 @@ class ShanaProjectProvider(TorrentProvider):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]
+
 
 provider = ShanaProjectProvider()
