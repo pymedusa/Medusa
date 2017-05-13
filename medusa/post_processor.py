@@ -1167,12 +1167,12 @@ class PostProcessor(object):
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
             orig_extension = self.file_name.rpartition('.')[-1]
-            new_basename = os.path.basename(proper_path)
-            new_file_name = new_basename + '.' + orig_extension
+            new_base_name = os.path.basename(proper_path)
+            new_file_name = new_base_name + '.' + orig_extension
 
         else:
             # if we're not renaming then there's no new base name, we'll just use the existing name
-            new_basename = None
+            new_base_name = None
             new_file_name = self.file_name
 
         # add to anidb

@@ -1449,7 +1449,7 @@ class Episode(TV):
         encoder = Quality.scene_quality_from_name(self.release_name.replace(rel_grp[relgrp], ''), ep_qual)
         if encoder:
             log.debug('Found codec for {series} {ep}',
-                      {'series': show_name, 'ep': ep_name})
+                      {'series': series_name, 'ep': ep_name})
 
         return {
             '%SN': series_name,
