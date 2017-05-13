@@ -126,14 +126,14 @@ class RarbgProvider(TorrentProvider):
                     # List of errors: https://github.com/rarbg/torrentapi/issues/1#issuecomment-114763312
                     if error_code == 5:
                         # 5 = Too many requests per second
-                        log_level = log.INFO
+                        log_level = logging.INFO
                     elif error_code not in (4, 8, 10, 12, 14, 20):
                         # 4 = Invalid token. Use get_token for a new one!
                         # 8, 10, 12, 14 = Cant find * in database. Are you sure this * exists?
                         # 20 = No results found
-                        log_level = log.WARNING
+                        log_level = logging.WARNING
                     else:
-                        log_level = log.DEBUG
+                        log_level = logging.DEBUG
                     log.log(log_level, '{msg} Code: {code}', {'msg': error, 'code': error_code})
                     continue
 
