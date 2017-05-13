@@ -19,22 +19,16 @@
 """Provider code for Xthor."""
 from __future__ import unicode_literals
 
-import time
-import traceback
-from operator import itemgetter
-
 from medusa import (
     logger,
     tv,
 )
 from medusa.common import USER_AGENT
 from medusa.helper.common import (
-    convert_size,
     try_int,
 )
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.auth import AuthBase
 from requests.compat import quote, urljoin
 
 
