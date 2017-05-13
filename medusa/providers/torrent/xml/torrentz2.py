@@ -25,7 +25,7 @@ class Torrentz2Provider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Torrentz2')
+        super(Torrentz2Provider, self).__init__('Torrentz2')
 
         # Credentials
         self.public = True
