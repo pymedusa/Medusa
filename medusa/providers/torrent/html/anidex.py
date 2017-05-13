@@ -1,16 +1,17 @@
 # coding=utf-8
 
-"""Provider code for EliteTorrent."""
+"""Provider code for AniDex."""
 
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
+
+from dateutil import parser
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helper.common import try_int
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -20,33 +21,33 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class EliteTorrentProvider(TorrentProvider):
-    """EliteTorrent Torrent provider."""
+class AniDexProvider(TorrentProvider):
+    """AniDex Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('EliteTorrent')
+        super(self.__class__, self).__init__('AniDex')
 
         # Credentials
+        self.public = True
 
         # URLs
-        self.url = 'http://www.elitetorrent.net'
+        self.url = 'https://anidex.info'
         self.urls = {
-            'base_url': self.url,
-            'search': urljoin(self.url, 'torrents.php')
+            'search': urljoin(self.url, '/ajax/page.ajax.php'),
         }
 
-        # Proper Strings
-
         # Miscellaneous Options
-        self.onlyspasearch = None
+        self.headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
 
         # Torrent Stats
         self.minseed = None
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self)  # Only poll EliteTorrent every 20 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -58,26 +59,17 @@ class EliteTorrentProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        lang_info = '' if not ep_obj or not ep_obj.series else ep_obj.series.lang
 
-        # Search query:
-        # http://www.elitetorrent.net/torrents.php?cat=4&modo=listado&orden=fecha&pag=1&buscar=fringe
-        # Search Params
         search_params = {
-            'cat': 4,  # Shows
-            'modo': 'listado',  # display results mode
-            'orden': 'fecha',  # date order
-            'pag': 1,  # page number
-            'buscar': '',  # Search show
+            'page': 'torrents',
+            'category': 0,
+            'filename': '',
+            'limit': 50,
+            'offset': 0,
         }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
-
-            # Only search if user conditions are true
-            if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
-                log.debug('Show info is not spanish, skipping provider search')
-                continue
 
             for search_string in search_strings[mode]:
 
@@ -85,8 +77,8 @@ class EliteTorrentProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_string = re.sub(r'S0*(\d*)E(\d*)', r'\1x\2', search_string)
-                search_params['buscar'] = search_string.strip() if mode != 'RSS' else ''
+                    search_params.update({'filename': '{0}'.format(search_string)})
+
                 response = self.get_url(self.urls['search'], params=search_params, returns='response')
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -106,25 +98,33 @@ class EliteTorrentProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
+
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', class_='fichas-listado')
-            torrent_rows = torrent_table('tr') if torrent_table else []
+            table_header = html.find('thead')
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if not table_header:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            # Skip column headers
-            for row in torrent_rows[1:]:
+            table_spans = table_header.find_all('span')
+            # Skip 'Likes' to have the same amount of cells and labels
+            labels = [label.get('title') for label in table_spans if label.get('title') != 'Likes']
+
+            torrent_rows = html.find('tbody').find_all('tr')
+            for row in torrent_rows:
+                cells = row.find_all('td')
+
                 try:
-                    title = self._process_title(row.find('a', class_='nombre')['title'])
-                    download_url = self.urls['base_url'] + row.find('a')['href']
+                    title = cells[labels.index('Filename')].span.get_text()
+                    download_url = cells[labels.index('Torrent')].a.get('href')
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(row.find('td', class_='semillas').get_text(strip=True))
-                    leechers = try_int(row.find('td', class_='clientes').get_text(strip=True))
+                    download_url = urljoin(self.url, download_url)
+
+                    seeders = cells[labels.index('Seeders')].get_text()
+                    leechers = cells[labels.index('Leechers')].get_text()
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -134,7 +134,11 @@ class EliteTorrentProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    size = -1  # Provider does not provide size
+                    torrent_size = cells[labels.index('File size')].get_text()
+                    size = convert_size(torrent_size) or -1
+
+                    date = cells[labels.index('Age')].get('title')
+                    pubdate = parser.parse(date)
 
                     item = {
                         'title': title,
@@ -142,7 +146,7 @@ class EliteTorrentProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -155,25 +159,5 @@ class EliteTorrentProvider(TorrentProvider):
 
         return items
 
-    @staticmethod
-    def _process_title(title):
 
-        # Quality, if no literal is defined it's HDTV
-        if 'calidad' not in title:
-            title += ' HDTV x264'
-
-        title = title.replace('(calidad baja)', 'HDTV x264')
-        title = title.replace('(Buena calidad)', '720p HDTV x264')
-        title = title.replace('(Alta calidad)', '720p HDTV x264')
-        title = title.replace('(calidad regular)', 'DVDrip x264')
-        title = title.replace('(calidad media)', 'DVDrip x264')
-
-        # Language, all results from this provider have spanish audio,
-        # We append it to title (to avoid downloading undesired torrents)
-        title += ' SPANISH AUDIO'
-        title += '-ELITETORRENT'
-
-        return title.strip()
-
-
-provider = EliteTorrentProvider()
+provider = AniDexProvider()

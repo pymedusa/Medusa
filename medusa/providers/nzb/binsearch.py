@@ -1,33 +1,20 @@
 # coding=utf-8
-# Author: moparisthebest <admin@moparisthebest.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Binsearch provider."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 from time import time
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class BinSearchProvider(NZBProvider):
@@ -119,7 +106,7 @@ class BinSearchCache(tv.Cache):
             search_params = {'max': 50, 'g': group}
             data = self.get_rss_feed(self.provider.urls['rss'], search_params)['entries']
             if not data:
-                logger.log('No data returned from provider', logger.DEBUG)
+                log.debug('No data returned from provider')
                 continue
 
             for item in data:

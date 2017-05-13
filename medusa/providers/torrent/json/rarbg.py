@@ -1,36 +1,24 @@
 # coding=utf-8
-# Author: Dustyn Gibson <miigotu@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for RARBG."""
+
 from __future__ import unicode_literals
 
 import datetime
+import logging
 import time
 import traceback
 
-from dateutil import parser
-
 from medusa import (
     app,
-    logger,
     tv,
 )
 from medusa.helper.common import convert_size, try_int
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class RarbgProvider(TorrentProvider):
@@ -93,7 +81,7 @@ class RarbgProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             if mode == 'RSS':
                 search_params['search_string'] = None
@@ -105,10 +93,10 @@ class RarbgProvider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                     if self.ranked:
-                        logger.log('Searching only ranked torrents', logger.DEBUG)
+                        log.debug('Searching only ranked torrents')
 
                 search_params['search_string'] = search_string
 
@@ -123,13 +111,13 @@ class RarbgProvider(TorrentProvider):
                 search_url = self.urls['api']
                 response = self.get_url(search_url, params=search_params, returns='response')
                 if not response or not response.content:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 try:
                     jdata = response.json()
                 except ValueError:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 error = jdata.get('error')
@@ -138,15 +126,15 @@ class RarbgProvider(TorrentProvider):
                     # List of errors: https://github.com/rarbg/torrentapi/issues/1#issuecomment-114763312
                     if error_code == 5:
                         # 5 = Too many requests per second
-                        log_level = logger.INFO
+                        log_level = logging.INFO
                     elif error_code not in (4, 8, 10, 12, 14, 20):
                         # 4 = Invalid token. Use get_token for a new one!
                         # 8, 10, 12, 14 = Cant find * in database. Are you sure this * exists?
                         # 20 = No results found
-                        log_level = logger.WARNING
+                        log_level = logging.WARNING
                     else:
-                        log_level = logger.DEBUG
-                    logger.log('{msg} Code: {code}'.format(msg=error, code=error_code), log_level)
+                        log_level = logging.DEBUG
+                    log.log(log_level, '{msg} Code: {code}', {'msg': error, 'code': error_code})
                     continue
 
                 results += self.parse(jdata, mode)
@@ -167,10 +155,9 @@ class RarbgProvider(TorrentProvider):
         torrent_rows = data.get('torrent_results', {})
 
         if not torrent_rows:
-            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+            log.debug('Data returned from provider does not contain any torrents')
             return items
 
-        # Skip column headers
         for row in torrent_rows:
             try:
                 title = row.pop('title')
@@ -184,16 +171,16 @@ class RarbgProvider(TorrentProvider):
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
-                        logger.log("Discarding torrent because it doesn't meet the "
-                                   "minimum seeders: {0}. Seeders: {1}".format
-                                   (title, seeders), logger.DEBUG)
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  " minimum seeders: {0}. Seeders: {1}",
+                                  title, seeders)
                     continue
 
                 torrent_size = row.pop('size', -1)
                 size = convert_size(torrent_size) or -1
 
-                pubdate = row.pop('pubdate')
-                pubdate = parser.parse(pubdate, fuzzy=True)
+                pubdate_raw = row.pop('pubdate')
+                pubdate = self._parse_pubdate(pubdate_raw)
 
                 item = {
                     'title': title,
@@ -204,13 +191,13 @@ class RarbgProvider(TorrentProvider):
                     'pubdate': pubdate,
                 }
                 if mode != 'RSS':
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                           (traceback.format_exc()), logger.ERROR)
+                log.error('Failed parsing provider. Traceback: {0!r}',
+                          traceback.format_exc())
 
         return items
 
@@ -227,7 +214,7 @@ class RarbgProvider(TorrentProvider):
 
         response = self.get_url(self.urls['api'], params=login_params, returns='json')
         if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         self.token = response.get('token')

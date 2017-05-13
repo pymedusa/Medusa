@@ -1,40 +1,28 @@
 # coding=utf-8
-# Author: djoole <bobby.djoole@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for T411."""
+
 from __future__ import unicode_literals
 
+import logging
 import time
 import traceback
 from operator import itemgetter
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.common import USER_AGENT
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.auth import AuthBase
 from requests.compat import quote, urljoin
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class T411Provider(TorrentProvider):
@@ -51,7 +39,7 @@ class T411Provider(TorrentProvider):
         self.tokenLastUpdate = None
 
         # URLs
-        self.url = 'https://api.t411.ai'
+        self.url = 'https://api.t411.al'
         self.urls = {
             'search': urljoin(self.url, 'torrents/search/{search}'),
             'rss': urljoin(self.url, 'torrents/top/today'),
@@ -74,7 +62,8 @@ class T411Provider(TorrentProvider):
         self.cache = tv.Cache(self, min_time=10)  # Only poll T411 every 10 minutes max
 
     def search(self, search_strings, age=0, ep_obj=None):
-        """Search a provider and parse the results.
+        """
+        Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
@@ -85,17 +74,18 @@ class T411Provider(TorrentProvider):
         if not self.login():
             return results
 
+        # Search Params
         search_params = {}
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                     if self.confirmed:
-                        logger.log('Searching only confirmed torrents', logger.DEBUG)
+                        log.debug('Searching only confirmed torrents')
 
                     # use string formatting to safely coerce the search term
                     # to unicode then utf-8 encode the unicode string
@@ -118,13 +108,13 @@ class T411Provider(TorrentProvider):
                     )
 
                     if not response or not response.content:
-                        logger.log('No data returned from provider', logger.DEBUG)
+                        log.debug('No data returned from provider')
                         continue
 
                     try:
                         jdata = response.json()
-                    except ValueError:  # also catches JSONDecodeError if simplejson is installed
-                        logger.log('No data returned from provider', logger.DEBUG)
+                    except ValueError:
+                        log.debug('No data returned from provider')
                         continue
 
                     results += self.parse(jdata, mode)
@@ -132,7 +122,8 @@ class T411Provider(TorrentProvider):
         return results
 
     def parse(self, data, mode):
-        """Parse search results for items.
+        """
+        Parse search results for items.
 
         :param data: The raw response from a search
         :param mode: The current mode used to search, e.g. RSS
@@ -144,10 +135,9 @@ class T411Provider(TorrentProvider):
         unsorted_torrent_rows = data.get('torrents') if mode != 'RSS' else data
 
         if not unsorted_torrent_rows:
-            logger.log(
-                'Data returned from provider does not contain any {torrents}'.format(
-                    torrents='confirmed torrents' if self.confirmed else 'torrents'
-                ), logger.DEBUG
+            log.debug(
+                'Data returned from provider does not contain any {torrents}',
+                {'torrents': 'confirmed torrents' if self.confirmed else 'torrents'}
             )
             return items
 
@@ -155,7 +145,7 @@ class T411Provider(TorrentProvider):
 
         for row in torrent_rows:
             if not isinstance(row, dict):
-                logger.log('Invalid data returned from provider', logger.WARNING)
+                log.warning('Invalid data returned from provider')
                 continue
 
             if mode == 'RSS' and 'category' in row and try_int(row['category'], 0) not in self.subcategories:
@@ -175,14 +165,14 @@ class T411Provider(TorrentProvider):
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
-                        logger.log("Discarding torrent because it doesn't meet the "
-                                   "minimum seeders: {0}. Seeders: {1}".format
-                                   (title, seeders), logger.DEBUG)
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  " minimum seeders: {0}. Seeders: {1}",
+                                  title, seeders)
                     continue
 
                 if self.confirmed and not verified and mode != 'RSS':
-                    logger.log("Found result {0} but that doesn't seem like a verified"
-                               " result so I'm ignoring it".format(title), logger.DEBUG)
+                    log.debug("Found result {0} but that doesn't seem like a verified"
+                              " result so I'm ignoring it", title)
                     continue
 
                 torrent_size = row['size']
@@ -197,13 +187,13 @@ class T411Provider(TorrentProvider):
                     'pubdate': None,
                 }
                 if mode != 'RSS':
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                           (traceback.format_exc()), logger.ERROR)
+                log.error('Failed parsing provider. Traceback: {0!r}',
+                          traceback.format_exc())
 
         return items
 
@@ -220,7 +210,7 @@ class T411Provider(TorrentProvider):
 
         response = self.get_url(self.urls['login_page'], post_data=login_params, returns='json')
         if not response:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         if response and 'token' in response:
@@ -230,7 +220,7 @@ class T411Provider(TorrentProvider):
             self.session.auth = T411Auth(self.token)
             return True
         else:
-            logger.log('Token not found in authentication response', logger.WARNING)
+            log.warning('Token not found in authentication response')
             return False
 
 

@@ -1,37 +1,23 @@
 # coding=utf-8
-# Author: Mr_Orange <mr_orange@hotmail.it>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for TorrentDay."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from dateutil import parser
-
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.helper.common import convert_size
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class TorrentDayProvider(TorrentProvider):
@@ -95,12 +81,12 @@ class TorrentDayProvider(TorrentProvider):
             return results
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
 
                 search_string = '+'.join(search_string.split())
 
@@ -112,13 +98,13 @@ class TorrentDayProvider(TorrentProvider):
 
                 response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
                 if not response or not response.content:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 try:
                     jdata = response.json()
-                except ValueError:  # also catches JSONDecodeError if simplejson is installed
-                    logger.log('No data returned from provider', logger.DEBUG)
+                except ValueError:
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(jdata, mode)
@@ -139,14 +125,14 @@ class TorrentDayProvider(TorrentProvider):
         try:
             initial_data = data.get('Fs', [dict()])[0].get('Cn', {})
             torrent_rows = initial_data.get('torrents', []) if initial_data else None
-        except (AttributeError, TypeError, KeyError, ValueError, IndexError) as e:
+        except (AttributeError, TypeError, KeyError, ValueError, IndexError) as error:
             # If TorrentDay changes their website issue will be opened so we can fix fast
             # and not wait user notice it's not downloading torrents from there
-            logger.log('TorrentDay response: {0}. Error: {1!r}'.format(data, e), logger.ERROR)
+            log.error('TorrentDay response: {0}. Error: {1!r}', data, error)
             torrent_rows = None
 
         if not torrent_rows:
-            logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+            log.debug('Data returned from provider does not contain any torrents')
             return items
 
         for row in torrent_rows:
@@ -163,15 +149,15 @@ class TorrentDayProvider(TorrentProvider):
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
                     if mode != 'RSS':
-                        logger.log("Discarding torrent because it doesn't meet the "
-                                   "minimum seeders: {0}. Seeders: {1}".format
-                                   (title, seeders), logger.DEBUG)
+                        log.debug("Discarding torrent because it doesn't meet the"
+                                  " minimum seeders: {0}. Seeders: {1}",
+                                  title, seeders)
                     continue
 
                 torrent_size = row['size']
                 size = convert_size(torrent_size) or -1
                 pubdate_raw = row['added']
-                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                pubdate = self._parse_pubdate(pubdate_raw)
 
                 item = {
                     'title': title,
@@ -182,13 +168,13 @@ class TorrentDayProvider(TorrentProvider):
                     'pubdate': pubdate,
                 }
                 if mode != 'RSS':
-                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                               (title, seeders, leechers), logger.DEBUG)
+                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                              title, seeders, leechers)
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                           (traceback.format_exc()), logger.ERROR)
+                log.error('Failed parsing provider. Traceback: {0!r}',
+                          traceback.format_exc())
 
         return items
 
@@ -201,7 +187,7 @@ class TorrentDayProvider(TorrentProvider):
         if self.cookies:
             self.add_cookies_from_ui()
         else:
-            logger.log('Failed to login, you must add your cookies in the provider settings', logger.WARNING)
+            log.warning('Failed to login, you must add your cookies in the provider settings')
             return False
 
         login_params = {
@@ -213,18 +199,18 @@ class TorrentDayProvider(TorrentProvider):
 
         response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
         if not response or not (response.content and response.status_code == 200):
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         if re.search('You tried too often', response.text):
-            logger.log('Too many login access attempts', logger.WARNING)
+            log.warning('Too many login access attempts')
             return False
 
         if (dict_from_cookiejar(self.session.cookies).get('uid') and
                 dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
             return True
         else:
-            logger.log('Failed to login, check your cookies', logger.WARNING)
+            log.warning('Failed to login, check your cookies')
             self.session.cookies.clear()
             return False
 

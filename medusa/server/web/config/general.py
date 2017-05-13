@@ -68,7 +68,8 @@ class ConfigGeneral(Config):
                     indexer_timeout=None, download_url=None, rootDir=None, theme_name=None, default_page=None,
                     git_reset=None, git_reset_branches=None, git_auth_type=0, git_username=None, git_password=None, git_token=None,
                     display_all_seasons=None, subliminal_log=None, privacy_level='normal', fanart_background=None, fanart_background_opacity=None,
-                    dbdebug=None):
+                    dbdebug=None, fallback_plex_enable=1, fallback_plex_notifications=1, fallback_plex_timeout=3, web_root=None):
+
         results = []
 
         # Misc
@@ -121,11 +122,17 @@ class ConfigGeneral(Config):
             app.ENCRYPTION_VERSION = 0
         app.WEB_USERNAME = web_username
         app.WEB_PASSWORD = web_password
+        app.WEB_ROOT = web_root
 
         app.DEBUG = config.checkbox_to_value(debug)
         app.DBDEBUG = config.checkbox_to_value(dbdebug)
         app.WEB_LOG = config.checkbox_to_value(web_log)
         app.SUBLIMINAL_LOG = config.checkbox_to_value(subliminal_log)
+
+        # Added for tvdb / plex fallback
+        app.FALLBACK_PLEX_ENABLE = config.checkbox_to_value(fallback_plex_enable)
+        app.FALLBACK_PLEX_NOTIFICATIONS = config.checkbox_to_value(fallback_plex_notifications)
+        app.FALLBACK_PLEX_TIMEOUT = try_int(fallback_plex_timeout)
 
         if not config.change_LOG_DIR(log_dir):
             results += ['Unable to create directory {dir}, '

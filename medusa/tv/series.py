@@ -65,7 +65,7 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
-from medusa.helpers.externals import get_externals
+from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import (
@@ -1162,37 +1162,6 @@ class Series(TV):
 
         return scanned_eps
 
-    def _load_externals_from_db(self, indexer=None, indexer_id=None):
-        """Load and recreate the indexers external id's.
-
-        :param indexer: Optional pass indexer id, else use the current shows indexer.
-        :type indexer: int
-        :param indexer_id: Optional pass indexer id, else use the current shows indexer.
-        :type indexer_id: int
-        """
-        indexer = indexer or self.indexer
-        indexer_id = indexer_id or self.indexerid
-
-        main_db_con = db.DBConnection()
-        sql = (b'SELECT indexer, indexer_id, mindexer, mindexer_id '
-               b'FROM indexer_mapping '
-               b'WHERE (indexer = ? AND indexer_id = ?) '
-               b'OR (mindexer = ? AND mindexer_id = ?)')
-
-        results = main_db_con.select(sql, [indexer, indexer_id, indexer, indexer_id])
-
-        for result in results:
-            try:
-                if result[b'indexer'] == self.indexer:
-                    self.externals[mappings[result[b'mindexer']]] = result[b'mindexer_id']
-                else:
-                    self.externals[mappings[result[b'indexer']]] = result[b'indexer_id']
-            except KeyError as error:
-                log.error(u'Indexer not supported in current mappings: {id}',
-                          {'id': error.message})
-
-        return self.externals
-
     def _save_externals_to_db(self):
         """Save the indexers external id's to the db."""
         sql_l = []
@@ -1481,7 +1450,7 @@ class Series(TV):
             self.plot = sql_results[0][b'plot']
 
             # Load external id's from indexer_mappings table.
-            self._load_externals_from_db()
+            self.externals = load_externals_from_db(self.indexer, self.indexerid)
 
         # Get IMDb_info from database
         main_db_con = db.DBConnection()
@@ -1747,9 +1716,6 @@ class Series(TV):
         # make sure the show directory is where we think it is unless directories are created on the fly
         if not app.CREATE_MISSING_SHOW_DIRS and not self.is_location_valid():
             return False
-
-        # Let's get some fresh indexer info, as we might need it later on.
-        # self.create_indexer()
 
         # load from dir
         self.load_episodes_from_dir()
