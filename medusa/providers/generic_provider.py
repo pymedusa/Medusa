@@ -16,7 +16,6 @@ from random import shuffle
 
 from dateutil import parser
 from pytimeparse import parse
-from pytz import timezone
 
 from medusa import (
     app,
@@ -55,6 +54,7 @@ from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 
 from requests.utils import add_dict_to_cookiejar
+from pytz import timezone
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -493,7 +493,6 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
-
         try:
             if human_time:
                 match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
