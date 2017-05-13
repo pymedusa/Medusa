@@ -38,7 +38,7 @@ class ShanaProjectProvider(TorrentProvider):
             'search': urljoin(self.url, '/search/{page}/'),
         }
 
-        # paging
+        # Miscellaneous Options
         self.max_pages = 3  # Max return 150 results for 3 pages.
 
         # Torrent Stats
@@ -70,9 +70,11 @@ class ShanaProjectProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                    search_params = {'sort': 'date',
-                                     'dir': 'Descending',
-                                     'title': '{0}'.format(search_string)}
+                    search_params = {
+                        'sort': 'date',
+                        'dir': 'Descending',
+                        'title': '{0}'.format(search_string)
+                    }
 
                 page = 1
                 while page and page <= self.max_pages:
@@ -103,19 +105,18 @@ class ShanaProjectProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
 
-            torrent_blocks = html.find_all('div', {'class': 'release_block'})
-            if len(torrent_blocks) < 2:
+            torrent_rows = html('div', {'class': 'release_block'})
+            if len(torrent_rows) < 2:
                 return
 
-            for block in torrent_blocks[1:]:
+            for row in torrent_rows[1:]:
 
                 try:
-                    first_row = block.find('div', {'class': 'release_row_first'})
-                    second_row = block.find_all('div', {'class': 'release_row'})[0]
-                    third_row = block.find_all('div', {'class': 'release_row'})[1]
+                    first_cell = row.find('div', {'class': 'release_row_first'})
+                    cells = row('div', {'class': 'release_row'})
 
-                    title = third_row.find('div', {'class': 'release_text_contents'}).get_text().strip()
-                    download_url = first_row.find_all('a')[-1].get('href')
+                    title = cells[1].find('div', {'class': 'release_text_contents'}).get_text().strip()
+                    download_url = first_cell('a')[-1].get('href')
 
                     if not all([title, download_url]):
                         continue
@@ -126,7 +127,7 @@ class ShanaProjectProvider(TorrentProvider):
                     seeders = -1
                     leechers = -1
 
-                    torrent_size = first_row.find('div', {'class': 'release_size'}).get_text()
+                    torrent_size = first_cell.find('div', {'class': 'release_size'}).get_text()
                     size_regex = re.compile('([\d.]+)(.*)')
                     match_size = size_regex.match(torrent_size)
                     try:
@@ -134,7 +135,7 @@ class ShanaProjectProvider(TorrentProvider):
                     except AttributeError:
                         size = -1
 
-                    date = second_row.find('div', {'class': 'release_last'}).get_text()
+                    date = cells[0].find('div', {'class': 'release_last'}).get_text()
                     pubdate = parser.parse(date)
 
                     item = {
