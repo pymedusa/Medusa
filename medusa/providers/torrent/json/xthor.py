@@ -29,7 +29,7 @@ from medusa.helper.common import (
 )
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.compat import quote, urljoin
+from requests.compat import quote
 
 
 class XthorProvider(TorrentProvider):
