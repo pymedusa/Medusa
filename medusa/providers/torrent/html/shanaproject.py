@@ -27,7 +27,7 @@ class ShanaProjectProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('ShanaProject')
+        super(ShanaProjectProvider, self).__init__('ShanaProject')
 
         # Credentials
         self.public = True
@@ -40,6 +40,8 @@ class ShanaProjectProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.max_pages = 3  # Max return 150 results for 3 pages.
+        self.supports_absolute_numbering = True
+        self.anime_only = True
 
         # Torrent Stats
         self.minseed = None
