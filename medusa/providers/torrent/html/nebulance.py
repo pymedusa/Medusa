@@ -155,8 +155,9 @@ class NebulanceProvider(TorrentProvider):
                         continue
 
                     size = temp_anchor['data-filesize'] or -1
+
                     pubdate_raw = cells[3].find('span')['title']
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

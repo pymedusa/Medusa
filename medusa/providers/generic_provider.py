@@ -9,12 +9,14 @@ import re
 
 from base64 import b16encode, b32decode
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
 from random import shuffle
 
 from dateutil import parser
+from pytimeparse import parse
+from pytz import timezone
 
 from medusa import (
     app,
@@ -480,6 +482,32 @@ class GenericProvider(object):
         """Search the provider."""
         return []
 
+    @staticmethod
+    def parse_pubdate(pubdate, human_time=False, tz=None):
+        """
+        Parse publishing date into a datetime object.
+
+        :param pubdate: date and time string
+        :param human_time: string uses human slang ("4 hours ago")
+        :param tz: use a different timezone ("US/Eastern")
+
+        :returns: a datetime object or None
+        """
+
+        try:
+            if human_time:
+                match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
+                seconds = parse(match.group('time'))
+                return datetime.now() - timedelta(seconds=seconds)
+
+            dt = parser.parse(pubdate, fuzzy=True)
+            if tz:
+                dt.astimezone(timezone(tz))
+            return dt
+
+        except (TypeError, AttributeError, ValueError):
+            log.exception('Failed parsing publishing date.')
+
     def _get_result(self, episodes=None):
         """Get result."""
         return SearchResult(episodes)
@@ -573,14 +601,6 @@ class GenericProvider(object):
         If provider doesnt have _get_pubdate function this will be used
         """
         return None
-
-    def _parse_pubdate(self, pubdate):
-        """Parse pubdate into a valid timedate format."""
-        try:
-            pubdate_parsed = parser.parse(pubdate, fuzzy=True) if pubdate else None
-        except ValueError:
-            pubdate_parsed = None
-        return pubdate_parsed
 
     def _get_title_and_url(self, item):
         """Return title and url from result."""

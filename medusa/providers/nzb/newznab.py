@@ -200,8 +200,9 @@ class NewznabProvider(NZBProvider):
                                 continue
 
                             size = convert_size(item_size) or -1
+
                             pubdate_raw = item.pubdate.get_text(strip=True)
-                            pubdate = self._parse_pubdate(pubdate_raw)
+                            pubdate = self.parse_pubdate(pubdate_raw)
 
                             item = {
                                 'title': title,
