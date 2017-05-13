@@ -29,9 +29,6 @@ from medusa.helper.common import (
 )
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from requests.compat import quote
-
-
 class XthorProvider(TorrentProvider):
     """Xthor Torrent provider."""
 
@@ -49,14 +46,10 @@ class XthorProvider(TorrentProvider):
             'search': 'https://api.xthor.bz',
         }
 
-        # Proper Strings
-
-
         # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
         self.subcategories = [433, 637, 455, 639]
         self.confirmed = False
-
 
         # Cache
         self.cache = tv.Cache(self, min_time=10)
