@@ -24,6 +24,7 @@ log.logger.addHandler(logging.NullHandler())
 
 class ShanaProjectProvider(TorrentProvider):
     """ShanaProject Torrent provider."""
+    size_regex = re.compile('([\d.]+)(.*)')
 
     def __init__(self):
         """Initialize the class."""
@@ -107,17 +108,17 @@ class ShanaProjectProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
 
-            torrent_rows = html('div', {'class': 'release_block'})
+            torrent_rows = html('div', class_='release_block')
             if len(torrent_rows) < 2:
                 return
 
             for row in torrent_rows[1:]:
 
                 try:
-                    first_cell = row.find('div', {'class': 'release_row_first'})
-                    cells = row('div', {'class': 'release_row'})
+                    first_cell = row.find('div', class_='release_row_first')
+                    cells = row('div', class_='release_row')
 
-                    title = cells[1].find('div', {'class': 'release_text_contents'}).get_text().strip()
+                    title = cells[1].find('div', class_='release_text_contents').get_text().strip()
                     download_url = first_cell('a')[-1].get('href')
 
                     if not all([title, download_url]):
@@ -129,15 +130,14 @@ class ShanaProjectProvider(TorrentProvider):
                     seeders = -1
                     leechers = -1
 
-                    torrent_size = first_cell.find('div', {'class': 'release_size'}).get_text()
-                    size_regex = re.compile('([\d.]+)(.*)')
-                    match_size = size_regex.match(torrent_size)
+                    torrent_size = first_cell.find('div', class_='release_size').get_text()
+                    match_size = ShanaProjectProvider.size_regex.match(torrent_size)
                     try:
                         size = convert_size(match_size.group(1) + ' ' + match_size.group(2)) or -1
                     except AttributeError:
                         size = -1
 
-                    date = cells[0].find('div', {'class': 'release_last'}).get_text()
+                    date = cells[0].find('div', class_='release_last').get_text()
                     pubdate = parser.parse(date)
 
                     item = {
