@@ -43,6 +43,7 @@ from medusa.providers.torrent import (
     scc,
     scenetime,
     sdbits,
+    shanaproject,
     shazbat,
     speedcd,
     t411,
@@ -65,7 +66,7 @@ __all__ = [
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'nebulance', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb', 'bithdtv',
-    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex'
+    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]
 
 
