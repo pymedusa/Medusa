@@ -30,7 +30,7 @@ class T411Provider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__("T411")
+        super(T411Provider, self).__init__("T411")
 
         # Credentials
         self.username = None

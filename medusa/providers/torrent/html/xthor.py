@@ -28,7 +28,7 @@ class XthorProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Xthor')
+        super(XthorProvider, self).__init__('Xthor')
 
         # Credentials
         self.username = None
