@@ -1,9 +1,7 @@
 import Vuex from 'vuex';
 
 // Import translations
-import english from './translations/english';
-import german from './translations/german';
-import french from './translations/french';
+import enUs from './translations/en-us';
 
 const debug = process.env.NODE_ENV !== 'production';
 
@@ -13,7 +11,5 @@ const store = new Vuex.Store({
 
 export {
     store as i18nstore,
-    english,
-    german,
-    french
+    enUs
 };

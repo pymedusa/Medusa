@@ -8,21 +8,17 @@ import App from './components/app.vue';
 // Import translations and store
 import {
     i18nstore,
-    english,
-    german,
-    french
+    enUs
 } from './i18n';
 
 Vue.use(vuexI18n.plugin, i18nstore);
 Vue.use(VueResource);
 
 // Add translations directly to Vue
-Vue.i18n.add('en', english);
-Vue.i18n.add('ge', german);
-Vue.i18n.add('fr', french);
+Vue.i18n.add('en-us', enUs);
 
 // Set the start locale to use
-Vue.i18n.set('en');
+Vue.i18n.set('en-us');
 
 new Vue({ // eslint-disable-line no-new
     el: '#app',

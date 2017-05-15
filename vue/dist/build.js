@@ -17589,7 +17589,7 @@ exports.default = {
     }
 };
 
-},{"../errors":121,"../log":126,"./api":115}],117:[function(require,module,exports){
+},{"../errors":121,"../log":124,"./api":115}],117:[function(require,module,exports){
 var __vueify_style_dispose__ = require("vueify/lib/insert-css").insert("#app{font-family:Avenir,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-align:center;color:#2c3e50;margin-top:60px}")
 ;(function(){
 'use strict';
@@ -17735,29 +17735,21 @@ var apiError = function apiError(err) {
 
 exports.apiError = apiError;
 
-},{"./log":126}],122:[function(require,module,exports){
+},{"./log":124}],122:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.french = exports.german = exports.english = exports.i18nstore = undefined;
+exports.enUs = exports.i18nstore = undefined;
 
 var _vuex = require('vuex');
 
 var _vuex2 = _interopRequireDefault(_vuex);
 
-var _english = require('./translations/english');
+var _enUs = require('./translations/en-us');
 
-var _english2 = _interopRequireDefault(_english);
-
-var _german = require('./translations/german');
-
-var _german2 = _interopRequireDefault(_german);
-
-var _french = require('./translations/french');
-
-var _french2 = _interopRequireDefault(_french);
+var _enUs2 = _interopRequireDefault(_enUs);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -17771,32 +17763,20 @@ var store = new _vuex2.default.Store({
 });
 
 exports.i18nstore = store;
-exports.english = _english2.default;
-exports.german = _german2.default;
-exports.french = _french2.default;
+exports.enUs = _enUs2.default;
 
-},{"./translations/english":123,"./translations/french":124,"./translations/german":125,"vuex":114}],123:[function(require,module,exports){
+},{"./translations/en-us":123,"vuex":114}],123:[function(require,module,exports){
 module.exports={
     "loading": "loading",
     "series": {
         "add": {
-            "new": "Add a new series?",
-            "existing": "Add an existing series?"
+            "new": "Add a new series",
+            "existing": "Add an existing series"
         }
     }
 }
 
 },{}],124:[function(require,module,exports){
-module.exports={
-    "loading": "french loading"
-}
-
-},{}],125:[function(require,module,exports){
-module.exports={
-    "loading": "german loading"
-}
-
-},{}],126:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -17824,7 +17804,7 @@ exports.generalLogger = generalLogger;
 exports.apiLogger = apiLogger;
 exports.seriesLogger = seriesLogger;
 
-},{"loglevel":107}],127:[function(require,module,exports){
+},{"loglevel":107}],125:[function(require,module,exports){
 'use strict';
 
 var _vue = require('vue');
@@ -17862,12 +17842,10 @@ _vue2.default.use(_vuexI18n2.default.plugin, _i18n.i18nstore);
 _vue2.default.use(_vueResource2.default);
 
 // Add translations directly to Vue
-_vue2.default.i18n.add('en', _i18n.english);
-_vue2.default.i18n.add('ge', _i18n.german);
-_vue2.default.i18n.add('fr', _i18n.french);
+_vue2.default.i18n.add('en-us', _i18n.enUs);
 
 // Set the start locale to use
-_vue2.default.i18n.set('en');
+_vue2.default.i18n.set('en-us');
 
 new _vue2.default({ // eslint-disable-line no-new
     el: '#app',
@@ -17878,7 +17856,7 @@ new _vue2.default({ // eslint-disable-line no-new
     store: _store2.default
 });
 
-},{"./components/app.vue":117,"./i18n":122,"./router":128,"./store":129,"vue":111,"vue-resource":109,"vuex-i18n":113}],128:[function(require,module,exports){
+},{"./components/app.vue":117,"./i18n":122,"./router":126,"./store":127,"vue":111,"vue-resource":109,"vuex-i18n":113}],126:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -17921,7 +17899,7 @@ exports.default = new _vueRouter2.default({
     mode: 'history'
 });
 
-},{"../components/home.vue":118,"../components/not-found.vue":120,"vue":111,"vue-router":110}],129:[function(require,module,exports){
+},{"../components/home.vue":118,"../components/not-found.vue":120,"vue":111,"vue-router":110}],127:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -17953,7 +17931,7 @@ exports.default = new _vuex2.default.Store({
     strict: debug
 });
 
-},{"./modules/series":130,"vue":111,"vuex":114}],130:[function(require,module,exports){
+},{"./modules/series":128,"vue":111,"vuex":114}],128:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18058,7 +18036,7 @@ exports.default = {
     mutations: mutations
 };
 
-},{"../../api/series":116,"../../log":126,"../mutation-types":131,"babel-runtime/helpers/defineProperty":29}],131:[function(require,module,exports){
+},{"../../api/series":116,"../../log":124,"../mutation-types":129,"babel-runtime/helpers/defineProperty":29}],129:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -18067,4 +18045,4 @@ Object.defineProperty(exports, "__esModule", {
 var ADD_SERIES = exports.ADD_SERIES = 'ADD_SERIES';
 var RECEIVE_SERIES = exports.RECEIVE_SERIES = 'RECEIVE_SERIES';
 
-},{}]},{},[127]);
+},{}]},{},[125]);
