@@ -52,13 +52,14 @@ class UTorrentAPI(GenericClient):
     def _get_auth(self):
 
         self.response = self.session.get(urljoin(self.url, 'token.html'), verify=False)
-        self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
-
-        return self.auth if not self.response.status_code == 404 else None
+        if not self.response.status_code == 404:
+            self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
+            return self.auth
 
     def _add_torrent_uri(self, result):
         return self._request(params={
             'action': 'add-url',
+            # requests (?) limits the param length to 1024 chars
             's': result.url[:1024],
         })
 
