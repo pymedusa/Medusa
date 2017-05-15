@@ -11,18 +11,14 @@ import HomeComponent from '../src/components/home.vue';
 // Import translations and store
 import {
     i18nstore,
-    english,
-    german,
-    french
+    enUs
 } from '../src/i18n';
 
 test('App should render', t => {
     Vue.use(vuexI18n.plugin, i18nstore);
 
     // Add translations directly to Vue
-    Vue.i18n.add('en', english);
-    Vue.i18n.add('ge', german);
-    Vue.i18n.add('fr', french);
+    Vue.i18n.add('en-us', enUs);
 
     // Set the start locale to use
     Vue.i18n.set('en');
