@@ -15,7 +15,6 @@ from os.path import join
 from random import shuffle
 
 from dateutil import parser, tz
-from pytimeparse import parse
 
 from medusa import (
     app,
@@ -52,6 +51,8 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
+
+from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar
 
