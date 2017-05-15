@@ -14,7 +14,7 @@ from itertools import chain
 from os.path import join
 from random import shuffle
 
-from dateutil import parser
+from dateutil import parser, tz
 from pytimeparse import parse
 
 from medusa import (
@@ -54,7 +54,6 @@ from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 
 from requests.utils import add_dict_to_cookiejar
-from pytz import timezone
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -483,13 +482,13 @@ class GenericProvider(object):
         return []
 
     @staticmethod
-    def parse_pubdate(pubdate, human_time=False, tz=None):
+    def parse_pubdate(pubdate, human_time=False, timezone=None):
         """
         Parse publishing date into a datetime object.
 
         :param pubdate: date and time string
         :param human_time: string uses human slang ("4 hours ago")
-        :param tz: use a different timezone ("US/Eastern")
+        :param timezone: use a different timezone ("US/Eastern")
 
         :returns: a datetime object or None
         """
@@ -500,8 +499,8 @@ class GenericProvider(object):
                 return datetime.now() - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, fuzzy=True)
-            if tz:
-                dt.astimezone(timezone(tz))
+            if timezone:
+                dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
         except (TypeError, AttributeError, ValueError):
