@@ -14,7 +14,6 @@ from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
 
-
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
