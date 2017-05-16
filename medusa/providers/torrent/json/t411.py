@@ -227,7 +227,7 @@ class T411Provider(TorrentProvider):
                                   {'series': series, 'season': season, 'episode': episode})
                     else:
                         series = search_string
-                        log.debug('Search string: {search}', {'search':search_string})
+                        log.debug('Search string: {search}', {'search': search_string})
 
                     if self.confirmed:
                         log.debug('Searching only confirmed torrents')
