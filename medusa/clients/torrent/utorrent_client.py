@@ -12,37 +12,11 @@ from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
-from requests.compat import urljoin, quote
+from requests.compat import urljoin
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
-
-
-def translate_magnet_to_key_value(magnet_string):
-    """
-    Split a magnet string with trackers into a dict structure.
-
-    This method has been added to provide requests.get() with proper params. We need to perform
-    some actions on the string provided, to make sure it's passed on as key/value pairs.
-    :param magnet_string: String provided by the torrent provider, with the magnet urn and trackers.
-    :return: params in a dict structure.
-    """
-    param = {}
-    match = re.match(r'^(magnet.+?)(&.*)', magnet_string)
-    if match and match.lastindex == 2:
-        magnet_string = 's={magnet}{trackers}'.format(magnet=quote(match.group(1)), trackers=match.group(2))
-
-    param_list = magnet_string.split('&')
-    for param_item in param_list:
-        k, v = param_item.split('=')
-        if k not in param:
-            param[k] = v
-        else:
-            if isinstance(param[k], list):
-                param[k].append(v)
-            else:
-                param[k] = [param[k], v]
-    return param
 
 
 class UTorrentAPI(GenericClient):
@@ -81,9 +55,11 @@ class UTorrentAPI(GenericClient):
             return self.auth
 
     def _add_torrent_uri(self, result):
-        params = {'action': 'add-url'}
-        params.update(translate_magnet_to_key_value(result.url))
-        return self._request(params=params)
+        return self._request(params={
+            'action': 'add-url',
+            # limit the param length to 1024 chars (uTorrent bug)
+            's': result.url[:1024],
+        })
 
     def _add_torrent_file(self, result):
         return self._request(
