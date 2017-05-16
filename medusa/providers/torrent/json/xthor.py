@@ -8,7 +8,6 @@ import logging
 
 from medusa import tv
 from medusa.common import USER_AGENT
-from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
@@ -68,7 +67,6 @@ class XthorProvider(TorrentProvider):
             search_params['freeleech'] = 1
 
         for mode in search_strings:
-            items = []
             log.debug('Search Mode: {0}', mode)
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
