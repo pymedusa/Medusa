@@ -29,7 +29,7 @@ class HDTorrentsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('HDTorrents')
+        super(HDTorrentsProvider, self).__init__('HDTorrents')
 
         # Credentials
         self.username = None

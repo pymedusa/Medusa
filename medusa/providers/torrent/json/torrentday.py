@@ -25,7 +25,7 @@ class TorrentDayProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('TorrentDay')
+        super(TorrentDayProvider, self).__init__('TorrentDay')
 
         # Credentials
         self.username = None

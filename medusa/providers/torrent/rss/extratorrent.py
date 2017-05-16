@@ -32,7 +32,7 @@ class ExtraTorrentProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('ExtraTorrent')
+        super(ExtraTorrentProvider, self).__init__('ExtraTorrent')
 
         # Credentials
         self.public = True

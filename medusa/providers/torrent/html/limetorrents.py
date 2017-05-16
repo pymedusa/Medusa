@@ -38,7 +38,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('LimeTorrents')
+        super(LimeTorrentsProvider, self).__init__('LimeTorrents')
 
         # Credentials
         self.public = True

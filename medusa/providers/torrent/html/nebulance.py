@@ -27,7 +27,7 @@ class NebulanceProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Nebulance')
+        super(NebulanceProvider, self).__init__('Nebulance')
 
         # Credentials
         self.username = None

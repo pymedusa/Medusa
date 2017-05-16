@@ -30,7 +30,7 @@ class TorrentRssProvider(TorrentProvider):
                  title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
-        super(self.__class__, self).__init__(name)
+        super(TorrentRssProvider, self).__init__(name)
 
         # Credentials
 
