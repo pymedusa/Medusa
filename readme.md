@@ -1,9 +1,9 @@
 ![Medusa](static/images/medusa-logo.png)
 
-[![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=develop)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open")  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ade58b4469dd4b38bbbd681913d97bfc)](https://www.codacy.com/app/pymedusa/Medusa?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pymedusa/Medusa&amp;utm_campaign=Badge_Grade) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
+[![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=master)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open")  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ade58b4469dd4b38bbbd681913d97bfc)](https://www.codacy.com/app/pymedusa/Medusa?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pymedusa/Medusa&amp;utm_campaign=Badge_Grade) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo) [![Coverage Status](https://coveralls.io/repos/github/pymedusa/medusa/badge.svg?branch=master)](https://coveralls.io/github/pymedusa/medusa?branch=master)
 
-=====
-Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
+
+### Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
 
 #### Exclusive features
  - Supports TVMaze and TMDB indexers
@@ -21,7 +21,7 @@ Automatic Video Library Manager for TV Shows. It watches for new episodes of you
 
  #### Features
  - Kodi/XBMC library updates, poster/banner/fanart downloads, and NFO/TBN generation
- - Sync your shows with Trakt. Keep shows/episode updated in Trakt watchlist 
+ - Sync your shows with Trakt. Keep shows/episode updated in Trakt watchlist
  - Configurable automatic episode renaming, sorting, and other processing
  - Easily see what episodes you're missing, are airing soon, and more
  - Automatic torrent/nzb searching, downloading, and processing at the qualities you want
@@ -94,4 +94,4 @@ The [linuxserver.io](https://www.linuxserver.io) team have kindly produced docke
 * armhf - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa/), [Github](https://github.com/linuxserver/docker-medusa-armhf)
 * aarch64 - [Dockerhub](https://hub.docker.com/r/lsioarmhf/medusa-aarch64/), [Github](https://github.com/linuxserver/docker-medusa-arm64)
 
- 
+

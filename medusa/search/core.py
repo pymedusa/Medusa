@@ -101,7 +101,7 @@ def _download_result(result):
 
 def snatch_episode(result):
     """
-    Internal logic necessary to actually snatch a result that has been found.
+    Snatch a result that has been found.
 
     :param result: SearchResult instance to be snatched.
     :return: boolean, True on success
@@ -327,7 +327,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
                 log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
-            if any(ext in best_result.name.lower() and ext not in cur_result.name.lower() for ext in undesired_words):
+            if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
                 best_result = cur_result
 
@@ -367,7 +367,7 @@ def wanted_episodes(show, from_date):
     allowed_qualities, preferred_qualities = show.current_qualities
     all_qualities = list(set(allowed_qualities + preferred_qualities))
 
-    log.debug(u'Seeing if we need anything from ', show.name)
+    log.debug(u'Seeing if we need anything from {0}', show.name)
     con = db.DBConnection()
 
     sql_results = con.select(
@@ -549,7 +549,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 log.error(u'Authentication error: {0}', ex(error))
                 break
             except socket_timeout as error:
-                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {0!r}',
+                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {1!r}',
                           cur_provider.name, ex(error))
                 break
             except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as error:

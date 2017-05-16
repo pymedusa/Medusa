@@ -1,39 +1,28 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Animetorrents."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from dateutil import parser
-
 from medusa import (
-    logger,
     scene_exceptions,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
 from medusa.helper.exceptions import AuthException
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class AnimeTorrentsProvider(TorrentProvider):
@@ -41,7 +30,7 @@ class AnimeTorrentsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('AnimeTorrents')
+        super(AnimeTorrentsProvider, self).__init__('AnimeTorrents')
 
         # Credentials
         self.username = None
@@ -105,15 +94,15 @@ class AnimeTorrentsProvider(TorrentProvider):
         })
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     search_params['search'] = search_string
                     search_params['total'] = 1  # Setting this to 1, makes sure we get 1 big result set.
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
 
                 self.headers = headers_paged
                 for cat in self.categories:
@@ -121,7 +110,7 @@ class AnimeTorrentsProvider(TorrentProvider):
                     response = self.get_url(self.urls['search_ajax'], params=search_params, returns='response')
 
                     if not response or not response.text or 'Access Denied!' in response.text:
-                        logger.log('No data returned from provider', logger.DEBUG)
+                        log.debug('No data returned from provider')
                         break
 
                     # Get the rows with results
@@ -144,7 +133,7 @@ class AnimeTorrentsProvider(TorrentProvider):
             torrent_rows = html('tr')
 
             if not torrent_rows or not len(torrent_rows) > 1:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             # Cat., Active, Filename, Dl, Wl, Added, Size, Uploader, S, L, C
@@ -170,16 +159,16 @@ class AnimeTorrentsProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
                     torrent_size = cells[labels.index('Size')].get_text()
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text() if cells[labels.index('Added')] else None
-                    pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
+                    pubdate = self._parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -190,13 +179,13 @@ class AnimeTorrentsProvider(TorrentProvider):
                         'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
@@ -216,18 +205,18 @@ class AnimeTorrentsProvider(TorrentProvider):
 
         request = self.get_url(self.urls['login'], returns='response')
         if not hasattr(request, 'cookies'):
-            logger.log('Unable to retrieve the required cookies', logger.WARNING)
+            log.warning('Unable to retrieve the required cookies')
             return False
 
         response = self.get_url(self.urls['login'], post_data=login_params, cookies=request.cookies,
                                 returns='response')
 
         if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         if re.search(' Login', response.text):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            log.warning('Invalid username or password. Check your settings')
             return False
 
         return True

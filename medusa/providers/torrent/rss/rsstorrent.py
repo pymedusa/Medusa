@@ -1,24 +1,11 @@
 # coding=utf-8
-# # Author: Mr_Orange
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for RSS Torrents."""
+
 from __future__ import unicode_literals
 
 import io
+import logging
 import os
 import re
 
@@ -27,11 +14,13 @@ from bencode import bdecode
 from medusa import (
     app,
     helpers,
-    logger,
     tv,
 )
 from medusa.helper.exceptions import ex
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+
+log = logging.getLogger(__name__)
+log.logger.addHandler(logging.NullHandler())
 
 
 class TorrentRssProvider(TorrentProvider):
@@ -41,7 +30,7 @@ class TorrentRssProvider(TorrentProvider):
                  title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
-        super(self.__class__, self).__init__(name)
+        super(TorrentRssProvider, self).__init__(name)
 
         # Credentials
 
@@ -153,7 +142,7 @@ class TorrentRssProvider(TorrentProvider):
                 name = values[0]
                 url = values[1]
         except ValueError:
-            logger.log('Skipping RSS Torrent provider string: {}, incorrect format'.format(config), logger.ERROR)
+            log.error('Skipping RSS Torrent provider string: {0}, incorrect format', config)
             return None
 
         new_provider = TorrentRssProvider(
@@ -214,10 +203,10 @@ class TorrentRssProvider(TorrentProvider):
             file_out.close()
             helpers.chmod_as_parent(dump_name)
         except IOError as error:
-            logger.log('Unable to save the file: {0}'.format(ex(error)), logger.ERROR)
+            log.error('Unable to save the file: {0}', error)
             return False
 
-        logger.log('Saved custom_torrent html dump {0} '.format(dump_name), logger.INFO)
+        log.info('Saved custom_torrent html dump {0} ', dump_name)
         return True
 
 

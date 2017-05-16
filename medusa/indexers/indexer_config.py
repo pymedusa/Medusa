@@ -1,20 +1,4 @@
 # coding=utf-8
-# Author: p0psicles
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import re
 
@@ -50,6 +34,28 @@ EXTERNAL_MAPPINGS = {EXTERNAL_IMDB: 'imdb_id', EXTERNAL_ANIDB: 'anidb_id',
 
 # trakt indexer name vs Medusa indexer
 TRAKT_INDEXERS = {'tvdb': INDEXER_TVDBV2, 'tmdb': INDEXER_TMDB, 'imdb': EXTERNAL_IMDB, 'trakt': EXTERNAL_TRAKT}
+
+STATUS_MAP = {
+    'returning series': 'Continuing',
+    'canceled/ended': 'Ended',
+    'tbd/on the bubble': 'Continuing',
+    'in development': 'Continuing',
+    'new series': 'Continuing',
+    'never aired': 'Ended',
+    'final season': 'Continuing',
+    'on hiatus': 'Continuing',
+    'pilot ordered': 'Continuing',
+    'pilot rejected': 'Ended',
+    'canceled': 'Ended',
+    'ended': 'Ended',
+    'to be determined': 'Continuing',
+    'running': 'Continuing',
+    'planned': 'Continuing',
+    'in production': 'Continuing',
+    'pilot': 'Continuing',
+    'cancelled': 'Ended',
+    'continuing': 'Continuing'
+}
 
 indexerConfig = {
     INDEXER_TVDBV2: {
@@ -135,7 +141,7 @@ def indexer_id_to_name(indexer):
 
 
 def indexer_id_to_slug(indexer, indexer_id):
-    """A utility function to translate a shows indexex and indexer id to a slug.
+    """Translate a shows indexex and indexer id to a slug.
 
     :param indexer: The indexer id. For example 1 for tvdb and 3 for tvmaze.
     :param indexer_id: The shows id, for the specific indexer.
@@ -145,7 +151,7 @@ def indexer_id_to_slug(indexer, indexer_id):
 
 
 def slug_to_indexer_id(slug):
-    """A utility function to translate a shows slug to it's indexer and indexer id.
+    """Translate a shows slug to it's indexer and indexer id.
 
     :param slug: the slug used for the indexer and indexer id.
     :return: A tuple with the indexer id and show id, for the specific indexer.

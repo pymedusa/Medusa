@@ -24,7 +24,7 @@ class StyleAdapter(logging.LoggerAdapter):
         super(StyleAdapter, self).__init__(target_logger, extra)
 
     def __getattr__(self, name):
-        """Wrapper that delegates to the actual logger.
+        """Wrap to the actual logger.
 
         :param name:
         :type name: str
@@ -36,7 +36,7 @@ class StyleAdapter(logging.LoggerAdapter):
         return getattr(self, self.adapter_members[name])
 
     def __setattr__(self, key, value):
-        """Wrapper that delegates to the actual logger.
+        """Wrap to the actual logger.
 
         :param key:
         :type key: str
@@ -72,7 +72,7 @@ class BraceMessage(object):
         self.kwargs = kwargs
 
     def __str__(self):
-        """String representation.
+        """Represent a string.
 
         :return:
         :rtype: str

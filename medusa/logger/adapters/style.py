@@ -2,11 +2,17 @@
 
 """Style Adapters for Python logging."""
 
+from __future__ import unicode_literals
+
 import collections
 import functools
 import logging
+import traceback
 
 from six import text_type
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class BraceMessage(object):
@@ -31,6 +37,13 @@ class BraceMessage(object):
             return self.msg.format(*args, **kwargs)
         except IndexError:
             return self.msg.format(kwargs)
+        except Exception:
+            log.error(
+                'BraceMessage string formatting failed. Using representation instead.\n{1}'.format(
+                    ''.join(traceback.format_stack())
+                )
+            )
+            return repr(self)
 
     def __repr__(self):
         """Convert to class representation."""
@@ -67,5 +80,5 @@ class BraceAdapter(logging.LoggerAdapter):
 
     def exception(self, msg, *args, **kwargs):
         """Add exception information before delegating to self.log."""
-        kwargs["exc_info"] = 1
+        kwargs['exc_info'] = 1
         self.log(logging.ERROR, msg, *args, **kwargs)
