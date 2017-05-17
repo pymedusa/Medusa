@@ -15,10 +15,10 @@ Vue.use(vuexI18n.plugin, i18nstore);
 Vue.use(VueResource);
 
 // Add translations directly to Vue
-Vue.i18n.add('en-us', enUs);
+Vue.i18n.add('en-US', enUs);
 
 // Set the start locale to use
-Vue.i18n.set('en-us');
+Vue.i18n.set('en-US');
 
 new Vue({ // eslint-disable-line no-new
     el: '#app',
