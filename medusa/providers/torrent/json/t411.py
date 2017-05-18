@@ -118,6 +118,7 @@ class T411Provider(TorrentProvider):
                 episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
 
             search_string['Season'].append(episode_string.strip())
+
         return [search_string]
 
     def _get_episode_search_strings(self, episode, add_string=''):
