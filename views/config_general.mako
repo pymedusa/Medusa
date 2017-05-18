@@ -32,22 +32,13 @@
                     <script>document.write('<li><a href="' + document.location.href + '#advanced-settings">Advanced Settings</a></li>');</script>
                 </ul>
                 <div id="misc">
-                        <div class="component-group-desc">
-                            <h3>Misc</h3>
-                            <p>Startup options. Indexer options. Log and show file locations.</p>
-                            <p><b>Some options may require a manual restart to take effect.</b></p>
-                        </div>
+                    <div class="component-group-desc">
+                        <h3>Misc</h3>
+                        <p>Startup options. Indexer options. Log and show file locations.</p>
+                        <p><b>Some options may require a manual restart to take effect.</b></p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
-                            <div class="field-pair">
-                                <label for="indexerDefaultLang">
-                                    <span class="component-title">Default Indexer Language</span>
-                                    <span class="component-desc">
-                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language=${app.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
-                                        <span>for adding shows and metadata providers</span>
-                                    </span>
-                                </label>
-                            </div>
                             <div class="field-pair">
                                 <label for="launch_browser">
                                     <span class="component-title">Launch browser</span>
@@ -69,16 +60,6 @@
                                             <option value="IRC" ${'selected="selected"' if app.DEFAULT_PAGE == 'IRC' else ''}>IRC</option>
                                         </select>
                                         <span>when launching Medusa interface</span>
-                                    </span>
-                                </label>
-                            </div>
-                            <div class="field-pair">
-                                <label for="showupdate_hour">
-                                    <span class="component-title">Choose hour to update shows</span>
-                                    <span class="component-desc">
-                                        <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${app.SHOWUPDATE_HOUR}" class="form-control input-sm input75"/>
-                                        <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
-                                        <p>Note: minutes are randomized each time Medusa is started</p>
                                     </span>
                                 </label>
                             </div>
@@ -123,6 +104,52 @@
                                 </label>
                             </div>
                             <div class="field-pair">
+                                <label>
+                                    <span class="component-title">Show root directories</span>
+                                    <span class="component-desc">
+                                        <p>where the files of shows are located</p>
+                                        <%include file="/inc_rootDirs.mako"/>
+                                    </span>
+                                </label>
+                            </div>
+                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                        </fieldset>
+                    </div>
+                    <div class="component-group-desc">
+                        <h3>Indexer</h3>
+                        <p>Options for controlling the show indexers.</p>
+                    </div>
+                    <div class="component-group">
+                        <fieldset class="component-group-list">
+                            <div class="field-pair">
+                                <label for="indexerDefaultLang">
+                                    <span class="component-title">Default Indexer Language</span>
+                                    <span class="component-desc">
+                                        <select name="indexerDefaultLang" id="indexerDefaultLang" class="form-control form-control-inline input-sm bfh-languages" data-blank="false" data-language=${app.INDEXER_DEFAULT_LANGUAGE} data-available="${','.join(indexerApi().config['valid_languages'])}"></select>
+                                        <span>for adding shows and metadata providers</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="showupdate_hour">
+                                    <span class="component-title">Choose hour to update shows</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="0" max="23" step="1" name="showupdate_hour" id="showupdate_hour" value="${app.SHOWUPDATE_HOUR}" class="form-control input-sm input75"/>
+                                        <p>with information such as next air dates, show ended, etc. Use 15 for 3pm, 4 for 4am etc.</p>
+                                        <p>Note: minutes are randomized each time Medusa is started</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
+                                <label for="indexer_timeout">
+                                    <span class="component-title">Timeout show indexer at</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="10" step="1" name="indexer_timeout" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" class="form-control input-sm input75"/>
+                                        <p>seconds of inactivity when finding new shows (default:20)</p>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field-pair">
                                 <label for="indexer_default">
                                     <span class="component-title">Use initial indexer set to</span>
                                     <span class="component-desc">
@@ -137,30 +164,40 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <label for="indexer_timeout">
-                                    <span class="component-title">Timeout show indexer at</span>
+                                <label for="fallback_plex_enable">
+                                    <span class="component-title">Enable fallback to plex</span>
                                     <span class="component-desc">
-                                        <input type="number" min="10" step="1" name="indexer_timeout" id="indexer_timeout" value="${app.INDEXER_TIMEOUT}" class="form-control input-sm input75"/>
-                                        <p>seconds of inactivity when finding new shows (default:20)</p>
+                                        <input type="checkbox" name="fallback_plex_enable" id="fallback_plex_enable" ${'checked="checked"' if app.FALLBACK_PLEX_ENABLE else ''}/>
+                                        <p>Plex provides a tvdb mirror, that can be utilized when Tvdb's api is unavailable.</p>
                                     </span>
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <label>
-                                    <span class="component-title">Show root directories</span>
+                                <label for="fallback_plex_notifications">
+                                    <span class="component-title">Enable fallback notifications</span>
                                     <span class="component-desc">
-                                        <p>where the files of shows are located</p>
-                                        <%include file="/inc_rootDirs.mako"/>
+                                        <input type="checkbox" name="fallback_plex_notifications" id="fallback_plex_notifications" ${'checked="checked"' if app.FALLBACK_PLEX_NOTIFICATIONS else ''}/>
+                                        <p>When this settings has been enabled, you may receive frequent notifications when falling back to the plex mirror.</p>
                                     </span>
                                 </label>
                             </div>
-                            <input type="submit" class="btn config_submitter" value="Save Changes" />
+                            <div class="field-pair">
+                                <label for="fallback_plex_timer">
+                                    <span class="component-title">Fallback duration</span>
+                                    <span class="component-desc">
+                                        <input type="number" min="1" step="1" name="fallback_plex_timeout" id="fallback_plex_timeout" value="${app.FALLBACK_PLEX_TIMEOUT}" class="form-control input-sm input75"/>
+                                        <p>Amount of hours after we try to revert back to the thetvdb.com api url (default:3).</p>
+                                    </span>
+                                </label>
+                            </div>
+
                         </fieldset>
                     </div>
-                        <div class="component-group-desc">
-                            <h3>Updates</h3>
-                            <p>Options for software updates.</p>
-                        </div>
+
+                    <div class="component-group-desc">
+                        <h3>Updates</h3>
+                        <p>Options for software updates.</p>
+                    </div>
                     <div class="component-group">
                         <fieldset class="component-group-list">
                             <div class="field-pair">
@@ -455,6 +492,19 @@
                                 <span class="component-desc">
                                     <input type="checkbox" name="handle_reverse_proxy" id="handle_reverse_proxy" ${'checked="checked"' if app.HANDLE_REVERSE_PROXY else ''}/>
                                     <p>accept the following reverse proxy headers (advanced)...<br>(X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto)</p>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="field-pair">
+                            <label for="web_root">
+                                <span class="component-title">HTTP web root</span>
+                                <span class="component-desc">
+                                    <input type="text" name="web_root" id="web_root" value="${app.WEB_ROOT}" class="form-control input-sm input300" autocomplete="no" />
+                                    blank = disabled
+                                <div class="clear-left">
+                                <p>Set a base URL, for use in reverse proxies.</p>
+                                <p><b>Note:</b> Must restart to have effect. Keep in mind that any previously configured base URLs won't work, after this change.</p>
+                                </div>
                                 </span>
                             </label>
                         </div>

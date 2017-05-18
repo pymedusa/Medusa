@@ -1,33 +1,26 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import unicode_literals
 
+import logging
 import os
 import time
+
+from medusa import app
+from medusa.helper.common import try_int
+from medusa.helper.exceptions import MultipleShowObjectsException
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.recommendations.recommended import RecommendedShow
+
 import requests
 from simpleanidb import Anidb
 from traktor import (TokenExpiredException, TraktApi, TraktException)
 from tvdbapiv2.exceptions import ApiException
-from .recommended import RecommendedShow
-from ... import app, logger
-from ...helper.common import try_int
-from ...helper.exceptions import MultipleShowObjectsException, ex
-from ...indexers.indexer_api import indexerApi
-from ...indexers.indexer_config import INDEXER_TVDBV2
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class MissingPosterList(list):
@@ -113,16 +106,16 @@ class TraktPopular(object):
                 image = self.check_cache_for_poster(show_obj['show']['ids']['tvdb']) or \
                     self.tvdb_api_v2.series_api.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
             else:
-                logger.log('CACHE: Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.INFO)
+                log.info('CACHE: Missing poster on TVDB for show {0}', show_obj['show']['title'])
                 use_default = self.default_img_src
-        except ApiException as e:
+        except ApiException as error:
             use_default = self.default_img_src
-            if getattr(e, 'status', None) == 404:
-                logger.log('Missing poster on TheTVDB for show %s' % (show_obj['show']['title']), logger.INFO)
+            if getattr(error, 'status', None) == 404:
+                log.info('Missing poster on TheTVDB for show {0}', show_obj['show']['title'])
                 missing_posters.append(show_obj['show']['ids']['tvdb'])
-        except Exception as e:
+        except Exception as error:
             use_default = self.default_img_src
-            logger.log('Missing poster on TheTVDB, cause: %r' % e, logger.DEBUG)
+            log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
 
         rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
         # As the method below requires allot of resources, i've only enabled it when
@@ -180,7 +173,7 @@ class TraktPopular(object):
                     not_liked_show = trakt_api.request('users/' + app.TRAKT_USERNAME + '/lists/' +
                                                        app.TRAKT_BLACKLIST_NAME + '/items') or []
                 else:
-                    logger.log('Trakt blacklist name is empty', logger.DEBUG)
+                    log.debug('Trakt blacklist name is empty')
 
             if trakt_list not in ['recommended', 'newshow', 'newseason']:
                 limit_show = '?limit=' + str(100 + len(not_liked_show)) + '&'
@@ -209,8 +202,8 @@ class TraktPopular(object):
 
             blacklist = app.TRAKT_BLACKLIST_NAME not in ''
 
-        except TraktException as e:
-            logger.log('Could not connect to Trakt service: %s' % ex(e), logger.WARNING)
+        except TraktException as error:
+            log.warning('Could not connect to Trakt service: {0}', error)
             raise
 
         return blacklist, trending_shows, removed_from_medusa

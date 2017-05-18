@@ -1,44 +1,72 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """All providers type init."""
+
 import pkgutil
 from os import sys
 from random import shuffle
 
-from .nzb import (
+from medusa import app
+from medusa.providers.nzb import (
     anizb, binsearch,
 )
-from .torrent import (
-    abnormal, alpharatio, animebytes, animetorrents, bitcannon, bithdtv, btn, cpasbien, danishbits,
-    elitetorrent, extratorrent, freshontv, gftracker, hd4free, hdbits, hdspace, hdtorrents, hounddawgs, iptorrents,
-    limetorrents, morethantv, newpct, norbits, nyaatorrents, pretome, rarbg, scc, scenetime, sdbits, shazbat,
-    speedcd, t411, thepiratebay, tntvillage, tokyotoshokan, torrentbytes, torrentday, torrentleech, torrentproject,
-    torrentz2, transmitthenet, tvchaosuk, xthor, zooqle
+from medusa.providers.torrent import (
+    abnormal,
+    alpharatio,
+    anidex,
+    animebytes,
+    animetorrents,
+    bitcannon,
+    bithdtv,
+    btn,
+    cpasbien,
+    danishbits,
+    elitetorrent,
+    extratorrent,
+    freshontv,
+    gftracker,
+    hd4free,
+    hdbits,
+    hdspace,
+    hdtorrents,
+    horriblesubs,
+    hounddawgs,
+    iptorrents,
+    limetorrents,
+    morethantv,
+    nebulance,
+    newpct,
+    norbits,
+    nyaatorrents,
+    pretome,
+    rarbg,
+    scc,
+    scenetime,
+    sdbits,
+    shanaproject,
+    shazbat,
+    speedcd,
+    t411,
+    thepiratebay,
+    tntvillage,
+    tokyotoshokan,
+    torrentbytes,
+    torrentday,
+    torrentleech,
+    torrentproject,
+    torrentz2,
+    tvchaosuk,
+    xthor,
+    zooqle
 )
-from .. import app
 
 __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs', 'iptorrents',
     'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'cpasbien', 'morethantv', 't411', 'tokyotoshokan',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
-    'transmitthenet', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb',
-    'bithdtv', 'zooqle', 'animebytes', 'animetorrents'
+    'nebulance', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
+    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb', 'bithdtv',
+    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]
 
 

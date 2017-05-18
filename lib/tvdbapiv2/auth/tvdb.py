@@ -8,6 +8,7 @@ import logging
 
 from time import time
 import requests
+from requests.compat import urljoin
 
 from .jwt import JWTBearerAuth
 from ..exceptions import AuthError
@@ -21,10 +22,11 @@ class TVDBAuth(JWTBearerAuth):
 
     refresh_window = 7200  # seconds
 
-    def __init__(self, api_key=None, token=None):
+    def __init__(self, api_key=None, token=None, api_base='https://api.thetvdb.com'):
         """Create a new TVDB request auth."""
         super(TVDBAuth, self).__init__(token)
         self.api_key = api_key
+        self.api_base = api_base
 
     @property
     def authorization(self):
@@ -64,8 +66,9 @@ class TVDBAuth(JWTBearerAuth):
         if not self.api_key:
             raise AuthError('Missing API key')
         response = requests.post(
-            'https://api.thetvdb.com/login',
+            urljoin(self.api_base, 'login'),
             json=self.authorization,
+            verify=False,
         )
         try:
             self._get_token(response)
@@ -85,8 +88,9 @@ class TVDBAuth(JWTBearerAuth):
             return self.login()
 
         response = requests.get(
-            'https://api.thetvdb.com/refresh_token',
+            urljoin(self.api_base, 'refresh_token'),
             headers=self.auth_header,
+            verify=False,
         )
 
         try:
