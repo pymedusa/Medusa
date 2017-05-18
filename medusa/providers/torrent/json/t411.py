@@ -8,10 +8,7 @@ from __future__ import unicode_literals
 import logging
 import time
 import traceback
-from collections import namedtuple
 from operator import itemgetter
-
-from contextlib2 import suppress
 
 from medusa import (
     config,
@@ -76,15 +73,15 @@ class T411Provider(TorrentProvider):
         # Miscellaneous Options
         self.headers.update({'User-Agent': USER_AGENT})
         self.subcategories = (
-            # 402,  # Video Clips (Vid�o-clips)
-            433,  # TV Series (S�rie TV)
+            # 402,  # Video Clips (Video-clips)
+            433,  # TV Series (Serie TV)
             455,  # Animation
             # 631,  # Film
             # 633,  # Concert
             # 634,  # Documentary (Documentaire)
             # 635,  # Show (Spectacle)
             636,  # Sport
-            637,  # Animations (Animation S�rie)
+            637,  # Animations (Animation Serie)
             639,  # TV Programs (Emission TV)
         )
 
