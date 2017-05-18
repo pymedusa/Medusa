@@ -53,9 +53,9 @@ def test_parse_pubdate(p):
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone)
 
-    # Use a recent datetime for human date comparison
+    # Calculate the difference for human date comparison
     if ht:
-        expected = datetime.now(tz.tzlocal()) - p['expected']
+        actual = datetime.now(tz.tzlocal()) - actual
 
     # Then
     assert expected == actual
