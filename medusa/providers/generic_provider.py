@@ -497,14 +497,21 @@ class GenericProvider(object):
             if human_time:
                 match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
                 seconds = parse(match.group('time'))
-                return datetime.now() - timedelta(seconds=seconds)
+                return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, fuzzy=True)
+            # Always make UTC aware if naive
+            if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+                dt = dt.replace(tzinfo=tz.gettz('UTC'))
             if timezone:
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except (TypeError, AttributeError, ValueError):
+        except TypeError:
+            # Don't log an exception if we got None
+            log.debug('Skipping invalid publishing date.')
+
+        except (AttributeError, ValueError):
             log.exception('Failed parsing publishing date.')
 
     def _get_result(self, episodes=None):
