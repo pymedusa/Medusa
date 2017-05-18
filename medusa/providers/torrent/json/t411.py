@@ -101,30 +101,23 @@ class T411Provider(TorrentProvider):
         """Get season search strings."""
         if not episode:
             return []
+
         search_string = {
             'Season': []
         }
 
         for series in episode.show.get_all_possible_names(season=episode.scene_season):
             episode_string = series + ' '
-            episode_params = None
 
             if episode.show.air_by_date or episode.show.sports:
                 episode_string += str(episode.airdate).split('-')[0]
-                episode_string = episode_string.strip()
             elif episode.show.anime:
                 episode_string += 'Season'
-                episode_string = episode_string.strip()
-            else:
-                # Chech if season and episode are within the mapped values. Otherwise use normal search
-                if episode.scene_season > max(SEASON_MAP):
-                    episode_string += 'S{season:0>2}'.format(season=episode.season)
-                    episode_string = episode_string.strip()
-                # Custom string for param search only
-                else:
-                    episode_params = (series, episode.scene_season, episode.scene_episode,)
+            elif episode.scene_season > max(SEASON_MAP):
+                # Check if season and episode are within the mapped values. Otherwise use normal search.
+                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
 
-            search_string['Season'].append(episode_params or episode_string)
+            search_string['Season'].append(episode_string.strip())
         return [search_string]
 
     def _get_episode_search_strings(self, episode, add_string=''):
@@ -138,15 +131,13 @@ class T411Provider(TorrentProvider):
 
         for series in episode.show.get_all_possible_names(season=episode.scene_season):
             episode_string = series + self.search_separator
-            episode_params = None
+
             if episode.show.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
-                episode_string = episode_string.strip()
             elif episode.show.sports:
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
-                episode_string = episode_string.strip()
             elif episode.show.anime:
                 # If the series is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
@@ -158,20 +149,16 @@ class T411Provider(TorrentProvider):
                 else:
                     ep = episode.scene_absolute_number
                 episode_string += '{episode:0>2}'.format(episode=ep)
-                episode_string = episode_string.strip()
-            else:
-                # Chech if season and episode are within the mapped values. Otherwise use normal search
-                if episode.scene_season > max(SEASON_MAP) or episode.scene_episode > max(EPISODE_MAP):
-                    episode_string += config.naming_ep_type[2] % {
-                        'seasonnumber': episode.scene_season,
-                        'episodenumber': episode.scene_episode,
-                    }
-                    episode_string = episode_string.strip()
-                # Custom string for param search only
-                else:
-                    episode_params = (series, episode.scene_season, episode.scene_episode,)
+            elif episode.scene_season > max(SEASON_MAP) or episode.scene_episode > max(EPISODE_MAP):
+                # Check if season and episode are not within the mapped values.
+                # In that case we are not going to search using season and episode parameters. And we need
+                # contruct a search term.
+                episode_string += config.naming_ep_type[2] % {
+                    'seasonnumber': episode.scene_season,
+                    'episodenumber': episode.scene_episode,
+                }
 
-            search_string['Episode'].append(episode_params or episode_string)
+            search_string['Episode'].append(episode_string.strip())
 
         return [search_string]
 
@@ -218,23 +205,13 @@ class T411Provider(TorrentProvider):
 
             for search_string in search_strings[mode]:
                 if mode != 'RSS':
-                    season = episode = None
-                    if isinstance(search_string, tuple):
-                        series = search_string[0]
-                        season = search_string[1]
-                        episode = search_string[2]
-                        log.debug('Search params: Name: {series}. Season: {season} Episode: {episode}',
-                                  {'series': series, 'season': season, 'episode': episode})
-                    else:
-                        series = search_string
-                        log.debug('Search string: {search}', {'search': search_string})
 
                     if self.confirmed:
                         log.debug('Searching only confirmed torrents')
 
                     # use string formatting to safely coerce the search term
                     # to unicode then utf-8 encode the unicode string
-                    term = '{term}'.format(term=series).encode('utf-8')
+                    term = '{term}'.format(term=search_string).encode('utf-8')
                     # build the search URL
                     search_url = self.urls['search'].format(
                         search=quote(term)  # URL encode the search term
@@ -243,12 +220,22 @@ class T411Provider(TorrentProvider):
                     search_params.update({'limit': 100})
 
                     # Search using season and episode specific params only for normal episodes
-                    if season and episode:
+                    if all(
+                        [not ep_obj.show.air_by_date,
+                         not ep_obj.show.sports,
+                         not ep_obj.show.anime,
+                         ep_obj.scene_season <= max(SEASON_MAP) and ep_obj.scene_episode <= max(EPISODE_MAP)]
+                    ):
                         if mode == 'Season':
                             search_params.update({'term[46][]': EPISODE_MAP.get(0)})
                         else:
-                            search_params.update({'term[46][]': EPISODE_MAP.get(episode)})
-                        search_params.update({'term[45][]': SEASON_MAP.get(season)})
+                            search_params.update({'term[46][]': EPISODE_MAP.get(ep_obj.scene_episode)})
+                        search_params.update({'term[45][]': SEASON_MAP.get(ep_obj.scene_season)})
+                        log.debug('Search params: Name: {series}. Season: {season} Episode: {episode}',
+                                  {'series': search_string, 'season': ep_obj.scene_season, 'episode': ep_obj.scene_episode})
+                    else:
+                        log.debug('Search string: {search}', {'search': search_string})
+
                 else:
                     search_url = self.urls['rss']
                     # Using None as a category removes it as a search param
@@ -388,52 +375,6 @@ class T411Auth(AuthBase):
         """Add token to request header."""
         r.headers['Authorization'] = self.token
         return r
-
-
-_BaseQuery = namedtuple('Query', ['name', 'season', 'episode', 'air_date'])
-
-
-class Query(_BaseQuery):
-    """A query item to search for."""
-
-    __slots__ = ()  # Required to keep subclass a tuple
-
-    # Using __new__ instead of __init__ since tuples are immutable
-    def __new__(cls, name, season=None, episode=None, air_date=None):
-        """Initialize a new query."""
-        # First argument of super().__new__ must be cls since __new__ is a static method
-        return super(Query, cls).__new__(cls, name, season, episode, air_date)
-
-    air_date_fmt = '%Y-%m-%d'
-
-    _str = {
-        # Various string formats for __str__ method
-        # The key is a tuple of bool values of attributes
-        # to determine if the format is valid:
-        #     bool(season), bool(episode), bool(air_date)
-
-        # Title s01e01  (Standard naming)
-        (True, True, False): '{self.name} s{self.season:0>2}e{self.episode:0>2}',
-        # Title s01  (Season)
-        (True, False, False): '{self.name} s{self.season:0>2}',
-        # Title e01  (Absolute numbered)
-        (False, True, False): '{self.name} e{self.episode:0>2}',
-        # Title YYYY-MM-DD  (Air by Date)
-        (False, False, True): '{self.name} {date}',
-    }
-
-    def __str__(self):
-        """Return readable/formated search string."""
-        # Get the formatted air date, if one exists.
-        date = None
-        with suppress(AttributeError):
-            date = self.air_date.strftime(self.air_date_fmt)
-
-        # Determine which format string to use
-        key = bool(self.season), bool(self.episode), bool(self.air_date)
-        _str = self._str.get(key, '{self.name}')
-
-        return _str.format(self=self, date=date)
 
 
 provider = T411Provider()

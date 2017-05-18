@@ -251,7 +251,7 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                log.debug(error)
+                log.debug(error.message)
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
@@ -541,7 +541,7 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + ' '
 
             if episode.show.air_by_date or episode.show.sports:
@@ -549,7 +549,7 @@ class GenericProvider(object):
             elif episode.show.anime:
                 episode_string += 'Season'
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.season)
+                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
 
             search_string['Season'].append(episode_string.strip())
 
