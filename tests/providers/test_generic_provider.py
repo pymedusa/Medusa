@@ -2,7 +2,7 @@
 """Provider test code for Generic Provider."""
 from __future__ import unicode_literals
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from dateutil import tz
 
@@ -29,12 +29,12 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p3: human time and minutes
         'pubdate': '12 minutes ago',
-        'expected': timedelta(seconds=60 * 12),
+        'expected': 720,  # difference in seconds
         'human_time': True
     },
     {  # p4: human time and hours
         'pubdate': '3hours',
-        'expected': timedelta(seconds=60 * 60 * 3),
+        'expected': 10800,  # difference in seconds
         'human_time': True
     },
     {  # p5: date, time and custom timezone
@@ -55,7 +55,7 @@ def test_parse_pubdate(p):
 
     # Calculate the difference for human date comparison
     if ht:
-        actual = datetime.now(tz.tzlocal()) - actual
+        actual = (datetime.now(tz.tzlocal()) - actual).seconds
 
     # Then
     assert expected == actual
