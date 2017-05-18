@@ -400,7 +400,7 @@ def wanted_episodes(show, from_date):
     return wanted
 
 
-def search_for_needed_episodes(force):
+def search_for_needed_episodes(force=False):
     """
     Check providers for details on wanted episodes.
 
