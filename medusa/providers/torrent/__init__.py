@@ -36,7 +36,6 @@ from medusa.providers.torrent.html import (
     torrentleech,
     torrentproject,
     tvchaosuk,
-    xthor,
     zooqle,
 )
 
@@ -49,6 +48,7 @@ from medusa.providers.torrent.json import (
     rarbg,
     t411,
     torrentday,
+    xthor,
 )
 
 from medusa.providers.torrent.rss import (
