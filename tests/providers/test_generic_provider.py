@@ -17,18 +17,15 @@ sut = GenericProvider('FakeProvider')
 @pytest.mark.parametrize('p', [
     {  # p0: None
         'pubdate': None,
-        'expected': None,
-        'human_time': False
+        'expected': None
     },
     {  # p1: date and time
         'pubdate': '2017-05-18 15:00:15',
-        'expected': datetime(2017, 5, 18, 15, 0, 15, tzinfo=tz.tzwin('UTC')),
-        'human_time': False
+        'expected': datetime(2017, 5, 18, 15, 0, 15, tzinfo=tz.tzwin('UTC'))
     },
     {  # p2: date, time and timezone
         'pubdate': '2017-05-16 17:12:25+02:00',
-        'expected': datetime(2017, 5, 16, 17, 12, 25, tzinfo=tz.tzoffset(None, 7200)),
-        'human_time': False
+        'expected': datetime(2017, 5, 16, 17, 12, 25, tzinfo=tz.tzoffset(None, 7200))
     },
     {  # p3: human time and minutes
         'pubdate': '12 minutes ago',
@@ -43,18 +40,18 @@ sut = GenericProvider('FakeProvider')
     {  # p5: date, time and custom timezone
         'pubdate': '2017-05-18 16:19:33',
         'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.tzwin('UTC')),
-        'human_time': False,
         'timezone': 'US/Eastern'
     },
 ])
-def test_parse_pubdate(p, monkeypatch):
+def test_parse_pubdate(p):
     # Given
     parsed_date = p['pubdate']
     expected = p['expected']
-    ht = p['human_time']
+    ht = p['human_time'] if p.get('human_time') else False
+    tzone = p['timezone'] if p.get('timezone') else None
 
     # When
-    actual = sut.parse_pubdate(parsed_date, human_time=ht)
+    actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone)
 
     # Use a recent datetime for human date comparison
     if ht:
