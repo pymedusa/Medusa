@@ -21,7 +21,7 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p1: date and time
         'pubdate': '2017-05-18 15:00:15',
-        'expected': datetime(2017, 5, 18, 15, 0, 15, tzinfo=tz.tzwin('UTC'))
+        'expected': datetime(2017, 5, 18, 15, 0, 15, tzinfo=tz.gettz('UTC'))
     },
     {  # p2: date, time and timezone
         'pubdate': '2017-05-16 17:12:25+02:00',
@@ -39,7 +39,7 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p5: date, time and custom timezone
         'pubdate': '2017-05-18 16:19:33',
-        'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.tzwin('UTC')),
+        'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.gettz('UTC')),
         'timezone': 'US/Eastern'
     },
 ])
