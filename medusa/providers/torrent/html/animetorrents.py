@@ -8,8 +8,6 @@ import logging
 import re
 import traceback
 
-from dateutil import parser
-
 from medusa import (
     scene_exceptions,
     tv,
@@ -32,7 +30,7 @@ class AnimeTorrentsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('AnimeTorrents')
+        super(AnimeTorrentsProvider, self).__init__('AnimeTorrents')
 
         # Credentials
         self.username = None
@@ -170,7 +168,7 @@ class AnimeTorrentsProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text() if cells[labels.index('Added')] else None
-                    pubdate = parser.parse(pubdate_raw) if pubdate_raw else None
+                    pubdate = self._parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

@@ -19,8 +19,6 @@ from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 
 import requests
-from six.moves.http_cookiejar import CookieJar
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -52,7 +50,6 @@ class GenericClient(object):
         self.last_time = time.time()
         self.session = helpers.make_session()
         self.session.auth = (self.username, self.password)
-        self.session.cookies = CookieJar()
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
 
@@ -321,5 +318,5 @@ class GenericClient(object):
                 return True, 'Success: Connected and Authenticated'
             else:
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
-        except Exception:
-            return False, 'Error: Unable to connect to {name}'.format(name=self.name)
+        except Exception as error:
+            return False, 'Unable to connect to {name}. Error: {msg}'.format(name=self.name, msg=error)

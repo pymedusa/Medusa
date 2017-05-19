@@ -27,6 +27,7 @@ from medusa.providers.torrent.html import (
     scc,
     scenetime,
     sdbits,
+    shanaproject,
     speedcd,
     thepiratebay,
     tntvillage,
@@ -35,7 +36,6 @@ from medusa.providers.torrent.html import (
     torrentleech,
     torrentproject,
     tvchaosuk,
-    xthor,
     zooqle,
 )
 
@@ -48,6 +48,7 @@ from medusa.providers.torrent.json import (
     rarbg,
     t411,
     torrentday,
+    xthor,
 )
 
 from medusa.providers.torrent.rss import (
@@ -67,5 +68,5 @@ __all__ = [
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
-    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex'
+    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]

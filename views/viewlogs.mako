@@ -18,8 +18,8 @@ pre {
 <%!
     random_show = choice(app.showList)
 %>
-<input type="hidden" id="showID" value="${random_show.indexerid if app.showList else ''}" />
-<input type="hidden" id="series_slug" value="${random_show.slug if app.showList else ''}" />
+<input type="hidden" id="showID" value="${getattr(random_show, 'indexerid', '')}" />
+<input type="hidden" id="series_slug" value="${getattr(random_show, 'slug', '')}" />
 
 <div class="row wide">
         <div class="col-md-12">

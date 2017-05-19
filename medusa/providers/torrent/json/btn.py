@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 
+import logging
 import socket
 import time
 
@@ -11,16 +12,19 @@ import jsonrpclib
 
 from medusa import (
     app,
-    logger,
     scene_exceptions,
     tv,
 )
 from medusa.common import cpu_presets
 from medusa.helper.common import episode_num
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from six import itervalues
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 # API docs:
@@ -32,7 +36,7 @@ class BTNProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('BTN')
+        super(BTNProvider, self).__init__('BTN')
 
         # Credentials
         self.api_key = None
@@ -75,7 +79,7 @@ class BTNProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             if mode != 'RSS':
                 searches = self._search_params(ep_obj, mode)
@@ -84,12 +88,12 @@ class BTNProvider(TorrentProvider):
 
             for search_params in searches:
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_params), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_params})
 
                 response = self._api_call(search_params)
                 if not response or response.get('results') == '0':
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.get('torrents', {}), mode)
@@ -119,9 +123,9 @@ class BTNProvider(TorrentProvider):
 
             # Filter unseeded torrent
             if seeders < min(self.minseed, 1):
-                logger.log("Discarding torrent because it doesn't meet the "
-                           "minimum seeders: {0}. Seeders: {1}".format
-                           (title, seeders), logger.DEBUG)
+                log.debug("Discarding torrent because it doesn't meet the"
+                          " minimum seeders: {0}. Seeders: {1}",
+                          title, seeders)
                 continue
 
             size = row.get('Size') or -1
@@ -134,12 +138,10 @@ class BTNProvider(TorrentProvider):
                 'leechers': leechers,
                 'pubdate': None,
             }
-            logger.log(
+            log.debug(
                 'Found result: {title} with {x} seeders'
-                ' and {y} leechers'.format(
-                    title=title, x=seeders, y=leechers
-                ),
-                logger.DEBUG
+                ' and {y} leechers',
+                {'title': title, 'x': seeders, 'y': leechers}
             )
 
             items.append(item)
@@ -149,7 +151,7 @@ class BTNProvider(TorrentProvider):
     def _check_auth(self):
 
         if not self.api_key:
-            logger.log('Missing API key. Check your settings', logger.WARNING)
+            log.warning('Missing API key. Check your settings')
             return False
 
         return True
@@ -246,19 +248,17 @@ class BTNProvider(TorrentProvider):
             time.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message[1] == 'Invalid API Key':
-                logger.log('Incorrect authentication credentials.',
-                           logger.WARNING)
+                log.warning('Incorrect authentication credentials.')
             elif error.message[1] == 'Call Limit Exceeded':
-                logger.log('You have exceeded the limit of'
-                           ' 150 calls per hour.', logger.WARNING)
+                log.warning('You have exceeded the limit of'
+                            ' 150 calls per hour.')
             else:
-                logger.log('JSON-RPC protocol error while accessing provider.'
-                           ' Error: {msg!r}'.format(msg=error.message[1]),
-                           logger.ERROR)
+                log.error('JSON-RPC protocol error while accessing provider.'
+                          ' Error: {msg!r}', {'msg': error.message[1]})
 
         except (socket.error, socket.timeout, ValueError) as error:
-            logger.log('Error while accessing provider.'
-                       ' Error: {msg}'.format(msg=error), logger.WARNING)
+            log.warning('Error while accessing provider.'
+                        ' Error: {msg}', {'msg': error})
         return parsed_json
 
 
