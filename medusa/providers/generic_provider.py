@@ -492,21 +492,26 @@ class GenericProvider(object):
         return SearchResult(episodes)
 
     def _create_air_by_date_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        """Create a search string used for series that are indexed by air date."""
         episode_string = show_scene_name + self.search_separator
         episode_string += str(episode.airdate).replace('-', ' ')
+
         episode_string += self.search_separator + add_string
         search_string['Episode'].append(episode_string.strip())
 
     def _create_sports_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        """Create a search string used for sport series."""
         episode_string = show_scene_name + self.search_separator
 
         episode_string += str(episode.airdate).replace('-', ' ')
         episode_string += ('|', ' ')[len(self.proper_strings) > 1]
         episode_string += episode.airdate.strftime('%b')
+
         episode_string += self.search_separator + add_string
         search_string['Episode'].append(episode_string.strip())
 
     def _create_anime_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        """Create a search string used for as anime 'marked' shows."""
         episode_string = show_scene_name + self.search_separator
 
         # If the showname is a season scene exception, we want to use the indexer episode number.
@@ -532,6 +537,17 @@ class GenericProvider(object):
         if self.anime_search_show_name:
             search_string['EpisodeFallback'].append(show_scene_name.strip())
 
+    def _create_default_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        """Create a default search string, used for standard type S01E01 tv series."""
+        episode_string = show_scene_name + self.search_separator
+
+        episode_string += config.naming_ep_type[2] % {
+            'seasonnumber': episode.scene_season,
+            'episodenumber': episode.scene_episode,
+        }
+        episode_string += self.search_separator + add_string
+        search_string['Episode'].append(episode_string.strip())
+
     def _get_episode_search_strings(self, episode, add_string=''):
         """Get episode search strings."""
         if not episode:
@@ -551,14 +567,7 @@ class GenericProvider(object):
             elif episode.show.anime:
                 self._create_anime_search_string(show_name, episode, search_string, add_string=add_string)
             else:
-                episode_string = show_name + self.search_separator
-
-                episode_string += config.naming_ep_type[2] % {
-                    'seasonnumber': episode.scene_season,
-                    'episodenumber': episode.scene_episode,
-                }
-
-                search_string['Episode'].append(episode_string.strip())
+                self._create_default_search_string(show_name, episode, search_string, add_string=add_string)
 
         return [search_string]
 
