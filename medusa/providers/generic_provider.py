@@ -96,6 +96,7 @@ class GenericProvider(object):
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
+        self.anime_search_show_name = True
         self.url = ''
         self.urls = {}
         # Ability to override the search separator. As for example anizb is using '*' instead of space.
@@ -205,6 +206,12 @@ class GenericProvider(object):
             for search_string in search_strings:
                 # Find results from the provider
                 items_list += self.search(search_string, ep_obj=episode)
+
+            if not items_list:
+                # Find results from the provider using a fall-back search string.
+                search_string['Episode'] = search_string['EpisodeFallback']
+                for search_string in search_strings:
+                    items_list += self.search(search_string, ep_obj=episode)
 
         if len(results) == len(episodes):
             return results
@@ -484,51 +491,74 @@ class GenericProvider(object):
         """Get result."""
         return SearchResult(episodes)
 
+    def _create_air_by_date_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        episode_string = show_scene_name + self.search_separator
+        episode_string += str(episode.airdate).replace('-', ' ')
+        episode_string += self.search_separator + add_string
+        search_string['Episode'].append(episode_string.strip())
+
+    def _create_sports_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        episode_string = show_scene_name + self.search_separator
+
+        episode_string += str(episode.airdate).replace('-', ' ')
+        episode_string += ('|', ' ')[len(self.proper_strings) > 1]
+        episode_string += episode.airdate.strftime('%b')
+        episode_string += self.search_separator + add_string
+        search_string['Episode'].append(episode_string.strip())
+
+    def _create_anime_search_string(self, show_scene_name, episode, search_string, add_string=None):
+        episode_string = show_scene_name + self.search_separator
+
+        # If the showname is a season scene exception, we want to use the indexer episode number.
+        if (episode.scene_season > 1 and
+            show_scene_name in get_scene_exceptions(episode.show.indexerid,
+                                                    episode.show.indexer,
+                                                    episode.scene_season)):
+            # This is apparently a season exception, let's use the scene_episode instead of absolute
+            ep = episode.scene_episode
+        else:
+            ep = episode.scene_absolute_number
+
+        episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
+        episode_string += '{episode:0>2}'.format(episode=ep)
+
+        episode_string += self.search_separator + add_string
+
+        episode_string_fallback += self.search_separator + add_string
+
+        search_string['Episode'].append(episode_string_fallback.strip())
+        search_string['Episode'].append(episode_string.strip())
+
+        if self.anime_search_show_name:
+            search_string['EpisodeFallback'].append(show_scene_name.strip())
+
     def _get_episode_search_strings(self, episode, add_string=''):
         """Get episode search strings."""
         if not episode:
             return []
 
         search_string = {
-            'Episode': []
+            'Episode': [],
+            'EpisodeFallback': []
         }
 
         for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + self.search_separator
-            episode_string_fallback = None
 
             if episode.show.air_by_date:
-                episode_string += str(episode.airdate).replace('-', ' ')
+                self._create_air_by_date_search_string(show_name, episode, search_string, add_string=add_string)
             elif episode.show.sports:
-                episode_string += str(episode.airdate).replace('-', ' ')
-                episode_string += ('|', ' ')[len(self.proper_strings) > 1]
-                episode_string += episode.airdate.strftime('%b')
+                self._create_sports_search_string(show_name, episode, search_string, add_string=add_string)
             elif episode.show.anime:
-                # If the showname is a season scene exception, we want to use the indexer episode number.
-                if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.show.indexerid,
-                                                          episode.show.indexer,
-                                                          episode.scene_season)):
-                    # This is apparently a season exception, let's use the scene_episode instead of absolute
-                    ep = episode.scene_episode
-                else:
-                    ep = episode.scene_absolute_number
-                episode_string_fallback = episode_string + '{episode:0>3}'.format(episode=ep)
-                episode_string += '{episode:0>2}'.format(episode=ep)
+                self._create_anime_search_string(show_name, episode, search_string, add_string=add_string)
             else:
+                episode_string = show_name + self.search_separator
+
                 episode_string += config.naming_ep_type[2] % {
                     'seasonnumber': episode.scene_season,
                     'episodenumber': episode.scene_episode,
                 }
 
-            if add_string:
-                episode_string += self.search_separator + add_string
-                if episode_string_fallback:
-                    episode_string_fallback += self.search_separator + add_string
-
-            search_string['Episode'].append(episode_string.strip())
-            if episode_string_fallback:
-                search_string['Episode'].append(episode_string_fallback.strip())
+                search_string['Episode'].append(episode_string.strip())
 
         return [search_string]
 
