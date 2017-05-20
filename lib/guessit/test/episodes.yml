@@ -3836,21 +3836,24 @@
   release_group: NTb
   type: episode
 
-? Show Name Super 015 VOSTFR par Fansub-Resistance (1280x720) - HQ version
-: options: --type episode --episode-prefer-number
-  title: Show Name Super
-  episode: 15
-  subtitle_language: fr
+? True Detective S02E04 720p HDTV x264-0SEC [GloDLS].mkv
+: title: True Detective
+  season: 2
+  episode: 4
   screen_size: 720p
-  release_group: Resistance
-  other: HQ
+  format: HDTV
+  video_codec: h264
+  release_group: 0SEC [GloDLS]
+  container: mkv
   type: episode
 
-? Show Name 445 VOSTFR par Fansub-Resistance (1280*720) - version MQ
-: options: --type episode --episode-prefer-number
-  title: Show Name
-  episode: 445
+? Anthony.Bourdain.Parts.Unknown.S09E01.Los.Angeles.720p.HDTV.x264-MiNDTHEGAP
+: title: Anthony Bourdain Parts Unknown
+  season: 9
+  episode: 1
+  episode_title: Los Angeles
   screen_size: 720p
-  subtitle_language: fr
-  release_group: Resistance
+  format: HDTV
+  video_codec: h264
+  release_group: MiNDTHEGAP
   type: episode
