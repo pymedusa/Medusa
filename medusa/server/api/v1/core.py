@@ -157,7 +157,7 @@ class ApiHandler(RequestHandler):
                 out = '{0}({1});'.format(callback, out)  # wrap with JSONP call if requested
         except Exception as error:  # if we fail to generate the output fake an error
             log.exception(u'API :: Traceback')
-            out = '{"result": "{0}", "message": "error while composing output: {1!r"}'.format(
+            out = '{"result": "{0}", "message": "error while composing output: {1!r}"}'.format(
                 result_type_map[RESULT_ERROR], error
             )
         return out
