@@ -21,7 +21,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 8
+CURRENT_MINOR_DB_VERSION = 9
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -39,6 +39,15 @@ class MainSanityCheck(db.DBSanityCheck):
         self.convert_archived_to_compound()
         self.fix_subtitle_reference()
         self.clean_null_indexer_mappings()
+
+    def fix_proper_action(self):
+        """Convert wrong action 02 (snatched) when we have proper tags. Should be 09 (snatched proper)."""
+        log.debug(u'Converting propers snatches to correct action')
+
+        # Replace only the last two digits with 09 (SNATCHED_PROPER) instead of 02 (SNATCHED)
+        self.connection.select(u'UPDATE history '
+                               u'SET action = (action + 7)'
+                               u'WHERE action LIKE "%02" and proper_tags is not ""')
 
     def clean_null_indexer_mappings(self):
         log.debug(u'Checking for null indexer mappings')
@@ -611,3 +620,20 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
         self.inc_minor_version()
+
+
+class FixProperAction(AddIndexerInteger):
+    """Adds columns manually_searched to history and tv_episodes table."""
+
+    def test(self):
+        """Test if the version is < 44.9."""
+        return self.connection.version >= (44, 9)
+
+    def execute(self):
+        """Update the version until 44.9 and fixes proper action in history table."""
+        backupDatabase(self.connection.version)
+
+        MainSanityCheck(self.connection).fix_proper_action()
+        self.inc_minor_version()
+
+        log.info(u'Updated to: {}.{}', *self.connection.version)
