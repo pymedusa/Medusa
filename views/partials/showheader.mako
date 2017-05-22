@@ -91,8 +91,8 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <a asset="show/${show.indexerid}?type=poster">
-                        <img alt="" class="show-image shadow" asset="show/${show.indexerid}?type=posterThumb" />
+                    <a series="${show.slug}" asset="poster">
+                        <img alt="" class="show-image shadow" series="${show.slug}" asset="posterThumb" />
                     </a>
                 </div>
             </div>
@@ -103,7 +103,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right shadow" asset="show/${show.indexerid}?type=banner">
+                    <img id="showBanner" class="pull-right shadow" series="${show.slug}" asset="banner">
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -128,6 +128,11 @@
                                      <img alt="[imdb]" height="16" width="16" src="images/imdb.png" style="margin-top: -1px; vertical-align:middle;"/>
                                  </a>
                  % endif
+                % if show.externals.get('trakt_id'):
+                    <a href="${anon_url('https://trakt.tv/shows/', show.externals.get('trakt_id'))}" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false" title="https://trakt.tv/shows/${show.externals.get('trakt_id')}">
+                        <img alt="[trakt]" height="16" width="16" src="images/trakt.png" />
+                    </a>
+                % endif
                  <a href="${anon_url(indexerApi(show.indexer).config['show_url'], show.indexerid)}" onclick="window.open(this.href, '_blank'); return false;" title="${indexerApi(show.indexer).config["show_url"] + str(show.indexerid)}">
                      <img alt="${indexerApi(show.indexer).name}" height="16" width="16" src="images/${indexerApi(show.indexer).config["icon"]}" style="margin-top: -1px; vertical-align:middle;"/>
                  </a>
@@ -278,6 +283,7 @@
                                 % endif
                             % endfor
                             </select>
+                            <input type="hidden" id="series_slug" value="${show.slug}" />
                             <input type="hidden" id="showID" value="${show.indexerid}" />
                             <input type="hidden" id="indexer" value="${show.indexer}" />
                             <input class="btn" type="button" id="changeStatus" value="Go" />

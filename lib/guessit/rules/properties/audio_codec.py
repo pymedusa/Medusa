@@ -55,15 +55,18 @@ def audio_codec():
     rebulk.string("HQ", value="HQ", tags="AC3")
 
     rebulk.defaults(name="audio_channels")
-    rebulk.regex(r'(7[\W_][01](?:ch)?)(?:[^\d]|$)', r'(?<=[^\d\W]{2})(7[01]\b)', value='7.1', children=True)
-    rebulk.regex(r'(5[\W_][01](?:ch)?)(?:[^\d]|$)', r'(?<=[^\d\W]{2})(5[01]\b)', value='5.1', children=True)
-    rebulk.regex(r'(2[\W_]0(?:ch)?)(?:[^\d]|$)', r'(?<=[^\d\W]{2})(20\b)', value='2.0', children=True)
+    rebulk.regex(r'(7[\W_][01](?:ch)?)(?:[^\d]|$)', value='7.1', children=True)
+    rebulk.regex(r'(5[\W_][01](?:ch)?)(?:[^\d]|$)', value='5.1', children=True)
+    rebulk.regex(r'(2[\W_]0(?:ch)?)(?:[^\d]|$)', value='2.0', children=True)
+    rebulk.regex('7[01]', value='7.1', validator=seps_after, tags='weak-audio_channels')
+    rebulk.regex('5[01]', value='5.1', validator=seps_after, tags='weak-audio_channels')
+    rebulk.string('20', value='2.0', validator=seps_after, tags='weak-audio_channels')
     rebulk.string('7ch', '8ch', value='7.1')
     rebulk.string('5ch', '6ch', value='5.1')
     rebulk.string('2ch', 'stereo', value='2.0')
     rebulk.string('1ch', 'mono', value='1.0')
 
-    rebulk.rules(DtsRule, AacRule, Ac3Rule, AudioValidatorRule, HqConflictRule)
+    rebulk.rules(DtsRule, AacRule, Ac3Rule, AudioValidatorRule, HqConflictRule, AudioChannelsValidatorRule)
 
     return rebulk
 
@@ -162,3 +165,22 @@ class HqConflictRule(Rule):
 
         if hq_other:
             return hq_other
+
+
+class AudioChannelsValidatorRule(Rule):
+    """
+    Remove audio_channel if no audio codec as previous match.
+    """
+    priority = 128
+    consequence = RemoveMatch
+
+    def when(self, matches, context):
+        ret = []
+
+        for audio_channel in matches.tagged('weak-audio_channels'):
+            valid_before = matches.range(audio_channel.start - 1, audio_channel.start,
+                                         lambda match: match.name == 'audio_codec')
+            if not valid_before:
+                ret.append(audio_channel)
+
+        return ret

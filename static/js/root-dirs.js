@@ -24,8 +24,6 @@
 
 $(document).ready(function() {
     function setDefault(which, force) {
-        console.log('setting default to ' + which);
-
         if (which !== undefined && which.length === 0) {
             return;
         }
@@ -58,6 +56,9 @@ $(document).ready(function() {
 
     function refreshRootDirs() {
         if ($('#rootDirs').length === 0) {
+            /* Trigger change event as $.rootDirCheck() function is not
+               always available when this section of code is called. */
+            $('#rootDirs').trigger('change');
             return;
         }
 
@@ -81,23 +82,19 @@ $(document).ready(function() {
         $('#defaultRootDir').prop('disabled', doDisable);
         $('#editRootDir').prop('disabled', doDisable);
 
-        var logString = '';
         var dirString = '';
         if ($('#whichDefaultRootDir').val().length >= 4) {
             dirString = $('#whichDefaultRootDir').val().substr(3);
         }
         $('#rootDirs option').each(function() {
-            logString += $(this).val() + '=' + $(this).text() + '->' + $(this).attr('id') + '\n';
             if (dirString.length !== 0) {
                 dirString += '|' + $(this).val();
             }
         });
-        logString += 'def: ' + $('#whichDefaultRootDir').val();
-        console.log(logString);
 
         $('#rootDirText').val(dirString);
-        $('#rootDirText').change();
-        console.log('rootDirText: ' + $('#rootDirText').val());
+        // Manually trigger change event as setting .val directly doesn't
+        $('#rootDirs').trigger('change');
     }
 
     function addRootDir(path) {

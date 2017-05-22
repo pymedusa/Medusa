@@ -9,21 +9,25 @@
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
 </%block>
 <%block name="content">
-    <div>
-    % if not header is UNDEFINED:
-        <h1 class="header">${header}</h1>
-    % else:
-        <h1 class="title">${title}</h1>
-    % endif
-    </div>
-<div id="container">
+<div class="row">
+<div class="col-md-12">
+% if not header is UNDEFINED:
+    <h1 class="header">${header}</h1>
+% else:
+    <h1 class="title">${title}</h1>
+% endif
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="horizontal-scroll">
     <table id="releasesPP" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
         <thead aria-live="polite" aria-relevant="all">
             <tr>
                 <th>Show</th>
-                <th>Episode</th>
+                <th class="col-search">Episode</th>
                 <th>Release</th>
-                <th>Age</th>
+                <th class="col-search">Age</th>
                 <th class="col-search">Search</th>
             </tr>
         </thead>
@@ -45,7 +49,9 @@
                     </span>
                 </td>
                 <td class="tvShow" align="center">
+                <span class="tvShow" datetime="${epResult['date'].isoformat('T')}">
                         ${epResult['age']}${epResult['age_unit']}
+                </span>
                 </td>
                 <td class="col-search" align="center">
                     <a class="epSubtitlesSearchPP" release_id=${index} href="home/manual_search_subtitles?release_id=${index}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>
@@ -54,7 +60,6 @@
         % endfor
         </tbody>
     </table>
-
 <%include file="subtitle_modal.mako"/>
 <br>
 <form name="processForm" method="post" action="home/postprocess/processEpisode" style="float: right;">
@@ -70,8 +75,14 @@
 </table>
     <input id="submit" class="btn" type="submit" value="Run Manual Post-Process" />
 </form>
+</div><!-- Releases missed subtitles -->
+</div><!-- col -->
+</div><!-- row -->
 <br>
-    <h3 style="display: inline;">Releases waiting minimum ratio</h3>
+<div class="row ${' hidden' if app.TORRENT_SEED_LOCATION else ''}">
+<div class="col-md-12">
+<h3 style="display: inline;">Releases waiting minimum ratio</h3>
+<div class="horizontal-scroll">
     <table id="releasesPP-downloaded" class="defaultTable" cellspacing="1" border="0" cellpadding="0">
         <thead aria-live="polite" aria-relevant="all">
             <tr>
@@ -101,5 +112,7 @@
         % endfor
         </tbody>
     </table>
-</div>
+</div><!-- Releases waiting minimum ratio -->
+</div><!-- col -->
+</div><!-- row -->
 </%block>

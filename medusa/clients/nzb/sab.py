@@ -1,42 +1,41 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
 
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""
+NZB Client API for SABnzbd.
+
+https://sabnzbd.org/
+https://github.com/sabnzbd/sabnzbd
+"""
 
 from __future__ import unicode_literals
 
 import datetime
+import logging
 
-from medusa import (
-    app,
-    helpers,
-    logger,
-)
+from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 
+import requests
 from requests.compat import urljoin
 
-session = helpers.make_session()
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+session = requests.Session()
 
 
-def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branches, too-many-statements
+def send_nzb(nzb):
     """
     Sends an NZB to SABnzbd via the API.
 
     :param nzb: The NZBSearchResult object to send to SAB
     """
+    session.params.update({
+        'output': 'json',
+        'ma_username': app.SAB_USERNAME,
+        'ma_password': app.SAB_PASSWORD,
+        'apikey': app.SAB_APIKEY,
+    })
 
     category = app.SAB_CATEGORY
     if nzb.show.is_anime:
@@ -48,76 +47,73 @@ def sendNZB(nzb):  # pylint:disable=too-many-return-statements, too-many-branche
             category = app.SAB_CATEGORY_ANIME_BACKLOG if nzb.show.is_anime else app.SAB_CATEGORY_BACKLOG
 
     # set up a dict with the URL params in it
-    params = {'output': 'json'}
-    if app.SAB_USERNAME:
-        params['ma_username'] = app.SAB_USERNAME
-    if app.SAB_PASSWORD:
-        params['ma_password'] = app.SAB_PASSWORD
-    if app.SAB_APIKEY:
-        params['apikey'] = app.SAB_APIKEY
-
-    if category:
-        params['cat'] = category
+    params = {
+        'cat': category,
+        'mode': 'addurl',
+        'name': nzb.url,
+    }
 
     if nzb.priority:
         params['priority'] = 2 if app.SAB_FORCED else 1
 
-    logger.log('Sending NZB to SABnzbd')
+    log.info('Sending NZB to SABnzbd')
     url = urljoin(app.SAB_HOST, 'api')
 
-    if nzb.resultType == 'nzb':
-        params['mode'] = 'addurl'
-        params['name'] = nzb.url
-        jdata = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
-    elif nzb.resultType == 'nzbdata':
-        params['mode'] = 'addfile'
-        multiPartParams = {'nzbfile': (nzb.name + '.nzb', nzb.extraInfo[0])}
-        jdata = helpers.get_url(url, params=params, file=multiPartParams, session=session, returns='json', verify=False)
+    response = session.get(url, params=params, verify=False)
 
-    if not jdata:
-        logger.log('Error connecting to sab, no data returned')
-        return False
-
-    logger.log('Result text from SAB: {0}'.format(jdata), logger.DEBUG)
-
-    result, _ = _checkSabResponse(jdata)
-    return result
+    try:
+        data = response.json()
+    except ValueError:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        log.debug('Result text from SAB: {0}', data)
+        result, text = _check_sab_response(data)
+        del text
+        return result
 
 
-def _checkSabResponse(jdata):
+def _check_sab_response(jdata):
     """
     Check response from SAB
 
     :param jdata: Response from requests api call
     :return: a list of (Boolean, string) which is True if SAB is not reporting an error
     """
-    if 'error' in jdata:
-        if jdata['error'] == 'API Key Incorrect':
-            logger.log("Sabnzbd's API key is incorrect", logger.WARNING)
-        else:
-            logger.log('Sabnzbd encountered an error: {0}'.format(jdata['error']), logger.ERROR)
-        return False, jdata['error']
-    else:
-        return True, jdata
+    error = jdata.get('error')
+
+    if error == 'API Key Incorrect':
+        log.warning("Sabnzbd's API key is incorrect")
+    elif error:
+        log.error('Sabnzbd encountered an error: {0}', error)
+
+    return not error, error or jdata
 
 
-def getSabAccesMethod(host=None):
+def get_sab_access_method(host=None):
     """
     Find out how we should connect to SAB
 
     :param host: hostname where SAB lives
     :return: (boolean, string) with True if method was successful
     """
-    params = {'mode': 'auth', 'output': 'json'}
+    session.params.update({
+        'output': 'json',
+        'ma_username': app.SAB_USERNAME,
+        'ma_password': app.SAB_PASSWORD,
+        'apikey': app.SAB_APIKEY,
+    })
     url = urljoin(host, 'api')
-    data = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
-    if not data:
-        return False, data
+    response = session.get(url, params={'mode': 'auth'}, verify=False)
 
-    return _checkSabResponse(data)
+    try:
+        data = response.json()
+    except ValueError:
+        return False, response
+    else:
+        return _check_sab_response(data)
 
 
-def testAuthentication(host=None, username=None, password=None, apikey=None):
+def test_authentication(host=None, username=None, password=None, apikey=None):
     """
     Sends a simple API request to SAB to determine if the given connection information is connect
 
@@ -127,25 +123,19 @@ def testAuthentication(host=None, username=None, password=None, apikey=None):
     :param apikey: The API key to provide to SAB
     :return: A tuple containing the success boolean and a message
     """
-
-    # build up the URL parameters
-    params = {
-        'mode': 'queue',
-        'output': 'json',
+    session.params.update({
         'ma_username': username,
         'ma_password': password,
-        'apikey': apikey
-    }
-
+        'apikey': apikey,
+    })
     url = urljoin(host, 'api')
 
-    data = helpers.get_url(url, params=params, session=session, returns='json', verify=False)
-    if not data:
-        return False, data
-
-    # check the result and determine if it's good or not
-    result, sabText = _checkSabResponse(data)
-    if not result:
-        return False, sabText
-
-    return True, 'Success'
+    response = session.get(url, params={'mode': 'queue'}, verify=False)
+    try:
+        data = response.json()
+    except ValueError:
+        return False, response
+    else:
+        # check the result and determine if it's good or not
+        result, sab_text = _check_sab_response(data)
+        return result, 'success' if result else sab_text

@@ -1775,7 +1775,8 @@
 : episode: 11
   episode_title: Our Man in Damascus
   format: HDTV
-  release_group: iNTERNAL-BaCKToRG
+  other: Internal
+  release_group: BaCKToRG
   screen_size: 720p
   season: 5
   subtitle_language: de
@@ -3648,4 +3649,211 @@
 : title: Show Name
   season: 1
   episode: 50
+  type: episode
+
+? Vikings.Seizoen.4.1080p.Web.NLsubs
+: title: Vikings
+  season: 4
+  screen_size: 1080p
+  format: WEB-DL
+  subtitle_language: nl
+  type: episode
+
+? Star.Wars.Rebels.S01E01.Spark.of.Rebellion.ALTERNATE.CUT.HDTV.x264-W4F.mp4
+: title: Star Wars Rebels
+  season: 1
+  episode: 1
+  episode_title: Spark of Rebellion
+  other: Alternative Cut
+  format: HDTV
+  video_codec: h264
+  release_group: W4F
+  container: mp4
+  type: episode
+
+? DCs.Legends.of.Tomorrow.S02E12.HDTV.XviD-FUM
+: title: DCs Legends of Tomorrow
+  season: 2
+  episode: 12
+  format: HDTV
+  video_codec: XviD
+  release_group: FUM
+  type: episode
+
+? DC's Legends of Tomorrow 2016 - S02E02
+: title: DC's Legends of Tomorrow
+  year: 2016
+  season: 2
+  episode: 2
+  type: episode
+
+? Broadchurch.S01.DIRFIX.720p.BluRay.x264-SHORTBREHD
+: title: Broadchurch
+  season: 1
+  other: Proper
+  screen_size: 720p
+  format: BluRay
+  video_codec: h264
+  release_group: SHORTBREHD
+  proper_count: 1
+  type: episode
+
+? Simply Red - 2016-07-08 Montreux Jazz Festival 720p
+: title: Simply Red
+  date: 2016-07-08
+  episode_title: Montreux Jazz Festival
+  screen_size: 720p
+  type: episode
+
+? Ridiculousness.S07E14.iNTERNAL.HDTV.x264-YesTV
+: title: Ridiculousness
+  season: 7
+  episode: 14
+  other: Internal
+  format: HDTV
+  video_codec: h264
+  release_group: YesTV
+  type: episode
+
+? Stephen.Colbert.2016.05.25.James.McAvoy.iNTERNAL.XviD-AFG
+: title: Stephen Colbert
+  date: 2016-05-25
+  episode_title: James McAvoy
+  other: Internal
+  video_codec: XviD
+  release_group: AFG
+  type: episode
+
+? The.100.S01E13.iNTERNAL.READNFO.720p.HDTV.x264-2HD
+: title: The 100
+  season: 1
+  episode: 13
+  other: [Internal, Read NFO]
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: 2HD
+  type: episode
+
+? The.100.S01E13.READ.NFO.720p.HDTV.x264-2HD
+: title: The 100
+  season: 1
+  episode: 13
+  other: Read NFO
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: 2HD
+  type: episode
+
+? Dr.Ken.S01E21.SAMPLEFIX.720p.HDTV.x264-SVA
+: title: Dr Ken
+  season: 1
+  episode: 21
+  other: Proper
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: SVA
+  type: episode
+
+? Rick and Morty Season 1 [UNCENSORED] [BDRip] [1080p] [HEVC]
+: title: Rick and Morty
+  season: 1
+  other: Uncensored
+  format: BluRay
+  screen_size: 1080p
+  video_codec: h265
+  type: episode
+
+? 12.Monkeys.S01E01.LiMiTED.FRENCH.1080p.WEB-DL.H264-AUTHORiTY
+: title: 12 Monkeys
+  season: 1
+  episode: 1
+  edition: Limited Edition
+  language: french
+  screen_size: 1080p
+  format: WEB-DL
+  video_codec: h264
+  release_group: AUTHORiTY
+  type: episode
+
+? Undateable.2014.S03E05.West.Feed.HDTV.x264-2HD
+: title: Undateable
+  year: 2014
+  season: 3
+  episode: 5
+  other: West Coast Feed
+  format: HDTV
+  video_codec: h264
+  release_group: 2HD
+  type: episode
+
+? Undateable.2014.S02E07-E08.Live.Episode.West.Coast.Feed.HDTV.x264-2HD
+: title: Undateable
+  year: 2014
+  season: 2
+  episode: [7, 8]
+  other: West Coast Feed
+  format: HDTV
+  video_codec: h264
+  release_group: 2HD
+  type: episode
+
+? Undateable.S03E01-E02.LIVE.EAST.FEED.720p.HDTV.x264-KILLERS
+: title: Undateable
+  season: 3
+  episode: [1, 2]
+  other: East Coast Feed
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: KILLERS
+  type: episode
+
+? Undateable.2014.S02E07.Live.Episode.East.Coast.Feed.HDTV.x264-2HD
+: title: Undateable
+  year: 2014
+  season: 2
+  episode: 7
+  other: East Coast Feed
+  format: HDTV
+  video_codec: h264
+  release_group: 2HD
+  type: episode
+
+? Undateable.2014.S02E07.East.Coast.Feed.720p.WEB-DL.DD5.1.H.264-NTb
+: title: Undateable
+  year: 2014
+  season: 2
+  episode: 7
+  other: East Coast Feed
+  screen_size: 720p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: NTb
+  type: episode
+
+? True Detective S02E04 720p HDTV x264-0SEC [GloDLS].mkv
+: title: True Detective
+  season: 2
+  episode: 4
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: 0SEC [GloDLS]
+  container: mkv
+  type: episode
+
+? Anthony.Bourdain.Parts.Unknown.S09E01.Los.Angeles.720p.HDTV.x264-MiNDTHEGAP
+: title: Anthony Bourdain Parts Unknown
+  season: 9
+  episode: 1
+  episode_title: Los Angeles
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  release_group: MiNDTHEGAP
   type: episode

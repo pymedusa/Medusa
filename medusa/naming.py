@@ -97,7 +97,7 @@ class TVEpisode(tv.Episode):  # pylint: disable=too-many-instance-attributes
         self.status = Quality.composite_status(common.DOWNLOADED, common.Quality.SDTV)
         self.release_name = 'Show.Name.S02E03.HDTV.x264-RLSGROUP'
         self.is_proper = True
-        self.show = TVShow()
+        self.series = TVShow()
 
 
 def check_force_season_folders(pattern=None, multi=None, anime_type=None):
@@ -200,7 +200,7 @@ def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-m
     logger.log(u"Trying to parse " + new_name, logger.DEBUG)
 
     try:
-        result = NameParser(show=ep.show, naming_pattern=True).parse(new_name)
+        result = NameParser(show=ep.series, naming_pattern=True).parse(new_name)
     except (InvalidNameException, InvalidShowException) as error:
         logger.log(u"{}".format(error), logger.DEBUG)
         return False
@@ -236,13 +236,13 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
 
     if abd:
         ep.release_name = 'Show.Name.2011.03.09.HDTV.x264-RLSGROUP'
-        ep.show.air_by_date = 1
+        ep.series.air_by_date = 1
     elif sports:
         ep.release_name = 'Show.Name.2011.03.09.HDTV.x264-RLSGROUP'
-        ep.show.sports = 1
+        ep.series.sports = 1
     else:
         if anime_type != 3:
-            ep.show.anime = 1
+            ep.series.anime = 1
             ep.release_name = 'Show.Name.003.HDTV.x264-RLSGROUP'
         else:
             ep.release_name = 'Show.Name.S02E03.HDTV.x264-RLSGROUP'
@@ -251,7 +251,7 @@ def generate_sample_ep(multi=None, abd=False, sports=False, anime_type=None):
         ep.name = "Ep Name (1)"
 
         if anime_type != 3:
-            ep.show.anime = 1
+            ep.series.anime = 1
 
             ep.release_name = 'Show.Name.003-004.HDTV.x264-RLSGROUP'
 

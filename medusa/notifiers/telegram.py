@@ -1,32 +1,29 @@
 # coding=utf-8
-# Author: Marvin Pinto <me@marvinp.ca>
-# Author: Dennis Lutter <lad1337@gmail.com>
-# Author: Aaron Bieber <deftly@gmail.com>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals
 
+import logging
+
+from medusa import app
+from medusa.common import (
+    NOTIFY_DOWNLOAD,
+    NOTIFY_GIT_UPDATE,
+    NOTIFY_GIT_UPDATE_TEXT,
+    NOTIFY_LOGIN,
+    NOTIFY_LOGIN_TEXT,
+    NOTIFY_SNATCH,
+    NOTIFY_SNATCH_PROPER,
+    NOTIFY_SUBTITLE_DOWNLOAD,
+    notifyStrings,
+)
+from medusa.helper.common import http_status_code
+from medusa.logger.adapters.style import BraceAdapter
+
 from requests.compat import urlencode
 from six.moves.urllib.request import Request, urlopen
-from .. import app, logger
-from ..common import NOTIFY_DOWNLOAD, NOTIFY_GIT_UPDATE, NOTIFY_GIT_UPDATE_TEXT, NOTIFY_LOGIN, NOTIFY_LOGIN_TEXT, NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER, \
-    NOTIFY_SUBTITLE_DOWNLOAD, notifyStrings
-from ..helper.common import http_status_code
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -58,7 +55,7 @@ class Notifier(object):
         user_id = app.TELEGRAM_ID if user_id is None else user_id
         api_key = app.TELEGRAM_APIKEY if api_key is None else api_key
 
-        logger.log('Telegram in use with API KEY: %s' % api_key, logger.DEBUG)
+        log.debug('Telegram in use with API KEY: {0}', api_key)
 
         message = '%s : %s' % (title.encode(), msg.encode())
         payload = urlencode({'chat_id': user_id, 'text': message})
@@ -87,7 +84,7 @@ class Notifier(object):
         except Exception as e:
             message = 'Error while sending Telegram message: %s ' % e
         finally:
-            logger.log(message, logger.INFO)
+            log.info(message)
         return success, message
 
     def notify_snatch(self, ep_name, is_proper):
@@ -158,9 +155,9 @@ class Notifier(object):
         """
 
         if not (force or app.USE_TELEGRAM):
-            logger.log('Notification for Telegram not enabled, skipping this notification', logger.DEBUG)
+            log.debug('Notification for Telegram not enabled, skipping this notification')
             return False, 'Disabled'
 
-        logger.log('Sending a Telegram message for %s' % message, logger.DEBUG)
+        log.debug('Sending a Telegram message for {0}', message)
 
         return self._send_telegram_msg(title, message, user_id, api_key)

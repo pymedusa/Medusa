@@ -2425,10 +2425,10 @@
   release_group: SUJAIDR
   type: episode
 
-? Show.Name.-.Alternative.-.02.(1280x720.HEVC.AAC)
+? Show.Name.-.Other Name.-.02.(1280x720.HEVC.AAC)
 : title: Show Name
-  alternative_title: Alternative
-  alias: Show Name - Alternative
+  alternative_title: Other Name
+  alias: Show Name - Other Name
   absolute_episode: 2
   episode: 2
   screen_size: 720p
@@ -2695,7 +2695,9 @@
 : title: Show Name
   season: 12
   episode: 17
-  other: DirFix
+  other: Proper
+  proper_count: 1
+  proper_tag: DIRFIX
   format: HDTV
   video_codec: h264
   video_encoder: x264

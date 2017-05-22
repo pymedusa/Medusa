@@ -415,7 +415,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
     $('.display-specials a').on('click', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             layout: {
                 show: {
                     specials: $(this).text() !== 'Hide'

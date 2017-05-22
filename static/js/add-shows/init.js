@@ -44,6 +44,10 @@ MEDUSA.addShows.init = function() {
             });
         });
 
+        $('#rootDirs').on('change', function() {
+            $.rootDirCheck();
+        });
+
         $('#showsortdirection').on('change', function() {
             $('#container').isotope({
                 sortAscending: (this.value === 'asc')

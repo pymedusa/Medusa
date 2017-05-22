@@ -43,6 +43,7 @@
             <th class="col-legend">Scene</th>
             <th class="col-legend">Anime</th>
             <th class="col-legend">Season folders</th>
+            <th class="col-legend">DVD Order</th>
             <th class="col-legend">Paused</th>
             <th class="col-legend">Subtitle</th>
             <th class="col-legend">Default Ep Status</th>
@@ -61,7 +62,7 @@
     <tfoot>
         <tr>
             <td rowspan="1" colspan="2" class="align-center alt"><input class="btn pull-left submitMassEdit" type="button" value="Edit Selected" /></td>
-            <td rowspan="1" colspan="${(14, 15)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
+            <td rowspan="1" colspan="${(15, 16)[bool(app.USE_SUBTITLES)]}" class="align-right alt"><input class="btn pull-right submitMassUpdate" type="button" value="Submit" /></td>
         </tr>
     </tfoot>
     <tbody>
@@ -86,25 +87,26 @@
         curRemove = "<input type=\"checkbox\" class=\"removeCheck\" id=\"remove-" + str(cur_show.indexerid) + "\" " + ("", "disabled=\"disabled\" ")[disabled] + "/>"
     %>
     <tr>
-        <td align="center"><input type="checkbox" class="editCheck" id="edit-${cur_show.indexerid}" /></td>
-        <td class="tvShow"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
-        <td align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
-        <td align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>
-        <td align="center">${statusStrings[cur_show.default_ep_status]}</td>
-        <td align="center">${cur_show.status}</td>
-        <td align="center">${curUpdate}</td>
-        <td align="center">${curRefresh}</td>
-        <td align="center">${curRename}</td>
+        <td class="triggerhighlight" align="center"><input type="checkbox" class="editCheck" id="edit-${cur_show.indexerid}" /></td>
+        <td class="tvShow triggerhighlight"><a href="home/displayShow?show=${cur_show.indexerid}">${cur_show.name}</a></td>
+        <td class="triggerhighlight" align="center">${renderQualityPill(cur_show.quality, showTitle=True)}</td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_sports) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_scene) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.is_anime) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[not int(cur_show.flatten_folders) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.dvd_order) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.paused) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center"><img src="images/${('no16.png" alt="N', 'yes16.png" alt="Y')[int(cur_show.subtitles) == 1]}" width="16" height="16" /></td>
+        <td class="triggerhighlight" align="center">${statusStrings[cur_show.default_ep_status]}</td>
+        <td class="triggerhighlight" align="center">${cur_show.status}</td>
+        <td class="triggerhighlight" align="center">${curUpdate}</td>
+        <td class="triggerhighlight" align="center">${curRefresh}</td>
+        <td class="triggerhighlight" align="center">${curRename}</td>
         % if app.USE_SUBTITLES:
-        <td align="center">${curSubtitle}</td>
+        <td class="triggerhighlight" align="center">${curSubtitle}</td>
         % endif
-        <td align="center">${curDelete}</td>
-        <td align="center">${curRemove}</td>
+        <td class="triggerhighlight" align="center">${curDelete}</td>
+        <td class="triggerhighlight" align="center">${curRemove}</td>
     </tr>
 % endfor
 </tbody>

@@ -1,29 +1,18 @@
 # coding=utf-8
 
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 import json
+import logging
+
+from medusa import app
+from medusa.helper.exceptions import ex
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urlencode
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
-from .. import app, logger
-from ..helper.exceptions import ex
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -54,11 +43,12 @@ class Notifier(object):
             result = response.read()
             response.close()
 
-            logger.log(u'EMBY: HTTP response: ' + result.replace('\n', ''), logger.DEBUG)
+            log.debug(u'EMBY: HTTP response: {0}', result.replace('\n', ''))
             return True
 
-        except (URLError, IOError) as e:
-            logger.log(u'EMBY: Warning: Couldn\'t contact Emby at ' + url + ' ' + ex(e), logger.WARNING)
+        except (URLError, IOError) as error:
+            log.warning(u'EMBY: Warning: Unable to contact Emby at {url}: {error}',
+                        {'url': url, 'error': ex(error)})
             return False
 
 
@@ -80,17 +70,17 @@ class Notifier(object):
         if app.USE_EMBY:
 
             if not app.EMBY_HOST:
-                logger.log(u'EMBY: No host specified, check your settings', logger.DEBUG)
+                log.debug(u'EMBY: No host specified, check your settings')
                 return False
 
             if show:
                 if show.indexer == 1:
                     provider = 'tvdb'
                 elif show.indexer == 2:
-                    logger.log(u'EMBY: TVRage Provider no longer valid', logger.WARNING)
+                    log.warning(u'EMBY: TVRage Provider no longer valid')
                     return False
                 else:
-                    logger.log(u'EMBY: Provider unknown', logger.WARNING)
+                    log.warning(u'EMBY: Provider unknown')
                     return False
                 query = '?%sid=%s' % (provider, show.indexerid)
             else:
@@ -107,9 +97,10 @@ class Notifier(object):
                 result = response.read()
                 response.close()
 
-                logger.log(u'EMBY: HTTP response: ' + result.replace('\n', ''), logger.DEBUG)
+                log.debug(u'EMBY: HTTP response: {0}', result.replace('\n', ''))
                 return True
 
-            except (URLError, IOError) as e:
-                logger.log(u'EMBY: Warning: Couldn\'t contact Emby at ' + url + ' ' + ex(e), logger.WARNING)
+            except (URLError, IOError) as error:
+                log.warning(u'EMBY: Warning: Unable to contact Emby at {url}: {error}',
+                            {'url': url, 'error': ex(error)})
                 return False

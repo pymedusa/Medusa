@@ -39,8 +39,7 @@ COMMON_WORDS_STRICT = frozenset(['brazil'])
 
 UNDETERMINED = babelfish.Language('und')
 
-SYN = {('und', None): ['unknown', 'inconnu', 'unk'],
-       ('ell', None): ['gr', 'greek'],
+SYN = {('ell', None): ['gr', 'greek'],
        ('spa', None): ['esp', 'español', 'espanol'],
        ('fra', None): ['français', 'vf', 'vff', 'vfi', 'vfq'],
        ('swe', None): ['se'],
@@ -76,7 +75,7 @@ class GuessitConverter(babelfish.LanguageReverseConverter):  # pylint: disable=m
     def convert(self, alpha3, country=None, script=None):
         return str(babelfish.Language(alpha3, country, script))
 
-    def reverse(self, name):
+    def reverse(self, name):  # pylint:disable=arguments-differ
         with_country = (GuessitConverter._with_country_regexp.match(name) or
                         GuessitConverter._with_country_regexp2.match(name))
 
@@ -129,6 +128,8 @@ subtitle_suffixes = sorted(subtitle_both +
 lang_both = ['dublado', 'dubbed', 'dub']
 lang_suffixes = sorted(lang_both + ['audio'], key=length_comparator)
 lang_prefixes = sorted(lang_both + ['true'], key=length_comparator)
+
+weak_prefixes = ('audio', 'true')
 
 _LanguageMatch = namedtuple('_LanguageMatch', ['property_name', 'word', 'lang'])
 
@@ -293,7 +294,7 @@ class LanguageFinder(object):
                         if fallback_word:
                             match = self.find_language_match_for_word(fallback_word, key=key, force=True)
 
-                        if not match:
+                        if not match and part not in weak_prefixes:
                             match = self.create_language_match(key, LanguageWord(current_word.start, current_word.end,
                                                                                  'und', current_word.input_string))
                     elif value not in self.common_words:

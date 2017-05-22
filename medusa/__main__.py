@@ -76,6 +76,7 @@ from .config import (
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events
+from .indexers.indexer_config import INDEXER_TVDBV2, INDEXER_TVMAZE
 from .providers.generic_provider import GenericProvider
 from .providers.nzb.newznab import NewznabProvider
 from .providers.torrent.rss.rsstorrent import TorrentRssProvider
@@ -290,7 +291,7 @@ class Application(object):
         if self.console_logging and not os.path.isfile(app.CONFIG_FILE):
             sys.stdout.write('Unable to find %s, all settings will be default!\n' % app.CONFIG_FILE)
 
-        app.CFG = ConfigObj(app.CONFIG_FILE)
+        app.CFG = ConfigObj(app.CONFIG_FILE, encoding='UTF-8', default_encoding='UTF-8')
 
         # Initialize the config and our threads
         self.initialize(console_logging=self.console_logging)
@@ -331,6 +332,7 @@ class Application(object):
             'port': int(self.start_port),
             'host': self.web_host,
             'data_root': os.path.join(app.PROG_DIR, 'static'),
+            'vue_root': os.path.join(app.PROG_DIR, 'vue'),
             'web_root': app.WEB_ROOT,
             'log_dir': self.log_dir,
             'username': app.WEB_USERNAME,
@@ -646,6 +648,7 @@ class Application(object):
             app.TORRENT_VERIFY_CERT = bool(check_setting_int(app.CFG, 'TORRENT', 'torrent_verify_cert', 0))
             app.TORRENT_RPCURL = check_setting_str(app.CFG, 'TORRENT', 'torrent_rpcurl', 'transmission')
             app.TORRENT_AUTH_TYPE = check_setting_str(app.CFG, 'TORRENT', 'torrent_auth_type', '')
+            app.TORRENT_SEED_LOCATION = check_setting_str(app.CFG, 'TORRENT', 'torrent_seed_location', '')
 
             app.USE_KODI = bool(check_setting_int(app.CFG, 'KODI', 'use_kodi', 0))
             app.KODI_ALWAYS_ON = bool(check_setting_int(app.CFG, 'KODI', 'kodi_always_on', 1))
@@ -775,7 +778,10 @@ class Application(object):
             app.TRAKT_USE_RECOMMENDED = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_use_recommended', 0))
             app.TRAKT_SYNC = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync', 0))
             app.TRAKT_SYNC_REMOVE = bool(check_setting_int(app.CFG, 'Trakt', 'trakt_sync_remove', 0))
-            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', 1)
+            app.TRAKT_DEFAULT_INDEXER = check_setting_int(app.CFG, 'Trakt', 'trakt_default_indexer', INDEXER_TVDBV2)
+            if app.TRAKT_DEFAULT_INDEXER == INDEXER_TVMAZE:
+                # Trakt doesn't support TVMAZE. Default to TVDB
+                app.TRAKT_DEFAULT_INDEXER = INDEXER_TVDBV2
             app.TRAKT_TIMEOUT = check_setting_int(app.CFG, 'Trakt', 'trakt_timeout', 30)
             app.TRAKT_BLACKLIST_NAME = check_setting_str(app.CFG, 'Trakt', 'trakt_blacklist_name', '')
 
@@ -916,6 +922,10 @@ class Application(object):
             app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
             app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
+
+            app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
+            app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
+            app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
 
             # reconfigure the logger
             app_logger.reconfigure()
@@ -1092,9 +1102,8 @@ class Application(object):
                                                                   threadName="BACKLOG",
                                                                   run_delay=update_interval)
 
-            search_intervals = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
-            if app.CHECK_PROPERS_INTERVAL in search_intervals:
-                update_interval = datetime.timedelta(minutes=search_intervals[app.CHECK_PROPERS_INTERVAL])
+            if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
+                update_interval = datetime.timedelta(minutes=app.PROPERS_SEARCH_INTERVAL[app.CHECK_PROPERS_INTERVAL])
                 run_at = None
             else:
                 update_interval = datetime.timedelta(hours=1)
@@ -1477,6 +1486,10 @@ class Application(object):
         new_config['General']['backlog_period'] = app.BACKLOG_PERIOD
         new_config['General']['backlog_status'] = app.BACKLOG_STATUS
 
+        new_config['General']['fallback_plex_enable'] = app.FALLBACK_PLEX_ENABLE
+        new_config['General']['fallback_plex_notifications'] = app.FALLBACK_PLEX_NOTIFICATIONS
+        new_config['General']['fallback_plex_timeout'] = app.FALLBACK_PLEX_TIMEOUT
+
         new_config['Blackhole'] = {}
         new_config['Blackhole']['nzb_dir'] = app.NZB_DIR
         new_config['Blackhole']['torrent_dir'] = app.TORRENT_DIR
@@ -1566,6 +1579,7 @@ class Application(object):
         new_config['TORRENT']['torrent_verify_cert'] = int(app.TORRENT_VERIFY_CERT)
         new_config['TORRENT']['torrent_rpcurl'] = app.TORRENT_RPCURL
         new_config['TORRENT']['torrent_auth_type'] = app.TORRENT_AUTH_TYPE
+        new_config['TORRENT']['torrent_seed_location'] = app.TORRENT_SEED_LOCATION
 
         new_config['KODI'] = {}
         new_config['KODI']['use_kodi'] = int(app.USE_KODI)

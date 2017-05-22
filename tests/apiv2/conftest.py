@@ -1,6 +1,5 @@
 # coding=utf-8
 """Configuration for pytest."""
-
 from medusa.server.core import get_apiv2_handlers
 import pytest
 import tornado.web
@@ -8,6 +7,8 @@ import tornado.web
 
 @pytest.fixture(scope='session')
 def app():
+    from medusa import app as medusa_app
+    medusa_app.APP_VERSION = '0.0.0'
     return tornado.web.Application(get_apiv2_handlers(''))
 
 

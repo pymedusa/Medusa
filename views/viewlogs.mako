@@ -15,7 +15,11 @@ pre {
 </style>
 </%block>
 <%block name="content">
-<input type="hidden" id="showID" value="${choice(app.showList).indexerid if app.showList else ''}" />
+<%!
+    random_show = choice(app.showList)
+%>
+<input type="hidden" id="showID" value="${getattr(random_show, 'indexerid', '')}" />
+<input type="hidden" id="series_slug" value="${getattr(random_show, 'slug', '')}" />
 
 <div class="row wide">
         <div class="col-md-12">

@@ -37,7 +37,7 @@ class NotifierTests(test.AppTestDBCase):
 
     @classmethod
     def setUpClass(cls):
-        """Setup class for tests."""
+        """Set up class for tests."""
         num_legacy_shows = 3
         num_shows = 3
         num_episodes_per_show = 5

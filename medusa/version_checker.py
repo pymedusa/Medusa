@@ -31,6 +31,9 @@ from . import app, db, helpers, logger, notifiers, ui
 from .github_client import get_github_repo
 from .helper.exceptions import ex
 
+ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
+                 'OR shutdown application and delete your .git folder and run from source to enable updates.')
+
 
 class CheckVersion(object):
     """Version check class meant to run as a thread object with the sr scheduler."""
@@ -245,12 +248,11 @@ class CheckVersion(object):
         """
         Determines how this copy of sr was installed.
 
-        returns: type of installation. Possible values are:
+        :return: type of installation. Possible values are:
             'win': any compiled windows build
             'git': running from source using git
             'source': running from source without git
         """
-
         # check if we're a windows build
         if app.BRANCH.startswith('build '):
             install_type = 'win'
@@ -263,15 +265,14 @@ class CheckVersion(object):
 
     def check_for_new_version(self, force=False):
         """
-        Checks the internet for a newer version.
+        Check the internet for a newer version.
 
-        returns: bool, True for new version or False for no new version.
-
-        force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
+        :force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
+        :return: bool, True for new version or False for no new version.
         """
-
         if not self.updater or (not app.VERSION_NOTIFY and not app.AUTO_UPDATE and not force):
             logger.log(u'Version checking is disabled, not checking for the newest version')
+            app.NEWEST_VERSION_STRING = None
             return False
 
         # checking for updates
@@ -294,13 +295,11 @@ class CheckVersion(object):
 
     def check_for_new_news(self, force=False):
         """
-        Checks GitHub for the latest news.
+        Check GitHub for the latest news.
 
-        returns: unicode, a copy of the news
-
-        force: ignored
+        :return: unicode, a copy of the news
+        :force: ignored
         """
-
         # Grab a copy of the news
         logger.log(u'check_for_new_news: Checking GitHub for latest news.', logger.DEBUG)
         try:
@@ -407,12 +406,6 @@ class GitUpdateManager(UpdateManager):
     def get_num_commits_ahead(self):
         return self._num_commits_ahead
 
-    @staticmethod
-    def _git_error():
-        error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
-                         'in your config.ini OR delete your .git folder and run from source to enable updates.')
-        app.NEWEST_VERSION_STRING = error_message
-
     def _find_working_git(self):
         test_cmd = 'version'
 
@@ -456,9 +449,9 @@ class GitUpdateManager(UpdateManager):
                     logger.log(u'Not using: {0}'.format(cur_git), logger.DEBUG)
 
         # Still haven't found a working git
-        error_message = ('Unable to find your git executable - Shutdown the application and EITHER set git_path '
-                         'in your config.ini OR delete your .git folder and run from source to enable updates.')
-        app.NEWEST_VERSION_STRING = error_message
+        # Warn user only if he has version check enabled
+        if app.VERSION_NOTIFY:
+            app.NEWEST_VERSION_STRING = ERROR_MESSAGE
 
         return None
 
@@ -469,8 +462,13 @@ class GitUpdateManager(UpdateManager):
 
         if not git_path:
             logger.log(u"No git specified, can't use git commands", logger.WARNING)
+            app.NEWEST_VERSION_STRING = ERROR_MESSAGE
             exit_status = 1
             return output, err, exit_status
+
+        # If we have a valid git remove the git warning
+        # String will be updated as soon we check github
+        app.NEWEST_VERSION_STRING = None
 
         cmd = git_path + ' ' + args
 
@@ -518,9 +516,8 @@ class GitUpdateManager(UpdateManager):
 
         Uses git show to get commit version.
 
-        Returns: True for success or False for failure
+        :return: True for success or False for failure
         """
-
         output, _, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')  # @UnusedVariable
 
         if exit_status == 0 and output:

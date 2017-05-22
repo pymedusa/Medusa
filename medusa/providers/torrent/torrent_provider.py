@@ -1,19 +1,10 @@
 # coding=utf-8
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Generic Torrent Provider."""
+
+from __future__ import unicode_literals
+
+import logging
 import os
 
 import bencode
@@ -21,14 +12,15 @@ from bencode.BTL import BTFailure
 
 from feedparser.util import FeedParserDict
 
-from medusa import (
-    app,
-    logger,
-)
+from medusa import app
 from medusa.classes import TorrentSearchResult
 from medusa.helper.common import try_int
 from medusa.helpers import remove_file_failed
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class TorrentProvider(GenericProvider):
@@ -124,11 +116,12 @@ class TorrentProvider(GenericProvider):
                 meta_info = bencode.bdecode(f.read())
             return 'info' in meta_info and meta_info['info']
         except BTFailure as e:
-            logger.log(u'Failed to validate torrent file: {name}. Error: {error}'.format
-                       (name=file_name, error=e), logger.DEBUG)
+            log.debug('Failed to validate torrent file: {name}. Error: {error}',
+                      {'name': file_name, 'error': e})
 
         remove_file_failed(file_name)
-        logger.log(u'{result} is not a valid torrent file'.format(result=file_name), logger.DEBUG)
+        log.debug('{result} is not a valid torrent file',
+                  {'result': file_name})
 
         return False
 

@@ -50,9 +50,8 @@
                                         <span class="component-title">Check propers every:</span>
                                         <span class="component-desc">
                                             <select id="check_propers_interval" name="check_propers_interval" class="form-control input-sm">
-    <% check_propers_interval_text = {'daily': "24 hours", '4h': "4 hours", '90m': "90 mins", '45m': "45 mins", '15m': "15 mins"} %>
-    % for curInterval in ('daily', '4h', '90m', '45m', '15m'):
-                                                <option value="${curInterval}" ${'selected="selected"' if app.CHECK_PROPERS_INTERVAL == curInterval else ''}>${check_propers_interval_text[curInterval]}</option>
+    % for curInterval in app.PROPERS_SEARCH_INTERVAL.keys():
+                                                <option value="${curInterval}" ${'selected="selected"' if app.CHECK_PROPERS_INTERVAL == curInterval else ''}>${app.PROPERS_INTERVAL_LABELS[curInterval]}</option>
     % endfor
                                             </select>
                                         </span>
@@ -95,13 +94,13 @@
                                         </span>
                                 </label>
                             </div><!-- daily search frequency -->
-                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD != 'transmission' else ''}>
+                            <div class="field-pair"${' hidden' if app.TORRENT_METHOD not in ('transmission', 'deluge', 'deluged') else ''}>
                                 <label for="remove_from_client">
                                     <span class="component-title">Remove torrents from client</span>
                                     <span class="component-desc">
-                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD == 'transmission' else ''}/>
+                                        <input type="checkbox" name="remove_from_client" id="remove_from_client" class="enabler" ${'checked="checked"' if app.REMOVE_FROM_CLIENT and app.TORRENT_METHOD in ('transmission', 'deluge', 'deluged') else ''}/>
                                         <p>Remove torrent from client (also torrent data) when provider ratio is reached</p>
-                                        <p><b>Note:</b> For now only Transmission is supported</p>
+                                        <p><b>Note:</b> For now only Transmission and Deluge are supported</p>
                                     </span>
                                 </label>
                             </div>
@@ -633,6 +632,21 @@
                                             <input type="text" name="torrent_path" id="torrent_path" value="${app.TORRENT_PATH}" class="form-control input-sm input350"/>
                                             <div class="clear-left"><p>where <span id="torrent_client">the torrent client</span> will save downloaded files (blank for client default)
                                                 <span id="path_synology"> <b>note:</b> the destination has to be a shared folder for Synology DS</span></p>
+                                            </div>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="field-pair" id="torrent_seed_location_option">
+                                    <label>
+                                        <span class="component-title" id="directory_title">Post-Processed seeding torrents location</span>
+                                        <span class="component-desc">
+                                            <input type="text" name="torrent_seed_location" id="torrent_seed_location" value="${app.TORRENT_SEED_LOCATION}" class="form-control input-sm input350"/>
+                                            <div class="clear-left">
+                                                <p>where <span id="torrent_client_seed_path">the torrent client</span> will move Torrents after Post-Processing<br/>
+                                                   <b>Note:</b> If your Post-Processor method is set to hard/soft link this will move your torrent
+                                                   to another location after Post-Processor to prevent reprocessing the same file over and over.
+                                                   This feature does a "Set Torrent location" or "Move Torrent" like in client
+                                                </p>
                                             </div>
                                         </span>
                                     </label>

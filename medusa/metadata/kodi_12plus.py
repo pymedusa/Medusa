@@ -1,36 +1,27 @@
 # coding=utf-8
 
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
 import datetime
+import logging
 import re
 
 from babelfish import Country
+
+from medusa import helpers
+from medusa.helper.common import dateFormat, episode_num
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.metadata import generic
+
 from six import string_types
-from . import generic
-from .. import helpers, logger
-from ..helper.common import dateFormat, episode_num
-from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
 
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
     import xml.etree.ElementTree as etree
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class KODI_12PlusMetadata(generic.GenericMetadata):
@@ -218,7 +209,7 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
         """
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -233,21 +224,24 @@ class KODI_12PlusMetadata(generic.GenericMetadata):
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
-                logger.log(u'Unable to find episode {ep_num} on {indexer}... '
-                           u'has it been removed? Should I delete from db?'.format
-                           (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=indexerApi(ep_obj.show.indexer).name))
+                log.info(
+                    u'Unable to find episode {ep_num} on {indexer}...'
+                    u' has it been removed? Should I delete from db?', {
+                        'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                    }
+                )
                 return None
 
             if not getattr(my_ep, 'firstaired', None):
                 my_ep['firstaired'] = str(datetime.date.fromordinal(1))
 
             if not getattr(my_ep, 'episodename', None):
-                logger.log(u'Not generating nfo because the ep has no title', logger.DEBUG)
+                log.debug(u'Not generating nfo because the ep has no title')
                 return None
 
-            logger.log(u'Creating metadata for episode {ep_num}'.format
-                       (ep_num=episode_num(ep_obj.season, ep_obj.episode)), logger.DEBUG)
+            log.debug(u'Creating metadata for episode {0}',
+                      episode_num(ep_obj.season, ep_obj.episode))
 
             if len(eps_to_write) > 1:
                 episode = etree.SubElement(root_node, 'episodedetails')

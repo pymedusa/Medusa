@@ -1,10 +1,11 @@
 # coding=utf-8
-# Author: Paul Wollaston
-# Contributions: Luke Mullan
-#
-# This client script allows connection to Deluge Daemon directly, completely
-# circumventing the requirement to use the WebUI.
-"""Deluge Daemon Client."""
+
+"""
+Deluge Daemon Client.
+
+This client script allows connection to Deluge Daemon directly, completely
+circumventing the requirement to use the WebUI.
+"""
 
 from __future__ import unicode_literals
 
@@ -12,12 +13,15 @@ import logging
 from base64 import b64encode
 
 from medusa import app
+from medusa.clients.torrent.deluge_client import read_torrent_status
 from medusa.clients.torrent.generic import GenericClient
+from medusa.logger.adapters.style import BraceAdapter
 
 from synchronousdeluge import DelugeClient
 
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class DelugeDAPI(GenericClient):
@@ -92,7 +96,19 @@ class DelugeDAPI(GenericClient):
         :return
         :rtype: bool
         """
-        return self.drpc.remove_torrent_ratio(info_hash, True)
+        return self.drpc.remove_torrent_data(info_hash)
+
+    def move_torrent(self, info_hash):
+        """Set new torrent location given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        if not app.TORRENT_SEED_LOCATION or not info_hash:
+            return
+        return self.drpc.move_storage(info_hash, app.TORRENT_SEED_LOCATION)
 
     def _set_torrent_label(self, result):
 
@@ -100,7 +116,8 @@ class DelugeDAPI(GenericClient):
         if result.show.is_anime:
             label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
+            log.error('{name}: Invalid label. Label must not contain a space',
+                      {'name': self.name})
             return False
 
         return self.drpc.set_torrent_label(result.hash, label) if label else True
@@ -128,6 +145,25 @@ class DelugeDAPI(GenericClient):
             return True, 'Success: Connected and Authenticated'
         else:
             return False, 'Error: Unable to Authenticate!  Please check your config!'
+
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
+
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+        """
+        log.info('Checking DelugeD torrent status.')
+
+        if not self.connect():
+            return
+
+        torrent_data = self.drpc.get_all_torrents()
+        read_torrent_status(torrent_data)
+        # Commented for now
+        # for info_hash in to_remove:
+        #    self.remove_torrent(info_hash)
 
 
 class DelugeRPC(object):
@@ -174,6 +210,46 @@ class DelugeRPC(object):
             return False
         else:
             return True
+
+    def remove_torrent_data(self, torrent_id):
+        """Remove torrent from client using given info_hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.remove_torrent(torrent_id, True).get()
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
+
+    def move_storage(self, torrent_id, location):
+        """Move torrent to new location and return torrent id/hash.
+
+        :param torrent_id:
+        :type torrent_id: str
+        :param location:
+        :type location: str
+        :return:
+        :rtype: str or bool
+        """
+        try:
+            self.connect()
+            self.client.core.move_storage(torrent_id, location).get()
+        except Exception:
+            return False
+        else:
+            return True
+        finally:
+            if self.client:
+                self.disconnect()
 
     def add_torrent_magnet(self, torrent, options, info_hash):
         """Add Torrent magnet and return torrent id/hash.
@@ -340,8 +416,28 @@ class DelugeRPC(object):
     def _check_torrent(self, info_hash):
         torrent_id = self.client.core.get_torrent_status(info_hash, {}).get()
         if torrent_id['hash']:
-            logger.debug('DelugeD: Torrent already exists in Deluge')
+            log.debug('DelugeD: Torrent already exists in Deluge')
             return info_hash
         return False
+
+    def get_all_torrents(self):
+        """Get all torrents in client.
+
+        :return:
+        :rtype: bool
+        """
+        try:
+            self.connect()
+            torrents_data = self.client.core.get_torrents_status({}, ('name', 'hash', 'progress', 'state',
+                                                                      'ratio', 'stop_ratio', 'is_seed', 'is_finished',
+                                                                      'paused', 'files')).get()
+        except Exception:
+            return False
+        else:
+            return torrents_data
+        finally:
+            if self.client:
+                self.disconnect()
+
 
 api = DelugeDAPI

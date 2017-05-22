@@ -1,20 +1,5 @@
 # coding=utf-8
-# Author: Mr_Orange <mr_orange@hotmail.it>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Deluge Web Client."""
 
 from __future__ import unicode_literals
@@ -24,11 +9,94 @@ import logging
 from base64 import b64encode
 
 from medusa import app
+
 from medusa.clients.torrent.generic import GenericClient
+
+from medusa.helpers import (
+    is_already_processed_media,
+    is_info_hash_in_history,
+    is_info_hash_processed,
+)
+
+from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
 
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+
+def read_torrent_status(torrent_data):
+    """Read torrent status from Deluge and Deluged client."""
+    found_torrents = False
+    info_hash_to_remove = []
+    for torrent in torrent_data.items():
+        info_hash = str(torrent[0])
+        details = torrent[1]
+        if not is_info_hash_in_history(info_hash):
+            continue
+        found_torrents = True
+
+        to_remove = False
+        for i in details['files']:
+            # Check if media was processed
+            # OR check hash in case of RARed torrents
+            if is_already_processed_media(i['path']) or is_info_hash_processed(info_hash):
+                to_remove = True
+
+        # Don't need to check status if we are not going to remove it.
+        if not to_remove:
+            log.info('Torrent not yet post-processed. Skipping: {torrent}',
+                     {'torrent': details['name']})
+            continue
+
+        status = 'busy'
+        if details['is_finished']:
+            status = 'completed'
+        elif details['is_seed']:
+            status = 'seeding'
+        elif details['paused']:
+            status = 'paused'
+        else:
+            status = details['state']
+
+        if status == 'completed':
+            log.info(
+                'Torrent completed and reached minimum'
+                ' ratio: [{ratio:.3f}/{ratio_limit:.3f}] or'
+                ' seed idle limit'
+                ' Removing it: [{name}]',
+                ratio=details['ratio'],
+                ratio_limit=torrent['stop_ratio'],
+                name=torrent['name']
+            )
+            info_hash_to_remove.append(info_hash)
+        elif status == 'seeding':
+            if float(details['ratio']) < float(details['stop_ratio']):
+                log.info(
+                    'Torrent did not reach minimum'
+                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
+                    ' Keeping it: [{name}]',
+                    ratio=torrent['ratio'],
+                    ratio_limit=torrent['stop_ratio'],
+                    name=torrent['name']
+                )
+            else:
+                log.info(
+                    'Torrent completed and reached minimum ratio but it'
+                    ' was force started again. Current'
+                    ' ratio: [{ratio:.3f}/{ratio_limit:.3f}].'
+                    ' Keeping it: [{name}]',
+                    ratio=torrent['uploadRatio'],
+                    ratio_limit=torrent['seedRatioLimit'],
+                    name=torrent['name']
+                )
+        else:
+            log.info('Torrent is {status}. Keeping it: [{name}]', status=status, name=details['name'])
+
+    if not found_torrents:
+        log.info('No torrents found that were snatched by Medusa')
+    return info_hash_to_remove
 
 
 class DelugeAPI(GenericClient):
@@ -45,10 +113,10 @@ class DelugeAPI(GenericClient):
         :type password: string
         """
         super(DelugeAPI, self).__init__('Deluge', host, username, password)
+        self.session.headers.update({'Content-Type': 'application/json'})
         self.url = '{host}json'.format(host=self.host)
 
     def _get_auth(self):
-
         post_data = json.dumps({
             'method': 'auth.login',
             'params': [
@@ -72,8 +140,11 @@ class DelugeAPI(GenericClient):
         })
 
         try:
-            self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                              verify=app.TORRENT_VERIFY_CERT)
+            self.response = self.session.post(
+                self.url,
+                data=post_data.encode('utf-8'),
+                verify=app.TORRENT_VERIFY_CERT
+            )
         except RequestException:
             return None
 
@@ -86,14 +157,18 @@ class DelugeAPI(GenericClient):
                 'id': 11,
             })
             try:
-                self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=app.TORRENT_VERIFY_CERT)
+                self.response = self.session.post(
+                    self.url,
+                    data=post_data.encode('utf-8'),
+                    verify=app.TORRENT_VERIFY_CERT
+                )
             except RequestException:
                 return None
 
             hosts = self.response.json()['result']
             if not hosts:
-                logger.error('{name}: WebUI does not contain daemons', name=self.name)
+                log.error('{name}: WebUI does not contain daemons',
+                          {'name': self.name})
                 return None
 
             post_data = json.dumps({
@@ -105,8 +180,11 @@ class DelugeAPI(GenericClient):
             })
 
             try:
-                self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=app.TORRENT_VERIFY_CERT)
+                self.response = self.session.post(
+                    self.url,
+                    data=post_data.encode('utf-8'),
+                    verify=app.TORRENT_VERIFY_CERT
+                )
             except RequestException:
                 return None
 
@@ -117,14 +195,18 @@ class DelugeAPI(GenericClient):
             })
 
             try:
-                self.response = self.session.post(self.url, data=post_data.encode('utf-8'),
-                                                  verify=app.TORRENT_VERIFY_CERT)
+                self.response = self.session.post(
+                    self.url,
+                    data=post_data.encode('utf-8'),
+                    verify=app.TORRENT_VERIFY_CERT
+                )
             except RequestException:
                 return None
 
             connected = self.response.json()['result']
             if not connected:
-                logger.error('{name}: WebUI could not connect to daemon', name=self.name)
+                log.error('{name}: WebUI could not connect to daemon',
+                          {'name': self.name})
                 return None
 
         return self.auth
@@ -164,6 +246,28 @@ class DelugeAPI(GenericClient):
 
         return self.response.json()['result']
 
+    def move_torrent(self, info_hash):
+        """Set new torrent location given info_hash.
+
+        :param info_hash:
+        :type info_hash: string
+        :return
+        :rtype: bool
+        """
+        if not app.TORRENT_SEED_LOCATION or not info_hash:
+            return
+
+        post_data = json.dumps({
+            'method': 'core.move_storage',
+            'params': [
+                [info_hash],
+                app.TORRENT_SEED_LOCATION,
+            ],
+            'id': 72,
+        })
+
+        return not self.response.json()['error'] if self._request(method='post', data=post_data) else False
+
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
 
@@ -190,7 +294,9 @@ class DelugeAPI(GenericClient):
         if result.show.is_anime:
             label = app.TORRENT_LABEL_ANIME.lower()
         if ' ' in label:
-            logger.error('{name}: Invalid label. Label must not contain a space', name=self.name)
+            log.error('{name}: Invalid label. Label must not contain a space',
+                      {'name': self.name})
+
             return False
 
         if label:
@@ -206,8 +312,9 @@ class DelugeAPI(GenericClient):
 
             if labels is not None:
                 if label not in labels:
-                    logger.debug('{name}: {label} label does not exist in Deluge we must add it', name=self.name,
-                                 label=label)
+                    log.debug('{name}: {label} label does not exist in Deluge'
+                              ' we must add it',
+                              {'name': self.name, 'label': label})
                     post_data = json.dumps({
                         'method': 'label.add',
                         'params': [
@@ -217,7 +324,8 @@ class DelugeAPI(GenericClient):
                     })
 
                     self._request(method='post', data=post_data)
-                    logger.debug('{name}: {label} label added to Deluge', name=self.name, label=label)
+                    log.debug('{name}: {label} label added to Deluge',
+                              {'name': self.name, 'label': label})
 
                 # add label to torrent
                 post_data = json.dumps({
@@ -230,9 +338,12 @@ class DelugeAPI(GenericClient):
                 })
 
                 self._request(method='post', data=post_data)
-                logger.debug('{name}: {label} label added to torrent', name=self.name, label=label)
+                log.debug('{name}: {label} label added to torrent',
+                          {'name': self.name, 'label': label})
+
             else:
-                logger.debug('{name}: label plugin not detected', name=self.name)
+                log.debug('{name}: label plugin not detected',
+                          {'name': self.name})
                 return False
 
         return not self.response.json()['error']
@@ -256,7 +367,8 @@ class DelugeAPI(GenericClient):
 
             self._request(method='post', data=post_data)
 
-            # Return false if we couldn't enable setting set_torrent_stop_at_ratio. No reason to set ratio.
+            # if unable to set_torrent_stop_at_ratio return False
+            # No reason to set ratio.
             if self.response.json()['error']:
                 return False
 
@@ -330,6 +442,36 @@ class DelugeAPI(GenericClient):
             return not self.response.json()['error']
 
         return True
+
+    def remove_ratio_reached(self):
+        """Remove all Medusa torrents that ratio was reached.
+
+        It loops in all hashes returned from client and check if it is in the snatch history
+        if its then it checks if we already processed media from the torrent (episode status `Downloaded`)
+        If is a RARed torrent then we don't have a media file so we check if that hash is from an
+        episode that has a `Downloaded` status
+        """
+        post_data = json.dumps({
+            'method': 'core.get_torrents_status',
+            'params': [
+                {},
+                ['name', 'hash', 'progress', 'state', 'ratio', 'stop_ratio',
+                 'is_seed', 'is_finished', 'paused', 'files'],
+            ],
+            'id': 72,
+        })
+
+        log.info('Checking Deluge torrent status.')
+        if self._request(method='post', data=post_data):
+            if self.response.json()['error']:
+                log.info('Error while fetching torrents status')
+                return
+            else:
+                torrent_data = self.response.json()['result']
+                self.read_torrent_status(torrent_data)
+                # Commented for now
+                # for info_hash in to_remove:
+                #    self.remove_torrent(info_hash)
 
 
 api = DelugeAPI

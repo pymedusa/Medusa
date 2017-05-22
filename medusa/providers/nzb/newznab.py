@@ -1,34 +1,17 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-# Rewrite: Dustyn Gibson (miigotu) <miigotu@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Newznab provider."""
+
 from __future__ import unicode_literals
 
+import logging
 import os
 import re
 import time
 import traceback
 
-from dateutil import parser
-
 from medusa import (
     app,
-    logger,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
@@ -44,10 +27,14 @@ from medusa.indexers.indexer_config import (
     INDEXER_TVMAZE,
     mappings,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
 import validators
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class NewznabProvider(NZBProvider):
@@ -60,7 +47,7 @@ class NewznabProvider(NZBProvider):
     def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
-        super(self.__class__, self).__init__(name)
+        super(NewznabProvider, self).__init__(name)
 
         self.url = url
         self.key = key
@@ -89,13 +76,13 @@ class NewznabProvider(NZBProvider):
         # self.cap_movie_search = None
         # self.cap_audio_search = None
 
-        self.cache = tv.Cache(self, min_time=30)  # only poll newznab providers every 30 minutes max
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
-        Searche indexer using the params in search_strings, either for latest releases, or a string/id search.
+        Search indexer using the params in search_strings, either for latest releases, or a string/id search.
 
-        Returns: list of results in dict form
+        :return: list of results in dict form
         """
         results = []
         if not self._check_auth():
@@ -127,7 +114,7 @@ class NewznabProvider(NZBProvider):
                 if search_params['t'] == 'tvsearch':
                     search_params.update(match_indexer)
 
-                    if ep_obj.show.air_by_date or ep_obj.show.sports:
+                    if ep_obj.series.air_by_date or ep_obj.series.sports:
                         date_str = str(ep_obj.airdate)
                         search_params['season'] = date_str.partition('-')[0]
                         search_params['ep'] = date_str.partition('-')[2].replace('-', '/')
@@ -139,7 +126,7 @@ class NewznabProvider(NZBProvider):
                     search_params.pop('ep', '')
 
             items = []
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
@@ -148,11 +135,13 @@ class NewznabProvider(NZBProvider):
                     if any(proper_string in search_string for proper_string in self.proper_strings):
                         search_params['t'] = 'search'
 
-                    logger.log('Search show using {search}'.format
-                               (search='search string: {search_string}'.format(search_string=search_string if
-                                search_params['t'] != 'tvsearch' else
-                                'indexer_id: {indexer_id}'.format(indexer_id=match_indexer))),
-                               logger.DEBUG)
+                    log.debug(
+                        'Search show using {search}', {
+                            'search': 'search string: {search_string}'.format(
+                                search_string=search_string if search_params['t'] != 'tvsearch' else 'indexer_id: {indexer_id}'.format(indexer_id=match_indexer)
+                            )
+                        }
+                    )
 
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
@@ -161,7 +150,7 @@ class NewznabProvider(NZBProvider):
 
                 response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 with BS4Parser(response.text, 'html5lib') as html:
@@ -174,7 +163,8 @@ class NewznabProvider(NZBProvider):
                         self.torznab = False
 
                     if not html('item'):
-                        logger.log('No results returned from provider', logger.DEBUG)
+                        log.debug('No results returned from provider. Check chosen Newznab search categories'
+                                  ' in provider settings and/or usenet retention')
                         continue
 
                     for item in html('item'):
@@ -210,11 +200,9 @@ class NewznabProvider(NZBProvider):
                                 continue
 
                             size = convert_size(item_size) or -1
+
                             pubdate_raw = item.pubdate.get_text(strip=True)
-                            try:
-                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
-                            except ValueError:
-                                pubdate = None
+                            pubdate = self.parse_pubdate(pubdate_raw)
 
                             item = {
                                 'title': title,
@@ -226,15 +214,15 @@ class NewznabProvider(NZBProvider):
                             }
                             if mode != 'RSS':
                                 if seeders == -1:
-                                    logger.log('Found result: {0}'.format(title), logger.DEBUG)
+                                    log.debug('Found result: {0}', title)
                                 else:
-                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                              title, seeders, leechers)
 
                             items.append(item)
                         except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                            logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                       (traceback.format_exc()), logger.ERROR)
+                            log.error('Failed parsing provider. Traceback: {0!r}',
+                                      traceback.format_exc())
                             continue
 
                 # Since we arent using the search string,
@@ -255,10 +243,10 @@ class NewznabProvider(NZBProvider):
         """
         Check that user has set their api key if it is needed.
 
-        Returns: True/False
+        :return: True/False
         """
         if self.needs_auth and not self.key:
-            logger.log('Invalid api key. Check your settings', logger.WARNING)
+            log.warning('Invalid api key. Check your settings')
             return False
 
         return True
@@ -267,7 +255,7 @@ class NewznabProvider(NZBProvider):
         """
         Check that the returned data is valid.
 
-        Returns: _check_auth if valid otherwise False if there is an error
+        :return: _check_auth if valid otherwise False if there is an error
         """
         if data('categories') + data('item'):
             return self._check_auth()
@@ -279,7 +267,7 @@ class NewznabProvider(NZBProvider):
         except (AttributeError, TypeError):
             return self._check_auth()
 
-        logger.log(ss(err_desc))
+        log.info(ss(err_desc))
 
         return False
 
@@ -409,8 +397,8 @@ class NewznabProvider(NZBProvider):
              ) = values
 
         except ValueError:
-            logger.log('Skipping Newznab provider string: {config!r}, incorrect format'.format
-                       (config=config), logger.ERROR)
+            log.error('Skipping Newznab provider string: {config!r}, incorrect format',
+                      {'config': config})
             return None
 
         new_provider = NewznabProvider(
@@ -461,13 +449,13 @@ class NewznabProvider(NZBProvider):
         response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
         if not response or not response.text:
             error_string = 'Error getting caps xml for [{0}]'.format(self.name)
-            logger.log(error_string, logger.WARNING)
+            log.warning(error_string)
             return False, return_categories, error_string
 
         with BS4Parser(response.text, 'html5lib') as html:
             if not html.find('categories'):
                 error_string = 'Error parsing caps xml for [{0}]'.format(self.name)
-                logger.log(error_string, logger.DEBUG)
+                log.debug(error_string)
                 return False, return_categories, error_string
 
             self.set_caps(html.find('searching'))

@@ -1,8 +1,11 @@
 # coding=utf-8
+
 """Initialize all torrent providers."""
-from .html import (
+
+from medusa.providers.torrent.html import (
     abnormal,
     alpharatio,
+    anidex,
     animebytes,
     animetorrents,
     bithdtv,
@@ -13,15 +16,18 @@ from .html import (
     gftracker,
     hdspace,
     hdtorrents,
+    horriblesubs,
     hounddawgs,
     iptorrents,
     limetorrents,
     morethantv,
+    nebulance,
     newpct,
     pretome,
     scc,
     scenetime,
     sdbits,
+    shanaproject,
     speedcd,
     thepiratebay,
     tntvillage,
@@ -29,13 +35,11 @@ from .html import (
     torrentbytes,
     torrentleech,
     torrentproject,
-    transmitthenet,
     tvchaosuk,
-    xthor,
     zooqle,
 )
 
-from .json import (
+from medusa.providers.torrent.json import (
     bitcannon,
     btn,
     hd4free,
@@ -44,17 +48,17 @@ from .json import (
     rarbg,
     t411,
     torrentday,
+    xthor,
 )
 
-from .rss import (
+from medusa.providers.torrent.rss import (
     extratorrent,
     nyaatorrents,
     rsstorrent,
     shazbat,
 )
 
-from .xml import (
-    bitsnoop,
+from medusa.providers.torrent.xml import (
     torrentz2,
 )
 
@@ -62,7 +66,7 @@ __all__ = [
     'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent',
     'freshontv', 'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
+    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
-    'bitsnoop', 'torrentz2', 'animetorrents'
+    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]
