@@ -114,7 +114,7 @@ class NewznabProvider(NZBProvider):
                 if search_params['t'] == 'tvsearch':
                     search_params.update(match_indexer)
 
-                    if ep_obj.show.air_by_date or ep_obj.show.sports:
+                    if ep_obj.series.air_by_date or ep_obj.series.sports:
                         date_str = str(ep_obj.airdate)
                         search_params['season'] = date_str.partition('-')[0]
                         search_params['ep'] = date_str.partition('-')[2].replace('-', '/')

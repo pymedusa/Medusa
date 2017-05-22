@@ -381,7 +381,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.show.name
+    show_name = tv_episode.series.name
     season = tv_episode.season
     episode = tv_episode.episode
     release_name = tv_episode.release_name
@@ -451,11 +451,11 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.show.name
+    show_name = tv_episode.series.name
     season = tv_episode.season
     episode = tv_episode.episode
     episode_name = tv_episode.name
-    show_indexerid = tv_episode.show.indexerid
+    show_indexerid = tv_episode.series.indexerid
     status = tv_episode.status
     subtitles_dir = get_subtitles_dir(video_path)
     saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
@@ -831,7 +831,7 @@ class SubtitlesFinder(object):
                 if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
-                if not tv_episode.show.subtitles:
+                if not tv_episode.series.subtitles:
                     logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
                     run_post_process = True
                     continue

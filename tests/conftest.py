@@ -142,7 +142,7 @@ def create_tvshow(monkeypatch):
 def create_tvepisode(monkeypatch):
     def create(show, season, episode, filepath='', **kwargs):
         monkeypatch.setattr(Episode, '_specify_episode', lambda method, season, episode: None)
-        target = Episode(show=show, season=season, episode=episode, filepath=filepath)
+        target = Episode(series=show, season=season, episode=episode, filepath=filepath)
         return _patch_object(monkeypatch, target, **kwargs)
 
     return create
