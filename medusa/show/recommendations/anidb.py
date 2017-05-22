@@ -5,11 +5,11 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from medusa import app, helpers
+from medusa import app
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
 from medusa.session.core import MedusaSession
+from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
 
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
@@ -68,7 +68,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         return rec_show
 
     def fetch_popular_shows(self, list_type=REQUEST_HOT):
-        """Get popular show information from IMDB"""
+        """Get popular show information from IMDB."""
         shows = []
         result = []
 
