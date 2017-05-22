@@ -18,7 +18,6 @@
 
 import datetime
 import logging
-from logging import DEBUG, WARNING
 import os
 import platform
 import re
@@ -27,6 +26,8 @@ import stat
 import subprocess
 import tarfile
 import time
+
+from logging import DEBUG, WARNING
 
 from . import app, db, helpers, notifiers, ui
 from .github_client import get_github_repo
