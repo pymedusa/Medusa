@@ -30,7 +30,6 @@ import time
 
 from . import app, db, helpers, notifiers, ui
 from .github_client import get_github_repo
-from .helper.exceptions import ex
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
                  'OR shutdown application and delete your .git folder and run from source to enable updates.')
@@ -501,7 +500,7 @@ class GitUpdateManager(UpdateManager):
                 else:
                     log.warning(u'{cmd} returned : {output}', {'cmd': cmd, 'output': output})
             else:
-                    log.warning(u'{cmd} returned no data', {'cmd': cmd})
+                log.warning(u'{cmd} returned no data', {'cmd': cmd})
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
