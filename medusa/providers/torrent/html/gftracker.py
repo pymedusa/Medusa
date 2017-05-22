@@ -30,7 +30,7 @@ class GFTrackerProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('GFTracker')
+        super(GFTrackerProvider, self).__init__('GFTracker')
 
         # Credentials
         self.username = None
@@ -168,8 +168,9 @@ class GFTrackerProvider(TorrentProvider):
 
                     torrent_size = cells[labels.index('Size/Snatched')].get_text(strip=True).split('/', 1)[0]
                     size = convert_size(torrent_size, units=units) or -1
+
                     pubdate_raw = cells[labels.index('Added')].get_text(' ')
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

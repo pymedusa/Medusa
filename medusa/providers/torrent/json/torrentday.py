@@ -25,7 +25,7 @@ class TorrentDayProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('TorrentDay')
+        super(TorrentDayProvider, self).__init__('TorrentDay')
 
         # Credentials
         self.username = None
@@ -156,8 +156,9 @@ class TorrentDayProvider(TorrentProvider):
 
                 torrent_size = row['size']
                 size = convert_size(torrent_size) or -1
+
                 pubdate_raw = row['added']
-                pubdate = self._parse_pubdate(pubdate_raw)
+                pubdate = self.parse_pubdate(pubdate_raw)
 
                 item = {
                     'title': title,

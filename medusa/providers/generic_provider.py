@@ -9,12 +9,12 @@ import re
 
 from base64 import b16encode, b32decode
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
 from random import shuffle
 
-from dateutil import parser
+from dateutil import parser, tz
 
 from medusa import (
     app,
@@ -51,6 +51,8 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
+
+from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar
 
@@ -251,7 +253,7 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                log.debug(error)
+                log.debug(error.message)
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
@@ -480,6 +482,38 @@ class GenericProvider(object):
         """Search the provider."""
         return []
 
+    @staticmethod
+    def parse_pubdate(pubdate, human_time=False, timezone=None):
+        """
+        Parse publishing date into a datetime object.
+
+        :param pubdate: date and time string
+        :param human_time: string uses human slang ("4 hours ago")
+        :param timezone: use a different timezone ("US/Eastern")
+
+        :returns: a datetime object or None
+        """
+        try:
+            if human_time:
+                match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
+                seconds = parse(match.group('time'))
+                return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
+
+            dt = parser.parse(pubdate, fuzzy=True)
+            # Always make UTC aware if naive
+            if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+                dt = dt.replace(tzinfo=tz.gettz('UTC'))
+            if timezone:
+                dt = dt.astimezone(tz.gettz(timezone))
+            return dt
+
+        except TypeError:
+            # Don't log an exception if we got None
+            log.debug('Skipping invalid publishing date.')
+
+        except (AttributeError, ValueError):
+            log.exception('Failed parsing publishing date.')
+
     def _get_result(self, episodes=None):
         """Get result."""
         return SearchResult(episodes)
@@ -541,7 +575,8 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.season):
+
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + ' '
 
             if episode.series.air_by_date or episode.series.sports:
@@ -549,7 +584,7 @@ class GenericProvider(object):
             elif episode.series.anime:
                 episode_string += 'Season'
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.season)
+                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
 
             search_string['Season'].append(episode_string.strip())
 
@@ -573,14 +608,6 @@ class GenericProvider(object):
         If provider doesnt have _get_pubdate function this will be used
         """
         return None
-
-    def _parse_pubdate(self, pubdate):
-        """Parse pubdate into a valid timedate format."""
-        try:
-            pubdate_parsed = parser.parse(pubdate, fuzzy=True) if pubdate else None
-        except ValueError:
-            pubdate_parsed = None
-        return pubdate_parsed
 
     def _get_title_and_url(self, item):
         """Return title and url from result."""

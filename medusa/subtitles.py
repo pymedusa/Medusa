@@ -872,10 +872,13 @@ class SubtitlesFinder(object):
         """
         from . import process_tv
         for root, _, files in os.walk(dirpath, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             rar_files = [rar_file for rar_file in files if is_rar_file(rar_file)]
             if rar_files and app.UNPACK:
                 video_files = [video_file for video_file in files if is_media_file(video_file)]
-                if u'_UNPACK' not in root.upper() and (not video_files or root == app.TV_DOWNLOAD_DIR):
+                if not video_files or root == app.TV_DOWNLOAD_DIR:
                     logger.debug(u'Found rar files in post-process folder: %s', rar_files)
                     process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
             elif rar_files and not app.UNPACK:

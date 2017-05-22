@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
@@ -26,7 +24,7 @@ class AniDexProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('AniDex')
+        super(AniDexProvider, self).__init__('AniDex')
 
         # Credentials
         self.public = True
@@ -107,9 +105,10 @@ class AniDexProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            table_spans = table_header.find_all('span')
-            # Skip 'Likes' to have the same amount of cells and labels
-            labels = [label.get('title') for label in table_spans if label.get('title') != 'Likes']
+            table_ths = table_header.find_all('th')
+            # [u'Category', u'', u'Filename', u'Comments', u'Torrent', u'Magnet',
+            #  u'File size', u'Age', u'Seeders', u'Leechers', u'Completed']
+            labels = [label.span.get('title') if label.span else '' for label in table_ths]
 
             torrent_rows = html.find('tbody').find_all('tr')
             for row in torrent_rows:
@@ -137,8 +136,8 @@ class AniDexProvider(TorrentProvider):
                     torrent_size = cells[labels.index('File size')].get_text()
                     size = convert_size(torrent_size) or -1
 
-                    date = cells[labels.index('Age')].get('title')
-                    pubdate = parser.parse(date)
+                    pubdate_raw = cells[labels.index('Age')].get('title')
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

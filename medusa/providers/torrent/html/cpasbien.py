@@ -26,7 +26,7 @@ class CpasbienProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Cpasbien')
+        super(CpasbienProvider, self).__init__('Cpasbien')
 
         # Credentials
         self.public = True
@@ -119,7 +119,7 @@ class CpasbienProvider(TorrentProvider):
                     size = convert_size(torrent_size, units=units) or -1
 
                     pubdate_raw = row.find('a')['title'].split('-')[1]
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

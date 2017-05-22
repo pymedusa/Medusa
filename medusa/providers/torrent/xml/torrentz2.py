@@ -25,7 +25,7 @@ class Torrentz2Provider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Torrentz2')
+        super(Torrentz2Provider, self).__init__('Torrentz2')
 
         # Credentials
         self.public = True
@@ -118,8 +118,9 @@ class Torrentz2Provider(TorrentProvider):
 
                     torrent_size, seeders, leechers = self._split_description(row.find('description').text)
                     size = convert_size(torrent_size) or -1
-                    pubdate_raw = row.pubDate.text if row.pubDate else None
-                    pubdate = self._parse_pubdate(pubdate_raw)
+
+                    pubdate_raw = row.pubdate.get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):

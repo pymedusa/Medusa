@@ -26,7 +26,7 @@ class RarbgProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Rarbg')
+        super(RarbgProvider, self).__init__('Rarbg')
 
         # Credentials
         self.public = True
@@ -179,8 +179,8 @@ class RarbgProvider(TorrentProvider):
                 torrent_size = row.pop('size', -1)
                 size = convert_size(torrent_size) or -1
 
-                pubdate_raw = row.pop('pubdate')
-                pubdate = self._parse_pubdate(pubdate_raw)
+                pubdate_raw = row.pop('pubdate', None)
+                pubdate = self.parse_pubdate(pubdate_raw)
 
                 item = {
                     'title': title,

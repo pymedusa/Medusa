@@ -32,7 +32,7 @@ class MoreThanTVProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('MoreThanTV')
+        super(MoreThanTVProvider, self).__init__('MoreThanTV')
 
         # Credentials
         self.username = None
@@ -171,8 +171,9 @@ class MoreThanTVProvider(TorrentProvider):
 
                     torrent_size = cells[labels.index('Size')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
+
                     pubdate_raw = cells[labels.index('Time')].find('span')['title']
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

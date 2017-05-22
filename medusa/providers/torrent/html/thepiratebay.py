@@ -29,7 +29,7 @@ class ThePirateBayProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('ThePirateBay')
+        super(ThePirateBayProvider, self).__init__('ThePirateBay')
 
         # Credentials
         self.public = True

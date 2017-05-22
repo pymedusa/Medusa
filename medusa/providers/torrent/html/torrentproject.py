@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import logging
 import traceback
 
@@ -18,8 +17,6 @@ from medusa.helper.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
-from pytimeparse import parse
-
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -31,7 +28,7 @@ class TorrentProjectProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('TorrentProject')
+        super(TorrentProjectProvider, self).__init__('TorrentProject')
 
         # Credentials
         self.public = True
@@ -146,9 +143,8 @@ class TorrentProjectProvider(TorrentProvider):
                     torrent_size = row.find('span', class_='bc torrent-size').get_text().rstrip()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row.find('span', class_='bc cated').get_text()[:-4]
-                    pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw)))\
-                        if pubdate_raw else None
+                    pubdate_raw = row.find('span', class_='bc cated').get_text(strip=True)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

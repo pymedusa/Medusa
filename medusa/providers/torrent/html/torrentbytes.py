@@ -29,7 +29,7 @@ class TorrentBytesProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('TorrentBytes')
+        super(TorrentBytesProvider, self).__init__('TorrentBytes')
 
         # Credentials
         self.username = None
@@ -159,7 +159,7 @@ class TorrentBytesProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text(' ', strip=True)
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

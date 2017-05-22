@@ -29,7 +29,7 @@ class HDSpaceProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('HDSpace')
+        super(HDSpaceProvider, self).__init__('HDSpace')
 
         # Credentials
         self.username = None
@@ -156,8 +156,8 @@ class HDSpaceProvider(TorrentProvider):
                     torrent_size = row.find('td', class_='lista222', attrs={'width': '100%'}).get_text()
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = row.findAll('td', class_='lista', attrs={'align': 'center'})[3].get_text()
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate_raw = row.find_all('td', class_='lista', attrs={'align': 'center'})[3].get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

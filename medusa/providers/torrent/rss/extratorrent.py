@@ -32,7 +32,7 @@ class ExtraTorrentProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('ExtraTorrent')
+        super(ExtraTorrentProvider, self).__init__('ExtraTorrent')
 
         # Credentials
         self.public = True
@@ -145,13 +145,15 @@ class ExtraTorrentProvider(TorrentProvider):
 
                     size = convert_size(element.size.get_text()) or -1
 
+                    pubdate = self.parse_pubdate(element.pubdate.get_text())
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
 
                     if mode != 'RSS':

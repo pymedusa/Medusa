@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-import datetime
 import logging
 import re
 import traceback
@@ -12,7 +11,6 @@ import traceback
 from contextlib2 import suppress
 
 from medusa import tv
-
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
@@ -20,8 +18,6 @@ from medusa.helper.common import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-
-from pytimeparse import parse
 
 from requests.compat import urljoin
 from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
@@ -38,7 +34,7 @@ class LimeTorrentsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('LimeTorrents')
+        super(LimeTorrentsProvider, self).__init__('LimeTorrents')
 
         # Credentials
         self.public = True
@@ -160,16 +156,12 @@ class LimeTorrentsProvider(TorrentProvider):
                         self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
                                                                                    'infohash': info_hash})
 
+                    download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
+                        hash=info_hash, title=title, trackers=self._custom_trackers)
+
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''), 1)
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True).replace(',', ''))
-
-                    # Handle all date formats in the site
-                    # Example: "7 days ago - in TV shows" or "16 minutes ago"
-                    pubdate_raw = cells[1].get_text()
-                    pubdate_raw = pubdate_raw.split('ago')[0].split('+')[0].split('-')[0].replace('Last', '1').replace('Yesterday', '24 Hours')
-                    pubdate = str(datetime.datetime.now() - datetime.timedelta(seconds=parse(pubdate_raw)))\
-                        if pubdate_raw else None
 
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
@@ -179,8 +171,9 @@ class LimeTorrentsProvider(TorrentProvider):
                         continue
 
                     size = convert_size(cells[labels.index('Size')].get_text(strip=True)) or -1
-                    download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
-                        hash=info_hash, title=title, trackers=self._custom_trackers)
+
+                    pubdate_raw = cells[1].get_text().replace('Last', '1').replace('Yesterday', '24 hours')
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,

@@ -278,6 +278,9 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_subtitleMissedPP.mako')
         app.RELEASES_IN_PP = []
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             for filename in sorted(files):
                 if not is_media_file(filename):
                     continue
@@ -321,8 +324,7 @@ class Manage(Home, WebRoot):
 
                 app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.series.indexerid, 'show_name': tv_episode.series.name,
                                            'season': tv_episode.season, 'episode': tv_episode.episode, 'status': status,
-                                           'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
-        app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
+                                           'age': age_value, 'age_unit': age_unit, 'date': video_date})
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
                         header='Missing Subtitles in Post Process folder', topmenu='manage',
