@@ -575,7 +575,6 @@ class GenericProvider(object):
             'Season': []
         }
 
-
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + ' '
 
