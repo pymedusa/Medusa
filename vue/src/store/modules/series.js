@@ -31,28 +31,18 @@ const actions = {
     getAllSeries({commit}) {
         series.getAllSeries(data => {
             log.info(data);
-            commit(types.RECEIVE_SERIES, {data});
-        });
-    },
-    // Add a new series to Medusa
-    addSeries({commit}, {id, name}) {
-        // @TODO: This actually needs to hit the API instead of just returning the series object
-        series.addSeries({id, name}, (err, data) => {
-            if (err) {
-                return err;
-            }
-            commit(types.RECEIVE_SERIES, {data});
+            commit(types.SERIES_RECIEVE_MULTIPLE, {data});
         });
     }
 };
 
 const mutations = {
     // Add multiple series to the store
-    [types.RECEIVE_SERIES](state, {series}) {
+    [types.SERIES_RECIEVE_MULTIPLE](state, {series}) {
         state.all = series;
     },
     // Add a single series to the store
-    [types.RECEIVE_SERIES](state, {series}) {
+    [types.SERIES_RECIEVE_SINGULAR](state, {series}) {
         let foundSeries = state.all.find(x => x.id === series.id);
         if (foundSeries) {
             // Replace current store's version of the series with the new one

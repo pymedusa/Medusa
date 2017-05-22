@@ -1,12 +1,28 @@
 <template>
-    <loader v-if="loading" type="square"></loader>
-    <router-view v-else></router-view>
+    <div class="container-fluid">
+        <loader v-if="loading" type="square"></loader>
+        <template v-else>
+            <navbar v-if="isAuthenticated"></navbar>
+            <!-- % if submenu:
+                /partials/submenu.mako
+            % endif -->
+            <!-- /partials/alerts.mako -->
+           <div id="content-row" class="row">
+                <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
+                    <router-view></router-view>
+                </div>
+           </div>
+           <stats-bar v-if="isAuthenticated"></stats-bar>
+           <scroll-to v-if="isAuthenticated" :showIcon="true"></scroll-to>
+        </template>
+    </div>
 </template>
 
 <script>
-import {mapGetters} from 'vuex';
+import {mapGetters, mapActions} from 'vuex';
 
 import navbar from './navbar.vue';
+import statsBar from './stats-bar.vue';
 import loader from './loader.vue';
 
 export default {
@@ -23,15 +39,38 @@ export default {
         };
     },
     mounted() {
-
+        const vm = this;
+        vm.checkAuth().then(({token}) => {
+            vm.sidebarOpen = localStorage.getItem('sidebar') === 'true';
+            if (token) {
+                vm.loading = true;
+                setTimeout(() => {
+                    vm.getAllBlogs().then(() => {
+                        vm.loading = false;
+                    });
+                }, process.env.NODE_ENV === 'production' ? 0 : 2000);
+            }
+        });
     },
     computed: {
         ...mapGetters({
             series: 'allSeries'
-        })
+        }),
+        ...mapGetters([
+            'user',
+            'userError',
+            'isAuthenticated'
+        ])
+    },
+    methods: {
+        ...mapActions([
+            'getConfig',
+            'checkAuth'
+        ])
     },
     components: {
         navbar,
+        statsBar,
         loader
     }
 };

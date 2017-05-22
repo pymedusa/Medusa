@@ -3,7 +3,8 @@ import api from './api';
 const getAllSeries = () => {
     return new Promise((resolve, reject) => {
         api.get('series').then(({data}) => {
-            resolve({series: data.series});
+            // Change this to use series: data.series once we fix the API
+            resolve({series: data});
         }).catch(reject);
     });
 };
@@ -11,7 +12,8 @@ const getAllSeries = () => {
 const getSeries = ({seriesIndexer, seriesId}) => {
     return new Promise((resolve, reject) => {
         api.get(`series/${seriesIndexer}${seriesId}`).then(({data}) => {
-            resolve({series: data.series});
+            // Change this to use series: data.series once we fix the API
+            resolve({series: data});
         }).catch(reject);
     });
 };
