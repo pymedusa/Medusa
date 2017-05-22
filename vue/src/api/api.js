@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8081/api/v2/',
+    baseURL: '/api/v2/',
     timeout: 5000,
     headers: {
         Accept: 'application/json',
@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async request => {
-    const response = await axios.get('http://localhost:8081/token');
+    const response = await axios.get('/token');
     const apiKey = response.data.token;
     const token = localStorage.getItem('token');
     const headers = request.headers || (request.headers = {});
