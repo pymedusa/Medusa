@@ -30,9 +30,13 @@ Please use the following example for when adding logs.
 ```python
 # At the top of the module
 import logging
-logger = logging.getLogger(__name__)
+from medusa.logger.adapters.style import BraceAdapter
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
 # For each log line
-logger.info('{param1} {param2}', param1='nice', param2='catch')
+log.info('{param1} {param2}', {'param1': 'nice', 'param2': 'catch'})
 ```
 ### String formatting
 When you want to format a string and it's not for the purpose of a log message,

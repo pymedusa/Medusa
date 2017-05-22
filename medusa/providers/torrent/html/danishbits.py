@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
@@ -30,7 +28,7 @@ class DanishbitsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Danishbits')
+        super(DanishbitsProvider, self).__init__('Danishbits')
 
         # Credentials
         self.username = None
@@ -158,8 +156,9 @@ class DanishbitsProvider(TorrentProvider):
 
                     torrent_size = cells[labels.index('Størrelse')].contents[0]
                     size = convert_size(torrent_size, units=units) or -1
+
                     pubdate_raw = cells[labels.index('Tilføjet')].find('span')['title']
-                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -170,8 +169,8 @@ class DanishbitsProvider(TorrentProvider):
                         'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        log.log('Found result: {0} with {1} seeders and {2} leechers',
-                                title, seeders, leechers)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):

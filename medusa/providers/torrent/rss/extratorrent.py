@@ -1,27 +1,14 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for ExtraTorrent."""
+
 from __future__ import unicode_literals
 
+import logging
 import traceback
 
 from medusa import (
     app,
-    logger,
     tv,
 )
 from medusa.bs4_parser import BS4Parser
@@ -29,11 +16,15 @@ from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 
 import validators
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class ExtraTorrentProvider(TorrentProvider):
@@ -41,7 +32,7 @@ class ExtraTorrentProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('ExtraTorrent')
+        super(ExtraTorrentProvider, self).__init__('ExtraTorrent')
 
         # Credentials
         self.public = True
@@ -75,7 +66,7 @@ class ExtraTorrentProvider(TorrentProvider):
 
         if self.custom_url:
             if not validators.url(self.custom_url):
-                logger.log('Invalid custom URL: {0}'.format(self.custom_url), logger.WARNING)
+                log.warning('Invalid custom URL: {0}', self.custom_url)
                 return results
             self.url = self.custom_url
 
@@ -90,19 +81,18 @@ class ExtraTorrentProvider(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     search_params['type'] = 'search'
                     search_params['search'] = search_string
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}', {'search': search_string})
 
                 response = self.session.get(self.urls['rss'], params=search_params)
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode)
@@ -123,7 +113,7 @@ class ExtraTorrentProvider(TorrentProvider):
 
             elements = xml.find_all('item')
             if not elements:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             for element in elements:
@@ -149,12 +139,13 @@ class ExtraTorrentProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}", title, seeders)
                         continue
 
                     size = convert_size(element.size.get_text()) or -1
+
+                    pubdate = self.parse_pubdate(element.pubdate.get_text())
 
                     item = {
                         'title': title,
@@ -162,17 +153,17 @@ class ExtraTorrentProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
 
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
                     continue
 
         return items

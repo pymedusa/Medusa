@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.logger.adapters.style import BraceAdapter
@@ -25,7 +23,7 @@ class HorribleSubsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('HorribleSubs')
+        super(HorribleSubsProvider, self).__init__('HorribleSubs')
 
         # Credentials
         self.public = True
@@ -103,8 +101,8 @@ class HorribleSubsProvider(TorrentProvider):
                         # pubdate is only supported for non-daily searches
                         if mode != 'RSS':
                             # keep the date and strip the rest
-                            date = row.find('td', class_='rls-label').get_text()[1:9]
-                            pubdate = parser.parse(date)
+                            pubdate_raw = row.find('td', class_='rls-label').get_text()[1:9]
+                            pubdate = self.parse_pubdate(pubdate_raw, timezone='America/Los_Angeles')
                         continue
 
                     title = row.find('td', class_='dl-label').get_text()

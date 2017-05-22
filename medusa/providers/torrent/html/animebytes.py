@@ -1,37 +1,25 @@
 # coding=utf-8
-# Author: p0ps
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for AnimeBytes."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 SEASON_PACK = 1
 SINGLE_EP = 2
@@ -46,7 +34,7 @@ class AnimeBytes(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('AnimeBytes')
+        super(AnimeBytes, self).__init__('AnimeBytes')
 
         # Credentials
         self.username = None
@@ -111,18 +99,18 @@ class AnimeBytes(TorrentProvider):
         }
 
         for mode in search_strings:
-            logger.log('Search Mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search Mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                     search_params['searchstr'] = search_string
 
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode)
@@ -149,7 +137,7 @@ class AnimeBytes(TorrentProvider):
 
             # Continue only if at least one release is found
             if not torrent_group:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             for group in torrent_group:
@@ -245,9 +233,9 @@ class AnimeBytes(TorrentProvider):
                                 # Filter unseeded torrent
                                 if seeders < min(self.minseed, 1):
                                     if mode != 'RSS':
-                                        logger.log("Discarding torrent because it doesn't meet the"
-                                                   ' minimum seeders: {0}. Seeders: {1}'.format
-                                                   (title, seeders), logger.DEBUG)
+                                        log.debug("Discarding torrent because it doesn't meet the"
+                                                  " minimum seeders: {0}. Seeders: {1}",
+                                                  title, seeders)
                                     continue
 
                                 torrent_size = show_info[index + 1].get_text()
@@ -262,8 +250,8 @@ class AnimeBytes(TorrentProvider):
                                     'pubdate': None,
                                 }
                                 if mode != 'RSS':
-                                    logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                               (title, seeders, leechers), logger.DEBUG)
+                                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                              title, seeders, leechers)
 
                                 items.append(item)
 
@@ -295,8 +283,8 @@ class AnimeBytes(TorrentProvider):
                                 continue
 
                     except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                        logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                                   (traceback.format_exc()), logger.ERROR)
+                        log.error('Failed parsing provider. Traceback: {0!r}',
+                                  traceback.format_exc())
 
         return items
 
@@ -309,7 +297,7 @@ class AnimeBytes(TorrentProvider):
         # Get csrf_index and csrf_token
         csrf_response = self.get_url(self.urls['login'], returns='response')
         if not csrf_response or not csrf_response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         with BS4Parser(csrf_response.text, 'html5lib') as html:
@@ -317,7 +305,7 @@ class AnimeBytes(TorrentProvider):
             csrf_token = html.find('input', {'name': '_CSRF_TOKEN'}).get('value')
 
         if not all([csrf_index, csrf_token]):
-            logger.log("Unable to get csrf_index and csrf_token, can't login", logger.WARNING)
+            log.warning("Unable to get csrf_index and csrf_token, can't login")
             return False
 
         login_params = {
@@ -331,11 +319,11 @@ class AnimeBytes(TorrentProvider):
 
         response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
 
         if re.search('You will be banned for 6 hours after your login attempts run out.', response.text):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            log.warning('Invalid username or password. Check your settings')
             self.session.cookies.clear()
             return False
 
@@ -350,7 +338,7 @@ class AnimeBytes(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -361,7 +349,7 @@ class AnimeBytes(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

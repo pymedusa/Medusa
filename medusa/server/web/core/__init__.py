@@ -10,3 +10,4 @@ from .calendar import CalendarHandler
 from .error_logs import ErrorLogs
 from .file_browser import WebFileBrowser
 from .history import History
+from .token import TokenHandler

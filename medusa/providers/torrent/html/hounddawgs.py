@@ -29,7 +29,7 @@ class HoundDawgsProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('HoundDawgs')
+        super(HoundDawgsProvider, self).__init__('HoundDawgs')
 
         # Credentials
         self.username = None
@@ -169,13 +169,16 @@ class HoundDawgsProvider(TorrentProvider):
                     if torrent_size:
                         size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row.find('td', class_='nobr').find('span')['title']
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

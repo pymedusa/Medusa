@@ -24,7 +24,8 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
-from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
+from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
+from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
 
@@ -150,6 +151,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
             (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
 
+            (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
+
             # Web calendar handler (Needed because option Unprotected calendar)
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
@@ -186,7 +189,15 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root})
+             {'path': self.video_root}),
+
+            # vue dist
+            (r'{base}/vue/dist/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'dist')}),
+
+            # vue index.html
+            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
     def _get_webui_routes(self):

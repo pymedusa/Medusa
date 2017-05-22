@@ -8,8 +8,6 @@ import logging
 import re
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import try_int
@@ -29,7 +27,7 @@ class NebulanceProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('Nebulance')
+        super(NebulanceProvider, self).__init__('Nebulance')
 
         # Credentials
         self.username = None
@@ -157,8 +155,9 @@ class NebulanceProvider(TorrentProvider):
                         continue
 
                     size = temp_anchor['data-filesize'] or -1
+
                     pubdate_raw = cells[3].find('span')['title']
-                    pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

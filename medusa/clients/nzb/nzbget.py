@@ -99,10 +99,10 @@ def sendNZB(nzb, proper=False):
     # if it aired recently make it high priority and generate DupeKey/Score
     for cur_ep in nzb.episodes:
         if dupekey == '':
-            if cur_ep.show.indexer == 1:
-                dupekey = 'Medusa-' + str(cur_ep.show.indexerid)
-            elif cur_ep.show.indexer == 2:
-                dupekey = 'Medusa-tvr' + str(cur_ep.show.indexerid)
+            if cur_ep.series.indexer == 1:
+                dupekey = 'Medusa-' + str(cur_ep.series.indexerid)
+            elif cur_ep.series.indexer == 2:
+                dupekey = 'Medusa-tvr' + str(cur_ep.series.indexerid)
         dupekey += '-' + str(cur_ep.season) + '.' + str(cur_ep.episode)
         if datetime.date.today() - cur_ep.airdate <= datetime.timedelta(days=7):
             addToTop = True

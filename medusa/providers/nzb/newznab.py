@@ -10,8 +10,6 @@ import re
 import time
 import traceback
 
-from dateutil import parser
-
 from medusa import (
     app,
     tv,
@@ -52,7 +50,7 @@ class NewznabProvider(NZBProvider):
                  enable_api_hit_cooldown=False, enable_daily_request_reserve=False, api_hit_limit=0,
                  daily_reserve_calls=0):
         """Initialize the class."""
-        super(self.__class__, self).__init__(name)
+        super(NewznabProvider, self).__init__(name)
 
         self.url = url
         self.key = key
@@ -129,7 +127,7 @@ class NewznabProvider(NZBProvider):
                 if search_params['t'] == 'tvsearch':
                     search_params.update(match_indexer)
 
-                    if ep_obj.show.air_by_date or ep_obj.show.sports:
+                    if ep_obj.series.air_by_date or ep_obj.series.sports:
                         date_str = str(ep_obj.airdate)
                         search_params['season'] = date_str.partition('-')[0]
                         search_params['ep'] = date_str.partition('-')[2].replace('-', '/')
@@ -222,11 +220,9 @@ class NewznabProvider(NZBProvider):
                                 continue
 
                             size = convert_size(item_size) or -1
+
                             pubdate_raw = item.pubdate.get_text(strip=True)
-                            try:
-                                pubdate = parser.parse(pubdate_raw, fuzzy=True) if pubdate_raw else None
-                            except ValueError:
-                                pubdate = None
+                            pubdate = self.parse_pubdate(pubdate_raw)
 
                             item = {
                                 'title': title,

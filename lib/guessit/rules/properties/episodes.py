@@ -231,14 +231,16 @@ def episodes():
                  formatter={'season': int, 'other': lambda match: 'Complete'})
 
     # 12, 13
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
+                 disabled=lambda context: context.get('type') == 'movie') \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d{2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>[x-])(?P<episode>\d{2})').repeater('*')
 
     # 012, 013
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
+                 disabled=lambda context: context.get('type') == 'movie') \
         .defaults(validator=None) \
         .regex(r'0(?P<episode>\d{1,2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
@@ -246,7 +248,8 @@ def episodes():
 
     # 112, 113
     rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
-                 disabled=lambda context: not context.get('episode_prefer_number', False)) \
+                 disabled=lambda context: (not context.get('episode_prefer_number', False) or
+                                           context.get('type') == 'movie')) \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d{3,4})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
@@ -287,7 +290,8 @@ def episodes():
     rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode', 'weak-duplicate'],
                  formatter={'season': int, 'episode': int, 'version': int},
                  conflict_solver=lambda match, other: match if other.name == 'year' else '__default__',
-                 disabled=lambda context: context.get('episode_prefer_number', False)) \
+                 disabled=lambda context: (context.get('episode_prefer_number', False) or
+                                           context.get('type') == 'movie')) \
         .defaults(validator=None) \
         .regex(r'(?P<season>\d{1,2})(?P<episode>\d{2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
