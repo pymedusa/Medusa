@@ -1,6 +1,5 @@
-import series from '../../api/series';
+import {series} from '../../api';
 import * as types from '../mutation-types';
-import {seriesLogger as log} from '../../log';
 
 const state = {
     all: []
@@ -8,20 +7,14 @@ const state = {
 
 const getters = {
     allSeries: state => state.all,
-    seriesByName: (state, name) => {
-        return state.all.find(series => {
-            if (series) {
-                return series.name === name;
-            }
-            return null;
+    seriesEnded: state => {
+        return state.all.filter(series => {
+            return series.status.toLowerCase() === 'ended';
         });
     },
-    seriesById: (state, id) => {
-        return state.all.find(series => {
-            if (series) {
-                return series.id === id;
-            }
-            return null;
+    seriesActive: state => {
+        return state.all.filter(series => {
+            return series.status.toLowerCase() === 'active';
         });
     }
 };
@@ -29,9 +22,8 @@ const getters = {
 const actions = {
     // Gets all the series from Medusa
     getAllSeries({commit}) {
-        series.getAllSeries(data => {
-            log.info(data);
-            commit(types.SERIES_RECIEVE_MULTIPLE, {data});
+        series.getAllSeries().then(({series}) => {
+            commit(types.SERIES_RECIEVE_MULTIPLE, {series});
         });
     }
 };

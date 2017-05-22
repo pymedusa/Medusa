@@ -8,8 +8,8 @@
 <script>
 export default {
     name: 'scroll-to',
-    props: [
-        'showIcon'
-    ]
+    props: {
+        showIcon: Boolean
+    }
 };
 </script>

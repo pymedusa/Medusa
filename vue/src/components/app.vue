@@ -42,20 +42,13 @@ export default {
     mounted() {
         const vm = this;
         vm.loading = true;
-        vm.checkAuth().then(({token}) => {
-            if (token) {
-                vm.loading = true;
-                vm.getConfig().then(() => {
-                    vm.loading = false;
-                });
-            }
+        vm.checkAuth().then(vm.getConfig()).then(vm.getAllSeries()).then(() => {
+            vm.loading = false;
         });
     },
     computed: {
-        ...mapGetters({
-            series: 'allSeries'
-        }),
         ...mapGetters([
+            'allSeries',
             'config',
             'user',
             'userError',
@@ -64,6 +57,7 @@ export default {
     },
     methods: {
         ...mapActions([
+            'getAllSeries',
             'getConfig',
             'checkAuth'
         ])
