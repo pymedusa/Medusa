@@ -156,8 +156,9 @@ class TorrentDayProvider(TorrentProvider):
 
                 torrent_size = row['size']
                 size = convert_size(torrent_size) or -1
+
                 pubdate_raw = row['added']
-                pubdate = self._parse_pubdate(pubdate_raw)
+                pubdate = self.parse_pubdate(pubdate_raw)
 
                 item = {
                     'title': title,

@@ -159,7 +159,7 @@ class TorrentBytesProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[labels.index('Added')].get_text(' ', strip=True)
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
