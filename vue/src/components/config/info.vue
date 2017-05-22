@@ -36,7 +36,7 @@
 import {mapGetters} from 'vuex';
 
 export default {
-    name: 'info',
+    name: 'config-info',
     computed: {
         ...mapGetters([
             'config'

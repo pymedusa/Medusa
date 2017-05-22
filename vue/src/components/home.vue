@@ -1,8 +1,7 @@
 <template>
     <div>
         <loader v-if="loading" type="square"></loader>
-        <template v-else>
-        </template>
+        <template v-else></template>
     </div>
 </template>
 

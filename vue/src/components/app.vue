@@ -82,4 +82,8 @@ export default {
 @import "/css/dark.css";
 @import "/css/print.css";
 @import "/css/country-flags.css";
+
+#content-row {
+    margin-top: 51px;
+}
 </style>

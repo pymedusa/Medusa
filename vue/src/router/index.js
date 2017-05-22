@@ -7,6 +7,7 @@ import ConfigComponent from '../components/config.vue';
 import ConfigInfoComponent from '../components/config/info.vue';
 import ConfigGeneralComponent from '../components/config/general.vue';
 
+import ToBeComponent from '../components/to-be-implemented.vue';
 import NotFoundComponent from '../components/not-found.vue';
 
 Vue.use(VueRouter);
@@ -24,15 +25,37 @@ const routes = [{
     path: '/config',
     component: ConfigComponent,
     children: [{
+        name: 'config-info',
         path: 'info',
         component: ConfigInfoComponent
     }, {
+        name: 'config-general',
         path: 'general',
         component: ConfigGeneralComponent
     }],
     meta: {
         auth: true
     }
+}, {
+    name: 'series',
+    path: '/series',
+    component: NotFoundComponent,
+    children: [{
+        name: 'series-details',
+        path: ':indexerId',
+        component: NotFoundComponent
+    }, {
+        name: 'series-add',
+        path: 'add',
+        component: NotFoundComponent
+    }],
+    meta: {
+        auth: true
+    }
+}, {
+    name: 'to-be-implemented',
+    path: '/to-be-implemented',
+    component: ToBeComponent
 }, {
     name: 'not-found',
     path: '*',
