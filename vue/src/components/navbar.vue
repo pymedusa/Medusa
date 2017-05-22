@@ -1,14 +1,16 @@
 <template>
     <nav class="navbar navbar-default navbar-fixed-top hidden-print" role="navigation">
         <div class="container-fluid">
-            <div v-if="mobileNav" class="navbar-header">
+            <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main_nav">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="home/" title="Medusa"><img alt="Medusa" src="/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" /></a>
+                <router-link :to="{ name: 'home' }" class="navbar-brand" title="Medusa">
+                    <img alt="Medusa" src="/images/medusa.png" style="height: 50px;" class="img-responsive pull-left" />
+                </router-link>
             </div>
             <div v-if="isAuthenticated" class="collapse navbar-collapse" id="main_nav">
                 <ul class="nav navbar-nav navbar-right">
@@ -83,7 +85,6 @@ export default {
         // All of the returns here are because we're currently missing the field in the API.
         // The only one that's not missing is mobileNav, that's here until w fix the nav working on mobile
         return {
-            mobileNav: null,
             failedDownloads: null,
             useSubtitles: null,
             POSTPONE_IF_NO_SUBS: null,
