@@ -1,8 +1,11 @@
 import Vue from 'vue';
 import vuexI18n from 'vuex-i18n';
 import VueResource from 'vue-resource';
+import VueHead from 'vue-head';
+
 import router from './router';
 import store from './store';
+
 import App from './components/app.vue';
 
 // Import translations and store
@@ -19,6 +22,8 @@ Vue.i18n.add('en-US', enUs);
 
 // Set the start locale to use
 Vue.i18n.set('en-US');
+
+Vue.use(VueHead);
 
 new Vue({ // eslint-disable-line no-new
     el: '#app',

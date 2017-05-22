@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: '/api/v2/',
-    timeout: 10000,
+    timeout: 5000,
     headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json'
@@ -23,7 +23,7 @@ api.interceptors.request.use(request => {
 }, err => Promise.reject(err));
 
 api.interceptors.response.use(response => {
-    if (response.status && response.status.code === 401) {
+    if (response.status && (response.status.code === 401 || response.status.code === 403)) {
         localStorage.removeItem('token');
     }
 

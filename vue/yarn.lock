@@ -6264,6 +6264,10 @@ vue-events@^2.0.0-beta:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/vue-events/-/vue-events-2.0.1.tgz#8a9d39b11d11dbffc9988575868b01954111bb39"
 
+vue-head@^2.0.11:
+  version "2.0.11"
+  resolved "https://registry.yarnpkg.com/vue-head/-/vue-head-2.0.11.tgz#d063b87d99e8898002c4967f558f82437b23f72a"
+
 vue-hot-reload-api@^2.0.1:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.1.0.tgz#9ca58a6e0df9078554ce1708688b6578754d86de"

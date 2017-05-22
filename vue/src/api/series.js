@@ -1,19 +1,22 @@
-import {seriesLogger as log} from '../log';
-import {apiError} from '../errors';
 import api from './api';
 
-export default {
-    getSeries(next) {
-        // The {} around data grabs it from the response param
+const getAllSeries = () => {
+    return new Promise((resolve, reject) => {
         api.get('series').then(({data}) => {
-            log.info(data);
-            next(data.response);
-        }).catch(err => {
-            apiError(err);
-            next(err);
-        });
-    },
-    addSeries(series, next) {
-        next(null, series);
-    }
+            resolve({series: data.series});
+        }).catch(reject);
+    });
+};
+
+const getSeries = ({seriesIndexer, seriesId}) => {
+    return new Promise((resolve, reject) => {
+        api.get(`series/${seriesIndexer}${seriesId}`).then(({data}) => {
+            resolve({series: data.series});
+        }).catch(reject);
+    });
+};
+
+export default {
+    getSeries,
+    getAllSeries
 };

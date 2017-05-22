@@ -1,26 +1,37 @@
 <template>
-    <div id="app">
-        <loader v-if="loading" type="square"></loader>
-        <router-view v-else></router-view>
-    </div>
+    <loader v-if="loading" type="square"></loader>
+    <router-view v-else></router-view>
 </template>
 
 <script>
+import {mapGetters} from 'vuex';
+
+import navbar from './navbar.vue';
 import loader from './loader.vue';
 
 export default {
     name: 'App',
+    head: {
+        meta: [{
+            name: 'theme-color',
+            content: '#333333'
+        }]
+    },
     data() {
         return {
             loading: false
         };
     },
-    methods: {
-        stopLoading() {
-            this.loading = !this.loading;
-        }
+    mounted() {
+
+    },
+    computed: {
+        ...mapGetters([
+            'blogs'
+        ])
     },
     components: {
+        navbar,
         loader
     }
 };
