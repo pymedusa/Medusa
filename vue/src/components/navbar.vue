@@ -19,7 +19,9 @@
                         <li><router-link :to="{ name: 'to-be-implemented' }"><i class="menu-icon-postprocess"></i> Manual Post-Processing</router-link></li>
                         <li v-if="recentSeries" role="separator" class="divider"></li>
                         <li>
-                            <router-link v-for"series in recentSeries" :to="{ name: 'series', params: { id: series.id[series.indexer], indexer: series.indexer } }"><i class="menu-icon-addshow"></i> ${recentShow['name']|trim,h}</a>
+                            <router-link v-for="series in recentSeries" :to="{ name: 'series', params: { id: series.id[series.indexer], indexer: series.indexer } }">
+                                <i class="menu-icon-addshow"></i> {{series.title}}
+                            </router-link>
                         </li>
                     </dropdown>
                     <li><router-link :to="{ name: 'to-be-implemented' }">Schedule</router-link></li>
@@ -48,22 +50,18 @@
                         <li><router-link :to="{ name: 'to-be-implemented' }"><i class="menu-icon-anime"></i> Anime</router-link></li>
                     </dropdown>
                     <dropdown title="Tools" icon="/images/menu/system18-2.png" :badge="toolsBadge">
-                        <li><a href="news/"><i class="menu-icon-news"></i> News${newsBadge}</a></li>
+                        <li><a href="news/"><i class="menu-icon-news"></i> News{{newsBadge}}</a></li>
                         <li><a href="IRC/"><i class="menu-icon-irc"></i> IRC</a></li>
                         <li><a href="changes/"><i class="menu-icon-changelog"></i> Changelog</a></li>
                         <li><a href="${app.DONATIONS_URL}" rel="noreferrer" onclick="window.open('${app.ANON_REDIRECT}' + this.href); return false;"><i class="menu-icon-support"></i> Support Medusa</a></li>
                         <li role="separator" class="divider"></li>
-                        %if numErrors:
-                            <li><a href="errorlogs/"><i class="menu-icon-error"></i> View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
-                        %endif
-                        %if numWarnings:
-                            <li><a href="errorlogs/?level=${logger.WARNING}"><i class="menu-icon-viewlog-errors"></i> View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
-                        %endif
+                        <li><a href="errorlogs/"><i class="menu-icon-error"></i> View Errors <span class="badge btn-danger">${numErrors}</span></a></li>
+                        <li><a href="errorlogs/?level=${logger.WARNING}"><i class="menu-icon-viewlog-errors"></i> View Warnings <span class="badge btn-warning">${numWarnings}</span></a></li>
                         <li><a href="errorlogs/viewlog/"><i class="menu-icon-viewlog"></i> View Log</a></li>
                         <li role="separator" class="divider"></li>
-                        <li><a href="home/updateCheck?pid=${sbPID}"><i class="menu-icon-update"></i> Check For Updates</a></li>
-                        <li><a href="home/restart/?pid=${sbPID}" class="confirm restart"><i class="menu-icon-restart"></i> Restart</a></li>
-                        <li><a href="home/shutdown/?pid=${sbPID}" class="confirm shutdown"><i class="menu-icon-shutdown"></i> Shutdown</a></li>
+                        <li><a href="updateCheck"><i class="menu-icon-update"></i> Check For Updates</a></li>
+                        <li><a href="restart" class="confirm restart"><i class="menu-icon-restart"></i> Restart</a></li>
+                        <li><a href="shutdown" class="confirm shutdown"><i class="menu-icon-shutdown"></i> Shutdown</a></li>
                         <li><router-link v-if="!isAuthenticated" :to="{ name: 'to-be-implemented' }" class="confirm logout"><i class="menu-icon-shutdown"></i> Logout</router-link></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="home/status/"><i class="menu-icon-info"></i> Server Status</a></li>
@@ -86,14 +84,15 @@ export default {
         // The only one that's not missing is mobileNav, that's here until w fix the nav working on mobile
         return {
             mobileNav: null,
-            recentSeries: null,
             failedDownloads: null,
             useSubtitles: null,
-            POSTPONE_IF_NO_SUBS: null
+            POSTPONE_IF_NO_SUBS: null,
+            newsBadge: null
         };
     },
     computed: {
         ...mapGetters([
+            'recentSeries',
             'isAuthenticated',
             'config'
         ])

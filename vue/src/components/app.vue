@@ -42,8 +42,10 @@ export default {
     mounted() {
         const vm = this;
         vm.loading = true;
-        vm.checkAuth().then(vm.getConfig()).then(vm.getAllSeries()).then(() => {
-            vm.loading = false;
+        vm.checkAuth().then(() => {
+            vm.getRecentShows().then(() => {
+                vm.loading = false;
+            });
         });
     },
     computed: {
@@ -57,8 +59,7 @@ export default {
     },
     methods: {
         ...mapActions([
-            'getAllSeries',
-            'getConfig',
+            'getRecentShows',
             'checkAuth'
         ])
     },

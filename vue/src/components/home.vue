@@ -32,9 +32,7 @@ export default {
     },
     computed: {
         ...mapGetters([
-            'allSeries',
-            'seriesByName',
-            'seriesById'
+            'allSeries'
         ])
     },
     components: {

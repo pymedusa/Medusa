@@ -32,14 +32,15 @@ const actions = {
         });
     },
     checkAuth({commit}) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const token = localStorage.getItem('token');
             if (token) {
                 commit(types.AUTHENTICATION_SUCCESS, {token});
+                resolve({token});
             } else {
                 commit(types.AUTHENTICATION_SIGNOUT);
+                reject(new Error('Token missing.'));
             }
-            resolve({token});
         });
     }
 };
