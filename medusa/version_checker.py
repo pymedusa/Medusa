@@ -501,7 +501,7 @@ class GitUpdateManager(UpdateManager):
                 else:
                     log.warning(u'{cmd} returned : {output}', {'cmd': cmd, 'output': output})
             else:
-                    log.warning(u'{cmd} returned no data')
+                    log.warning(u'{cmd} returned no data', {'cmd': cmd})
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
