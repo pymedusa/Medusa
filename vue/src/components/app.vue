@@ -23,6 +23,7 @@ import {mapGetters, mapActions} from 'vuex';
 
 import navbar from './navbar.vue';
 import statsBar from './stats-bar.vue';
+import scrollTo from './scroll-to.vue';
 import loader from './loader.vue';
 
 export default {
@@ -40,15 +41,13 @@ export default {
     },
     mounted() {
         const vm = this;
+        vm.loading = true;
         vm.checkAuth().then(({token}) => {
-            vm.sidebarOpen = localStorage.getItem('sidebar') === 'true';
             if (token) {
                 vm.loading = true;
-                setTimeout(() => {
-                    vm.getAllBlogs().then(() => {
-                        vm.loading = false;
-                    });
-                }, process.env.NODE_ENV === 'production' ? 0 : 2000);
+                vm.getConfig().then(() => {
+                    vm.loading = false;
+                });
             }
         });
     },
@@ -57,6 +56,7 @@ export default {
             series: 'allSeries'
         }),
         ...mapGetters([
+            'config',
             'user',
             'userError',
             'isAuthenticated'
@@ -71,6 +71,7 @@ export default {
     components: {
         navbar,
         statsBar,
+        scrollTo,
         loader
     }
 };

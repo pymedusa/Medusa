@@ -4,7 +4,7 @@ const getConfig = () => {
     return new Promise((resolve, reject) => {
         api.get('config').then(({data}) => {
             // Change this to use config: data.config once we fix the API
-            resolve({config: data});
+            resolve({config: data[0]});
         }).catch(reject);
     });
 };
