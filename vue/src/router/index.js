@@ -7,11 +7,11 @@ import NotFoundComponent from '../components/not-found.vue';
 Vue.use(VueRouter);
 
 const routes = [{
-    name: 'Home',
+    name: 'home',
     path: '/',
     component: HomeComponent
 }, {
-    name: 'NotFound',
+    name: 'not-found',
     path: '*',
     component: NotFoundComponent
 }];

@@ -29,7 +29,7 @@ const getters = {
 const actions = {
     // Gets all the series from Medusa
     getAllSeries({commit}) {
-        series.getSeries(data => {
+        series.getAllSeries(data => {
             log.info(data);
             commit(types.RECEIVE_SERIES, {data});
         });

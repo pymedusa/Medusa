@@ -10,7 +10,7 @@ import navbar from './navbar.vue';
 import loader from './loader.vue';
 
 export default {
-    name: 'App',
+    name: 'app',
     head: {
         meta: [{
             name: 'theme-color',
@@ -26,9 +26,9 @@ export default {
 
     },
     computed: {
-        ...mapGetters([
-            'blogs'
-        ])
+        ...mapGetters({
+            series: 'allSeries'
+        })
     },
     components: {
         navbar,
@@ -38,12 +38,14 @@ export default {
 </script>
 
 <style>
-#app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
-}
+@import "/css/vender.min.css";
+@import "/css/bootstrap-formhelpers.min.css";
+@import "/css/browser.css";
+@import "/css/lib/jquery-ui-1.10.4.custom.min.css";
+@import "/css/lib/jquery.qtip-2.2.1.min.css";
+@import "/css/style.css";
+/* The CSS below should be dependant on the theme */
+@import "/css/dark.css";
+@import "/css/print.css";
+@import "/css/country-flags.css";
 </style>

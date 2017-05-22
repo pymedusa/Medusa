@@ -4,6 +4,6 @@
 
 <script>
 export default {
-    name: 'NotFound'
+    name: 'not-found'
 };
 </script>
