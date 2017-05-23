@@ -653,9 +653,10 @@ class Quality(object):
         :param manually_searched: True if episode was manually searched by user
         :return: True if the old quality should be replaced with new quality.
         """
-        if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
+        qualities = Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST
+        if ep_status and ep_status not in qualities:
             if not force:
-                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
+                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER/BEST. Ignoring new quality'
 
         # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
         if old_quality == Quality.UNKNOWN:
