@@ -1,7 +1,8 @@
-// ./test/helpers/setup.js
-
 // Setup browser environment
 require('browser-env')();
+
+global.localStorage = require('./localstorage');
+
 const hooks = require('require-extension-hooks');
 const Vue = require('vue');
 const VueRouter = require('vue-router');
