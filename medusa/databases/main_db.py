@@ -21,7 +21,7 @@ MIN_DB_VERSION = 40  # oldest db version we support migrating from
 MAX_DB_VERSION = 44
 
 # Used to check when checking for updates
-CURRENT_MINOR_DB_VERSION = 8
+CURRENT_MINOR_DB_VERSION = 9
 
 
 class MainSanityCheck(db.DBSanityCheck):
@@ -611,3 +611,22 @@ class AddIndexerInteger(AddPKIndexerMapping):
         self.connection.action("ALTER TABLE new_tv_episodes RENAME TO tv_episodes;")
         self.connection.action("DROP TABLE IF EXISTS new_tv_episodoes;")
         self.inc_minor_version()
+
+
+class AddNotifiedRelease(AddIndexerInteger):
+    """Adds column notified_earlier_release to history table."""
+
+    def test(self):
+        """
+        Test if the version is at least 44.9
+        """
+        return self.connection.version >= (44, 9)
+
+    def execute(self):
+        backupDatabase(self.connection.version)
+
+        log.info(u"Adding column size in history")
+        if not self.hasColumn("tv_episodes", "notified_earlier_release"):
+            self.addColumn("tv_episodes", "notified_earlier_release", 'NUMERIC', 0)
+
+        # self.inc_minor_version()
