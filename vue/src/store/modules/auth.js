@@ -15,13 +15,14 @@ const getters = {
 
 const actions = {
     signin({commit}, {username, password}) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             auth.signin({username, password}).then(({token}) => {
                 commit(types.AUTHENTICATION_SUCCESS, {token});
                 resolve({token});
             }).catch(err => {
                 const {error, stack} = err.response.data;
                 commit(types.AUTHENTICATION_FAILURE, {error, stack});
+                reject(err);
             });
         });
     },
@@ -32,14 +33,13 @@ const actions = {
         });
     },
     checkAuth({commit}) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             const token = localStorage.getItem('token');
             if (token) {
                 commit(types.AUTHENTICATION_SUCCESS, {token});
                 resolve({token});
             } else {
                 commit(types.AUTHENTICATION_SIGNOUT);
-                reject(new Error('Token missing.'));
             }
         });
     }
