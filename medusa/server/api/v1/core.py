@@ -22,8 +22,8 @@
 # pylint: disable=no-member,method-hidden,missing-docstring,invalid-name
 
 import json
-import os
 import logging
+import os
 import time
 from collections import OrderedDict
 from datetime import date, datetime
@@ -44,7 +44,7 @@ from medusa.helpers.quality import get_quality_string
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.indexers.indexer_exceptions import IndexerError, IndexerShowIncomplete, IndexerShowNotFound
-from medusa.logger import filter_logline, LOGGING_LEVELS, read_loglines
+from medusa.logger import  LOGGING_LEVELS, filter_logline, read_loglines
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -702,14 +702,15 @@ class CMD_Episode(ApiCall):
         ApiCall.__init__(self, args, kwargs)
 
     def run(self):
-        """" Get detailed information about an episode """
+        """Get detailed information about an episode."""
         show_obj = Show.find(app.showList, int(self.indexerid))
         if not show_obj:
             return _responds(RESULT_FAILURE, msg='Show not found')
 
         main_db_con = db.DBConnection(row_type='dict')
         sql_results = main_db_con.select(
-            'SELECT name, description, airdate, status, location, file_size, release_name, subtitles FROM tv_episodes WHERE showid = ? AND episode = ? AND season = ?',
+            'SELECT name, description, airdate, status, location, file_size, release_name, subtitles '
+            'FROM tv_episodes WHERE showid = ? AND episode = ? AND season = ?',
             [self.indexerid, self.e, self.s])
         if not len(sql_results) == 1:
             raise ApiError('Episode not found')
