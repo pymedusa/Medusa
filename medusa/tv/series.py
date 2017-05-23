@@ -2160,19 +2160,36 @@ class Series(TV):
         should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
                                                         preferred_qualities, download_current_quality,
                                                         forced_search, manually_searched)
-        log.debug(
-            u"{id}: '{show}' {ep} status is: '{status}'."
-            u" {action} result with quality '{new_quality}'."
-            u" Reason: {reason}", {
-                'id': self.indexerid,
-                'show': self.name,
-                'ep': episode_num(season, episode),
-                'status': ep_status_text,
-                'action': 'Accepting' if should_replace else 'Ignoring',
-                'new_quality': Quality.qualityStrings[quality],
-                'reason': reason,
-            }
-        )
+        if reason == 'leaked':
+            notify_message = '{show} {ep} with quality: {quality}'.format(show=self.name,
+                                                                          ep=episode_num(season, episode),
+                                                                          quality=Quality.qualityStrings[quality])
+            notifiers.notify_leaked(notify_message)
+            log.info(
+                u"{id}: '{show}' {ep} status is: '{status}'."
+                u" Found a possible leaked episode with quality '{new_quality}'.",
+                {
+                    'id': self.indexerid,
+                    'show': self.name,
+                    'ep': episode_num(season, episode),
+                    'status': ep_status_text,
+                    'new_quality': Quality.qualityStrings[quality],
+                }
+            )
+        else:
+            log.debug(
+                u"{id}: '{show}' {ep} status is: '{status}'."
+                u" {action} result with quality '{new_quality}'."
+                u" Reason: {reason}", {
+                    'id': self.indexerid,
+                    'show': self.name,
+                    'ep': episode_num(season, episode),
+                    'status': ep_status_text,
+                    'action': 'Accepting' if should_replace else 'Ignoring',
+                    'new_quality': Quality.qualityStrings[quality],
+                    'reason': reason,
+                }
+            )
         return should_replace
 
     def get_overview(self, ep_status, backlog_mode=False, manually_searched=False):
