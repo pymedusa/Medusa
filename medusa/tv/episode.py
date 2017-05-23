@@ -254,6 +254,7 @@ class Episode(TV):
         self.scene_episode = 0
         self.scene_absolute_number = 0
         self.manually_searched = False
+        self.notified_earlier_release = False
         self.related_episodes = []
         self.wanted_quality = []
         self.loaded = False
@@ -1190,14 +1191,15 @@ class Episode(TV):
                         b'  absolute_number = ?, '
                         b'  version = ?, '
                         b'  release_group = ?, '
-                        b'  manually_searched = ? '
+                        b'  manually_searched = ?, '
+                        b'  notified_earlier_release = ? '
                         b'WHERE '
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description, ','.join(self.subtitles),
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
                          self.series.indexerid, self.season, self.episode, self.absolute_number, self.version,
-                         self.release_group, self.manually_searched, ep_id]]
+                         self.release_group, self.manually_searched, self.notified_earlier_release, ep_id]]
                 else:
                     # Don't update the subtitle language when the srt file doesn't contain the
                     # alpha2 code, keep value from subliminal
@@ -1225,14 +1227,15 @@ class Episode(TV):
                         b'  absolute_number = ?, '
                         b'  version = ?, '
                         b'  release_group = ?, '
-                        b'  manually_searched = ? '
+                        b'  manually_searched = ?, '
+                        b'  notified_earlier_release = ?'
                         b'WHERE '
                         b'  episode_id = ?',
                         [self.indexerid, self.indexer, self.name, self.description,
                          self.subtitles_searchcount, self.subtitles_lastsearch, self.airdate.toordinal(), self.hasnfo,
                          self.hastbn, self.status, self.location, self.file_size, self.release_name, self.is_proper,
                          self.series.indexerid, self.season, self.episode, self.absolute_number, self.version,
-                         self.release_group, self.manually_searched, ep_id]]
+                         self.release_group, self.manually_searched, self.notified_earlier_release, ep_id]]
             else:
                 # use a custom insert method to get the data into the DB.
                 return [
@@ -1295,7 +1298,8 @@ class Episode(TV):
                           b'absolute_number': self.absolute_number,
                           b'version': self.version,
                           b'release_group': self.release_group,
-                          b'manually_searched': self.manually_searched}
+                          b'manually_searched': self.manually_searched,
+                          b'notified_earlier_release': self.notified_earlier_release}
 
         control_value_dict = {b'showid': self.series.indexerid,
                               b'season': self.season,
