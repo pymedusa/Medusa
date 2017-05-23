@@ -493,6 +493,11 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
+        # This can happen from time to time
+        if pubdate is None:
+            log.debug('Skipping invalid publishing date.')
+            return
+
         try:
             if human_time:
                 match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
@@ -507,12 +512,8 @@ class GenericProvider(object):
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except TypeError:
-            # Don't log an exception if we got None
-            log.debug('Skipping invalid publishing date.')
-
         except (AttributeError, ValueError):
-            log.exception('Failed parsing publishing date.')
+            log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
         """Get result."""
