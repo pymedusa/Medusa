@@ -452,7 +452,8 @@ def search_for_needed_episodes():
         episodes.extend(wanted_episodes(cur_show, from_date))
 
         # Create a list of unaired episodes for all shows
-        unaired_episodes.extend(get_unaired_episodes(cur_show))
+        if app.SEARCH_EARLIER_RELEASES:
+            unaired_episodes.extend(get_unaired_episodes(cur_show))
 
     for unaired_episode in unaired_episodes:
         log.debug(u"Searching leaked episodes in cached results for unaired episode: '{show}' {ep}", {
@@ -461,10 +462,11 @@ def search_for_needed_episodes():
         for cur_provider in enabled_providers(u'daily'):
             cur_provider.cache.search_cache(unaired_episode)
 
-    if not episodes:
+    if not episodes and not app.SEARCH_EARLIER_RELEASES:
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
+        # Unless we are searching for earlier releases so we must keep updating cache
         return found_results.values()
 
     original_thread_name = threading.currentThread().name

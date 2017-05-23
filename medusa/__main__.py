@@ -556,6 +556,7 @@ class Application(object):
             app.DOWNLOAD_PROPERS = bool(check_setting_int(app.CFG, 'General', 'download_propers', 1))
             app.PROPERS_SEARCH_DAYS = max(2, min(8, check_setting_int(app.CFG, 'General', 'propers_search_days', 2)))
             app.REMOVE_FROM_CLIENT = bool(check_setting_int(app.CFG, 'General', 'remove_from_client', 0))
+            app.SEARCH_EARLIER_RELEASES = bool(check_setting_int(app.CFG, 'General', 'search_earlier_releases', 0))
             app.CHECK_PROPERS_INTERVAL = check_setting_str(app.CFG, 'General', 'check_propers_interval', 'daily',
                                                            valid_values=('15m', '45m', '90m', '4h', 'daily'))
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
@@ -1398,6 +1399,7 @@ class Application(object):
         new_config['General']['download_propers'] = int(app.DOWNLOAD_PROPERS)
         new_config['General']['propers_search_days'] = int(app.PROPERS_SEARCH_DAYS)
         new_config['General']['remove_from_client'] = int(app.REMOVE_FROM_CLIENT)
+        new_config['General']['search_earlier_releases'] = int(app.SEARCH_EARLIER_RELEASES)
         new_config['General']['randomize_providers'] = int(app.RANDOMIZE_PROVIDERS)
         new_config['General']['check_propers_interval'] = app.CHECK_PROPERS_INTERVAL
         new_config['General']['allow_high_priority'] = int(app.ALLOW_HIGH_PRIORITY)
