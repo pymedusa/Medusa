@@ -761,14 +761,15 @@
   type: episode
   video_codec: h264
 
+# Episode title is indeed 'October 8, 2014'
+# https://thetvdb.com/?tab=episode&seriesid=82483&seasonid=569935&id=4997362&lid=7
 ? The Soup - 11x41 - October 8, 2014.mp4
 : container: mp4
   episode: 41
-  episode_title: October 8
+  episode_title: October 8, 2014
   season: 11
   title: The Soup
   type: episode
-  year: 2014
 
 ? Red.Rock.S02E59.WEB-DLx264-JIVE
 : episode: 59
