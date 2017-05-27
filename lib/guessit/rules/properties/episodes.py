@@ -464,8 +464,21 @@ class RemoveWeakIfMovie(Rule):
         return context.get('type') != 'episode'
 
     def when(self, matches, context):
-        if matches.named('year'):
-            return matches.tagged('weak-movie')
+        to_remove = []
+        to_ignore = set()
+        remove = False
+        for filepart in matches.markers.named('path'):
+            year = matches.range(filepart.start, filepart.end, predicate=lambda m: m.name == 'year', index=0)
+            if year:
+                remove = True
+                next_match = matches.next(year, predicate=lambda m, fp=filepart: m.private and m.end <= fp.end, index=0)
+                if next_match and not matches.at_match(next_match, predicate=lambda m: m.name == 'year'):
+                    to_ignore.add(next_match.initiator)
+
+        if remove:
+            to_remove.extend(matches.tagged('weak-movie', predicate=lambda m: m.initiator not in to_ignore))
+
+        return to_remove
 
 
 class RemoveWeakIfSxxExx(Rule):

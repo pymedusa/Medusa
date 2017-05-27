@@ -39,12 +39,13 @@ def audio_codec():
     rebulk.defaults(name="audio_codec", conflict_solver=audio_codec_priority)
 
     rebulk.regex("MP3", "LAME", r"LAME(?:\d)+-?(?:\d)+", value="MP3")
-    rebulk.regex("Dolby", "DolbyDigital", "Dolby-Digital", "DDP?", value="DolbyDigital")
+    rebulk.regex("Dolby", "DolbyDigital", "Dolby-Digital", "DD", value="DolbyDigital")
     rebulk.regex("DolbyAtmos", "Dolby-Atmos", "Atmos", value="DolbyAtmos")
-    rebulk.regex("AAC", value="AAC")
+    rebulk.string("AAC", value="AAC")
     rebulk.regex("AC3D?", value="AC3")
-    rebulk.regex("Flac", value="FLAC")
-    rebulk.regex("DTS", value="DTS")
+    rebulk.string('EAC3', 'DDP', 'DD+', value="EAC3")
+    rebulk.string("Flac", value="FLAC")
+    rebulk.string("DTS", value="DTS")
     rebulk.regex("True-?HD", value="TrueHD")
 
     rebulk.defaults(name="audio_profile")
