@@ -59,7 +59,7 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p6: human time hours
         'pubdate': 'Now',
-        'expected': None,  # difference in seconds
+        'expected': 0,  # difference in seconds
         'human_time': True
     },
     {  # p6: human time hours
@@ -78,8 +78,9 @@ def test_parse_pubdate(p):
     # When
     actual = sut.parse_pubdate(parsed_date, provided_timezone=tzone, human_time=ht)
 
+    # Calculate the difference for human date comparison
     if ht and actual:
-        actual = (datetime.now(tz.tzlocal()) - actual).total_seconds()
-
-    # Then
-    assert expected == actual
+        actual = int((datetime.now(tz.tzlocal()) - actual).total_seconds())
+        assert actual in range(expected - 1, expected + 2)
+    else:
+        assert expected == actual

@@ -483,7 +483,7 @@ class GenericProvider(object):
         return []
 
     @staticmethod
-    def parse_pubdate(pubdate, provided_timezone=None, human=None):
+    def parse_pubdate(pubdate, provided_timezone=None, human_time=None):
         """
         Parse publishing date into a datetime object.
 
@@ -493,7 +493,7 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
-        return GenericProvider.calendar.parse_past(pubdate, provided_timezone, human)
+        return GenericProvider.calendar.parse_past(pubdate, provided_timezone, human_time)
 
     def _get_result(self, episodes=None):
         """Get result."""
