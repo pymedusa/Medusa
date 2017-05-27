@@ -9,12 +9,10 @@ import re
 
 from base64 import b16encode, b32decode
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from itertools import chain
 from os.path import join
 from random import shuffle
-
-from dateutil import parser, tz
 
 from medusa import (
     app,
@@ -52,7 +50,7 @@ from medusa.name_parser.parser import (
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 
-from pytimeparse import parse
+from medusa.helpers.human_data_parser import MedusaDateParser
 
 from requests.utils import add_dict_to_cookiejar
 
@@ -68,6 +66,8 @@ class GenericProvider(object):
 
     NZB = 'nzb'
     TORRENT = 'torrent'
+
+    calendar = MedusaDateParser()
 
     def __init__(self, name):
         """Initialize the class."""
@@ -483,36 +483,17 @@ class GenericProvider(object):
         return []
 
     @staticmethod
-    def parse_pubdate(pubdate, human_time=False, timezone=None):
+    def parse_pubdate(pubdate, provided_timezone=None, human=None):
         """
         Parse publishing date into a datetime object.
 
         :param pubdate: date and time string
         :param human_time: string uses human slang ("4 hours ago")
-        :param timezone: use a different timezone ("US/Eastern")
+        :param provided_timezone: use a different timezone ("US/Eastern")
 
         :returns: a datetime object or None
         """
-        try:
-            if human_time:
-                match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                seconds = parse(match.group('time'))
-                return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
-
-            dt = parser.parse(pubdate, fuzzy=True)
-            # Always make UTC aware if naive
-            if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
-                dt = dt.replace(tzinfo=tz.gettz('UTC'))
-            if timezone:
-                dt = dt.astimezone(tz.gettz(timezone))
-            return dt
-
-        except TypeError:
-            # Don't log an exception if we got None
-            log.debug('Skipping invalid publishing date.')
-
-        except (AttributeError, ValueError):
-            log.exception('Failed parsing publishing date.')
+        return GenericProvider.calendar.parse_past(pubdate, provided_timezone, human)
 
     def _get_result(self, episodes=None):
         """Get result."""
@@ -539,10 +520,11 @@ class GenericProvider(object):
                 episode_string += episode.airdate.strftime('%b')
             elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
-                if (episode.scene_season > 1 and
+                if ((episode.scene_season > 1 and
                         show_name in get_scene_exceptions(episode.series.indexerid,
                                                           episode.series.indexer,
-                                                          episode.scene_season)):
+                                                          episode.scene_season))
+                        or not episode.scene_absolute_number):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
                 else:

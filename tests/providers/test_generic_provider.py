@@ -21,7 +21,7 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p1: date and time
         'pubdate': '2017-05-18 15:00:15',
-        'expected': datetime(2017, 5, 18, 15, 0, 15, tzinfo=tz.gettz('UTC'))
+        'expected': datetime(2017, 5, 18, 15, 0, 15, tzinfo=tz.tzlocal())
     },
     {  # p2: date, time and timezone
         'pubdate': '2017-05-16 17:12:25+02:00',
@@ -39,23 +39,47 @@ sut = GenericProvider('FakeProvider')
     },
     {  # p5: date, time and custom timezone
         'pubdate': '2017-05-18 16:19:33',
-        'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.gettz('UTC')),
+        'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.tzlocal()),
         'timezone': 'US/Eastern'
+    },
+    {  # p6: human time hours
+        'pubdate': '24 hours ago',
+        'expected': 86400,  # difference in seconds
+        'human_time': True
+    },
+    {  # p6: human time hours
+        'pubdate': 'right now',
+        'expected': 0,  # difference in seconds
+        'human_time': True
+    },
+    {  # p6: human time hours
+        'pubdate': 'just now',
+        'expected': 0,  # difference in seconds
+        'human_time': True
+    },
+    {  # p6: human time hours
+        'pubdate': 'Now',
+        'expected': None,  # difference in seconds
+        'human_time': True
+    },
+    {  # p6: human time hours
+        'pubdate': 'This is not a valid hum readable date format!',
+        'expected': None,  # difference in seconds
+        'human_time': True
     },
 ])
 def test_parse_pubdate(p):
     # Given
     parsed_date = p['pubdate']
     expected = p['expected']
-    ht = p['human_time'] if p.get('human_time') else False
     tzone = p['timezone'] if p.get('timezone') else None
+    ht = p.get('human_time', False)
 
     # When
-    actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone)
+    actual = sut.parse_pubdate(parsed_date, provided_timezone=tzone, human_time=ht)
 
-    # Calculate the difference for human date comparison
-    if ht:
-        actual = (datetime.now(tz.tzlocal()) - actual).seconds
+    if ht and actual:
+        actual = (datetime.now(tz.tzlocal()) - actual).total_seconds()
 
     # Then
     assert expected == actual
