@@ -77,7 +77,7 @@ class DanishbitsProvider(TorrentProvider):
 
                 search_params['search'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='json')
-                if not response or response["total_results"] == 0:
+                if not response or response['total_results'] == 0:
                     log.debug('No data returned from provider')
                     continue
 
@@ -96,8 +96,8 @@ class DanishbitsProvider(TorrentProvider):
         """
         items = []
 
-        del data["total_results"]
-        torrent_rows = data["results"]
+        del data['total_results']
+        torrent_rows = data['results']
 
         for row in torrent_rows:
             try:
@@ -121,7 +121,7 @@ class DanishbitsProvider(TorrentProvider):
                 if self.freeleech and not freeleech:
                     continue
 
-                torrent_size = "{0} MB".format(row.get('size', -1))
+                torrent_size = '{0} MB'.format(row.get('size', -1))
                 size = convert_size(torrent_size) or -1
 
                 pubdate = row.get('publish_date')
