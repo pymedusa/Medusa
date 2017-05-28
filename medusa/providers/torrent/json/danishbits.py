@@ -123,10 +123,9 @@ class DanishbitsProvider(TorrentProvider):
                 if self.freeleech and not freeleech:
                     continue
 
-                size = try_int(row.get('size')) or -1
+                size = row.get('size') or -1
 
-                # Current API doesn't have it.
-                # pubdate = row.get('publish_date')
+                pubdate = row.get('publish_date')
 
                 item = {
                     'title': title,
@@ -134,7 +133,7 @@ class DanishbitsProvider(TorrentProvider):
                     'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
-                    'pubdate': None,
+                    'pubdate': pubdate,
                 }
                 if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -148,4 +147,3 @@ class DanishbitsProvider(TorrentProvider):
         return items
 
 provider = DanishbitsProvider()
-
