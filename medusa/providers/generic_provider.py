@@ -493,6 +493,8 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
+        now_alias = ('right now', 'just now', 'now')
+
         # This can happen from time to time
         if pubdate is None:
             log.debug('Skipping invalid publishing date.')
@@ -500,8 +502,11 @@ class GenericProvider(object):
 
         try:
             if human_time:
-                match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                seconds = parse(match.group('time'))
+                if pubdate.lower() in now_alias:
+                    seconds = 0
+                else:
+                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
+                    seconds = parse(match.group('time'))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, fuzzy=True)
