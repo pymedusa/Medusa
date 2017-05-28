@@ -493,7 +493,7 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
-        now_alias = ['right now', 'just now', 'now']
+        now_alias = ('right now', 'just now', 'now')
 
         # This can happen from time to time
         if pubdate is None:
