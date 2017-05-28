@@ -8,16 +8,13 @@ import logging
 import traceback
 
 from medusa import tv
-from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
-    convert_size,
     try_int,
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -126,7 +123,7 @@ class DanishbitsProvider(TorrentProvider):
                 if self.freeleech and not freeleech:
                     continue
 
-                size = row.get('size') or -1
+                size = try_int(row.get('size')) or -1
 
                 # Current API doesn't have it.
                 # pubdate = row.get('publish_date')
@@ -151,3 +148,4 @@ class DanishbitsProvider(TorrentProvider):
         return items
 
 provider = DanishbitsProvider()
+
