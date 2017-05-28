@@ -25,6 +25,7 @@ def initialize():
     _urllib3_disable_warnings()
     _strptime_workaround()
     _configure_guessit()
+    _load_model_recommended_show()
 
 
 def _check_python_version():
@@ -113,3 +114,6 @@ def _configure_guessit():
     import guessit
     from ..name_parser.guessit_parser import guessit as pre_configured_guessit
     guessit.guessit = pre_configured_guessit
+
+def _load_model_recommended_show():
+    from medusa.model import recommended
