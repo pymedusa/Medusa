@@ -493,7 +493,7 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
-        now_alias = ['right now', 'just now', 'Now']
+        now_alias = ['right now', 'just now', 'now']
 
         # This can happen from time to time
         if pubdate is None:
@@ -502,7 +502,7 @@ class GenericProvider(object):
 
         try:
             if human_time:
-                if pubdate in now_alias:
+                if pubdate.lower() in now_alias:
                     seconds = 0
                 else:
                     match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)

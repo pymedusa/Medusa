@@ -77,8 +77,8 @@ def test_parse_pubdate(p):
     # Given
     parsed_date = p['pubdate']
     expected = p['expected']
-    ht = p['human_time'] if p.get('human_time') else False
-    tzone = p['timezone'] if p.get('timezone') else None
+    ht = p.get('human_time', False)
+    tzone = p.get('timezone')
 
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone)
