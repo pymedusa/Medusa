@@ -57,7 +57,6 @@ class DanishbitsProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        results = []
 
         # Search Params
         search_params = {
@@ -144,5 +143,6 @@ class DanishbitsProvider(TorrentProvider):
                           traceback.format_exc())
 
         return items
+
 
 provider = DanishbitsProvider()
