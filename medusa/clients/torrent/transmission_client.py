@@ -45,7 +45,7 @@ class TransmissionAPI(GenericClient):
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
 
     def check_response(self):
-        """Checks if response is a valid json and its a success one."""
+        """Check if response is a valid json and its a success one."""
         try:
             return self.response.json()['result'] == 'success'
         except ValueError:
