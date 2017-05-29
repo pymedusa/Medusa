@@ -493,10 +493,20 @@ class GenericProvider(object):
 
         :returns: a datetime object or None
         """
+        now_alias = ('right now', 'just now', 'now')
+
+        # This can happen from time to time
+        if pubdate is None:
+            log.debug('Skipping invalid publishing date.')
+            return
+
         try:
             if human_time:
-                match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                seconds = parse(match.group('time'))
+                if pubdate.lower() in now_alias:
+                    seconds = 0
+                else:
+                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
+                    seconds = parse(match.group('time'))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, fuzzy=True)
@@ -507,12 +517,8 @@ class GenericProvider(object):
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except TypeError:
-            # Don't log an exception if we got None
-            log.debug('Skipping invalid publishing date.')
-
         except (AttributeError, ValueError):
-            log.exception('Failed parsing publishing date.')
+            log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
         """Get result."""

@@ -42,20 +42,50 @@ sut = GenericProvider('FakeProvider')
         'expected': datetime(2017, 5, 18, 16, 19, 33, tzinfo=tz.gettz('UTC')),
         'timezone': 'US/Eastern'
     },
+    {  # p6: human time hours (full day)
+        'pubdate': '24 hours ago',
+        'expected': 86400,  # difference in seconds
+        'human_time': True
+    },
+    {  # p7: human now variant
+        'pubdate': 'right now',
+        'expected': 0,  # difference in seconds
+        'human_time': True
+    },
+    {  # p8: human now variant
+        'pubdate': 'just now',
+        'expected': 0,  # difference in seconds
+        'human_time': True
+    },
+    {  # p9: human now variant
+        'pubdate': 'Now',
+        'expected': 0,  # difference in seconds
+        'human_time': True
+    },
+    {  # p10: invalid human time string
+        'pubdate': 'This is not a valid hum readable date format!',
+        'expected': None,  # difference in seconds
+        'human_time': True
+    },
+    {  # p11: human time 1 minute
+        'pubdate': '1 minute ago',
+        'expected': 60,  # difference in seconds
+        'human_time': True
+    },
 ])
 def test_parse_pubdate(p):
     # Given
     parsed_date = p['pubdate']
     expected = p['expected']
-    ht = p['human_time'] if p.get('human_time') else False
-    tzone = p['timezone'] if p.get('timezone') else None
+    ht = p.get('human_time', False)
+    tzone = p.get('timezone')
 
     # When
     actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone)
 
     # Calculate the difference for human date comparison
-    if ht:
-        actual = (datetime.now(tz.tzlocal()) - actual).seconds
+    if ht and actual:
+        actual = int((datetime.now(tz.tzlocal()) - actual).total_seconds())
 
     # Then
     assert expected == actual
