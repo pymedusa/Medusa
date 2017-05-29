@@ -211,7 +211,7 @@ class BTNProvider(TorrentProvider):
         }
 
         # Search
-        if ep_obj.show.indexer == INDEXER_TVDBV2:
+        if ep_obj.series.indexer == INDEXER_TVDBV2:
             params['tvdb'] = self._get_tvdb_id()
             searches.append(params)
         else:
