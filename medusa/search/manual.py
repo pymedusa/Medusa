@@ -206,7 +206,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         )
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
         minseed = int(cur_provider.minseed) if getattr(cur_provider, 'minseed', None) else -1
-        minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minseed', None) else -1
+        minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minleech', None) else -1
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
