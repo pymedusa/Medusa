@@ -102,7 +102,7 @@ class HorribleSubsProvider(TorrentProvider):
                         if mode != 'RSS':
                             # keep the date and strip the rest
                             pubdate_raw = row.find('td', class_='rls-label').get_text()[1:9]
-                            pubdate = self.parse_pubdate(pubdate_raw, timezone='America/Los_Angeles')
+                            pubdate = self.parse_pubdate(pubdate_raw, provided_timezone='America/Los_Angeles')
                         continue
 
                     title = row.find('td', class_='dl-label').get_text()
