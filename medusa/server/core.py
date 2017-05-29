@@ -15,14 +15,18 @@ from medusa.server.api.v2.base import NotFoundHandler
 from medusa.server.api.v2.config import ConfigHandler
 from medusa.server.api.v2.episode import EpisodeHandler
 from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.season import SeasonHandler
 from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
+
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
+
 from tornroutes import route
+
 from .api.v1.core import ApiHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
 from .web.core.base import AuthenticatedStaticFileHandler
@@ -37,6 +41,9 @@ def get_apiv2_handlers(base):
         # Order: Most specific to most generic
         # /api/v2/series/tvdb1234/episode
         EpisodeHandler.create_app_handler(base),
+
+        # /api/v2/series/tvdb1234/season
+        SeasonHandler.create_app_handler(base),
 
         # /api/v2/series/tvdb1234/operation
         SeriesOperationHandler.create_app_handler(base),
