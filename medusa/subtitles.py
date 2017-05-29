@@ -29,9 +29,9 @@ import time
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
 import knowit
+from medusa.subtitle_providers.utils import hash_itasa
 from six import iteritems, string_types, text_type
-from subliminal import (ProviderPool, compute_score, provider_manager, refine, refiner_manager, save_subtitles,
-                        scan_video)
+from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
@@ -49,25 +49,22 @@ logger = logging.getLogger(__name__)
 PROVIDER_POOL_EXPIRATION_TIME = datetime.timedelta(minutes=15).total_seconds()
 VIDEO_EXPIRATION_TIME = datetime.timedelta(days=1).total_seconds()
 
-provider_manager.register('itasa = subliminal.providers.itasa:ItaSAProvider')
-provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
-
-basename = __name__.split('.')[0]
-refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
-refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
-
 subtitle_key = u'subtitle={id}'
 video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
 episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
+provider_mapping = {
+    'legendastv': 'legendastv2'
+}
+
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
     'itasa': 'http://www.italiansubs.net',
-    'legendastv': 'http://www.legendas.tv',
+    'legendastv2': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
-    'podnapisi': 'http://www.podnapisi.net',
+    'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
     'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
@@ -92,6 +89,7 @@ def sorted_service_list():
 
     current_index = 0
     for current_service in app.SUBTITLES_SERVICES_LIST:
+        current_service = provider_mapping.get(current_service, current_service)
         if current_service in provider_manager.names():
             new_list.append({'name': current_service,
                              'url': PROVIDER_URLS[current_service]
@@ -497,8 +495,8 @@ def get_provider_pool():
                                      'password': app.ADDIC7ED_PASS},
                         'itasa': {'username': app.ITASA_USER,
                                   'password': app.ITASA_PASS},
-                        'legendastv': {'username': app.LEGENDASTV_USER,
-                                       'password': app.LEGENDASTV_PASS},
+                        'legendastv2': {'username': app.LEGENDASTV_USER,
+                                        'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
                                           'password': app.OPENSUBTITLES_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)
@@ -701,6 +699,12 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
     except ValueError as e:
         logger.warning(u'Unable to scan video: %s. Error: %s', video_path, e.message)
     else:
+
+        # Add hash of our custom provider Itasa
+        video.size = os.path.getsize(video_path)
+        if video.size > 10485760:
+            video.hashes['itasa'] = hash_itasa(video_path)
+
         # external subtitles
         if subtitles:
             video.subtitle_languages |= set(search_external_subtitles(video_path, directory=subtitles_dir).values())

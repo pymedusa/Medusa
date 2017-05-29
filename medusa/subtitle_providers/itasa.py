@@ -16,12 +16,12 @@ except ImportError:  # pragma: no cover
 from requests import Session
 from zipfile import ZipFile, is_zipfile
 
-from . import Provider
-from .. import __version__
-from .. cache import EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME, region
-from .. exceptions import AuthenticationError, ConfigurationError, TooManyRequests
-from .. subtitle import (Subtitle, fix_line_ending, guess_matches, sanitize)
-from .. video import Episode
+from subliminal.providers import Provider
+from subliminal import __version__
+from subliminal.cache import EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME, region
+from subliminal.exceptions import AuthenticationError, ConfigurationError, TooManyRequests
+from subliminal.subtitle import (Subtitle, fix_line_ending, guess_matches, sanitize)
+from subliminal.video import Episode
 
 logger = logging.getLogger(__name__)
 
