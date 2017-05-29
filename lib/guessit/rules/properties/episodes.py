@@ -231,14 +231,16 @@ def episodes():
                  formatter={'season': int, 'other': lambda match: 'Complete'})
 
     # 12, 13
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
+                 disabled=lambda context: context.get('type') == 'movie') \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d{2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
         .regex(r'(?P<episodeSeparator>[x-])(?P<episode>\d{2})').repeater('*')
 
     # 012, 013
-    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int}) \
+    rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
+                 disabled=lambda context: context.get('type') == 'movie') \
         .defaults(validator=None) \
         .regex(r'0(?P<episode>\d{1,2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
@@ -246,7 +248,8 @@ def episodes():
 
     # 112, 113
     rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode'], formatter={'episode': int, 'version': int},
-                 disabled=lambda context: not context.get('episode_prefer_number', False)) \
+                 disabled=lambda context: (not context.get('episode_prefer_number', False) or
+                                           context.get('type') == 'movie')) \
         .defaults(validator=None) \
         .regex(r'(?P<episode>\d{3,4})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
@@ -287,7 +290,8 @@ def episodes():
     rebulk.chain(tags=['bonus-conflict', 'weak-movie', 'weak-episode', 'weak-duplicate'],
                  formatter={'season': int, 'episode': int, 'version': int},
                  conflict_solver=lambda match, other: match if other.name == 'year' else '__default__',
-                 disabled=lambda context: context.get('episode_prefer_number', False)) \
+                 disabled=lambda context: (context.get('episode_prefer_number', False) or
+                                           context.get('type') == 'movie')) \
         .defaults(validator=None) \
         .regex(r'(?P<season>\d{1,2})(?P<episode>\d{2})') \
         .regex(r'v(?P<version>\d+)').repeater('?') \
@@ -460,8 +464,21 @@ class RemoveWeakIfMovie(Rule):
         return context.get('type') != 'episode'
 
     def when(self, matches, context):
-        if matches.named('year'):
-            return matches.tagged('weak-movie')
+        to_remove = []
+        to_ignore = set()
+        remove = False
+        for filepart in matches.markers.named('path'):
+            year = matches.range(filepart.start, filepart.end, predicate=lambda m: m.name == 'year', index=0)
+            if year:
+                remove = True
+                next_match = matches.next(year, predicate=lambda m, fp=filepart: m.private and m.end <= fp.end, index=0)
+                if next_match and not matches.at_match(next_match, predicate=lambda m: m.name == 'year'):
+                    to_ignore.add(next_match.initiator)
+
+        if remove:
+            to_remove.extend(matches.tagged('weak-movie', predicate=lambda m: m.initiator not in to_ignore))
+
+        return to_remove
 
 
 class RemoveWeakIfSxxExx(Rule):

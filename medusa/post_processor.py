@@ -742,7 +742,7 @@ class PostProcessor(object):
             if not cur_name:
                 continue
 
-            ep_quality = common.Quality.name_quality(cur_name, ep_obj.show.is_anime, extend=False)
+            ep_quality = common.Quality.name_quality(cur_name, ep_obj.series.is_anime, extend=False)
             self._log(u"Looking up quality for '{0}', got {1}".format
                       (cur_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
             if ep_quality != common.Quality.UNKNOWN:
@@ -751,7 +751,7 @@ class PostProcessor(object):
                 return ep_quality
 
         # Try using other methods to get the file quality
-        ep_quality = common.Quality.name_quality(self.file_path, ep_obj.show.is_anime)
+        ep_quality = common.Quality.name_quality(self.file_path, ep_obj.series.is_anime)
         self._log(u"Trying other methods to get quality for '{0}', got {1}".format
                   (self.file_name, common.Quality.qualityStrings[ep_quality]), logger.DEBUG)
         if ep_quality != common.Quality.UNKNOWN:
@@ -927,7 +927,7 @@ class PostProcessor(object):
             self._log(u'Absolute path to script: {0}'.format(script_cmd[0]), logger.DEBUG)
 
             script_cmd += [
-                ep_location, file_path, str(ep_obj.show.indexerid),
+                ep_location, file_path, str(ep_obj.series.indexerid),
                 str(ep_obj.season), str(ep_obj.episode), str(ep_obj.airdate)
             ]
 
@@ -1071,7 +1071,7 @@ class PostProcessor(object):
 
         # try to find out if we have enough space to perform the copy or move action.
         if not helpers.is_file_locked(self.file_path, False):
-            if not verify_freespace(self.file_path, ep_obj.show._location, [ep_obj] + ep_obj.related_episodes):
+            if not verify_freespace(self.file_path, ep_obj.series._location, [ep_obj] + ep_obj.related_episodes):
                 self._log(u'Not enough space to continue post-processing, exiting', logger.WARNING)
                 return False
         else:
@@ -1083,7 +1083,7 @@ class PostProcessor(object):
                 self._delete(cur_ep.location, associated_files=True)
                 # clean up any left over folders
                 if cur_ep.location:
-                    helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.show._location)
+                    helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.series._location)
             except (OSError, IOError):
                 raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
 
@@ -1092,20 +1092,20 @@ class PostProcessor(object):
             #    cur_ep.status = common.Quality.composite_status(common.SNATCHED, new_ep_quality)
 
         # if the show directory doesn't exist then make it if desired
-        if not os.path.isdir(ep_obj.show._location) and app.CREATE_MISSING_SHOW_DIRS:
+        if not os.path.isdir(ep_obj.series._location) and app.CREATE_MISSING_SHOW_DIRS:
             self._log(u"Show directory doesn't exist, creating it", logger.DEBUG)
             try:
-                os.mkdir(ep_obj.show._location)
-                helpers.chmod_as_parent(ep_obj.show._location)
+                os.mkdir(ep_obj.series._location)
+                helpers.chmod_as_parent(ep_obj.series._location)
 
                 # do the library update for synoindex
-                notifiers.synoindex_notifier.addFolder(ep_obj.show._location)
+                notifiers.synoindex_notifier.addFolder(ep_obj.series._location)
             except (OSError, IOError):
                 raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {0}'.format
-                                                           (ep_obj.show._location))
+                                                           (ep_obj.series._location))
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
-            ep_obj.show.write_metadata(True)
+            ep_obj.series.write_metadata(True)
 
         # update the ep info before we rename so the quality & release name go into the name properly
         sql_l = []
@@ -1152,11 +1152,11 @@ class PostProcessor(object):
         # find the destination folder
         try:
             proper_path = ep_obj.proper_path()
-            proper_absolute_path = os.path.join(ep_obj.show.location, proper_path)
+            proper_absolute_path = os.path.join(ep_obj.series.location, proper_path)
             dest_path = os.path.dirname(proper_absolute_path)
         except ShowDirectoryNotFoundException:
             raise EpisodePostProcessingFailedException(u"Unable to post-process an episode if the show dir '{0}' "
-                                                       u"doesn't exist, quitting".format(ep_obj.show.raw_location))
+                                                       u"doesn't exist, quitting".format(ep_obj.series.raw_location))
 
         self._log(u'Destination folder for this episode: {0}'.format(dest_path), logger.DEBUG)
 
@@ -1167,16 +1167,16 @@ class PostProcessor(object):
         # figure out the base name of the resulting episode file
         if app.RENAME_EPISODES:
             orig_extension = self.file_name.rpartition('.')[-1]
-            new_basename = os.path.basename(proper_path)
-            new_file_name = new_basename + '.' + orig_extension
+            new_base_name = os.path.basename(proper_path)
+            new_file_name = new_base_name + '.' + orig_extension
 
         else:
             # if we're not renaming then there's no new base name, we'll just use the existing name
-            new_basename = None
+            new_base_name = None
             new_file_name = self.file_name
 
         # add to anidb
-        if ep_obj.show.is_anime and app.ANIDB_USE_MYLIST:
+        if ep_obj.series.is_anime and app.ANIDB_USE_MYLIST:
             self._add_to_anidb_mylist(self.file_path)
 
         try:
@@ -1185,8 +1185,9 @@ class PostProcessor(object):
                 if not self.process_method == 'hardlink':
                     if helpers.is_file_locked(self.file_path, False):
                         raise EpisodePostProcessingFailedException('File is locked for reading')
-                self.post_process_action(self.file_path, dest_path, new_basename,
-                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.show.subtitles)
+
+                self.post_process_action(self.file_path, dest_path, new_base_name,
+                                         app.MOVE_ASSOCIATED_FILES, app.USE_SUBTITLES and ep_obj.series.subtitles)
             else:
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
@@ -1195,7 +1196,7 @@ class PostProcessor(object):
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         # download subtitles
-        if app.USE_SUBTITLES and ep_obj.show.subtitles:
+        if app.USE_SUBTITLES and ep_obj.series.subtitles:
             for cur_ep in [ep_obj] + ep_obj.related_episodes:
                 with cur_ep.lock:
                     cur_ep.location = os.path.join(dest_path, new_file_name)
@@ -1234,11 +1235,11 @@ class PostProcessor(object):
         # send notifications
         notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
         # do the library update for KODI
-        notifiers.kodi_notifier.update_library(ep_obj.show.name)
+        notifiers.kodi_notifier.update_library(ep_obj.series.name)
         # do the library update for Plex
         notifiers.plex_notifier.update_library(ep_obj)
         # do the library update for EMBY
-        notifiers.emby_notifier.update_library(ep_obj.show)
+        notifiers.emby_notifier.update_library(ep_obj.series)
         # do the library update for NMJ
         # nmj_notifier kicks off its library update when the notify_download is issued (inside notifiers)
         # do the library update for Synology Indexer

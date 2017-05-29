@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
@@ -138,8 +136,8 @@ class AniDexProvider(TorrentProvider):
                     torrent_size = cells[labels.index('File size')].get_text()
                     size = convert_size(torrent_size) or -1
 
-                    date = cells[labels.index('Age')].get('title')
-                    pubdate = parser.parse(date)
+                    pubdate_raw = cells[labels.index('Age')].get('title')
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

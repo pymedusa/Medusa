@@ -441,7 +441,7 @@ class Cache(object):
                 b'WHERE indexerid = ? AND'
                 b'     season = ? AND'
                 b'     episodes LIKE ?'.format(name=self.provider_id),
-                [episode.show.indexerid, episode.season,
+                [episode.series.indexerid, episode.season,
                  b'%|{0}|%'.format(episode.episode)]
             )
         else:
@@ -456,7 +456,7 @@ class Cache(object):
                         qualities=','.join((str(x)
                                             for x in ep_obj.wanted_quality))
                     ),
-                    [ep_obj.show.indexerid, ep_obj.season,
+                    [ep_obj.series.indexerid, ep_obj.season,
                      b'%|{0}|%'.format(ep_obj.episode)]]
                 )
 
@@ -468,9 +468,9 @@ class Cache(object):
                 sql_results = []
                 log.debug(
                     '{id}: No cached results in {provider} for series {show_name!r} episode {ep}', {
-                        'id': ep_obj.show.indexerid,
+                        'id': ep_obj.series.indexerid,
                         'provider': self.provider.name,
-                        'show_name': ep_obj.show.name,
+                        'show_name': ep_obj.series.name,
                         'ep': episode_num(ep_obj.season, ep_obj.episode),
                     }
                 )
@@ -520,9 +520,9 @@ class Cache(object):
 
             log.debug(
                 '{id}: Using cached results from {provider} for series {show_name!r} episode {ep}', {
-                    'id': ep_obj.show.indexerid,
+                    'id': ep_obj.series.indexerid,
                     'provider': self.provider.name,
-                    'show_name': ep_obj.show.name,
+                    'show_name': ep_obj.series.name,
                     'ep': episode_num(ep_obj.season, ep_obj.episode),
                 }
             )

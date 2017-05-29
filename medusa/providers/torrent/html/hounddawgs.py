@@ -170,7 +170,7 @@ class HoundDawgsProvider(TorrentProvider):
                         size = convert_size(torrent_size) or -1
 
                     pubdate_raw = row.find('td', class_='nobr').find('span')['title']
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

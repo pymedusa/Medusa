@@ -161,8 +161,8 @@ def load_config(options):
     if configurations:
         configurations.append(options)
         return merge_configurations(*configurations)
-    else:
-        return options
+
+    return options
 
 
 def merge_configurations(*configurations):

@@ -10,9 +10,13 @@
 
 ? +DolbyDigital
 ? +DD
-? +DDP
 ? +Dolby Digital
 : audio_codec: DolbyDigital
+
+? +DDP
+? +DD+
+? +EAC3
+: audio_codec: EAC3
 
 ? +DolbyAtmos
 ? +Dolby Atmos

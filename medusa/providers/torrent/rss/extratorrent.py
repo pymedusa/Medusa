@@ -145,13 +145,15 @@ class ExtraTorrentProvider(TorrentProvider):
 
                     size = convert_size(element.size.get_text()) or -1
 
+                    pubdate = self.parse_pubdate(element.pubdate.get_text())
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
 
                     if mode != 'RSS':

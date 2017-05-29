@@ -147,7 +147,7 @@ class BithdtvProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = cells[5].get_text(' ')
-                    pubdate = self._parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

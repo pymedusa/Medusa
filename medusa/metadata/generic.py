@@ -378,12 +378,12 @@ class GenericMetadata(object):
         all_eps = [ep_obj] + ep_obj.related_episodes
 
         # validate show
-        if not helpers.validate_show(ep_obj.show):
+        if not helpers.validate_show(ep_obj.series):
             return None
 
         # try all included episodes in case some have thumbs and others don't
         for cur_ep in all_eps:
-            myEp = helpers.validate_show(cur_ep.show, cur_ep.season, cur_ep.episode)
+            myEp = helpers.validate_show(cur_ep.series, cur_ep.season, cur_ep.episode)
             if not myEp:
                 continue
 

@@ -25,6 +25,7 @@ def initialize():
     _urllib3_disable_warnings()
     _strptime_workaround()
     _configure_guessit()
+    _configure_subliminal()
 
 
 def _check_python_version():
@@ -109,7 +110,28 @@ def _strptime_workaround():
 
 
 def _configure_guessit():
-    """Replace guessit function with a pre-configured one, so guessit.guessit() could be called directly in any place."""
+    """Replace guessit with a pre-configured one, so guessit.guessit() could be called directly in any place."""
     import guessit
     from ..name_parser.guessit_parser import guessit as pre_configured_guessit
     guessit.guessit = pre_configured_guessit
+
+
+def _configure_subliminal():
+    """Load subliminal with our custom configuration."""
+    from subliminal import provider_manager, refiner_manager
+    from subliminal.providers.podnapisi import PodnapisiProvider
+
+    basename = __name__.split('.')[0]
+
+    provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
+
+    # Use our custom providers
+    provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
+    provider_manager.register(
+        'legendastv2 = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
+
+    refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
+    refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
+
+    # Configure podnapisi https url
+    PodnapisiProvider.server_url = 'https://podnapisi.net/subtitles/'

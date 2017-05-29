@@ -60,7 +60,7 @@ def log_snatch(searchResult):
     """
     for curEpObj in searchResult.episodes:
 
-        showid = int(curEpObj.show.indexerid)
+        showid = int(curEpObj.series.indexerid)
         season = int(curEpObj.season)
         episode = int(curEpObj.episode)
         quality = searchResult.quality
@@ -94,7 +94,7 @@ def log_download(episode, filename, new_ep_quality, release_group=None, version=
     :param release_group: Release group
     :param version: Version of file (defaults to -1)
     """
-    showid = int(episode.show.indexerid)
+    showid = int(episode.series.indexerid)
     season = int(episode.season)
     ep_number = int(episode.episode)
     size = int(episode.file_size)
@@ -139,7 +139,7 @@ def log_failed(ep_obj, release, provider=None):
     :param release: Release group
     :param provider: Provider used for snatch
     """
-    showid = int(ep_obj.show.indexerid)
+    showid = int(ep_obj.series.indexerid)
     season = int(ep_obj.season)
     ep_number = int(ep_obj.episode)
     _, quality = Quality.split_composite_status(ep_obj.status)

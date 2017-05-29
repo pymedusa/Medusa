@@ -60,7 +60,7 @@ class NewpctProvider(TorrentProvider):
         results = []
 
         # Only search if user conditions are true
-        lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
+        lang_info = '' if not ep_obj or not ep_obj.series else ep_obj.series.lang
 
         # http://www.newpct.com/index.php?l=doSearch&q=fringe&category_=All&idioma_=1&bus_de_=All
         # Search Params

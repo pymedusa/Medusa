@@ -9,12 +9,12 @@ import re
 
 from base64 import b16encode, b32decode
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
 from random import shuffle
 
-from dateutil import parser
+from dateutil import parser, tz
 
 from medusa import (
     app,
@@ -51,6 +51,8 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
+
+from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar
 
@@ -308,7 +310,7 @@ class GenericProvider(object):
                         if not [searched_episode for searched_episode in episodes
                                 if searched_episode.season == search_result.parsed_result.season_number and
                                 (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.show.is_scene] in
+                                [searched_episode.series.is_scene] in
                                 search_result.parsed_result.episode_numbers]:
                             log.debug(
                                 "The result {0} doesn't seem to match an episode that we are currently trying to "
@@ -480,6 +482,44 @@ class GenericProvider(object):
         """Search the provider."""
         return []
 
+    @staticmethod
+    def parse_pubdate(pubdate, human_time=False, timezone=None):
+        """
+        Parse publishing date into a datetime object.
+
+        :param pubdate: date and time string
+        :param human_time: string uses human slang ("4 hours ago")
+        :param timezone: use a different timezone ("US/Eastern")
+
+        :returns: a datetime object or None
+        """
+        now_alias = ('right now', 'just now', 'now')
+
+        # This can happen from time to time
+        if pubdate is None:
+            log.debug('Skipping invalid publishing date.')
+            return
+
+        try:
+            if human_time:
+                if pubdate.lower() in now_alias:
+                    seconds = 0
+                else:
+                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
+                    seconds = parse(match.group('time'))
+                return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
+
+            dt = parser.parse(pubdate, fuzzy=True)
+            # Always make UTC aware if naive
+            if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+                dt = dt.replace(tzinfo=tz.gettz('UTC'))
+            if timezone:
+                dt = dt.astimezone(tz.gettz(timezone))
+            return dt
+
+        except (AttributeError, ValueError):
+            log.exception('Failed parsing publishing date: {0}', pubdate)
+
     def _get_result(self, episodes=None):
         """Get result."""
         return SearchResult(episodes)
@@ -493,21 +533,21 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
-            if episode.show.air_by_date:
+            if episode.series.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
-            elif episode.show.sports:
+            elif episode.series.sports:
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
-            elif episode.show.anime:
+            elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.show.indexerid,
-                                                          episode.show.indexer,
+                        show_name in get_scene_exceptions(episode.series.indexerid,
+                                                          episode.series.indexer,
                                                           episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
@@ -543,15 +583,15 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + ' '
 
-            if episode.show.air_by_date or episode.show.sports:
+            if episode.series.air_by_date or episode.series.sports:
                 episode_string += str(episode.airdate).split('-')[0]
-            elif episode.show.anime:
+            elif episode.series.anime:
                 episode_string += 'Season'
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.season)
+                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
 
             search_string['Season'].append(episode_string.strip())
 
@@ -575,14 +615,6 @@ class GenericProvider(object):
         If provider doesnt have _get_pubdate function this will be used
         """
         return None
-
-    def _parse_pubdate(self, pubdate):
-        """Parse pubdate into a valid timedate format."""
-        try:
-            pubdate_parsed = parser.parse(pubdate, fuzzy=True) if pubdate else None
-        except ValueError:
-            pubdate_parsed = None
-        return pubdate_parsed
 
     def _get_title_and_url(self, item):
         """Return title and url from result."""

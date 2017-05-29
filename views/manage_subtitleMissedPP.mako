@@ -25,9 +25,9 @@
         <thead aria-live="polite" aria-relevant="all">
             <tr>
                 <th>Show</th>
-                <th>Episode</th>
+                <th class="col-search">Episode</th>
                 <th>Release</th>
-                <th>Age</th>
+                <th class="col-search">Age</th>
                 <th class="col-search">Search</th>
             </tr>
         </thead>
@@ -49,7 +49,9 @@
                     </span>
                 </td>
                 <td class="tvShow" align="center">
+                <span class="tvShow" datetime="${epResult['date'].isoformat('T')}">
                         ${epResult['age']}${epResult['age_unit']}
+                </span>
                 </td>
                 <td class="col-search" align="center">
                     <a class="epSubtitlesSearchPP" release_id=${index} href="home/manual_search_subtitles?release_id=${index}"><img src="images/closed_captioning.png" height="16" alt="search subtitles" title="Search Subtitles" /></a>

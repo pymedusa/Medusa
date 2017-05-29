@@ -58,7 +58,7 @@ class EliteTorrentProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        lang_info = '' if not ep_obj or not ep_obj.show else ep_obj.show.lang
+        lang_info = '' if not ep_obj or not ep_obj.series else ep_obj.series.lang
 
         # Search query:
         # http://www.elitetorrent.net/torrents.php?cat=4&modo=listado&orden=fecha&pag=1&buscar=fringe

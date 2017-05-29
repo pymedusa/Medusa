@@ -205,8 +205,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             [cur_provider.get_id()]
         )
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
-        minseed = int(cur_provider.minseed) if hasattr(cur_provider, 'minseed') else -1
-        minleech = int(cur_provider.minleech) if hasattr(cur_provider, 'minleech') else -1
+        minseed = int(cur_provider.minseed) if getattr(cur_provider, 'minseed', None) else -1
+        minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minleech', None) else -1
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
@@ -266,7 +266,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
