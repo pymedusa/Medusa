@@ -47,7 +47,7 @@ __all__ = ["parse", "parserinfo"]
 
 class _timelex(object):
     # Fractional seconds are sometimes split by a comma
-    _split_decimal = re.compile("([\.,])")
+    _split_decimal = re.compile("([.,])")
 
     def __init__(self, instream):
         if isinstance(instream, binary_type):
@@ -541,6 +541,9 @@ class parser(object):
             :class:`tzinfo` is not in a valid format, or if an invalid date
             would be created.
 
+        :raises TypeError:
+            Raised for non-string or character stream input.
+
         :raises OverflowError:
             Raised if the parsed date exceeds the largest valid C integer on
             your system.
@@ -952,7 +955,7 @@ class parser(object):
                             raise ValueError('No hour specified with ' +
                                              'AM or PM flag.')
                     elif not 0 <= res.hour <= 12:
-                        # If AM/PM is found, it's a 12 hour clock, so raise 
+                        # If AM/PM is found, it's a 12 hour clock, so raise
                         # an error for invalid range
                         if fuzzy:
                             val_is_ampm = False
@@ -968,6 +971,9 @@ class parser(object):
 
                         res.ampm = value
 
+                    elif fuzzy:
+                        last_skipped_token_i = self._skip_token(skipped_tokens,
+                                                    last_skipped_token_i, i, l)
                     i += 1
                     continue
 
@@ -1032,13 +1038,8 @@ class parser(object):
                 if not (info.jump(l[i]) or fuzzy):
                     return None, None
 
-                if last_skipped_token_i == i - 1:
-                    # recombine the tokens
-                    skipped_tokens[-1] += l[i]
-                else:
-                    # just append
-                    skipped_tokens.append(l[i])
-                last_skipped_token_i = i
+                last_skipped_token_i = self._skip_token(skipped_tokens,
+                                                last_skipped_token_i, i, l)
                 i += 1
 
             # Process year/month/day
@@ -1063,6 +1064,18 @@ class parser(object):
             return res, tuple(skipped_tokens)
         else:
             return res, None
+
+    @staticmethod
+    def _skip_token(skipped_tokens, last_skipped_token_i, i, l):
+        if last_skipped_token_i == i - 1:
+            # recombine the tokens
+            skipped_tokens[-1] += l[i]
+        else:
+            # just append
+            skipped_tokens.append(l[i])
+        last_skipped_token_i = i
+        return last_skipped_token_i
+
 
 DEFAULTPARSER = parser()
 
@@ -1145,7 +1158,7 @@ def parse(timestr, parserinfo=None, **kwargs):
 
             >>> from dateutil.parser import parse
             >>> parse("Today is January 1, 2047 at 8:21:00AM", fuzzy_with_tokens=True)
-            (datetime.datetime(2011, 1, 1, 8, 21), (u'Today is ', u' ', u'at '))
+            (datetime.datetime(2047, 1, 1, 8, 21), (u'Today is ', u' ', u'at '))
 
     :return:
         Returns a :class:`datetime.datetime` object or, if the

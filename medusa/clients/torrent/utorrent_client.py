@@ -6,14 +6,13 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from collections import OrderedDict
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.compat import urljoin
-from six import iteritems
-
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -36,39 +35,29 @@ class UTorrentAPI(GenericClient):
         self.url = urljoin(self.host, 'gui/')
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
-
         if cookies:
             log.debug('{name}: Received unused argument: cookies={value!r}',
                       {'name': self.name, 'value': cookies})
 
-        # Workaround for uTorrent 2.2.1
-        # Need an OrderedDict but only supported in 2.7+
-        # Medusa is no longer 2.6+
-
-        # TOD0: Replace this with an OrderedDict
-        ordered_params = {
+        # "token" must be the first parameter: https://goo.gl/qTxf9x
+        ordered_params = OrderedDict({
             'token': self.auth,
-        }
-
-        for k, v in iteritems(params) or {}:
-            ordered_params.update({k: v})
+        })
+        ordered_params.update(params)
 
         return super(UTorrentAPI, self)._request(method=method, params=ordered_params, data=data, files=files)
 
     def _get_auth(self):
-
-        try:
-            self.response = self.session.get(urljoin(self.url, 'token.html'), verify=False)
+        self.response = self.session.get(urljoin(self.url, 'token.html'), verify=False)
+        if not self.response.status_code == 404:
             self.auth = re.findall('<div.*?>(.*?)</', self.response.text)[0]
-        except Exception:
-            return None
-
-        return self.auth if not self.response.status_code == 404 else None
+            return self.auth
 
     def _add_torrent_uri(self, result):
         return self._request(params={
             'action': 'add-url',
-            's': result.url,
+            # limit the param length to 1024 chars (uTorrent bug)
+            's': result.url[:1024],
         })
 
     def _add_torrent_file(self, result):
@@ -86,7 +75,6 @@ class UTorrentAPI(GenericClient):
         )
 
     def _set_torrent_label(self, result):
-
         if result.show.is_anime and app.TORRENT_LABEL_ANIME:
             label = app.TORRENT_LABEL_ANIME
         else:
@@ -100,7 +88,6 @@ class UTorrentAPI(GenericClient):
         })
 
     def _set_torrent_ratio(self, result):
-
         ratio = result.ratio or None
 
         if ratio:
@@ -122,7 +109,6 @@ class UTorrentAPI(GenericClient):
         return True
 
     def _set_torrent_seed_time(self, result):
-
         if app.TORRENT_SEED_TIME:
             if self._request(params={
                 'action': 'setprops',
@@ -165,5 +151,6 @@ class UTorrentAPI(GenericClient):
             'action': 'removedatatorrent',
             'hash': info_hash,
         })
+
 
 api = UTorrentAPI

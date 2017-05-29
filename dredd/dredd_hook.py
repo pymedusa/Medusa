@@ -8,6 +8,7 @@ from urllib import urlencode
 import dredd_hooks as hooks
 
 from six import string_types
+
 import yaml
 
 
@@ -168,6 +169,7 @@ def start():
     from medusa.__main__ import Application
     application = Application()
     application.start(args)
+
 
 if __name__ == '__main__':
     start()

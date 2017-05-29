@@ -64,6 +64,7 @@ def create_test_cache_folder():
     if not os.path.isdir(app.CACHE_DIR):
         os.mkdir(app.CACHE_DIR)
 
+
 # call env functions at appropriate time during application var setup
 
 # =================
@@ -116,6 +117,7 @@ def _fake_specify_ep(self, season, episode):
     :param episode: Episode to search for  ...not used
     """
     pass
+
 
 # the real one tries to contact TVDB just stop it from getting more info on the ep
 Episode._specify_episode = _fake_specify_ep
@@ -182,6 +184,7 @@ class TestCacheDBConnection(TestDBConnection, object):
         except Exception as error:
             if str(error) != "table lastUpdate already exists":
                 raise
+
 
 # this will override the normal db connection
 db.DBConnection = TestDBConnection

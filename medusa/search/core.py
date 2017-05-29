@@ -101,7 +101,7 @@ def _download_result(result):
 
 def snatch_episode(result):
     """
-    Internal logic necessary to actually snatch a result that has been found.
+    Snatch a result that has been found.
 
     :param result: SearchResult instance to be snatched.
     :return: boolean, True on success
@@ -327,7 +327,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
                 log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
-            if any(ext in best_result.name.lower() and ext not in cur_result.name.lower() for ext in undesired_words):
+            if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
                 best_result = cur_result
 
@@ -348,7 +348,7 @@ def is_first_best_match(result):
     """
     log.debug(u'Checking if we should stop searching for a better quality for for episode {0}', result.name)
 
-    show_obj = result.episodes[0].show
+    show_obj = result.episodes[0].series
 
     _, preferred_qualities = show_obj.current_qualities
     # Don't pass allowed because we only want to check if this quality is wanted preferred.
@@ -452,11 +452,11 @@ def search_for_needed_episodes():
 
         # pick a single result for each episode, respecting existing results
         for cur_ep in cur_found_results:
-            if not cur_ep.show or cur_ep.show.paused:
+            if not cur_ep.series or cur_ep.series.paused:
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.show)
+            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.series)
 
             # if all results were rejected move on to the next episode
             if not best_result:

@@ -45,7 +45,6 @@ from imdbpie import imdbpie
 from medusa import app, db
 from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
-from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.show.show import Show
@@ -357,7 +356,7 @@ def hardlink_file(src_file, dest_file):
                 u'Failed to create hardlink of {source} at {destination}.'
                 u' Error: {error!r}. Copying instead', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )
@@ -834,10 +833,10 @@ def backup_versioned_file(old_file, version):
             shutil.copy(old_file, new_file)
             log.debug(u"Backup done")
             break
-        except Exception as msg:
+        except OSError as error:
             log.warning(u'Error while trying to back up {old} to {new}:'
                         u' {error!r}',
-                        {'old': old_file, 'new': new_file, 'error': msg})
+                        {'old': old_file, 'new': new_file, 'error': error})
             num_tries += 1
             time.sleep(1)
             log.debug(u'Trying again.')
@@ -877,10 +876,10 @@ def restore_versioned_file(backup_file, version):
                   u'restoring backup', {'file': new_file, 'version': version})
 
         shutil.move(new_file, new_file + '.' + 'r' + str(version))
-    except Exception as e:
+    except OSError as error:
         log.warning(u'Error while trying to backup DB file {name} before'
                     u' proceeding with restore: {error!r}',
-                    {'name': restore_file, 'error': ex(e)})
+                    {'name': restore_file, 'error': error})
         return False
 
     while not os.path.isfile(new_file):
@@ -895,10 +894,10 @@ def restore_versioned_file(backup_file, version):
             shutil.copy(restore_file, new_file)
             log.debug(u"Restore done")
             break
-        except Exception as e:
+        except OSError as error:
             log.warning(u'Error while trying to restore file {name}.'
                         u' Error: {msg!r}',
-                        {'name': restore_file, 'msg': ex(e)})
+                        {'name': restore_file, 'msg': error})
             num_tries += 1
             time.sleep(1)
             log.debug(u'Trying again. Attempt #: {0}', num_tries)
@@ -1067,7 +1066,7 @@ def real_path(path):
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
     indexer_lang = show.lang
 
     try:
@@ -1083,7 +1082,8 @@ def validate_show(show, season=None, episode=None):
             return show.indexer_api
 
         return show.indexer_api[show.indexerid][season][episode]
-    except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
+    except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
+        log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
         pass
 
 
@@ -1134,8 +1134,8 @@ def backup_config_zip(file_list, archive, arcname=None):
             a.write(f, os.path.relpath(f, arcname))
         a.close()
         return True
-    except Exception as error:
-        log.error(u'Zip creation error: {0!r} ', error)
+    except OSError as error:
+        log.warning(u'Zip creation error: {0!r} ', error)
         return False
 
 
@@ -1161,8 +1161,8 @@ def restore_config_zip(archive, target_dir):
             zip_file.extract(member, target_dir)
         zip_file.close()
         return True
-    except Exception as error:
-        log.error(u'Zip extraction error: {0!r}', error)
+    except OSError as error:
+        log.warning(u'Zip extraction error: {0!r}', error)
         shutil.rmtree(target_dir)
         return False
 
@@ -1415,9 +1415,8 @@ def get_size(start_path='.'):
             try:
                 total_size += os.path.getsize(fp)
             except OSError as error:
-                log.error(u'Unable to get size for file {name} Error: {msg!r}',
-                          {'name': fp, 'msg': ex(error)})
-                log.debug(traceback.format_exc())
+                log.warning(u'Unable to get size for file {name} Error: {msg!r}',
+                            {'name': fp, 'msg': error})
     return total_size
 
 

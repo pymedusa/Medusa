@@ -381,7 +381,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.show.name
+    show_name = tv_episode.series.name
     season = tv_episode.season
     episode = tv_episode.episode
     release_name = tv_episode.release_name
@@ -451,11 +451,11 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
     :rtype: list of str
     """
     video_path = video_path or tv_episode.location
-    show_name = tv_episode.show.name
+    show_name = tv_episode.series.name
     season = tv_episode.season
     episode = tv_episode.episode
     episode_name = tv_episode.name
-    show_indexerid = tv_episode.show.indexerid
+    show_indexerid = tv_episode.series.indexerid
     status = tv_episode.status
     subtitles_dir = get_subtitles_dir(video_path)
     saved_subtitles = save_subtitles(video, found_subtitles, directory=_encode(subtitles_dir),
@@ -787,7 +787,7 @@ class SubtitlesFinder(object):
     """
 
     def __init__(self):
-        """Default constructor."""
+        """Initialize class with the default constructor."""
         self.amActive = False
 
     @staticmethod
@@ -811,6 +811,9 @@ class SubtitlesFinder(object):
 
         run_post_process = False
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             for filename in sorted(files):
                 # Delete unwanted subtitles before downloading new ones
                 delete_unwanted_subtitles(root, filename)
@@ -828,7 +831,7 @@ class SubtitlesFinder(object):
                 if tv_episode.status not in Quality.SNATCHED + Quality.SNATCHED_PROPER + Quality.SNATCHED_BEST:
                     continue
 
-                if not tv_episode.show.subtitles:
+                if not tv_episode.series.subtitles:
                     logger.debug(u'Subtitle disabled for show: %s. Running post-process to PP it', filename)
                     run_post_process = True
                     continue
@@ -869,10 +872,13 @@ class SubtitlesFinder(object):
         """
         from . import process_tv
         for root, _, files in os.walk(dirpath, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             rar_files = [rar_file for rar_file in files if is_rar_file(rar_file)]
             if rar_files and app.UNPACK:
                 video_files = [video_file for video_file in files if is_media_file(video_file)]
-                if u'_UNPACK' not in root and (not video_files or root == app.TV_DOWNLOAD_DIR):
+                if not video_files or root == app.TV_DOWNLOAD_DIR:
                     logger.debug(u'Found rar files in post-process folder: %s', rar_files)
                     process_tv.ProcessResult(app.TV_DOWNLOAD_DIR).unrar(root, rar_files, False)
             elif rar_files and not app.UNPACK:

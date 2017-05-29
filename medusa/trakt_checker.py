@@ -31,9 +31,10 @@ from .search.queue import BacklogQueueItem
 from .show.show import Show
 
 
-def set_episode_to_wanted(show, s, e):
+def set_episode_to_wanted(show, season, episode):
     """Set an episode to wanted, only if it is currently skipped."""
-    ep_obj = show.get_episode(s, e, no_create=True)
+    # Episode must be loaded from DB to get current status and not default blank episode status
+    ep_obj = show.get_episode(season, episode)
     if ep_obj:
 
         with ep_obj.lock:
@@ -41,17 +42,18 @@ def set_episode_to_wanted(show, s, e):
                 return
 
             logger.log("Setting episode '{show}' {ep} to wanted".format
-                       (show=show.name, ep=episode_num(s, e)))
+                       (show=show.name, ep=episode_num(season, episode)))
             # figure out what segment the episode is in and remember it so we can backlog it
 
             ep_obj.status = WANTED
+            # As we created the episode and updated the status, need to save to DB
             ep_obj.save_to_db()
 
         cur_backlog_queue_item = BacklogQueueItem(show, [ep_obj])
         app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
         logger.log("Starting backlog search for '{show}' {ep} because some episodes were set to wanted".format
-                   (show=show.name, ep=episode_num(s, e)))
+                   (show=show.name, ep=episode_num(season, episode)))
 
 
 class TraktChecker(object):

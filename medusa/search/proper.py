@@ -162,7 +162,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                            (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
                 continue
             except Exception as e:
-                if 'ECONNRESET' in e or getattr(e, 'errno') == errno.ECONNRESET:
+                if 'ECONNRESET' in e or getattr(e, 'errno', None) == errno.ECONNRESET:
                     logger.log('Connection reset by peer while searching for propers in {provider}. '
                                'Skipping: {error}'.format
                                (provider=cur_provider.name, error=ex(e)), logger.DEBUG)

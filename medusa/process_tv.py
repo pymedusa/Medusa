@@ -32,7 +32,7 @@ from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
 from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
-from .helper.common import is_sync_file, subtitle_extensions
+from .helper.common import is_sync_file
 from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from .subtitles import accept_any, accept_unknown, get_embedded_subtitles
@@ -555,11 +555,8 @@ class ProcessResult(object):
                                 self._log('Found wanted embedded subtitles. '
                                           'Continuing the post-processing of this file: {0}'.format(video_file))
                             else:
-                                associated_files = processor.list_associated_files(file_path, subtitles_only=True)
-                                if not [filename
-                                        for filename in associated_files
-                                        if helpers.get_extension(filename)
-                                        in subtitle_extensions]:
+                                associated_subs = processor.list_associated_files(file_path, subtitles_only=True)
+                                if not associated_subs:
                                     self._log('No subtitles associated. Postponing the post-process of this file: '
                                               '{0}'.format(video_file), logger.DEBUG)
                                     self.postponed_no_subs = True
@@ -664,7 +661,7 @@ class ProcessResult(object):
             try:
                 torrent_moved = client.move_torrent(info_hash)
             except (requests.exceptions.RequestException, socket.gaierror) as e:
-                logger.log("Could't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
+                logger.log("Couldn't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
                            "to: '{path}'. Error: {error}".format
                            (release=release_names, hash=info_hash, error=e.message, path=app.TORRENT_SEED_LOCATION, s=s),
                            logger.WARNING)
@@ -675,7 +672,7 @@ class ProcessResult(object):
             if torrent_moved:
                 logger.log("Moved torrent for release{s} '{release}' with hash: {hash} to: '{path}'".format
                            (release=release_names, hash=info_hash, path=app.TORRENT_SEED_LOCATION, s=s),
-                           logger.WARNING)
+                           logger.DEBUG)
                 return True
             else:
                 logger.log("Could not move torrent for release{s} '{release}' with hash: {hash} to: '{path}'. "
