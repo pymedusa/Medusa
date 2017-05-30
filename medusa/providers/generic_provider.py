@@ -186,7 +186,8 @@ class GenericProvider(object):
         results = {}
         items_list = []
 
-        for episode in episodes:
+        # Need to be sorted because in a season search we only need episode 01 to get season search string
+        for episode in sorted(episodes, key=lambda k: k.episode):
             if not manual_search:
                 cache_result = self.cache.search_cache(episode, forced_search=forced_search,
                                                        down_cur_quality=download_current_quality)
@@ -207,6 +208,10 @@ class GenericProvider(object):
             for search_string in search_strings:
                 # Find results from the provider
                 items_list += self.search(search_string, ep_obj=episode)
+
+            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            if search_mode == 'sponly':
+                break
 
         if len(results) == len(episodes):
             return results
@@ -379,8 +384,9 @@ class GenericProvider(object):
                           search_result.name, search_result.url)
                 continue
 
-            if not manual_search:
+            if not (manual_search or search_mode == 'sponly'):
                 # The second check, will loop through actual_episodes and check if there's anything useful in it.
+                # If is a season pack search, we only have the season, not the episodes.
                 if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
                     log.debug('Ignoring result {0}', search_result.name)
                     continue
