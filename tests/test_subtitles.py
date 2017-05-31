@@ -297,7 +297,7 @@ def test_compute_subtitle_path__single_with_valid_language_and_subs_folder(monke
     actual = sut.compute_subtitle_path(subtitle, video_path, subtitles_dir)
 
     # Then
-    assert '/folder/subtitles/video.srt' == actual
+    assert '/folder/subtitles' + os.sep + 'video.srt' == actual
 
 
 def test_merge_subtitles__with_multi_enabled(monkeypatch):
