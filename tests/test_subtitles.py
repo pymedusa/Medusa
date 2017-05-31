@@ -392,9 +392,9 @@ def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(mon
     some_file = str(tmpdir.ensure('video.fr.nfo'))
 
     # When
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_eng)
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_fre)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_pob)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_eng)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_fre)
 
     # Then
     assert os.path.exists(subtitle_pob)
