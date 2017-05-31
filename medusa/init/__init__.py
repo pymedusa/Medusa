@@ -126,6 +126,7 @@ def _configure_subliminal():
     provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
 
     # Use our custom providers
+    provider_manager.register('thewiz = {basename}.subtitle_providers.thewiz:TheWizProvider'.format(basename=basename))
     provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
     provider_manager.register(
         'legendastv2 = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
