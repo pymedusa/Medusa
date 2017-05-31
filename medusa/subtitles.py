@@ -89,6 +89,7 @@ def sorted_service_list():
 
     current_index = 0
     for current_service in app.SUBTITLES_SERVICES_LIST:
+        # Need to map to remove original subliminal legendastv from UI as we have a custom one
         current_service = provider_mapping.get(current_service, current_service)
         if current_service in provider_manager.names():
             new_list.append({'name': current_service,
@@ -99,6 +100,8 @@ def sorted_service_list():
         current_index += 1
 
     for current_service in sorted(provider_manager.names()):
+        # Need to map to remove original subliminal legendastv from UI as we have a custom one
+        current_service = provider_mapping.get(current_service, current_service)
         if current_service not in [service['name'] for service in new_list]:
             new_list.append({'name': current_service,
                              'url': PROVIDER_URLS[current_service]
