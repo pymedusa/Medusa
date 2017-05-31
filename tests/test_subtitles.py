@@ -29,7 +29,6 @@ def test_sorted_service_list(monkeypatch):
         {'name': 'thesubdb', 'enabled': True},
         {'name': 'shooter', 'enabled': False},
         {'name': 'addic7ed', 'enabled': False},
-        {'name': 'legendastv', 'enabled': False},
         {'name': 'napiprojekt', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
