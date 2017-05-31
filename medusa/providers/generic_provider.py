@@ -384,9 +384,8 @@ class GenericProvider(object):
                           search_result.name, search_result.url)
                 continue
 
-            if not (manual_search or search_mode == 'sponly'):
+            if not manual_search:
                 # The second check, will loop through actual_episodes and check if there's anything useful in it.
-                # If is a season pack search, we only have the season, not the episodes.
                 if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
                     log.debug('Ignoring result {0}', search_result.name)
                     continue

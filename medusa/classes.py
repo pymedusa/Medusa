@@ -157,14 +157,16 @@ class SearchResult(object):
         We could have gotten a multi-ep result, let's see if at least one if them is what we want
         in the correct quality.
         """
-        if not self.actual_episodes or not self.actual_season:
-            return False
-
         result_wanted = False
-        for episode_number in self.actual_episodes:
-            # Check whether or not the episode with the specified quality is wanted.
-            if self.show.want_episode(self.actual_season, episode_number,
-                                      self.quality, forced_search, download_current_quality):
+
+        if self.actual_episodes and self.actual_season:
+            for episode_number in self.actual_episodes:
+                # Check whether or not the episode with the specified quality is wanted.
+                if self.show.want_episode(self.actual_season, episode_number,
+                                          self.quality, forced_search, download_current_quality):
+                    result_wanted = True
+        elif not self.actual_episodes and self.actual_season:
+            if self.show.want_season(self.actual_season, self.quality, forced_search, download_current_quality):
                 result_wanted = True
 
         if not result_wanted:
