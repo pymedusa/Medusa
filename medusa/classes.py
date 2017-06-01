@@ -151,27 +151,34 @@ class SearchResult(object):
                                          self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
         return None
 
-    def check_episodes_for_quality(self, forced_search, download_current_quality):
+    def check_episodes_for_quality(self, forced_search, download_current_quality, search_mode):
         """Check if that episode is wanted in that quality.
 
         We could have gotten a multi-ep result, let's see if at least one if them is what we want
         in the correct quality.
         """
-        if not self.actual_episodes or not self.actual_season:
-            return False
+        if search_mode == 'eponly':
+            if not self.actual_episodes or not self.actual_season:
+                return False
+            episodes = self.actual_episodes
+
+        if search_mode == 'sponly':
+
+            if not self.actual_season:
+                return False
+            # Only need to check one episode quality in a season pack.
+            # Later we will check all episodes based on provider preferences
+            # 1) Snatch all episodes of the season pack or 2) Download season pack
+            episodes = [1]
 
         result_wanted = False
-        for episode_number in self.actual_episodes:
+        for episode_number in episodes:
             # Check whether or not the episode with the specified quality is wanted.
             if self.show.want_episode(self.actual_season, episode_number,
                                       self.quality, forced_search, download_current_quality):
                 result_wanted = True
 
-        if not result_wanted:
-            logger.debug('We could not find a result in the correct quality for {release_name} with url {url}',
-                         release_name=self.name, url=self.url)
-            return False
-        return True
+        return result_wanted
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""

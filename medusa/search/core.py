@@ -259,13 +259,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             if not show.release_groups.is_valid(cur_result):
                 continue
 
-        log.info(u'Quality of {0} is {1}', cur_result.name, Quality.qualityStrings[cur_result.quality])
-
         allowed_qualities, preferred_qualities = show.current_qualities
-
-        if cur_result.quality not in allowed_qualities + preferred_qualities:
-            log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
-            continue
 
         # If doesnt have min seeders OR min leechers then discard it
         if cur_result.seeders not in (-1, None) and cur_result.leechers not in (-1, None) \
@@ -327,7 +321,8 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
                 log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
-            if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
+            if any(ext in best_result.name.lower() for ext in undesired_words) and \
+                    (best_result == cur_result or not any(ext in cur_result.name.lower() for ext in undesired_words)):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
                 best_result = cur_result
 
