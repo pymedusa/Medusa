@@ -321,12 +321,6 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
                 best_result = cur_result
-            elif u'internal' in best_result.name.lower() and u'internal' not in cur_result.name.lower():
-                log.info(u'Preferring {0} (normal instead of internal)', cur_result.name)
-                best_result = cur_result
-            elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
-                log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
-                best_result = cur_result
             if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
                 best_result = cur_result
