@@ -186,7 +186,8 @@ class GenericProvider(object):
         results = {}
         items_list = []
 
-        for episode in episodes:
+        # Need to be sorted because in a season search we only need episode 01 to get season search string
+        for episode in sorted(episodes, key=lambda k: k.episode):
             if not manual_search:
                 cache_result = self.cache.search_cache(episode, forced_search=forced_search,
                                                        down_cur_quality=download_current_quality)
@@ -207,6 +208,10 @@ class GenericProvider(object):
             for search_string in search_strings:
                 # Find results from the provider
                 items_list += self.search(search_string, ep_obj=episode)
+
+            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            if search_mode == 'sponly':
+                break
 
         if len(results) == len(episodes):
             return results
@@ -318,12 +323,6 @@ class GenericProvider(object):
                             )
                             search_result.result_wanted = False
                             continue
-
-                    # We've performed some checks to decided if we want to continue with this result.
-                    # If we've hit this, that means this is not an air_by_date and not a sports show. And it seems to be
-                    # a valid result. Let's store the parsed season and episode number and continue.
-                    search_result.actual_season = search_result.parsed_result.season_number
-                    search_result.actual_episodes = search_result.parsed_result.episode_numbers
                 else:
                     # air_by_date or sportshow.
                     search_result.same_day_special = False
@@ -381,11 +380,15 @@ class GenericProvider(object):
 
             if not manual_search:
                 # The second check, will loop through actual_episodes and check if there's anything useful in it.
-                if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
-                    log.debug('Ignoring result {0}', search_result.name)
+                if not search_result.check_episodes_for_quality(forced_search, download_current_quality, search_mode):
+                    log.debug('Ignoring result {0} with unwanted quality at {1}',
+                              search_result.name, search_result.url)
                     continue
 
-            log.debug('Found result {0} at {1}', search_result.name, search_result.url)
+            log.debug('Found result {0} {1}at {2}',
+                      search_result.name,
+                      '' if manual_search else 'with quanted quality ',
+                      search_result.url)
 
             episode_object = search_result.create_episode_object()
             # result = self.get_result(episode_object, search_result)
@@ -393,14 +396,16 @@ class GenericProvider(object):
 
             if not episode_object:
                 episode_number = SEASON_RESULT
-                log.debug('Separating full season result to check for later')
+                log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
             elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
-                log.debug('Single episode result.')
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
-                log.debug('Separating multi-episode result to check for later - result contains episodes: {0}',
-                          search_result.parsed_result.episode_numbers)
+                log.debug('Found multi-episode ({0}) result {1} at {2}',
+                          ', '.join(search_result.parsed_result.episode_numbers),
+                          search_result.name,
+                          search_result.url)
 
             if episode_number not in results:
                 results[episode_number] = [search_result]
