@@ -1317,9 +1317,13 @@ class Series(TV):
 
                 with cur_ep.lock:
                     old_size = cur_ep.file_size
+
+                    # Setting a location to cur_ep, we will get the size of the filepath
                     cur_ep.location = filepath
+
                     # if the sizes are the same then it's probably the same file
-                    same_file = old_size and cur_ep.file_size == old_size
+                    # If size from given filepath is 0 means we couldn't determine file size
+                    same_file = old_size and cur_ep.file_size > 0 and cur_ep.file_size == old_size
                     cur_ep.check_for_meta_files()
 
             if root_ep is None:

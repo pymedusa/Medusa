@@ -29,14 +29,16 @@ import time
 
 from logging import DEBUG, WARNING
 
+from medusa.logger.adapters.style import BraceAdapter
+
 from . import app, db, helpers, notifiers, ui
 from .github_client import get_github_repo
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
                  'OR shutdown application and delete your .git folder and run from source to enable updates.')
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class CheckVersion(object):
