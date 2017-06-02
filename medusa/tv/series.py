@@ -2238,20 +2238,16 @@ class Series(TV):
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
         if ep_status == WANTED:
-            log.debug(
-                u"{id}: '{show}' {ep} status is 'WANTED'. Accepting result with quality '{new_quality}'", {
-                    'id': self.indexerid,
-                    'status': ep_status_text,
-                    'show': self.name,
-                    'ep': episode_num(season, episode),
-                    'new_quality': Quality.qualityStrings[quality],
-                }
+            should_replace, reason = (
+                True, u"Current status is 'WANTED'. Accepting result with quality '{new_quality}'".format(
+                    new_quality=Quality.qualityStrings[quality]
+                )
             )
-            return True
+        else:
+            should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
+                                                            preferred_qualities, download_current_quality,
+                                                            forced_search, manually_searched)
 
-        should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
-                                                        preferred_qualities, download_current_quality,
-                                                        forced_search, manually_searched)
         log.debug(
             u"{id}: '{show}' {ep} status is: '{status}'."
             u" {action} result with quality '{new_quality}'."

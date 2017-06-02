@@ -245,6 +245,7 @@ class GenericProvider(object):
             search_results.append(search_result)
             search_result.item = item
             search_result.download_current_quality = download_current_quality
+            search_result.forced_search = forced_search
 
             (search_result.name, search_result.url) = self._get_title_and_url(item)
             (search_result.seeders, search_result.leechers) = self._get_result_info(item)
@@ -383,12 +384,6 @@ class GenericProvider(object):
                 log.debug("We aren't interested in this result: {0} with url: {1}",
                           search_result.name, search_result.url)
                 continue
-
-            if not manual_search:
-                # The second check, will loop through actual_episodes and check if there's anything useful in it.
-                if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
-                    log.debug('Ignoring result {0}', search_result.name)
-                    continue
 
             log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 

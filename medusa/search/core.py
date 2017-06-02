@@ -267,6 +267,14 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
             continue
 
+        wanted_ep = False
+        for episode in cur_result.actual_episodes:
+            if show.want_episode(cur_result.actual_season, episode,
+                                 cur_result.quality, cur_result.forced_search, cur_result.download_current_quality):
+                wanted_ep = True
+        if not wanted_ep:
+            continue
+
         # If doesnt have min seeders OR min leechers then discard it
         if cur_result.seeders not in (-1, None) and cur_result.leechers not in (-1, None) \
             and hasattr(cur_result.provider, u'minseed') and hasattr(cur_result.provider, u'minleech') \
@@ -303,6 +311,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                                                                       cur_result.provider.name):
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
+
         preferred_words = ''
         if app.PREFERRED_WORDS:
             preferred_words = app.PREFERRED_WORDS.lower().split(u',')
