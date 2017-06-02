@@ -267,11 +267,14 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
             continue
 
-        wanted_ep = False
-        for episode in cur_result.actual_episodes:
-            if show.want_episode(cur_result.actual_season, episode,
-                                 cur_result.quality, cur_result.forced_search, cur_result.download_current_quality):
-                wanted_ep = True
+        wanted_ep = True
+        if cur_result.actual_episodes:
+            wanted_ep = False
+            for episode in cur_result.actual_episodes:
+                if show.want_episode(cur_result.actual_season, episode,
+                                     cur_result.quality, cur_result.forced_search, cur_result.download_current_quality):
+                    wanted_ep = True
+
         if not wanted_ep:
             continue
 
