@@ -61,7 +61,7 @@ def contains_words(item, words, strict=True):
 
     for word in words:
         if item_contains(word):
-                yield word
+            yield word
 
 
 def contains_at_least_one_word(name, words):
