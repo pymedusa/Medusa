@@ -86,6 +86,7 @@ NOTIFY_GIT_UPDATE_TEXT = 5
 NOTIFY_LOGIN = 6
 NOTIFY_LOGIN_TEXT = 7
 NOTIFY_SNATCH_PROPER = 8
+NOTIFY_LEAKED = 9
 
 notifyStrings = NumDict({
     NOTIFY_SNATCH: "Started Download",
@@ -95,7 +96,8 @@ notifyStrings = NumDict({
     NOTIFY_GIT_UPDATE_TEXT: "Medusa Updated To Commit#: ",
     NOTIFY_LOGIN: "Medusa new login",
     NOTIFY_LOGIN_TEXT: "New login from IP: {0}. http://geomaplookup.net/?ip={0}",
-    NOTIFY_SNATCH_PROPER: "Started PROPER Download"
+    NOTIFY_SNATCH_PROPER: "Started PROPER Download",
+    NOTIFY_LEAKED: "Found a potential early release episode"
 })
 
 # Episode statuses
@@ -655,7 +657,10 @@ class Quality(object):
         """
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
             if not force:
-                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
+                if ep_status == UNAIRED:
+                    return False, 'leaked'
+                else:
+                    return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
 
         # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
         if old_quality == Quality.UNKNOWN:

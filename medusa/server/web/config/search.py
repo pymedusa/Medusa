@@ -46,7 +46,7 @@ class ConfigSearch(Config):
                    torrent_rpcurl=None, torrent_auth_type=None, ignore_words=None, torrent_checker_frequency=None,
                    preferred_words=None, undesired_words=None, trackers_list=None, require_words=None,
                    ignored_subs_list=None, ignore_und_subs=None, cache_trimming=None, max_cache_age=None,
-                   torrent_seed_location=None):
+                   torrent_seed_location=None, search_earlier_releases=None):
         """
         Save Search related settings
         """
@@ -87,6 +87,7 @@ class ConfigSearch(Config):
         config.change_DOWNLOAD_PROPERS(download_propers)
         app.PROPERS_SEARCH_DAYS = try_int(propers_search_days, 2)
         app.REMOVE_FROM_CLIENT = config.checkbox_to_value(remove_from_client)
+        app.SEARCH_EARLIER_RELEASES = config.checkbox_to_value(search_earlier_releases)
         config.change_PROPERS_FREQUENCY(check_propers_interval)
 
         app.ALLOW_HIGH_PRIORITY = config.checkbox_to_value(allow_high_priority)

@@ -2123,7 +2123,8 @@ class Series(TV):
         sql_results = main_db_con.select(
             b'SELECT '
             b'  status, '
-            b'  manually_searched '
+            b'  manually_searched, '
+            b'  notified_earlier_release '
             b'FROM '
             b'  tv_episodes '
             b'WHERE '
@@ -2146,6 +2147,7 @@ class Series(TV):
         ep_status = int(sql_results[0][b'status'])
         ep_status_text = statusStrings[ep_status].upper()
         manually_searched = sql_results[0][b'manually_searched']
+        notified_earlier_release = sql_results[0][b'notified_earlier_release']
         _, cur_quality = Quality.split_composite_status(ep_status)
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
@@ -2164,19 +2166,45 @@ class Series(TV):
         should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
                                                         preferred_qualities, download_current_quality,
                                                         forced_search, manually_searched)
-        log.debug(
-            u"{id}: '{show}' {ep} status is: '{status}'."
-            u" {action} result with quality '{new_quality}'."
-            u" Reason: {reason}", {
-                'id': self.indexerid,
-                'show': self.name,
-                'ep': episode_num(season, episode),
-                'status': ep_status_text,
-                'action': 'Accepting' if should_replace else 'Ignoring',
-                'new_quality': Quality.qualityStrings[quality],
-                'reason': reason,
-            }
-        )
+        if reason == 'leaked' and not notified_earlier_release:
+            notify_message = '{show} {ep} with quality: {quality}'.format(show=self.name,
+                                                                          ep=episode_num(season, episode),
+                                                                          quality=Quality.qualityStrings[quality])
+            notifiers.notify_leaked(notify_message)
+
+            # Update notify flag
+            main_db_con.action(b'UPDATE tv_episodes '
+                               b'SET notified_earlier_release = 1 '
+                               b'WHERE '
+                               b'  showid = ? '
+                               b'  AND season = ? '
+                               b'  AND episode = ?', [self.indexerid, season, episode])
+
+            log.info(
+                u"{id}: '{show}' {ep} status is: '{status}'."
+                u" Found a possible leaked episode with quality '{new_quality}'.",
+                {
+                    'id': self.indexerid,
+                    'show': self.name,
+                    'ep': episode_num(season, episode),
+                    'status': ep_status_text,
+                    'new_quality': Quality.qualityStrings[quality],
+                }
+            )
+        else:
+            log.debug(
+                u"{id}: '{show}' {ep} status is: '{status}'."
+                u" {action} result with quality '{new_quality}'."
+                u" Reason: {reason}", {
+                    'id': self.indexerid,
+                    'show': self.name,
+                    'ep': episode_num(season, episode),
+                    'status': ep_status_text,
+                    'action': 'Accepting' if should_replace else 'Ignoring',
+                    'new_quality': Quality.qualityStrings[quality],
+                    'reason': reason,
+                }
+            )
         return should_replace
 
     def get_overview(self, ep_status, backlog_mode=False, manually_searched=False):

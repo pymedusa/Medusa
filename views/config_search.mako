@@ -104,6 +104,16 @@
                                     </span>
                                 </label>
                             </div>
+                            <div class="field-pair">
+                                <label for="search_earlier_releases">
+                                    <span class="component-title">Search earlier releases</span>
+                                    <span class="component-desc">
+                                        <input type="checkbox" name="search_earlier_releases" id="search_earlier_releases" ${'checked="checked"' if app.SEARCH_EARLIER_RELEASES else ''}/>
+                                        <p>search earlier releases for episodes with UNAIRED status</p>
+                                        <b>NOTE:</b> Enabling this will keep updating providers cache even not needed episodes.
+                                    </span>
+                                </label>
+                            </div><!-- high priority -->
                             <div id="content_remove_from_client">
                                 <div class="field-pair">
                                     <label>

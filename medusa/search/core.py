@@ -35,6 +35,7 @@ from medusa.common import (
     SNATCHED,
     SNATCHED_BEST,
     SNATCHED_PROPER,
+    UNAIRED,
     UNKNOWN,
 )
 from medusa.helper.common import (
@@ -369,7 +370,7 @@ def wanted_episodes(show, from_date):
         'FROM tv_episodes '
         'WHERE showid = ?'
         ' AND season > 0'
-        ' and airdate > ?',
+        ' AND airdate > ?',
         [show.indexerid, from_date.toordinal()]
     )
 
@@ -394,6 +395,35 @@ def wanted_episodes(show, from_date):
     return wanted
 
 
+def get_unaired_episodes(show):
+    """
+    Get a list of unaired episodes from the next 7 days.
+
+    :param show: Show these episodes are from
+    :return: list of unaired episodes
+    """
+    unaired_episodes = []
+    unaired_date = (datetime.datetime.now() + datetime.timedelta(days=7)).toordinal()
+    log.debug(u"Listing unaired episodes from '{0}'", show.name)
+    con = db.DBConnection()
+
+    sql_results = con.select(
+        'SELECT status, season, episode, airdate '
+        'FROM tv_episodes '
+        'WHERE showid = ?'
+        ' AND season > 0'
+        ' AND status = ?'
+        ' AND airdate > 1 and airdate <= ?',
+        [show.indexerid, UNAIRED, unaired_date]
+    )
+
+    for result in sql_results:
+        ep_obj = show.get_episode(result[b'season'], result[b'episode'])
+        unaired_episodes.append(ep_obj)
+
+    return unaired_episodes
+
+
 def search_for_needed_episodes():
     """
     Check providers for details on wanted episodes.
@@ -407,6 +437,7 @@ def search_for_needed_episodes():
     show_list = app.showList
     from_date = datetime.date.fromordinal(1)
     episodes = []
+    unaired_episodes = []
 
     for cur_show in show_list:
         if cur_show.paused:
@@ -414,10 +445,22 @@ def search_for_needed_episodes():
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
-    if not episodes:
+        # Create a list of unaired episodes for all shows
+        if app.SEARCH_EARLIER_RELEASES:
+            unaired_episodes.extend(get_unaired_episodes(cur_show))
+
+    for unaired_episode in unaired_episodes:
+        log.debug(u"Searching leaked episodes in cached results for unaired episode: '{show}' {ep}", {
+            'show': unaired_episode.series.name,
+            'ep': episode_num(unaired_episode.season, unaired_episode.episode)})
+        for cur_provider in enabled_providers(u'daily'):
+            cur_provider.cache.search_cache(unaired_episode)
+
+    if not episodes and not app.SEARCH_EARLIER_RELEASES:
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
+        # Unless we are searching for earlier releases so we must keep updating cache
         return found_results.values()
 
     original_thread_name = threading.currentThread().name

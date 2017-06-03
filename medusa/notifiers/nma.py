@@ -21,6 +21,9 @@ class Notifier(object):
             self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
                           message=ep_name)
 
+    def notify_leaked(self, ep_name):
+        self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[common.NOTIFY_LEAKED], message=ep_name)
+
     def notify_download(self, ep_name):
         if app.NMA_NOTIFY_ONDOWNLOAD:
             self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],

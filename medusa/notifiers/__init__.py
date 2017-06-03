@@ -124,3 +124,14 @@ def notify_login(ipaddress):
                 n.notify_login(ipaddress)
             except (RequestException, socket.gaierror) as error:
                 log.debug(u'Unable to new login notification. Error: {0}', error.message)
+
+
+def notify_leaked(ep_name):
+    for n in notifiers:
+        try:
+            n.notify_leaked(ep_name)
+        except (RequestException, socket.gaierror) as error:
+            log.debug(u'Unable to send leaked episode notification. Error: {0}', error.message)
+        except AttributeError:
+            # Method not implemented in notifier
+            pass
