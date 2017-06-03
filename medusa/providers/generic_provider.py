@@ -392,15 +392,16 @@ class GenericProvider(object):
 
             if not episode_object:
                 episode_number = SEASON_RESULT
-                log.debug('Separating full season result to check for later')
+                log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
             elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
-                log.debug('Single episode result.')
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
-                log.debug('Separating multi-episode result to check for later - result contains episodes: {0}',
-                          search_result.parsed_result.episode_numbers)
-
+                log.debug('Found multi-episode ({0}) result {1} at {2}',
+                          ', '.join(search_result.parsed_result.episode_numbers),
+                          search_result.name,
+                          search_result.url)
             if episode_number not in results:
                 results[episode_number] = [search_result]
             else:
