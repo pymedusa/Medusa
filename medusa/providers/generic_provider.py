@@ -186,8 +186,7 @@ class GenericProvider(object):
         results = {}
         items_list = []
 
-        # Need to be sorted because in a season search we only need episode 01 to get season search string
-        for episode in sorted(episodes, key=lambda k: k.episode):
+        for episode in episodes:
             if not manual_search:
                 cache_result = self.cache.search_cache(episode, forced_search=forced_search,
                                                        down_cur_quality=download_current_quality)
