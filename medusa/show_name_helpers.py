@@ -68,7 +68,7 @@ def contains_at_least_one_word(name, words):
     return False
 
 
-def filterBadReleases(name, parse=True):
+def filter_bad_releases(name, parse=True):
     """
     Filter out non-english and just all-around stupid releases by comparing them
     to the resultFilters contents.
@@ -117,13 +117,13 @@ def determineReleaseName(dir_name=None, nzb_name=None):
         if len(results) == 1:
             found_file = os.path.basename(results[0])
             found_file = found_file.rpartition('.')[0]
-            if filterBadReleases(found_file):
+            if filter_bad_releases(found_file):
                 logger.log(u"Release name (" + found_file + ") found from file (" + results[0] + ")")
                 return found_file.rpartition('.')[0]
 
     # If that fails, we try the folder
     folder = os.path.basename(dir_name)
-    if filterBadReleases(folder):
+    if filter_bad_releases(folder):
         # NOTE: Multiple failed downloads will change the folder name.
         # (e.g., appending #s)
         # Should we handle that?

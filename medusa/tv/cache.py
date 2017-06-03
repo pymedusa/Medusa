@@ -478,7 +478,7 @@ class Cache(object):
         # for each cache entry
         for cur_result in sql_results:
             # ignored/required words, and non-tv junk
-            if not show_name_helpers.filterBadReleases(cur_result[b'name']):
+            if not show_name_helpers.filter_bad_releases(cur_result[b'name']):
                 continue
 
             # get the show, or ignore if it's not one of our shows

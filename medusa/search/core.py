@@ -295,7 +295,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.info(u'Ignoring {0} based on required words filter: {1}', cur_result.name, required_words)
             continue
 
-        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
+        if not show_name_helpers.filter_bad_releases(cur_result.name, parse=False):
             continue
 
         if hasattr(cur_result, u'size'):

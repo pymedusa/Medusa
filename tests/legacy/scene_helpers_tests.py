@@ -33,7 +33,7 @@ class SceneTests(test.AppTestDBCase):
         :param expected:
         :return:
         """
-        result = show_name_helpers.filterBadReleases(name)
+        result = show_name_helpers.filter_bad_releases(name)
         self.assertEqual(result, expected)
 
     def test_all_possible_show_names(self):
