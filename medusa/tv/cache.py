@@ -9,10 +9,11 @@ import logging
 import traceback
 from time import time
 
+from six import text_type
+
 from medusa import (
     app,
     db,
-    show_name_helpers,
 )
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
@@ -23,9 +24,8 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.rss_feeds import getFeed
+from medusa.show import naming
 from medusa.show.show import Show
-
-from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -478,7 +478,7 @@ class Cache(object):
         # for each cache entry
         for cur_result in sql_results:
             # ignored/required words, and non-tv junk
-            if not show_name_helpers.filter_bad_releases(cur_result[b'name']):
+            if not naming.filter_bad_releases(cur_result[b'name']):
                 continue
 
             # get the show, or ignore if it's not one of our shows

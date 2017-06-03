@@ -22,9 +22,9 @@ import re
 
 from six import string_types
 
-from . import app, logger
+from medusa import app, logger
 
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 
 
 resultFilters = [

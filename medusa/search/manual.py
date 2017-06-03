@@ -6,7 +6,6 @@ import json
 import logging
 import threading
 import time
-
 from datetime import datetime
 
 from dateutil import parser
@@ -22,8 +21,8 @@ from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import sbdatetime
 from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
-from medusa.show_name_helpers import contains_at_least_one_word, filter_bad_releases
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
