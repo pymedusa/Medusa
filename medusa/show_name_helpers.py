@@ -40,7 +40,7 @@ if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
     resultFilters.append("(" + app.IGNORED_SUBS_LIST.replace(",", "|") + ")sub(bed|ed|s)?")
 
 
-def containsAtLeastOneWord(name, words):
+def contains_at_least_one_word(name, words):
     """
     Filter out results based on filter_words.
 
@@ -86,7 +86,7 @@ def filterBadReleases(name, parse=True):
         pass
 
     # if any of the bad strings are in the name then say no
-    word = containsAtLeastOneWord(name, resultFilters)
+    word = contains_at_least_one_word(name, resultFilters)
     if word:
         logger.log(u"Unwanted scene release: {0}. Contains unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
         return False

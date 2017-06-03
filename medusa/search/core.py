@@ -284,8 +284,8 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         ignored_words = show.show_words().ignored_words
         required_words = show.show_words().required_words
-        found_ignored_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignored_words)
-        found_required_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, required_words)
+        found_ignored_word = show_name_helpers.contains_at_least_one_word(cur_result.name, ignored_words)
+        found_required_word = show_name_helpers.contains_at_least_one_word(cur_result.name, required_words)
 
         if ignored_words and found_ignored_word:
             log.info(u'Ignoring {0} based on ignored words filter: {1}', cur_result.name, found_ignored_word)

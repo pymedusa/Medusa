@@ -23,7 +23,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import sbdatetime
 from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from medusa.show.show import Show
-from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
+from medusa.show_name_helpers import contains_at_least_one_word, filterBadReleases
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -297,13 +297,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 i['rg_highlight'] = 'undesired'
             else:
                 i['rg_highlight'] = ''
-            if containsAtLeastOneWord(i['name'], required_words):
+            if contains_at_least_one_word(i['name'], required_words):
                 i['name_highlight'] = 'required'
-            elif containsAtLeastOneWord(i['name'], ignored_words) or not filterBadReleases(i['name'], parse=False):
+            elif contains_at_least_one_word(i['name'], ignored_words) or not filterBadReleases(i['name'], parse=False):
                 i['name_highlight'] = 'ignored'
-            elif containsAtLeastOneWord(i['name'], undesired_words):
+            elif contains_at_least_one_word(i['name'], undesired_words):
                 i['name_highlight'] = 'undesired'
-            elif containsAtLeastOneWord(i['name'], preferred_words):
+            elif contains_at_least_one_word(i['name'], preferred_words):
                 i['name_highlight'] = 'preferred'
             else:
                 i['name_highlight'] = ''
