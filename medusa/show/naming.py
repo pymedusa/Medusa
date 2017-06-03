@@ -2,6 +2,8 @@
 
 """Series naming helpers for selecting results."""
 
+from __future__ import unicode_literals
+
 import logging
 import fnmatch
 import os
@@ -101,7 +103,7 @@ def filter_bad_releases(name, parse=True):
         if parse:
             NameParser().parse(name)
     except InvalidNameException as error:
-        log.debug(u'{0}', error)
+        log.debug('{0}', error)
         return False
     except InvalidShowException:
         pass
@@ -109,8 +111,8 @@ def filter_bad_releases(name, parse=True):
     # if any of the bad strings are in the name then say no
     word = contains_at_least_one_word(name, resultFilters)
     if word:
-        log.debug(u'Unwanted scene release: {0}. Contains unwanted word: {1}.'
-                  u' Ignoring it', name, word)
+        log.debug('Unwanted scene release: {0}. Contains unwanted word: {1}.'
+                  ' Ignoring it', name, word)
         return False
     return True
 
@@ -119,7 +121,7 @@ def determine_release_name(dir_name=None, nzb_name=None):
     """Determine a release name from an nzb and/or folder name."""
 
     if nzb_name is not None:
-        log.info(u'Using nzb_name for release name.')
+        log.info('Using nzb_name for release name.')
         return nzb_name.rpartition('.')[0]
 
     if dir_name is None:
@@ -140,7 +142,7 @@ def determine_release_name(dir_name=None, nzb_name=None):
             found_file = os.path.basename(results[0])
             found_file = found_file.rpartition('.')[0]
             if filter_bad_releases(found_file):
-                log.info(u'Release name ({0}) found from file ({1})',
+                log.info('Release name ({0}) found from file ({1})',
                          found_file, results[0])
                 return found_file.rpartition('.')[0]
 
@@ -150,8 +152,8 @@ def determine_release_name(dir_name=None, nzb_name=None):
         # NOTE: Multiple failed downloads will change the folder name.
         # (e.g., appending #s)
         # Should we handle that?
-        log.debug(u'Folder name ({0}) appears to be a valid release name.'
-                  u' Using it.', folder)
+        log.debug('Folder name ({0}) appears to be a valid release name.'
+                  ' Using it.', folder)
         return folder
 
     return None
