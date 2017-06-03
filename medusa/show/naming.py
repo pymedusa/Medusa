@@ -16,15 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import fnmatch
 import os
 import re
 
 from six import string_types
 
-from medusa import app, logger
-
+from medusa import app
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler)
 
 
 resultFilters = [
@@ -108,7 +112,7 @@ def filter_bad_releases(name, parse=True):
         if parse:
             NameParser().parse(name)
     except InvalidNameException as error:
-        logger.log(u"{}".format(error), logger.DEBUG)
+        log.debug(u'{0}', error)
         return False
     except InvalidShowException:
         pass
@@ -116,7 +120,8 @@ def filter_bad_releases(name, parse=True):
     # if any of the bad strings are in the name then say no
     word = contains_at_least_one_word(name, resultFilters)
     if word:
-        logger.log(u"Unwanted scene release: {0}. Contains unwanted word: {1}. Ignoring it".format(name, word), logger.DEBUG)
+        log.debug(u'Unwanted scene release: {0}. Contains unwanted word: {1}.'
+                  u' Ignoring it', name, word)
         return False
     return True
 
@@ -125,7 +130,7 @@ def determine_release_name(dir_name=None, nzb_name=None):
     """Determine a release name from an nzb and/or folder name."""
 
     if nzb_name is not None:
-        logger.log(u"Using nzb_name for release name.")
+        log.info(u'Using nzb_name for release name.')
         return nzb_name.rpartition('.')[0]
 
     if dir_name is None:
@@ -146,7 +151,8 @@ def determine_release_name(dir_name=None, nzb_name=None):
             found_file = os.path.basename(results[0])
             found_file = found_file.rpartition('.')[0]
             if filter_bad_releases(found_file):
-                logger.log(u"Release name (" + found_file + ") found from file (" + results[0] + ")")
+                log.info(u'Release name ({0}) found from file ({1})',
+                         found_file, results[0])
                 return found_file.rpartition('.')[0]
 
     # If that fails, we try the folder
@@ -155,7 +161,8 @@ def determine_release_name(dir_name=None, nzb_name=None):
         # NOTE: Multiple failed downloads will change the folder name.
         # (e.g., appending #s)
         # Should we handle that?
-        logger.log(u"Folder name (" + folder + ") appears to be a valid release name. Using it.", logger.DEBUG)
+        log.debug(u'Folder name ({0}) appears to be a valid release name.'
+                  u' Using it.', folder)
         return folder
 
     return None
