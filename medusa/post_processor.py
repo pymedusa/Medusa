@@ -1143,7 +1143,7 @@ class PostProcessor(object):
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        nzb_release_name = show_name_helpers.determine_release_name(self.folder_path, self.nzb_name)
         if nzb_release_name is not None:
             failed_history.log_success(nzb_release_name)
         else:

@@ -93,7 +93,7 @@ def filter_bad_releases(name, parse=True):
     return True
 
 
-def determineReleaseName(dir_name=None, nzb_name=None):
+def determine_release_name(dir_name=None, nzb_name=None):
     """Determine a release name from an nzb and/or folder name."""
 
     if nzb_name is not None:
