@@ -27,16 +27,37 @@ from collections import OrderedDict
 import adba
 import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
-from six import text_type
 
+from medusa import (
+    app,
+    common,
+    db,
+    failed_history,
+    helpers,
+    history,
+    logger,
+    notifiers,
+)
+from medusa.helper.common import (
+    episode_num,
+    pretty_file_size,
+    remove_extension,
+)
+from medusa.helper.exceptions import (
+    EpisodeNotFoundException,
+    EpisodePostProcessingFailedException,
+    ShowDirectoryNotFoundException,
+)
+from medusa.helpers import is_subtitle, verify_freespace
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException,
+    NameParser,
+)
 from medusa.show import naming
-from . import app, common, db, failed_history, helpers, history, logger, notifiers
-from .helper.common import episode_num, pretty_file_size, remove_extension
-from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
-                                ShowDirectoryNotFoundException)
-from .helpers import is_subtitle, verify_freespace
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .subtitles import from_code, from_ietf_code
+from medusa.subtitles import from_code, from_ietf_code
+
+from six import text_type
 
 
 class PostProcessor(object):

@@ -9,8 +9,6 @@ import logging
 import traceback
 from time import time
 
-from six import text_type
-
 from medusa import (
     app,
     db,
@@ -26,6 +24,8 @@ from medusa.name_parser.parser import (
 from medusa.rss_feeds import getFeed
 from medusa.show import naming
 from medusa.show.show import Show
+
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

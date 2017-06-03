@@ -4,16 +4,16 @@
 
 from __future__ import unicode_literals
 
-import logging
 import fnmatch
+import logging
 import os
 import re
-
-from six import string_types
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+
+from six import string_types
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler)
@@ -41,7 +41,8 @@ def contains_words(item, words, strict=True):
     :param strict: exclude substring matches
       If strict find exact existence of a word in the item but exclude matches
       where the word is part of a substring.  For example `word` would not
-      match 'words' or 'word1'.
+      match 'words' or 'word1'.  Regex expressions as words can only
+      be used in strict mode!
     """
     log.debug('Searching {item} for {words}. (strict={strict})',
               {'item': item, 'words': words, 'strict': strict})
@@ -93,9 +94,9 @@ def contains_at_least_one_word(name, words):
 
 def filter_bad_releases(name, parse=True):
     """
-    Filter out non-english and just all-around stupid releases by comparing them
-    to the resultFilters contents.
+    Filter out non-english and invalid releases by comparing them to the resultFilters contents.
 
+    :param parse: parse the name
     :param name: the release name to check
     :return: True if the release name is OK, False if it's bad.
     """
@@ -119,7 +120,6 @@ def filter_bad_releases(name, parse=True):
 
 def determine_release_name(dir_name=None, nzb_name=None):
     """Determine a release name from an nzb and/or folder name."""
-
     if nzb_name is not None:
         log.info('Using nzb_name for release name.')
         return nzb_name.rpartition('.')[0]
