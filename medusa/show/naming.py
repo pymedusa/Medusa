@@ -41,6 +41,9 @@ def contains_words(item, words, strict=True):
       where the word is part of a substring.  For example `word` would not
       match 'words' or 'word1'.
     """
+    log.debug('Searching {item} for {words}. (strict={strict})',
+              {'item': item, 'words': words, 'strict': strict})
+
     def _strict(_word):
         # Use a regex to make sure the match is not part of a substring
         pattern = r'(^|[\W_]){word}($|[\W_])'.format(word=_word)
