@@ -18,16 +18,16 @@ log.logger.addHandler(logging.NullHandler)
 
 
 resultFilters = [
-    "(dir|sub|nfo)fix",
-    "(?<!shomin.)sample",
-    "(dvd)?extras",
+    '(dir|sub|nfo)fix',
+    '(?<!shomin.)sample',
+    '(dvd)?extras',
 ]
 
 if hasattr('General', 'ignore_und_subs') and app.IGNORE_UND_SUBS:
-    resultFilters.append("sub(bed|ed|pack|s)")
+    resultFilters.append('sub(bed|ed|pack|s)')
 
 if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
-    resultFilters.append("(" + app.IGNORED_SUBS_LIST.replace(",", "|") + ")sub(bed|ed|s)?")
+    resultFilters.append('(' + app.IGNORED_SUBS_LIST.replace(',', '|') + ')sub(bed|ed|s)?')
 
 
 def contains_words(item, words, strict=True):
@@ -79,10 +79,10 @@ def contains_at_least_one_word(name, words):
         if regexp.search(name):
             # subs_words = '.dub.' or '.dksub.' or else
             subs_word = regexp.search(name).group(0)
-            # If word is a regex like "dub(bed)?" or "sub(bed|ed|pack|s)"
-            # then return just the matched word: "dub" and not full regex
+            # If word is a regex like 'dub(bed)?' or 'sub(bed|ed|pack|s)'
+            # then return just the matched word: 'dub' and not full regex
             if word in resultFilters:
-                return subs_word.replace(".", "")
+                return subs_word.replace('.', '')
             else:
                 return word
 
@@ -126,7 +126,7 @@ def determine_release_name(dir_name=None, nzb_name=None):
         return None
 
     # try to get the release name from nzb/nfo
-    file_types = ["*.nzb", "*.nfo"]
+    file_types = ['*.nzb', '*.nfo']
 
     for search in file_types:
 
