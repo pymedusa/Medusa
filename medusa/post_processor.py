@@ -25,8 +25,6 @@ import subprocess
 from collections import OrderedDict
 
 import adba
-import rarfile
-from rarfile import Error as RarError, NeedFirstVolume
 
 from medusa import (
     app,
@@ -57,6 +55,8 @@ from medusa.name_parser.parser import (
 from medusa.show import naming
 from medusa.subtitles import from_code, from_ietf_code
 
+import rarfile
+from rarfile import Error as RarError, NeedFirstVolume
 from six import text_type
 
 
