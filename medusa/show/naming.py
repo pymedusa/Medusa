@@ -40,6 +40,34 @@ if hasattr('General', 'ignored_subs_list') and app.IGNORED_SUBS_LIST:
     resultFilters.append("(" + app.IGNORED_SUBS_LIST.replace(",", "|") + ")sub(bed|ed|s)?")
 
 
+def contains_words(item, words, strict=True):
+    """
+    Yield words that are contained in an item.
+
+    :param item: item to search for words
+    :param words: iterable of words to search for in item
+    :param strict: exclude substring matches
+      If strict find exact existence of a word in the item but exclude matches
+      where the word is part of a substring.  For example `word` would not
+      match 'words' or 'word1'.
+    """
+    def _strict(_word):
+        # Use a regex to make sure the match is not part of a substring
+        pattern = r'(^|[\W_]){word}($|[\W_])'.format(word=_word)
+        return re.search(pattern, item, re.I)
+
+    def _lenient(_word):
+        # Use string.__contains__ for a quick lenient test
+        return _word in item
+
+    # select strict or lenient method for the test
+    item_contains = _strict if strict else _lenient
+
+    for word in words:
+        if item_contains(word):
+                yield word
+
+
 def contains_at_least_one_word(name, words):
     """
     Filter out results based on filter_words.
