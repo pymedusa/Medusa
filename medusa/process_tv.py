@@ -199,7 +199,7 @@ class ProcessResult(object):
         if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
             to_remove_hashes = app.RECENTLY_POSTPROCESSED.items()
             for info_hash, release_names in to_remove_hashes:
-                if self.move_torrent_seeding_folder(info_hash, release_names):
+                if self.move_torrent(info_hash, release_names):
                     app.RECENTLY_POSTPROCESSED.pop(info_hash)
 
         return self.output
@@ -630,10 +630,10 @@ class ProcessResult(object):
         return False
 
     @staticmethod
-    def move_torrent_seeding_folder(info_hash, release_names):
+    def move_torrent(info_hash, release_names):
         """Move torrent to a given seeding folder after PP."""
         if not os.path.isdir(app.TORRENT_SEED_LOCATION):
-            logger.log('Not possible to move torrent after Post-Processor because seed location is invalid',
+            logger.log('Not possible to move torrent after post-processing because seed location is invalid',
                        logger.WARNING)
             return False
 
@@ -645,7 +645,7 @@ class ProcessResult(object):
             s = ''
             release_names = 'N/A'
 
-        logger.log('Trying to move torrent after Post-Processor', logger.DEBUG)
+        logger.log('Trying to move torrent after post-processing', logger.DEBUG)
         client = torrent.get_client_class(app.TORRENT_METHOD)()
 
         try:
