@@ -63,7 +63,7 @@ class DanishbitsProvider(TorrentProvider):
         search_params = {
             'user': self.username,
             'passkey': self.passkey,
-            'search': '',
+            'search': 'x264',
         }
 
         for mode in search_strings:
@@ -74,8 +74,8 @@ class DanishbitsProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
+                    search_params['search'] = search_string
 
-                search_params['search'] = search_string
                 response = self.get_url(self.urls['search'], params=search_params, returns='json')
                 if not response or response['total_results'] == 0:
                     log.debug('No data returned from provider')
