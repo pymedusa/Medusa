@@ -573,7 +573,6 @@ class ProcessResult(object):
             self._log('Subtitles check was disabled for this episode in manual post-processing. '
                       'Continuing the post-processing of this file: {0}'.format(video))
 
-        self.postpone_processing = False
         return True
 
     def process_failed(self, path):
