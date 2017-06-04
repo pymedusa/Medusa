@@ -318,7 +318,7 @@ class ProcessResult(object):
                                    is_priority, ignore_subs)
 
             elif app.DELRARCONTENTS and not self.postpone_processing:
-                    self.delete_files(path, self.rar_content)
+                self.delete_files(path, self.rar_content)
 
         else:
             self.process_media(path, self.video_files, force, is_priority, ignore_subs)
