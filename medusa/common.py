@@ -613,7 +613,7 @@ class Quality(object):
 
         #  Can't be SNATCHED_BEST because the quality is already final (unless user changes qualities).
         #  All other status will return false: IGNORED, SKIPPED, FAILED.
-        if cur_status not in (WANTED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
+        if cur_status not in (WANTED, DOWNLOADED):
             return False, 'Status is not allowed: {0}. Skipping episode'.format(statusStrings[cur_status])
 
         # If current status is WANTED, we must always search
@@ -653,9 +653,9 @@ class Quality(object):
         :param manually_searched: True if episode was manually searched by user
         :return: True if the old quality should be replaced with new quality.
         """
-        if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
+        if ep_status and ep_status not in Quality.DOWNLOADED:
             if not force:
-                return False, 'Episode status is not DOWNLOADED|SNATCHED|SNATCHED PROPER. Ignoring new quality'
+                return False, 'Episode status is not DOWNLOADED. Ignoring new quality'
 
         # If existing quality is UNKNOWN but Preferred is set, UNKNOWN should be replaced.
         if old_quality == Quality.UNKNOWN:
