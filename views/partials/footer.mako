@@ -11,7 +11,8 @@
     )
     from medusa.helper.common import pretty_file_size
     from medusa.show.show import Show
-
+%>
+<%
     mem_usage = None
     with suppress(ImportError):
         from psutil import Process
