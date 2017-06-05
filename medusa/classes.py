@@ -101,6 +101,9 @@ class SearchResult(object):
         # Raw result in a dictionary
         self.item = None
 
+        # Store if the search was started by a forced search.
+        self.forced_search = None
+
         # Search flag for specifying if we want to re-download the already downloaded quality.
         self.download_current_quality = None
 
@@ -150,28 +153,6 @@ class SearchResult(object):
             return cache.add_cache_entry(self.name, self.url, self.seeders,
                                          self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
         return None
-
-    def check_episodes_for_quality(self, forced_search, download_current_quality):
-        """Check if that episode is wanted in that quality.
-
-        We could have gotten a multi-ep result, let's see if at least one if them is what we want
-        in the correct quality.
-        """
-        if not self.actual_episodes or not self.actual_season:
-            return False
-
-        result_wanted = False
-        for episode_number in self.actual_episodes:
-            # Check whether or not the episode with the specified quality is wanted.
-            if self.show.want_episode(self.actual_season, episode_number,
-                                      self.quality, forced_search, download_current_quality):
-                result_wanted = True
-
-        if not result_wanted:
-            logger.debug('We could not find a result in the correct quality for {release_name} with url {url}',
-                         release_name=self.name, url=self.url)
-            return False
-        return True
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
