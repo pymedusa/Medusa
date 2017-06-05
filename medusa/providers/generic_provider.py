@@ -62,7 +62,7 @@ from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
 from medusa.show_name_helpers import allPossibleShowNames
 
-from requests.utils import add_dict_to_cookiejar
+from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -667,7 +667,7 @@ class GenericProvider(object):
         # This is the generic attribute used to manually add cookies for provider authentication
         if self.enable_cookies:
             if self.cookies:
-                cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
+                cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
                 if not cookie_validator.match(self.cookies):
                     ui.notifications.message(
                         'Failed to validate cookie for provider {provider}'.format(provider=self.name),
@@ -688,3 +688,12 @@ class GenericProvider(object):
 
         return {'result': False,
                 'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+
+    def check_required_cookies(self):
+        """Check we have the required cookies, available in the request sessions object."""
+        if not hasattr(self, 'required_cookies'):
+            logger.log('You need to configure the required_cookies attribute, for the provider: {provider}'.format(
+                provider=self.name), logger.ERROR
+            )
+            return False
+        return all(dict_from_cookiejar(self.session.cookies).get(cookie) for cookie in self.required_cookies)
