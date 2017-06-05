@@ -54,7 +54,6 @@ class ProcessResult(object):
         self.succeeded = True
         self.missedfiles = []
         self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
-        self.postpone_processing = False
 
     @property
     def directory(self):
@@ -310,15 +309,17 @@ class ProcessResult(object):
             self.resource_name = None
 
         if self.video_in_rar:
+            video_files = set(self.video_files + self.video_in_rar)
+
             # Don't delete rar content for hardlink or symlink
             if self.process_method in ('hardlink', 'symlink'):
-                self.process_media(path, self.video_in_rar, force, is_priority, ignore_subs)
+                self.process_media(path, video_files, force, is_priority, ignore_subs)
 
-                self.process_media(path, set(self.video_files) - set(self.video_in_rar), force,
-                                   is_priority, ignore_subs)
+            else:
+                self.process_media(path, video_files, force, is_priority, ignore_subs)
 
-            elif app.DELRARCONTENTS and not self.postpone_processing:
-                self.delete_files(path, self.rar_content)
+                if app.DELRARCONTENTS and not self.postpone_processing:
+                    self.delete_files(path, self.rar_content)
 
         else:
             self.process_media(path, self.video_files, force, is_priority, ignore_subs)
@@ -383,7 +384,6 @@ class ProcessResult(object):
 
         # Delete all file not needed
         for cur_file in files:
-
             cur_file_path = os.path.join(path, cur_file)
 
             if not os.path.isfile(cur_file_path):
@@ -417,11 +417,9 @@ class ProcessResult(object):
         unpacked_files = []
 
         if app.UNPACK and rar_files:
-
             self._log('Packed files detected: {0}'.format(rar_files), logger.DEBUG)
 
             for archive in rar_files:
-
                 self._log('Unpacking archive: {0}'.format(archive), logger.DEBUG)
 
                 failure = None
@@ -429,34 +427,30 @@ class ProcessResult(object):
                     rar_handle = RarFile(os.path.join(path, archive))
 
                     # Skip extraction if any file in archive has previously been extracted
-                    skip_file = False
+                    skip_extraction = False
                     for file_in_archive in [os.path.basename(each.filename)
                                             for each in rar_handle.infolist()
                                             if not each.isdir]:
                         if not force and self.already_postprocessed(file_in_archive):
                             self._log('Archive file already post-processed, extraction skipped: {0}'.format
                                       (file_in_archive), logger.DEBUG)
-                            skip_file = True
+                            skip_extraction = True
                             break
 
                         if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
                             self._log('Archive file already extracted, extraction skipped: {0}'.format
                                       (file_in_archive), logger.DEBUG)
-                            skip_file = True
-                            # We need to return the media file inside the rar so we can
-                            # move it when the method is hardlink/symlink
-                            unpacked_files.append(file_in_archive)
+                            skip_extraction = True
                             break
 
-                    if skip_file:
-                        continue
+                    if not skip_extraction:
+                        rar_handle.extract(path=path, withSubpath=False, overwrite=False)
 
-                    rar_handle.extract(path=path, withSubpath=False, overwrite=False)
                     for each in rar_handle.infolist():
                         if not each.isdir:
                             basename = os.path.basename(each.filename)
-                            if basename not in unpacked_files:
-                                unpacked_files.append(basename)
+                            unpacked_files.append(basename)
+
                     del rar_handle
 
                 except ArchiveHeaderBroken:
@@ -474,12 +468,12 @@ class ProcessResult(object):
                     failure = (ex(error), 'Unpacking failed for an unknown reason')
 
                 if failure is not None:
-                    self._log('Failed Unrar archive {0}: {1}'.format(archive, failure[0]), logger.WARNING)
+                    self._log('Failed unpacking archive {0}: {1}'.format(archive, failure[0]), logger.WARNING)
                     self.missedfiles.append('{0}: Unpacking failed: {1}'.format(archive, failure[1]))
                     self.result = False
                     continue
 
-            self._log('Unrar content: {0}'.format(unpacked_files), logger.DEBUG)
+            self._log('Extracted content: {0}'.format(unpacked_files), logger.DEBUG)
 
         return unpacked_files
 
@@ -512,12 +506,13 @@ class ProcessResult(object):
         :param is_priority: Boolean, is this a priority download
         :param ignore_subs: True to ignore setting 'postpone if no subs'
         """
-        processor = None
-        for video_file in video_files:
-            file_path = os.path.join(path, video_file)
+        self.postpone_processing = False
 
-            if not force and self.already_postprocessed(video_file):
-                self._log('Skipping already processed file: {0}'.format(video_file), logger.DEBUG)
+        for video in video_files:
+            file_path = os.path.join(path, video)
+
+            if not force and self.already_postprocessed(video):
+                self._log('Skipping already processed file: {0}'.format(video), logger.DEBUG)
                 continue
 
             try:
@@ -525,12 +520,13 @@ class ProcessResult(object):
                                                          self.process_method, is_priority)
 
                 if app.POSTPONE_IF_NO_SUBS:
-                    if not self._process_postponed(processor, file_path, video_file, ignore_subs):
+                    if not self._process_postponed(processor, file_path, video, ignore_subs):
                         continue
 
                 self.result = processor.process()
                 process_fail_message = ''
             except EpisodePostProcessingFailedException as error:
+                processor = None
                 self.result = False
                 process_fail_message = ex(error)
 
@@ -572,19 +568,17 @@ class ProcessResult(object):
         else:
             self._log('Subtitles check was disabled for this episode in manual post-processing. '
                       'Continuing the post-processing of this file: {0}'.format(video))
-
         return True
 
     def process_failed(self, path):
         """Process a download that did not complete correctly."""
         if app.USE_FAILED_DOWNLOADS:
-            processor = None
-
             try:
                 processor = failed_processor.FailedProcessor(path, self.resource_name)
                 self.result = processor.process()
                 process_fail_message = ''
             except FailedPostProcessingFailedException as error:
+                processor = None
                 self.result = False
                 process_fail_message = ex(error)
 
