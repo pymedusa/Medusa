@@ -63,7 +63,7 @@ class DanishbitsProvider(TorrentProvider):
         search_params = {
             'user': self.username,
             'passkey': self.passkey,
-            'search': '.',  # Dummy query for RSS search, needs the search param send.
+            'search': '.',  # Dummy query for RSS search, needs the search param sent.
             'latest': 'true',
         }
 
