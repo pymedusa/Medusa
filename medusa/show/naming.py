@@ -16,7 +16,7 @@ from medusa.name_parser.parser import InvalidNameException, InvalidShowException
 from six import string_types
 
 log = BraceAdapter(logging.getLogger(__name__))
-log.logger.addHandler(logging.NullHandler)
+log.logger.addHandler(logging.NullHandler())
 
 
 resultFilters = [
