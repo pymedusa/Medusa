@@ -316,13 +316,14 @@ class ProcessResult(object):
                 process_method = self.process_method
                 # Move extracted video files instead of hard/softlinking them
                 self.process_method = 'move'
-
-                self.process_media(path, video_files, force, is_priority, ignore_subs)
+                self.process_media(path, self.video_in_rar, force, is_priority, ignore_subs)
                 if not self.postpone_processing:
                     self.delete_files(path, self.rar_content)
-
                 # Reset process method to initial value
                 self.process_method = process_method
+
+                self.process_media(path, video_files - set(self.video_in_rar), force,
+                                   is_priority, ignore_subs)
             else:
                 self.process_media(path, video_files, force, is_priority, ignore_subs)
 
