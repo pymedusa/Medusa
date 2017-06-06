@@ -98,9 +98,12 @@ def log_failed(release):
 
 
 def log_success(release):
-    """Log release as success on failed.db."""
+    """Log release as success on failed.db by removing from history table."""
+    if not release:
+        logger.log(u'Not removing from history in failed database because release is None', logger.WARNING)
+        return
     release = prepare_failed_name(release)
-
+    logger.log(u"Removing '{release}' from history in failed database".format(release=release))
     failed_db_con = db.DBConnection('failed.db')
     failed_db_con.action(
         'DELETE '
