@@ -61,7 +61,7 @@
 
 <div class="row">
     <div class="col-md-12">
-        <div class="pull-left" id="showRoot" style="display: none;">
+        <div id="showRoot" class="show-option pull-left" style="display: none;">
             <select name="showRootDir" id="showRootDir"
                 class="form-control form-control-inline input-sm">
             </select>
