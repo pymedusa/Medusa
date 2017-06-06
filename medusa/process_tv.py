@@ -22,7 +22,12 @@ import shutil
 import socket
 import stat
 
+from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
 from medusa.clients import torrent
+from medusa.helper.common import is_sync_file
+from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 import requests
 
@@ -31,11 +36,6 @@ import shutil_custom
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
-from medusa.helper.common import is_sync_file
-from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
-from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
