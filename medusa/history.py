@@ -122,8 +122,9 @@ def logSubtitle(showid, season, episode, status, subtitle_result):
     :param status: Status of download
     :param subtitle_result: Result object
     """
+    from .subtitles import reverse_provider_mapping
     resource = subtitle_result.language.opensubtitles
-    provider = subtitle_result.provider_name
+    provider = reverse_provider_mapping.get(subtitle_result.provider_name, subtitle_result.provider_name)
 
     status, quality = Quality.split_composite_status(status)
     action = Quality.composite_status(SUBTITLED, quality)
