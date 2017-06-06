@@ -28,7 +28,7 @@ class NyaaProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.nyaa.se'
+        self.url = 'https://nyaa.si'
 
         # Proper Strings
 
