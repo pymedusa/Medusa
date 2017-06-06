@@ -184,7 +184,7 @@ def test__get_files(monkeypatch, p, create_structure):
 
 
 @pytest.mark.parametrize('p', [
-    {   # has matching subtitle, process
+    {   # matching subtitle, process
         'path': 'media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
         'video': 'show.name.103.hdtv.x264-lol.mkv',
         'ignore_subs': False,

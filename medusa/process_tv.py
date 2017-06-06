@@ -37,6 +37,7 @@ from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
 
+
 shutil.copyfile = shutil_custom.copyfile_custom
 
 
