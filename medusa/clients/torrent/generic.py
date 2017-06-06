@@ -57,15 +57,12 @@ class GenericClient(object):
             self.last_time = time.time()
             self._get_auth()
 
-        text = str(data)
         log.debug(
-            '{name}: Requested a {method} connection to {url} with'
-            ' params: {params} Data: {data}', {
+            '{name}: Requested a {method} connection to {url}',
+            {
                 'name': self.name,
                 'method': method.upper(),
                 'url': self.url,
-                'params': params,
-                'data': text[0:99] + '...' if len(text) > 102 else text
             }
         )
 
