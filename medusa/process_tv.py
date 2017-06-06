@@ -31,11 +31,11 @@ import shutil_custom
 from unrar2 import RarFile
 from unrar2.rar_exceptions import (ArchiveHeaderBroken, FileOpenError, IncorrectRARPassword, InvalidRARArchive,
                                    InvalidRARArchiveUsage)
-from . import app, db, failed_processor, helpers, logger, notifiers, post_processor
-from .helper.common import is_sync_file
-from .helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .subtitles import accept_any, accept_unknown, get_embedded_subtitles
+from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
+from medusa.helper.common import is_sync_file
+from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
 
 shutil.copyfile = shutil_custom.copyfile_custom
 
@@ -311,10 +311,17 @@ class ProcessResult(object):
         if self.video_in_rar:
             video_files = set(self.video_files + self.video_in_rar)
 
-            # Don't delete rar content for hardlink or symlink
             if self.process_method in ('hardlink', 'symlink'):
-                self.process_media(path, video_files, force, is_priority, ignore_subs)
+                process_method = self.process_method
+                # Move extracted video files instead of hard/softlinking them
+                self.process_method = 'move'
 
+                self.process_media(path, video_files, force, is_priority, ignore_subs)
+                if not self.postpone_processing:
+                    self.delete_files(path, self.rar_content)
+
+                # Reset process method to initial value
+                self.process_method = process_method
             else:
                 self.process_media(path, video_files, force, is_priority, ignore_subs)
 

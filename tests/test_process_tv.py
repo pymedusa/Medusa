@@ -2,6 +2,7 @@
 """Tests for medusa/process_tv.py."""
 import os
 
+from medusa.post_processor import PostProcessor
 from medusa.process_tv import ProcessResult
 
 import pytest
@@ -180,3 +181,67 @@ def test__get_files(monkeypatch, p, create_structure):
     for i, (dir_path, filelist) in enumerate(result):
         assert dir_path == os.path.join(test_path, os.path.normcase(p['expected'][i][0]))
         assert filelist == p['expected'][i][1]
+
+
+@pytest.mark.parametrize('p', [
+    {   # has matching subtitle, process
+        'path': 'media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
+        'video': 'show.name.103.hdtv.x264-lol.mkv',
+        'ignore_subs': False,
+        'expected': True,
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        ),
+        'subtitles_enabled': True
+    },
+    {   # no matching subtitle, postpone processing
+        'path': 'media/postprocess/Show.Name.S01E03.HDTV.x264-LOL',
+        'video': 'show.name.103.hdtv.x264-lol.mkv',
+        'ignore_subs': False,
+        'expected': False,
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+        ),
+        'subtitles_enabled': True
+    },
+    {   # matching subtitle, ignoring subtitles, process
+        'path': 'media/postprocess',
+        'video': 'show.name.103.hdtv.x264-lol.mkv',
+        'ignore_subs': True,
+        'expected': True,
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        ),
+        'subtitles_enabled': True
+    },
+    {   # matching subtitle, subtitles disabled, process
+        'path': 'media/postprocess',
+        'video': 'show.name.103.hdtv.x264-lol.mkv',
+        'ignore_subs': False,
+        'expected': True,
+        'structure': (
+            'show.name.103.hdtv.x264-lol.mkv',
+            'show.name.103.hdtv.x264-lol.en.srt',
+        ),
+        'subtitles_enabled': False
+    },
+])
+def test__process_postponed(monkeypatch, p, create_structure):
+    """Run the test."""
+    # Given
+    test_path = create_structure(p['path'], structure=p['structure'])
+    path = os.path.join(test_path, os.path.normcase(p['path']))
+    video_path = os.path.join(path, p['video'])
+    processor = PostProcessor(path)
+    sut = ProcessResult(path)
+
+    # Overwrite internal method
+    sut.subtitles_enabled = lambda path, resource_name: p['subtitles_enabled']
+
+    # When
+    result = sut._process_postponed(processor, video_path, p['video'], p['ignore_subs'])
+
+    # Then
+    assert p['expected'] == result
