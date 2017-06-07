@@ -20,7 +20,6 @@ from medusa import (
     name_cache,
     notifiers,
     nzb_splitter,
-    show_name_helpers,
     ui,
 )
 from medusa.clients import torrent
@@ -48,6 +47,7 @@ from medusa.helper.exceptions import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import sorted_provider_list
 from medusa.providers.generic_provider import GenericProvider
+from medusa.show import naming
 
 import requests
 
@@ -295,8 +295,8 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         ignored_words = show.show_words().ignored_words
         required_words = show.show_words().required_words
-        found_ignored_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignored_words)
-        found_required_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, required_words)
+        found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
+        found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
 
         if ignored_words and found_ignored_word:
             log.info(u'Ignoring {0} based on ignored words filter: {1}', cur_result.name, found_ignored_word)
@@ -306,7 +306,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.info(u'Ignoring {0} based on required words filter: {1}', cur_result.name, required_words)
             continue
 
-        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
+        if not naming.filter_bad_releases(cur_result.name, parse=False):
             continue
 
         if hasattr(cur_result, u'size'):

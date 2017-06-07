@@ -22,24 +22,42 @@ import os
 import re
 import stat
 import subprocess
-
 from collections import OrderedDict
 
 import adba
 
+from medusa import (
+    app,
+    common,
+    db,
+    failed_history,
+    helpers,
+    history,
+    logger,
+    notifiers,
+)
+from medusa.helper.common import (
+    episode_num,
+    pretty_file_size,
+    remove_extension,
+)
+from medusa.helper.exceptions import (
+    EpisodeNotFoundException,
+    EpisodePostProcessingFailedException,
+    ShowDirectoryNotFoundException,
+)
+from medusa.helpers import is_subtitle, verify_freespace
+from medusa.name_parser.parser import (
+    InvalidNameException,
+    InvalidShowException,
+    NameParser,
+)
+from medusa.show import naming
+from medusa.subtitles import from_code, from_ietf_code
+
 import rarfile
-
 from rarfile import Error as RarError, NeedFirstVolume
-
 from six import text_type
-
-from . import app, common, db, failed_history, helpers, history, logger, notifiers, show_name_helpers
-from .helper.common import episode_num, pretty_file_size, remove_extension
-from .helper.exceptions import (EpisodeNotFoundException, EpisodePostProcessingFailedException,
-                                ShowDirectoryNotFoundException)
-from .helpers import is_subtitle, verify_freespace
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .subtitles import from_code, from_ietf_code
 
 
 class PostProcessor(object):
@@ -1143,7 +1161,7 @@ class PostProcessor(object):
                 sql_l.append(cur_ep.get_sql())
 
         # Just want to keep this consistent for failed handling right now
-        nzb_release_name = show_name_helpers.determineReleaseName(self.folder_path, self.nzb_name)
+        nzb_release_name = naming.determine_release_name(self.folder_path, self.nzb_name)
         if nzb_release_name is not None:
             failed_history.log_success(nzb_release_name)
         else:
