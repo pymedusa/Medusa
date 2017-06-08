@@ -54,16 +54,10 @@ video_key = u'{name}:video|{{video_path}}'.format(name=__name__)
 
 episode_refiners = ('metadata', 'release', 'tvepisode', 'tvdb', 'omdb')
 
-provider_mapping = {
-    'legendastv': 'legendastv2'
-}
-
-reverse_provider_mapping = {v: k for k, v in provider_mapping.items()}
-
 PROVIDER_URLS = {
     'addic7ed': 'http://www.addic7ed.com',
     'itasa': 'http://www.italiansubs.net',
-    'legendastv2': 'http://www.legendas.tv',
+    'legendastv': 'http://www.legendas.tv',
     'napiprojekt': 'http://www.napiprojekt.pl',
     'opensubtitles': 'http://www.opensubtitles.org',
     'podnapisi': 'https://www.podnapisi.net',
@@ -91,8 +85,6 @@ def sorted_service_list():
 
     current_index = 0
     for current_service in app.SUBTITLES_SERVICES_LIST:
-        # Need to map to remove original subliminal legendastv from UI as we have a custom one
-        current_service = provider_mapping.get(current_service, current_service)
         if current_service in provider_manager.names():
             new_list.append({'name': current_service,
                              'url': PROVIDER_URLS[current_service]
@@ -102,8 +94,6 @@ def sorted_service_list():
         current_index += 1
 
     for current_service in sorted(provider_manager.names()):
-        # Need to map to remove original subliminal legendastv from UI as we have a custom one
-        current_service = provider_mapping.get(current_service, current_service)
         if current_service not in [service['name'] for service in new_list]:
             new_list.append({'name': current_service,
                              'url': PROVIDER_URLS[current_service]
@@ -328,7 +318,7 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
     max_scores = set(episode_scores) - {'hearing_impaired', 'hash'}
     factor = max_score / 9
     return [{'id': subtitle.id,
-             'provider': reverse_provider_mapping.get(subtitle.provider_name, subtitle.provider_name),
+             'provider': subtitle.provider_name,
              'missing_guess': sorted(list(max_scores - subtitle.get_matches(video))),
              'lang': subtitle.language.opensubtitles,
              'score': round(10 * (factor / (float(factor - 1 - score + max_score)))),
@@ -425,8 +415,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     scored_subtitles = score_subtitles(subtitles_list, video)
     for subtitle, score in scored_subtitles:
         logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
-            reverse_provider_mapping.get(subtitle.provider_name, subtitle.provider_name),
-            subtitle.language, score, min_score, get_subtitle_description(subtitle)))
+            subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
 
     found_subtitles = pool.download_best_subtitles(subtitles_list, video, languages=languages,
                                                    hearing_impaired=app.SUBTITLES_HEARING_IMPAIRED,
@@ -467,8 +456,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
 
     for subtitle in saved_subtitles:
         logger.info(u'Found subtitle for %s in %s provider with language %s', os.path.basename(video_path),
-                    reverse_provider_mapping.get(subtitle.provider_name, subtitle.provider_name),
-                    subtitle.language.opensubtitles)
+                    subtitle.provider_name, subtitle.language.opensubtitles)
         subtitle_path = compute_subtitle_path(subtitle, video_path, subtitles_dir)
         helpers.chmod_as_parent(subtitle_path)
         helpers.fix_set_group_id(subtitle_path)
@@ -481,8 +469,7 @@ def save_subs(tv_episode, video, found_subtitles, video_path=None):
 
         if app.SUBTITLES_HISTORY:
             logger.debug(u'Logging to history downloaded subtitle from provider %s and language %s',
-                         reverse_provider_mapping.get(subtitle.provider_name, subtitle.provider_name),
-                         subtitle.language.opensubtitles)
+                         subtitle.provider_name, subtitle.language.opensubtitles)
             history.logSubtitle(show_indexerid, season, episode, status, subtitle)
 
     # Refresh the subtitles property
@@ -504,8 +491,8 @@ def get_provider_pool():
                                      'password': app.ADDIC7ED_PASS},
                         'itasa': {'username': app.ITASA_USER,
                                   'password': app.ITASA_PASS},
-                        'legendastv2': {'username': app.LEGENDASTV_USER,
-                                        'password': app.LEGENDASTV_PASS},
+                        'legendastv': {'username': app.LEGENDASTV_USER,
+                                       'password': app.LEGENDASTV_PASS},
                         'opensubtitles': {'username': app.OPENSUBTITLES_USER,
                                           'password': app.OPENSUBTITLES_PASS}}
     return ProviderPool(providers=enabled_service_list(), provider_configs=provider_configs)

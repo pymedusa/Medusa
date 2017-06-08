@@ -3,7 +3,6 @@
     from medusa import subtitles
     from medusa import app
     from medusa.helpers import anon_url
-    from medusa.subtitles import reverse_provider_mapping
 %>
 <%block name="scripts">
 <script>
@@ -210,7 +209,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                     <fieldset class="component-group-list" style="margin-left: 50px; margin-top:36px;">
                         <ul id="service_order_list">
                         % for curService in subtitles.sorted_service_list():
-                            <% provider_name = reverse_provider_mapping.get(curService['name'], curService['name']) %>
+                            <% provider_name = curService['name'] %>
                             <li class="ui-state-default" id="${provider_name}">
                                 <input type="checkbox" id="enable_${provider_name}" class="service_enabler" ${'checked="checked"' if curService['enabled'] else ''}/>
                                 <a href="${anon_url(curService['url'])}" class="imgLink" target="_new">
@@ -239,7 +238,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 'opensubtitles': {'user': app.OPENSUBTITLES_USER, 'pass': app.OPENSUBTITLES_PASS}}
                         %>
                         % for curService in subtitles.sorted_service_list():
-                            <% provider_name = reverse_provider_mapping.get(curService['name'], curService['name']) %>
+                            <% provider_name = curService['name'] %>
                             % if provider_name not in providerLoginDict.keys():
                                 <% continue %>
                             % endif
