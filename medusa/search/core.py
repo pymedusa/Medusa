@@ -406,7 +406,7 @@ def wanted_episodes(show, from_date):
     return wanted
 
 
-def search_for_needed_episodes():
+def search_for_needed_episodes(force=False):
     """
     Check providers for details on wanted episodes.
 
@@ -426,7 +426,7 @@ def search_for_needed_episodes():
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
-    if not episodes:
+    if not episodes and not force:
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
