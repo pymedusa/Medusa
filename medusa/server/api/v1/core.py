@@ -65,7 +65,7 @@ from tornado.web import RequestHandler
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-indexer_ids = ['indexerid', 'tvdbid', 'tvmazeid', 'tmdbid']
+INDEXER_IDS = ('indexerid', 'tvdbid', 'tvmazeid', 'tmdbid')
 
 # basically everything except RESULT_SUCCESS / success is bad
 RESULT_SUCCESS = 10  # only use inside the run methods
@@ -125,7 +125,7 @@ class ApiHandler(RequestHandler):
         try:
             out_dict = _call_dispatcher(args, kwargs)
         except Exception as e:  # real internal error oohhh nooo :(
-            log.exception(u'API :: {0}', e)
+            log.exception(u'API :: {0!r}', e)
             error_data = {
                 'error_msg': e,
                 'args': args,
@@ -186,7 +186,7 @@ class ApiHandler(RequestHandler):
                 if len(cmd.split('_')) > 1:
                     cmd, cmd_index = cmd.split('_')
 
-                log.debug(u'API :: {0}: cur_kwargs', cmd, cur_kwargs)
+                log.debug(u'API :: {0}: {1}', cmd, cur_kwargs)
                 if not (cmd in ('show.getbanner', 'show.getfanart', 'show.getnetworklogo', 'show.getposter') and
                         multi_commands):  # skip these cmd while chaining
                     try:
@@ -315,7 +315,7 @@ class ApiCall(ApiHandler):
         if len(self._missing) == 1:
             msg = 'The required parameter: {0!r} was not set'.format(self._missing[0])
         else:
-            msg = 'The required parameters: {0!r} where not set"'.format("','".join(self._missing))
+            msg = 'The required parameters: {0!r} were not set'.format("','".join(self._missing))
         return _responds(RESULT_ERROR, msg=msg)
 
     def check_params(self, args, kwargs, key, default, required, arg_type, allowed_values):
@@ -325,11 +325,11 @@ class ApiCall(ApiHandler):
         """
 
         # auto-select indexer
-        if key in indexer_ids:
+        if key in INDEXER_IDS:
             if 'tvdbid' in kwargs:
                 key = 'tvdbid'
 
-            self.indexer = indexer_ids.index(key)
+            self.indexer = INDEXER_IDS.index(key)
 
         missing = True
         org_default = default
@@ -1637,7 +1637,7 @@ class CMD_SearchIndexers(ApiCall):
                     continue
 
                 for cur_series in api_data:
-                    results.append({indexer_ids[_indexer]: int(cur_series['id']),
+                    results.append({INDEXER_IDS[_indexer]: int(cur_series['id']),
                                     'name': cur_series['seriesname'],
                                     'first_aired': cur_series['firstaired'],
                                     'indexer': int(_indexer)})
@@ -1668,7 +1668,7 @@ class CMD_SearchIndexers(ApiCall):
                     return _responds(RESULT_FAILURE, msg='Show contains no name, invalid result')
 
                 # found show
-                results = [{indexer_ids[_indexer]: int(my_show.data['id']),
+                results = [{INDEXER_IDS[_indexer]: int(my_show.data['id']),
                             'name': text_type(my_show.data['seriesname']),
                             'first_aired': my_show.data['firstaired'],
                             'indexer': int(_indexer)}]
@@ -1958,7 +1958,7 @@ class CMD_ShowAddExisting(ApiCall):
             return _responds(RESULT_FAILURE, msg='Not a valid location')
 
         indexer_name = None
-        indexer_result = CMD_SearchIndexers([], {indexer_ids[self.indexer]: self.indexerid}).run()
+        indexer_result = CMD_SearchIndexers([], {INDEXER_IDS[self.indexer]: self.indexerid}).run()
 
         if indexer_result['result'] == result_type_map[RESULT_SUCCESS]:
             if not indexer_result['data']['results']:
@@ -2113,7 +2113,7 @@ class CMD_ShowAddNew(ApiCall):
             default_ep_status_after = self.future_status
 
         indexer_name = None
-        indexer_result = CMD_SearchIndexers([], {indexer_ids[self.indexer]: self.indexerid, 'lang': self.lang}).run()
+        indexer_result = CMD_SearchIndexers([], {INDEXER_IDS[self.indexer]: self.indexerid, 'lang': self.lang}).run()
 
         if indexer_result['result'] == result_type_map[RESULT_SUCCESS]:
             if not indexer_result['data']['results']:
