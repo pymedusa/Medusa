@@ -123,12 +123,17 @@ def _configure_subliminal():
 
     basename = __name__.split('.')[0]
 
-    provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
+    # Unregister
+    for name in ('legendastv = subliminal.providers.legendastv:LegendasTVProvider', ):
+        provider_manager.internal_extensions.remove(name)
+        provider_manager.registered_extensions.append(name)
+        provider_manager.unregister(name)
 
-    # Use our custom providers
-    provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
-    provider_manager.register(
-        'legendastv2 = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
+    # Register
+    for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
+                 'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
+                 'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename)):
+        provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
     refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
