@@ -27,7 +27,7 @@
         "exorcist": "^0.4.0",
         "http-server": "^0.9.0",
         "npm-run-all": "^2.1.2",
-        "require-extension-hooks-babel": "^0.1.0",
+        "require-extension-hooks-babel": "^0.1.1",
         "require-extension-hooks-vue": "^0.2.1",
         "stonejs-tools": "^1.0.8",
         "uglify-js": "^3.0.3",
