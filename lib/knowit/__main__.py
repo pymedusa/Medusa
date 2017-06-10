@@ -3,28 +3,32 @@ from __future__ import unicode_literals
 
 import json
 import logging
-import os
 import sys
 from argparse import ArgumentParser
 
-from babelfish.language import Language
 from enzyme import __version__ as enzyme_version
 from pymediainfo import __version__ as pymediainfo_version
-from six import PY2, text_type
+from six import PY2
 import yaml
 
-from . import VIDEO_EXTENSIONS, __version__, api
+from . import (
+    __url__,
+    __version__,
+    api,
+)
 from .provider import ProviderError
-from .utils import CustomDumper
-
+from .serializer import (
+    get_json_encoder,
+    get_yaml_dumper,
+)
+from .utils import recurse_paths
 
 logging.basicConfig(stream=sys.stdout, format='%(message)s')
 logging.getLogger('CONSOLE').setLevel(logging.INFO)
 logging.getLogger('knowit').setLevel(logging.ERROR)
-logging.getLogger('enzyme').setLevel(logging.ERROR)
 
-logger = logging.getLogger('enzyme')
 console = logging.getLogger('CONSOLE')
+logger = logging.getLogger('knowit')
 
 
 def build_argument_parser():
@@ -38,118 +42,145 @@ def build_argument_parser():
 
     provider_opts = opts.add_argument_group('Providers')
     provider_opts.add_argument('-p', '--provider', dest='provider', default=None,
-                               help='The provider to be used: enzyme or mediainfo.')
+                               help='The provider to be used: mediainfo, ffmpeg or enzyme.')
 
-    input_opts = opts.add_argument_group("Input")
+    input_opts = opts.add_argument_group('Input')
     input_opts.add_argument('-E', '--fail-on-error', action='store_true', dest='fail_on_error', default=False,
                             help='Fail when errors are found on the media file.')
 
-    output_opts = opts.add_argument_group("Output")
+    output_opts = opts.add_argument_group('Output')
     output_opts.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
                              help='Display debug output')
     output_opts.add_argument('-r', '--raw', action='store_true', dest='raw', default=False,
                              help='Display raw properties')
-    output_opts.add_argument('-N', '--no-output', action='store_true', dest='no_output', default=False,
-                             help='Do not display properties output')
+    output_opts.add_argument('--report', action='store_true', dest='report', default=False,
+                             help='Parse media and report all non-detected values')
     output_opts.add_argument('-y', '--yaml', action='store_true', dest='yaml', default=False,
                              help='Display output in yaml format')
+    output_opts.add_argument('-P', '--profile', dest='profile', default='default',
+                             help='Display values according to specified profile: code, default, human, technical')
 
-    information_opts = opts.add_argument_group("Information")
+    conf_opts = opts.add_argument_group('Configuration')
+    conf_opts.add_argument('--mediainfo', dest='mediainfo_path', default=None,
+                           help='The location to search for MediaInfo binaries')
+    conf_opts.add_argument('--ffmpeg', dest='ffmpeg_path', default=None,
+                           help='The location to search for FFmpeg (ffprobe) binaries')
+
+    information_opts = opts.add_argument_group('Information')
     information_opts.add_argument('--version', dest='version', action='store_true', default=False,
                                   help='Display knowit version.')
 
     return opts
 
 
-def knowit(video_path, options):
+def knowit(video_path, options, context):
     """Extract video metadata."""
-    console.info('For: %s', video_path)
-    info = api.know(video_path, vars(options))
-    if not options.no_output:
+    context['path'] = video_path
+    if not options.report:
+        console.info('For: %s', video_path)
+    else:
+        console.info('Parsing: %s', video_path)
+    info = api.know(video_path, context)
+    if not options.report:
         console.info('Knowit %s found: ', __version__)
-        if options.yaml:
-            result = yaml.dump({video_path: info}, Dumper=CustomDumper,
-                               default_flow_style=False, allow_unicode=True)
-            if PY2:
-                result = result.decode('utf-8')
-        else:
-            result = json.dumps(info, cls=StringEncoder, indent=4, ensure_ascii=False)
-        console.info(result)
+        console.info(dump(info, options, context))
+
+    return info
 
 
-class StringEncoder(json.JSONEncoder):
-    """String json encoder."""
+def dump(info, options, context):
+    """Convert info to string using json or yaml format."""
+    if options.yaml:
+        data = {info['path']: info} if 'path' in info else info
+        result = yaml.dump(data, Dumper=get_yaml_dumper(context),
+                           default_flow_style=False, allow_unicode=True)
+        if PY2:
+            result = result.decode('utf-8')
 
-    def default(self, o):
-        """Convert properties to string."""
-        if isinstance(o, Language):
-            return getattr(o, 'name')
+    else:
+        result = json.dumps(info, cls=get_json_encoder(context), indent=4, ensure_ascii=False)
 
-        return text_type(o)
+    return result
 
 
 def main(args=None):
-    """Main function for entry point."""
+    """Execute main function for entry point."""
     argument_parser = build_argument_parser()
     args = args or sys.argv[1:]
     options = argument_parser.parse_args(args)
 
     if options.verbose:
-        logging.getLogger('knowit').setLevel(logging.INFO)
-        logging.getLogger('enzyme').setLevel(logging.WARNING)
+        logger.setLevel(logging.DEBUG)
+        logging.getLogger('enzyme').setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARNING)
 
-    paths = []
-
-    encoding = sys.getfilesystemencoding()
-    for path in options.videopath:
-        if os.path.isfile(path):
-            paths.append(path.decode(encoding) if PY2 else path)
-        if os.path.isdir(path):
-            for root, directories, filenames in os.walk(path):
-                for filename in filenames:
-                    if os.path.splitext(filename)[1] in VIDEO_EXTENSIONS:
-                        if PY2:
-                            if os.name == 'nt':
-                                fullpath = os.path.join(root, filename.decode(encoding))
-                            else:
-                                fullpath = os.path.join(root, filename).decode(encoding)
-                        paths.append(fullpath)
+    paths = recurse_paths(options.videopath)
 
     if paths:
-        for videopath in paths:
+        report = {}
+        for i, videopath in enumerate(paths):
             try:
-                knowit(videopath, options)
+                context = dict(vars(options))
+                if options.report:
+                    context['report'] = report
+                else:
+                    del context['report']
+                knowit(videopath, options, context)
             except ProviderError:
                 logger.exception('Error when processing video')
             except OSError:
                 logger.exception('OS error when processing video')
             except UnicodeError:
                 logger.exception('Character encoding error when processing video')
+            if options.report and i % 20 == 19 and report:
+                console.info('Unknown values so far:')
+                console.info(dump(report, options, vars(options)))
+
+        if options.report:
+            if report:
+                console.info('Knowit %s found unknown values:', __version__)
+                console.info(dump(report, options, vars(options)))
+                console.info('Please report them at %s', __url__)
+            else:
+                console.info('Knowit %s knows everything. :-)', __version__)
+
     elif options.version:
-        mi_location = api.available_providers['mediainfo'].native_lib
-        if mi_location and hasattr(mi_location, '_name'):
-            mi_location = getattr(mi_location, '_name')
+        api.initialize(vars(options))
+        mediainfo_executor = api.available_providers['mediainfo'].executor
+        mediainfo_location = mediainfo_executor.location if mediainfo_executor else None
+        ffmpeg_executor = api.available_providers['ffmpeg'].executor
+        ffmpeg_location = ffmpeg_executor.location if ffmpeg_executor else None
 
         console.info('+-------------------------------------------------------+')
-        console.info('|                   KnowIt %s %s |', __version__, (27 - len(__version__)) * ' ')
+        _print_centered('KnowIt {0}'.format(__version__))
         console.info('+-------------------------------------------------------+')
-        console.info('|                   Enzyme %s %s |', enzyme_version, (27 - len(enzyme_version)) * ' ')
-        console.info('|                   pymediainfo %s %s |',
-                     pymediainfo_version, (22 - len(pymediainfo_version)) * ' ')
-        if not mi_location:
-            console.info('|              MediaInfo not available                  |')
-            console.info('|      https://mediaarea.net/en/MediaInfo/Download      |')
+        _print_centered('Enzyme {0}'.format(enzyme_version))
+        _print_centered('pymediainfo {0}'.format(pymediainfo_version))
+        if not mediainfo_location:
+            _print_centered('MediaInfo not available')
+            _print_centered('https://mediaarea.net/en/MediaInfo/Download')
         else:
-            mi_location = mi_location[-52:]
-            spaces = max((53 - len(mi_location)), 0)
-            console.info('|                   MediaInfo available                 |')
-            console.info('| %s%s%s |', spaces / 2 * ' ', mi_location, (spaces / 2 + spaces % 2) * ' ')
+            _print_centered('MediaInfo available')
+            _print_centered(mediainfo_location)
+        if not ffmpeg_location:
+            _print_centered('FFmpeg not available')
+            _print_centered('https://ffmpeg.org/download.html')
+        else:
+            _print_centered('FFmpeg available')
+            _print_centered(ffmpeg_location)
         console.info('+-------------------------------------------------------+')
         console.info('|      Please report any bug or feature request at      |')
         console.info('|     https://github.com/ratoaq2/knowit/issues.         |')
         console.info('+-------------------------------------------------------+')
     else:
         argument_parser.print_help()
+
+
+def _print_centered(value):
+    value = value[-52:]
+    spaces = max((53 - len(value)), 0)
+    console.info('| %s%s%s |', spaces / 2 * ' ', value, (spaces / 2 + spaces % 2) * ' ')
 
 
 if __name__ == '__main__':
