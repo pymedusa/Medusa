@@ -26,6 +26,7 @@ def initialize():
     _strptime_workaround()
     _configure_guessit()
     _configure_subliminal()
+    _configure_knowit()
 
 
 def _check_python_version():
@@ -34,8 +35,12 @@ def _check_python_version():
         sys.exit(1)
 
 
+def _lib_location():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
+
+
 def _configure_syspath():
-    sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib')))
+    sys.path.insert(1, _lib_location())
 
 
 def _register_utf8_codec():
@@ -140,3 +145,16 @@ def _configure_subliminal():
 
     # Configure podnapisi https url
     PodnapisiProvider.server_url = 'https://podnapisi.net/subtitles/'
+
+
+def _configure_knowit():
+    from knowit import api
+    from knowit.utils import detect_os
+
+    os_family = detect_os()
+    suggested_path = os.path.join(_lib_location(), os_family)
+    if os_family == 'windows':
+        subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
+        suggested_path = os.path.join(suggested_path, subfolder)
+
+    api.initialize({'mediainfo': suggested_path})

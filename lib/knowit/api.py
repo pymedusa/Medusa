@@ -24,8 +24,7 @@ def initialize(context=None):
         context = context or {}
         config = Config.build(context.get('config'))
         for name, provider_cls in _provider_map.items():
-            key = '{0}_path'.format(name)
-            available_providers[name] = provider_cls(config, context.get(key) or config.general.get(key))
+            available_providers[name] = provider_cls(config, context.get(name) or config.general.get(name))
 
 
 def know(video_path, context=None):

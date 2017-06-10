@@ -61,9 +61,9 @@ def build_argument_parser():
                              help='Display values according to specified profile: code, default, human, technical')
 
     conf_opts = opts.add_argument_group('Configuration')
-    conf_opts.add_argument('--mediainfo', dest='mediainfo_path', default=None,
+    conf_opts.add_argument('--mediainfo', dest='mediainfo', default=None,
                            help='The location to search for MediaInfo binaries')
-    conf_opts.add_argument('--ffmpeg', dest='ffmpeg_path', default=None,
+    conf_opts.add_argument('--ffmpeg', dest='ffmpeg', default=None,
                            help='The location to search for FFmpeg (ffprobe) binaries')
 
     information_opts = opts.add_argument_group('Information')

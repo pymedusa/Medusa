@@ -13,8 +13,8 @@ logger.addHandler(NullHandler())
 class Provider(object):
     """Base class for all providers."""
 
-    min_fps = 1. * units['FPS']
-    max_fps = 100 * units['FPS']
+    min_fps = 1. * units.FPS
+    max_fps = 100 * units.FPS
 
     def __init__(self, config, mapping, rules=None):
         """Init method."""
