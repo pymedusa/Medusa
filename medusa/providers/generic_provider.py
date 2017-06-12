@@ -399,7 +399,7 @@ class GenericProvider(object):
             else:
                 episode_number = MULTI_EP_RESULT
                 log.debug('Found multi-episode ({0}) result {1} at {2}',
-                          ', '.join(search_result.parsed_result.episode_numbers),
+                          ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
                           search_result.url)
             if episode_number not in results:
