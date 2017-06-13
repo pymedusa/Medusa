@@ -219,9 +219,9 @@ class T411Provider(TorrentProvider):
 
                     # Search using season and episode specific params only for normal episodes
                     if all(
-                        [not ep_obj.show.air_by_date,
-                         not ep_obj.show.sports,
-                         not ep_obj.show.anime,
+                        [not ep_obj.series.air_by_date,
+                         not ep_obj.series.sports,
+                         not ep_obj.series.anime,
                          ep_obj.scene_season <= max(SEASON_MAP) and ep_obj.scene_episode <= max(EPISODE_MAP)]
                     ):
                         if mode == 'Season':
