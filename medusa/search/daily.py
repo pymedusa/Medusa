@@ -55,7 +55,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         try:
             cur_time = datetime.now(app_timezone)
         except OverflowError as error:
-            log.warning('Could not get current time using the timezone: {timezone!r}. Error: {error!r}',
+            log.warning('Could not get current time using the timezone: {timezone}. Error: {error!r}',
                         {'timezone': app_timezone, 'error': error})
 
         cur_date = (
