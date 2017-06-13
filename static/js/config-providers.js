@@ -111,7 +111,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
     };
 
     $.fn.deleteProvider = function(id) {
-        $('#editANewznabProvider' + ' option[value=' + id + ']').remove();
+        $('#editANewznabProvider option[value=' + id + ']').remove();
         delete newznabProviders[id];
         $(this).populateNewznabSection();
         $('li').remove('#' + id);
@@ -127,7 +127,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
     };
 
     $.fn.deleteTorrentRssProvider = function(id) {
-        $('#editATorrentRssProvider' + ' option[value=' + id + ']').remove();
+        $('#editATorrentRssProvider option[value=' + id + ']').remove();
         delete torrentRssProviders[id];
         $(this).populateTorrentRssSection();
         $('li').remove('#' + id);
