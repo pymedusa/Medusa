@@ -68,6 +68,9 @@ class SearchResult(object):
         # leechers of the release
         self.leechers = -1
 
+        # update date
+        self.date = None
+
         # release publish date
         self.pubdate = None
 
@@ -121,6 +124,9 @@ class SearchResult(object):
 
         # The actual parsed episode.
         self.actual_episodes = None
+
+        # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
+        self.search_type = None
 
     def __str__(self):
 
@@ -261,35 +267,6 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
 
         # if nothing matches then return first result
         return all_series[0]
-
-
-class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, proper_tags):
-        self.name = name
-        self.url = url
-        self.date = date
-        self.provider = None
-        self.quality = Quality.UNKNOWN
-        self.release_group = None
-        self.version = -1
-        self.seeders = seeders
-        self.leechers = leechers
-        self.size = size
-        self.pubdate = pubdate
-        self.proper_tags = proper_tags
-        self.hash = None
-        self.show = show
-        self.indexer = None
-        self.indexerid = -1
-        self.season = -1
-        self.episode = -1
-        self.scene_season = -1
-        self.scene_episode = -1
-
-    def __str__(self):
-        return u'{date} {name} {season}x{episode} of {series_id} from {indexer}'.format(
-            date=self.date, name=self.name, season=self.season, episode=self.episode,
-            series_id=self.indexerid, indexer=indexerApi(self.indexer).name)
 
 
 class Viewer(object):

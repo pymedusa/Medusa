@@ -235,7 +235,7 @@ def snatch_episode(result):
     return True
 
 
-def pick_best_result(results, show):  # pylint: disable=too-many-branches
+def pick_best_result(results):  # pylint: disable=too-many-branches
     """
     Find the best result out of a list of search results for a show.
 
@@ -251,8 +251,10 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
     # find the best result for the current episode
     for cur_result in results:
-        if show and cur_result.show is not show:
-            continue
+        assert cur_result.show, 'Every SearchResult object should have a show object available at this point.'
+
+        # Every SearchResult object should have a show attribute available at this point.
+        show = cur_result.show
 
         # build the black and white list
         if show.is_anime:
@@ -268,6 +270,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             continue
 
         wanted_ep = True
+
         if cur_result.actual_episodes:
             wanted_ep = False
             for episode in cur_result.actual_episodes:
@@ -462,7 +465,7 @@ def search_for_needed_episodes(force=False):
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.series)
+            best_result = pick_best_result(cur_found_results[cur_ep])
 
             # if all results were rejected move on to the next episode
             if not best_result:
@@ -801,7 +804,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 continue
 
             # if all results were rejected move on to the next episode
-            best_result = pick_best_result(found_results[cur_provider.name][cur_ep], show)
+            best_result = pick_best_result(found_results[cur_provider.name][cur_ep])
             if not best_result:
                 continue
 

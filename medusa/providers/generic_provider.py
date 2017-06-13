@@ -23,7 +23,6 @@ from medusa import (
     ui,
 )
 from medusa.classes import (
-    Proper,
     SearchResult,
 )
 from medusa.common import (
@@ -55,6 +54,8 @@ from medusa.show.show import Show
 from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar
+
+from medusa.search import PROPER_SEARCH
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -164,16 +165,20 @@ class GenericProvider(object):
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
 
                     for item in self.search(search_strings[0], ep_obj=episode_obj):
-                        title, url = self._get_title_and_url(item)
-                        seeders, leechers = self._get_result_info(item)
-                        size = self._get_size(item)
-                        pubdate = self._get_pubdate(item)
+                        search_result = self.get_result()
+                        results.append(search_result)
 
-                        # This will be retrived from the parser
-                        proper_tags = ''
+                        search_result.title, search_result.url = self._get_title_and_url(item)
+                        search_result.seeders, search_result.leechers = self._get_result_info(item)
+                        search_result.size = self._get_size(item)
+                        search_result.pubdate = self._get_pubdate(item)
 
-                        results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
-                                              proper_tags))
+                        # This will be retrieved from the parser
+                        search_result.proper_tags = ''
+
+                        search_result.search_type = PROPER_SEARCH
+                        search_result.date = datetime.today()
+                        search_result.show = show_obj
 
         return results
 
@@ -244,6 +249,7 @@ class GenericProvider(object):
             search_results.append(search_result)
             search_result.item = item
             search_result.download_current_quality = download_current_quality
+            # FIXME: Should be changed to search_result.search_type
             search_result.forced_search = forced_search
 
             (search_result.name, search_result.url) = self._get_title_and_url(item)

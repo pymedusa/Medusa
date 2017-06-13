@@ -11,6 +11,7 @@ import traceback
 
 from medusa import app, common, failed_history, generic_queue, history, providers, ui
 from medusa.helpers import pretty_file_size
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search.core import (
     search_for_needed_episodes,
@@ -18,16 +19,11 @@ from medusa.search.core import (
     snatch_episode,
 )
 
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 search_queue_lock = threading.Lock()
-
-BACKLOG_SEARCH = 10
-DAILY_SEARCH = 20
-FAILED_SEARCH = 30
-FORCED_SEARCH = 40
-MANUAL_SEARCH = 50
 
 FORCED_SEARCH_HISTORY = []
 FORCED_SEARCH_HISTORY_SIZE = 100
@@ -294,9 +290,9 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
 
-        except Exception:
+        except Exception as error:
             self.success = False
-            log.debug(traceback.format_exc())
+            log.exception('DailySearchQueueItem Exception, error: {error}', {'error': error})
 
         if self.success is None:
             self.success = False
