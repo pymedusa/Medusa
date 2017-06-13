@@ -291,7 +291,7 @@ class GenericProvider(object):
                             continue
                         elif not [ep for ep in episodes if
                                   search_result.parsed_result.season_number == (ep.season, ep.scene_season)
-                                  [ep.show.is_scene]]:
+                                  [ep.series.is_scene]]:
                             log.debug(
                                 'This season result {0} is for a season we are not searching for, '
                                 'skipping it', search_result.name
