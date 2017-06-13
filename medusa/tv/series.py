@@ -1217,7 +1217,7 @@ class Series(TV):
             if new_quality != Quality.UNKNOWN:
                 return True, 'New file has different name from the database but has valid quality.'
             else:
-                return False, 'New file has UNKNOWN quality'
+                return True, 'New file has different name from the database and an UNKNOWN quality.'
 
         #  Reach here to check for status/quality changes as long as it's a new/different file
         if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
