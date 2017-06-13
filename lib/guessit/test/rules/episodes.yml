@@ -146,7 +146,7 @@
 ? Show.Name.-.Season.1.to.3.-.Mp4.1080p
 ? Show.Name.-.Season.1~3.-.Mp4.1080p
 ? Show.Name.-.Saison.1.a.3.-.Mp4.1080p
-: container: MP4
+: container: mp4
   screen_size: 1080p
   season:
   - 1

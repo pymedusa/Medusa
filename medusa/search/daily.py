@@ -52,7 +52,12 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if not network_dict:
             update_network_dict()
 
-        cur_time = datetime.now(app_timezone)
+        try:
+            cur_time = datetime.now(app_timezone)
+        except OverflowError as error:
+            log.warning('Could not get current time using the timezone: {timezone!r}. Error: {error!r}',
+                        {'timezone': app_timezone, 'error': error})
+
         cur_date = (
             date.today() + timedelta(days=1 if network_dict else 2)
         ).toordinal()
@@ -110,7 +115,7 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
 
         # queue episode for daily search
         app.search_queue_scheduler.action.add_item(
-            DailySearchQueueItem()
+            DailySearchQueueItem(force=force)
         )
 
         self.amActive = False

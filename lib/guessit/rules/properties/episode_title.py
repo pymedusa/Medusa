@@ -5,7 +5,7 @@ Episode title
 """
 from collections import defaultdict
 
-from rebulk import Rebulk, Rule, AppendMatch, RenameMatch, POST_PROCESS
+from rebulk import Rebulk, Rule, AppendMatch, RemoveMatch, RenameMatch, POST_PROCESS
 
 from ..common import seps, title_seps
 from ..common.formatters import cleanup
@@ -19,13 +19,73 @@ def episode_title():
     :return: Created Rebulk object
     :rtype: Rebulk
     """
-    rebulk = Rebulk().rules(EpisodeTitleFromPosition,
-                            AlternativeTitleReplace,
+    previous_names = ('episode', 'episode_details', 'episode_count',
+                      'season', 'season_count', 'date', 'title', 'year')
+
+    rebulk = Rebulk().rules(RemoveConflictsWithEpisodeTitle(previous_names),
+                            EpisodeTitleFromPosition(previous_names),
+                            AlternativeTitleReplace(previous_names),
                             TitleToEpisodeTitle,
                             Filepart3EpisodeTitle,
                             Filepart2EpisodeTitle,
                             RenameEpisodeTitleWhenMovieType)
     return rebulk
+
+
+class RemoveConflictsWithEpisodeTitle(Rule):
+    """
+    Remove conflicting matches that might lead to wrong episode_title parsing.
+    """
+
+    priority = 64
+    consequence = RemoveMatch
+
+    def __init__(self, previous_names):
+        super(RemoveConflictsWithEpisodeTitle, self).__init__()
+        self.previous_names = previous_names
+        self.next_names = ('streaming_service', 'screen_size', 'format',
+                           'video_codec', 'audio_codec', 'other', 'container')
+        self.affected_if_holes_after = ('part', )
+        self.affected_names = ('part', 'year')
+
+    def when(self, matches, context):
+        to_remove = []
+        for filepart in matches.markers.named('path'):
+            for match in matches.range(filepart.start, filepart.end,
+                                       predicate=lambda m: m.name in self.affected_names):
+                before = matches.previous(match, index=0,
+                                          predicate=lambda m, fp=filepart: not m.private and m.start >= fp.start)
+                if not before or before.name not in self.previous_names:
+                    continue
+
+                after = matches.next(match, index=0,
+                                     predicate=lambda m, fp=filepart: not m.private and m.end <= fp.end)
+                if not after or after.name not in self.next_names:
+                    continue
+
+                group = matches.markers.at_match(match, predicate=lambda m: m.name == 'group', index=0)
+
+                def has_value_in_same_group(current_match, current_group=group):
+                    """Return true if current match has value and belongs to the current group."""
+                    return current_match.value.strip(seps) and (
+                        current_group == matches.markers.at_match(current_match,
+                                                                  predicate=lambda mm: mm.name == 'group', index=0)
+                    )
+
+                holes_before = matches.holes(before.end, match.start, predicate=has_value_in_same_group)
+                holes_after = matches.holes(match.end, after.start, predicate=has_value_in_same_group)
+
+                if not holes_before and not holes_after:
+                    continue
+
+                if match.name in self.affected_if_holes_after and not holes_after:
+                    continue
+
+                to_remove.append(match)
+                if match.parent:
+                    to_remove.append(match.parent)
+
+        return to_remove
 
 
 class TitleToEpisodeTitle(Rule):
@@ -65,12 +125,14 @@ class EpisodeTitleFromPosition(TitleBaseRule):
     """
     dependency = TitleToEpisodeTitle
 
+    def __init__(self, previous_names):
+        super(EpisodeTitleFromPosition, self).__init__('episode_title', ['title'])
+        self.previous_names = previous_names
+
     def hole_filter(self, hole, matches):
         episode = matches.previous(hole,
                                    lambda previous: any(name in previous.names
-                                                        for name in ['episode', 'episode_details',
-                                                                     'episode_count', 'season', 'season_count',
-                                                                     'date', 'title', 'year']),
+                                                        for name in self.previous_names),
                                    0)
 
         crc32 = matches.named('crc32')
@@ -88,9 +150,6 @@ class EpisodeTitleFromPosition(TitleBaseRule):
             return False
         return super(EpisodeTitleFromPosition, self).should_remove(match, matches, filepart, hole, context)
 
-    def __init__(self):
-        super(EpisodeTitleFromPosition, self).__init__('episode_title', ['title'])
-
     def when(self, matches, context):
         if matches.named('episode_title'):
             return
@@ -104,6 +163,10 @@ class AlternativeTitleReplace(Rule):
     dependency = EpisodeTitleFromPosition
     consequence = RenameMatch
 
+    def __init__(self, previous_names):
+        super(AlternativeTitleReplace, self).__init__()
+        self.previous_names = previous_names
+
     def when(self, matches, context):
         if matches.named('episode_title'):
             return
@@ -115,10 +178,7 @@ class AlternativeTitleReplace(Rule):
             if main_title:
                 episode = matches.previous(main_title,
                                            lambda previous: any(name in previous.names
-                                                                for name in ['episode', 'episode_details',
-                                                                             'episode_count', 'season',
-                                                                             'season_count',
-                                                                             'date', 'title', 'year']),
+                                                                for name in self.previous_names),
                                            0)
 
                 crc32 = matches.named('crc32')

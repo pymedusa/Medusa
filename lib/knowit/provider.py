@@ -1,141 +1,94 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import logging
-
-from six import binary_type, text_type
+from logging import NullHandler, getLogger
 
 from . import OrderedDict
-from .properties import is_unknown
+from .units import units
 
-
-logger = logging.getLogger(__name__)
-
-visible_chars_table = dict.fromkeys(range(32))
+logger = getLogger(__name__)
+logger.addHandler(NullHandler())
 
 
 class Provider(object):
     """Base class for all providers."""
 
-    def __init__(self, mapping):
+    min_fps = 1. * units.FPS
+    max_fps = 100 * units.FPS
+
+    def __init__(self, config, mapping, rules=None):
         """Init method."""
+        self.config = config
         self.mapping = mapping
+        self.rules = rules or {}
 
     def accepts(self, target):
         """Whether or not the video is supported by this provider."""
         raise NotImplementedError
 
-    def describe(self, target, options):
+    def describe(self, target, context):
         """Read video metadata information."""
         raise NotImplementedError
 
-    def _describe_tracks(self, general_track, video_tracks, audio_tracks, subtitle_tracks):
-        props = self._describe_general(general_track)
+    def _describe_tracks(self, general_track, video_tracks, audio_tracks, subtitle_tracks, context):
+        logger.debug('Handling general track')
+        props = self._describe_track(general_track, 'general', context)
 
-        video = []
-        for track in video_tracks:
-            t = self._describe_video_track(track)
-            if t:
-                video.append(t)
+        for track_type, tracks, in (('video', video_tracks),
+                                    ('audio', audio_tracks),
+                                    ('subtitle', subtitle_tracks)):
+            results = []
+            for track in tracks or []:
+                logger.debug('Handling %s track', track_type)
+                t = self._validate_track(track_type, self._describe_track(track, track_type, context))
+                if t:
+                    results.append(t)
 
-        audio = []
-        for track in audio_tracks:
-            t = self._describe_audio_track(track)
-            if t:
-                audio.append(t)
-
-        subtitle = []
-        for track in subtitle_tracks:
-            t = self._describe_subtitle_track(track)
-            if t:
-                subtitle.append(t)
-
-        if video:
-            props['video'] = video
-        if audio:
-            props['audio'] = audio
-        if subtitle:
-            props['subtitle'] = subtitle
+            if results:
+                props[track_type] = results
 
         return props
 
-    def _describe_general(self, track):
-        """Describe general media info to a dict.
+    @classmethod
+    def _validate_track(cls, track_type, track):
+        if track_type != 'video' or 'frame_rate' not in track or cls.min_fps < track['frame_rate'] < cls.max_fps:
+            return track
 
-        :param track:
-        :return:
-        :rtype: dict
-        """
-        logger.debug('Handling general track')
-        return self._describe_track(track, self.mapping['general'])
-
-    def _describe_video_track(self, track):
-        """Describe video track to a dict.
-
-        :param track:
-        :return:
-        :rtype: dict
-        """
-        logger.debug('Handling video track')
-        return self._describe_track(track, self.mapping['video'])
-
-    def _describe_audio_track(self, track):
-        """Describe audio track to a dict.
-
-        :param track:
-        :return:
-        :rtype: dict
-        """
-        logger.debug('Handling audio track')
-        return self._describe_track(track, self.mapping['audio'])
-
-    def _describe_subtitle_track(self, track):
-        """Describe subtitle track to a dict.
-
-        :param track:
-        :return:
-        :rtype: dict
-        """
-        logger.debug('Handling subtitle track')
-        return self._describe_track(track, self.mapping['subtitle'])
-
-    def _describe_track(self, track, mapping):
+    def _describe_track(self, track, track_type, context):
         """Describe track to a dict.
 
         :param track:
-        :param mapping:
-        :type mapping: dict(str, str)
-        :return:
+        :param track_type:
         :rtype: dict
         """
         props = OrderedDict()
-        context = dict()
-        for name, prop in mapping.items():
-            self._enrich(props, name, track, prop, context)
+        pv_props = {}
+        for name, prop in self.mapping[track_type].items():
+            if not prop:
+                # placeholder to be populated by rules. It keeps the order
+                props[name] = None
+                continue
+
+            value = prop.extract_value(track, context)
+            if value is not None:
+                if not prop.private:
+                    which = props
+                else:
+                    which = pv_props
+                which[name] = value
+
+        for name, rule in self.rules.get(track_type, {}).items():
+            if props.get(name) is not None and not rule.override:
+                logger.debug('Skipping rule %s since property is already present', name)
+                continue
+
+            value = rule.execute(props, pv_props, context)
+            if value is not None:
+                props[name] = value
+            elif name in props and not rule.override:
+                del props[name]
 
         return props
-
-    @staticmethod
-    def _enrich(props, name, source, prop, context):
-        if source is not None:
-            is_rule = prop.name is None
-            value = source.get(prop.name) or prop.default if not is_rule else props
-            if value is not None:
-                logger.debug('Adding %s with value %r', name, value)
-                if isinstance(value, binary_type):
-                    value = text_type(value)
-                if isinstance(value, text_type):
-                    value = value.translate(visible_chars_table).strip()
-                    if is_unknown(value):
-                        return
-
-                result = prop.handler.handle(value, context) if prop.handler else value
-                if result is not None and not is_unknown(result):
-                    if not prop.private:
-                        if name.startswith('_'):
-                            name = name[1:]
-                        props[name] = result
-                    context[name] = result
 
 
 class ProviderError(Exception):

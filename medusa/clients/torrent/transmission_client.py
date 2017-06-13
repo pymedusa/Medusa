@@ -44,6 +44,13 @@ class TransmissionAPI(GenericClient):
         self.rpcurl = self.rpcurl.strip('/')
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
 
+    def check_response(self):
+        """Check if response is a valid json and its a success one."""
+        try:
+            return self.response.json()['result'] == 'success'
+        except ValueError:
+            return False
+
     def _get_auth(self):
 
         post_data = json.dumps({
@@ -85,7 +92,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def _add_torrent_file(self, result):
 
@@ -104,7 +111,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def _set_torrent_ratio(self, result):
 
@@ -134,7 +141,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def _set_torrent_seed_time(self, result):
 
@@ -153,7 +160,7 @@ class TransmissionAPI(GenericClient):
 
             self._request(method='post', data=post_data)
 
-            return self.response.json()['result'] == 'success'
+            return self.check_response()
         else:
             return True
 
@@ -180,7 +187,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def remove_torrent(self, info_hash):
         """Remove torrent from client using given info_hash.
@@ -202,7 +209,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def move_torrent(self, info_hash):
         """Set new torrent location given info_hash.
@@ -228,7 +235,7 @@ class TransmissionAPI(GenericClient):
 
         self._request(method='post', data=post_data)
 
-        return self.response.json()['result'] == 'success'
+        return self.check_response()
 
     def remove_ratio_reached(self):
         """Remove all Medusa torrents that ratio was reached.
