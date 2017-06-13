@@ -28,6 +28,7 @@ from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, Token
 from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
+from ..ws import MedusaWebSocketHandler
 
 
 def get_apiv2_handlers(base):
@@ -105,6 +106,9 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
         self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
 
+        # websocket root
+        self.options['web_socket'] = r'{root}/ws'.format(root=app.WEB_ROOT)
+
         # tornado setup
         self.enable_https = self.options['enable_https']
         self.https_cert = self.options['https_cert']
@@ -160,6 +164,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         ] + self._get_webui_routes())
 
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
+
+        # Websocket handler
+        self.app.add_handlers(".*$", [
+            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), MedusaWebSocketHandler.WebSocketUIHandler)
+        ])
 
         # Static File Handlers
         self.app.add_handlers('.*$', [

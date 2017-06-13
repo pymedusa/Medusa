@@ -558,7 +558,7 @@ IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
 
 PREFERRED_WORDS = ""
 
-UNDESIRED_WORDS = ""
+UNDESIRED_WORDS = "internal,xvid"
 
 TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
     udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\

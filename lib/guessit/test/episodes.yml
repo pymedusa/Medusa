@@ -1814,7 +1814,7 @@
   format: HDTV
   video_codec: h264
   audio_codec: AAC
-  container: MP4
+  container: mp4
   release_group: k3n
   type: episode
 
@@ -1885,7 +1885,7 @@
 
 ? Breaking.Bad.S01E01.2008.BluRay.VC1.1080P.5.1.WMV-NOVO
 : audio_channels: '5.1'
-  container: WMV
+  container: wmv
   episode: 1
   format: BluRay
   release_group: NOVO
@@ -1922,9 +1922,7 @@
 
 ? Fear.The.Walking.Dead.S02E01.HDTV.x264.AAC.MP4-k3n.mp4
 : audio_codec: AAC
-  container:
-  - MP4
-  - mp4
+  container: mp4
   episode: 1
   format: HDTV
   mimetype: video/mp4
@@ -2242,7 +2240,7 @@
   screen_size: 1080p
   streaming_service: Amazon Prime
   format: WEBRip
-  audio_codec: DolbyDigital
+  audio_codec: EAC3
   audio_channels: '5.1'
   video_codec: h264
   type: episode
@@ -2692,7 +2690,7 @@
   screen_size: 4K
   streaming_service: Amazon Prime
   format: WEBRip
-  audio_codec: DolbyDigital
+  audio_codec: EAC3
   audio_channels: '5.1'
   video_codec: h264
   release_group: Group
@@ -3311,7 +3309,7 @@
   screen_size: 720p
   format: WEBRip
   video_codec: h264
-  container: MKV
+  container: mkv
   audio_codec: AC3
   audio_channels: '5.1'
   release_group: Ehhhh
@@ -3856,4 +3854,103 @@
   format: HDTV
   video_codec: h264
   release_group: MiNDTHEGAP
+  type: episode
+
+? -feud.s01e05.and.the.winner.is.(the.oscars.of.1963).720p.amzn.webrip.dd5.1.x264-casstudio.mkv
+: year: 1963
+
+? feud.s01e05.and.the.winner.is.(the.oscars.of.1963).720p.amzn.webrip.dd5.1.x264-casstudio.mkv
+: title: feud
+  season: 1
+  episode: 5
+  episode_title: and the winner is
+  screen_size: 720p
+  streaming_service: Amazon Prime
+  format: WEBRip
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: casstudio
+  container: mkv
+  type: episode
+
+? Adventure.Time.S08E16.Elements.Part.1.Skyhooks.720p.WEB-DL.AAC2.0.H.264-RTN.mkv
+: title: Adventure Time
+  season: 8
+  episode: 16
+  season: 8
+  episode: 16
+  episode_title: Elements Part 1 Skyhooks
+  screen_size: 720p
+  format: WEB-DL
+  audio_codec: AAC
+  audio_channels: '2.0'
+  video_codec: h264
+  release_group: RTN
+  container: mkv
+  type: episode
+
+? D:\TV\SITCOMS (CLASSIC)\That '70s Show\Season 07\That '70s Show - S07E22 - 2000 Light Years from Home.mkv
+: title: That '70s Show
+  season: 7
+  episode: 22
+  episode_title: 2000 Light Years from Home
+  other: Classic
+  container: mkv
+  mimetype: video/x-matroska
+  type: episode
+
+? Show.Name.S02E01.Super.Title.720p.WEB-DL.DD5.1.H.264-ABC.nzb
+: title: Show Name
+  season: 2
+  episode: 1
+  episode_title: Super Title
+  screen_size: 720p
+  format: WEB-DL
+  audio_codec: DolbyDigital
+  audio_channels: '5.1'
+  video_codec: h264
+  release_group: ABC
+  container: nzb
+  type: episode
+
+? "[SGKK] Bleach 312v1 [720p/mkv]-Group.mkv"
+: title: Bleach
+  season: 3
+  episode: 12
+  version: 1
+  screen_size: 720p
+  release_group: Group
+  container: mkv
+  type: episode
+
+? The.Expanse.S02E08.720p.WEBRip.x264.EAC3-KiNGS.mkv
+: title: The Expanse
+  season: 2
+  episode: 8
+  screen_size: 720p
+  format: WEBRip
+  video_codec: h264
+  audio_codec: EAC3
+  release_group: KiNGS
+  container: mkv
+  type: episode
+
+? Series_name.2005.211.episode.title.avi
+: title: Series name
+  year: 2005
+  season: 2
+  episode: 11
+  episode_title: episode title
+  container: avi
+  type: episode
+
+? the.flash.2014.208.hdtv-lol[ettv].mkv
+: title: the flash
+  year: 2014
+  season: 2
+  episode: 8
+  format: HDTV
+  release_group: lol[ettv]
+  container: mkv
   type: episode

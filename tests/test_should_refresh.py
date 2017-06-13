@@ -26,13 +26,13 @@ import pytest
         'filepath': 'Show.S01E01.1080p.HDTV.X264-GROUP.srt',
         'expected': False
     },
-    {  # p2: Check file again but new file has UNKNOWN quality: no
+    {  # p2: Check file again but new file has UNKNOWN quality: yes
         'cur_status': Quality.composite_status(DOWNLOADED, Quality.HDTV),
         'same_file': False,
         'check_quality_again': True,
         'anime': False,
         'filepath': 'Show.S01E01.mkv',
-        'expected': False
+        'expected': True
     },
     {  # p3: Check file again and not UNKNOWN quality: yes
         'cur_status': Quality.composite_status(DOWNLOADED, Quality.HDTV),

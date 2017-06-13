@@ -10,7 +10,6 @@ from medusa.providers.torrent.html import (
     animetorrents,
     bithdtv,
     cpasbien,
-    danishbits,
     elitetorrent,
     freshontv,
     gftracker,
@@ -42,6 +41,7 @@ from medusa.providers.torrent.html import (
 from medusa.providers.torrent.json import (
     bitcannon,
     btn,
+    danishbits,
     hd4free,
     hdbits,
     norbits,

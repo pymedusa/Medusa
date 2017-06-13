@@ -6,7 +6,6 @@ import json
 import logging
 import threading
 import time
-
 from datetime import datetime
 
 from dateutil import parser
@@ -22,8 +21,8 @@ from medusa.helper.common import enabled_providers, pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.sbdatetime import sbdatetime
 from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
-from medusa.show_name_helpers import containsAtLeastOneWord, filterBadReleases
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -205,8 +204,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             [cur_provider.get_id()]
         )
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
-        minseed = int(cur_provider.minseed) if hasattr(cur_provider, 'minseed') else -1
-        minleech = int(cur_provider.minleech) if hasattr(cur_provider, 'minleech') else -1
+        minseed = int(cur_provider.minseed) if getattr(cur_provider, 'minseed', None) else -1
+        minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minleech', None) else -1
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
@@ -297,13 +296,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 i['rg_highlight'] = 'undesired'
             else:
                 i['rg_highlight'] = ''
-            if containsAtLeastOneWord(i['name'], required_words):
+            if contains_at_least_one_word(i['name'], required_words):
                 i['name_highlight'] = 'required'
-            elif containsAtLeastOneWord(i['name'], ignored_words) or not filterBadReleases(i['name'], parse=False):
+            elif contains_at_least_one_word(i['name'], ignored_words) or not filter_bad_releases(i['name'], parse=False):
                 i['name_highlight'] = 'ignored'
-            elif containsAtLeastOneWord(i['name'], undesired_words):
+            elif contains_at_least_one_word(i['name'], undesired_words):
                 i['name_highlight'] = 'undesired'
-            elif containsAtLeastOneWord(i['name'], preferred_words):
+            elif contains_at_least_one_word(i['name'], preferred_words):
                 i['name_highlight'] = 'preferred'
             else:
                 i['name_highlight'] = ''
