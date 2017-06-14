@@ -168,7 +168,7 @@ class GenericProvider(object):
                         search_result = self.get_result()
                         results.append(search_result)
 
-                        search_result.title, search_result.url = self._get_title_and_url(item)
+                        search_result.name, search_result.url = self._get_title_and_url(item)
                         search_result.seeders, search_result.leechers = self._get_result_info(item)
                         search_result.size = self._get_size(item)
                         search_result.pubdate = self._get_pubdate(item)

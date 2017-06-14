@@ -178,7 +178,6 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 if name not in propers:
                     logger.log('Found new possible proper result: {name}'.format
                                (name=proper.name), logger.DEBUG)
-                    proper.provider = cur_provider
                     propers[name] = proper
 
         threading.currentThread().name = original_thread_name
@@ -246,8 +245,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             cur_proper.content = None
             cur_proper.proper_tags = cur_proper.parse_result.proper_tags
 
-            # filter release
+            # filter release, in this case, it's just a quality gate. As we only send one result.
             best_result = pick_best_result(cur_proper)
+
             if not best_result:
                 logger.log('Rejected proper due to release filters: {name}'.format
                            (name=cur_proper.name))
@@ -287,14 +287,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if release_name:
                 current_codec = NameParser()._parse_string(release_name).video_codec
                 # Ignore proper if codec differs from downloaded release codec
-                if all([current_codec, parse_result.video_codec, parse_result.video_codec != current_codec]):
+                if all([current_codec, best_result.parse_result.video_codec, best_result.parse_result.video_codec != current_codec]):
                     logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
-                    if cur_proper.name not in processed_propers_names:
-                        self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
+                    if best_result.name not in processed_propers_names:
+                        self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
             else:
                 logger.log("Coudn't find a release name in database. Skipping codec comparison for: {name}".format
-                           (name=cur_proper.name), logger.DEBUG)
+                           (name=best_result.name), logger.DEBUG)
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
@@ -313,25 +313,26 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     logger.log('Ignoring proper with the same or lower version: {name}'.format
                                (name=best_result.name))
                     if cur_proper.name not in processed_propers_names:
-                        self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
+                        self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
 
                 if old_release_group != best_result.release_group:
                     logger.log('Ignoring proper from release group {new} instead of current group {old}'.format
                                (new=best_result.release_group, old=old_release_group))
-                    if cur_proper.name not in processed_propers_names:
-                        self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
+                    if best_result.name not in processed_propers_names:
+                        self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
 
             # if the show is in our list and there hasn't been a proper already added for that particular episode
             # then add it to our list of propers
-            if best_result.indexerid != -1 and (best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]) not in \
-                    map(operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
+            if best_result.indexerid != -1 and (
+                best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]
+            ) not in map(operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
                 logger.log('Found a desired proper: {name}'.format(name=best_result.name))
                 final_propers.append(best_result)
 
-            if cur_proper.name not in processed_propers_names:
-                self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
+            if best_result.name not in processed_propers_names:
+                self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
 
         return final_propers
 
