@@ -446,6 +446,42 @@ import pytest
         'manually_searched': False,
         'expected': True
     },
+    {  # p40: Downloaded SDTV and found SDTV PROPER: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.SDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'proper_tags': ['PROPER'],
+        'expected': True
+    },
+    {  # p41: Downloaded SDTV and found HDTV PROPER: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV, Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'proper_tags': ['PROPER'],
+        'expected': False
+    },
+    {  # p42: Downloaded SDTV and found SDTV PROPER: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.SDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'proper_tags': ['PROPER'],
+        'expected': True
+    },
 ])
 def test_should_replace(p):
     """Run the test."""
@@ -459,10 +495,11 @@ def test_should_replace(p):
     download_current_quality = p['download_current_quality']
     force = p['force']
     manually_searched = p['manually_searched']
+    proper_tags = p.get('proper_tags', '')
 
     # When
     replace, msg = Quality.should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities,
-                                          download_current_quality, force, manually_searched)
+                                          download_current_quality, force, manually_searched, proper_tags)
     actual = replace
 
     # Then
