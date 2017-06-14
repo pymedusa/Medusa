@@ -24,7 +24,6 @@ import operator
 import os
 import re
 import subprocess
-import time
 
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
@@ -35,6 +34,8 @@ from subliminal import ProviderPool, compute_score, provider_manager, refine, sa
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
+import tornado.gen
+
 from . import app, db, helpers, history
 from .cache import cache, memory_cache
 from .common import Quality, cpu_presets
@@ -971,7 +972,7 @@ class SubtitlesFinder(object):
         for ep_to_sub in sql_results:
 
             # give the CPU a break
-            time.sleep(cpu_presets[app.CPU_PRESET])
+            tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
             ep_num = episode_num(ep_to_sub['season'], ep_to_sub['episode']) or \
                 episode_num(ep_to_sub['season'], ep_to_sub['episode'], numbering='absolute')

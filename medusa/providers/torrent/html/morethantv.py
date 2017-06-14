@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import time
 import traceback
 
 from medusa import tv
@@ -22,6 +21,7 @@ from medusa.providers.torrent.torrent_provider import TorrentProvider
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
 from six.moves.urllib_parse import parse_qs
+import tornado.gen
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -234,7 +234,7 @@ class MoreThanTVProvider(TorrentProvider):
             return title
 
         # Take a break before querying the provider again
-        time.sleep(0.5)
+        tornado.gen.sleep(0.5)
         response = self.get_url(urljoin(self.url, details_url), returns='response')
         if not response or not response.text:
             log.debug("Couldn't open season pack details page for title: {0}", title)

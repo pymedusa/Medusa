@@ -111,7 +111,7 @@ from requests.compat import (
     unquote_plus,
 )
 from six import iteritems
-
+import tornado.gen
 from tornroutes import route
 
 from traktor import (
@@ -1043,7 +1043,7 @@ class Home(WebRoot):
                 return json.dumps({
                     'result': 'success',
                 })
-            time.sleep(1)
+            tornado.gen.sleep(1)
 
         return json.dumps({
             'result': 'failure',
@@ -1645,7 +1645,7 @@ class Home(WebRoot):
         if do_update:
             try:
                 app.show_queue_scheduler.action.updateShow(show_obj)
-                time.sleep(cpu_presets[app.CPU_PRESET])
+                tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException as e:
                 errors += 1
                 logger.log("Unable to update show '{show}': {error}".format
@@ -1654,7 +1654,7 @@ class Home(WebRoot):
         if do_update_exceptions:
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
-                time.sleep(cpu_presets[app.CPU_PRESET])
+                tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
                 name_cache.build_name_cache(show_obj)
             except CantUpdateShowException:
                 errors += 1
@@ -1664,7 +1664,7 @@ class Home(WebRoot):
         if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
-                time.sleep(cpu_presets[app.CPU_PRESET])
+                tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
             except CantUpdateShowException:
                 errors += 1
                 logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
@@ -1748,7 +1748,7 @@ class Home(WebRoot):
                 details='(with all related media)' if full else '(media untouched)',
             ))
 
-            time.sleep(cpu_presets[app.CPU_PRESET])
+            tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
         # Remove show from 'RECENT SHOWS' in 'Shows' menu
         app.SHOWS_RECENT = [x for x in app.SHOWS_RECENT if x['indexerid'] != show_obj.indexerid]
@@ -1768,7 +1768,7 @@ class Home(WebRoot):
         if error is not None:
             ui.notifications.error('Unable to refresh this show.', error)
 
-        time.sleep(cpu_presets[app.CPU_PRESET])
+        tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
@@ -1789,7 +1789,7 @@ class Home(WebRoot):
             ui.notifications.error('Unable to update this show.', ex(e))
 
         # just give it some time
-        time.sleep(cpu_presets[app.CPU_PRESET])
+        tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
@@ -1805,7 +1805,7 @@ class Home(WebRoot):
         # search and download subtitles
         app.show_queue_scheduler.action.download_subtitles(show_obj)
 
-        time.sleep(cpu_presets[app.CPU_PRESET])
+        tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
         return self.redirect('/home/displayShow?show={show}'.format(show=show_obj.indexerid))
 
@@ -2143,7 +2143,7 @@ class Home(WebRoot):
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
-        time.sleep(cpu_presets[app.CPU_PRESET])
+        tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
         if not ep_queue_item.started and ep_queue_item.success is None:
             return json.dumps({

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
-import time
 import traceback
 
 from medusa import (
@@ -16,6 +15,7 @@ from medusa import (
 from medusa.helper.common import convert_size, try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
+import tornado.gen
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -106,7 +106,7 @@ class RarbgProvider(TorrentProvider):
 
                 # Maximum requests allowed are 1req/2sec
                 # Changing to 5 because of server clock desync
-                time.sleep(5)
+                tornado.gen.sleep(5)
 
                 search_url = self.urls['api']
                 response = self.get_url(search_url, params=search_params, returns='response')

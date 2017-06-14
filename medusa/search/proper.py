@@ -24,12 +24,12 @@ import errno
 import operator
 import re
 import threading
-import time
 import traceback
 
 from socket import timeout as socket_timeout
 
 from requests import exceptions as requests_exceptions
+import tornado.gen
 
 from .. import app, db, helpers, logger
 from ..common import Quality, cpu_presets
@@ -379,7 +379,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
                 # snatch it
                 snatch_episode(cur_proper)
-                time.sleep(cpu_presets[app.CPU_PRESET])
+                tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
     @staticmethod
     def _canonical_name(name, clear_extension=False):

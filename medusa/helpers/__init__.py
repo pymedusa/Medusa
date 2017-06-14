@@ -54,6 +54,7 @@ from requests.compat import urlparse
 
 from six import binary_type, string_types, text_type
 from six.moves import http_client
+import tornado.gen
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -838,7 +839,7 @@ def backup_versioned_file(old_file, version):
                         u' {error!r}',
                         {'old': old_file, 'new': new_file, 'error': error})
             num_tries += 1
-            time.sleep(1)
+            tornado.gen.sleep(1)
             log.debug(u'Trying again.')
 
         if num_tries >= 10:
@@ -899,7 +900,7 @@ def restore_versioned_file(backup_file, version):
                         u' Error: {msg!r}',
                         {'name': restore_file, 'msg': error})
             num_tries += 1
-            time.sleep(1)
+            tornado.gen.sleep(1)
             log.debug(u'Trying again. Attempt #: {0}', num_tries)
 
         if num_tries >= 10:
@@ -1542,7 +1543,7 @@ def is_file_locked(check_file, write_lock_check=False):
             os.remove(lock_file)
         try:
             os.rename(check_file, lock_file)
-            time.sleep(1)
+            tornado.gen.sleep(1)
             os.rename(lock_file, check_file)
         except (OSError, IOError):
             return True

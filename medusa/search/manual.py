@@ -5,7 +5,6 @@
 import json
 import logging
 import threading
-import time
 from datetime import datetime
 
 from dateutil import parser
@@ -23,6 +22,8 @@ from medusa.sbdatetime import sbdatetime
 from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
 from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
 from medusa.show.show import Show
+
+import tornado.gen
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -270,7 +271,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         # give the CPU a break and some time to start the queue
-        time.sleep(cpu_presets[app.CPU_PRESET])
+        tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
     else:
         cached_results = [dict(row) for row in sql_total]
         for i in cached_results:

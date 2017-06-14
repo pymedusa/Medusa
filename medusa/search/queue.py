@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import threading
-import time
 import traceback
 
 from medusa import app, common, failed_history, generic_queue, history, providers, ui
@@ -18,6 +17,7 @@ from medusa.search.core import (
     search_providers,
     snatch_episode,
 )
+import tornado.gen
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -288,7 +288,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                     self.success = snatch_episode(result)
 
                     # give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
+                    tornado.gen.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception as error:
             self.success = False
@@ -375,7 +375,7 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
                     self.success = snatch_episode(result)
 
                     # Give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
+                    tornado.gen.sleep(common.cpu_presets[app.CPU_PRESET])
 
             elif self.manual_search and search_result:
                 self.results = search_result
@@ -490,7 +490,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
                          {'name': result.name})
 
             # give the CPU a break
-            time.sleep(common.cpu_presets[app.CPU_PRESET])
+            tornado.gen.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception:
             self.success = False
@@ -555,7 +555,7 @@ class BacklogQueueItem(generic_queue.QueueItem):
                         self.success = snatch_episode(result)
 
                         # give the CPU a break
-                        time.sleep(common.cpu_presets[app.CPU_PRESET])
+                        tornado.gen.sleep(common.cpu_presets[app.CPU_PRESET])
                 else:
                     log.info('No needed episodes found during backlog search for: {name}',
                              {'name': self.show.name})
@@ -638,7 +638,7 @@ class FailedQueueItem(generic_queue.QueueItem):
                     self.success = snatch_episode(result)
 
                     # give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
+                    tornado.gen.sleep(common.cpu_presets[app.CPU_PRESET])
             else:
                 log.info('No needed episodes found during failed search for: {name}',
                          {'name': self.show.name})

@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import socket
-import time
 
 import jsonrpclib
 
@@ -22,6 +21,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from six import itervalues
+import tornado.gen
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -245,7 +245,7 @@ class BTNProvider(TorrentProvider):
                 int(results_per_page),
                 int(offset)
             )
-            time.sleep(cpu_presets[app.CPU_PRESET])
+            tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
         except jsonrpclib.jsonrpc.ProtocolError as error:
             if error.message[1] == 'Invalid API Key':
                 log.warning('Incorrect authentication credentials.')
