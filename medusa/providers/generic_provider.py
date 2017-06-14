@@ -49,13 +49,12 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.scene_exceptions import get_scene_exceptions
+from medusa.search import PROPER_SEARCH
 from medusa.show.show import Show
 
 from pytimeparse import parse
 
 from requests.utils import add_dict_to_cookiejar
-
-from medusa.search import PROPER_SEARCH
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())

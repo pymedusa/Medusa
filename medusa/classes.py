@@ -24,7 +24,6 @@ from six.moves.urllib.request import FancyURLopener
 
 from . import app
 from .common import Quality, USER_AGENT
-from .indexers.indexer_api import indexerApi
 
 
 logger = logging.getLogger(__name__)
