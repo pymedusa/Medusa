@@ -2082,7 +2082,7 @@ class Series(TV):
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
     def want_episode(self, season, episode, quality, forced_search=False,
-                     download_current_quality=False, proper_tags=''):
+                     download_current_quality=False, proper_search=False):
         """Whether or not the episode with the specified quality is wanted.
 
         :param season:
@@ -2095,8 +2095,8 @@ class Series(TV):
         :type forced_search: bool
         :param download_current_quality:
         :type download_current_quality: bool
-        :param proper_tags:
-        :type propers_tags: string
+        :param proper_search:
+        :type propers_search: boolean
         :return:
         :rtype: bool
         """
@@ -2161,7 +2161,7 @@ class Series(TV):
         else:
             should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
                                                             preferred_qualities, download_current_quality,
-                                                            forced_search, manually_searched, proper_tags)
+                                                            forced_search, manually_searched, proper_search)
 
         log.debug(
             u"{id}: '{show}' {ep} status is: '{status}'."

@@ -455,10 +455,10 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'proper_tags': ['PROPER'],
+        'proper_search': True,
         'expected': True
     },
-    {  # p41: Downloaded SDTV and found HDTV PROPER: no
+    {  # p41: Downloaded SDTV and found HDTV PROPER but only Allowed. Not proper search: no
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.SDTV,
         'new_quality': Quality.HDTV,
@@ -467,10 +467,20 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'proper_tags': ['PROPER'],
         'expected': False
     },
-    {  # p42: Downloaded SDTV and found SDTV PROPER: yes
+    {  # p42: Downloaded SDTV and found HDTV PROPER in Preferred. Not proper search: yes
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV],
+        'preferred_qualities': [Quality.HDTV],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'expected': True
+    },
+    {  # p43: Downloaded SDTV and found SDTV PROPER: yes
         'ep_status': DOWNLOADED,
         'cur_quality': Quality.SDTV,
         'new_quality': Quality.SDTV,
@@ -479,8 +489,20 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'proper_tags': ['PROPER'],
+        'proper_search': True,
         'expected': True
+    },
+    {  # p44: Downloaded SDTV and found HDTV PROPER. Proper search: no
+        'ep_status': DOWNLOADED,
+        'cur_quality': Quality.SDTV,
+        'new_quality': Quality.HDTV,
+        'allowed_qualities': [Quality.SDTV, Quality.HDTV],
+        'preferred_qualities': [],
+        'download_current_quality': False,
+        'force': False,
+        'manually_searched': False,
+        'proper_search': True,
+        'expected': False
     },
 ])
 def test_should_replace(p):
@@ -495,11 +517,11 @@ def test_should_replace(p):
     download_current_quality = p['download_current_quality']
     force = p['force']
     manually_searched = p['manually_searched']
-    proper_tags = p.get('proper_tags', '')
+    proper_search = p.get('proper_search', False)
 
     # When
     replace, msg = Quality.should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities,
-                                          download_current_quality, force, manually_searched, proper_tags)
+                                          download_current_quality, force, manually_searched, proper_search)
     actual = replace
 
     # Then

@@ -634,7 +634,7 @@ class Quality(object):
 
     @staticmethod
     def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
-                       download_current_quality=False, force=False, manually_searched=False, proper_tags=''):
+                       download_current_quality=False, force=False, manually_searched=False, proper_search=False):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, then any downloaded quality is final
@@ -670,7 +670,7 @@ class Quality(object):
         if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
             return False, 'New quality is not in any wanted quality lists. Ignoring new quality'
 
-        if proper_tags:
+        if proper_search:
             if new_quality == old_quality:
                 return True, 'New quality is a PROPER of existing quality. Accepting PROPER'
             return False, "New quality can't PROPER current quality. Ignoring PROPER"
