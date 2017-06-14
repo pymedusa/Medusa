@@ -249,7 +249,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             best_result = pick_best_result(cur_proper)
 
             if not best_result:
-                logger.log('Rejected proper due to release filters: {name}'.format
+                logger.log('Rejected proper: {name}'.format
                            (name=cur_proper.name))
                 if cur_proper.name not in processed_propers_names:
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
