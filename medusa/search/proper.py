@@ -327,7 +327,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # then add it to our list of propers
             if best_result.indexerid != -1 and (
                 best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]
-            ) not in map(operator.attrgetter('indexerid', 'season', 'episode'), final_propers):
+            ) not in map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers):
                 logger.log('Found a desired proper: {name}'.format(name=best_result.name))
                 final_propers.append(best_result)
 
@@ -355,7 +355,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 b'AND quality = ? '
                 b'AND date >= ? '
                 b"AND (action LIKE '%02' OR action LIKE '%04' OR action LIKE '%09' OR action LIKE '%12')",
-                [cur_proper.indexerid, cur_proper.actual_season, cur_proper.actual_episodes[0], cur_proper.quality,
+                [cur_proper.indexerid, cur_proper.actual_season, cur_proper.actual_episode, cur_proper.quality,
                  history_limit.strftime(History.date_format)])
 
             # make sure that none of the existing history downloads are the same proper we're trying to download
@@ -375,27 +375,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                                (result=cur_proper.name), logger.DEBUG)
                     continue
 
-                # get the episode object
-                ep_obj = cur_proper.show.get_episode(cur_proper.actual_season, cur_proper.actual_episodes[0])
-
-                # make the result object
-                result = cur_proper.provider.get_result([ep_obj])
-                result.show = cur_proper.show
-                result.url = cur_proper.url
-                result.name = cur_proper.name
-                result.quality = cur_proper.quality
-                result.release_group = cur_proper.release_group
-                result.version = cur_proper.version
-                result.content = cur_proper.content
-                result.seeders = cur_proper.seeders
-                result.leechers = cur_proper.leechers
-                result.size = cur_proper.size
-                result.pubdate = cur_proper.pubdate
-                result.hash = cur_proper.hash
-                result.proper_tags = cur_proper.proper_tags
+                cur_proper.create_episode_object()
 
                 # snatch it
-                snatch_episode(result)
+                snatch_episode(cur_proper)
                 time.sleep(cpu_presets[app.CPU_PRESET])
 
     @staticmethod
