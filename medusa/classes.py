@@ -20,12 +20,11 @@ import logging
 
 from dateutil import parser
 
-from six.moves.urllib.request import FancyURLopener
-
-from . import app
-from .common import Quality, USER_AGENT
-
+from medusa import app
+from medusa.common import Quality, USER_AGENT
 from medusa.logger.adapters.style import BraceAdapter
+
+from six.moves.urllib.request import FancyURLopener
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -337,7 +336,7 @@ try:
     import urllib
     urllib._urlopener = ApplicationURLopener()
 except ImportError:
-    logger.debug(u'Unable to import _urlopener, not using user_agent for urllib')
+    log.debug(u'Unable to import _urlopener, not using user_agent for urllib')
 
 
 # The warning viewer: TODO: Change CamelCase to snake_case

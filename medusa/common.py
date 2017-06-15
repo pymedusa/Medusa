@@ -30,13 +30,12 @@ from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
+from medusa.numdict import NumDict
+from medusa.recompiled import tags
+from medusa.search import PROPER_SEARCH
+
 from six import PY3
 from six.moves import reduce
-
-from .numdict import NumDict
-from .recompiled import tags
-
-from medusa.search import PROPER_SEARCH
 
 if PY3:
     long = int
