@@ -151,14 +151,6 @@ class SearchResult(object):
         if len(value) == 1:
             self._actual_episode = value[0]
 
-    def create_episode_object(self):
-        if self.actual_season and self.actual_episodes and self.show:
-            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
-        else:
-            log.exception('Trying to create an episode object, without the proper ingredients. '
-                          'Missing season: {season}, episodes: {episodes} or the show object: {show}',
-                          {'season': self.actual_season, 'episodes': self.actual_episodes, 'show': self.show})
-
     def __str__(self):
 
         if self.provider is None:
@@ -186,19 +178,22 @@ class SearchResult(object):
     def add_result_to_cache(self, cache):
         """Cache the item if needed."""
         if self.add_cache_entry:
-            log.debug('Adding item from search to cache: {release_name}', release_name=self.name)
+            # FIXME: Added repr parsing, as that prevents the logger from throwing an exception.
+            # This can happen when there are unicode decoded chars in the release name.
+            log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
             return cache.add_cache_entry(self.name, self.url, self.seeders,
                                          self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
         return None
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        episode_object = []
-        for current_episode in self.actual_episodes:
-            episode_object.append(self.show.get_episode(self.actual_season,
-                                                        current_episode))
-        self.episodes = episode_object
-        return episode_object
+        if self.actual_season and self.actual_episodes and self.show:
+            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        else:
+            log.exception('Trying to create an episode object, without the proper ingredients. '
+                          'Missing season: {season}, episodes: {episodes} or the show object: {show}',
+                          {'season': self.actual_season, 'episodes': self.actual_episodes, 'show': self.show})
+        return self.episodes
 
     def finish_search_result(self, provider):
         self.size = provider._get_size(self.item)
