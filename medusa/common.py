@@ -433,12 +433,13 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
+        height = int(height.magnitude)
+
         # TODO: Use knowledge information like 'resolution'
         base_filename = path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
         webdl = re.search(r"web.?dl|web(rip|mux|hd)", base_filename, re.I) is not None
 
-        height = height.magnitude
         ret = Quality.UNKNOWN
         if 3240 < height:
             ret = ((Quality.UHD_8K_TV, Quality.UHD_8K_BLURAY)[bluray], Quality.UHD_8K_WEBDL)[webdl]
