@@ -674,7 +674,8 @@ class Quality(object):
         if search_type == PROPER_SEARCH:
             if new_quality == old_quality:
                 return True, 'New quality is the same as the existing quality. Accepting PROPER'
-            return False, 'New quality is different from the existing quality. Ignoring PROPER, as we only PROPER the same release.'
+            return False, 'New quality is different from the existing quality.' \
+                          'Ignoring PROPER, as we only PROPER the same release.'
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.

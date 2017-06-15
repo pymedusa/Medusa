@@ -1,6 +1,7 @@
 # coding=utf-8
 """Tests for medusa/test_should_replace.py."""
 from medusa.common import ARCHIVED, DOWNLOADED, Quality, SKIPPED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER, WANTED
+from medusa.search import DAILY_SEARCH, PROPER_SEARCH
 
 import pytest
 
@@ -455,7 +456,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'proper_search': True,
+        'search_type': PROPER_SEARCH,
         'expected': True
     },
     {  # p41: Downloaded SDTV and found HDTV PROPER but only Allowed. Not proper search: no
@@ -489,7 +490,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'proper_search': True,
+        'search_type': PROPER_SEARCH,
         'expected': True
     },
     {  # p44: Downloaded SDTV and found HDTV PROPER. Proper search: no
@@ -501,7 +502,7 @@ import pytest
         'download_current_quality': False,
         'force': False,
         'manually_searched': False,
-        'proper_search': True,
+        'search_type': PROPER_SEARCH,
         'expected': False
     },
 ])
@@ -517,11 +518,11 @@ def test_should_replace(p):
     download_current_quality = p['download_current_quality']
     force = p['force']
     manually_searched = p['manually_searched']
-    proper_search = p.get('proper_search', False)
+    search_type = p.get('search_type', DAILY_SEARCH)
 
     # When
     replace, msg = Quality.should_replace(ep_status, cur_quality, new_quality, allowed_qualities, preferred_qualities,
-                                          download_current_quality, force, manually_searched, proper_search)
+                                          download_current_quality, force, manually_searched, search_type)
     actual = replace
 
     # Then
