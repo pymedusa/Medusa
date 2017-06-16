@@ -3,7 +3,8 @@
 
 import unittest
 
-from medusa import common, db, name_cache, scene_exceptions, show_name_helpers
+from medusa import common, db, name_cache, scene_exceptions
+from medusa.show import naming
 from medusa.tv import Series as Show
 from . import test_lib as test
 
@@ -33,7 +34,7 @@ class SceneTests(test.AppTestDBCase):
         :param expected:
         :return:
         """
-        result = show_name_helpers.filterBadReleases(name)
+        result = naming.filter_bad_releases(name)
         self.assertEqual(result, expected)
 
     def test_all_possible_show_names(self):

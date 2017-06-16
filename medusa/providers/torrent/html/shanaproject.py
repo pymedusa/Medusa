@@ -169,7 +169,7 @@ class ShanaProjectProvider(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -181,7 +181,7 @@ class ShanaProjectProvider(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.series.get_all_possible_names(season=episode.season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

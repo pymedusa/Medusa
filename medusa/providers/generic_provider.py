@@ -81,6 +81,7 @@ class GenericProvider(object):
             'http://torra.pro/torrent/{info_hash}.torrent',
             'http://torra.click/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
+            'http://thetorrent.org/torrent/{info_hash}.torrent',
             'http://torrasave.site/torrent/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
@@ -208,6 +209,10 @@ class GenericProvider(object):
                 # Find results from the provider
                 items_list += self.search(search_string, ep_obj=episode)
 
+            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            if search_mode == 'sponly':
+                break
+
         if len(results) == len(episodes):
             return results
 
@@ -240,6 +245,7 @@ class GenericProvider(object):
             search_results.append(search_result)
             search_result.item = item
             search_result.download_current_quality = download_current_quality
+            search_result.forced_search = forced_search
 
             (search_result.name, search_result.url) = self._get_title_and_url(item)
             (search_result.seeders, search_result.leechers) = self._get_result_info(item)
@@ -379,12 +385,6 @@ class GenericProvider(object):
                           search_result.name, search_result.url)
                 continue
 
-            if not manual_search:
-                # The second check, will loop through actual_episodes and check if there's anything useful in it.
-                if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
-                    log.debug('Ignoring result {0}', search_result.name)
-                    continue
-
             log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
             episode_object = search_result.create_episode_object()
@@ -393,15 +393,16 @@ class GenericProvider(object):
 
             if not episode_object:
                 episode_number = SEASON_RESULT
-                log.debug('Separating full season result to check for later')
+                log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
             elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
-                log.debug('Single episode result.')
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
-                log.debug('Separating multi-episode result to check for later - result contains episodes: {0}',
-                          search_result.parsed_result.episode_numbers)
-
+                log.debug('Found multi-episode ({0}) result {1} at {2}',
+                          ', '.join(map(str, search_result.parsed_result.episode_numbers)),
+                          search_result.name,
+                          search_result.url)
             if episode_number not in results:
                 results[episode_number] = [search_result]
             else:
@@ -478,7 +479,7 @@ class GenericProvider(object):
         """Login to provider."""
         return True
 
-    def search(self, search_params, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None):
         """Search the provider."""
         return []
 
@@ -574,6 +575,8 @@ class GenericProvider(object):
 
     def _get_tvdb_id(self):
         """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
+        if not self.show:
+            return None
         return self.show.indexerid if self.show.indexer == INDEXER_TVDBV2 else self.show.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):

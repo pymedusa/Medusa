@@ -16,7 +16,7 @@ from subliminal.subtitle import Subtitle
 
 def test_sorted_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv2', 'trash', 'itasa', 'thesubdb', 'shooter'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'trash', 'itasa', 'thesubdb', 'shooter'])
     monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
 
     # When
@@ -24,12 +24,11 @@ def test_sorted_service_list(monkeypatch):
 
     # Then
     expected = [
-        {'name': 'legendastv2', 'enabled': True},
+        {'name': 'legendastv', 'enabled': True},
         {'name': 'itasa', 'enabled': False},
         {'name': 'thesubdb', 'enabled': True},
         {'name': 'shooter', 'enabled': False},
         {'name': 'addic7ed', 'enabled': False},
-        {'name': 'legendastv', 'enabled': False},
         {'name': 'napiprojekt', 'enabled': False},
         {'name': 'opensubtitles', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
@@ -42,14 +41,14 @@ def test_sorted_service_list(monkeypatch):
 
 def test_enabled_service_list(monkeypatch):
     # Given
-    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv2', 'a', 'itasa', 'tvsubtitles', 'shooter'])
+    monkeypatch.setattr(app, 'SUBTITLES_SERVICES_LIST', ['legendastv', 'a', 'itasa', 'tvsubtitles', 'shooter'])
     monkeypatch.setattr(app, 'SUBTITLES_SERVICES_ENABLED', [1, 1, 0, 1, 0])
 
     # When
     actual = sut.enabled_service_list()
 
     # Then
-    expected = ['legendastv2', 'tvsubtitles']
+    expected = ['legendastv', 'tvsubtitles']
     assert expected == actual
 
 

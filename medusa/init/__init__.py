@@ -26,6 +26,7 @@ def initialize():
     _strptime_workaround()
     _configure_guessit()
     _configure_subliminal()
+    _configure_knowit()
 
 
 def _check_python_version():
@@ -34,8 +35,12 @@ def _check_python_version():
         sys.exit(1)
 
 
+def _lib_location():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
+
+
 def _configure_syspath():
-    sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib')))
+    sys.path.insert(1, _lib_location())
 
 
 def _register_utf8_codec():
@@ -123,16 +128,34 @@ def _configure_subliminal():
 
     basename = __name__.split('.')[0]
 
-    provider_manager.register('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider')
+    # Unregister
+    for name in ('legendastv = subliminal.providers.legendastv:LegendasTVProvider', ):
+        provider_manager.internal_extensions.remove(name)
+        provider_manager.registered_extensions.append(name)
+        provider_manager.unregister(name)
 
-    # Use our custom providers
-    provider_manager.register('thewiz = {basename}.subtitle_providers.thewiz:TheWizProvider'.format(basename=basename))
-    provider_manager.register('itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename))
-    provider_manager.register(
-        'legendastv2 = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename))
+    # Register
+    for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
+                 'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
+                 'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename),
+                 'thewiz = {basename}.subtitle_providers.thewiz:TheWizProvider'.format(basename=basename)):
+        provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
     refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
 
     # Configure podnapisi https url
     PodnapisiProvider.server_url = 'https://podnapisi.net/subtitles/'
+
+
+def _configure_knowit():
+    from knowit import api
+    from knowit.utils import detect_os
+
+    os_family = detect_os()
+    suggested_path = os.path.join(_lib_location(), os_family)
+    if os_family == 'windows':
+        subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
+        suggested_path = os.path.join(suggested_path, subfolder)
+
+    api.initialize({'mediainfo': suggested_path})
