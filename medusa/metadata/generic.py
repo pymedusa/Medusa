@@ -378,12 +378,12 @@ class GenericMetadata(object):
         all_eps = [ep_obj] + ep_obj.related_episodes
 
         # validate show
-        if not helpers.validate_show(ep_obj.show):
+        if not helpers.validate_show(ep_obj.series):
             return None
 
         # try all included episodes in case some have thumbs and others don't
         for cur_ep in all_eps:
-            myEp = helpers.validate_show(cur_ep.show, cur_ep.season, cur_ep.episode)
+            myEp = helpers.validate_show(cur_ep.series, cur_ep.season, cur_ep.episode)
             if not myEp:
                 continue
 
@@ -733,13 +733,12 @@ class GenericMetadata(object):
 
     def _retrieve_show_image(self, image_type, show_obj, which=None):
         """
-        Gets an image URL from theTVDB.com and TMDB.com, downloads it and returns the data.
+        Get an image URL from theTVDB.com and TMDB.com, download it and returns the data.
 
-        image_type: type of image to retrieve (currently supported: fanart, poster, banner)
-        show_obj: a Series object to use when searching for the image
-        which: optional, a specific numbered poster to look for
-
-        Returns: the binary image data if available, or else None
+        :param image_type: type of image to retrieve (currently supported: fanart, poster, banner)
+        :param show_obj: a Series object to use when searching for the image
+        :param which: optional, a specific numbered poster to look for
+        :return: the binary image data if available, or else None
         """
         image_url = None
 

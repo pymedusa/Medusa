@@ -1,49 +1,33 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Binsearch provider."""
+
 from __future__ import unicode_literals
 
-import datetime
+import logging
 import re
 from time import time
 
-from medusa.helper.common import (
-    convert_size,
-)
-
-from medusa import (
-    logger,
-    tv,
-)
-from medusa.bs4_parser import BS4Parser
+from medusa import tv
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
-from pytimeparse import parse
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 size_regex = re.compile(r'size: (\d+\.\d+\xa0\w{2}), parts', re.I)
 title_regex = re.compile(r'\"([^\"]+)"', re.I)
+
 
 class BinSearchProvider(NZBProvider):
     """BinSearch Newznab provider."""
 
+    size_regex = re.compile(r'size: (\d+\.\d+\xa0\w{2}), parts', re.I)
+    title_regex = re.compile(r'\"([^\"]+)"', re.I)
+
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('BinSearch')
+        super(BinSearchProvider, self).__init__('BinSearch')
 
         # Credentials
         self.public = True
@@ -72,7 +56,7 @@ class BinSearchProvider(NZBProvider):
         groups = [1, 2]
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
                 search_params['q'] = search_string
@@ -80,12 +64,11 @@ class BinSearchProvider(NZBProvider):
                     # Try both 'search in the most popular groups' & 'search in the other groups' modes
                     search_params['server'] = group
                     if mode != 'RSS':
-                        logger.log('Search string: {search}'.format
-                                (search=search_string), logger.DEBUG)
+                        log.debug('Search string: {search}', {'search': search_string})
 
                     response = self.get_url(self.urls['search'], params=search_params)
                     if not response:
-                        logger.log('No data returned from provider', logger.DEBUG)
+                        log.debug('No data returned from provider')
                         continue
 
                     results += self.parse(response.text, mode)
@@ -111,8 +94,8 @@ class BinSearchProvider(NZBProvider):
             table = html.find('table', class_='xMenuT')
             rows = table('tr') if table else []
             row_offset = 2
-            if  not rows or not len(rows) - row_offset:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+            if not rows or not len(rows) - row_offset:
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             headers = rows[0]('th')
@@ -128,14 +111,14 @@ class BinSearchProvider(NZBProvider):
                 nzb_id = col[1].find('input')['name']
                 title_field = col['subject'].find('span')
                 # Try and get the the article subject from the weird binsearch format
-                title = title_regex.search(title_field.text).group(1)
+                title = BinSearchProvider.title_regex.search(title_field.text).group(1)
                 for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb'):
                     # Strip extensions that aren't part of the file name
                     title = title.rstrip(extension)
                 if not all([title, nzb_id]):
                     continue
                 # Obtain the size from the 'description'
-                size_field = size_regex.search(col['subject'].text)
+                size_field = BinSearchProvider.size_regex.search(col['subject'].text)
                 if size_field:
                     size_field = size_field.group(1)
                 size = convert_size(size_field, sep='\xa0') or -1
@@ -154,13 +137,11 @@ class BinSearchProvider(NZBProvider):
                     'pubdate': pubdate,
                 }
                 if mode != 'RSS':
-                    logger.log('Found result: {0}'.format
-                               (title), logger.DEBUG)
+                    log.debug('Found result: {0}', title)
 
                 items.append(item)
 
         return items
-
 
 
 class BinSearchCache(tv.Cache):
@@ -188,9 +169,8 @@ class BinSearchCache(tv.Cache):
         """
         Retrieve the title and URL data from the item XML node.
 
-        item: An elementtree.ElementTree element representing the <item> tag of the RSS feed
-
-        Returns: A tuple containing two strings representing title and URL respectively
+        :item: An elementtree.ElementTree element representing the <item> tag of the RSS feed
+        :return: A tuple containing two strings representing title and URL respectively
         """
         title = item.get('description')
         if title:
@@ -228,7 +208,7 @@ class BinSearchCache(tv.Cache):
             search_params = {'max': 50, 'g': group}
             data = self.get_rss_feed(self.provider.urls['rss'], search_params)['entries']
             if not data:
-                logger.log('No data returned from provider', logger.DEBUG)
+                log.debug('No data returned from provider')
                 continue
 
             for item in data:

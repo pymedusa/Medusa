@@ -24,9 +24,11 @@ from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
-from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
+from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
+from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
+from ..ws import MedusaWebSocketHandler
 
 
 def get_apiv2_handlers(base):
@@ -104,6 +106,9 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
         self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
 
+        # websocket root
+        self.options['web_socket'] = r'{root}/ws'.format(root=app.WEB_ROOT)
+
         # tornado setup
         self.enable_https = self.options['enable_https']
         self.https_cert = self.options['https_cert']
@@ -150,6 +155,8 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
             (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
 
+            (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
+
             # Web calendar handler (Needed because option Unprotected calendar)
             (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
 
@@ -157,6 +164,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
         ] + self._get_webui_routes())
 
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
+
+        # Websocket handler
+        self.app.add_handlers(".*$", [
+            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), MedusaWebSocketHandler.WebSocketUIHandler)
+        ])
 
         # Static File Handlers
         self.app.add_handlers('.*$', [
@@ -186,7 +198,15 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root})
+             {'path': self.video_root}),
+
+            # vue dist
+            (r'{base}/vue/dist/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'dist')}),
+
+            # vue index.html
+            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
 
     def _get_webui_routes(self):
@@ -202,8 +222,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on {scheme}://{host}:{port}/'.format
-                   (scheme=protocol, host=self.options['host'], port=self.options['port']))
+        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}/'.format
+                   (scheme=protocol,
+                    host=self.options['host'],
+                    port=self.options['port'],
+                    web_root=self.options['web_root']))
 
         try:
             self.server.listen(self.options['port'], self.options['host'])

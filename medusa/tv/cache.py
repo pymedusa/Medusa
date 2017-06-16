@@ -12,7 +12,6 @@ from time import time
 from medusa import (
     app,
     db,
-    show_name_helpers,
 )
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
@@ -23,6 +22,7 @@ from medusa.name_parser.parser import (
     NameParser,
 )
 from medusa.rss_feeds import getFeed
+from medusa.show import naming
 from medusa.show.show import Show
 
 from six import text_type
@@ -441,7 +441,7 @@ class Cache(object):
                 b'WHERE indexerid = ? AND'
                 b'     season = ? AND'
                 b'     episodes LIKE ?'.format(name=self.provider_id),
-                [episode.show.indexerid, episode.season,
+                [episode.series.indexerid, episode.season,
                  b'%|{0}|%'.format(episode.episode)]
             )
         else:
@@ -456,7 +456,7 @@ class Cache(object):
                         qualities=','.join((str(x)
                                             for x in ep_obj.wanted_quality))
                     ),
-                    [ep_obj.show.indexerid, ep_obj.season,
+                    [ep_obj.series.indexerid, ep_obj.season,
                      b'%|{0}|%'.format(ep_obj.episode)]]
                 )
 
@@ -468,17 +468,19 @@ class Cache(object):
                 sql_results = []
                 log.debug(
                     '{id}: No cached results in {provider} for series {show_name!r} episode {ep}', {
-                        'id': ep_obj.show.indexerid,
+                        'id': episode[0].series.indexerid,
                         'provider': self.provider.name,
-                        'show_name': ep_obj.show.name,
-                        'ep': episode_num(ep_obj.season, ep_obj.episode),
+                        'show_name': episode[0].series.name,
+                        'ep': episode_num(episode[0].season, episode[0].episode),
                     }
                 )
 
         # for each cache entry
         for cur_result in sql_results:
+            search_result = self.provider.get_result()
+
             # ignored/required words, and non-tv junk
-            if not show_name_helpers.filterBadReleases(cur_result[b'name']):
+            if not naming.filter_bad_releases(cur_result[b'name']):
                 continue
 
             # get the show, or ignore if it's not one of our shows
@@ -492,8 +494,8 @@ class Cache(object):
                 continue
 
             # get season and ep data (ignoring multi-eps for now)
-            cur_season = int(cur_result[b'season'])
-            if cur_season == -1:
+            search_result.season = int(cur_result[b'season'])
+            if search_result.season == -1:
                 continue
 
             cur_ep = cur_result[b'episodes'].split('|')[1]
@@ -502,50 +504,54 @@ class Cache(object):
 
             cur_ep = int(cur_ep)
 
-            cur_quality = int(cur_result[b'quality'])
-            cur_release_group = cur_result[b'release_group']
-            cur_version = cur_result[b'version']
+            search_result.quality = int(cur_result[b'quality'])
+            search_result.release_group = cur_result[b'release_group']
+            search_result.version = cur_result[b'version']
 
             # if the show says we want that episode then add it to the list
-            if not show_obj.want_episode(cur_season, cur_ep, cur_quality,
+            if not show_obj.want_episode(search_result.season, cur_ep, search_result.quality,
                                          forced_search, down_cur_quality):
                 log.debug('Ignoring {0}', cur_result[b'name'])
                 continue
 
-            ep_obj = show_obj.get_episode(cur_season, cur_ep)
+            search_result.episodes = [show_obj.get_episode(search_result.season, cur_ep)]
+
+            search_result.actual_episodes = [search_result.episodes[0].episode]
+            search_result.actual_season = search_result.season
 
             # build a result object
-            title = cur_result[b'name']
-            url = cur_result[b'url']
+            search_result.name = cur_result[b'name']
+            search_result.url = cur_result[b'url']
 
             log.debug(
                 '{id}: Using cached results from {provider} for series {show_name!r} episode {ep}', {
-                    'id': ep_obj.show.indexerid,
+                    'id': search_result.episodes[0].series.indexerid,
                     'provider': self.provider.name,
-                    'show_name': ep_obj.show.name,
-                    'ep': episode_num(ep_obj.season, ep_obj.episode),
+                    'show_name': search_result.episodes[0].series.name,
+                    'ep': episode_num(search_result.episodes[0].season, search_result.episodes[0].episode),
                 }
             )
 
-            result = self.provider.get_result([ep_obj])
-            result.show = show_obj
-            result.url = url
-            result.seeders = cur_result[b'seeders']
-            result.leechers = cur_result[b'leechers']
-            result.size = cur_result[b'size']
-            result.pubdate = cur_result[b'pubdate']
-            result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
-            result.name = title
-            result.quality = cur_quality
-            result.release_group = cur_release_group
-            result.version = cur_version
-            result.content = None
+            # Map the remaining attributes
+            search_result.show = show_obj
+            search_result.seeders = cur_result[b'seeders']
+            search_result.leechers = cur_result[b'leechers']
+            search_result.size = cur_result[b'size']
+            search_result.pubdate = cur_result[b'pubdate']
+            search_result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
+            search_result.content = None
 
+            # FIXME: Should be changed to search_result.search_type
+            search_result.forced_search = forced_search
+
+            search_result.download_current_quality = down_cur_quality
+
+            episode_object = search_result.episodes[0]
             # add it to the list
-            if ep_obj not in needed_eps:
-                needed_eps[ep_obj] = [result]
+            if episode_object not in needed_eps:
+                needed_eps[episode_object] = [search_result]
             else:
-                needed_eps[ep_obj].append(result)
+                needed_eps[episode_object].append(search_result)
 
         # datetime stamp this search so cache gets cleared
         self.searched = time()

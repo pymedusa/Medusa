@@ -644,7 +644,7 @@
     - Timsit
     - Lindon
   screen_size: 1080p
-  container: MKV
+  container: mkv
   format: HDTV
 
 ? some.movie.720p.bluray.x264-mind
@@ -1081,4 +1081,19 @@
   year: 1986
   format: BluRay
   screen_size: 1080p
+  type: movie
+
+? 10 Cloverfield Lane.[Blu-Ray 1080p].[MULTI]
+: options: --type movie
+  title: 10 Cloverfield Lane
+  format: BluRay
+  screen_size: 1080p
+  language: Multiple languages
+  type: movie
+
+? 007.Spectre.[HDTC.MD].[TRUEFRENCH]
+: options: --type movie
+  title: 007 Spectre
+  format: HDTC
+  language: French
   type: movie

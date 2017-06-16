@@ -558,7 +558,7 @@ IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
 
 PREFERRED_WORDS = ""
 
-UNDESIRED_WORDS = ""
+UNDESIRED_WORDS = "internal,xvid"
 
 TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
     udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\
@@ -614,3 +614,10 @@ PROPERS_INTERVAL_LABELS = {'daily': '24 hours',
                            '45m': '45 mins',
                            '15m': '15 mins'
                            }
+
+# Plex fallback settings
+FALLBACK_PLEX_ENABLE = True
+FALLBACK_PLEX_NOTIFICATIONS = True
+FALLBACK_PLEX_TIMEOUT = 3
+FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
+TVDB_API_KEY = '0629B785CE550C8D'

@@ -21,7 +21,7 @@ from tornado.escape import utf8
 from tornado.gen import coroutine
 from tornado.ioloop import IOLoop
 from tornado.process import cpu_count
-from tornado.web import HTTPError, RequestHandler, authenticated
+from tornado.web import HTTPError, RequestHandler, StaticFileHandler, addslash, authenticated
 from tornroutes import route
 from ...api.v1.core import function_mapper
 from .... import app, classes, db, exception_handler, helpers, logger, network_timezones, ui
@@ -214,9 +214,8 @@ class BaseHandler(RequestHandler):
                                             utf8(url)))
 
     def get_current_user(self):
-        if not isinstance(self, UI):
-            if app.WEB_USERNAME and app.WEB_PASSWORD:
-                return self.get_secure_cookie(app.SECURE_TOKEN)
+        if app.WEB_USERNAME and app.WEB_PASSWORD:
+            return self.get_secure_cookie(app.SECURE_TOKEN)
         return True
 
 
@@ -407,3 +406,18 @@ class UI(WebRoot):
             cur_notification_num += 1
 
         return json.dumps(messages)
+
+
+class AuthenticatedStaticFileHandler(StaticFileHandler):
+    def __init__(self, *args, **kwargs):
+        super(AuthenticatedStaticFileHandler, self).__init__(*args, **kwargs)
+
+    def get_current_user(self):
+        if app.WEB_USERNAME and app.WEB_PASSWORD:
+            return self.get_secure_cookie(app.SECURE_TOKEN)
+        return True
+
+    @addslash
+    @authenticated
+    def get(self, *args, **kwargs):
+        super(AuthenticatedStaticFileHandler, self).get(*args, **kwargs)

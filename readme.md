@@ -1,6 +1,6 @@
 ![Medusa](static/images/medusa-logo.png)
 
-[![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=master)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open")  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ade58b4469dd4b38bbbd681913d97bfc)](https://www.codacy.com/app/pymedusa/Medusa?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pymedusa/Medusa&amp;utm_campaign=Badge_Grade) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
+[![Build Status](https://travis-ci.org/pymedusa/Medusa.svg?branch=master)](https://travis-ci.org/pymedusa/Medusa) [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/pymedusa/Medusa.svg)](http://isitmaintained.com/project/pymedusa/Medusa "Percentage of issues still open")  [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ade58b4469dd4b38bbbd681913d97bfc)](https://www.codacy.com/app/pymedusa/Medusa?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=pymedusa/Medusa&amp;utm_campaign=Badge_Grade) [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo) [![Coverage Status](https://coveralls.io/repos/github/pymedusa/medusa/badge.svg?branch=master)](https://coveralls.io/github/pymedusa/medusa?branch=master)
 
 
 ### Automatic Video Library Manager for TV Shows. It watches for new episodes of your favorite shows, and when they are posted it does its magic.
@@ -69,6 +69,7 @@ A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Me
 ![image](https://nzb.cat/favicon.ico)[NZB.cat](https://nzb.cat/)
 ![image](https://nzbgeek.info/favicon.ico)[NZBGeek](https://nzbgeek.info)
 ![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/dognzb.png)[DOGnzb](https://dognzb.cr)
+![image](https://raw.githubusercontent.com/pymedusa/Medusa/master/static/images/providers/danishbits.png)[DanishBits](https://danishbits.org)
 
 #### Browsers support <sub><sub>made by <a href="https://godban.github.io">godban</a></sub></sub>
 

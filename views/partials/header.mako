@@ -63,8 +63,9 @@
                     % if app.USE_EMBY and app.EMBY_HOST != "" and app.EMBY_APIKEY != "":
                         <li><a href="home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                     % endif
-                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and app.TORRENT_HOST[:4] == 'http':
-                        <li><a href="manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
+                    ## Avoid mixed content blocking by open manage torrent in new tab
+                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole':
+                        <li><a href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                     % endif
                     % if app.USE_FAILED_DOWNLOADS:
                         <li><a href="manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>

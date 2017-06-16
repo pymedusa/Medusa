@@ -2133,7 +2133,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
@@ -2174,7 +2174,7 @@ class Home(WebRoot):
         try:
             if lang:
                 logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
-                           (show=ep_obj.show.name, lang=lang))
+                           (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
             return json.dumps({
@@ -2190,7 +2190,7 @@ class Home(WebRoot):
             status = 'No subtitles downloaded'
             result = 'failure'
 
-        ui.notifications.message(ep_obj.show.name, status)
+        ui.notifications.message(ep_obj.series.name, status)
         return json.dumps({
             'result': result,
             'subtitles': ','.join(ep_obj.subtitles),
@@ -2226,42 +2226,36 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         if not os.path.isfile(video_path):
-            ui.notifications.message(ep_obj.show.name, "Video file no longer exists. Can't search for subtitles")
+            ui.notifications.message(ep_obj.series.name, "Video file no longer exists. Can't search for subtitles")
             logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
             return json.dumps({'result': 'failure'})
 
-        try:
-            if mode == 'searching':
-                logger.log("Manual searching subtitles for: {0}".format(release_name))
-                found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
-                if found_subtitles:
-                    ui.notifications.message(ep_obj.show.name, 'Found {} subtitles'.format(len(found_subtitles)))
-                else:
-                    ui.notifications.message(ep_obj.show.name, 'No subtitle found')
-                result = 'success' if found_subtitles else 'failure'
-                subtitles_result = found_subtitles
-            elif mode == 'downloading':
-                logger.log("Manual downloading subtitles for: {0}".format(release_name))
-                new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id, video_path=video_path)
-                if new_manual_subtitle:
-                    ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
-                else:
-                    ui.notifications.message(ep_obj.show.name, 'Failed to download subtitle for {0}'.format(release_name))
-                result = 'success' if new_manual_subtitle else 'failure'
-                subtitles_result = new_manual_subtitle
+        if mode == 'searching':
+            logger.log("Manual searching subtitles for: {0}".format(release_name))
+            found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
+            if found_subtitles:
+                ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
             else:
-                raise ValueError
+                ui.notifications.message(ep_obj.series.name, 'No subtitle found')
+            result = 'success' if found_subtitles else 'failure'
+            subtitles_result = found_subtitles
+        else:
+            logger.log("Manual downloading subtitles for: {0}".format(release_name))
+            new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id,
+                                                          video_path=video_path)
+            if new_manual_subtitle:
+                ui.notifications.message(ep_obj.series.name,
+                                         'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
+            else:
+                ui.notifications.message(ep_obj.series.name, 'Failed to download subtitle for {0}'.format(release_name))
+            result = 'success' if new_manual_subtitle else 'failure'
+            subtitles_result = new_manual_subtitle
 
-            return json.dumps({
-                'result': result,
-                'release': release_name,
-                'subtitles': subtitles_result
-            })
-        except Exception as e:
-            ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
-            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
-                       (mode=mode, error_msg=e), logger.ERROR)
-            return json.dumps({'result': 'failure'})
+        return json.dumps({
+            'result': result,
+            'release': release_name,
+            'subtitles': subtitles_result
+        })
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
@@ -2360,7 +2354,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
+        ep_queue_item = FailedQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:

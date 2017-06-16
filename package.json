@@ -14,7 +14,8 @@
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
-    "build": "node_modules/grunt-cli/bin/grunt"
+    "build": "node_modules/grunt-cli/bin/grunt",
+    "install": "yarn run test-js"
   },
   "devDependencies": {
     "dredd": "^3.3.0",
@@ -58,7 +59,8 @@
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "static/js/api.js"
+      "static/js/api.js",
+      "vue/**/*.js"
     ]
   },
   "stylelint": {

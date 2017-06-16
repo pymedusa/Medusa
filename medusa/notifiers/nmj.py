@@ -23,13 +23,12 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     def notify_settings(self, host):
         """
-        Retrieves the settings from a NMJ/Popcorn hour
+        Retrieve the settings from a NMJ/Popcorn hour
 
         host: The hostname/IP of the Popcorn Hour server
 
-        Returns: True if the settings were retrieved successfully, False otherwise
+        return: True if the settings were retrieved successfully, False otherwise
         """
-
         # establish a terminal session to the PC
         try:
             terminal = telnetlib.Telnet(host)
@@ -95,13 +94,13 @@ class Notifier(object):
 
     def _sendNMJ(self, host, database, mount=None):
         """
-        Sends a NMJ update command to the specified machine
+        Send a NMJ update command to the specified machine
 
         host: The hostname/IP to send the request to (no port)
         database: The database to send the request to
         mount: The mount URL to use (optional)
 
-        Returns: True if the request succeeded, False otherwise
+        return: True if the request succeeded, False otherwise
         """
 
         # if a mount URL is provided then attempt to open a handle to that URL

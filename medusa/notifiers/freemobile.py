@@ -28,15 +28,14 @@ class Notifier(object):
 
     def _sendFreeMobileSMS(self, title, msg, cust_id=None, apiKey=None):
         """
-        Sends a SMS notification
+        Send a SMS notification
 
         msg: The message to send (unicode)
         title: The title of the message
         userKey: The pushover user id to send the message to (or to subscribe with)
 
-        returns: True if the message succeeded, False otherwise
+        return: True if the message succeeded, False otherwise
         """
-
         if cust_id is None:
             cust_id = app.FREEMOBILE_ID
         if apiKey is None:
@@ -75,7 +74,7 @@ class Notifier(object):
         return True, message
 
     def notify_snatch(self, ep_name, is_proper):
-        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
+        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.FREEMOBILE_NOTIFY_ONSNATCH:
             self._notifyFreeMobile(title, ep_name)
 
