@@ -20,14 +20,14 @@ import logging
 
 from dateutil import parser
 
+from medusa import app
+from medusa.common import Quality, USER_AGENT
+from medusa.logger.adapters.style import BraceAdapter
+
 from six.moves.urllib.request import FancyURLopener
 
-from . import app
-from .common import Quality, USER_AGENT
-from .indexers.indexer_api import indexerApi
-
-
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class ApplicationURLopener(FancyURLopener, object):
@@ -67,6 +67,9 @@ class SearchResult(object):
 
         # leechers of the release
         self.leechers = -1
+
+        # update date
+        self.date = None
 
         # release publish date
         self.pubdate = None
@@ -116,11 +119,36 @@ class SearchResult(object):
         # Keep track if we really want to result.
         self.result_wanted = False
 
-        # The actual parsed season.
+        # The actual parsed season. Stored as an integer.
         self.actual_season = None
 
-        # The actual parsed episode.
-        self.actual_episodes = None
+        # The actual parsed episode. Stored as an iterable of integers.
+        self._actual_episodes = None
+
+        # Some of the searches, expect a max of one episode object, per search result. Then this episode can be used
+        # to store a single episode number, as an int.
+        self._actual_episode = None
+
+        # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
+        self.search_type = None
+
+    @property
+    def actual_episode(self):
+        return self._actual_episode
+
+    @actual_episode.setter
+    def actual_episode(self, value):
+        self._actual_episode = value
+
+    @property
+    def actual_episodes(self):
+        return self._actual_episodes
+
+    @actual_episodes.setter
+    def actual_episodes(self, value):
+        self._actual_episodes = value
+        if len(value) == 1:
+            self._actual_episode = value[0]
 
     def __str__(self):
 
@@ -149,19 +177,22 @@ class SearchResult(object):
     def add_result_to_cache(self, cache):
         """Cache the item if needed."""
         if self.add_cache_entry:
-            logger.debug('Adding item from search to cache: {release_name}', release_name=self.name)
+            # FIXME: Added repr parsing, as that prevents the logger from throwing an exception.
+            # This can happen when there are unicode decoded chars in the release name.
+            log.debug('Adding item from search to cache: {release_name!r}', release_name=self.name)
             return cache.add_cache_entry(self.name, self.url, self.seeders,
                                          self.leechers, self.size, self.pubdate, parsed_result=self.parsed_result)
         return None
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        episode_object = []
-        for current_episode in self.actual_episodes:
-            episode_object.append(self.show.get_episode(self.actual_season,
-                                                        current_episode))
-        self.episodes = episode_object
-        return episode_object
+        if self.actual_season and self.actual_episodes and self.show:
+            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        else:
+            log.exception('Trying to create an episode object, without the proper ingredients. '
+                          'Missing season: {season}, episodes: {episodes} or the show object: {show}',
+                          {'season': self.actual_season, 'episodes': self.actual_episodes, 'show': self.show})
+        return self.episodes
 
     def finish_search_result(self, provider):
         self.size = provider._get_size(self.item)
@@ -263,35 +294,6 @@ class ShowListUI(object):  # pylint: disable=too-few-public-methods
         return all_series[0]
 
 
-class Proper(object):
-    def __init__(self, name, url, date, show, seeders, leechers, size, pubdate, proper_tags):
-        self.name = name
-        self.url = url
-        self.date = date
-        self.provider = None
-        self.quality = Quality.UNKNOWN
-        self.release_group = None
-        self.version = -1
-        self.seeders = seeders
-        self.leechers = leechers
-        self.size = size
-        self.pubdate = pubdate
-        self.proper_tags = proper_tags
-        self.hash = None
-        self.show = show
-        self.indexer = None
-        self.indexerid = -1
-        self.season = -1
-        self.episode = -1
-        self.scene_season = -1
-        self.scene_episode = -1
-
-    def __str__(self):
-        return u'{date} {name} {season}x{episode} of {series_id} from {indexer}'.format(
-            date=self.date, name=self.name, season=self.season, episode=self.episode,
-            series_id=self.indexerid, indexer=indexerApi(self.indexer).name)
-
-
 class Viewer(object):
     """Keep the Errors to be displayed in the UI."""
 
@@ -334,7 +336,7 @@ try:
     import urllib
     urllib._urlopener = ApplicationURLopener()
 except ImportError:
-    logger.debug(u'Unable to import _urlopener, not using user_agent for urllib')
+    log.debug(u'Unable to import _urlopener, not using user_agent for urllib')
 
 
 # The warning viewer: TODO: Change CamelCase to snake_case

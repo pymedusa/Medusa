@@ -62,6 +62,7 @@ class ShanaProjectProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
+        search_params = {}
         if self.show and not self.show.is_anime:
             return results
 
