@@ -152,7 +152,7 @@ def _configure_knowit():
     from knowit.utils import detect_os
 
     os_family = detect_os()
-    suggested_path = os.path.join(_lib_location(), os_family)
+    suggested_path = os.path.join(_lib_location(), 'native', os_family)
     if os_family == 'windows':
         subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
         suggested_path = os.path.join(suggested_path, subfolder)

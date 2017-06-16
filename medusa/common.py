@@ -433,6 +433,8 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
+        height = int(height.magnitude)
+
         # TODO: Use knowledge information like 'resolution'
         base_filename = path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
