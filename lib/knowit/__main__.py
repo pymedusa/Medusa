@@ -6,8 +6,6 @@ import logging
 import sys
 from argparse import ArgumentParser
 
-from enzyme import __version__ as enzyme_version
-from pymediainfo import __version__ as pymediainfo_version
 from six import PY2
 import yaml
 
@@ -146,29 +144,27 @@ def main(args=None):
                 console.info('Knowit %s knows everything. :-)', __version__)
 
     elif options.version:
-        api.initialize(vars(options))
-        mediainfo_executor = api.available_providers['mediainfo'].executor
-        mediainfo_location = mediainfo_executor.location if mediainfo_executor else None
-        ffmpeg_executor = api.available_providers['ffmpeg'].executor
-        ffmpeg_location = ffmpeg_executor.location if ffmpeg_executor else None
-
         console.info('+-------------------------------------------------------+')
         _print_centered('KnowIt {0}'.format(__version__))
         console.info('+-------------------------------------------------------+')
-        _print_centered('Enzyme {0}'.format(enzyme_version))
-        _print_centered('pymediainfo {0}'.format(pymediainfo_version))
-        if not mediainfo_location:
-            _print_centered('MediaInfo not available')
-            _print_centered('https://mediaarea.net/en/MediaInfo/Download')
-        else:
-            _print_centered('MediaInfo available')
-            _print_centered(mediainfo_location)
-        if not ffmpeg_location:
-            _print_centered('FFmpeg not available')
-            _print_centered('https://ffmpeg.org/download.html')
-        else:
-            _print_centered('FFmpeg available')
-            _print_centered(ffmpeg_location)
+
+        first = True
+        for key, info in api.dependencies(vars(options)).items():
+            if not first:
+                _print_centered('')
+            first = False
+
+            version, location = info
+            if version:
+                _print_centered('{0} {1}'.format(key, version))
+                if location:
+                    _print_centered(location)
+            elif not location:
+                _print_centered('{0} not available'.format(key, version))
+            else:
+                _print_centered(key)
+                _print_centered(location)
+
         console.info('+-------------------------------------------------------+')
         console.info('|      Please report any bug or feature request at      |')
         console.info('|     https://github.com/ratoaq2/knowit/issues.         |')
@@ -179,8 +175,7 @@ def main(args=None):
 
 def _print_centered(value):
     value = value[-52:]
-    spaces = max((53 - len(value)), 0)
-    console.info('| %s%s%s |', spaces / 2 * ' ', value, (spaces / 2 + spaces % 2) * ' ')
+    console.info('| {msg:^53} |'.format(msg=value))
 
 
 if __name__ == '__main__':

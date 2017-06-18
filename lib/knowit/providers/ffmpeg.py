@@ -236,3 +236,8 @@ class FFmpegProvider(Provider):
 
         result['provider'] = self.executor.location
         return result
+
+    @property
+    def version(self):
+        """Return ffmpeg version information."""
+        return None, self.executor.location if self.executor else None

@@ -4,13 +4,9 @@ from __future__ import unicode_literals
 import re
 
 from datetime import timedelta
-from logging import NullHandler, getLogger
 from six import text_type
 
 from ..property import Property
-
-logger = getLogger(__name__)
-logger.addHandler(NullHandler())
 
 
 class Duration(Property):

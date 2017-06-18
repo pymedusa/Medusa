@@ -10,6 +10,7 @@ from logging import NullHandler, getLogger
 from subprocess import check_output
 
 from pymediainfo import MediaInfo
+from pymediainfo import __version__ as pymediainfo_version
 
 from .. import (
     OrderedDict,
@@ -354,3 +355,8 @@ class MediaInfoProvider(Provider):
 
         result['provider'] = self.executor.location
         return result
+
+    @property
+    def version(self):
+        """Return mediainfo version information."""
+        return pymediainfo_version, self.executor.location if self.executor else None
