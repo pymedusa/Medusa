@@ -9,8 +9,8 @@ from ctypes import c_size_t, c_void_p, c_wchar_p
 from logging import NullHandler, getLogger
 from subprocess import check_output
 
-from pymediainfo import __version__ as pymediainfo_version
 from pymediainfo import MediaInfo
+from pymediainfo import __version__ as pymediainfo_version
 
 from .. import (
     OrderedDict,
