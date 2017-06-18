@@ -1,14 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from logging import NullHandler, getLogger
-
 from six import text_type
 
 from ...property import Property
-
-logger = getLogger(__name__)
-logger.addHandler(NullHandler())
 
 
 class AudioChannels(Property):

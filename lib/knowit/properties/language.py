@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from logging import NullHandler, getLogger
 import babelfish
 
 from ..property import Property
-
-logger = getLogger(__name__)
-logger.addHandler(NullHandler())
 
 
 class Language(Property):

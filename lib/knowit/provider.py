@@ -90,6 +90,11 @@ class Provider(object):
 
         return props
 
+    @property
+    def version(self):
+        """Return provider version information."""
+        raise NotImplementedError
+
 
 class ProviderError(Exception):
     """Base class for provider exceptions."""

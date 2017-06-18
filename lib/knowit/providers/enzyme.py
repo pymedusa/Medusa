@@ -130,3 +130,8 @@ class EnzymeProvider(Provider):
 
         result['provider'] = 'Enzyme {0}'.format(enzyme.__version__)
         return result
+
+    @property
+    def version(self):
+        """Return enzyme version information."""
+        return enzyme.__version__, None

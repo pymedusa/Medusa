@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from logging import NullHandler, getLogger
-
 from ...rule import Rule
 from ...units import units
-
-logger = getLogger(__name__)
-logger.addHandler(NullHandler())
 
 
 class ResolutionRule(Rule):
