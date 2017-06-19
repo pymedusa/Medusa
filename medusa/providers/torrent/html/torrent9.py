@@ -1,11 +1,10 @@
 # coding=utf-8
 
-"""Provider code for Cpasbien."""
+"""Provider code for Torrent9."""
 
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
 
 from medusa import tv
@@ -17,22 +16,29 @@ from medusa.helper.common import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
+from requests.compat import urljoin
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class CpasbienProvider(TorrentProvider):
-    """Cpasbien Torrent provider."""
+class Torrent9Provider(TorrentProvider):
+    """Torrent9 Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(CpasbienProvider, self).__init__('Cpasbien')
+        super(Torrent9Provider, self).__init__('Torrent9')
 
         # Credentials
         self.public = True
 
         # URLs
-        self.url = 'http://www.cpasbien.cm'
+        self.url = 'http://www.torrent9.cc'
+        self.urls = {
+            'search': urljoin(self.url, '/search_torrent/{query}.html,trie-seeds-d'),
+            'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
+            'download': urljoin(self.url, '{link}.torrent'),
+        }
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK']
@@ -65,10 +71,10 @@ class CpasbienProvider(TorrentProvider):
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    search_url = self.url + '/recherche/' + \
-                        search_string.replace('.', '-').replace(' ', '-') + '.html,trie-seeds-d'
+                    search_query = search_string.replace('.', '-').replace(' ', '-')
+                    search_url = self.urls['search'].format(query=search_query)
                 else:
-                    search_url = self.url + '/view_cat.php?categorie=series&trie=date-d'
+                    search_url = self.urls['daily']
 
                 response = self.get_url(search_url, returns='response')
                 if not response or not response.text:
@@ -89,23 +95,38 @@ class CpasbienProvider(TorrentProvider):
         :return: A list of items found
         """
         # Units
-        units = ['o', 'Ko', 'Mo', 'Go', 'To', 'Po']
+        units = ['O', 'KO', 'MO', 'GO', 'TO', 'PO']
 
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_rows = html(class_=re.compile('ligne[01]'))
-            for row in torrent_rows:
+            table_header = html.find('thead')
+            # Continue only if at least one release is found
+            if not table_header:
+                log.debug('Data returned from provider does not contain any torrents')
+                return items
+
+            # Nom du torrent, Taille, Seed, Leech
+            labels = [label.get_text() for label in table_header('th')]
+
+            table_body = html.find('tbody')
+            for row in table_body('tr'):
+                cells = row('td')
+
                 try:
-                    title = row.find(class_='titre').get_text(strip=True).replace('HDTV', 'HDTV x264-CPasBien')
-                    title = re.sub(r' Saison', ' Season', title, flags=re.IGNORECASE)
-                    tmp = row.find('a')['href'].split('/')[-1].replace('.html', '.torrent').strip()
-                    download_url = (self.url + '/telechargement/%s' % tmp)
+                    info_cell = cells[labels.index('Nom du torrent')].a
+                    title = info_cell.get_text()
+                    download_url = info_cell.get('href')
                     if not all([title, download_url]):
                         continue
 
-                    seeders = try_int(row.find(class_='up').get_text(strip=True))
-                    leechers = try_int(row.find(class_='down').get_text(strip=True))
+                    title = '{name} {codec}'.format(name=title, codec='x264')
+
+                    download_link = download_url.replace('torrent', 'get_torrent')
+                    download_url = self.urls['download'].format(link=download_link)
+
+                    seeders = try_int(cells[labels.index('Seed')].get_text(strip=True))
+                    leechers = try_int(cells[labels.index('Leech')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -115,11 +136,8 @@ class CpasbienProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = row.find(class_='poid').get_text(strip=True)
+                    torrent_size = cells[labels.index('Taille')].get_text()
                     size = convert_size(torrent_size, units=units) or -1
-
-                    pubdate_raw = row.find('a')['title'].split('-')[1]
-                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -127,7 +145,7 @@ class CpasbienProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': pubdate,
+                        'pubdate': None,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -141,4 +159,4 @@ class CpasbienProvider(TorrentProvider):
         return items
 
 
-provider = CpasbienProvider()
+provider = Torrent9Provider()
