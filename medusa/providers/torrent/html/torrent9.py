@@ -122,7 +122,7 @@ class Torrent9Provider(TorrentProvider):
 
                     title = '{name} {codec}'.format(name=title, codec='x264')
 
-                    download_link = download_url.replace('torrent', 'get_torrent')
+                    download_link = download_url.replace('/torrent', 'get_torrent')
                     download_url = self.urls['download'].format(link=download_link)
 
                     seeders = try_int(cells[labels.index('Seed')].get_text(strip=True))
