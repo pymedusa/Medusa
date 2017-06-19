@@ -67,15 +67,15 @@ class NyaaProvider(TorrentProvider):
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
+            if self.confirmed:
+                search_params['f'] = 2  # Trusted only
+                log.debug('Searching only confirmed torrents')
+
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
                     log.debug('Search string: {search}',
                               {'search': search_string})
-                    if self.confirmed:
-                        search_params['f'] = 2  # Trusted only
-                        log.debug('Searching only confirmed torrents')
-
                     search_params['q'] = search_string
 
                 data = self.cache.get_rss_feed(self.url, params=search_params)
