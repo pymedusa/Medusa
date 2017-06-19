@@ -21,8 +21,6 @@ from medusa.providers.torrent import (
     btn,
     danishbits,
     elitetorrent,
-    extratorrent,
-    freshontv,
     gftracker,
     hd4free,
     hdbits,
@@ -61,11 +59,11 @@ from medusa.providers.torrent import (
 )
 
 __all__ = [
-    'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs', 'iptorrents',
-    'speedcd', 'nyaa', 'torrentbytes', 'freshontv', 'torrent9', 'morethantv', 't411', 'tokyotoshokan',
+    'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs',
+    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 't411', 'tokyotoshokan', 'iptorrents',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
-    'nebulance', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
-    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb', 'bithdtv',
+    'nebulance', 'tvchaosuk', 'torrentproject', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
+    'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
     'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]
 
