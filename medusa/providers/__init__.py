@@ -36,7 +36,7 @@ from medusa.providers.torrent import (
     nebulance,
     newpct,
     norbits,
-    nyaatorrents,
+    nyaa,
     pretome,
     rarbg,
     scc,
@@ -62,7 +62,7 @@ from medusa.providers.torrent import (
 
 __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs', 'iptorrents',
-    'speedcd', 'nyaatorrents', 'torrentbytes', 'freshontv', 'torrent9', 'morethantv', 't411', 'tokyotoshokan',
+    'speedcd', 'nyaa', 'torrentbytes', 'freshontv', 'torrent9', 'morethantv', 't411', 'tokyotoshokan',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'nebulance', 'tvchaosuk', 'torrentproject', 'extratorrent', 'bitcannon', 'torrentz2', 'pretome', 'gftracker',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'anizb', 'bithdtv',

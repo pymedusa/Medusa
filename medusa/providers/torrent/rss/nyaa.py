@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import re
 import traceback
 
 from medusa import tv
@@ -22,13 +21,13 @@ class NyaaProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(NyaaProvider, self).__init__('NyaaTorrents')
+        super(NyaaProvider, self).__init__('Nyaa')
 
         # Credentials
         self.public = True
 
         # URLs
-        self.url = 'http://www.nyaa.se'
+        self.url = 'https://nyaa.si'
 
         # Proper Strings
 
@@ -36,15 +35,13 @@ class NyaaProvider(TorrentProvider):
         self.supports_absolute_numbering = True
         self.anime_only = True
         self.confirmed = False
-        self.regex = re.compile(r'(\d+) seeder\(s\), (\d+) leecher\(s\), \d+ download\(s\) - (\d+.?\d* [KMGT]iB)(.*)',
-                                re.DOTALL)
 
         # Torrent Stats
-        self.minseed = 0
-        self.minleech = 0
+        self.minseed = None
+        self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=20)  # only poll NyaaTorrents every 20 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -62,9 +59,9 @@ class NyaaProvider(TorrentProvider):
         # Search Params
         search_params = {
             'page': 'rss',
-            'cats': '1_0',  # All anime
-            'sort': 2,  # Sort Descending By Seeders
-            'order': 1,
+            'c': '1_0',  # All Anime
+            'f': 0,  # No filter
+            'q': '',
         }
 
         for mode in search_strings:
@@ -76,19 +73,21 @@ class NyaaProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
                     if self.confirmed:
+                        search_params['f'] = 2  # Trusted only
                         log.debug('Searching only confirmed torrents')
 
-                    search_params['term'] = search_string
+                    search_params['q'] = search_string
+
                 data = self.cache.get_rss_feed(self.url, params=search_params)
                 if not data:
                     log.debug('No data returned from provider')
                     continue
-                if not data['entries']:
+                if not data.get('entries'):
                     log.debug('Data returned from provider does not contain any {0}torrents',
                               'confirmed ' if self.confirmed else '')
                     continue
 
-                results += self.parse(data, mode)
+                results += self.parse(data['entries'], mode)
 
         return results
 
@@ -101,23 +100,20 @@ class NyaaProvider(TorrentProvider):
 
         :return: A list of items found
         """
+        # Units
+        units = ['B', 'KIB', 'MIB', 'GIB', 'TIB', 'PIB']
+
         items = []
 
-        for result in data['entries']:
+        for item in data:
             try:
-                title = result['title']
-                download_url = result['link']
+                title = item['title']
+                download_url = item['link']
                 if not all([title, download_url]):
                     continue
 
-                item_info = self.regex.search(result['summary'])
-                if not item_info:
-                    log.debug('There was a problem parsing an item summary, skipping: {0}', title)
-                    continue
-
-                seeders, leechers, torrent_size, verified = item_info.groups()
-                seeders = try_int(seeders)
-                leechers = try_int(leechers)
+                seeders = try_int(item['nyaa_seeders'])
+                leechers = try_int(item['nyaa_leechers'])
 
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
@@ -126,12 +122,9 @@ class NyaaProvider(TorrentProvider):
                                   " minimum seeders: {0}. Seeders: {1}", title, seeders)
                     continue
 
-                if self.confirmed and not verified and mode != 'RSS':
-                    log.debug("Found result {0} but that doesn't seem like a verified"
-                              " result so I'm ignoring it", title)
-                    continue
+                size = convert_size(item['nyaa_size'], units=units) or -1
 
-                size = convert_size(torrent_size) or -1
+                pubdate = self.parse_pubdate(item['published'])
 
                 item = {
                     'title': title,
@@ -139,7 +132,7 @@ class NyaaProvider(TorrentProvider):
                     'size': size,
                     'seeders': seeders,
                     'leechers': leechers,
-                    'pubdate': None,
+                    'pubdate': pubdate,
                 }
                 if mode != 'RSS':
                     log.debug('Found result: {0} with {1} seeders and {2} leechers',

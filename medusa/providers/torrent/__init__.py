@@ -53,7 +53,7 @@ from medusa.providers.torrent.json import (
 
 from medusa.providers.torrent.rss import (
     extratorrent,
-    nyaatorrents,
+    nyaa,
     rsstorrent,
     shazbat,
 )
@@ -67,6 +67,6 @@ __all__ = [
     'freshontv', 'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
-    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
+    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]
