@@ -43,16 +43,12 @@ class Anizb(NZBProvider):
         self.anime_only = True
         self.search_separator = '*'
 
-        # Torrent Stats
-
         # Cache
         self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """Start searching for anime using the provided search_strings. Used for backlog and daily."""
         results = []
-        if self.show and not self.show.is_anime:
-            return results
 
         for mode in search_strings:
             items = []

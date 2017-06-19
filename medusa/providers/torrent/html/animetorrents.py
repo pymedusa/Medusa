@@ -72,9 +72,6 @@ class AnimeTorrentsProvider(TorrentProvider):
         """
         results = []
 
-        if self.show and not self.show.is_anime:
-            return results
-
         if not self.login():
             return results
 

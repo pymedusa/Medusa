@@ -53,8 +53,6 @@ class NyaaProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        if self.show and not self.show.is_anime:
-            return results
 
         # Search Params
         search_params = {
