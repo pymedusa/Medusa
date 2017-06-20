@@ -36,6 +36,8 @@ class AniDexProvider(TorrentProvider):
         }
 
         # Miscellaneous Options
+        self.supports_absolute_numbering = True
+        self.anime_only = True
         self.headers = {
             'X-Requested-With': 'XMLHttpRequest',
         }
