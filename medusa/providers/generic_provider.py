@@ -77,12 +77,8 @@ class GenericProvider(object):
         self.bt_cache_urls = [
             'http://itorrents.org/torrent/{info_hash}.torrent',
             'https://torrentproject.se/torrent/{info_hash}.torrent',
-            'http://torrasave.top/torrent/{info_hash}.torrent',
-            'http://torra.pro/torrent/{info_hash}.torrent',
-            'http://torra.click/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
             'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'http://torrasave.site/torrent/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
