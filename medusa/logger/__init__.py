@@ -462,8 +462,9 @@ class ContextFilter(logging.Filter):
     level_mapping = {
         'subliminal': level_step,
         'subliminal.providers.addic7ed': 2 * level_step,
-        'subliminal.providers.itasa': 2 * level_step,
         'subliminal.providers.tvsubtitles': 2 * level_step,
+        'medusa.subtitle_providers.itasa': 2 * level_step,
+        'medusa.subtitle_providers.legendastv': 2 * level_step,
         'subliminal.refiners.omdb': 2 * level_step,
         'subliminal.refiners.metadata': 2 * level_step,
         'subliminal.refiners.tvdb': 2 * level_step,
