@@ -142,7 +142,7 @@ class ZooqleProvider(TorrentProvider):
                     torrent_size = cells[3].get_text().replace(',', '')
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = cells[4].get_text()
+                    pubdate_raw = cells[4].get_text().replace('yesterday', '24 hours')
                     # "long ago" can't be translated to a date
                     if pubdate_raw == 'long ago':
                         pubdate_raw = None
