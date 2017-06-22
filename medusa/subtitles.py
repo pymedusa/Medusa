@@ -286,6 +286,17 @@ def score_subtitles(subtitles_list, video):
     return [(s, score) for (s, score, provider_order) in result]
 
 
+def get_subtitles_using_alias(tv_episode, pool, video, languages, subtitles_list, scored_subtitles):
+    """List and score subtitles using series alias."""
+    for alias in tv_episode.series.aliases:
+        logger.debug(u'Searching subtitles using alias: %s', alias)
+        video.series = alias
+        subtitles_list.extend(pool.list_subtitles(video, languages))
+        # Calculate the score with new video
+        scored_subtitles.extend(score_subtitles(set(subtitles_list), video))
+    return subtitles_list, scored_subtitles
+
+
 def list_subtitles(tv_episode, video_path=None, limit=40):
     """List subtitles for the given episode in the given path.
 
@@ -307,9 +318,16 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
                       embedded_subtitles=False, release_name=release_name)
     pool = get_provider_pool()
     pool.discarded_providers.clear()
+    logger.debug(u'Searching subtitles using indexer name: %s', tv_episode.series.name)
     subtitles_list = pool.list_subtitles(video, languages)
-    scored_subtitles = score_subtitles(subtitles_list, video)[:limit]
-    for subtitle, _ in scored_subtitles:
+    scored_subtitles = score_subtitles(subtitles_list, video)
+
+    # Search using series alias
+    _, scored_subtitles = get_subtitles_using_alias(tv_episode, pool, video, languages,
+                                                    subtitles_list, scored_subtitles)
+
+    # Use set to avoid duplicate subtitles
+    for subtitle, _ in set(scored_subtitles[:limit]):
         cache.set(subtitle_key.format(id=subtitle.id).encode('utf-8'), subtitle)
 
     logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
@@ -402,7 +420,14 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         run_subs_pre_scripts(video_path)
 
     pool = get_provider_pool()
+    logger.debug(u'Searching subtitles using indexer name: %s', tv_episode.series.name)
     subtitles_list = pool.list_subtitles(video, languages)
+    scored_subtitles = score_subtitles(subtitles_list, video)
+
+    # Search using series alias
+    subtitles_list, scored_subtitles = get_subtitles_using_alias(tv_episode, pool, video, languages,
+                                                                 subtitles_list, scored_subtitles)
+
     for provider in pool.providers:
         if provider in pool.discarded_providers:
             logger.debug(u'Could not search in %s provider. Discarding for now', provider)
@@ -412,8 +437,7 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         return []
 
     min_score = get_min_score()
-    scored_subtitles = score_subtitles(subtitles_list, video)
-    for subtitle, score in scored_subtitles:
+    for subtitle, score in set(scored_subtitles):
         logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
             subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
 
