@@ -357,10 +357,21 @@ class LegendasTVProvider(Provider):
         # search for titles
         titles = self.search_titles(sanitize(title), season)
 
+        titles_cache_key = __name__ + ':search_titles|{title} {season}'.format(title=title.lower(), season=season)
+        if region.get(titles_cache_key) != NO_VALUE:
+            logger.debug('Found %d cached titles for %s', len(titles), title)
+
         # search for titles with the quote or dot character
         ignore_characters = {'\'', '.'}
         if any(c in title for c in ignore_characters):
-            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters), season))
+            sanitized_title = sanitize(title, ignore_characters=ignore_characters)
+            additional_titles = self.search_titles(sanitized_title, season)
+            titles.update(additional_titles)
+
+            titles_cache_key = __name__ + ':search_titles|{title} {season}'.format(title=sanitized_title.lower(),
+                                                                                   season=season)
+            if region.get(titles_cache_key) != NO_VALUE:
+                logger.debug('Found %d cached titles for %s', len(additional_titles), sanitized_title)
 
         subtitles = []
         # iterate over titles
