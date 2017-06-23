@@ -445,7 +445,7 @@ class LegendasTVProvider(Provider):
                 for r in releases:
                     subtitle = LegendasTVSubtitle(language, t['type'], t['title'], t.get('year'), t.get('imdb_id'),
                                                   t.get('season'), a, r)
-                    logger.info('Found subtitle %r', subtitle)
+                    logger.debug('Found subtitle %r', subtitle)
                     subtitles.append(subtitle)
 
         return subtitles
