@@ -52,6 +52,12 @@ title_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-
 releases_key = __name__ + ':releases|{archive_id}|{archive_name}'
 
 
+#: Check if the value should actually be cached in dogpile or not
+def should_cache_titles(titles):
+    """Return False if title is an empty dict to avoid caching it."""
+    return titles != {}
+
+
 class LegendasTVArchive(object):
     """LegendasTV Archive.
 
@@ -200,7 +206,7 @@ class LegendasTVProvider(Provider):
 
         self.session.close()
 
-    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
+    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME, should_cache_fn=should_cache_titles)
     def search_titles(self, title, season):
         """Search for titles matching the `title`.
 
