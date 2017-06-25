@@ -246,7 +246,7 @@ class LegendasTVProvider(Provider):
                     if match:
                         title['season'] = int(match.group('season'))
                     else:
-                        logger.warning('No season detected for title %d', title_id)
+                        logger.warning('No season detected for title %d (%s)', title_id, name)
 
             # extract year
             if year:
@@ -274,20 +274,22 @@ class LegendasTVProvider(Provider):
         """
         logger.info('Getting archives for title %d and language %d', title_id, language_code)
         archives = []
-        page = 1
+        page = 0
         while True:
             # get the archive page
-            url = self.server_url + 'util/carrega_legendas_busca_filme/{title}/{language}/-/{page}'.format(
-                title=title_id, language=language_code, page=page)
+            url = self.server_url + 'legenda/busca/-/{language}/-/{page}/{title}'.format(
+                language=language_code, page=page, title=title_id)
             r = self.session.get(url)
             r.raise_for_status()
 
             # parse the results
             soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
-            for archive_soup in soup.select('div.list_element > article > div'):
+            for archive_soup in soup.select('div.list_element > article > div > div.f_left'):
                 # create archive
-                archive = LegendasTVArchive(archive_soup.a['href'].split('/')[2], archive_soup.a.text,
-                                            'pack' in archive_soup['class'], 'destaque' in archive_soup['class'],
+                archive = LegendasTVArchive(archive_soup.a['href'].split('/')[2],
+                                            archive_soup.a.text,
+                                            'pack' in archive_soup.parent['class'],
+                                            'destaque' in archive_soup.parent['class'],
                                             self.server_url + archive_soup.a['href'][1:])
 
                 # extract text containing downloads, rating and timestamp
@@ -308,6 +310,8 @@ class LegendasTVProvider(Provider):
                     raise ProviderError('Archive timestamp is in the future')
 
                 # add archive
+                logger.info('Found archive for title %d and language %d at page %s: %s',
+                            title_id, language_code, page, archive)
                 archives.append(archive)
 
             # stop on last page
@@ -345,7 +349,8 @@ class LegendasTVProvider(Provider):
 
     def query(self, language, title, season=None, episode=None, year=None):
         # search for titles
-        titles = self.search_titles(sanitize(title))
+        sanitized_title = sanitize(title)
+        titles = self.search_titles(sanitized_title)
 
         # search for titles with the quote or dot character
         ignore_characters = {'\'', '.'}
@@ -356,17 +361,23 @@ class LegendasTVProvider(Provider):
         # iterate over titles
         for title_id, t in titles.items():
             # discard mismatches on title
-            if sanitize(t['title']) != sanitize(title):
+            sanitized_result = sanitize(t['title'])
+            if sanitized_result != sanitized_title:
+                logger.debug("Mismatched title, discarding title %d (%s)",
+                             title_id, sanitized_result)
                 continue
 
             # episode
             if season and episode:
                 # discard mismatches on type
                 if t['type'] != 'episode':
+                    logger.debug("Mismatched 'episode' type, discarding title %d (%s)", title_id, sanitized_result)
                     continue
 
                 # discard mismatches on season
                 if 'season' not in t or t['season'] != season:
+                    logger.debug('Mismatched season %s, discarding title %d (%s)',
+                                 t.get('season'), title_id, sanitized_result)
                     continue
             # movie
             else:
@@ -392,6 +403,8 @@ class LegendasTVProvider(Provider):
                 if season and episode:
                     # discard mismatches on episode in non-pack archives
                     if not a.pack and 'episode' in guess and guess['episode'] != episode:
+                        logger.debug('Mismatched episode %s, discarding archive: %s',
+                                     guess['episode'], a.name)
                         continue
 
                 # compute an expiration time based on the archive timestamp

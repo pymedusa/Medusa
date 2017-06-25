@@ -33,7 +33,7 @@ class ZooqleProvider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'https://zooqle.com/'
+        self.url = 'https://zooqle.com'
         self.urls = {
             'search': urljoin(self.url, '/search'),
         }
@@ -114,7 +114,7 @@ class ZooqleProvider(TorrentProvider):
 
                 try:
                     title = cells[1].find('a').get_text()
-                    magnet = cells[2].find('a')['href']
+                    magnet = cells[2].find('a', title='Magnet link')['href']
                     download_url = '{magnet}{trackers}'.format(magnet=magnet,
                                                                trackers=self._custom_trackers)
                     if not all([title, download_url]):
@@ -127,7 +127,7 @@ class ZooqleProvider(TorrentProvider):
                         if peers and peers.get('title'):
                             peers = peers['title'].replace(',', '').split(' | ', 1)
                             # Removes 'Seeders: '
-                            seeders = try_int(peers[0][9:], 1)
+                            seeders = try_int(peers[0][9:])
                             # Removes 'Leechers: '
                             leechers = try_int(peers[1][10:])
 
@@ -139,8 +139,14 @@ class ZooqleProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    torrent_size = cells[3].get_text(strip=True)
+                    torrent_size = cells[3].get_text().replace(',', '')
                     size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = cells[4].get_text().replace('yesterday', '24 hours')
+                    # "long ago" can't be translated to a date
+                    if pubdate_raw == 'long ago':
+                        pubdate_raw = None
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,
@@ -148,7 +154,7 @@ class ZooqleProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',

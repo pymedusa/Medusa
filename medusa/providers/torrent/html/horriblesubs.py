@@ -36,6 +36,8 @@ class HorribleSubsProvider(TorrentProvider):
         }
 
         # Miscellaneous Options
+        self.supports_absolute_numbering = True
+        self.anime_only = True
 
         # Cache
         self.cache = tv.Cache(self, min_time=20)

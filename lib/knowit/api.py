@@ -9,11 +9,11 @@ from .providers import (
     MediaInfoProvider,
 )
 
-_provider_map = {
-    'ffmpeg': FFmpegProvider,
-    'mediainfo': MediaInfoProvider,
-    'enzyme': EnzymeProvider,
-}
+_provider_map = OrderedDict([
+    ('mediainfo', MediaInfoProvider),
+    ('ffmpeg', FFmpegProvider),
+    ('enzyme', EnzymeProvider),
+])
 
 available_providers = OrderedDict([])
 
@@ -49,3 +49,16 @@ def know(video_path, context=None):
             return provider.describe(video_path, context)
 
     return {}
+
+
+def dependencies(context=None):
+    """Return all dependencies detected by knowit."""
+    initialize(context)
+    deps = OrderedDict([])
+    for name, provider_cls in _provider_map.items():
+        if name in available_providers:
+            deps[name] = available_providers[name].version
+        else:
+            deps[name] = None, None
+
+    return deps
