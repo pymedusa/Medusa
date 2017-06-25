@@ -188,10 +188,6 @@ class SearchResult(object):
         """Use this result to create an episode segment out of it."""
         if self.actual_season and self.actual_episodes and self.show:
             self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
-        else:
-            log.exception('Trying to create an episode object, without the proper ingredients. '
-                          'Missing season: {season}, episodes: {episodes} or the show object: {show}',
-                          {'season': self.actual_season, 'episodes': self.actual_episodes, 'show': self.show})
         return self.episodes
 
     def finish_search_result(self, provider):
