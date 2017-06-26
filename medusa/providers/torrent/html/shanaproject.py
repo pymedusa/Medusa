@@ -111,7 +111,7 @@ class ShanaProjectProvider(TorrentProvider):
 
             torrent_rows = html('div', class_='release_block')
             if len(torrent_rows) < 2:
-                return
+                return items
 
             for row in torrent_rows[1:]:
 
