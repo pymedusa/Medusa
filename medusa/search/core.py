@@ -240,7 +240,6 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
     Find the best result out of a list of search results for a show.
 
     :param results: list of result objects
-    :param show: Shows we check for
     :return: best result object
     """
     results = results if isinstance(results, list) else [results]
@@ -639,7 +638,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
         # pick the best season NZB
         best_season_result = None
         if SEASON_RESULT in found_results[cur_provider.name]:
-            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT], show)
+            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT])
 
         highest_quality_overall = 0
         for cur_episode in found_results[cur_provider.name]:
@@ -740,7 +739,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 log.debug(u'Seeing if we want to bother with multi-episode result {0}', _multi_result.name)
 
                 # Filter result by ignore/required/whitelist/blacklist/quality, etc
-                multi_result = pick_best_result(_multi_result, show)
+                multi_result = pick_best_result(_multi_result)
                 if not multi_result:
                     continue
 
