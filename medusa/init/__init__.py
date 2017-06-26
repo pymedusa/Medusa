@@ -137,7 +137,8 @@ def _configure_subliminal():
     # Register
     for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
                  'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
-                 'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename)):
+                 'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename),
+                 'thewiz = {basename}.subtitle_providers.thewiz:TheWizProvider'.format(basename=basename)):
         provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
