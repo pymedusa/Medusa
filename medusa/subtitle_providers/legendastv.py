@@ -55,7 +55,7 @@ releases_key = __name__ + ':releases|{archive_id}|{archive_name}'
 #: Check if the value should actually be cached in dogpile or not
 def should_cache_titles(titles):
     """Return False if title is an empty dict to avoid caching it."""
-    return titles != {}
+    return titles
 
 
 class LegendasTVArchive(object):
@@ -210,7 +210,7 @@ class LegendasTVProvider(Provider):
     def search_titles(self, title, season):
         """Search for titles matching the `title`.
 
-        For episodes, each season has it own title, so we must cache with season number
+        For episodes, each season has it own title
 
         :param str title: the title to search for.
         :return: found titles.
