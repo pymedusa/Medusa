@@ -207,6 +207,7 @@ class LegendasTVProvider(Provider):
         For episodes, each season has it own title
 
         :param str title: the title to search for.
+        :param int season: season of the title
         :return: found titles.
         :rtype: dict
 
