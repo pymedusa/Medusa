@@ -200,17 +200,24 @@ class LegendasTVProvider(Provider):
 
         self.session.close()
 
-    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME)
-    def search_titles(self, title):
+    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME, should_cache_fn=lambda value: value)
+    def search_titles(self, title, season):
         """Search for titles matching the `title`.
 
+        For episodes, each season has it own title
+
         :param str title: the title to search for.
+        :param int season: season of the title
         :return: found titles.
         :rtype: dict
 
         """
         # make the query
-        logger.info('Searching title %r', title)
+        if season:
+            logger.info('Searching episode title %r for season %r', title, season)
+        else:
+            logger.info('Searching movie title %r', title)
+
         r = self.session.get(self.server_url + 'legenda/sugestao/{}'.format(title), timeout=10)
         r.raise_for_status()
         results = json.loads(r.text)
@@ -350,12 +357,12 @@ class LegendasTVProvider(Provider):
     def query(self, language, title, season=None, episode=None, year=None):
         # search for titles
         sanitized_title = sanitize(title)
-        titles = self.search_titles(sanitized_title)
+        titles = self.search_titles(sanitized_title, season)
 
         # search for titles with the quote or dot character
         ignore_characters = {'\'', '.'}
         if any(c in title for c in ignore_characters):
-            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters)))
+            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters), season))
 
         subtitles = []
         # iterate over titles
