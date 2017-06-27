@@ -383,10 +383,12 @@ class LegendasTVProvider(Provider):
             else:
                 # discard mismatches on type
                 if t['type'] != 'movie':
+                    logger.debug("Mismatched 'movie' type, discarding title %d (%s)", title_id, sanitized_result)
                     continue
 
                 # discard mismatches on year
                 if year is not None and 'year' in t and t['year'] != year:
+                    logger.debug("Mismatched movie year, discarding title %d (%s)", title_id, sanitized_result)
                     continue
 
             # iterate over title's archives
