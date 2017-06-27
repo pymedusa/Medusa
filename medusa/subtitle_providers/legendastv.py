@@ -52,12 +52,6 @@ title_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-
 releases_key = __name__ + ':releases|{archive_id}|{archive_name}'
 
 
-#: Check if the value should actually be cached in dogpile or not
-def should_cache_titles(titles):
-    """Return False if title is an empty dict to avoid caching it."""
-    return titles
-
-
 class LegendasTVArchive(object):
     """LegendasTV Archive.
 
@@ -206,7 +200,7 @@ class LegendasTVProvider(Provider):
 
         self.session.close()
 
-    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME, should_cache_fn=should_cache_titles)
+    @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME, should_cache_fn=lambda value: value)
     def search_titles(self, title, season):
         """Search for titles matching the `title`.
 
@@ -362,23 +356,12 @@ class LegendasTVProvider(Provider):
     def query(self, language, title, season=None, episode=None, year=None):
         # search for titles
         sanitized_title = sanitize(title)
-        titles = self.search_titles(sanitized_title)
-
-        titles_cache_key = __name__ + ':search_titles|{title} {season}'.format(title=title.lower(), season=season)
-        if region.get(titles_cache_key) != NO_VALUE:
-            logger.debug('Found %d cached titles for %s', len(titles), title)
+        titles = self.search_titles(sanitized_title, season)
 
         # search for titles with the quote or dot character
         ignore_characters = {'\'', '.'}
         if any(c in title for c in ignore_characters):
-            sanitized_title = sanitize(title, ignore_characters=ignore_characters)
-            additional_titles = self.search_titles(sanitized_title, season)
-            titles.update(additional_titles)
-
-            titles_cache_key = __name__ + ':search_titles|{title} {season}'.format(title=sanitized_title.lower(),
-                                                                                   season=season)
-            if region.get(titles_cache_key) != NO_VALUE:
-                logger.debug('Found %d cached titles for %s', len(additional_titles), sanitized_title)
+            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters), season))
 
         subtitles = []
         # iterate over titles
