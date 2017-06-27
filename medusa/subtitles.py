@@ -307,9 +307,20 @@ def list_subtitles(tv_episode, video_path=None, limit=40):
                       embedded_subtitles=False, release_name=release_name)
     pool = get_provider_pool()
     pool.discarded_providers.clear()
+    logger.debug(u'Searching subtitles using indexer name: %s', tv_episode.series.name)
     subtitles_list = pool.list_subtitles(video, languages)
     scored_subtitles = score_subtitles(subtitles_list, video)[:limit]
-    for subtitle, _ in scored_subtitles:
+
+    # List and score subtitles using series alias
+    for alias in tv_episode.series.aliases:
+        logger.debug(u'Searching subtitles using alias: %s', alias)
+        video.series = alias
+        subtitles_list.extend(pool.list_subtitles(video, languages))
+        # Calculate the score with new video
+        scored_subtitles.extend(score_subtitles(set(subtitles_list), video)[:limit])
+
+    # Use set to avoid duplicate subtitles
+    for subtitle, _ in set(scored_subtitles):
         cache.set(subtitle_key.format(id=subtitle.id).encode('utf-8'), subtitle)
 
     logger.debug("Scores computed for release: {release}".format(release=os.path.basename(video_path)))
