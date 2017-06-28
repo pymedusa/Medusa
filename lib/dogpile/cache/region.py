@@ -410,7 +410,13 @@ class CacheRegion(object):
                 "configured with backend: %s.  "
                 "Specify replace_existing_backend=True to replace."
                 % self.backend)
-        backend_cls = _backend_loader.load(backend)
+
+        try:
+            backend_cls = _backend_loader.load(backend)
+        except PluginLoader.NotFound:
+            raise exception.PluginNotFound(
+                "Couldn't find cache plugin to load: %s" % backend)
+
         if _config_argument_dict:
             self.backend = backend_cls.from_config_dict(
                 _config_argument_dict,
@@ -550,6 +556,8 @@ class CacheRegion(object):
             _config_prefix="%sarguments." % prefix,
             wrap=config_dict.get(
                 "%swrap" % prefix, None),
+            replace_existing_backend=config_dict.get(
+                "%sreplace_existing_backend" % prefix, False),
         )
 
     @memoized_property
@@ -944,11 +952,14 @@ class CacheRegion(object):
                 if not should_cache_fn:
                     self.backend.set_multi(values_w_created)
                 else:
-                    self.backend.set_multi(dict(
+                    values_to_cache = dict(
                         (k, v)
                         for k, v in values_w_created.items()
                         if should_cache_fn(v[0])
-                    ))
+                    )
+
+                    if values_to_cache:
+                        self.backend.set_multi(values_to_cache)
 
                 values.update(values_w_created)
             return [values[orig_to_mangled[k]].payload for k in keys]
