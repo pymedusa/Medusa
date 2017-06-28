@@ -2,8 +2,7 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
-# Copyright 2013 AKFish <akfish@gmail.com>                                     #
-# Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2016 Jannis gebauier <ja.geb@me.com>                               #
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.github.io/PyGithub/v1/index.html                             #
@@ -23,23 +22,51 @@
 #                                                                              #
 # ##############################################################################
 
-# #193: Line endings should be linux style
+import datetime
 
-# TODO: As of Thu Aug 21 22:40:13 (BJT) Chinese Standard Time 2013
-# lots of consts in this project are explict
-# should realy round them up and reference them by consts
-# EDIT: well, maybe :-)
+import github.GithubObject
+import github.PaginatedList
+import github.NamedUser
 
-# ##############################################################################
-# Request Header                                                               #
-# (Case sensitive)                                                             #
-# ##############################################################################
-REQ_IF_NONE_MATCH = "If-None-Match"
-REQ_IF_MODIFIED_SINCE = "If-Modified-Since"
 
-# ##############################################################################
-# Response Header                                                              #
-# (Lower Case)                                                                 #
-# ##############################################################################
-RES_ETAG = "etag"
-RES_LAST_MODIFIED = "last-modified"
+class InstallationAuthorization(github.GithubObject.NonCompletableGithubObject):
+    """
+    InstallationAuthorization as obtained from a GitHub integration.
+    """
+
+    def __repr__(self):
+        return self.get__repr__({"expires_at": self._expires_at.value})
+
+    @property
+    def token(self):
+        """
+        :type: string
+        """
+        return self._token.value
+
+    @property
+    def expires_at(self):
+        """
+        :type: datetime
+        """
+        return self._expires_at.value
+
+    @property
+    def on_behalf_of(self):
+        """
+        :type: :class:`github.NamedUser.NamedUser`
+        """
+        return self._on_behalf_of.value
+
+    def _initAttributes(self):
+        self._token = github.GithubObject.NotSet
+        self._expires_at = github.GithubObject.NotSet
+        self._on_behalf_of = github.GithubObject.NotSet
+
+    def _useAttributes(self, attributes):
+        if "token" in attributes:  # pragma no branch
+            self._token = self._makeStringAttribute(attributes["token"])
+        if "expires_at" in attributes:  # pragma no branch
+            self._expires_at = self._makeDatetimeAttribute(attributes["expires_at"])
+        if "on_behalf_of" in attributes:  # pragma no branch
+            self._on_behalf_of = self._makeClassAttribute(github.NamedUser.NamedUser, attributes["on_behalf_of"])
