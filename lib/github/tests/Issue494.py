@@ -2,8 +2,8 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
-# Copyright 2013 AKFish <akfish@gmail.com>                                     #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2016 Sam Corbett <sjcorbett@apache.org>                            #
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.github.io/PyGithub/v1/index.html                             #
@@ -23,23 +23,16 @@
 #                                                                              #
 # ##############################################################################
 
-# #193: Line endings should be linux style
+import Framework
 
-# TODO: As of Thu Aug 21 22:40:13 (BJT) Chinese Standard Time 2013
-# lots of consts in this project are explict
-# should realy round them up and reference them by consts
-# EDIT: well, maybe :-)
 
-# ##############################################################################
-# Request Header                                                               #
-# (Case sensitive)                                                             #
-# ##############################################################################
-REQ_IF_NONE_MATCH = "If-None-Match"
-REQ_IF_MODIFIED_SINCE = "If-Modified-Since"
+class Issue494(Framework.TestCase):
+    def setUp(self):
+        Framework.TestCase.setUp(self)
+        self.repo = self.g.get_repo("apache/brooklyn-server")
+        self.pull = self.repo.get_pull(465)
 
-# ##############################################################################
-# Response Header                                                              #
-# (Lower Case)                                                                 #
-# ##############################################################################
-RES_ETAG = "etag"
-RES_LAST_MODIFIED = "last-modified"
+    def testRepr(self):
+        expected = 'PullRequest(title="Change SetHostnameCustomizer to check if ' \
+                   '/etc/sysconfig/network exist…", number=465)'
+        self.assertEqual(self.pull.__repr__(), expected)

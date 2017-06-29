@@ -2,7 +2,8 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
-# Copyright 2013 AKFish <akfish@gmail.com>                                     #
+# Copyright 2012 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2012 Zearin <zearin@gonk.net>                                      #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -23,23 +24,23 @@
 #                                                                              #
 # ##############################################################################
 
-# #193: Line endings should be linux style
+import Framework
 
-# TODO: As of Thu Aug 21 22:40:13 (BJT) Chinese Standard Time 2013
-# lots of consts in this project are explict
-# should realy round them up and reference them by consts
-# EDIT: well, maybe :-)
+class PullRequestReviewerRequests(Framework.TestCase):
+    def setUp(self):
+        Framework.TestCase.setUp(self)
+        self.repo = self.g.get_repo("PyGithub/PyGithub")
+        self.pull = self.repo.get_pull(538)
+        
+        self.pullreviewerrequests = self.pull.get_reviewer_requests()
+        self.pullreviewerrequest = self.pullreviewerrequests[0]
 
-# ##############################################################################
-# Request Header                                                               #
-# (Case sensitive)                                                             #
-# ##############################################################################
-REQ_IF_NONE_MATCH = "If-None-Match"
-REQ_IF_MODIFIED_SINCE = "If-Modified-Since"
 
-# ##############################################################################
-# Response Header                                                              #
-# (Lower Case)                                                                 #
-# ##############################################################################
-RES_ETAG = "etag"
-RES_LAST_MODIFIED = "last-modified"
+    def testAttributes(self):
+
+        self.assertEqual(self.pullreviewerrequest.id, 2930472)
+        self.assertEqual(self.pullreviewerrequest.login, "jayfk")
+ 
+        # test __repr__() based on this attributes
+        self.assertEqual(self.pullreviewerrequest.__repr__(), 'PullRequestReviewerRequest(login="jayfk", id=2930472)')
+
