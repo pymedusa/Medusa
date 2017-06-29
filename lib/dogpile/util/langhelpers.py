@@ -39,15 +39,18 @@ class PluginLoader(object):
                 self.impls[name] = impl.load
                 return impl.load()
             else:
-                raise Exception(
-                    "Can't load plugin %s %s" %
-                    (self.group, name))
+                raise self.NotFound(
+                    "Can't load plugin %s %s" % (self.group, name)
+                )
 
     def register(self, name, modulepath, objname):
         def load():
             mod = __import__(modulepath, fromlist=[objname])
             return getattr(mod, objname)
         self.impls[name] = load
+
+    class NotFound(Exception):
+        """The specified plugin could not be found."""
 
 
 class memoized_property(object):
