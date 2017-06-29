@@ -64,7 +64,7 @@ PROVIDER_URLS = {
     'shooter': 'http://www.shooter.cn',
     'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
-    'tvsubtitles': 'http://www.tvsubtitles.net'
+    'tvsubtitles': 'http://www.tvsubtitles.net',
     'wizdom': 'http://wizdom.xyz'
 }
 
