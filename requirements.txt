@@ -4,5 +4,6 @@ html5lib
 PyGithub
 Mako
 requests
+setuptools
 tornado
 tornroutes
