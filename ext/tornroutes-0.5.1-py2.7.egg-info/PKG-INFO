@@ -1,0 +1,12 @@
+Metadata-Version: 1.1
+Name: tornroutes
+Version: 0.5.1
+Summary: Tornado Web Route Decorator
+Home-page: https://github.com/nod/tornroutes
+Author: Jeremy Kelley
+Author-email: jeremy@33ad.org
+License: http://www.apache.org/licenses/LICENSE-2.0
+Download-URL: https://github.com/nod/tornroutes/tarball/0.5
+Description: UNKNOWN
+Keywords: tornado,routes,http
+Platform: UNKNOWN

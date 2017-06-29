@@ -34,13 +34,6 @@ class route(object):
             goto = self.reverse_url('SomeRequestHandler')
             self.redirect(goto)
 
-    # for passing uri parameters
-    @route(r'/some/(?P<parameterized>\w+)/path')
-    class SomeParameterizedRequestHandler(RequestHandler):
-        def get(self, parameterized):
-            goto = self.reverse_url(parameterized)
-            self.redirect(goto)
-
     my_routes = route.get_routes()
     ```
 
