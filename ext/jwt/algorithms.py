@@ -142,6 +142,7 @@ class HMACAlgorithm(Algorithm):
         invalid_strings = [
             b'-----BEGIN PUBLIC KEY-----',
             b'-----BEGIN CERTIFICATE-----',
+            b'-----BEGIN RSA PUBLIC KEY-----',
             b'ssh-rsa'
         ]
 
@@ -356,7 +357,10 @@ if has_crypto:
                 # a Signing Key or a Verifying Key, so we try
                 # the Verifying Key first.
                 try:
-                    key = load_pem_public_key(key, backend=default_backend())
+                    if key.startswith(b'ecdsa-sha2-'):
+                        key = load_ssh_public_key(key, backend=default_backend())
+                    else:
+                        key = load_pem_public_key(key, backend=default_backend())
                 except ValueError:
                     key = load_pem_private_key(key, password=None, backend=default_backend())
 

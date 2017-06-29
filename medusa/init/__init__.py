@@ -39,8 +39,13 @@ def _lib_location():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
 
 
+def _ext_lib_location():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'ext'))
+
+
 def _configure_syspath():
     sys.path.insert(1, _lib_location())
+    sys.path.insert(1, _ext_lib_location())
 
 
 def _register_utf8_codec():

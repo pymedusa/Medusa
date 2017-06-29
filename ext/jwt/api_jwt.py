@@ -58,10 +58,25 @@ class PyJWT(PyJWS):
 
     def decode(self, jwt, key='', verify=True, algorithms=None, options=None,
                **kwargs):
+
+        if not algorithms:
+            warnings.warn(
+                'It is strongly recommended that you pass in a ' +
+                'value for the "algorithms" argument when calling decode(). ' +
+                'This argument will be mandatory in a future version.',
+                DeprecationWarning
+            )
+
         payload, signing_input, header, signature = self._load(jwt)
 
-        decoded = super(PyJWT, self).decode(jwt, key, verify, algorithms,
-                                            options, **kwargs)
+        if options is None:
+            options = {'verify_signature': verify}
+        else:
+            options.setdefault('verify_signature', verify)
+
+        decoded = super(PyJWT, self).decode(
+            jwt, key=key, algorithms=algorithms, options=options, **kwargs
+        )
 
         try:
             payload = json.loads(decoded.decode('utf-8'))
@@ -82,7 +97,8 @@ class PyJWT(PyJWS):
         if 'verify_expiration' in kwargs:
             options['verify_exp'] = kwargs.get('verify_expiration', True)
             warnings.warn('The verify_expiration parameter is deprecated. '
-                          'Please use options instead.', DeprecationWarning)
+                          'Please use verify_exp in options instead.',
+                          DeprecationWarning)
 
         if isinstance(leeway, timedelta):
             leeway = timedelta_total_seconds(leeway)
@@ -121,13 +137,9 @@ class PyJWT(PyJWS):
 
     def _validate_iat(self, payload, now, leeway):
         try:
-            iat = int(payload['iat'])
+            int(payload['iat'])
         except ValueError:
-            raise DecodeError('Issued At claim (iat) must be an integer.')
-
-        if iat > (now + leeway):
-            raise InvalidIssuedAtError('Issued At claim (iat) cannot be in'
-                                       ' the future.')
+            raise InvalidIssuedAtError('Issued At claim (iat) must be an integer.')
 
     def _validate_nbf(self, payload, now, leeway):
         try:

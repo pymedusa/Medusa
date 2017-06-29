@@ -46,7 +46,7 @@ chardet-3.0.4.dist-info/WHEEL,sha256=o2k-Qa-RMNIJmUdIc7KU6VWR_ErNRbWNlxDIpl7lm34
 chardet-3.0.4.dist-info/entry_points.txt,sha256=fAMmhu5eJ-zAJ-smfqQwRClQ3-nozOCmvJ6-E8lgGJo,60
 chardet-3.0.4.dist-info/metadata.json,sha256=0htbRM18ujyGZDdfowgAqj6Hq2eQtwzwyhaEveKntgo,1375
 chardet-3.0.4.dist-info/top_level.txt,sha256=AowzBbZy4x8EirABDdJSLJZMkJ_53iIag8xfKR6D7kI,8
-../../bin/chardetect.exe,sha256=HYmAIeG8PSpYAA0nwTz9P3Ry0x1FXT-IdfdT9Ze09UI,98144
+../../bin/chardetect.exe,sha256=JrHt3xeQ559K3AFysbjSIjQBNFm1uhbmZd9_IqbsyrM,98144
 chardet-3.0.4.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
 chardet/euctwprober.pyc,,
 chardet/big5freq.pyc,,
