@@ -24,6 +24,6 @@ except ImportError:
 
 # Replicate some six behaviour
 try:
-    text_type = (unicode,)
+    text_type = unicode
 except NameError:
-    text_type = (str,)
+    text_type = str
