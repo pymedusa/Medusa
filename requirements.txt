@@ -1,4 +1,6 @@
+beautifulsoup4
 dogpile.cache
+html5lib
 PyGithub
 Mako
 requests
