@@ -122,7 +122,9 @@ class LegendasTVSubtitle(Subtitle):
         # episode
         if isinstance(video, Episode) and self.type == 'episode':
             # series
-            if video.series and sanitize(self.title) == sanitize(video.series):
+            sanitized_alias = [sanitize(alias) for alias in video.alternative_series]
+            if video.series and (sanitize(self.title) == sanitize(video.series) or
+                                 sanitize(self.title) in sanitized_alias):
                 matches.add('series')
 
             # year
@@ -136,7 +138,9 @@ class LegendasTVSubtitle(Subtitle):
         # movie
         elif isinstance(video, Movie) and self.type == 'movie':
             # title
-            if video.title and sanitize(self.title) == sanitize(video.title):
+            sanitized_alias = [sanitize(alias) for alias in video.alternative_titles]
+            if video.title and (sanitize(self.title) == sanitize(video.title) or
+                                sanitize(self.title) in sanitized_alias):
                 matches.add('title')
 
             # year
@@ -465,10 +469,21 @@ class LegendasTVProvider(Provider):
             title = video.series
             season = video.season
             episode = video.episode
+            aliases = video.alternative_series
         else:
             title = video.title
+            aliases = video.alternative_titles
 
-        return [s for l in languages for s in self.query(l, title, season=season, episode=episode, year=video.year)]
+        found_subtitles = [s for l in languages for s in
+                           self.query(l, title, season=season, episode=episode, year=video.year)]
+
+        # Use video aliases as fallback
+        if not found_subtitles:
+            for alias in aliases:
+                found_subtitles.extend([s for l in languages for s in
+                                       self.query(l, alias, season=season, episode=episode, year=video.year)])
+
+        return found_subtitles
 
     def download_subtitle(self, subtitle):
         # download archive in case we previously hit the releases cache and didn't download it
