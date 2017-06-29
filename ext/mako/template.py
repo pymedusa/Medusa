@@ -109,6 +109,11 @@ class Template(object):
      completes. Is used to provide custom error-rendering
      functions.
 
+     .. seealso::
+
+        :paramref:`.Template.include_error_handler` - include-specific
+        error handler function
+
     :param format_exceptions: if ``True``, exceptions which occur during
      the render phase of this template will be caught and
      formatted into an HTML error page, which then becomes the
@@ -128,6 +133,16 @@ class Template(object):
      use future_imports to convey that to the renderer, as otherwise the
      import will not appear as the first executed statement in the generated
      code and will therefore not have the desired effect.
+
+    :param include_error_handler: An error handler that runs when this template
+     is included within another one via the ``<%include>`` tag, and raises an
+     error.  Compare to the :paramref:`.Template.error_handler` option.
+
+     .. versionadded:: 1.0.6
+
+     .. seealso::
+
+        :paramref:`.Template.error_handler` - top-level error handler function
 
     :param input_encoding: Encoding of the template's source code.  Can
      be used in lieu of the coding comment. See
@@ -243,7 +258,8 @@ class Template(object):
                  future_imports=None,
                  enable_loop=True,
                  preprocessor=None,
-                 lexer_cls=None):
+                 lexer_cls=None,
+                 include_error_handler=None):
         if uri:
             self.module_id = re.sub(r'\W', "_", uri)
             self.uri = uri
@@ -329,6 +345,7 @@ class Template(object):
         self.callable_ = self.module.render_body
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
+        self.include_error_handler = include_error_handler
         self.lookup = lookup
 
         self.module_directory = module_directory
@@ -528,6 +545,7 @@ class ModuleTemplate(Template):
                  cache_type=None,
                  cache_dir=None,
                  cache_url=None,
+                 include_error_handler=None,
                  ):
         self.module_id = re.sub(r'\W', "_", module._template_uri)
         self.uri = module._template_uri
@@ -559,6 +577,7 @@ class ModuleTemplate(Template):
         self.callable_ = self.module.render_body
         self.format_exceptions = format_exceptions
         self.error_handler = error_handler
+        self.include_error_handler = include_error_handler
         self.lookup = lookup
         self._setup_cache_args(
             cache_impl, cache_enabled, cache_args,
@@ -579,6 +598,7 @@ class DefTemplate(Template):
         self.encoding_errors = parent.encoding_errors
         self.format_exceptions = parent.format_exceptions
         self.error_handler = parent.error_handler
+        self.include_error_handler = parent.include_error_handler
         self.enable_loop = parent.enable_loop
         self.lookup = parent.lookup
         self.bytestring_passthrough = parent.bytestring_passthrough

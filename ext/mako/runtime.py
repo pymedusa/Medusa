@@ -749,7 +749,16 @@ def _include_file(context, uri, calling_uri, **kwargs):
     (callable_, ctx) = _populate_self_namespace(
         context._clean_inheritance_tokens(),
         template)
-    callable_(ctx, **_kwargs_for_include(callable_, context._data, **kwargs))
+    kwargs = _kwargs_for_include(callable_, context._data, **kwargs)
+    if template.include_error_handler:
+        try:
+            callable_(ctx, **kwargs)
+        except Exception:
+            result = template.include_error_handler(ctx, compat.exception_as())
+            if not result:
+                compat.reraise(*sys.exc_info())
+    else:
+        callable_(ctx, **kwargs)
 
 
 def _inherit_from(context, uri, calling_uri):
