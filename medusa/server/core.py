@@ -139,30 +139,6 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
-        # API v1 handlers
-        self.app.add_handlers('.*$', [
-            # Main handler
-            (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
-
-            # Key retrieval
-            (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
-
-            # Builder redirect
-            (r'{base}/api/builder'.format(base=self.options['web_root']),
-             RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
-
-            # Webui login/logout handlers
-            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
-            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
-
-            (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
-
-            # Web calendar handler (Needed because option Unprotected calendar)
-            (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
-
-            # webui handlers
-        ] + self._get_webui_routes())
-
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
 
         # Websocket handler
@@ -208,6 +184,30 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
              {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
+
+        # API v1 handlers
+        self.app.add_handlers('.*$', [
+            # Main handler
+            (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
+
+            # Key retrieval
+            (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
+
+            # Builder redirect
+            (r'{base}/api/builder'.format(base=self.options['web_root']),
+             RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
+
+            # Webui login/logout handlers
+            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
+            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
+
+            (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
+
+            # Web calendar handler (Needed because option Unprotected calendar)
+            (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
+
+            # webui handlers
+        ] + self._get_webui_routes())
 
     def _get_webui_routes(self):
         webroot = self.options['web_root']
