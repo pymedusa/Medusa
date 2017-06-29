@@ -65,6 +65,7 @@ PROVIDER_URLS = {
     'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
     'tvsubtitles': 'http://www.tvsubtitles.net'
+    'wizdom': 'http://wizdom.xyz'
 }
 
 
