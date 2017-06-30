@@ -3,6 +3,7 @@ CacheControl
 dogpile.cache
 html5lib
 PyGithub
+python-dateutil
 Mako
 requests
 setuptools

@@ -82,8 +82,8 @@ setuptools-36.0.1.dist-info/entry_points.txt,sha256=DfaFRIzbRYpxV0yOQvyI-w9SfkLJ
 setuptools-36.0.1.dist-info/metadata.json,sha256=BnAN8gdScPOY_eGknL-bQ6O68v3RPwopI10vQDVhyXo,4804
 setuptools-36.0.1.dist-info/top_level.txt,sha256=2HUXVVwA4Pff1xgTFr3GsTXXKaPaO6vlG6oNJ_4u4Tg,38
 setuptools-36.0.1.dist-info/zip-safe,sha256=AbpHGcgLb-kRsJGnwFEktk7uzpZOCcBY74-YBdrKVGs,1
-../../bin/easy_install.exe,sha256=Pyjr44R4AqnUa1c-NH7SAJLMt7D4GCTTMtnwCFWZKMY,98153
-../../bin/easy_install-2.7.exe,sha256=Pyjr44R4AqnUa1c-NH7SAJLMt7D4GCTTMtnwCFWZKMY,98153
+../../bin/easy_install.exe,sha256=dbqgqkC3XaMWtoLOcXnXI84Rsh7sGlSAqALbug-lF5I,98153
+../../bin/easy_install-2.7.exe,sha256=dbqgqkC3XaMWtoLOcXnXI84Rsh7sGlSAqALbug-lF5I,98153
 setuptools-36.0.1.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
 setuptools/ssl_support.pyc,,
 setuptools/extern/__init__.pyc,,

@@ -70,7 +70,7 @@ class weekday(weekdaybase):
 
         super(weekday, self).__init__(wkday, n)
 
-MO, TU, WE, TH, FR, SA, SU = weekdays = tuple(weekday(x) for x in range(7))
+MO, TU, WE, TH, FR, SA, SU = weekdays = tuple([weekday(x) for x in range(7)])
 
 
 def _invalidates_cache(f):
@@ -256,12 +256,12 @@ class rrulebase(object):
         n = 0
         for d in gen:
             if comp(d, dt):
+                yield d
+
                 if count is not None:
                     n += 1
-                    if n > count:
+                    if n >= count:
                         break
-
-                yield d
 
     def between(self, after, before, inc=False, count=1):
         """ Returns all the occurrences of the rrule between after and before.
@@ -363,7 +363,7 @@ class rrule(rrulebase):
         limit of the recurrence. The last recurrence in the rule is the greatest
         datetime that is less than or equal to the value specified in the
         ``until`` parameter.
-
+        
         .. note::
             As of version 2.5.0, the use of the ``until`` keyword together
             with the ``count`` keyword is deprecated per RFC-2445 Sec. 4.3.10.
@@ -444,7 +444,7 @@ class rrule(rrulebase):
             until = datetime.datetime.fromordinal(until.toordinal())
         self._until = until
 
-        if count is not None and until:
+        if count and until:
             warn("Using both 'count' and 'until' is inconsistent with RFC 2445"
                  " and has been deprecated in dateutil. Future versions will "
                  "raise an error.", DeprecationWarning)
@@ -533,8 +533,8 @@ class rrule(rrulebase):
 
             bymonthday = set(bymonthday)            # Ensure it's unique
 
-            self._bymonthday = tuple(sorted(x for x in bymonthday if x > 0))
-            self._bynmonthday = tuple(sorted(x for x in bymonthday if x < 0))
+            self._bymonthday = tuple(sorted([x for x in bymonthday if x > 0]))
+            self._bynmonthday = tuple(sorted([x for x in bymonthday if x < 0]))
 
             # Storing positive numbers first, then negative numbers
             if 'bymonthday' not in self._original_rule:
@@ -689,7 +689,7 @@ class rrule(rrulebase):
         if self._wkst:
             parts.append('WKST=' + repr(weekday(self._wkst))[0:2])
 
-        if self._count is not None:
+        if self._count:
             parts.append('COUNT=' + str(self._count))
 
         if self._until:
@@ -844,13 +844,13 @@ class rrule(rrulebase):
                         self._len = total
                         return
                     elif res >= self._dtstart:
-                        if count is not None:
-                            count -= 1
-                            if count < 0:
-                                self._len = total
-                                return
                         total += 1
                         yield res
+                        if count:
+                            count -= 1
+                            if not count:
+                                self._len = total
+                                return
             else:
                 for i in dayset[start:end]:
                     if i is not None:
@@ -861,14 +861,13 @@ class rrule(rrulebase):
                                 self._len = total
                                 return
                             elif res >= self._dtstart:
-                                if count is not None:
-                                    count -= 1
-                                    if count < 0:
-                                        self._len = total
-                                        return
-
                                 total += 1
                                 yield res
+                                if count:
+                                    count -= 1
+                                    if not count:
+                                        self._len = total
+                                        return
 
             # Handle frequency and interval
             fixday = False
