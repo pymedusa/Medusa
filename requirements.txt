@@ -1,6 +1,7 @@
 beautifulsoup4
 CacheControl
 dogpile.cache
+futures
 html5lib
 PyGithub
 python-dateutil

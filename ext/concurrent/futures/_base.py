@@ -6,6 +6,7 @@ import logging
 import threading
 import itertools
 import time
+import types
 
 __author__ = 'Brian Quinlan (brian@sweetapp.com)'
 
@@ -300,6 +301,22 @@ class Future(object):
                 callback(self)
             except Exception:
                 LOGGER.exception('exception calling callback for %r', self)
+            except BaseException:
+                # Explicitly let all other new-style exceptions through so
+                # that we can catch all old-style exceptions with a simple
+                # "except:" clause below.
+                #
+                # All old-style exception objects are instances of
+                # types.InstanceType, but "except types.InstanceType:" does
+                # not catch old-style exceptions for some reason.  Thus, the
+                # only way to catch all old-style exceptions without catching
+                # any new-style exceptions is to filter out the new-style
+                # exceptions, which all derive from BaseException.
+                raise
+            except:
+                # Because of the BaseException clause above, this handler only
+                # executes for old-style exception objects.
+                LOGGER.exception('exception calling callback for %r', self)
 
     def __repr__(self):
         with self._condition:
@@ -354,7 +371,14 @@ class Future(object):
 
     def __get_result(self):
         if self._exception:
-            raise type(self._exception), self._exception, self._traceback
+            if isinstance(self._exception, types.InstanceType):
+                # The exception is an instance of an old-style class, which
+                # means type(self._exception) returns types.ClassType instead
+                # of the exception's actual class type.
+                exception_type = self._exception.__class__
+            else:
+                exception_type = type(self._exception)
+            raise exception_type, self._exception, self._traceback
         else:
             return self._result
 
