@@ -1,0 +1,592 @@
+Metadata-Version: 1.1
+Name: Pint
+Version: 0.8.1
+Summary: Physical quantities module
+Home-page: https://github.com/hgrecco/pint
+Author: Hernan E. Grecco
+Author-email: hernan.grecco@gmail.com
+License: BSD
+Description: Pint: makes units easy
+        ======================
+        
+        Pint is a Python package to define, operate and manipulate physical
+        quantities: the product of a numerical value and a unit of measurement.
+        It allows arithmetic operations between them and conversions from and
+        to different units.
+        
+        It is distributed with a comprehensive list of physical units, prefixes
+        and constants. Due to its modular design, you can extend (or even rewrite!)
+        the complete list without changing the source code. It supports a lot of
+        numpy mathematical operations **without monkey patching or wrapping numpy**.
+        
+        It has a complete test coverage. It runs in Python 2.6 and 3.X
+        with no other dependency. It is licensed under BSD.
+        
+        It is extremely easy and natural to use:
+        
+        .. code-block:: python
+        
+            >>> import pint
+            >>> ureg = pint.UnitRegistry()
+            >>> 3 * ureg.meter + 4 * ureg.cm
+            <Quantity(3.04, 'meter')>
+        
+        and you can make good use of numpy if you want:
+        
+        .. code-block:: python
+        
+            >>> import numpy as np
+            >>> [3, 4] * ureg.meter + [4, 3] * ureg.cm
+            <Quantity([ 3.04  4.03], 'meter')>
+            >>> np.sum(_)
+            <Quantity(7.07, 'meter')>
+        
+        
+        Quick Installation
+        ------------------
+        
+        To install Pint, simply:
+        
+        .. code-block:: bash
+        
+            $ pip install pint
+        
+        or utilizing conda with, the conda-forge channel:
+        
+        .. code-block:: bash
+        
+            $ conda install -c conda-forge pint
+        
+        and then simply enjoy it!
+        
+        
+        Documentation
+        -------------
+        
+        Full documentation is available at http://pint.readthedocs.org/
+        
+        
+        Design principles
+        -----------------
+        
+        Although there are already a few very good Python packages to handle physical
+        quantities, no one was really fitting my needs. Like most developers, I programed
+        Pint to scratch my own itches.
+        
+        - Unit parsing: prefixed and pluralized forms of units are recognized without
+          explicitly defining them. In other words: as the prefix *kilo* and the unit *meter*
+          are defined, Pint understands *kilometers*. This results in a much shorter and
+          maintainable unit definition list as compared to other packages.
+        
+        - Standalone unit definitions: units definitions are loaded from simple and
+          easy to edit text file. Adding and changing units and their definitions does
+          not involve changing the code.
+        
+        - Advanced string formatting: a quantity can be formatted into string using
+          PEP 3101 syntax. Extended conversion flags are given to provide latex and pretty
+          formatting.
+        
+        - Small codebase: small and easy to maintain with a flat hierarchy.
+        
+        - Dependency free: it depends only on Python and its standard library.
+        
+        - Python 2 and 3: A single codebase that runs unchanged in Python 2.6+ and Python 3.0+.
+        
+        - Advanced NumPy support: While NumPy is not a requirement for Pint,
+          when available ndarray methods and ufuncs can be used in Quantity objects.
+        
+        
+        Pint is written and maintained by Hernan E. Grecco <hernan.grecco@gmail.com>.
+        
+        Other contributors, listed alphabetically, are:
+        
+        * Aaron Coleman
+        * Alexander Böhn <fish2000@gmail.com>
+        * Ana Krivokapic <akrivokapic1@gmail.com>
+        * Andrea Zonca <code@andreazonca.com>
+        * Brend Wanders <b.wanders@utwente.nl>
+        * choloepus
+        * coutinho <coutinho@esrf.fr>
+        * Daniel Sokolowski <daniel.sokolowski@danols.com>
+        * Dave Brooks <dave@bcs.co.nz>
+        * David Linke
+        * Ed Schofield <ed@pythoncharmers.com>
+        * Eduard Bopp <eduard.bopp@aepsil0n.de>
+        * Eli <elifab@gmail.com>
+        * Felix Hummel <felix@felixhummel.de>
+        * Giel van Schijndel <me@mortis.eu>
+        * James Rowe <jnrowe@gmail.com>
+        * Jim Turner <jturner314@gmail.com>
+        * Joel B. Mohler <joel@kiwistrawberry.us>
+        * John David Reaver <jdreaver@adlerhorst.com>
+        * Jonas Olson <jolson@kth.se>
+        * Kaido Kert <kaidokert@gmail.com>
+        * Kenneth D. Mankoff <mankoff@gmail.com>
+        * Kevin Davies <kdavies4@gmail.com>
+        * Luke Campbell <luke.s.campbell@gmail.com>
+        * Matthieu Dartiailh <marul@laposte.net>
+        * Nate Bogdanowicz <natezb@gmail.com>
+        * Peter Grayson <jpgrayson@gmail.com>
+        * Richard Barnes <rbarnes@umn.edu>
+        * Ryan Dwyer <ryanpdwyer@gmail.com>
+        * Ryan Kingsbury <RyanSKingsbury@alumni.unc.edu>
+        * Sundar Raman <cybertoast@gmail.com>
+        * Tiago Coutinho <coutinho@esrf.fr>
+        * Thomas Kluyver <takowl@gmail.com>
+        * Tom Ritchford <tom@swirly.com>
+        * Virgil Dupras <virgil.dupras@savoirfairelinux.com>
+        
+        (If you think that your name belongs here, please let the maintainer know)
+        
+        
+        Pint Changelog
+        ==============
+        
+        0.8.1 (2017-06-05)
+        ------------------
+        
+        - Add support for datetime math.
+          (Issue #510, thanks robertd)
+        - Fixed _repr_html_ in Python 2.7.
+          (Issue #512)
+        - Implemented BaseRegistry.auto_reduce_dimensions.
+          (Issue #500, thanks robertd)
+        - Fixed dimension compatibility bug introduced on Registry refactoring
+          (Issue #523, thanks dalito)
+        
+        
+        0.8 (2017-04-16)
+        ----------------
+        
+        - Refactored the Registry in multiple classes for better separation of concerns and clarity.
+        - Implemented support for defining multiple units per `define` call (one definition per line).
+          (Issue #462)
+        - In pow and ipow, allow array exponents (with len > 1) when base is dimensionless.
+          (Issue #483)
+        - Wraps now gets the canonical name of the unit when passed as string.
+          (Issue #468)
+        - NumPy exp and log keeps the type
+          (Issue #95)
+        - Implemented a function decorator to ensure that a context is active (with_context)
+          (Issue #465)
+        - Add warning when a System contains an unknown Group. 
+          (Issue #472)
+        - Add conda-forge installation snippet.
+          (Issue #485, thanks stadelmanma)
+        - Properly support floor division and modulo.
+          (Issue #474, thanks tecki)
+        - Measurement Correlated variable fix.
+          (Issue #463, thanks tadhgmister)
+        - Implement degree sign handling.
+          (Issue #449, thanks iamthad)
+        - Change `UndefinedUnitError` to inherit from `AttributeError`
+          (Issue #480, thanks jhidding)
+        - Simplified travis for faster testing.
+        - Fixed order units in siunitx formatting.
+          (Issue #441)
+        - Changed Systems lister to return a list instead of frozenset.
+          (Issue #425, thanks GloriaVictis)
+        - Fixed issue with negative values in to_compact() method.
+          (Issue #443, thanks nowox)
+        - Improved defintions.
+          (Issues #448, thanks gdonval)
+        - Improved Parser to support capital "E" on scientific notation.
+          (Issue #390, thanks javenoneal)
+        - Make sure that prefixed units are defined on the registry when unplicking.
+          (Issue #405)
+        - Automatic unit names translation through babel.
+          (Issue #338, thanks alexbodn)
+        - Support pickling Unit objects.
+          (Issue #349)
+        - Add support for wavenumber/kayser in spectroscopy context.
+          (Issue #321, thanks gerritholl)
+        - Improved formatting.
+          (thanks endolith and others)
+        - Add support for inline comments in definitions file.
+          (Issue #366)
+        - Implement Unit.__deepcopy__.
+          (Issue #357, thanks noahl)
+        - Allow changing shape for Quantities with numpy arrays.
+          (Issue #344, thanks tecki)
+        
+        0.7.2 (2016-03-02)
+        ------------------
+        - Fixed backward incompatibility problem when parsing dimensionless units.
+        
+        
+        0.7.1 (2016-02-23)
+        ------------------
+        
+        - Use NIST as source for most of the unit information.
+        - Added message to assertQuantityEqual.
+        - Added detection of circular dependencies in definitions.
+        
+        
+        0.7 (2016-02-20)
+        ----------------
+        
+        - Added Systems and groups.
+          (Issue #215, #315)
+        - Implemented references for wraps decorator.
+          (Issue #195)
+        - Added check decorator to UnitRegistry.
+          (Issue #283, thanks kaidokert)
+        - Added compact conversion.
+          (See #224, thanks Ryan Dwyer)
+        - Added compact formating code.
+          (Issue #240)
+        - New Unit Class.
+          (thanks Matthieu Dartiailh)
+        - Refactor UnitRegistry.
+          (thanks Matthieu Dartiailh)
+        - Move definitions, errors, and converters into their own modules.
+          (thanks Matthieu Dartiailh)
+        - UnitsContainer is now immutable
+          (Issue #202, thanks Matthieu Dartiailh)
+        - New parser and evaluator.
+          (Issue #226, thanks Aaron Coleman)
+        - Added support for Unicode identifiers.
+        - Added m_as as way top retrieve the magnitude in different units.
+          (Issue #227)
+        - Added Short form for magnitude and units.
+          (Issue #234)
+        - Improved deepcopy.
+          (Issue #252, thanks Emilien Kofman)
+        - Improved testing infrastructure.
+        - Improved docs.
+          (thanks Ryan Dwyer, Martin Thoma, Andrea Zonca)
+        - Fixed short names on electron_volt and hartree.
+        - Fixed definitions of scruple and drachm.
+          (Issue #262, thanks takowl)
+        - Fixed troy ounce to 480 'grains'.
+          (thanks elifab)
+        - Added 'quad' as a unit of energy (= 10**15 Btu).
+          (thanks Ed Schofield)
+        - Added "hectare" as a supported unit of area and 'ha' as the symbol for hectare.
+          (thanks Ed Schofield)
+        - Added peak sun hour and Langley.
+          (thanks Ed Schofield)
+        - Added photometric units: lumen & lux.
+          (Issue #230, thanks janpipek)
+        - A fraction magnitude quantity is conserved
+          (Issue #323, thanks emilienkofman)
+        - Improved conversion performance by removing unnecessart try/except.
+          (Issue #251)
+        - Added to_tuple and from_tuple to facilitate serialization.
+        - Fixed support for NumPy 1.10 due to a change in the Default casting rule
+          (Issue #320)
+        - Infrastructure: Added doctesting.
+        - Infrastructure: Better way to specify exclude matrix in travis.
+        
+        
+        0.6 (2014-11-07)
+        ----------------
+        
+        - Fix operations with measurments and user defined units.
+          (Issue #204)
+        - Faster conversions through caching and other performance improvements.
+          (Issue #193, thanks MatthieuDartiailh)
+        - Better error messages on Quantity.__setitem__.
+          (Issue #191)
+        - Fixed abbreviation of fluid_ounce.
+          (Issue #187, thanks hsoft)
+        - Defined Angstrom symbol.
+          (Issue #181, thanks JonasOlson)
+        - Removed fetching version from git repo as it triggers XCode installation on OSX.
+          (Issue #178, thanks deanishe)
+        - Improved context documentation.
+          (Issue #176 and 179, thanks rsking84)
+        - Added Chemistry context.
+          (Issue #179, thanks rsking84)
+        - Fix help(UnitRegisty)
+          (Issue #168)
+        - Optimized "get_dimensionality" and "get_base_name".
+          (Issue #166 and #167, thanks jbmohler)
+        - Renamed ureg.parse_units parameter "to_delta" to "as_delta" to make clear.
+          that no conversion happens. Accordingly, the parameter/property
+          "default_to_delta" of UnitRegistry was renamed to "default_as_delta".
+          (Issue #158, thanks dalit)
+        - Fixed problem when adding two uncertainties.
+          (thanks dalito)
+        - Full support for Offset units (e.g. temperature)
+          (Issue #88, #143, #147 and #161, thanks dalito)
+        
+        
+        0.5.2 (2014-07-31)
+        ------------------
+        
+        - Changed travis config to use miniconda for faster testing.
+        - Added wheel configuration to setup.cfg.
+        - Ensure resource streams are closed after reading.
+        - Require setuptools.
+          (Issue #169)
+        - Implemented real, imag and T Quantity properties.
+          (Issue #171)
+        - Implemented __int__ and __long__ for Quantity
+          (Issue #170)
+        - Fixed SI prefix error on ureg.convert.
+          (Issue #156, thanks jdreaver)
+        - Fixed parsing of multiparemeter contexts.
+          (Issue #174)
+        
+        
+        0.5.1 (2014-06-03)
+        ------------------
+        
+        - Implemented a standard way to change the registry used in unpickling operations.
+          (Issue #148)
+        - Fix bug where conversion would fail due to caching.
+          (Issue #140, thanks jdreaver)
+        - Allow assigning Not a Number to a quantity array.
+          (Issue #127)
+        - Decoupled Quantity in place and not in place unit conversion methods.
+        - Return None in functions that modify quantities in place.
+        - Improved testing infrastructure to check for unwanted warnings.
+        - Added test function at the package level to run all tests.
+        
+        
+        0.5 (2014-05-07)
+        ----------------
+        
+        - Improved test suite helper functions.
+        - Print honors default format w/o format().
+          (Issue #132, thanks mankoff)
+        - Fixed sum() by treating number zero as a special case.
+          (Issue #122, thanks rec)
+        - Improved behaviour in ScaleConverter, OffsetConverter and Quantity.to.
+          (Issue #120)
+        - Reimplemented loading of default definitions to allow Pint in a cx_freeze or similar package.
+          (Issue #118, thanks jbmohler)
+        - Implemented parsing of pretty printed units.
+          (Issue #117, thanks jpgrayson)
+        - Fixed representation of dimensionless quantities.
+          (Issue #112, thanks rec)
+        - Raise error when invalid formatting code is given.
+          (Issue #111, thanks rec)
+        - Default registry to lazy load, raise error on redefinition
+          (Issue #108, thanks rec, aepsil0n)
+        - Added condensed format.
+          (Issue #107, thanks rec)
+        - Added UnitRegistry () operator to parse expression replacing [].
+          (Issue #106, thanks rec)
+        - Optional case insensitive unit parsing. 
+          (Issue #105, thanks rec, jeremyfreeman, dbrnz)
+        - Change the Quantity mutability depending on magnitude type.
+          (Issue #104, thanks rec)
+        - Implemented API to list compatible units.
+          (Issue #89)
+        - Implemented cache of key UnitRegistry methods.
+        - Rewrote the Measurement class to use uncertainties.
+          (Issue #24)
+        
+        
+        0.4.2 (2014-02-14)
+        ------------------
+        
+        - Python 2.6 support
+          (Issue #96, thanks tiagocoutinho)
+        - Fixed symbol for inch.
+          (Issue #102, thanks cybertoast)
+        - Stop raising AttributeError when wrapping funcs without all of the attributes.
+          (Issue #100, thanks jturner314)
+        - Fixed warning appearing in Py2.x when comparing a Numpy Array with an empty string.
+          (Issue #98, thanks jturner314)
+        - Add links to AUR packages in docs.
+          (Issue #91, thanks jturner314)
+        - Fixed garbage collection related problem.
+          (Issue #92, thanks jturner314)
+        
+        
+        0.4.1 (2014-01-12)
+        ------------------
+        
+        - Integer Division with Arrays.
+          (Issue #80, thanks jdreaver)
+        - Improved Documentation.
+          (Issue #83, thanks choloepus)
+        - Removed 'h' alias for hour due to conflict with Planck's constant.
+          (Issue #82, thanks choloepus)
+        - Improved get_base_units for non-multiplicative units.
+          (Issue #85, thanks exxus)
+        - Refactored code for multiplication.
+          (Issue #84, thanks jturner314)
+        - Removed 'R' alias for roentgen as it collides with molar_gas_constant.
+          (Issue #87, thanks rsking84)
+        - Improved naming of temperature units and multiplication of non-multiplicative units.
+          (Issue #86, tahsnk exxus)
+        
+        
+        
+        0.4 (2013-12-17)
+        ----------------
+        
+        - Introduced Contexts: relation between incompatible dimensions.
+          (Issue #65)
+        - Fixed get_base_units for non multiplicative units.
+          (Related to issue #66)
+        - Implemented default formatting for quantities.
+        - Changed comparison between Quantities containing NumPy arrays.
+          (Issue #75) - BACKWARDS INCOMPATIBLE CHANGE
+        - Fixes for NumPy 1.8 due to changes in handling binary ops.
+          (Issue #73)
+        
+        
+        0.3.3 (2013-11-29)
+        ------------------
+        
+        - ParseHelper can now parse units named like python keywords.
+          (Issue #69)
+        - Fix comparison of quantities.
+          (Issue #74)
+        - Fix Inequality operator.
+          (Issue #70, thanks muggenhor)
+        - Improved travis configuration.
+          (thanks muggenhor)
+        
+        
+        0.3.2 (2013-10-22)
+        ------------------
+        
+        - Fix get_dimensionality for non multiplicative units.
+          (Issue #66)
+        - Proper handling of @import directive inside a file read using pkg_resources.
+          (Issue #68)
+        
+        
+        0.3.1 (2013-09-15)
+        ------------------
+        
+        - fix right division on python 2.7
+          (Issue #58, thanks natezb)
+        - fix formatting of fractional exponentials between 0 and 1.
+          (Issue #62, thanks jdreaver)
+        - fix installation as egg.
+          (Issue #61)
+        - fix handling of strange values as input of Quantity.
+          (Issue #53)
+        - math operations between quantities of different registries now raise a ValueError.
+          (Issue #52)
+        
+        
+        0.3 (2013-09-02)
+        ----------------
+        
+        - support for IPython autocomplete and rich display.
+          (Issues #30 and #31)
+        - support for @import directive in definitions file.
+          (Issue #22)
+        - support for wrapping functions to make them pint-aware.
+          (Issue #16)
+        - support for comparing UnitsContainer to string.
+          (Issue #35)
+        - fix error raised while converting from a single unit to one expressed as
+          the relation between many.
+          (Issue #29)
+        - fix error raised when unit symbol is missing.
+          (Issue #41)
+        - fix error raised when magnitude is Decimal.
+          (Issue #46, thanks danielsokolowski)
+        - support for non-installed pint.
+          (Issue #42, thanks danielsokolowski)
+        - support for application of numpy function on non-ndarray magnitudes.
+          (Issue #44)
+        - support for math operations on dimensionless Quantities (written with units).
+          (Issue #45)
+        - fix obtaining dimensionless quantity from string.
+          (Issue #50)
+        - fix adding and comparing numbers to a dimensionless quantity (written with units).
+          (Issue #54)
+        - Support for iter in Quantity.
+          (Issue #55, thanks natezb)
+        
+        
+        0.2.1 (2013-07-02)
+        ------------------
+        
+        - fix error raised while converting from a single unit to one expressed as
+          the relation between many.
+          (Issue #29)
+        
+        
+        0.2 (2013-05-13)
+        ----------------
+        
+        - support for Measurement (Quantity +/- error).
+        - implemented buckingham pi theorem for dimensional analysis.
+        - support for temperature units and temperature difference units.
+        - parser can infers if the user mean temperature or temperature difference.
+        - support for derived dimensions (e.g. [speed] = [length] / [time]).
+        - refactored the code into multiple files.
+        - refactored code to isolate definitions and converters.
+        - refactored formatter out of UnitParser class.
+        - added tox and travis config files for CI.
+        - comprehensive NumPy testing including almost all ufuncs.
+        - full NumPy support (features is not longer experimental).
+        - fixed bug preventing from having independent registries.
+          (Issue #10, thanks bwanders)
+        - forces real division as default for Quantities.
+          (Issue #7, thanks dbrnz)
+        - improved default unit definition file.
+          (Issue #13, thanks r-barnes)
+        - smarter parser supporting spaces as multiplications and other nice features.
+          (Issue #13, thanks r-barnes)
+        - moved testsuite inside package.
+        - short forms of binary prefixes, more units and fix to less than comparison.
+          (Issue #20, thanks muggenhor)
+        - pint is now zip-safe
+          (Issue #23, thanks muggenhor)
+        
+        
+        Version 0.1.3 (2013-01-07)
+        --------------------------
+        
+        - abbreviated quantity string formating.
+        - complete Python 2.7 compatibility.
+        - implemented pickle support for Quantities objects.
+        - extended NumPy support.
+        - various bugfixes.
+        
+        
+        Version 0.1.2 (2012-08-12)
+        --------------------------
+        
+        - experimenal NumPy support.
+        - included default unit definitions file.
+          (Issue #1, thanks fish2000)
+        - better testing.
+        - various bugfixes.
+        - fixed some units definitions.
+          (Issue #4, thanks craigholm)
+        
+        
+        Version 0.1.1 (2012-07-31)
+        --------------------------
+        
+        - better packaging and installation.
+        
+        
+        Version 0.1   (2012-07-26)
+        --------------------------
+        
+        - first public release.
+        
+Keywords: physical quantities unit conversion science
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.0
+Classifier: Programming Language :: Python :: 3.1
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
