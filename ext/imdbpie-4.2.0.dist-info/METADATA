@@ -1,0 +1,28 @@
+Metadata-Version: 2.0
+Name: imdbpie
+Version: 4.2.0
+Summary: Python IMDB client using the IMDB json web service made available for their iOS app.
+Home-page: UNKNOWN
+Author: Richard O'Dwyer
+Author-email: richard@richard.do
+License: Creative Commons Attribution-Noncommercial-Share Alike license
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Topic :: Internet :: WWW/HTTP
+Requires-Dist: requests (>=0.10)
+Requires-Dist: cachecontrol[filecache]
+Requires-Dist: six (>=1.0.0,<2.0.0)
+Requires-Dist: wheel
+
+https://github.com/richardasaurus/imdb-pie
+
+

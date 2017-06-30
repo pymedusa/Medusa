@@ -7,6 +7,7 @@ git+git://github.com/kurtmckee/feedparser.git@develop#egg=feedparser
 futures
 guessit
 html5lib
+imdbpie
 knowit
 git+git://github.com/joestump/python-oauth2.git@master#egg=oauth2
 PyGithub
