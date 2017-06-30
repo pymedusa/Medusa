@@ -122,8 +122,8 @@ class LegendasTVSubtitle(Subtitle):
         # episode
         if isinstance(video, Episode) and self.type == 'episode':
             # series
-            if video.series and (sanitize(video.series) in (
-                    sanitize(name) for name in [self.title] + video.alternative_series)):
+            if video.series and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.series] + video.alternative_series)):
                 matches.add('series')
 
             # year
@@ -137,8 +137,8 @@ class LegendasTVSubtitle(Subtitle):
         # movie
         elif isinstance(video, Movie) and self.type == 'movie':
             # title
-            if video.title and (sanitize(video.title) in (
-                    sanitize(name) for name in [self.title] + video.alternative_titles)):
+            if video.title and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.title] + video.alternative_titles)):
                 matches.add('title')
 
             # year
