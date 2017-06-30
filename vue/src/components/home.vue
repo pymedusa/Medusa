@@ -22,7 +22,7 @@ export default {
         vm.loading = true;
         vm.getAllSeries().then(() => {
             vm.loading = false;
-        });
+        }).catch(console.error);
     },
     methods: {
         ...mapActions([

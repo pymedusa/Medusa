@@ -45,8 +45,8 @@ export default {
         vm.checkAuth().then(() => {
             vm.getRecentShows().then(() => {
                 vm.loading = false;
-            });
-        });
+            }).catch(console.error);
+        }).catch(console.error);
     },
     computed: {
         ...mapGetters([
