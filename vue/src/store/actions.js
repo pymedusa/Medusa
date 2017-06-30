@@ -1,7 +1,7 @@
 import * as types from './mutation-types';
 
 const addSeries = ({commit}, series) => {
-    commit(types.ADD_SERIES, {
+    commit(types.SERIES_CREATE_SINGULAR, {
         id: series.id
     });
 };

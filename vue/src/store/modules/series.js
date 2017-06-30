@@ -1,58 +1,48 @@
-import series from '../../api/series';
+import {series} from '../../api';
 import * as types from '../mutation-types';
-import {seriesLogger as log} from '../../log';
 
 const state = {
-    all: []
+    all: [],
+    recent: []
 };
 
 const getters = {
     allSeries: state => state.all,
-    seriesByName: (state, name) => {
-        return state.all.find(series => {
-            if (series) {
-                return series.name === name;
-            }
-            return null;
+    seriesEnded: state => {
+        return state.all.filter(series => {
+            return series.status.toLowerCase() === 'ended';
         });
     },
-    seriesById: (state, id) => {
-        return state.all.find(series => {
-            if (series) {
-                return series.id === id;
-            }
-            return null;
+    seriesActive: state => {
+        return state.all.filter(series => {
+            return series.status.toLowerCase() === 'active';
         });
-    }
+    },
+    recentSeries: state => state.recent
 };
 
 const actions = {
     // Gets all the series from Medusa
     getAllSeries({commit}) {
-        series.getSeries(data => {
-            log.info(data);
-            commit(types.RECEIVE_SERIES, {data});
+        return new Promise((resolve, reject) => {
+            series.getAllSeries().then(({series}) => {
+                commit(types.SERIES_RECIEVE_MULTIPLE, {series});
+                resolve({series});
+            }).catch(reject);
         });
     },
-    // Add a new series to Medusa
-    addSeries({commit}, {id, name}) {
-        // @TODO: This actually needs to hit the API instead of just returning the series object
-        series.addSeries({id, name}, (err, data) => {
-            if (err) {
-                return err;
-            }
-            commit(types.RECEIVE_SERIES, {data});
+    getRecentShows({commit}) {
+        return new Promise(resolve => {
+            const recentShows = JSON.parse(localStorage.getItem('recentSeries'));
+            commit(types.SERIES_RECENT_MULTIPLE, {series: recentShows});
+            resolve({series: recentShows});
         });
     }
 };
 
 const mutations = {
-    // Add multiple series to the store
-    [types.RECEIVE_SERIES](state, {series}) {
-        state.all = series;
-    },
     // Add a single series to the store
-    [types.RECEIVE_SERIES](state, {series}) {
+    [types.SERIES_RECIEVE_SINGULAR](state, {series}) {
         let foundSeries = state.all.find(x => x.id === series.id);
         if (foundSeries) {
             // Replace current store's version of the series with the new one
@@ -60,6 +50,19 @@ const mutations = {
         } else {
             state.all.push(series);
         }
+    },
+    // Add multiple series to the store
+    [types.SERIES_RECIEVE_MULTIPLE](state, {series}) {
+        state.all = series;
+    },
+    [types.SERIES_RECENT_SINGULAR](state, {series}) {
+        state.recent.pop();
+        state.recent.unshift(series);
+        localStorage.setItem('recentSeries', JSON.stringify(state.recent));
+    },
+    [types.SERIES_RECENT_MULTIPLE](state, {series}) {
+        state.recent = series;
+        localStorage.setItem('recentSeries', JSON.stringify(state.recent));
     }
 };
 
