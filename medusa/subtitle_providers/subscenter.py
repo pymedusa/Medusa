@@ -182,7 +182,7 @@ class SubsCenterProvider(Provider):
         subtitles = {}
         for language_code, language_data in results.items():
             for quality_data in language_data.values():
-                for _, subtitles_data in quality_data.values():
+                for subtitles_data in quality_data.values():
                     for subtitle_item in subtitles_data.values():
                         # read the item
                         language = Language.fromalpha2(language_code)
