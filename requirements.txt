@@ -3,6 +3,7 @@ beautifulsoup4
 CacheControl
 git+git://github.com/DiffSK/configobj.git@master#egg=configobj
 dogpile.cache
+git+git://github.com/kurtmckee/feedparser.git@develop#egg=feedparser
 futures
 guessit
 html5lib
