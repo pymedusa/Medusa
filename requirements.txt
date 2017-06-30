@@ -1,7 +1,9 @@
+git+git://github.com/Diaoul/babelfish.git@master#egg=babelfish
 beautifulsoup4
 CacheControl
 dogpile.cache
 futures
+guessit
 html5lib
 PyGithub
 python-dateutil

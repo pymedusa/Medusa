@@ -1,0 +1,14 @@
+six
+
+[dev]
+pytest>=2.7.3
+pytest-capturelog
+zest.releaser[recommended]
+pylint
+tox
+
+[native]
+regex
+
+[test]
+pytest
