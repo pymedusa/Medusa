@@ -19,6 +19,10 @@ regex = re.compile(
     u"(?:(?:169\.254|192\.168)" + ip_middle_octet + ip_last_octet + u")|"
     u"(?:172\.(?:1[6-9]|2\d|3[0-1])" + ip_middle_octet + ip_last_octet + u"))"
     u"|"
+    # private & local hosts
+    u"(?P<private_host>"
+    u"(?:localhost))"
+    u"|"
     # IP address dotted notation octets
     # excludes loopback network 0.0.0.0
     # excludes reserved space >= 224.0.0.0
@@ -40,7 +44,10 @@ regex = re.compile(
     u"(?::\d{2,5})?"
     # resource path
     u"(?:/\S*)?"
-    u"$", re.UNICODE
+    # query string
+    u"(?:\?\S*)?"
+    u"$",
+    re.UNICODE | re.IGNORECASE
 )
 
 pattern = re.compile(regex)
@@ -64,6 +71,9 @@ def url(value, public=False):
         >>> url('http://foobar.dk')
         True
 
+        >>> url('ftp://foobar.dk')
+        True
+
         >>> url('http://10.0.0.1')
         True
 
@@ -84,15 +94,21 @@ def url(value, public=False):
 
         Added ``public`` parameter.
 
+    .. versionchanged:: 0.11.0
+
+        Made the regular expression this function uses case insensitive.
+
+    .. versionchanged:: 0.11.3
+
+        Added support for URLs containing localhost
+
     :param value: URL address string to validate
     :param public: (default=False) Set True to only allow a public IP address
     """
+    result = pattern.match(value)
     if not public:
-        return pattern.match(value)
+        return result
 
-    match_result = pattern.match(value)
-
-    if match_result.groupdict()['private_ip']:
-        return False
-
-    return match_result
+    return result and not any(
+        (result.groupdict().get(key) for key in ('private_ip', 'private_host'))
+    )
