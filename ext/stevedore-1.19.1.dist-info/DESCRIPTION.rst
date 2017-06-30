@@ -10,9 +10,6 @@ stevedore -- Manage dynamic plugins for Python applications
     :target: https://pypi.python.org/pypi/stevedore/
     :alt: Downloads
 
-.. image:: http://governance.openstack.org/badges/stevedore.svg
-    :target: http://governance.openstack.org/reference/tags/index.html
-
 Python makes loading code dynamically easy, allowing you to configure
 and extend your application by discovering and loading extensions
 ("*plugins*") at runtime. Many applications implement their own

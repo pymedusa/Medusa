@@ -14,6 +14,7 @@ python-dateutil
 Mako
 requests
 setuptools
+stevedore==1.19.1
 git+git://github.com/Diaoul/subliminal.git@develop#egg=subliminal
 tornado
 tornroutes
