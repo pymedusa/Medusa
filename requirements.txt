@@ -12,6 +12,7 @@ imdbpie
 jsonrpclib
 knowit
 git+git://github.com/joestump/python-oauth2.git@master#egg=oauth2
+profilehooks
 PyGithub
 PyNMA
 python-dateutil
