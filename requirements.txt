@@ -9,6 +9,7 @@ futures
 guessit
 html5lib
 imdbpie
+jsonrpclib
 knowit
 git+git://github.com/joestump/python-oauth2.git@master#egg=oauth2
 PyGithub

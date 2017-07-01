@@ -1,0 +1,16 @@
+..\jsonrpclib\config.py
+..\jsonrpclib\history.py
+..\jsonrpclib\jsonclass.py
+..\jsonrpclib\jsonrpc.py
+..\jsonrpclib\SimpleJSONRPCServer.py
+..\jsonrpclib\__init__.py
+..\jsonrpclib\config.pyc
+..\jsonrpclib\history.pyc
+..\jsonrpclib\jsonclass.pyc
+..\jsonrpclib\jsonrpc.pyc
+..\jsonrpclib\SimpleJSONRPCServer.pyc
+..\jsonrpclib\__init__.pyc
+dependency_links.txt
+PKG-INFO
+SOURCES.txt
+top_level.txt

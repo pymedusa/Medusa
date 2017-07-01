@@ -1,0 +1,10 @@
+jsonrpclib/SimpleJSONRPCServer.py
+jsonrpclib/__init__.py
+jsonrpclib/config.py
+jsonrpclib/history.py
+jsonrpclib/jsonclass.py
+jsonrpclib/jsonrpc.py
+jsonrpclib.egg-info/PKG-INFO
+jsonrpclib.egg-info/SOURCES.txt
+jsonrpclib.egg-info/dependency_links.txt
+jsonrpclib.egg-info/top_level.txt
