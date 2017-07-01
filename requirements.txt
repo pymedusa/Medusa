@@ -11,6 +11,7 @@ imdbpie
 knowit
 git+git://github.com/joestump/python-oauth2.git@master#egg=oauth2
 PyGithub
+PyNMA
 python-dateutil
 lockfile
 Mako
