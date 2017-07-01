@@ -780,11 +780,14 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA, serial
+        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
     except Exception:
         log.warning(u'pyopenssl module missing, please install for'
                     u' https access')
         return False
+
+    # Serial number for the certificate
+    serial = int(time.time())
 
     # Create the CA Certificate
     cakey = createKeyPair(TYPE_RSA, 1024)
