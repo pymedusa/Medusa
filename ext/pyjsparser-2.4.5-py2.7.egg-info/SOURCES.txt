@@ -1,0 +1,8 @@
+pyjsparser/__init__.py
+pyjsparser/parser.py
+pyjsparser/pyjsparserdata.py
+pyjsparser/std_nodes.py
+pyjsparser.egg-info/PKG-INFO
+pyjsparser.egg-info/SOURCES.txt
+pyjsparser.egg-info/dependency_links.txt
+pyjsparser.egg-info/top_level.txt

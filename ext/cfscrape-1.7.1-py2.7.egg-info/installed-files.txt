@@ -1,0 +1,7 @@
+..\cfscrape\__init__.py
+..\cfscrape\__init__.pyc
+dependency_links.txt
+PKG-INFO
+requires.txt
+SOURCES.txt
+top_level.txt

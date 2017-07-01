@@ -1,0 +1,12 @@
+..\pyjsparser\parser.py
+..\pyjsparser\pyjsparserdata.py
+..\pyjsparser\std_nodes.py
+..\pyjsparser\__init__.py
+..\pyjsparser\parser.pyc
+..\pyjsparser\pyjsparserdata.pyc
+..\pyjsparser\std_nodes.pyc
+..\pyjsparser\__init__.pyc
+dependency_links.txt
+PKG-INFO
+SOURCES.txt
+top_level.txt

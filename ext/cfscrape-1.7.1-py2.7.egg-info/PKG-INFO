@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: cfscrape
+Version: 1.7.1
+Summary: A simple Python module to bypass Cloudflare's anti-bot page. See https://github.com/Anorov/cloudflare-scrape for more information.
+Home-page: https://github.com/Anorov/cloudflare-scrape
+Author: Anorov
+Author-email: anorov.vorona@gmail.com
+License: UNKNOWN
+Description: UNKNOWN
+Keywords: cloudflare,scraping
+Platform: UNKNOWN

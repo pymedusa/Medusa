@@ -1,6 +1,7 @@
 git+git://github.com/Diaoul/babelfish.git@master#egg=babelfish
 beautifulsoup4
 CacheControl
+git+git://github.com/Anorov/cloudflare-scrape.git@85cf963f6eb81804227878df2ca74fe4a309db67#egg=cfscrape
 git+git://github.com/DiffSK/configobj.git@master#egg=configobj
 dogpile.cache
 git+git://github.com/kurtmckee/feedparser.git@develop#egg=feedparser
