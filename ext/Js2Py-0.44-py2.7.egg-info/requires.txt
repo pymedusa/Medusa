@@ -1,3 +1,0 @@
-tzlocal>=1.2
-six>=1.10
-pyjsparser>=2.4.5

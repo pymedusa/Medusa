@@ -1,6 +1,0 @@
-cfscrape/__init__.py
-cfscrape.egg-info/PKG-INFO
-cfscrape.egg-info/SOURCES.txt
-cfscrape.egg-info/dependency_links.txt
-cfscrape.egg-info/requires.txt
-cfscrape.egg-info/top_level.txt

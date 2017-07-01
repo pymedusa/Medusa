@@ -1,8 +1,0 @@
-setup.cfg
-setup.py
-PyNMA.egg-info/PKG-INFO
-PyNMA.egg-info/SOURCES.txt
-PyNMA.egg-info/dependency_links.txt
-PyNMA.egg-info/top_level.txt
-pynma/__init__.py
-pynma/pynma.py

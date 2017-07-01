@@ -1,8 +1,0 @@
-..\pynma\pynma.py
-..\pynma\__init__.py
-..\pynma\pynma.pyc
-..\pynma\__init__.pyc
-dependency_links.txt
-PKG-INFO
-SOURCES.txt
-top_level.txt

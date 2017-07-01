@@ -1,7 +1,0 @@
-..\markdown2.py
-..\markdown2.pyc
-dependency_links.txt
-PKG-INFO
-SOURCES.txt
-top_level.txt
-..\..\..\bin\markdown2.py
