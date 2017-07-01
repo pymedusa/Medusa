@@ -18,6 +18,7 @@ python-dateutil
 lockfile
 Mako
 requests
+SQLAlchemy
 stevedore==1.19.1
 git+git://github.com/Diaoul/subliminal.git@develop#egg=subliminal
 tornado
