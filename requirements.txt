@@ -19,6 +19,7 @@ PyNMA
 python-dateutil
 lockfile
 Mako
+markdown2
 requests
 SQLAlchemy
 stevedore==1.19.1
