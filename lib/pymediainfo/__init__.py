@@ -11,7 +11,7 @@ if sys.version_info < (3,):
 else:
     import urllib.parse as urlparse
 
-__version__ = get_distribution("pymediainfo").version
+__version__ = '2.1.9'
 
 class Track(object):
     def __getattribute__(self, name):
