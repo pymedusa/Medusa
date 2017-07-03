@@ -10,7 +10,6 @@ import hashlib
 import imghdr
 import io
 import logging
-from logging import ERROR, WARNING
 import os
 import platform
 import random
@@ -42,6 +41,7 @@ from contextlib2 import closing, suppress
 import guessit
 
 from imdbpie import imdbpie
+from logging import ERROR, WARNING
 
 from medusa import app, db
 from medusa.common import USER_AGENT
