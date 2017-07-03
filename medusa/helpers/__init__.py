@@ -26,6 +26,7 @@ import warnings
 import xml.etree.ElementTree as ET
 import zipfile
 from itertools import cycle, izip
+from logging import ERROR, WARNING
 
 import adba
 
@@ -41,7 +42,6 @@ from contextlib2 import closing, suppress
 import guessit
 
 from imdbpie import imdbpie
-from logging import ERROR, WARNING
 
 from medusa import app, db
 from medusa.common import USER_AGENT
