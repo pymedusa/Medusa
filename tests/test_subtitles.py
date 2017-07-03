@@ -33,6 +33,7 @@ def test_sorted_service_list(monkeypatch):
         {'name': 'opensubtitles', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
         {'name': 'subscenter', 'enabled': False},
+        {'name': 'thewiz', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
     ]
     assert expected == [{'name': a['name'], 'enabled': a['enabled']} for a in actual]
@@ -295,7 +296,7 @@ def test_compute_subtitle_path__single_with_valid_language_and_subs_folder(monke
     actual = sut.compute_subtitle_path(subtitle, video_path, subtitles_dir)
 
     # Then
-    assert '/folder/subtitles/video.srt' == actual
+    assert os.path.normpath('/folder/subtitles/video.srt') == os.path.normpath(actual)
 
 
 def test_merge_subtitles__with_multi_enabled(monkeypatch):
@@ -390,9 +391,9 @@ def test_delete_unwanted_subtitles__existing_subtitles_in_unwanted_languages(mon
     some_file = str(tmpdir.ensure('video.fr.nfo'))
 
     # When
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_pob)
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_eng)
-    sut.delete_unwanted_subtitles(tmpdir, subtitle_fre)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_pob)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_eng)
+    sut.delete_unwanted_subtitles(str(tmpdir), subtitle_fre)
 
     # Then
     assert os.path.exists(subtitle_pob)

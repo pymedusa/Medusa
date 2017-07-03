@@ -53,9 +53,12 @@ from Label import *
 from Milestone import *
 from NamedUser import *
 from Markdown import *
+from OrganizationHasInMembers import *
 from Organization import *
 from PullRequest import *
 from PullRequestComment import *
+from PullRequestReview import *
+from PullRequestReviewerRequests import *
 from PullRequestFile import *
 from RateLimiting import *
 from Repository import *
@@ -93,3 +96,4 @@ from Issue174 import *
 from Issue214 import *
 from Issue216 import *
 from Issue278 import *
+from Issue494 import *

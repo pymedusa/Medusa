@@ -9,10 +9,7 @@ from medusa.providers.torrent.html import (
     animebytes,
     animetorrents,
     bithdtv,
-    cpasbien,
-    danishbits,
     elitetorrent,
-    freshontv,
     gftracker,
     hdspace,
     hdtorrents,
@@ -32,6 +29,7 @@ from medusa.providers.torrent.html import (
     thepiratebay,
     tntvillage,
     tokyotoshokan,
+    torrent9,
     torrentbytes,
     torrentleech,
     torrentproject,
@@ -42,6 +40,7 @@ from medusa.providers.torrent.html import (
 from medusa.providers.torrent.json import (
     bitcannon,
     btn,
+    danishbits,
     hd4free,
     hdbits,
     norbits,
@@ -52,8 +51,7 @@ from medusa.providers.torrent.json import (
 )
 
 from medusa.providers.torrent.rss import (
-    extratorrent,
-    nyaatorrents,
+    nyaa,
     rsstorrent,
     shazbat,
 )
@@ -63,10 +61,10 @@ from medusa.providers.torrent.xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent',
-    'freshontv', 'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
+    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
+    'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
-    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
+    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]

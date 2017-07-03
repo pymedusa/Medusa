@@ -144,7 +144,7 @@ class TorrentProjectProvider(TorrentProvider):
                     size = convert_size(torrent_size) or -1
 
                     pubdate_raw = row.find('span', class_='bc cated').get_text(strip=True)
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
 
                     item = {
                         'title': title,

@@ -375,9 +375,13 @@ class NewznabProvider(NZBProvider):
 
         return_mapping = {}
 
+        if not self.show:
+            # If we don't have show, can't get tvdbid
+            return return_mapping
+
         if not self.cap_tv_search or self.cap_tv_search == 'True':
             # We didn't get back a supportedParams, lets return, and continue with doing a search string search.
-            return {}
+            return return_mapping
 
         for search_type in self.cap_tv_search.split(','):
             if search_type == 'tvdbid' and self._get_tvdb_id():

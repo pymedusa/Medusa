@@ -468,10 +468,9 @@ class DelugeAPI(GenericClient):
                 return
             else:
                 torrent_data = self.response.json()['result']
-                self.read_torrent_status(torrent_data)
-                # Commented for now
-                # for info_hash in to_remove:
-                #    self.remove_torrent(info_hash)
+                info_hash_to_remove = read_torrent_status(torrent_data)
+                for info_hash in info_hash_to_remove:
+                    self.remove_torrent(info_hash)
 
 
 api = DelugeAPI

@@ -62,8 +62,8 @@ class ShanaProjectProvider(TorrentProvider):
         :returns: A list of search results (structure)
         """
         results = []
-        if self.show and not self.show.is_anime:
-            return results
+
+        search_params = {}
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -111,7 +111,7 @@ class ShanaProjectProvider(TorrentProvider):
 
             torrent_rows = html('div', class_='release_block')
             if len(torrent_rows) < 2:
-                return
+                return items
 
             for row in torrent_rows[1:]:
 
@@ -169,7 +169,7 @@ class ShanaProjectProvider(TorrentProvider):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             search_string['Episode'].append(show_name.strip())
 
         return [search_string]
@@ -181,7 +181,7 @@ class ShanaProjectProvider(TorrentProvider):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.series.get_all_possible_names(season=episode.season):
             search_string['Season'].append(show_name.strip())
 
         return [search_string]

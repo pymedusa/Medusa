@@ -1,3 +1,10 @@
 # coding=utf-8
 
 """Search module for all Medusa searches."""
+
+BACKLOG_SEARCH = 10
+DAILY_SEARCH = 20
+FAILED_SEARCH = 30
+FORCED_SEARCH = 40
+MANUAL_SEARCH = 50
+PROPER_SEARCH = 60

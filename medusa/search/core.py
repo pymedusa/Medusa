@@ -20,7 +20,6 @@ from medusa import (
     name_cache,
     notifiers,
     nzb_splitter,
-    show_name_helpers,
     ui,
 )
 from medusa.clients import torrent
@@ -48,6 +47,7 @@ from medusa.helper.exceptions import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import sorted_provider_list
 from medusa.providers.generic_provider import GenericProvider
+from medusa.show import naming
 
 import requests
 
@@ -235,12 +235,11 @@ def snatch_episode(result):
     return True
 
 
-def pick_best_result(results, show):  # pylint: disable=too-many-branches
+def pick_best_result(results):  # pylint: disable=too-many-branches
     """
     Find the best result out of a list of search results for a show.
 
     :param results: list of result objects
-    :param show: Shows we check for
     :return: best result object
     """
     results = results if isinstance(results, list) else [results]
@@ -251,8 +250,10 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
     # find the best result for the current episode
     for cur_result in results:
-        if show and cur_result.show is not show:
-            continue
+        assert cur_result.show, 'Every SearchResult object should have a show object available at this point.'
+
+        # Every SearchResult object should have a show attribute available at this point.
+        show = cur_result.show
 
         # build the black and white list
         if show.is_anime:
@@ -265,6 +266,18 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         if cur_result.quality not in allowed_qualities + preferred_qualities:
             log.debug(u'{0} is an unwanted quality, rejecting it', cur_result.name)
+            continue
+
+        wanted_ep = True
+
+        if cur_result.actual_episodes:
+            wanted_ep = False
+            for episode in cur_result.actual_episodes:
+                if show.want_episode(cur_result.actual_season, episode, cur_result.quality, cur_result.forced_search,
+                                     cur_result.download_current_quality, search_type=cur_result.search_type):
+                    wanted_ep = True
+
+        if not wanted_ep:
             continue
 
         # If doesnt have min seeders OR min leechers then discard it
@@ -284,8 +297,8 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
 
         ignored_words = show.show_words().ignored_words
         required_words = show.show_words().required_words
-        found_ignored_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, ignored_words)
-        found_required_word = show_name_helpers.containsAtLeastOneWord(cur_result.name, required_words)
+        found_ignored_word = naming.contains_at_least_one_word(cur_result.name, ignored_words)
+        found_required_word = naming.contains_at_least_one_word(cur_result.name, required_words)
 
         if ignored_words and found_ignored_word:
             log.info(u'Ignoring {0} based on ignored words filter: {1}', cur_result.name, found_ignored_word)
@@ -295,7 +308,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
             log.info(u'Ignoring {0} based on required words filter: {1}', cur_result.name, required_words)
             continue
 
-        if not show_name_helpers.filterBadReleases(cur_result.name, parse=False):
+        if not naming.filter_bad_releases(cur_result.name, parse=False):
             continue
 
         if hasattr(cur_result, u'size'):
@@ -303,6 +316,7 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                                                                       cur_result.provider.name):
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
+
         preferred_words = ''
         if app.PREFERRED_WORDS:
             preferred_words = app.PREFERRED_WORDS.lower().split(u',')
@@ -320,12 +334,6 @@ def pick_best_result(results, show):  # pylint: disable=too-many-branches
                 best_result = cur_result
             if cur_result.proper_tags:
                 log.info(u'Preferring {0} (repack/proper/real/rerip over nuked)', cur_result.name)
-                best_result = cur_result
-            elif u'internal' in best_result.name.lower() and u'internal' not in cur_result.name.lower():
-                log.info(u'Preferring {0} (normal instead of internal)', cur_result.name)
-                best_result = cur_result
-            elif u'xvid' in best_result.name.lower() and u'x264' in cur_result.name.lower():
-                log.info(u'Preferring {0} (x264 over xvid)', cur_result.name)
                 best_result = cur_result
             if any(ext in best_result.name.lower() for ext in undesired_words) and not any(ext in cur_result.name.lower() for ext in undesired_words):
                 log.info(u'Unwanted release {0} (contains undesired word(s))', cur_result.name)
@@ -400,7 +408,7 @@ def wanted_episodes(show, from_date):
     return wanted
 
 
-def search_for_needed_episodes():
+def search_for_needed_episodes(force=False):
     """
     Check providers for details on wanted episodes.
 
@@ -420,7 +428,7 @@ def search_for_needed_episodes():
             continue
         episodes.extend(wanted_episodes(cur_show, from_date))
 
-    if not episodes:
+    if not episodes and not force:
         # nothing wanted so early out, ie: avoid whatever arbitrarily
         # complex thing a provider cache update entails, for example,
         # reading rss feeds
@@ -456,7 +464,7 @@ def search_for_needed_episodes():
                 log.debug(u'Skipping {0} because the show is paused ', cur_ep.pretty_name())
                 continue
 
-            best_result = pick_best_result(cur_found_results[cur_ep], cur_ep.series)
+            best_result = pick_best_result(cur_found_results[cur_ep])
 
             # if all results were rejected move on to the next episode
             if not best_result:
@@ -630,7 +638,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
         # pick the best season NZB
         best_season_result = None
         if SEASON_RESULT in found_results[cur_provider.name]:
-            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT], show)
+            best_season_result = pick_best_result(found_results[cur_provider.name][SEASON_RESULT])
 
         highest_quality_overall = 0
         for cur_episode in found_results[cur_provider.name]:
@@ -731,7 +739,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 log.debug(u'Seeing if we want to bother with multi-episode result {0}', _multi_result.name)
 
                 # Filter result by ignore/required/whitelist/blacklist/quality, etc
-                multi_result = pick_best_result(_multi_result, show)
+                multi_result = pick_best_result(_multi_result)
                 if not multi_result:
                     continue
 
@@ -795,7 +803,7 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                 continue
 
             # if all results were rejected move on to the next episode
-            best_result = pick_best_result(found_results[cur_provider.name][cur_ep], show)
+            best_result = pick_best_result(found_results[cur_provider.name][cur_ep])
             if not best_result:
                 continue
 

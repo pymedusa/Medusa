@@ -103,12 +103,12 @@ class T411Provider(TorrentProvider):
             'Season': []
         }
 
-        for series in episode.show.get_all_possible_names(season=episode.scene_season):
+        for series in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = series + ' '
 
-            if episode.show.air_by_date or episode.show.sports:
+            if episode.series.air_by_date or episode.series.sports:
                 episode_string += str(episode.airdate).split('-')[0]
-            elif episode.show.anime:
+            elif episode.series.anime:
                 episode_string += 'Season'
             elif episode.scene_season > max(SEASON_MAP):
                 # Check if season and episode are within the mapped values. Otherwise use normal search.
@@ -127,20 +127,20 @@ class T411Provider(TorrentProvider):
             'Episode': []
         }
 
-        for series in episode.show.get_all_possible_names(season=episode.scene_season):
+        for series in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = series + self.search_separator
 
-            if episode.show.air_by_date:
+            if episode.series.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
-            elif episode.show.sports:
+            elif episode.series.sports:
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
-            elif episode.show.anime:
+            elif episode.series.anime:
                 # If the series is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                    series in get_scene_exceptions(episode.show.indexerid,
-                                                   episode.show.indexer,
+                    series in get_scene_exceptions(episode.series.indexerid,
+                                                   episode.series.indexer,
                                                    episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
@@ -219,9 +219,9 @@ class T411Provider(TorrentProvider):
 
                     # Search using season and episode specific params only for normal episodes
                     if all(
-                        [not ep_obj.show.air_by_date,
-                         not ep_obj.show.sports,
-                         not ep_obj.show.anime,
+                        [not ep_obj.series.air_by_date,
+                         not ep_obj.series.sports,
+                         not ep_obj.series.anime,
                          ep_obj.scene_season <= max(SEASON_MAP) and ep_obj.scene_episode <= max(EPISODE_MAP)]
                     ):
                         if mode == 'Season':

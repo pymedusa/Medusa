@@ -1217,7 +1217,7 @@ class Series(TV):
             if new_quality != Quality.UNKNOWN:
                 return True, 'New file has different name from the database but has valid quality.'
             else:
-                return False, 'New file has UNKNOWN quality'
+                return True, 'New file has different name from the database and an UNKNOWN quality.'
 
         #  Reach here to check for status/quality changes as long as it's a new/different file
         if cur_status in Quality.DOWNLOADED + Quality.ARCHIVED + [IGNORED]:
@@ -1317,9 +1317,13 @@ class Series(TV):
 
                 with cur_ep.lock:
                     old_size = cur_ep.file_size
+
+                    # Setting a location to cur_ep, we will get the size of the filepath
                     cur_ep.location = filepath
+
                     # if the sizes are the same then it's probably the same file
-                    same_file = old_size and cur_ep.file_size == old_size
+                    # If size from given filepath is 0 means we couldn't determine file size
+                    same_file = old_size and cur_ep.file_size > 0 and cur_ep.file_size == old_size
                     cur_ep.check_for_meta_files()
 
             if root_ep is None:
@@ -2077,7 +2081,8 @@ class Series(TV):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
 
-    def want_episode(self, season, episode, quality, forced_search=False, download_current_quality=False):
+    def want_episode(self, season, episode, quality, forced_search=False,
+                     download_current_quality=False, search_type=None):
         """Whether or not the episode with the specified quality is wanted.
 
         :param season:
@@ -2090,6 +2095,8 @@ class Series(TV):
         :type forced_search: bool
         :param download_current_quality:
         :type download_current_quality: bool
+        :param search_type:
+        :type search_type: int
         :return:
         :rtype: bool
         """
@@ -2146,20 +2153,16 @@ class Series(TV):
 
         # if it's one of these then we want it as long as it's in our allowed initial qualities
         if ep_status == WANTED:
-            log.debug(
-                u"{id}: '{show}' {ep} status is 'WANTED'. Accepting result with quality '{new_quality}'", {
-                    'id': self.indexerid,
-                    'status': ep_status_text,
-                    'show': self.name,
-                    'ep': episode_num(season, episode),
-                    'new_quality': Quality.qualityStrings[quality],
-                }
+            should_replace, reason = (
+                True, u"Current status is 'WANTED'. Accepting result with quality '{new_quality}'".format(
+                    new_quality=Quality.qualityStrings[quality]
+                )
             )
-            return True
+        else:
+            should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
+                                                            preferred_qualities, download_current_quality,
+                                                            forced_search, manually_searched, search_type)
 
-        should_replace, reason = Quality.should_replace(ep_status, cur_quality, quality, allowed_qualities,
-                                                        preferred_qualities, download_current_quality,
-                                                        forced_search, manually_searched)
         log.debug(
             u"{id}: '{show}' {ep} status is: '{status}'."
             u" {action} result with quality '{new_quality}'."

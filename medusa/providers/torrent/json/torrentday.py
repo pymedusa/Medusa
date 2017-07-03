@@ -32,7 +32,7 @@ class TorrentDayProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://classic.torrentday.com'
+        self.url = 'https://www.torrentday.com'
         self.urls = {
             'login': urljoin(self.url, '/torrents/'),
             'search': urljoin(self.url, '/V3/API/API.php'),

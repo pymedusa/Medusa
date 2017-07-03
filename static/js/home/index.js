@@ -337,7 +337,7 @@ MEDUSA.home.index = function() {
 
     $('#showRootDir').on('change', function() {
         api.patch('config/main', {
-            selectedRootIndex: $(this).val()
+            selectedRootIndex: parseInt($(this).val(), 10)
         }).then(function(response) {
             log.info(response);
             window.location.reload();

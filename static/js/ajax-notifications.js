@@ -1,4 +1,4 @@
-var messageUrl = 'ui/get_messages';
+var WSMessageUrl = '/ui'; // eslint-disable-line xo/filename-case
 var test = !1;
 
 var iconUrl = 'images/ico/favicon-120.png';
@@ -19,30 +19,43 @@ function displayPNotify(type, title, message) {
     new PNotify({ // eslint-disable-line no-new
         type: type,
         title: title,
-        text: message.replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
+        text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
             .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*')
             .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
             .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
     });
 }
 
-function checkNotifications() {
-    if (document.visibilityState === 'visible') {
-        $.getJSON(messageUrl, function(data) {
-            $.each(data, function(name, data) {
-                displayPNotify(data.type, data.title, data.message);
-            });
-        });
-    }
-    setTimeout(function() {
-        'use strict';
-        checkNotifications();
-    }, 3000);
+function wsCheckNotifications() {
+    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
+    ws.onmessage = function(evt) {
+        var msg;
+        try {
+            msg = JSON.parse(evt.data);
+        } catch (e) { // eslint-disable-line unicorn/catch-error-name
+            msg = evt.data;
+        }
+
+        // Add handling for different kinds of events. For ex: {"event": "notification", "data": {"title": ..}}
+        if (msg.event === 'notification') {
+            displayPNotify(msg.data.type, msg.data.title, msg.data.body);
+        } else {
+            displayPNotify('info', '', msg);
+        }
+    };
+
+    ws.onerror = function() {
+        log.warn('Error connecting to websocket. Please check your network connection. ' +
+            'If you are using a reverse proxy, please take a look at our wiki for config examples.');
+        displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
+            'If you are using a reverse proxy, please take a look at our wiki for config examples.');
+    };
 }
 
 $(document).ready(function() {
-    checkNotifications();
+    wsCheckNotifications();
     if (test) {
-        displayPNotify('notice', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
+        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
     }
 });

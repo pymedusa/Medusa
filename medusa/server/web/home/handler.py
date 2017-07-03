@@ -138,7 +138,12 @@ class Home(WebRoot):
         if selected_root is not None and app.ROOT_DIRS:
             backend_pieces = app.ROOT_DIRS.split('|')
             backend_dirs = backend_pieces[1:]
-            shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+            try:
+                shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+            except IndexError:
+                # If user have a root selected in /home and remove the root folder a IndexError is raised
+                shows_dir = None
+                app.SELECTED_ROOT = -1
 
         shows = []
         if app.ANIME_SPLIT_HOME:
