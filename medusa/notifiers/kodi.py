@@ -4,7 +4,6 @@ import base64
 import json
 import logging
 import socket
-import time
 
 from medusa import app, common
 from medusa.helper.encoding import ss
@@ -16,6 +15,7 @@ from six import text_type
 from six.moves.http_client import BadStatusLine
 from six.moves.urllib.error import URLError
 from six.moves.urllib.request import Request, urlopen
+import tornado.gen
 
 try:
     import xml.etree.cElementTree as etree
@@ -335,7 +335,7 @@ class Notifier(object):
                     return False
                 # sleep for a few seconds just to be sure kodi has a chance to finish each directory
                 if len(paths) > 1:
-                    time.sleep(5)
+                    tornado.gen.sleep(5)
         # do a full update if requested
         else:
             log.debug(u'Doing Full Library KODI update on host: {0}', host)

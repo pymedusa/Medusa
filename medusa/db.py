@@ -21,10 +21,11 @@ import os.path
 import re
 import sqlite3
 import threading
-import time
 import warnings
 
 from six import text_type
+import tornado.gen
+
 from . import app, logger
 from .helper.exceptions import ex
 
@@ -224,7 +225,7 @@ class DBConnection(object):
                     if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
                         logger.log(u"DB error: " + ex(e), logger.WARNING)
                         attempt += 1
-                        time.sleep(1)
+                        tornado.gen.sleep(1)
                     else:
                         logger.log(u"DB error: " + ex(e), logger.ERROR)
                         raise
@@ -235,7 +236,7 @@ class DBConnection(object):
                     logger.log(u"Fatal error executing query: " + ex(e), logger.ERROR)
                     raise
 
-            # time.sleep(0.02)
+            # tornado.gen.sleep(0.02)
 
             return sql_results
 
@@ -273,7 +274,7 @@ class DBConnection(object):
                     if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
                         logger.log(u"DB error: " + ex(e), logger.WARNING)
                         attempt += 1
-                        time.sleep(1)
+                        tornado.gen.sleep(1)
                     else:
                         logger.log(u"DB error: " + ex(e), logger.ERROR)
                         raise
@@ -281,7 +282,7 @@ class DBConnection(object):
                     logger.log(u"Fatal error executing query: " + ex(e), logger.ERROR)
                     raise
 
-            # time.sleep(0.02)
+            # tornado.gen.sleep(0.02)
 
             return sql_results
 

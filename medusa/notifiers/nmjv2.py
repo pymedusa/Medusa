@@ -1,13 +1,13 @@
 # coding=utf-8
 
 import logging
-import time
 from xml.dom.minidom import parseString
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
 from six.moves.urllib.request import Request, urlopen
+import tornado.gen
 
 try:
     import xml.etree.cElementTree as etree
@@ -55,7 +55,7 @@ class Notifier(object):
             handle1 = urlopen(req)
             response1 = handle1.read()
             xml = parseString(response1)
-            time.sleep(300.0 / 1000.0)
+            tornado.gen.sleep(300.0 / 1000.0)
             for node in xml.getElementsByTagName('path'):
                 xmlTag = node.toxml()
                 xmlData = xmlTag.replace('<path>', '').replace('</path>', '').replace('[=]', '')
@@ -103,7 +103,7 @@ class Notifier(object):
             req = Request(url_updatedb)
             handle1 = urlopen(prereq)
             response1 = handle1.read()
-            time.sleep(300.0 / 1000.0)
+            tornado.gen.sleep(300.0 / 1000.0)
             handle2 = urlopen(req)
             response2 = handle2.read()
         except IOError as error:

@@ -23,7 +23,6 @@
 
 import json
 import os
-import time
 import traceback
 from collections import OrderedDict
 from datetime import date, datetime
@@ -59,6 +58,7 @@ from medusa.version_checker import CheckVersion
 
 from requests.compat import unquote_plus
 from six import iteritems, text_type
+import tornado.gen
 from tornado.web import RequestHandler
 
 indexer_ids = ["indexerid", "tvdbid", "tvmazeid", "tmdbid"]
@@ -776,7 +776,7 @@ class CMD_EpisodeSearch(ApiCall):
 
         # wait until the queue item tells us whether it worked or not
         while ep_queue_item.success is None:  # @UndefinedVariable
-            time.sleep(1)
+            tornado.gen.sleep(1)
 
         # return the correct json value
         if ep_queue_item.success:

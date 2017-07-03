@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import logging
 import os
 import re
-import time
 import traceback
 
 from medusa import (
@@ -31,6 +30,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
+import tornado.gen
 import validators
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -146,7 +146,7 @@ class NewznabProvider(NZBProvider):
                     if search_params['t'] != 'tvsearch':
                         search_params['q'] = search_string
 
-                time.sleep(cpu_presets[app.CPU_PRESET])
+                tornado.gen.sleep(cpu_presets[app.CPU_PRESET])
 
                 response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
                 if not response or not response.text:
