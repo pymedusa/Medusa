@@ -11,7 +11,6 @@ from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
-from medusa.session.core import JsonSession
 
 from requests.compat import urljoin
 
