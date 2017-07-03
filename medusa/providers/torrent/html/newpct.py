@@ -173,23 +173,17 @@ class NewpctProvider(TorrentProvider):
 
         return title
 
-    def get_url(self, url, params=None, timeout=30, **kwargs):
+    def get_content(self, url, params=None, timeout=30, **kwargs):
         """
         Parse URL to get the torrent file.
 
         :return: 'content' when trying access to torrent info (For calling torrent client).
         """
-        trickery = kwargs.pop('returns', '')
-        if trickery == 'content':
-            data = self.session.get(url, params=params, timeout=timeout).text
-            url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
+        data = self.session.get(url, params=params, timeout=timeout).text
+        url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
         # kwargs['returns'] = trickery
-        response = self.session.get(url, params=params, timeout=timeout, **kwargs)
-        if trickery == 'text':
-            return response.text
-        else:
-            return response
+        return self.session.get(url, params=params, timeout=timeout, **kwargs).content
 
     def download_result(self, result):
         """Save the result to disk."""
