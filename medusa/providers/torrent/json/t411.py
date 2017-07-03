@@ -344,8 +344,9 @@ class T411Provider(TorrentProvider):
             'password': self.password,
         }
 
-        response = self.session.post(self.urls['login_page'], data=login_params).json()
-        if not response:
+        try:
+            response = self.session.post(self.urls['login_page'], data=login_params).json()
+        except (AttributeError, ValueError):
             log.warning('Unable to connect to provider')
             return False
 
