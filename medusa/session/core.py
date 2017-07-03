@@ -83,90 +83,12 @@ class MedusaSession(BaseSession):
             # Use `setdefault` to avoid clobbering existing headers
             self.headers.setdefault(header, value)
 
-
-class TextSession(MedusaSession):
-    """Text Session class.
-
-    This is a Medusa text session, used to create and configure a session object that's tailored to requesting and
-    retunring text. It includes the basic request and response exception handling. Making it easy to use, and not
-    needing to implement this in the requester.
-    :param verify: Enable/Disable SSL certificate verification.
-
-    Optional arguments:
-    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
-    :cache_control: Provide a cache control dict of cache_control options.
-    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
-    """
-
-    def __init__(self, verify=True, **kwargs):
-        """Initialize the TextSession object."""
-        # Initialize request.session
-        super(TextSession, self).__init__(**kwargs)
-
-    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
-        """Overwrite request, to be able to return the resp.text value."""
-        resp = super(TextSession, self).request(method, url, data=data, params=params, headers=headers,
-                                                timeout=timeout, **kwargs)
-        return resp.text if resp else False
-
-
-class ContentSession(MedusaSession):
-    """Text Session class.
-
-    This is a Medusa content session, used to create and configure a session object that's tailored to requesting and
-    returning content. It includes the basic request and response exception handling. Making it easy to use, and not
-    needing to implement this in the requester.
-
-    :param verify: Enable/Disable SSL certificate verification.
-
-    Optional arguments:
-    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
-    :cache_control: Provide a cache control dict of cache_control options.
-    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
-    :return: The response as content or False.
-    """
-
-    def __init__(self, verify=True, **kwargs):
-        """Initialize the TextSession object."""
-        # Initialize request.session
-        super(ContentSession, self).__init__(**kwargs)
-
-    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
-        """Overwrite request, to be able to return the resp.content value."""
-        resp = super(ContentSession, self).request(method, url, data=data, params=params, headers=headers,
-                                                   timeout=timeout, **kwargs)
-        return resp.content if resp else False
-
-
-class JsonSession(MedusaSession):
-    """Text Session class.
-
-    This is a Medusa content session, used to create and configure a session object that's tailored to requesting and
-    returning content. It includes the basic request and response exception handling. Making it easy to use, and not
-    needing to implement this in the requester.
-
-    :param verify: Enable/Disable SSL certificate verification.
-
-    Optional arguments:
-    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
-    :cache_control: Provide a cache control dict of cache_control options.
-    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
-    :return: The response as dict or False.
-    """
-
-    def __init__(self, verify=True, **kwargs):
-        """Initialize the TextSession object."""
-        # Initialize request.session
-        super(JsonSession, self).__init__(**kwargs)
-
-    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
-        """Overwrite request, to be able to return the json value."""
-        resp = super(JsonSession, self).request(method, url, data=data, params=params, headers=headers,
-                                                timeout=timeout, **kwargs)
+    def get_json(self, url, method='GET', *args, **kwargs):
+        """Overwrite request, to be able to return the json value if possible. Else it will fail silently!"""
+        resp = self.request(method, url, *args, **kwargs)
         try:
             return resp.json() if resp else None
-        except ValueError as e:
-            log.debug(u'Could not decode the response as json for url {url} with error {err_msg}', url=url, err_mesg=e)
+        except ValueError:
             return None
 
 
@@ -217,3 +139,82 @@ class MedusaSafeSession(MedusaSession):
             return None
 
         return resp
+
+
+class TextSession(MedusaSafeSession):
+    """Text Session class.
+
+    This is a Medusa text session, used to create and configure a session object that's tailored to requesting and
+    retunring text. It includes the basic request and response exception handling. Making it easy to use, and not
+    needing to implement this in the requester.
+    :param verify: Enable/Disable SSL certificate verification.
+
+    Optional arguments:
+    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
+    :cache_control: Provide a cache control dict of cache_control options.
+    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
+    """
+
+    def __init__(self, **kwargs):
+        """Initialize the TextSession object."""
+        # Initialize request.session
+        super(TextSession, self).__init__(**kwargs)
+
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        """Overwrite request, to be able to return the resp.text value."""
+        resp = super(TextSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                timeout=timeout, **kwargs)
+        return resp.text if resp else False
+
+
+class ContentSession(MedusaSafeSession):
+    """Text Session class.
+
+    This is a Medusa content session, used to create and configure a session object that's tailored to requesting and
+    returning content. It includes the basic request and response exception handling. Making it easy to use, and not
+    needing to implement this in the requester.
+
+    :param verify: Enable/Disable SSL certificate verification.
+
+    Optional arguments:
+    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
+    :cache_control: Provide a cache control dict of cache_control options.
+    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
+    :return: The response as content or False.
+    """
+
+    def __init__(self, **kwargs):
+        """Initialize the TextSession object."""
+        # Initialize request.session
+        super(ContentSession, self).__init__(**kwargs)
+
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        """Overwrite request, to be able to return the resp.content value."""
+        resp = super(ContentSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                   timeout=timeout, **kwargs)
+        return resp.content if resp else False
+
+
+class JsonSession(MedusaSafeSession):
+    """Text Session class.
+
+    This is a Medusa content session, used to create and configure a session object that's tailored to requesting and
+    returning content. It includes the basic request and response exception handling. Making it easy to use, and not
+    needing to implement this in the requester.
+
+    :param verify: Enable/Disable SSL certificate verification.
+
+    Optional arguments:
+    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
+    :cache_control: Provide a cache control dict of cache_control options.
+    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
+    :return: The response as dict or False.
+    """
+
+    def __init__(self, **kwargs):
+        """Initialize the TextSession object."""
+        # Initialize request.session
+        super(JsonSession, self).__init__(**kwargs)
+
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        return self.get_json(method, url, data, params, headers, timeout, **kwargs)
