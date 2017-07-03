@@ -51,16 +51,19 @@ class MedusaSession(BaseSession):
     :return: The response as text or False.
     """
 
-    def __init__(self, verify=True, proxies=factory.add_proxies(), **kwargs):
+    def __init__(self, proxies=factory.add_proxies(), **kwargs):
         """Create base Medusa session instance."""
+        # Set default ssl verify
+        self.verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop('verify', False)]) else False
+
         # Add response hooks
         self.my_hooks = kwargs.pop('hooks', [])
 
         # Pop the cache_control config
         cache_control = kwargs.pop('cache_control', None)
 
-        # Initialize request.session
-        super(MedusaSession, self).__init__()
+        # Initialize request.session after we've done the pop's.
+        super(MedusaSession, self).__init__(**kwargs)
 
         # Add cache control of provided as a dict. Needs to be attached after super init.
         if cache_control:
@@ -80,33 +83,6 @@ class MedusaSession(BaseSession):
             # Use `setdefault` to avoid clobbering existing headers
             self.headers.setdefault(header, value)
 
-        # Set default ssl verify
-        self.verify = certifi.old_where() if all([app.SSL_VERIFY, verify]) else False
-
-    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
-
-        try:
-            resp = super(MedusaSession, self).request(method, url, params=params, data=data, headers=headers,
-                                                      timeout=30, **kwargs)
-            resp.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            log.debug(u'The response returned a non-200 response while requestion url {url}. Error: {err_msg}',
-                      url=url, err_msg=e)
-            return None
-        except requests.exceptions.RequestException as e:
-            log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
-            return None
-        except Exception as e:
-            if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
-                log.warning(
-                    u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=e)
-                )
-            else:
-                log.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
-                log.debug(traceback.format_exc())
-            return None
-        return resp
-
 
 class TextSession(MedusaSession):
     """Text Session class.
@@ -114,7 +90,6 @@ class TextSession(MedusaSession):
     This is a Medusa text session, used to create and configure a session object that's tailored to requesting and
     retunring text. It includes the basic request and response exception handling. Making it easy to use, and not
     needing to implement this in the requester.
-
     :param verify: Enable/Disable SSL certificate verification.
 
     Optional arguments:
@@ -126,10 +101,12 @@ class TextSession(MedusaSession):
     def __init__(self, verify=True, **kwargs):
         """Initialize the TextSession object."""
         # Initialize request.session
-        super(TextSession, self).__init__(verify, **kwargs)
+        super(TextSession, self).__init__(**kwargs)
 
-    def request(self, method, url, data=None, headers=None, timeout=30, **kwargs):
-        resp = super(TextSession, self).request(method, url, data=None, params=None, headers=None, timeout=30, **kwargs)
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        """Overwrite request, to be able to return the resp.text value."""
+        resp = super(TextSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                timeout=timeout, **kwargs)
         return resp.text if resp else False
 
 
@@ -152,11 +129,12 @@ class ContentSession(MedusaSession):
     def __init__(self, verify=True, **kwargs):
         """Initialize the TextSession object."""
         # Initialize request.session
-        super(ContentSession, self).__init__(verify, **kwargs)
+        super(ContentSession, self).__init__(**kwargs)
 
-    def request(self, method, url, data=None, headers=None, timeout=30, **kwargs):
-        resp = super(ContentSession, self).request(method, url, data=None, params=None, headers=None,
-                                                   timeout=30, **kwargs)
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        """Overwrite request, to be able to return the resp.content value."""
+        resp = super(ContentSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                   timeout=timeout, **kwargs)
         return resp.content if resp else False
 
 
@@ -179,13 +157,63 @@ class JsonSession(MedusaSession):
     def __init__(self, verify=True, **kwargs):
         """Initialize the TextSession object."""
         # Initialize request.session
-        super(JsonSession, self).__init__(verify, **kwargs)
+        super(JsonSession, self).__init__(**kwargs)
 
-    def request(self, method, url, data=None, headers=None, timeout=30, **kwargs):
-        resp = super(JsonSession, self).request(method, url, data=None, params=None, headers=None,
-                                                timeout=30, **kwargs)
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        """Overwrite request, to be able to return the json value."""
+        resp = super(JsonSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                timeout=timeout, **kwargs)
         try:
-            return resp.json() if resp else False
+            return resp.json() if resp else None
         except ValueError as e:
             log.debug(u'Could not decode the response as json for url {url} with error {err_msg}', url=url, err_mesg=e)
-            return False
+            return None
+
+
+class MedusaSafeSession(MedusaSession):
+    """Medusa Safe Session object.
+
+    This is a Medusa safe session object, used to create and configure a session protected with the most common
+    exception handling.
+
+    :param verify: Enable/Disable SSL certificate verification.
+    :param proxies: Provide a proxy configuration in the form of a dict: {
+        "http": address,
+        "https": address,
+    }
+    Optional arguments:
+    :param hooks: Provide additional 'response' hooks, provided as a list of functions.
+    :cache_control: Provide a cache control dict of cache_control options.
+    :example: {'cache_etags': True, 'serializer': None, 'heuristic': None}
+    :return: The response as text or False.
+    """
+
+    def __init__(self, verify=True, *args, **kwargs):
+        # Initialize request.session
+        super(MedusaSafeSession, self).__init__(**kwargs)
+
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+        """Overwrite request, for adding basic exception handling."""
+
+        try:
+            resp = super(MedusaSafeSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                          timeout=30, **kwargs)
+            resp.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            log.debug(u'The response returned a non-200 response while requestion url {url}. Error: {err_msg}',
+                      url=url, err_msg=e)
+            return None
+        except requests.exceptions.RequestException as e:
+            log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
+            return None
+        except Exception as e:
+            if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
+                log.warning(
+                    u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=e)
+                )
+            else:
+                log.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
+                log.debug(traceback.format_exc())
+            return None
+
+        return resp
