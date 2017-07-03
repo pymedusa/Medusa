@@ -10,6 +10,7 @@ import hashlib
 import imghdr
 import io
 import logging
+from logging import ERROR, WARNING
 import os
 import platform
 import random
@@ -283,12 +284,12 @@ def copy_file(src_file, dest_file):
     try:
         shutil.copyfile(src_file, dest_file)
     except (SpecialFileError, Error) as error:
-        log.warning(error)
+        log.warning('Error copying file: {error}', {'error': error})
     except OSError as error:
-        if 'No space left on device' in error:
-            log.warning(error)
-        else:
-            log.error(error)
+        error_level = ERROR
+        if 'No space left on device' in error.message:
+            error_level = WARNING
+        log.log(error_level, 'OSError: {error}', {'error': error.message})
     else:
         try:
             shutil.copymode(src_file, dest_file)
