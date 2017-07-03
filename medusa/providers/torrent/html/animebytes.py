@@ -292,7 +292,7 @@ class AnimeBytes(TorrentProvider):
             return True
 
         # Get csrf_index and csrf_token
-        csrf_response = self.get_url(self.urls['login'], returns='response')
+        csrf_response = self.session.get(self.urls['login'])
         if not csrf_response or not csrf_response.text:
             log.warning('Unable to connect to provider')
             return False

@@ -29,7 +29,6 @@ from medusa.indexers.indexer_config import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
-from medusa.session.custom import MedusaSession
 
 from requests.compat import urljoin
 import validators
@@ -46,9 +45,7 @@ class NewznabProvider(NZBProvider):
     """
 
     def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
-                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False,
-                 enable_api_hit_cooldown=False, enable_daily_request_reserve=False, api_hit_limit=0,
-                 daily_reserve_calls=0):
+                 search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
 
@@ -80,16 +77,6 @@ class NewznabProvider(NZBProvider):
         # self.cap_audio_search = None
 
         self.cache = tv.Cache(self)
-
-        # self.enable_daily_request_reserve = bool(daily_reserve_calls)
-
-        self.session = MedusaSession({'enable_api_hit_cooldown': enable_api_hit_cooldown,
-                                      'daily_reserve_calls': daily_reserve_calls})
-
-        self.session.enable_api_hit_cooldown = self.enable_api_hit_cooldown = enable_api_hit_cooldown
-        self.session.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
-        self.session.api_hit_limit = self.api_hit_limit = api_hit_limit
-        # self.session.daily_reserve_calls = self.daily_reserve_calls = daily_reserve_calls
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -161,14 +148,7 @@ class NewznabProvider(NZBProvider):
 
                 time.sleep(cpu_presets[app.CPU_PRESET])
 
-                # try:
-                #     self.session.request_check_newznab_daily_reserved_calls(mode)
-                # except PoliceReservedDailyExceeded as e:
-                #     logger.log(e.message, logger.INFO)
-                #     return items
-
-                response = self.session.get(urljoin(self.url, 'api'), params=search_params,
-                                            police_options={'api_hit': True, 'search_mode': mode})
+                response = self.session.get(urljoin(self.url, 'api'), params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

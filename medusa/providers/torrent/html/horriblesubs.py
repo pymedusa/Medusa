@@ -68,7 +68,7 @@ class HorribleSubsProvider(TorrentProvider):
                     search_params = {'value': '{0}'.format(search_string)}
                     search_url = self.urls['search']
 
-                response = self.get_url(search_url, params=search_params, returns='response')
+                response = self.session.get(search_url, params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

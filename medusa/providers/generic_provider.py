@@ -48,7 +48,7 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.search import PROPER_SEARCH
-from medusa.session.custom import MedusaSession
+from medusa.session.core import MedusaSafeSession
 from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
@@ -96,7 +96,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = MedusaSession(hooks=[cloudflare])
+        self.session = MedusaSafeSession(hooks=[cloudflare])
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True

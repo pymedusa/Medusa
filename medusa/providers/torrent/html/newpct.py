@@ -89,7 +89,7 @@ class NewpctProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['q'] = search_string
-                response = self.session.get(self.urls['search'], params=search_params)
+                response = self.get_url(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -181,8 +181,7 @@ class NewpctProvider(TorrentProvider):
         """
         trickery = kwargs.pop('returns', '')
         if trickery == 'content':
-            kwargs['returns'] = 'text'
-            data = self.session.get(url, params=params, timeout=timeout, **kwargs).text
+            data = self.session.get(url, params=params, timeout=timeout).text
             url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
         # kwargs['returns'] = trickery
