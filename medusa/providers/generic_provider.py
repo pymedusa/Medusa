@@ -265,7 +265,8 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                log.debug(error.message)
+                log.debug('Error during parsing of release name: {release_name}, with error: {error}',
+                          {'release_name': search_result.name, 'error': error})
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
