@@ -271,7 +271,7 @@ class Cache(object):
         if self.provider.login():
             # TODO: Check the usage of get_url.
             return getFeed(url, params=params,
-                           request_hook=self.provider.get_url)
+                           request_hook=self.provider.session.get)
         return {'entries': []}
 
     @staticmethod
