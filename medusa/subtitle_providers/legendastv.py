@@ -170,6 +170,7 @@ class LegendasTVProvider(Provider):
         self.username = username
         self.password = password
         self.logged_in = False
+        self.session = None
 
     def initialize(self):
         self.session = Session()
