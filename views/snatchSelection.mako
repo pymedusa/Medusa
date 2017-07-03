@@ -133,8 +133,8 @@
                             <td class="triggerhighlight">
                                 <span class="${hItem['leech_highlight']}">${hItem["leechers"]}</span>
                             </td>
-                            <td class="col-size triggerhighlight">${hItem["pretty_size"]}</td>
-                            <td class="triggerhighlight">${hItem["provider_type"]}</tdclass>
+                            <td class="col-size triggerhighlight" data-size="${hItem["size"]}">${hItem["pretty_size"]}</td>
+                            <td class="triggerhighlight">${hItem["provider_type"]}</td>
                             <td class="col-date triggerhighlight">
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
