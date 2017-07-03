@@ -26,7 +26,6 @@ import warnings
 import xml.etree.ElementTree as ET
 import zipfile
 from itertools import cycle, izip
-from logging import ERROR, WARNING
 
 import adba
 
@@ -47,7 +46,7 @@ from medusa import app, db
 from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.indexers.indexer_exceptions import IndexerException
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.show.show import Show
 
 import requests
@@ -286,10 +285,13 @@ def copy_file(src_file, dest_file):
     except (SpecialFileError, Error) as error:
         log.warning('Error copying file: {error}', {'error': error})
     except OSError as error:
-        error_level = ERROR
-        if 'No space left on device' in error.message:
-            error_level = WARNING
-        log.log(error_level, 'OSError: {error}', {'error': error.message})
+        msg = BraceMessage('OSError: {0}', error.message)
+        if error.errno == errno.ENOSPC:
+            # Only warn if device is out of space
+            log.warning(msg)
+        else:
+            # Error for any other OSError
+            log.error(msg)
     else:
         try:
             shutil.copymode(src_file, dest_file)
