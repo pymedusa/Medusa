@@ -983,10 +983,6 @@ class Application(object):
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_daily', 1)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_backlog', provider.supports_backlog)
                 load_provider_setting(app.CFG, provider, 'bool', 'enable_manualsearch', 1)
-                load_provider_setting(app.CFG, provider, 'bool', 'enable_api_hit_cooldown', 0)
-                load_provider_setting(app.CFG, provider, 'bool', 'enable_daily_request_reserve', 0)
-                load_provider_setting(app.CFG, provider, 'int', 'api_hit_limit', 0)
-                load_provider_setting(app.CFG, provider, 'int', 'daily_reserve_calls', 0)
 
                 if provider.provider_type == GenericProvider.TORRENT:
                     load_provider_setting(app.CFG, provider, 'string', 'custom_url', '', censor_log='low')
@@ -1512,8 +1508,6 @@ class Application(object):
                     'api_key', 'username',
                     'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch',
-                    'enable_api_hit_cooldown', 'enable_daily_request_reserve',
-                    'api_hit_limit', 'enable_daily_request_reserve'
                 ],
                 'encrypted': [
                     'password',
