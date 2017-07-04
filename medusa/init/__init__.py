@@ -141,7 +141,6 @@ def _configure_subliminal():
                  'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename),
                  'subscenter = {basename}.subtitle_providers.subscenter:SubsCenterProvider'.format(basename=basename),
                  'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
-
         provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
