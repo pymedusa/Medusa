@@ -16,7 +16,7 @@
     % if app.PROCESS_METHOD == 'symlink':
 <div class="text-center">
 <div class="alert alert-danger upgrade-notification hidden-print" role="alert">
-    <span>WARNING: Your current process method is SYMLINK. Renaming these files will break all symlinks in your Post-Processor${('', '/Seeding')[app.TORRENT_SEED_LOCATION]} directory for this show</span>
+    <span>WARNING: Your current process method is SYMLINK. Renaming these files will break all symlinks in your Post-Processor${('', '/Seeding')[bool(app.TORRENT_SEED_LOCATION)]} directory for this show</span>
 </div>
 </div>
     % endif

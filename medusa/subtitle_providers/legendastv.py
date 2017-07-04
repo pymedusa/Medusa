@@ -11,9 +11,9 @@ from dogpile.cache.api import NO_VALUE
 from guessit import guessit
 import pytz
 import rarfile
-from rarfile import RarFile, is_rarfile
+from rarfile import BadRarFile, RarFile, is_rarfile
 from requests import Session, Timeout
-from zipfile import ZipFile, is_zipfile
+from zipfile import BadZipfile, ZipFile, is_zipfile
 
 from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal import __short_version__
@@ -122,7 +122,8 @@ class LegendasTVSubtitle(Subtitle):
         # episode
         if isinstance(video, Episode) and self.type == 'episode':
             # series
-            if video.series and sanitize(self.title) == sanitize(video.series):
+            if video.series and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.series] + video.alternative_series)):
                 matches.add('series')
 
             # year
@@ -136,7 +137,8 @@ class LegendasTVSubtitle(Subtitle):
         # movie
         elif isinstance(video, Movie) and self.type == 'movie':
             # title
-            if video.title and sanitize(self.title) == sanitize(video.title):
+            if video.title and (sanitize(self.title) in (
+                    sanitize(name) for name in [video.title] + video.alternative_titles)):
                 matches.add('title')
 
             # year
@@ -164,19 +166,20 @@ class LegendasTVProvider(Provider):
     server_url = 'http://legendas.tv/'
 
     def __init__(self, username=None, password=None):
-        if username and not password or not username and password:
+        if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username
         self.password = password
         self.logged_in = False
+        self.session = None
 
     def initialize(self):
         self.session = Session()
         self.session.headers['User-Agent'] = 'Subliminal/%s' % __short_version__
 
         # login
-        if self.username is not None and self.password is not None:
+        if self.username and self.password:
             logger.info('Logging in')
             data = {'_method': 'POST', 'data[User][username]': self.username, 'data[User][password]': self.password}
             r = self.session.post(self.server_url + 'login', data, allow_redirects=False, timeout=10)
@@ -462,13 +465,19 @@ class LegendasTVProvider(Provider):
     def list_subtitles(self, video, languages):
         season = episode = None
         if isinstance(video, Episode):
-            title = video.series
+            titles = [video.series] + video.alternative_series
             season = video.season
             episode = video.episode
         else:
-            title = video.title
+            titles = [video.title] + video.alternative_titles
 
-        return [s for l in languages for s in self.query(l, title, season=season, episode=episode, year=video.year)]
+        for title in titles:
+            subtitles = [s for l in languages for s in
+                         self.query(l, title, season=season, episode=episode, year=video.year)]
+            if subtitles:
+                return subtitles
+
+        return []
 
     def download_subtitle(self, subtitle):
         # download archive in case we previously hit the releases cache and didn't download it
@@ -476,7 +485,10 @@ class LegendasTVProvider(Provider):
             self.download_archive(subtitle.archive)
 
         # extract subtitle's content
-        subtitle.content = fix_line_ending(subtitle.archive.content.read(subtitle.name))
+        try:
+            subtitle.content = fix_line_ending(subtitle.archive.content.read(subtitle.name))
+        except (BadRarFile, BadZipfile):
+            logger.error('Bad archive for %s', subtitle.name)
 
 
 def raise_for_status(r):
