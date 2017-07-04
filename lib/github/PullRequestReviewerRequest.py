@@ -2,7 +2,10 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
+# Copyright 2012 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2012 Zearin <zearin@gonk.net>                                      #
 # Copyright 2013 AKFish <akfish@gmail.com>                                     #
+# Copyright 2013 Michael Stead <michael.stead@gmail.com>                       #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -23,23 +26,41 @@
 #                                                                              #
 # ##############################################################################
 
-# #193: Line endings should be linux style
+import github.GithubObject
 
-# TODO: As of Thu Aug 21 22:40:13 (BJT) Chinese Standard Time 2013
-# lots of consts in this project are explict
-# should realy round them up and reference them by consts
-# EDIT: well, maybe :-)
+import github.NamedUser
 
-# ##############################################################################
-# Request Header                                                               #
-# (Case sensitive)                                                             #
-# ##############################################################################
-REQ_IF_NONE_MATCH = "If-None-Match"
-REQ_IF_MODIFIED_SINCE = "If-Modified-Since"
 
-# ##############################################################################
-# Response Header                                                              #
-# (Lower Case)                                                                 #
-# ##############################################################################
-RES_ETAG = "etag"
-RES_LAST_MODIFIED = "last-modified"
+class PullRequestReviewerRequest(github.GithubObject.CompletableGithubObject):
+    """
+    This class represents Pull Request Reviewer Requests as returned for example by https://developer.github.com/v3/pulls/review_requests/
+    """
+
+    def __repr__(self):
+        return self.get__repr__({"id": self._id.value, "login": self._login.value})
+
+    @property
+    def login(self):
+        """
+        :type: string
+        """
+        self._completeIfNotSet(self._login)
+        return self._login.value
+
+    @property
+    def id(self):
+        """
+        :type: integer
+        """
+        self._completeIfNotSet(self._id)
+        return self._id.value
+
+    def _initAttributes(self):
+        self._login = github.GithubObject.NotSet
+        self._id = github.GithubObject.NotSet
+
+    def _useAttributes(self, attributes):
+        if "login" in attributes:  # pragma no branch
+            self._login = self._makeStringAttribute(attributes["login"])
+        if "id" in attributes:  # pragma no branch
+            self._id = self._makeIntAttribute(attributes["id"])

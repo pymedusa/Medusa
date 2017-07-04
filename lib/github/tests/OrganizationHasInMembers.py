@@ -2,8 +2,8 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
-# Copyright 2013 AKFish <akfish@gmail.com>                                     #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2016 Sam Corbett <sjcorbett@apache.org>                            #
 #                                                                              #
 # This file is part of PyGithub.                                               #
 # http://pygithub.github.io/PyGithub/v1/index.html                             #
@@ -23,23 +23,15 @@
 #                                                                              #
 # ##############################################################################
 
-# #193: Line endings should be linux style
+import Framework
 
-# TODO: As of Thu Aug 21 22:40:13 (BJT) Chinese Standard Time 2013
-# lots of consts in this project are explict
-# should realy round them up and reference them by consts
-# EDIT: well, maybe :-)
 
-# ##############################################################################
-# Request Header                                                               #
-# (Case sensitive)                                                             #
-# ##############################################################################
-REQ_IF_NONE_MATCH = "If-None-Match"
-REQ_IF_MODIFIED_SINCE = "If-Modified-Since"
+class OrganizationHasInMembers(Framework.TestCase):
+    def setUp(self):
+        Framework.TestCase.setUp(self)
+        self.user = self.g.get_user("meneal")
+        self.org = self.g.get_organization("RobotWithFeelings")
+        self.has_in_members = self.org.has_in_members(self.user)
 
-# ##############################################################################
-# Response Header                                                              #
-# (Lower Case)                                                                 #
-# ##############################################################################
-RES_ETAG = "etag"
-RES_LAST_MODIFIED = "last-modified"
+    def testHasInMembers(self):
+        self.assertTrue(self.has_in_members)

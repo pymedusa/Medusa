@@ -104,7 +104,8 @@ class TraktPopular(object):
         try:
             if not missing_posters.has(show_obj['show']['ids']['tvdb']):
                 image = self.check_cache_for_poster(show_obj['show']['ids']['tvdb']) or \
-                    self.tvdb_api_v2.series_api.series_id_images_query_get(show_obj['show']['ids']['tvdb'], key_type='poster').data[0].file_name
+                    self.tvdb_api_v2.config['session'].series_api.series_id_images_query_get(show_obj['show']['ids']['tvdb'],
+                                                                                             key_type='poster').data[0].file_name
             else:
                 log.info('CACHE: Missing poster on TVDB for show {0}', show_obj['show']['title'])
                 use_default = self.default_img_src
@@ -117,7 +118,11 @@ class TraktPopular(object):
             use_default = self.default_img_src
             log.debug('Missing poster on TheTVDB, cause: {0!r}', error)
 
-        rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        if image:
+            rec_show.cache_image('http://thetvdb.com/banners/{0}'.format(image), default=use_default)
+        else:
+            rec_show.cache_image('', default=use_default)
+
         # As the method below requires allot of resources, i've only enabled it when
         # the shows language or country is 'jp' (japanese). Looks a litle bit akward,
         # but alternative is allot of resource used
@@ -210,6 +215,9 @@ class TraktPopular(object):
 
     def check_cache_for_poster(self, tvdb_id):
         """Verify if we already have a poster downloaded for this show."""
+        if not os.path.exists(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder)):
+            os.makedirs(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))
+
         for image_file_name in os.listdir(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder))):
             if os.path.isfile(os.path.abspath(os.path.join(app.CACHE_DIR, 'images', self.cache_subfolder, image_file_name))):
                 if str(tvdb_id) == image_file_name.split('-')[0]:

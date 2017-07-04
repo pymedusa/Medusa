@@ -2,7 +2,8 @@
 
 # ########################## Copyrights and license ############################
 #                                                                              #
-# Copyright 2013 AKFish <akfish@gmail.com>                                     #
+# Copyright 2012 Vincent Jacques <vincent@vincent-jacques.net>                 #
+# Copyright 2012 Zearin <zearin@gonk.net>                                      #
 # Copyright 2013 Vincent Jacques <vincent@vincent-jacques.net>                 #
 #                                                                              #
 # This file is part of PyGithub.                                               #
@@ -23,23 +24,28 @@
 #                                                                              #
 # ##############################################################################
 
-# #193: Line endings should be linux style
+import Framework
 
-# TODO: As of Thu Aug 21 22:40:13 (BJT) Chinese Standard Time 2013
-# lots of consts in this project are explict
-# should realy round them up and reference them by consts
-# EDIT: well, maybe :-)
+class PullRequestReview(Framework.TestCase):
+    def setUp(self):
+        Framework.TestCase.setUp(self)
+        self.repo = self.g.get_repo("PyGithub/PyGithub")
+        self.pull = self.repo.get_pull(538)
+        
+        # Test ability to get all reviews
+        self.pullreviews = self.pull.get_reviews()
 
-# ##############################################################################
-# Request Header                                                               #
-# (Case sensitive)                                                             #
-# ##############################################################################
-REQ_IF_NONE_MATCH = "If-None-Match"
-REQ_IF_MODIFIED_SINCE = "If-Modified-Since"
+        # Test ability to get a single review
+        self.pullreview = self.pull.get_review(28482091)
 
-# ##############################################################################
-# Response Header                                                              #
-# (Lower Case)                                                                 #
-# ##############################################################################
-RES_ETAG = "etag"
-RES_LAST_MODIFIED = "last-modified"
+    def testAttributes(self):
+        self.assertEqual(self.pullreview.id, 28482091)
+        self.assertEqual(self.pullreview.user.login, "jzelinskie")
+        self.assertEqual(self.pullreview.body, "")
+        self.assertEqual(self.pullreview.commit_id, "7a0fcb27b7cd6c346fc3f76216ccb6e0f4ca3bcc")
+        self.assertEqual(self.pullreview.state, "APPROVED")
+        self.assertEqual(self.pullreview.html_url, "https://github.com/PyGithub/PyGithub/pull/538#pullrequestreview-28482091")
+        self.assertEqual(self.pullreview.pull_request_url, "https://api.github.com/repos/PyGithub/PyGithub/pulls/538")
+
+        # test __repr__() based on this attributes
+        self.assertEqual(self.pullreview.__repr__(), 'PullRequestReview(user=NamedUser(login="jzelinskie"), id=28482091)')

@@ -265,7 +265,8 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                log.debug(error.message)
+                log.debug('Error during parsing of release name: {release_name}, with error: {error}',
+                          {'release_name': search_result.name, 'error': error})
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
@@ -291,7 +292,7 @@ class GenericProvider(object):
                             continue
                         elif not [ep for ep in episodes if
                                   search_result.parsed_result.season_number == (ep.season, ep.scene_season)
-                                  [ep.show.is_scene]]:
+                                  [ep.series.is_scene]]:
                             log.debug(
                                 'This season result {0} is for a season we are not searching for, '
                                 'skipping it', search_result.name
