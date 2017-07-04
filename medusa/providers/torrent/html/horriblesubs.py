@@ -108,9 +108,12 @@ class HorribleSubsProvider(TorrentProvider):
                         continue
 
                     title = row.find('td', class_='dl-label').get_text()
-                    download_url = row.find('td', class_='dl-type hs-magnet-link').a.get('href')
+                    magnet = row.find('td', class_='dl-type hs-magnet-link')
+                    download_url = magnet or row.find('td', class_='dl-type hs-torrent-link')
                     if not all([title, download_url]):
                         continue
+
+                    download_url = download_url.span.a.get('href')
 
                     # Add HorribleSubs group to the title
                     title = '{group} {title}'.format(group='[HorribleSubs]', title=title)

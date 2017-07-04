@@ -45,7 +45,7 @@ from medusa import app, db
 from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.indexers.indexer_exceptions import IndexerException
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import ContentSession, JsonSession, MedusaSession
 from medusa.show.show import Show
 
@@ -283,12 +283,15 @@ def copy_file(src_file, dest_file):
     try:
         shutil.copyfile(src_file, dest_file)
     except (SpecialFileError, Error) as error:
-        log.warning(error)
+        log.warning('Error copying file: {error}', {'error': error})
     except OSError as error:
-        if 'No space left on device' in error:
-            log.warning(error)
+        msg = BraceMessage('OSError: {0}', error.message)
+        if error.errno == errno.ENOSPC:
+            # Only warn if device is out of space
+            log.warning(msg)
         else:
-            log.error(error)
+            # Error for any other OSError
+            log.error(msg)
     else:
         try:
             shutil.copymode(src_file, dest_file)

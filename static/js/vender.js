@@ -10683,7 +10683,7 @@ this.activeTarget=b,this.clear();var c=this.selector+'[data-target="'+b+'"],'+th
 }));
 
 /**
- * Fizzy UI utils v2.0.4
+ * Fizzy UI utils v2.0.5
  * MIT license
  */
 
@@ -10769,7 +10769,7 @@ utils.removeFrom = function( ary, obj ) {
 // ----- getParent ----- //
 
 utils.getParent = function( elem, selector ) {
-  while ( elem != document.body ) {
+  while ( elem.parentNode && elem != document.body ) {
     elem = elem.parentNode;
     if ( matchesSelector( elem, selector ) ) {
       return elem;
@@ -11132,7 +11132,7 @@ return getSize;
 });
 
 /**
- * EvEmitter v1.0.3
+ * EvEmitter v1.1.0
  * Lil' event emitter
  * MIT License
  */
@@ -11235,6 +11235,12 @@ proto.emitEvent = function( eventName, args ) {
   }
 
   return this;
+};
+
+proto.allOff =
+proto.removeAllListeners = function() {
+  delete this._events;
+  delete this._onceEvents;
 };
 
 return EvEmitter;
@@ -11376,13 +11382,16 @@ proto.getPosition = function() {
   var isOriginTop = this.layout._getOption('originTop');
   var xValue = style[ isOriginLeft ? 'left' : 'right' ];
   var yValue = style[ isOriginTop ? 'top' : 'bottom' ];
+  var x = parseFloat( xValue );
+  var y = parseFloat( yValue );
   // convert percent to pixels
   var layoutSize = this.layout.size;
-  var x = xValue.indexOf('%') != -1 ?
-    ( parseFloat( xValue ) / 100 ) * layoutSize.width : parseInt( xValue, 10 );
-  var y = yValue.indexOf('%') != -1 ?
-    ( parseFloat( yValue ) / 100 ) * layoutSize.height : parseInt( yValue, 10 );
-
+  if ( xValue.indexOf('%') != -1 ) {
+    x = ( x / 100 ) * layoutSize.width;
+  }
+  if ( yValue.indexOf('%') != -1 ) {
+    y = ( y / 100 ) * layoutSize.height;
+  }
   // clean up 'auto' or other non-integer values
   x = isNaN( x ) ? 0 : x;
   y = isNaN( y ) ? 0 : y;
@@ -11445,9 +11454,7 @@ proto._transitionTo = function( x, y ) {
   var curX = this.position.x;
   var curY = this.position.y;
 
-  var compareX = parseInt( x, 10 );
-  var compareY = parseInt( y, 10 );
-  var didNotMove = compareX === this.position.x && compareY === this.position.y;
+  var didNotMove = x == this.position.x && y == this.position.y;
 
   // save end position
   this.setPosition( x, y );
@@ -11490,8 +11497,8 @@ proto.goTo = function( x, y ) {
 proto.moveTo = proto._transitionTo;
 
 proto.setPosition = function( x, y ) {
-  this.position.x = parseInt( x, 10 );
-  this.position.y = parseInt( y, 10 );
+  this.position.x = parseFloat( x );
+  this.position.y = parseFloat( y );
 };
 
 // ----- transition ----- //
@@ -11796,7 +11803,7 @@ return Item;
 }));
 
 /*!
- * Outlayer v2.1.0
+ * Outlayer v2.1.1
  * the brains and guts of a layout library
  * MIT license
  */
@@ -12736,7 +12743,7 @@ return Outlayer;
 }));
 
 /*!
- * Masonry v4.1.1
+ * Masonry v4.2.0
  * Cascading grid layout library
  * http://masonry.desandro.com
  * MIT License
@@ -12778,7 +12785,9 @@ return Outlayer;
   // isFitWidth -> fitWidth
   Masonry.compatOptions.fitWidth = 'isFitWidth';
 
-  Masonry.prototype._resetLayout = function() {
+  var proto = Masonry.prototype;
+
+  proto._resetLayout = function() {
     this.getSize();
     this._getMeasurement( 'columnWidth', 'outerWidth' );
     this._getMeasurement( 'gutter', 'outerWidth' );
@@ -12791,9 +12800,10 @@ return Outlayer;
     }
 
     this.maxY = 0;
+    this.horizontalColIndex = 0;
   };
 
-  Masonry.prototype.measureColumns = function() {
+  proto.measureColumns = function() {
     this.getContainerWidth();
     // if columnWidth is 0, default to outerWidth of first item
     if ( !this.columnWidth ) {
@@ -12818,7 +12828,7 @@ return Outlayer;
     this.cols = Math.max( cols, 1 );
   };
 
-  Masonry.prototype.getContainerWidth = function() {
+  proto.getContainerWidth = function() {
     // container is parent if fit width
     var isFitWidth = this._getOption('fitWidth');
     var container = isFitWidth ? this.element.parentNode : this.element;
@@ -12828,7 +12838,7 @@ return Outlayer;
     this.containerWidth = size && size.innerWidth;
   };
 
-  Masonry.prototype._getItemLayoutPosition = function( item ) {
+  proto._getItemLayoutPosition = function( item ) {
     item.getSize();
     // how many columns does this brick span
     var remainder = item.size.outerWidth % this.columnWidth;
@@ -12836,33 +12846,41 @@ return Outlayer;
     // round if off by 1 pixel, otherwise use ceil
     var colSpan = Math[ mathMethod ]( item.size.outerWidth / this.columnWidth );
     colSpan = Math.min( colSpan, this.cols );
-
-    var colGroup = this._getColGroup( colSpan );
-    // get the minimum Y value from the columns
-    var minimumY = Math.min.apply( Math, colGroup );
-    var shortColIndex = colGroup.indexOf( minimumY );
-
+    // use horizontal or top column position
+    var colPosMethod = this.options.horizontalOrder ?
+      '_getHorizontalColPosition' : '_getTopColPosition';
+    var colPosition = this[ colPosMethod ]( colSpan, item );
     // position the brick
     var position = {
-      x: this.columnWidth * shortColIndex,
-      y: minimumY
+      x: this.columnWidth * colPosition.col,
+      y: colPosition.y
     };
-
     // apply setHeight to necessary columns
-    var setHeight = minimumY + item.size.outerHeight;
-    var setSpan = this.cols + 1 - colGroup.length;
-    for ( var i = 0; i < setSpan; i++ ) {
-      this.colYs[ shortColIndex + i ] = setHeight;
+    var setHeight = colPosition.y + item.size.outerHeight;
+    var setMax = colSpan + colPosition.col;
+    for ( var i = colPosition.col; i < setMax; i++ ) {
+      this.colYs[i] = setHeight;
     }
 
     return position;
+  };
+
+  proto._getTopColPosition = function( colSpan ) {
+    var colGroup = this._getTopColGroup( colSpan );
+    // get the minimum Y value from the columns
+    var minimumY = Math.min.apply( Math, colGroup );
+
+    return {
+      col: colGroup.indexOf( minimumY ),
+      y: minimumY,
+    };
   };
 
   /**
    * @param {Number} colSpan - number of columns the element spans
    * @returns {Array} colGroup
    */
-  Masonry.prototype._getColGroup = function( colSpan ) {
+  proto._getTopColGroup = function( colSpan ) {
     if ( colSpan < 2 ) {
       // if brick spans only one column, use all the column Ys
       return this.colYs;
@@ -12873,15 +12891,38 @@ return Outlayer;
     var groupCount = this.cols + 1 - colSpan;
     // for each group potential horizontal position
     for ( var i = 0; i < groupCount; i++ ) {
-      // make an array of colY values for that one group
-      var groupColYs = this.colYs.slice( i, i + colSpan );
-      // and get the max value of the array
-      colGroup[i] = Math.max.apply( Math, groupColYs );
+      colGroup[i] = this._getColGroupY( i, colSpan );
     }
     return colGroup;
   };
 
-  Masonry.prototype._manageStamp = function( stamp ) {
+  proto._getColGroupY = function( col, colSpan ) {
+    if ( colSpan < 2 ) {
+      return this.colYs[ col ];
+    }
+    // make an array of colY values for that one group
+    var groupColYs = this.colYs.slice( col, col + colSpan );
+    // and get the max value of the array
+    return Math.max.apply( Math, groupColYs );
+  };
+
+  // get column position based on horizontal index. #873
+  proto._getHorizontalColPosition = function( colSpan, item ) {
+    var col = this.horizontalColIndex % this.cols;
+    var isOver = colSpan > 1 && col + colSpan > this.cols;
+    // shift to next row if item can't fit on current row
+    col = isOver ? 0 : col;
+    // don't let zero-size items take up space
+    var hasSize = item.size.outerWidth && item.size.outerHeight;
+    this.horizontalColIndex = hasSize ? col + colSpan : this.horizontalColIndex;
+
+    return {
+      col: col,
+      y: this._getColGroupY( col, colSpan ),
+    };
+  };
+
+  proto._manageStamp = function( stamp ) {
     var stampSize = getSize( stamp );
     var offset = this._getElementOffset( stamp );
     // get the columns that this stamp affects
@@ -12904,7 +12945,7 @@ return Outlayer;
     }
   };
 
-  Masonry.prototype._getContainerSize = function() {
+  proto._getContainerSize = function() {
     this.maxY = Math.max.apply( Math, this.colYs );
     var size = {
       height: this.maxY
@@ -12917,7 +12958,7 @@ return Outlayer;
     return size;
   };
 
-  Masonry.prototype._getContainerFitWidth = function() {
+  proto._getContainerFitWidth = function() {
     var unusedCols = 0;
     // count unused columns
     var i = this.cols;
@@ -12931,7 +12972,7 @@ return Outlayer;
     return ( this.cols - unusedCols ) * this.columnWidth - this.gutter;
   };
 
-  Masonry.prototype.needsResizeLayout = function() {
+  proto.needsResizeLayout = function() {
     var previousWidth = this.containerWidth;
     this.getContainerWidth();
     return previousWidth != this.containerWidth;
@@ -13429,6 +13470,10 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
       options.transition = 'fade';
     }
 
+    if (options.scale) {
+      options.scale = validScale(options.scale);
+    }
+    
     return processAlignOptions(options);
   };
 
@@ -13473,6 +13518,20 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
     return options;
   };
 
+  var SUPPORTED_SCALE_OPTIONS = {
+      'cover': 'cover',
+      'fit': 'fit',
+      'fit-smaller': 'fit-smaller',
+      'fill': 'fill'
+  };
+  
+  function validScale(scale) {
+    if (!SUPPORTED_SCALE_OPTIONS.hasOwnProperty(scale)) {
+      return 'cover';
+    }
+    return scale;
+  }
+  
   /* CLASS DEFINITION
    * ========================= */
   var Backstretch = function (container, images, options) {
@@ -13736,41 +13795,71 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
           }
 
           var bgCSS = {left: 0, top: 0, right: 'auto', bottom: 'auto'}
-            , rootWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
-            , rootHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
-            , bgWidth = rootWidth
-            , bgHeight = bgWidth / this.$itemWrapper.data('ratio')
-            , evt = $.Event('backstretch.resize', {
-              relatedTarget: this.$container[0]
-            })
-            , bgOffset
+          
+            , boxWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
+            , boxHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
+            
+            , naturalWidth = this.$itemWrapper.data('width')
+            , naturalHeight = this.$itemWrapper.data('height')
+            
+            , ratio = (naturalWidth / naturalHeight) || 1
+                    
             , alignX = this._currentImage.alignX === undefined ? this.options.alignX : this._currentImage.alignX
-            , alignY = this._currentImage.alignY === undefined ? this.options.alignY : this._currentImage.alignY;
-
-            // Make adjustments based on image ratio
-            if (bgHeight >= rootHeight) {
-                bgCSS.top = -(bgHeight - rootHeight) * alignY;
-            } else {
-                bgHeight = rootHeight;
-                bgWidth = bgHeight * this.$itemWrapper.data('ratio');
-                bgOffset = (bgWidth - rootWidth) / 2;
-                bgCSS.left = -(bgWidth - rootWidth) * alignX;
+            , alignY = this._currentImage.alignY === undefined ? this.options.alignY : this._currentImage.alignY
+            , scale = validScale(this._currentImage.scale || this.options.scale);
+          
+          var width, height;
+                
+          if (scale === 'fit' || scale === 'fit-smaller') {
+            width = naturalWidth;
+            height = naturalHeight;
+            
+            if (width > boxWidth || 
+                height > boxHeight || 
+                scale === 'fit-smaller') {
+              var boxRatio = boxWidth / boxHeight;
+              if (boxRatio > ratio) {
+                width = Math.floor(boxHeight * ratio);
+                height = boxHeight;
+              } else if (boxRatio < ratio) {
+                width = boxWidth;
+                height = Math.floor(boxWidth / ratio);
+              } else {
+                width = boxWidth;
+                height = boxHeight;
+              }
             }
+          } else if (scale === 'fill') {
+            width = boxWidth;
+            height = boxHeight;
+          } else { // 'cover'
+            width = Math.max(boxHeight * ratio, boxWidth);
+            height = Math.max(width / ratio, boxHeight);
+          }
+          
+          // Make adjustments based on image ratio
+          bgCSS.top = -(height - boxHeight) * alignY;
+          bgCSS.left = -(width - boxWidth) * alignX;
+          bgCSS.width = width;
+          bgCSS.height = height;
+          
+          if (!this.options.bypassCss) {
 
-            if (!this.options.bypassCss) {
+            this.$wrap
+                .css({width: boxWidth, height: boxHeight})
+                .find('>.backstretch-item').not('.deleteable')
+                .each(function () {
+                  var $wrapper = $(this);
+                  $wrapper.find('img,video,iframe')
+                          .css(bgCSS);
+                });
+          }
 
-                this.$wrap
-                    .css({width: rootWidth, height: rootHeight})
-                    .find('>.backstretch-item').not('.deleteable')
-                    .each(function () {
-                        var $wrapper = $(this);
-                        $wrapper.find('img,video,iframe')
-                                .css({width: bgWidth, height: bgHeight})
-                                .css(bgCSS);
+          var evt = $.Event('backstretch.resize', {
+                      relatedTarget: this.$container[0]
                     });
-            }
-
-            this.$container.trigger(evt, this);
+          this.$container.trigger(evt, this);
+          
         } catch(err) {
             // IE7 seems to trigger resize before the image is loaded.
             // This try/catch block is a hack to let it fail gracefully.
@@ -13839,8 +13928,10 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
             var imgWidth = this.naturalWidth || this.videoWidth || this.width
               , imgHeight = this.naturalHeight || this.videoHeight || this.height;
 
-            // Save the ratio
-            $wrapper.data('ratio', imgWidth / imgHeight);
+            // Save the natural dimensions
+            $wrapper
+                .data('width', imgWidth)
+                .data('height', imgHeight);
 
             var getOption = function (opt) {
               return options[opt] !== undefined ?
@@ -54731,7 +54822,7 @@ a.stopPropagation()},mouseout:function(a){c.myOptions.nonblock&&a.stopPropagatio
 (a.stopPropagation(),d(b,a,"ondblclick"))}})},update:function(b,a){this.myOptions=a}}});
 
 /*!
- * imagesLoaded v4.1.1
+ * imagesLoaded v4.1.3
  * JavaScript is all like "You images are done yet or what?"
  * MIT License
  */
@@ -54762,7 +54853,7 @@ a.stopPropagation()},mouseout:function(a){c.myOptions.nonblock&&a.stopPropagatio
     );
   }
 
-})( window,
+})( typeof window !== 'undefined' ? window : this,
 
 // --------------------------  factory -------------------------- //
 
