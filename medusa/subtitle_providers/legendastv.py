@@ -11,9 +11,9 @@ from dogpile.cache.api import NO_VALUE
 from guessit import guessit
 import pytz
 import rarfile
-from rarfile import RarFile, is_rarfile
+from rarfile import BadRarFile, RarFile, is_rarfile
 from requests import Session
-from zipfile import ZipFile, is_zipfile
+from zipfile import BadZipfile, ZipFile, is_zipfile
 
 from subliminal.providers import ParserBeautifulSoup, Provider
 from subliminal import __short_version__
@@ -166,19 +166,20 @@ class LegendasTVProvider(Provider):
     server_url = 'http://legendas.tv/'
 
     def __init__(self, username=None, password=None):
-        if username and not password or not username and password:
+        if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
         self.username = username
         self.password = password
         self.logged_in = False
+        self.session = None
 
     def initialize(self):
         self.session = Session()
         self.session.headers['User-Agent'] = 'Subliminal/%s' % __short_version__
 
         # login
-        if self.username is not None and self.password is not None:
+        if self.username and self.password:
             logger.info('Logging in')
             data = {'_method': 'POST', 'data[User][username]': self.username, 'data[User][password]': self.password}
             r = self.session.post(self.server_url + 'login', data, allow_redirects=False, timeout=10)
@@ -484,4 +485,7 @@ class LegendasTVProvider(Provider):
             self.download_archive(subtitle.archive)
 
         # extract subtitle's content
-        subtitle.content = fix_line_ending(subtitle.archive.content.read(subtitle.name))
+        try:
+            subtitle.content = fix_line_ending(subtitle.archive.content.read(subtitle.name))
+        except (BadRarFile, BadZipfile):
+            logger.error('Bad archive for %s', subtitle.name)
