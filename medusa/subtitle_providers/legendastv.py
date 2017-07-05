@@ -12,7 +12,7 @@ from guessit import guessit
 import pytz
 import rarfile
 from rarfile import BadRarFile, RarFile, is_rarfile
-from requests import Session, Timeout
+from requests import Session
 from zipfile import BadZipfile, ZipFile, is_zipfile
 
 from subliminal.providers import ParserBeautifulSoup, Provider
@@ -494,7 +494,6 @@ class LegendasTVProvider(Provider):
 def raise_for_status(r):
     # When site is under maintaince and http status code 200.
     if 'Em breve estaremos de volta' in r.text or r.status_code == 503:
-        # For now raise Timeout until the upstream PR gets merged that catches ServiceUnavailable
-        raise Timeout
+        raise ProviderError
     else:
         r.raise_for_status()
