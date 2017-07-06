@@ -52,6 +52,11 @@ title_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-
 releases_key = __name__ + ':releases|{archive_id}|{archive_name}'
 
 
+class ServiceUnavailable(ProviderError):
+    """Exception raised when status is '503 Service Unavailable'."""
+    pass
+
+
 class LegendasTVArchive(object):
     """LegendasTV Archive.
 
@@ -494,6 +499,6 @@ class LegendasTVProvider(Provider):
 def raise_for_status(r):
     # When site is under maintaince and http status code 200.
     if 'Em breve estaremos de volta' in r.text or r.status_code == 503:
-        raise ProviderError
+        raise ServiceUnavailable
     else:
         r.raise_for_status()
