@@ -208,7 +208,7 @@ class GithubObject(object):
         '''
         :type: str
         '''
-        return self._headers.get(Consts.RES_LAST_MODIFED)
+        return self._headers.get(Consts.RES_LAST_MODIFIED)
 
     def get__repr__(self, params):
         """
@@ -220,7 +220,10 @@ class GithubObject(object):
             else:
                 items = list(params.items())
             for k, v in sorted(items, key=itemgetter(0), reverse=True):
-                yield '{k}="{v}"'.format(k=k, v=v) if isinstance(v, (str, unicode)) else '{k}={v}'.format(k=k, v=v)
+                isText = isinstance(v, (str, unicode))
+                if isText and not atLeastPython3:
+                    v = v.encode('utf-8')
+                yield '{k}="{v}"'.format(k=k, v=v) if isText else '{k}={v}'.format(k=k, v=v)
         return '{class_name}({params})'.format(
             class_name=self.__class__.__name__,
             params=", ".join(list(format_params(params)))

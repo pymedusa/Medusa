@@ -25,6 +25,8 @@ def initialize():
     _urllib3_disable_warnings()
     _strptime_workaround()
     _configure_guessit()
+    _configure_subliminal()
+    _configure_knowit()
 
 
 def _check_python_version():
@@ -33,8 +35,12 @@ def _check_python_version():
         sys.exit(1)
 
 
+def _lib_location():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib'))
+
+
 def _configure_syspath():
-    sys.path.insert(1, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'lib')))
+    sys.path.insert(1, _lib_location())
 
 
 def _register_utf8_codec():
@@ -109,7 +115,49 @@ def _strptime_workaround():
 
 
 def _configure_guessit():
-    """Replace guessit function with a pre-configured one, so guessit.guessit() could be called directly in any place."""
+    """Replace guessit with a pre-configured one, so guessit.guessit() could be called directly in any place."""
     import guessit
     from ..name_parser.guessit_parser import guessit as pre_configured_guessit
     guessit.guessit = pre_configured_guessit
+
+
+def _configure_subliminal():
+    """Load subliminal with our custom configuration."""
+    from subliminal import provider_manager, refiner_manager
+    from subliminal.providers.podnapisi import PodnapisiProvider
+
+    basename = __name__.split('.')[0]
+
+    # Unregister
+    for name in ('legendastv = subliminal.providers.legendastv:LegendasTVProvider',
+                 'subscenter = subliminal.providers.subscenter:SubsCenterProvider',):
+        provider_manager.internal_extensions.remove(name)
+        provider_manager.registered_extensions.append(name)
+        provider_manager.unregister(name)
+
+    # Register
+    for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
+                 'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
+                 'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename),
+                 'subscenter = {basename}.subtitle_providers.subscenter:SubsCenterProvider'.format(basename=basename),
+                 'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
+        provider_manager.register(name)
+
+    refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
+    refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
+
+    # Configure podnapisi https url
+    PodnapisiProvider.server_url = 'https://podnapisi.net/subtitles/'
+
+
+def _configure_knowit():
+    from knowit import api
+    from knowit.utils import detect_os
+
+    os_family = detect_os()
+    suggested_path = os.path.join(_lib_location(), 'native', os_family)
+    if os_family == 'windows':
+        subfolder = 'x86_64' if sys.maxsize > 2 ** 32 else 'i386'
+        suggested_path = os.path.join(suggested_path, subfolder)
+
+    api.initialize({'mediainfo': suggested_path})

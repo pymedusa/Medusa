@@ -551,7 +551,8 @@ class TraktChecker(object):
                 if indexer_id not in added_shows:
                     self.add_show(trakt_default_indexer, indexer_id, trakt_show['title'], SKIPPED)
                     added_shows.append(indexer_id)
-            if not trakt_season == 0 or not show.paused:
+
+            elif not trakt_season == 0 and not show.paused:
                 set_episode_to_wanted(show, trakt_season, trakt_episode)
 
         logger.log(u"Synced episodes with Trakt watchlist", logger.DEBUG)

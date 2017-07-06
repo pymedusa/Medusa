@@ -85,6 +85,7 @@ class ValidateWebsitePrefix(Rule):
     """
     Validate website prefixes
     """
+    priority = 64
     consequence = RemoveMatch
 
     def when(self, matches, context):
