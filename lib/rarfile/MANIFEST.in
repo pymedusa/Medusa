@@ -1,0 +1,3 @@
+include README.rst Makefile MANIFEST.in LICENSE dumprar.py
+include doc/*.rst doc/Makefile doc/conf.py doc/make.bat
+include test/Makefile test/*.sh test/files/*.rar test/files/*.exp
