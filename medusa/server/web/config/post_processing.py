@@ -63,7 +63,7 @@ class ConfigPostProcessing(Config):
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:
-            if self.isRarSupported() != 'not supported':
+            if self.isRarSupported(unrar_path) != 'not supported':
                 app.UNPACK = config.checkbox_to_value(unpack)
             else:
                 app.UNPACK = 0
@@ -216,13 +216,13 @@ class ConfigPostProcessing(Config):
             return 'invalid'
 
     @staticmethod
-    def isRarSupported():
+    def isRarSupported(unrar_path):
         """
         Test Packing Support:
             - Simulating in memory rar extraction on test.rar file
         """
-        if app.UNRAR_PATH:
-            rarfile.UNRAR_TOOL = app.UNRAR_PATH
+        if unrar_path:
+            rarfile.UNRAR_TOOL = unrar_path
         try:
             rar_path = os.path.join(app.PROG_DIR, 'lib', 'rarfile', 'test', 'files', 'seektest.rar')
             testing = rarfile.RarFile(rar_path).infolist()
