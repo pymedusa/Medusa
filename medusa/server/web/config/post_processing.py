@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import os
 
-from rarfile import RarFile
+import rarfile
 
 from tornroutes import route
 
@@ -51,7 +51,7 @@ class ConfigPostProcessing(Config):
                            naming_abd_pattern=None, naming_strip_year=None,
                            naming_custom_sports=None, naming_sports_pattern=None,
                            naming_custom_anime=None, naming_anime_pattern=None,
-                           naming_anime_multi_ep=None, autopostprocessor_frequency=None):
+                           naming_anime_multi_ep=None, autopostprocessor_frequency=None, unrar_path=None):
 
         results = []
 
@@ -70,6 +70,7 @@ class ConfigPostProcessing(Config):
                 results.append('Unpacking Not Supported, disabling unpack setting')
         else:
             app.UNPACK = config.checkbox_to_value(unpack)
+        app.UNRAR_PATH = unrar_path
         app.NO_DELETE = config.checkbox_to_value(no_delete)
         app.KEEP_PROCESSED_DIR = config.checkbox_to_value(keep_processed_dir)
         app.CREATE_MISSING_SHOW_DIRS = config.checkbox_to_value(create_missing_show_dirs)
@@ -220,10 +221,11 @@ class ConfigPostProcessing(Config):
         Test Packing Support:
             - Simulating in memory rar extraction on test.rar file
         """
-
+        if app.UNRAR_PATH:
+            rarfile.UNRAR_TOOL = app.UNRAR_PATH
         try:
             rar_path = os.path.join(app.PROG_DIR, 'lib', 'rarfile', 'test', 'files', 'seektest.rar')
-            testing = RarFile(rar_path).infolist()
+            testing = rarfile.RarFile(rar_path).infolist()
             if testing[0].filename == u'stest1.txt':
                 return 'supported'
             logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)

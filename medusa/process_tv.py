@@ -430,6 +430,9 @@ class ProcessResult(object):
                 self._log('Unpacking archive: {0}'.format(archive), logger.DEBUG)
 
                 failure = None
+                # Use custom unrar path only if set, else will use from $PATH
+                if app.UNRAR_PATH:
+                    rarfile.UNRAR_TOOL = app.UNRAR_PATH
                 try:
                     rar_handle = rarfile.RarFile(os.path.join(path, archive))
 

@@ -200,6 +200,18 @@
                                     <span class="component-desc"><b>NOTE:</b> Only working with RAR archive</span>
                                 </label>
                             </div>
+                            <div id="content_unpack">
+                                <div class="field-pair">
+                                    <label class="nocheck">
+                                        <span class="component-title">UNRAR executable path</span>
+                                        <input type="text" name="unrar_path" id="unrar_path" value="${app.UNRAR_PATH}" class="form-control input-sm input350"/>
+                                    </label>
+                                    <label class="nocheck">
+                                        <span class="component-title">&nbsp;</span>
+                                        <span class="component-desc"><p>only needed if OS is unable to locate unrar from env</p></span>
+                                    </label>
+                                </div>
+                            </div>
                             <div class="field-pair">
                                 <input type="checkbox" name="del_rar_contents" id="del_rar_contents" ${'checked="checked"' if app.DELRARCONTENTS else ''}/>
                                 <label for="del_rar_contents">

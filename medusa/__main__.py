@@ -594,6 +594,7 @@ class Application(object):
             app.PROCESS_AUTOMATICALLY = bool(check_setting_int(app.CFG, 'General', 'process_automatically', 0))
             app.NO_DELETE = bool(check_setting_int(app.CFG, 'General', 'no_delete', 0))
             app.UNPACK = bool(check_setting_int(app.CFG, 'General', 'unpack', 0))
+            app.UNRAR_PATH = check_setting_str(app.CFG, 'General', 'unrar_path', '')
             app.RENAME_EPISODES = bool(check_setting_int(app.CFG, 'General', 'rename_episodes', 1))
             app.AIRDATE_EPISODES = bool(check_setting_int(app.CFG, 'General', 'airdate_episodes', 0))
             app.FILE_TIMESTAMP_TIMEZONE = check_setting_str(app.CFG, 'General', 'file_timestamp_timezone', 'network')
@@ -1460,6 +1461,7 @@ class Application(object):
         new_config['General']['process_automatically'] = int(app.PROCESS_AUTOMATICALLY)
         new_config['General']['no_delete'] = int(app.NO_DELETE)
         new_config['General']['unpack'] = int(app.UNPACK)
+        new_config['General']['unrar_path'] = app.UNRAR_PATH
         new_config['General']['rename_episodes'] = int(app.RENAME_EPISODES)
         new_config['General']['airdate_episodes'] = int(app.AIRDATE_EPISODES)
         new_config['General']['file_timestamp_timezone'] = app.FILE_TIMESTAMP_TIMEZONE
