@@ -4,6 +4,8 @@
 
 
 import logging
+import threading
+
 
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -20,16 +22,21 @@ class SearchBase(object):
         self.search_results = []
 
         # Keep track of process
+        self.collect_rss_started = False
         self.collect_from_cache_started = False
         self.collect_from_providers_started = False
         self.get_best_results_started = False
         self.snatch_results_started = False
 
-        self.states = (
-            ('collect_from_cache_started', self.collect_from_cache_started),
-            ('get_best_results_started', self.collect_from_providers_started),
-            ('get_best_results_started', self.get_best_results_started)
-        )
+    def collect_rss(self):
+        self.collect_rss_started = True
+        # FIXME: Replace with a proper throw/catch exception.
+        assert self.search_request.providers, 'Missing list of enabled RSS providers.'
+
+        for cur_provider in self.search_request.providers:
+            threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=threading.currentThread().name,
+                                                                                provider=cur_provider.name)
+            cur_provider.cache.update_cache()
 
     def collect_from_cache(self):
         self.collect_from_cache_started = True
@@ -63,6 +70,19 @@ class SearchBase(object):
 class BacklogSearch(SearchBase):
     def __init__(self, search_request):
         super(BacklogSearch, self).__init__(search_request)
+        self.states = (
+            ('collect_from_cache_started', self.collect_from_cache_started),
+            ('get_best_results_started', self.collect_from_providers_started),
+            ('get_best_results_started', self.get_best_results_started)
+        )
+
+
+class CollectRss(SearchBase):
+    def __init__(self, search_request):
+        super(CollectRss, self).__init__(search_request)
+
+    def start(self):
+        self.collect_rss()
 
 
 class DailySearch(SearchBase):

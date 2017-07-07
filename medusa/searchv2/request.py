@@ -9,7 +9,7 @@ class SearchOptions(object):
 
 
 class SearchRequest(object):
-    def __init__(self, series, segment, options, providers):
+    def __init__(self, series=None, segment=None, options=None, providers=None):
         # The series object
         self.series = series
 

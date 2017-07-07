@@ -9,7 +9,7 @@ import threading
 import time
 import traceback
 
-from medusa import app, common, failed_history, generic_queue, history, providers, ui
+from medusa import app, common, failed_history, generic_queue, history, providers as content_providers, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
@@ -258,7 +258,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            log.info('Beginning daily search for new episodes')
+            log.info('Beginning collection of RSS items for RSS enabled providers.')
             found_results = search_for_needed_episodes(force=self.force)
 
             if not found_results:
@@ -446,7 +446,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.run(self)
         self.started = True
 
-        result = providers.get_provider_class(self.provider).get_result(self.segment)
+        result = content_providers.get_provider_class(self.provider).get_result(self.segment)
         result.show = self.show
         result.url = self.cached_result[b'url']
         result.quality = int(self.cached_result[b'quality'])
