@@ -1,9 +1,16 @@
 import logging
 
+from medusa.common import Quality
 from medusa.logger.adapters.style import BraceAdapter
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+SINGLE_EP = 1
+MULTI_EP = 2
+SEASON_PACK = 3
+COMPLETE_SERIES = 4
 
 
 class SearchResult(object):
@@ -23,7 +30,7 @@ class SearchResult(object):
         self.provider = provider
 
         # release show object
-        self.show = None
+        self.show = self.series = None
 
         # URL to the NZB/torrent file
         self.url = u''
@@ -110,6 +117,9 @@ class SearchResult(object):
         # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
         self.search_type = None
 
+        # Explicitly set the results episode packing. Like single episode, multi-ep, season pack, complete series pack.
+        self.packaged = None
+
     @property
     def actual_episode(self):
         return self._actual_episode
@@ -164,8 +174,8 @@ class SearchResult(object):
 
     def create_episode_object(self):
         """Use this result to create an episode segment out of it."""
-        if self.actual_season and self.actual_episodes and self.show:
-            self.episodes = [self.show.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
+        if self.actual_season and self.actual_episodes and self.series:
+            self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
         return self.episodes
 
     def finish_search_result(self, provider):

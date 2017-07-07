@@ -3,7 +3,7 @@
 """Provider code for Generic NZB Provider."""
 
 from medusa import app
-from medusa.classes import NZBSearchResult
+from medusa.searchv2.response import NZBSearchResult
 from medusa.helper.common import try_int
 from medusa.providers.generic_provider import GenericProvider
 

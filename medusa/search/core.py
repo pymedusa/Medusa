@@ -438,10 +438,6 @@ def search_for_needed_episodes(force=False):
 
     providers = enabled_providers(u'daily')
     log.info(u'Using daily search providers')
-    for cur_provider in providers:
-        threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
-                                                                            provider=cur_provider.name)
-        cur_provider.cache.update_cache()
 
     for cur_provider in providers:
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
@@ -455,6 +451,9 @@ def search_for_needed_episodes(force=False):
             log.debug(traceback.format_exc())
             log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
             continue
+        else:
+            if not cur_found_results:
+                continue
 
         did_search = True
 

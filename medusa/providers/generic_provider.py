@@ -22,13 +22,14 @@ from medusa import (
     tv,
     ui,
 )
-from medusa.classes import (
+from medusa.searchv2.response import (
     SearchResult,
 )
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
     SEASON_RESULT,
+    SINGLE_EP_RESULT,
     UA_POOL,
 )
 from medusa.db import DBConnection
@@ -400,12 +401,15 @@ class GenericProvider(object):
 
             if not episode_object:
                 episode_number = SEASON_RESULT
+                search_result.packaged = SEASON_RESULT
                 log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
             elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
+                search_result.packaged = SINGLE_EP_RESULT
                 log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
+                search_result.packaged = MULTI_EP_RESULT
                 log.debug('Found multi-episode ({0}) result {1} at {2}',
                           ', '.join(map(str, search_result.parsed_result.episode_numbers)),
                           search_result.name,
@@ -472,7 +476,7 @@ class GenericProvider(object):
 
     def search_rss(self, episodes):
         """Find cached needed episodes."""
-        return self.cache.find_needed_episodes(episodes)
+        return self.cache.search_provider(episodes)
 
     def seed_ratio(self):
         """Return ratio."""

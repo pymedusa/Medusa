@@ -18,6 +18,8 @@ from medusa.search.core import (
     search_providers,
     snatch_episode,
 )
+from medusa.searchv2.request import SearchRequest
+from medusa.searchv2.core import DailySearch
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -259,36 +261,41 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             log.info('Beginning collection of RSS items for RSS enabled providers.')
-            found_results = search_for_needed_episodes(force=self.force)
+            # found_results = search_for_needed_episodes(force=self.force)
+            from medusa.helper.common import enabled_providers
 
-            if not found_results:
-                log.info('No needed episodes found')
-            else:
-                for result in found_results:
-                    # just use the first result for now
-                    if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        log.info(
-                            'Downloading {name} with {seeders} seeders and {leechers} leechers'
-                            ' and size {size} from {provider}', {
-                                'name': result.name,
-                                'seeders': result.seeders,
-                                'leechers': result.leechers,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-                    else:
-                        log.info(
-                            'Downloading {name} with size: {size} from {provider}', {
-                                'name': result.name,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-                    self.success = snatch_episode(result)
+            search_request = SearchRequest(providers=enabled_providers('daily'))
+            search = DailySearch(search_request)
+            search.start()
 
-                    # give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
+            # # if not search.search_results:
+            # #     log.info('No needed episodes found')
+            # # else:
+            # #     for result in found_results:
+            # #         # just use the first result for now
+            # #         if result.seeders not in (-1, None) and result.leechers not in (-1, None):
+            # #             log.info(
+            # #                 'Downloading {name} with {seeders} seeders and {leechers} leechers'
+            # #                 ' and size {size} from {provider}', {
+            # #                     'name': result.name,
+            # #                     'seeders': result.seeders,
+            # #                     'leechers': result.leechers,
+            # #                     'size': pretty_file_size(result.size),
+            # #                     'provider': result.provider.name,
+            # #                 }
+            # #             )
+            # #         else:
+            # #             log.info(
+            # #                 'Downloading {name} with size: {size} from {provider}', {
+            # #                     'name': result.name,
+            # #                     'size': pretty_file_size(result.size),
+            # #                     'provider': result.provider.name,
+            # #                 }
+            # #             )
+            # #         self.success = snatch_episode(result)
+            #
+            #         # give the CPU a break
+            #         time.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception as error:
             self.success = False

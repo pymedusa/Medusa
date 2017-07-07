@@ -13,7 +13,7 @@ from bencode.BTL import BTFailure
 from feedparser.util import FeedParserDict
 
 from medusa import app
-from medusa.classes import TorrentSearchResult
+from medusa.searchv2.response import TorrentSearchResult
 from medusa.helper.common import try_int
 from medusa.helpers import remove_file_failed
 from medusa.logger.adapters.style import BraceAdapter
