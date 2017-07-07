@@ -190,7 +190,7 @@
                                 </label>
                             </div>
                             <div class="field-pair">
-                                <input id="unpack" type="checkbox" name="unpack" ${'checked="checked"' if app.UNPACK else ''} />
+                                <input class="enabler" id="unpack" type="checkbox" name="unpack" ${'checked="checked"' if app.UNPACK else ''} />
                                 <label for="unpack">
                                     <span class="component-title">Unpack</span>
                                     <span class="component-desc">Unpack any TV releases in your <i>TV Download Dir</i>?</span>
