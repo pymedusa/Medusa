@@ -443,7 +443,7 @@ class ProcessResult(object):
                     skip_extraction = False
                     for file_in_archive in [os.path.basename(each.filename)
                                             for each in rar_handle.infolist()
-                                            if not each.isdir]:
+                                            if not each.isdir()]:
                         if not force and self.already_postprocessed(file_in_archive):
                             self._log('Archive file already post-processed, extraction skipped: {0}'.format
                                       (file_in_archive), logger.DEBUG)
