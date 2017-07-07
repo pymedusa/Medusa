@@ -8,11 +8,23 @@ from medusa.process_tv import ProcessResult
 import pytest
 
 
+class ProcessResultTest(ProcessResult):
+    """A test `ProcessResult` object that does not check already processed files."""
+
+    def __init__(self, path):
+        """Initialize the object."""
+        super(ProcessResultTest, self).__init__(self, path)
+
+    def already_postprocessed(self, video_file):
+        """Override method."""
+        return False
+
+
 @pytest.mark.parametrize('p', [
     {
         'rar_file': ['test.rar'],
         'extracted_file': ['test.txt'],
-        'error': u'',
+        'error': u"Extracted content: [u'test.txt']",
         'missed_file_message': u''
     },
     {
@@ -32,9 +44,9 @@ def test_unpack(monkeypatch, p):
     """Run the test."""
     # Given
     path = os.path.join('tests', 'rar')
-    monkeypatch.setattr(ProcessResult, 'directory', path)
+    monkeypatch.setattr(ProcessResultTest, 'directory', path)
     monkeypatch.setattr(app, 'UNPACK', True)
-    sut = ProcessResult(path)
+    sut = ProcessResultTest(path)
 
     # When
     result = sut.unrar(path, p['rar_file'])
