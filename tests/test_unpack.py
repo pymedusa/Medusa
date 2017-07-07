@@ -23,21 +23,21 @@ class ProcessResultTest(ProcessResult):
 @pytest.mark.parametrize('p', [
     {
         'rar_file': ['test.rar'],
-        'extracted_file': ['test.txt'],
-        'error': u"Extracted content: [u'test.txt']",
-        'missed_file_message': u''
+        'extracted_files': ['test.txt'],
+        'output': u"Extracted content: [u'test.txt']",
+        'missed_files_msg': u''
     },
     {
         'rar_file': ['invalid.rar'],
-        'extracted_file': [],
-        'error': u'Not a RAR file',
-        'missed_file_message': u'invalid.rar: Unpacking failed: Unpacking failed'
+        'extracted_files': [],
+        'output': u'Not a RAR file',
+        'missed_files_msg': u'invalid.rar: Unpacking failed: Unpacking failed'
     },
     {
         'rar_file': ['passworded.rar'],
-        'extracted_file': [],
-        'error': u'wrong password',
-        'missed_file_message': u'passworded.rar: Unpacking failed: Unpacking failed'
+        'extracted_files': [],
+        'output': u'wrong password',
+        'missed_files_msg': u'passworded.rar: Unpacking failed: Unpacking failed'
     },
 ])
 def test_unpack(monkeypatch, p):
@@ -50,9 +50,9 @@ def test_unpack(monkeypatch, p):
 
     # When
     result = sut.unrar(path, p['rar_file'])
-    missed_files = sut.missedfiles[0] if sut.missedfiles else ''
+    missed_files_msg = sut.missedfiles[0] if sut.missedfiles else ''
 
     # Then
-    assert p['extracted_file'] == result
-    assert p['error'] in sut.output
-    assert p['missed_file_message'] == missed_files
+    assert p['extracted_files'] == result
+    assert p['output'] in sut.output
+    assert p['missed_files_msg'] == missed_files_msg
