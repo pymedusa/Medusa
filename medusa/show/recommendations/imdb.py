@@ -14,6 +14,7 @@ from imdbpie import imdbpie
 from medusa import app, helpers
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.recommendations import ExpiringKeyValue
 from medusa.show.recommendations.recommended import RecommendedShow
 
 from requests import RequestException
@@ -21,6 +22,10 @@ from simpleanidb import Anidb
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+imdb_show_details_cache = ExpiringKeyValue(cache_timeout=3600 * 24 * 7)  # Cache 7 days
+tvdb_mapping_cache = ExpiringKeyValue(cache_timeout=3600 * 24 * 7)  # Cache 7 days
 
 
 class ImdbPopular(object):
@@ -46,7 +51,14 @@ class ImdbPopular(object):
 
     def _create_recommended_show(self, show_obj):
         """Create the RecommendedShow object from the returned showobj."""
-        tvdb_id = helpers.get_tvdb_from_id(show_obj.get('imdb_tt'), 'IMDB')
+        cached_tvdb_id = tvdb_mapping_cache.get(show_obj.get('imdb_tt'))
+        if not cached_tvdb_id:
+            tvdb_id = helpers.get_tvdb_from_id(show_obj.get('imdb_tt'), 'IMDB')
+            if tvdb_id:
+                tvdb_mapping_cache.append(show_obj.get('imdb_tt'), tvdb_id)
+        else:
+            tvdb_id = cached_tvdb_id.value
+
         if not tvdb_id:
             return None
 
@@ -69,6 +81,10 @@ class ImdbPopular(object):
         """Get popular show information from IMDB."""
         popular_shows = []
 
+        # Clean expired cache items.
+        imdb_show_details_cache.clean()
+        tvdb_mapping_cache.clean()
+
         imdb_api = imdbpie.Imdb()
         imdb_result = imdb_api.popular_shows()
 
@@ -78,7 +94,12 @@ class ImdbPopular(object):
 
             if imdb_tt:
                 show['imdb_tt'] = imdb_show['tconst']
-                show_details = imdb_api.get_title_by_id(imdb_tt)
+                cached_show_details = imdb_show_details_cache.get(imdb_tt)
+                if not cached_show_details:
+                    show_details = imdb_api.get_title_by_id(imdb_tt)
+                    imdb_show_details_cache.append(imdb_tt, show_details)
+                else:
+                    show_details = cached_show_details.value
 
                 if show_details:
                     show['year'] = getattr(show_details, 'year')
