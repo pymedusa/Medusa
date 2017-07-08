@@ -1,7 +1,10 @@
 import logging
 
-from medusa.common import Quality
+from medusa.common import SINGLE_EP_RESULT, MULTI_EP_RESULT, SEASON_RESULT, Quality
 from medusa.logger.adapters.style import BraceAdapter
+from . import BACKLOG_SEARCH, DAILY_SEARCH, FORCED_SEARCH, PROPER_SEARCH, MANUAL_SEARCH
+
+from filter import FilterVerifyPackage
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -24,13 +27,16 @@ class SearchResult(object):
         self.search_request = None
 
         # list of Episode objects that this result is associated with
-        self.episodes = episodes
+        self.episodes = episodes or []
 
         # the search provider
         self.provider = provider
 
         # release show object
-        self.show = self.series = None
+        self.show = None
+
+        # self.show is deprecated.
+        self.series = None
 
         # URL to the NZB/torrent file
         self.url = u''
@@ -117,8 +123,27 @@ class SearchResult(object):
         # Search type. For example MANUAL_SEARCH, FORCED_SEARCH, DAILY_SEARCH, PROPER_SEARCH
         self.search_type = None
 
+        # Search mode, like eponly of sponly. Determines if we need to run an episode, season search or fallback to one
+        # or another.
+        self.search_mode = None
+
         # Explicitly set the results episode packing. Like single episode, multi-ep, season pack, complete series pack.
         self.packaged = None
+
+    def __setattr__(self, key, value):
+        if key in ('download_current_quality', 'search_type'):
+            log.warning(
+                'Attribute {attr} is deprecated, please use SearchResult.search_request.options.{attr} in stead.',
+                {'attr': key}
+            )
+
+        if key in ('forced_search', 'manually_searched'):
+            log.warning(
+                "You shouldn't use {attr} any more, this has been replaced with SearchResult.options.search_type. \n"
+                "You can use the constants BACKLOG_SEARCH, DAILY_SEARCH, MANUAL_SEARCH, .. found in searchv2.__init__ for that.",
+                {'attr': key}
+            )
+        super(SearchResult, self).__setattr__(key, value)
 
     @property
     def actual_episode(self):
@@ -178,9 +203,69 @@ class SearchResult(object):
             self.episodes = [self.series.get_episode(self.actual_season, ep) for ep in self.actual_episodes]
         return self.episodes
 
-    def finish_search_result(self, provider):
-        self.size = provider._get_size(self.item)
-        self.pubdate = provider._get_pubdate(self.item)
+    def parse_provider(self):
+        self.size = self.provider._get_size(self.item)
+        self.pubdate = self.provider._get_pubdate(self.item)
+        (self.name, self.url) = self.provider._get_title_and_url(self.item)
+        (self.seeders, self.leechers) = self.provider._get_result_info(self.item)
+
+    def map_parsed_results(self):
+        self.series = self.parsed_result.series
+        self.quality = self.parsed_result.quality
+        self.release_group = self.parsed_result.release_group
+        self.version = self.parsed_result.version
+        self.actual_season = self.parsed_result.season_number
+        self.actual_episodes = self.parsed_result.episode_numbers
+
+    def configure_filters_backlog(self):
+        self.search_request.options.backlog_search_filters = [FilterVerifyPackage]
+
+    def filter_results(self, results):
+        """
+        Run a list of filters, on the search results.
+
+        This will drop results early, reducing the amount of results we need to parse.
+        """
+        filters = None
+        if self.search_request.options.search_type == BACKLOG_SEARCH:
+            self.configure_filters_backlog()
+            filters = self.search_request.options.backlog_search_filters
+        elif self.search_request.options.search_type == DAILY_SEARCH:
+            filters = self.search_request.options.daily_search_filters
+        elif self.search_request.options.search_type == FORCED_SEARCH:
+            filters = self.search_request.options.forced_search_filters
+        elif self.search_request.options.search_type == PROPER_SEARCH:
+            filters = self.search_request.options.proper_search_filters
+
+        if not filters:
+            log.info('No filters enabled for the search {search_type}.',
+                     {'search_type': self.search_request.options.search_type})
+            return
+
+        for filter_result in filters:
+            # If the result has been filtered, we do need to run any other.
+            if not filter_result(self, results).filter():
+                return False
+            return True
+
+    def set_package(self):
+        if len(self.episodes) == 1:
+            # single ep
+            self.packaged = SINGLE_EP_RESULT
+            log.debug('Found single episode result {0} at {1}', self.name, self.url)
+
+        elif len(self.episodes) > 1:
+            # multip ep
+            self.packaged = MULTI_EP_RESULT
+            log.debug('Found multi-episode ({0}) result {1} at {2}',
+                      ', '.join(map(str, self.parsed_result.episode_numbers)),
+                      self.name,
+                      self.url)
+
+        elif len(self.episodes) == 0:
+            # season pack
+            self.packaged = SEASON_RESULT
+            log.debug('Found season pack result {0} at {1}', self.name, self.url)
 
 
 class NZBSearchResult(SearchResult):

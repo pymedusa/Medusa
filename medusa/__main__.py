@@ -1105,7 +1105,7 @@ class Application(object):
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
                                                              threadName="DAILYSEARCHER",
-                                                             run_delay=delay_interval)
+                                                             run_delay=update_interval)
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),

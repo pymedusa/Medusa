@@ -2,10 +2,11 @@
 
 
 class SearchOptions(object):
-    def __init__(self, search_type, down_cur_quality=False, season_search=False):
+    def __init__(self, search_type=None, down_cur_quality=False, season_search=False, backlog_filter=None):
         self.search_type = search_type
         self.down_cur_quality = down_cur_quality
         self.season_search = season_search
+        self.backlog_filter = backlog_filter or []
 
 
 class SearchRequest(object):
@@ -17,7 +18,7 @@ class SearchRequest(object):
         self.segment = segment
 
         # An options object. For storing all the global, provider and series search options.
-        self.options = options
+        self.options = options or SearchOptions()
 
         # A list of providers, that we are going to use to search.
         self.providers = providers

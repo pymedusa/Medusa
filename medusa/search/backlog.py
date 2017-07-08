@@ -107,7 +107,7 @@ class BacklogSearcher(object):
             for season, segment in iteritems(segments):
                 self.currentSearchInfo = {'title': cur_show.name + ' Season ' + str(season)}
 
-                backlog_queue_item = BacklogQueueItem(cur_show, segment)
+                backlog_queue_item = BacklogQueueItem(segment)
                 app.search_queue_scheduler.action.add_item(backlog_queue_item)  # @UndefinedVariable
 
             if not segments:

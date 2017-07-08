@@ -184,6 +184,60 @@ class GenericProvider(object):
 
         return results
 
+    def search_episodes(self, episodes, search_request, search_mode):
+
+        search_results = []
+        for episode in episodes:
+            results = []
+            search_strings = []
+            if (len(episodes) > 1 or search_request.options.season_search) and search_mode == 'sponly':
+                search_strings = self._get_season_search_strings(episode)
+            elif search_mode == 'eponly':
+                search_strings = self._get_episode_search_strings(episode)
+
+            for search_string in search_strings:
+                # Find results from the provider
+                results += self.search(search_string, ep_obj=episode)
+
+            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            if search_mode == 'sponly':
+                break
+
+            for item in results:
+
+                # Create search result
+                search_result = self.get_result()
+                search_results.append(search_result)
+
+                try:
+                    search_result.parsed_result = NameParser(
+                        parse_method=('normal', 'anime')[episode.series.is_anime]
+                ).parse(item.get('title'))
+                except (InvalidNameException, InvalidShowException) as error:
+                    log.debug('Error during parsing of release name: {release_name}, with error: {error}',
+                              {'release_name': search_result.name, 'error': error})
+                    continue
+
+                search_result.item = item
+                search_result.search_request = search_request
+                search_result.searched_episode = episode
+                search_result.search_mode = search_mode
+
+                # Map the results returned by the provider
+                search_result.parse_provider()
+
+                # Map quessit (release name) parsed results
+                search_result.map_parsed_results()
+
+                # Run filters
+                if not search_result.filter_results(search_results):
+                    continue
+
+                search_result.create_episode_object()
+                search_result.set_package()
+
+        return search_results
+
     def find_search_results(self, show, episodes, search_mode, forced_search=False, download_current_quality=False,
                             manual_search=False, manual_search_type='episode'):
         """Search episodes based on param."""
@@ -192,6 +246,7 @@ class GenericProvider(object):
 
         results = {}
         items_list = []
+        search_results = []
 
         for episode in episodes:
             if not manual_search:
@@ -213,7 +268,7 @@ class GenericProvider(object):
 
             for search_string in search_strings:
                 # Find results from the provider
-                items_list += self.search(search_string, ep_obj=episode)
+                results = self.search(search_string, ep_obj=episode)
 
             # In season search, we can't loop in episodes lists as we only need one episode to get the season string
             if search_mode == 'sponly':
@@ -250,17 +305,9 @@ class GenericProvider(object):
             search_result = self.get_result()
             search_results.append(search_result)
             search_result.item = item
-            search_result.download_current_quality = download_current_quality
-            # FIXME: Should be changed to search_result.search_type
-            search_result.forced_search = forced_search
-
-            (search_result.name, search_result.url) = self._get_title_and_url(item)
-            (search_result.seeders, search_result.leechers) = self._get_result_info(item)
-
-            search_result.size = self._get_size(item)
-            search_result.pubdate = self._get_pubdate(item)
-
+            search_result.parse_provider()
             search_result.result_wanted = True
+            search_result.search_mode = search_mode
 
             try:
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
