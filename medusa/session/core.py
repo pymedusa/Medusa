@@ -87,17 +87,19 @@ class MedusaSession(BaseSession):
         """Overwrite request, to be able to return the json value if possible. Else it will fail silently!"""
         resp = self.request(method, url, *args, **kwargs)
         try:
-            return resp.json() if resp else None
+            return resp.json() if resp else resp
         except ValueError:
             return None
 
     def get_content(self, url, method='GET', *args, **kwargs):
         """Overwrite request, to be able to return the content if possible. Else it will fail silently!"""
-        return self.request(method, url, *args, **kwargs).content
+        resp = self.request(method, url, *args, **kwargs)
+        return resp.content if resp else resp
 
     def get_text(self, url, method='GET', *args, **kwargs):
         """Overwrite request, to be able to return the text value if possible. Else it will fail silently!"""
-        return self.request(method, url, *args, **kwargs).text
+        resp = self.request(method, url, *args, **kwargs)
+        return resp.text if resp else resp
 
 
 class MedusaSafeSession(MedusaSession):
@@ -129,20 +131,20 @@ class MedusaSafeSession(MedusaSession):
             resp = super(MedusaSafeSession, self).request(method, url, data=data, params=params, headers=headers,
                                                           timeout=30, **kwargs)
             resp.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            log.debug(u'The response returned a non-200 response while requestion url {url}. Error: {err_msg}',
-                      url=url, err_msg=e)
-            return None
-        except requests.exceptions.RequestException as e:
-            log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
-            return None
-        except Exception as e:
-            if u'ECONNRESET' in e or (hasattr(e, u'errno') and e.errno == errno.ECONNRESET):
+        except requests.exceptions.HTTPError as error:
+            log.debug(u'The response returned a non-200 response while requestion url {url}. Error: {err_msg!r}',
+                      url=url, err_msg=error)
+            return resp or error.request.getattr('response', None)
+        except requests.exceptions.RequestException as error:
+            log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=error)
+            return resp or error.request.getattr('response', None)
+        except Exception as error:
+            if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
                 log.warning(
-                    u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=e)
+                    u'Connection reset by peer accessing url {url}. Error: {err_msg}'.format(url=url, err_msg=error)
                 )
             else:
-                log.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=e)
+                log.info(u'Unknown exception in url {url}. Error: {err_msg}', url=url, err_msg=error)
                 log.debug(traceback.format_exc())
             return None
 
