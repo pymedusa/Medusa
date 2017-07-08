@@ -26,7 +26,7 @@ from six import iteritems
 
 from . import db, logger
 from .helper.common import try_int
-from .session.core import MedusaSession
+from .session.core import MedusaSafeSession
 
 try:
     app_timezone = tz.tzwinlocal() if tz.tzwinlocal else tz.tzlocal()
@@ -39,7 +39,7 @@ time_regex = re.compile(r'(?P<hour>\d{1,2})(?:[:.](?P<minute>\d{2})?)? ?(?P<meri
 network_dict = None
 missing_network_timezones = set()
 
-session = MedusaSession()
+session = MedusaSafeSession()
 
 
 # update the network timezone table

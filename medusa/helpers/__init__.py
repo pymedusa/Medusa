@@ -1278,7 +1278,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     :return: True on success, False on failure
     """
     try:
-        hooks, cookies, verify, proxies = request_defaults(kwargs)
+        hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
         with closing(session.get(url, allow_redirects=True, stream=True,
                                  verify=verify, headers=headers, cookies=cookies,
@@ -1533,7 +1533,7 @@ def get_disk_space_usage(disk_path=None, pretty=True):
 
 def get_tvdb_from_id(indexer_id, indexer):
 
-    session = MedusaSession()
+    session = MedusaSafeSession()
     tvdb_id = ''
 
     if indexer == 'IMDB':

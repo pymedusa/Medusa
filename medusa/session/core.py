@@ -126,18 +126,18 @@ class MedusaSafeSession(MedusaSession):
 
     def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
         """Overwrite request, for adding basic exception handling."""
-
+        resp = None
         try:
             resp = super(MedusaSafeSession, self).request(method, url, data=data, params=params, headers=headers,
-                                                          timeout=30, **kwargs)
+                                                          timeout=timeout, **kwargs)
             resp.raise_for_status()
         except requests.exceptions.HTTPError as error:
             log.debug(u'The response returned a non-200 response while requestion url {url}. Error: {err_msg!r}',
                       url=url, err_msg=error)
-            return resp or error.request.getattr('response', None)
+            return resp or error.response
         except requests.exceptions.RequestException as error:
             log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=error)
-            return resp or error.request.getattr('response', None)
+            return resp or error.response
         except Exception as error:
             if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
                 log.warning(
