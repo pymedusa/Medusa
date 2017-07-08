@@ -46,7 +46,7 @@ from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
-from medusa.session.core import ContentSession, JsonSession, MedusaSession
+from medusa.session.core import MedusaSession, MedusaSafeSession
 from medusa.show.show import Show
 
 import requests
@@ -1533,13 +1533,12 @@ def get_disk_space_usage(disk_path=None, pretty=True):
 
 def get_tvdb_from_id(indexer_id, indexer):
 
-    content_session = ContentSession()
     session = MedusaSession()
     tvdb_id = ''
 
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
-        data = content_session.get(url)
+        data = session.get_content(url)
         if data is None:
             return tvdb_id
 
@@ -1553,7 +1552,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'ZAP2IT':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
-        data = content_session.get(url)
+        data = session.get_content(url)
         if data is None:
             return tvdb_id
 
@@ -1752,8 +1751,8 @@ def get_broken_providers():
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
-    # TODO: Might want to replace this with a JsonSession(), as there the ValueError is handled.
-    response = MedusaSession().get_json(url)
+
+    response = MedusaSafeSession().get_json(url)
     if response is None:
         log.warning('Unable to update the list with broken providers.'
                     ' This list is used to disable broken providers.'
