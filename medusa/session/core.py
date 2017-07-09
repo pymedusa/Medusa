@@ -51,7 +51,7 @@ class MedusaSession(BaseSession):
     :return: The response as text or False.
     """
 
-    def __init__(self, proxies=factory.add_proxies(), **kwargs):
+    def __init__(self, proxies=None, **kwargs):
         """Create base Medusa session instance."""
         # Set default ssl verify
         self.verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop('verify', False)]) else False
@@ -70,7 +70,7 @@ class MedusaSession(BaseSession):
             factory.add_cache_control(self, cache_control)
 
         # add proxies
-        self.proxies = proxies
+        self.proxies = proxies or factory.add_proxies()
 
         # Configure global session hooks
         self.hooks['response'].append(hooks.log_url)
