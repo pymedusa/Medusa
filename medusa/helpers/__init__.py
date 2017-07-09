@@ -46,7 +46,7 @@ from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
-from medusa.session.core import MedusaSession, MedusaSafeSession
+from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
 
 import requests
