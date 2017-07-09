@@ -183,7 +183,7 @@ class NewpctProvider(TorrentProvider):
         url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
         # kwargs['returns'] = trickery
-        return self.session.get(url, params=params, timeout=timeout, **kwargs).content
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def download_result(self, result):
         """Save the result to disk."""

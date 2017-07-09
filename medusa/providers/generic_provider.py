@@ -157,7 +157,7 @@ class GenericProvider(object):
 
     def get_content(self, url, params=None, timeout=30, **kwargs):
         """Retrieve the torrent/nzb content."""
-        return self.session.get(url, params=params, timeout=timeout, **kwargs).content
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def find_propers(self, proper_candidates):
         """Find propers in providers."""
