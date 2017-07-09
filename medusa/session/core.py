@@ -84,7 +84,7 @@ class MedusaSession(BaseSession):
             self.headers.setdefault(header, value)
 
     def get_json(self, url, method='GET', *args, **kwargs):
-        """Overwrite request, to be able to return the json value if possible. Else it will fail silently!"""
+        """Overwrite request, to be able to return the json value if possible. Else it will fail silently."""
         resp = self.request(method, url, *args, **kwargs)
         try:
             return resp.json() if resp else resp
@@ -92,12 +92,12 @@ class MedusaSession(BaseSession):
             return None
 
     def get_content(self, url, method='GET', *args, **kwargs):
-        """Overwrite request, to be able to return the content if possible. Else it will fail silently!"""
+        """Overwrite request, to be able to return the content if possible. Else it will fail silently."""
         resp = self.request(method, url, *args, **kwargs)
         return resp.content if resp else resp
 
     def get_text(self, url, method='GET', *args, **kwargs):
-        """Overwrite request, to be able to return the text value if possible. Else it will fail silently!"""
+        """Overwrite request, to be able to return the text value if possible. Else it will fail silently."""
         resp = self.request(method, url, *args, **kwargs)
         return resp.text if resp else resp
 
