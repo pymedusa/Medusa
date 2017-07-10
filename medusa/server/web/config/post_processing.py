@@ -13,7 +13,6 @@ from tornroutes import route
 from .handler import Config
 from ..core import PageTemplate
 from .... import app, config, logger, naming, ui
-from ....helper.exceptions import ex
 
 
 @route('/config/postProcessing(/?.*)')
