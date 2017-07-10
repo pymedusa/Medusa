@@ -64,7 +64,7 @@ class ConfigPostProcessing(Config):
         if unpack:
             # If nothing has changed, don't check again for supported rar
             if unrar_tool != app.UNRAR_TOOL:
-                if self.is_rar_supported(unrar_tool):
+                if self.isRarSupported(unrar_tool):
                     app.UNPACK = config.checkbox_to_value(unpack)
                     # Use the new custom install
                     app.UNRAR_TOOL = unrar_tool
@@ -220,7 +220,7 @@ class ConfigPostProcessing(Config):
             return 'invalid'
 
     @staticmethod
-    def is_rar_supported(unrar_tool):
+    def isRarSupported(unrar_tool):
         """Test if UNRAR_TOOL works."""
         try:
             rarfile.custom_check(unrar_tool)
