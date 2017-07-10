@@ -13,7 +13,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         };
     })();
 
-    function is_rar_supported() {
+    function is_rar_supported() { // eslint-disable-line camelcase
         $.post('config/postProcessing/is_rar_supported', {unrar_tool: $('#unrar_tool').val()}, function(data) { // eslint-disable-line camelcase
             if (data) {
                 $('#unrar_tool').qtip('option', {
