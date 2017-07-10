@@ -4,20 +4,14 @@
 
 from __future__ import unicode_literals
 
-from contextlib2 import closing
-
 import logging
-import io
 import re
-import requests
-from time import time
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
-from medusa.helpers import chmod_as_parent, remove_file_failed, request_defaults
+
 from medusa.helper.common import convert_size
-from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
-from medusa.providers.nzb.nzb_provider import NZBProvider
+from medusa.helpers import download_filefrom medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
 
@@ -116,7 +110,7 @@ class BinSearchProvider(NZBProvider):
             # 0, 1, subject, poster, group, age
             labels = [process_column_header(header) or idx
                       for idx, header in enumerate(headers)]
-            
+
             # Skip column headers
             rows = rows[row_offset:]
             for row in rows:
@@ -136,12 +130,9 @@ class BinSearchProvider(NZBProvider):
                     for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb'):
                         # Strip extensions that aren't part of the file name
                         title = title.rstrip(extension)
-                except AttributeError as error:
+                except AttributeError:
                     log.debug('Parsing rows, that may not always have usefull info. Skipping to next.')
                     continue
-                except Exception as error:
-                    continue
-
                 if not all([title, nzb_id]):
                     continue
                 # Obtain the size from the 'description'
@@ -210,8 +201,8 @@ class BinSearchProvider(NZBProvider):
                 'action': 'nzb'
             }
 
-            if self.download_file(url, data, filename, session=self.session, headers=self.headers,
-                                  hooks={'response': self.get_url_hook}, verify=verify):
+            if download_file(url, filename, method='POST', data=data, session=self.session, headers=self.headers,
+                             hooks={'response': self.get_url_hook}, verify=verify):
 
                 if self._verify_download(filename):
                     log.info('Saved {result} to {location}',
@@ -224,70 +215,5 @@ class BinSearchProvider(NZBProvider):
 
         return False
 
-    def download_file(self, url, data, filename, session=None, headers=None, **kwargs):
-        """Download a file specified.
-
-        :param url: Source URL
-        :param data: Post data
-        :param filename: Target file on filesystem
-        :param session: request session to use
-        :param headers: override existing headers in request session
-        :return: True on success, False on failure
-        """
-        try:
-            hooks, cookies, verify, proxies = request_defaults(kwargs)
-
-            with closing(session.post(url, data=data, allow_redirects=True, stream=True,
-                                      verify=verify, headers=headers, cookies=cookies,
-                                      hooks=hooks, proxies=proxies)) as resp:
-
-                if not resp.ok:
-                    log.debug(
-                        u'Requested download URL {url} returned'
-                        u' status code {code}: {description}', {
-                            'url': url,
-                            'code': resp.status_code,
-                            'description': http_code_description(resp.status_code),
-                        }
-                    )
-                    return False
-
-                try:
-                    with io.open(filename, 'wb') as fp:
-                        for chunk in resp.iter_content(chunk_size=1024):
-                            if chunk:
-                                fp.write(chunk)
-                                fp.flush()
-
-                    chmod_as_parent(filename)
-                except OSError as msg:
-                    remove_file_failed(filename)
-                    log.warning(
-                        u'Problem setting permissions or writing file'
-                        u' to: {location}. Error: {msg}', {
-                            'location': filename,
-                            'msg': msg,
-                        }
-                    )
-                    return False
-
-        except requests.exceptions.RequestException as msg:
-            remove_file_failed(filename)
-            log.warning(u'Error requesting download URL: {url}. Error: {error}',
-                        {'url': url, 'error': msg})
-            return False
-        except EnvironmentError as msg:
-            remove_file_failed(filename)
-            log.warning(u'Unable to save the file: {name}. Error: {error}',
-                        {'name': filename, 'error': msg})
-            return False
-        except Exception as msg:
-            remove_file_failed(filename)
-            log.exception(u'Unknown exception while downloading file {name}'
-                          u' from URL: {url}. Error: {error}',
-                          {'name': filename, 'url': url, 'error': msg})
-            return False
-
-        return True
 
 provider = BinSearchProvider()

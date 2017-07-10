@@ -1306,11 +1306,13 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             return getattr(resp, response_type, None)
 
 
-def download_file(url, filename, session=None, headers=None, **kwargs):
+def download_file(url, filename, method='GET', data=None, session=None, headers=None, **kwargs):
     """Download a file specified.
 
     :param url: Source URL
     :param filename: Target file on filesystem
+    :param method: Specity the http method. Currently only GET and POST supported
+    :param data: sessions post data
     :param session: request session to use
     :param headers: override existing headers in request session
     :return: True on success, False on failure
@@ -1318,9 +1320,9 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     try:
         hooks, cookies, verify, proxies = request_defaults(kwargs)
 
-        with closing(session.get(url, allow_redirects=True, stream=True,
-                                 verify=verify, headers=headers, cookies=cookies,
-                                 hooks=hooks, proxies=proxies)) as resp:
+        with closing(session.request(method, url, data=data, allow_redirects=True, stream=True,
+                                     verify=verify, headers=headers, cookies=cookies,
+                                     hooks=hooks, proxies=proxies)) as resp:
 
             if not resp.ok:
                 log.debug(
