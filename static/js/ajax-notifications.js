@@ -59,6 +59,6 @@ function wsCheckNotifications() {
 $(document).ready(function() {
     wsCheckNotifications();
     if (test) {
-        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test')
+        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
     }
 });
