@@ -217,19 +217,14 @@ class ConfigPostProcessing(Config):
 
     @staticmethod
     def isRarSupported(unrar_path):
-        """
-        Test Packing Support:
-            - Simulating in memory rar extraction on test.rar file
-        """
+        """Test if UNRAR_TOOL works."""
         if unrar_path:
             rarfile.UNRAR_TOOL = unrar_path
         try:
-            rar_path = os.path.join(app.PROG_DIR, 'lib', 'rarfile', 'test', 'files', 'seektest.rar')
-            testing = rarfile.RarFile(rar_path).infolist()
-            if testing[0].filename == u'stest1.txt':
-                return 'supported'
-            logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
+            rarfile._check_unrar_tool()
+        except (rarfile.RarCannotExec, rarfile.RarExecError, OSError) as error:
+            # Executable not found or Problem reported by unrar/rar or OSError
+            logger.log('Rar Not Supported: {error}'.format(error=error.message), logger.WARNING)
             return 'not supported'
-        except Exception as msg:
-            logger.log('Rar Not Supported: {error}'.format(error=ex(msg)), logger.ERROR)
-            return 'not supported'
+        else:
+            return 'supported'
