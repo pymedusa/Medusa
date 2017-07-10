@@ -50,6 +50,7 @@ import io
 import locale
 import logging
 import os
+import platform
 import random
 import re
 import shutil
@@ -61,6 +62,8 @@ import threading
 import time
 
 from configobj import ConfigObj
+
+import rarfile
 
 from six import text_type
 
@@ -301,6 +304,9 @@ class Application(object):
 
         # Get PID
         app.PID = os.getpid()
+
+        # Configure UNRAR:
+        self.configure_unrar()
 
         # Build from the DB to start with
         self.load_shows_from_db()
@@ -2071,6 +2077,51 @@ class Application(object):
             # Make sure the logger has stopped, just in case
             logging.shutdown()
             os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
+
+    @staticmethod
+    def configure_unrar():
+        """Check if user has a valid UNRAR installation and set accordinly."""
+        try:
+            # If previously set from PATH or custom, try it first
+            if app.UNRAR_TOOL:
+                rarfile.custom_check(app.UNRAR_TOOL)
+            else:
+                rarfile._check_unrar_tool()
+        except (rarfile.RarCannotExec, rarfile.RarExecError, OSError):
+            if platform.system() == 'Windows':
+                logger.info('Looking for UNRAR in your installed programs')
+                winrar_path = 'WinRAR\\UnRAR.exe'
+                # Make a set of unique paths to check from existing environment variables
+                check_locations = {
+                    os.path.join(location, winrar_path) for location in (
+                        os.environ.get("ProgramW6432"), os.environ.get("ProgramFiles(x86)"),
+                        os.environ.get("ProgramFiles"), re.sub(r'\s?\(x86\)', '', os.environ["ProgramFiles"])
+                    ) if location
+                }
+                # If custom fails, try PATH again
+                check_locations.add('unrar')
+
+                for location in check_locations:
+                    if os.path.isfile(location):
+                        try:
+                            rarfile.custom_check(location)
+                            rarfile.UNRAR_TOOL = location
+                            break
+                        except (rarfile.RarCannotExec, rarfile.RarExecError, OSError):
+                            rarfile.UNRAR_TOOL = ''
+
+        finally:
+            if rarfile.UNRAR_TOOL:
+                app.UNRAR_TOOL = rarfile.UNRAR_TOOL
+                logger.info('Using unrar tool: %s', rarfile.UNRAR_TOOL)
+            else:
+                # Disable unpack
+                app.UNRAR_TOOL = ''
+                app.UNPACK = 0
+                logger.warning('Unable to locate unrar installation in your OS. '
+                               'Please follow this instructions: '
+                               'https://github.com/pymedusa/Medusa/wiki/How-to-install-UNRAR')
+            app.instance.save_config()
 
 
 def main():
