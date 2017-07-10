@@ -13,9 +13,9 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         };
     })();
 
-    function isRarSupported() {
-        $.post('config/postProcessing/isRarSupported', {unrar_tool: $('#unrar_tool').val()}, function(data) { // eslint-disable-line camelcase
-            if (data !== 'supported') {
+    function is_rar_supported() {
+        $.post('config/postProcessing/is_rar_supported', {unrar_tool: $('#unrar_tool').val()}, function(data) { // eslint-disable-line camelcase
+            if (data) {
                 $('#unrar_tool').qtip('option', {
                     'content.text': 'Unrar Executable not found.',
                     'style.classes': 'qtip-rounded qtip-shadow qtip-red'
@@ -285,7 +285,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
 
     $('#unrar_tool').on('change', function() {
         if ($('#unpack').checked) {
-            isRarSupported();
+            is_rar_supported();
         } else {
             $('#unpack').qtip('toggle', false);
         }

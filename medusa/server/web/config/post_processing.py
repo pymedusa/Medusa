@@ -50,7 +50,7 @@ class ConfigPostProcessing(Config):
                            naming_abd_pattern=None, naming_strip_year=None,
                            naming_custom_sports=None, naming_sports_pattern=None,
                            naming_custom_anime=None, naming_anime_pattern=None,
-                           naming_anime_multi_ep=None, autopostprocessor_frequency=None, unrar_path=None):
+                           naming_anime_multi_ep=None, autopostprocessor_frequency=None, unrar_tool=None):
 
         results = []
 
@@ -62,14 +62,19 @@ class ConfigPostProcessing(Config):
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:
-            if self.isRarSupported(unrar_tool) != 'not supported':
-                app.UNPACK = config.checkbox_to_value(unpack)
-            else:
-                app.UNPACK = 0
-                results.append('Unpacking Not Supported, disabling unpack setting')
+            # If nothing has changed, don't check again for supported rar
+            if unrar_tool != app.UNRAR_TOOL:
+                if self.is_rar_supported(unrar_tool):
+                    app.UNPACK = config.checkbox_to_value(unpack)
+                    # Use the new custom install
+                    app.UNRAR_TOOL = unrar_tool
+                else:
+                    app.UNPACK = 0
+                    # Reset the custom install
+                    app.UNRAR_TOOL = ''
+                    results.append('Unpacking Not Supported, disabling unpack setting')
         else:
             app.UNPACK = config.checkbox_to_value(unpack)
-        app.UNRAR_TOOL = unrar_tool
         app.NO_DELETE = config.checkbox_to_value(no_delete)
         app.KEEP_PROCESSED_DIR = config.checkbox_to_value(keep_processed_dir)
         app.CREATE_MISSING_SHOW_DIRS = config.checkbox_to_value(create_missing_show_dirs)
@@ -215,15 +220,13 @@ class ConfigPostProcessing(Config):
             return 'invalid'
 
     @staticmethod
-    def isRarSupported(unrar_tool):
+    def is_rar_supported(unrar_tool):
         """Test if UNRAR_TOOL works."""
-        if unrar_tool:
-            rarfile.UNRAR_TOOL = unrar_tool
         try:
-            rarfile._check_unrar_tool()
+            rarfile.custom_check(unrar_tool)
         except (rarfile.RarCannotExec, rarfile.RarExecError, OSError) as error:
             # Executable not found or Problem reported by unrar/rar or OSError
             logger.log('Rar Not Supported: {error}'.format(error=error.message), logger.WARNING)
-            return 'not supported'
+            return False
         else:
-            return 'supported'
+            return True
