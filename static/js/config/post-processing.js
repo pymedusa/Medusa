@@ -14,9 +14,9 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
     })();
 
     function isRarSupported() {
-        $.post('config/postProcessing/isRarSupported', {unrar_path: $('#unrar_path').val()}, function(data) { // eslint-disable-line camelcase
+        $.post('config/postProcessing/isRarSupported', {unrar_tool: $('#unrar_tool').val()}, function(data) { // eslint-disable-line camelcase
             if (data !== 'supported') {
-                $('#unrar_path').qtip('option', {
+                $('#unrar_tool').qtip('option', {
                     'content.text': 'Unrar Executable not found.',
                     'style.classes': 'qtip-rounded qtip-shadow qtip-red'
                 });
@@ -283,7 +283,7 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         fillAnimeExamples();
     }
 
-    $('#unrar_path').on('change', function() {
+    $('#unrar_tool').on('change', function() {
         if ($('#unpack').checked) {
             isRarSupported();
         } else {

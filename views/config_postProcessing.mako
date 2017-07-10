@@ -204,7 +204,7 @@
                                 <div class="field-pair">
                                     <label class="nocheck">
                                         <span class="component-title">UNRAR executable path</span>
-                                        <input type="text" name="unrar_path" id="unrar_path" value="${app.UNRAR_PATH}" class="form-control input-sm input350"/>
+                                        <input type="text" name="unrar_tool" id="unrar_tool" value="${app.UNRAR_TOOL}" class="form-control input-sm input350"/>
                                     </label>
                                     <label class="nocheck">
                                         <span class="component-title">&nbsp;</span>

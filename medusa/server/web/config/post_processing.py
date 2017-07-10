@@ -62,14 +62,14 @@ class ConfigPostProcessing(Config):
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:
-            if self.isRarSupported(unrar_path) != 'not supported':
+            if self.isRarSupported(unrar_tool) != 'not supported':
                 app.UNPACK = config.checkbox_to_value(unpack)
             else:
                 app.UNPACK = 0
                 results.append('Unpacking Not Supported, disabling unpack setting')
         else:
             app.UNPACK = config.checkbox_to_value(unpack)
-        app.UNRAR_PATH = unrar_path
+        app.UNRAR_TOOL = unrar_tool
         app.NO_DELETE = config.checkbox_to_value(no_delete)
         app.KEEP_PROCESSED_DIR = config.checkbox_to_value(keep_processed_dir)
         app.CREATE_MISSING_SHOW_DIRS = config.checkbox_to_value(create_missing_show_dirs)
@@ -215,10 +215,10 @@ class ConfigPostProcessing(Config):
             return 'invalid'
 
     @staticmethod
-    def isRarSupported(unrar_path):
+    def isRarSupported(unrar_tool):
         """Test if UNRAR_TOOL works."""
-        if unrar_path:
-            rarfile.UNRAR_TOOL = unrar_path
+        if unrar_tool:
+            rarfile.UNRAR_TOOL = unrar_tool
         try:
             rarfile._check_unrar_tool()
         except (rarfile.RarCannotExec, rarfile.RarExecError, OSError) as error:
