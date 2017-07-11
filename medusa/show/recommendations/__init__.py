@@ -1,11 +1,12 @@
 # coding=utf-8
 
-from collections import namedtuple
 import time
+from collections import namedtuple
 
 
 class ExpiringList(list):
     """Smart custom list, with a cache expiration."""
+
     CachedResult = namedtuple('CachedResult', 'time value')
 
     def __init__(self, items=None, cache_timeout=3600, implicit_clean=False):
@@ -70,7 +71,8 @@ class ExpiringList(list):
 
 
 class ExpiringKeyValue(list):
-    """Smart custom list, with a cache expiration."""
+    """Smart custom list (that acts like a dictionary, with a cache expiration."""
+
     CachedResult = namedtuple('CachedResult', 'time key value')
 
     def __init__(self, items=None, cache_timeout=3600, implicit_clean=False):
@@ -96,27 +98,27 @@ class ExpiringKeyValue(list):
         new_list = [_ for _ in self if _[0] + self.cache_timeout > int(time.time())]
         self.__init__(new_list, self.cache_timeout, self.implicit_clean)
 
-    def has(self, key):
+    def has(self, value):
         """Check if the value is in the list.
 
         We need a smarter method to check if an item is already in the list. This will return a list with items that
         match the value.
-        :param key: The key to check for.
+        :param value: The key to check for.
         :return: A list of tuples with matches. For example: [<CachedResult()>, <CachedResult()>].
         """
         if self.implicit_clean:
             self.clean()
         return [
             ExpiringKeyValue.CachedResult(time=match[0], key=match[1], value=match[2])
-            for match in self if match[1] == key
+            for match in self if match[2] == value
         ]
 
     def get(self, key):
-        """Check if the value is in the list.
+        """Check if the key is in the list.
 
         We need a smarter method to check if an item is already in the list. This will return a list with items that
         match the value.
-        :param value: The value to check for.
+        :param key: The value to check for.
         :return: A single item, if it matches. For example: <CachedResult()>.
         """
         if self.implicit_clean:
@@ -127,8 +129,7 @@ class ExpiringKeyValue(list):
         if not matches:
             return None
 
-        if len(matches) > 1:
-            raise Exception("Returned multiple items, you shouldn't store keys more than once")
+        assert len(matches) <= 1, "Returned multiple items, you shouldn't store keys more than once"
 
         if len(matches):
             return ExpiringKeyValue.CachedResult(time=matches[0][0], key=matches[0][1], value=matches[0][2])
