@@ -27,6 +27,7 @@ from collections import defaultdict
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
+from requests.exceptions import RequestException
 from six import iteritems
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
@@ -304,7 +305,7 @@ def _get_custom_exceptions(force):
                 response = indexerApi(indexer).session.get(location, timeout=60)
                 try:
                     jdata = response.json()
-                except (ValueError, AttributeError) as error:
+                except (ValueError, AttributeError, RequestException) as error:
                     logger.debug(
                         'Check scene exceptions update failed. Unable to '
                         'update from {location}. Error: {error}'.format(
