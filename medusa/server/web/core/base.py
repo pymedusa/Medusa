@@ -402,6 +402,7 @@ class UI(WebRoot):
                 'title': '{0}'.format(cur_notification.title),
                 'message': '{0}'.format(cur_notification.message),
                 'type': '{0}'.format(cur_notification.notification_type),
+                'hash': '{0}'.format(hash(cur_notification)),
             }
             cur_notification_num += 1
 

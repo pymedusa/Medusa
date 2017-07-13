@@ -344,6 +344,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """
     subtitle = cache.get(subtitle_key.format(id=subtitle_id).encode('utf-8'))
     if subtitle == NO_VALUE:
+        logger.error('Unable to find cached subtitle ID: %s', subtitle_id)
         return
 
     release_name = tv_episode.release_name

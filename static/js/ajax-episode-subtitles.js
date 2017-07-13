@@ -71,7 +71,7 @@ var startAjaxEpisodeSubtitles = function() { // eslint-disable-line no-unused-va
             var url = selectedEpisode.prop('href');
             url = url.replace('searchEpisodeSubtitles', 'manual_search_subtitles');
             // Append the ID param that 'manual_search_subtitles' expect when picking subtitles
-            url += '&picked_id=' + subtitleID;
+            url += '&picked_id=' + encodeURIComponent(subtitleID);
             $.getJSON(url, function(data) {
                 // If user click to close the window before subtitle download finishes, show again the modal
                 if ((subtitlesResultModal.is(':visible')) === false) {
