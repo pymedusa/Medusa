@@ -4,10 +4,6 @@ import time
 from collections import namedtuple
 
 
-class ExpectUniqueKeyException(Exception):
-    """Exception raised when multiple keys are detected, but a unique key is expected."""
-
-
 class ExpiringList(list):
     """Smart custom list, with a cache expiration."""
 
@@ -68,7 +64,10 @@ class ExpiringList(list):
             return None
 
         if len(matches) > 1:
-            raise ExpectUniqueKeyException("Returned multiple items, you shouldn't store keys more than once")
+            # If we detect more then one match, let's remove then all.
+            for match in matches:
+                self.remove(match)
+            return None
 
         if len(matches):
             return ExpiringList.CachedResult(time=matches[0][0], value=matches[0][1])
@@ -134,7 +133,10 @@ class ExpiringKeyValue(list):
             return None
 
         if len(matches) > 1:
-            raise ExpectUniqueKeyException("Returned multiple items, you shouldn't store keys more than once")
+            # If we detect more then one match, let's remove then all.
+            for match in matches:
+                self.remove(match)
+            return None
 
         if len(matches):
             return ExpiringKeyValue.CachedResult(time=matches[0][0], key=matches[0][1], value=matches[0][2])
