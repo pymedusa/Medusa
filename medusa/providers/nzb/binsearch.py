@@ -11,7 +11,8 @@ from medusa import tv
 from medusa.bs4_parser import BS4Parser
 
 from medusa.helper.common import convert_size
-from medusa.helpers import download_filefrom medusa.providers.nzb.nzb_provider import NZBProvider
+from medusa.helpers import download_file
+from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
 
