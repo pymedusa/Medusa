@@ -5,13 +5,15 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from medusa import app, helpers
+from medusa import app
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 from medusa.show.recommendations.recommended import (MissingTvdbMapping, RecommendedShow)
 
 from simpleanidb import (Anidb, REQUEST_HOT)
 from simpleanidb.exceptions import GeneralError
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -24,7 +26,7 @@ class AnidbPopular(object):  # pylint: disable=too-few-public-methods
         List of returned shows is mapped to a RecommendedShow object
         """
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = helpers.make_session()
+        self.session = MedusaSession()
         self.recommender = "Anidb Popular"
         self.base_url = 'https://anidb.net/perl-bin/animedb.pl?show=anime&aid={aid}'
         self.default_img_src = 'poster.png'

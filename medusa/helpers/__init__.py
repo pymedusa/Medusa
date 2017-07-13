@@ -25,6 +25,7 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
+
 from itertools import cycle, izip
 
 import adba
@@ -33,8 +34,6 @@ from cachecontrol import CacheControlAdapter
 from cachecontrol.cache import DictCache
 
 import certifi
-
-import cfscrape
 
 from contextlib2 import closing, suppress
 
@@ -47,6 +46,7 @@ from medusa.common import USER_AGENT
 from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
+from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
 
 import requests
@@ -1204,7 +1204,7 @@ def make_session(cache_etags=True, serializer=None, heuristic=None):
     return session
 
 
-def request_defaults(kwargs):
+def request_defaults(**kwargs):
     hooks = kwargs.pop(u'hooks', None)
     cookies = kwargs.pop(u'cookies', None)
     verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
@@ -1224,31 +1224,13 @@ def request_defaults(kwargs):
     return hooks, cookies, verify, proxies
 
 
-def prepare_cf_req(session, request):
-    log.debug(u'CloudFlare protection detected, trying to bypass it.')
-
-    try:
-        tokens, user_agent = cfscrape.get_tokens(request.url)
-        if request.cookies:
-            request.cookies.update(tokens)
-        else:
-            request.cookies = tokens
-        if request.headers:
-            request.headers.update({u'User-Agent': user_agent})
-        else:
-            request.headers = {u'User-Agent': user_agent}
-        log.debug(u'CloudFlare protection successfully bypassed.')
-        return session.prepare_request(request)
-    except (ValueError, AttributeError) as error:
-        log.warning(u'Could not bypass CloudFlare anti-bot protection.'
-                    u' Error: {0}', error)
-
-
 def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
     """Return data retrieved from the url provider."""
+    log.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
+                'please make use of the PolicedRequest session for all of your requests.')
     response_type = kwargs.pop(u'returns', u'response')
     stream = kwargs.pop(u'stream', False)
-    hooks, cookies, verify, proxies = request_defaults(kwargs)
+    hooks, cookies, verify, proxies = request_defaults(**kwargs)
     method = u'POST' if post_data else u'GET'
 
     try:
@@ -1258,31 +1240,8 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
         resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
                             allow_redirects=True)
 
-        if not resp.ok:
-            # Try to bypass CloudFlare's anti-bot protection
-            if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
-                cf_prepped = prepare_cf_req(session, req)
-                if cf_prepped:
-                    cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
-                                           timeout=timeout, allow_redirects=True)
-                    if cf_resp.ok:
-                        return cf_resp
-
-            log.debug(
-                u'Requested url {url} returned status code {status}:'
-                u' {description}', {
-                    'url': resp.url,
-                    'status': resp.status_code,
-                    'description': http_code_description(resp.status_code),
-                }
-            )
-
-            if response_type and response_type != u'response':
-                return None
-
-    except (requests.exceptions.RequestException, socket.gaierror) as error:
-        log.debug(u'Error requesting url {url}. Error: {msg}',
-                  {'url': url, 'msg': error})
+    except requests.exceptions.RequestException as e:
+        log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
         return None
     except Exception as error:
         if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
@@ -1319,7 +1278,7 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     :return: True on success, False on failure
     """
     try:
-        hooks, cookies, verify, proxies = request_defaults(kwargs)
+        hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
         with closing(session.get(url, allow_redirects=True, stream=True,
                                  verify=verify, headers=headers, cookies=cookies,
@@ -1574,11 +1533,12 @@ def get_disk_space_usage(disk_path=None, pretty=True):
 
 def get_tvdb_from_id(indexer_id, indexer):
 
-    session = make_session()
+    session = MedusaSafeSession()
     tvdb_id = ''
+
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
-        data = get_url(url, session=session, returns='content')
+        data = session.get_content(url)
         if data is None:
             return tvdb_id
 
@@ -1592,7 +1552,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'ZAP2IT':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
-        data = get_url(url, session=session, returns='content')
+        data = session.get_content(url)
         if data is None:
             return tvdb_id
 
@@ -1605,7 +1565,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'TVMAZE':
         url = "http://api.tvmaze.com/shows/%s" % indexer_id
-        data = get_url(url, session=session, returns='json')
+        data = session.get_json(url)
         if data is None:
             return tvdb_id
         tvdb_id = data['externals']['thetvdb']
@@ -1615,7 +1575,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     # let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
         url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
-        data = get_url(url, session=session, returns='json')
+        data = session.get_json(url)
         if not data:
             return tvdb_id
         tvdb_id = data['externals'].get('thetvdb', '')
@@ -1791,7 +1751,8 @@ def get_broken_providers():
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
-    response = get_url(url, session=make_session(), returns='json')
+
+    response = MedusaSafeSession().get_json(url)
     if response is None:
         log.warning('Unable to update the list with broken providers.'
                     ' This list is used to disable broken providers.'

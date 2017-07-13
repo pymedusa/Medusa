@@ -14,6 +14,7 @@ from imdbpie import imdbpie
 from medusa import app, helpers
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 from medusa.show.recommendations import ExpiringKeyValue
 from medusa.show.recommendations.recommended import RecommendedShow
 
@@ -34,7 +35,7 @@ class ImdbPopular(object):
     def __init__(self):
         """Initialize class."""
         self.cache_subfolder = __name__.split('.')[-1] if '.' in __name__ else __name__
-        self.session = helpers.make_session()
+        self.session = MedusaSession()
         self.recommender = 'IMDB Popular'
         self.default_img_src = 'poster.png'
         self.anidb = Anidb(cache_dir=app.CACHE_DIR)

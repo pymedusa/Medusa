@@ -76,7 +76,7 @@ class Torrent9Provider(TorrentProvider):
                 else:
                     search_url = self.urls['daily']
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url, allow_redirects=False)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

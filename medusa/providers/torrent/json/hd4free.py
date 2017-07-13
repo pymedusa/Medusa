@@ -80,7 +80,7 @@ class HD4FreeProvider(TorrentProvider):
                 else:
                     search_params['search'] = None
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue

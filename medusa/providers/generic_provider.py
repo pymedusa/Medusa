@@ -38,8 +38,6 @@ from medusa.helper.common import (
 )
 from medusa.helpers import (
     download_file,
-    get_url,
-    make_session,
 )
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -50,6 +48,8 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.search import PROPER_SEARCH
+from medusa.session.core import MedusaSafeSession
+from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
 from pytimeparse import parse
@@ -96,7 +96,7 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = make_session()
+        self.session = MedusaSafeSession(hooks=[cloudflare])
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -112,6 +112,10 @@ class GenericProvider(object):
         # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
         self.stop_at = 3
+
+        # Police attributes
+        self.enable_api_hit_cooldown = False
+        self.enable_daily_request_reserve = False
 
     def download_result(self, result):
         """Download result from provider."""
@@ -150,6 +154,10 @@ class GenericProvider(object):
                         {'result': result.name})
 
         return False
+
+    def get_content(self, url, params=None, timeout=30, **kwargs):
+        """Retrieve the torrent/nzb content."""
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def find_propers(self, proper_candidates):
         """Find propers in providers."""
@@ -447,8 +455,15 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
+        log.info('providers.generic_provider.get_url() is deprecated, '
+                 'please rewrite your provider to make use of the MedusaSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+
+        if not post_data:
+            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
+        else:
+            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
+                                     timeout=timeout, **kwargs)
 
     def image_name(self):
         """Return provider image name."""
@@ -729,3 +744,11 @@ class GenericProvider(object):
 
         return {'result': False,
                 'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+
+    def __str__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def __unicode__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

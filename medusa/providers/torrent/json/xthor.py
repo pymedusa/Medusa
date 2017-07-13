@@ -76,9 +76,19 @@ class XthorProvider(TorrentProvider):
                 else:
                     search_params.pop('search', '')
 
-                jdata = self.get_url(self.urls['search'], params=search_params, returns='json')
-                if not jdata:
+                data = self.session.get(self.urls['search'], params=search_params)
+                if not data:
                     log.debug('No data returned from provider')
+                    continue
+
+                try:
+                    jdata = data.json()
+                except ValueError as e:
+                    log.warning(
+                        u'Could not decode the response as json for the result, searching {provider} with error {err_msg}',
+                        provider=self.name,
+                        err_msg=e
+                    )
                     continue
 
                 error_code = jdata.pop('error', {})
