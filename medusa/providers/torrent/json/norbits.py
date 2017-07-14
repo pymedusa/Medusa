@@ -79,7 +79,7 @@ class NorbitsProvider(TorrentProvider):
                     'search': search_string,
                 }
 
-                response = self.session.post(self.urls['search'], data=json.dumps(post_data))
+                response = self.session.post(self.urls['search'], data=post_data)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
