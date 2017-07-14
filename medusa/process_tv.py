@@ -441,9 +441,9 @@ class ProcessResult(object):
 
                     # Skip extraction if any file in archive has previously been extracted
                     skip_extraction = False
-                    for file_in_archive in [os.path.basename(each.filename)
-                                            for each in rar_handle.infolist()
-                                            if not each.isdir()]:
+                    for file_in_archive in [os.path.basename(each)
+                                            for each in rar_handle.namelist()
+                                            if not os.path.isdir(each)]:
                         if not force and self.already_postprocessed(file_in_archive):
                             self._log('Archive file already post-processed, extraction skipped: {0}'.format
                                       (file_in_archive), logger.DEBUG)
@@ -459,9 +459,9 @@ class ProcessResult(object):
                     if not skip_extraction:
                         rar_handle.extract(path)
 
-                    for each in rar_handle.infolist():
-                        if not each.isdir():
-                            basename = os.path.basename(each.filename)
+                    for each in rar_handle.namelist():
+                        if not os.path.isfile(each):
+                            basename = os.path.basename(each)
                             unpacked_files.append(basename)
 
                     del rar_handle
