@@ -15,25 +15,27 @@
     % if whichSubs:
         <% subsLanguage = subtitles.name_from_code(whichSubs) if not whichSubs == 'all' else 'All' %>
     % endif
+    <% wanted_languages = subtitles.wanted_languages()%>
     % if not whichSubs or (whichSubs and not ep_counts):
         % if whichSubs:
-        <h2>All of your episodes have ${subsLanguage} subtitles.</h2>
+        <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
+        <h2>All of your episodes have ${label} subtitles.</h2>
         <br>
         % endif
         <form action="manage/subtitleMissed" method="get">
             % if app.SUBTITLES_MULTI:
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
                 <option value="all">All</option>
-                % for sub_code in subtitles.wanted_languages():
-                    <option value="${sub_code}">${subtitles.name_from_code(sub_code)} (${subtitles.from_code(sub_code)})</option>
+                % for sub_code in wanted_languages:
+                    <option ${'selected="selected"' if sub_code == whichSubs else ''} value="${sub_code}">${subtitles.name_from_code(sub_code)} (${subtitles.from_code(sub_code)})</option>
                 % endfor
                 </select>
             % else:
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
-                % if not subtitles.wanted_languages():
+                % if not wanted_languages:
                     <option value="all">All</option>
                 % else:
-                    % for index, sub_code in enumerate(subtitles.wanted_languages()):
+                    % for index, sub_code in enumerate(wanted_languages):
                         % if index == 0:
                             <option value="und">${subtitles.name_from_code(sub_code)} (${subtitles.from_code(sub_code)})</option>
                         % endif
@@ -51,7 +53,7 @@
                 <% sub_code = '({0}) '.format(whichSubs) if not whichSubs == 'all' else '' %>
                 <h2>Episodes without ${subsLanguage} ${subtitles.from_code(sub_code)}subtitles.</h2>
             % else:
-                % for index, sub_code in enumerate(subtitles.wanted_languages()):
+                % for index, sub_code in enumerate(wanted_languages):
                     % if index == 0:
                         <h2>Episodes without ${subtitles.name_from_code(sub_code)} (undefined) subtitles.</h2>
                     % endif
