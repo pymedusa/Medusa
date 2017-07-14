@@ -79,9 +79,7 @@ class MedusaSession(BaseSession):
         self.hooks['response'].extend(self.my_hooks)
 
         # Set default headers.
-        for header, value in self.default_headers.items():
-            # Use `setdefault` to avoid clobbering existing headers
-            self.headers.setdefault(header, value)
+        self.headers.update(self.default_headers)
 
     def get_json(self, url, method='GET', *args, **kwargs):
         """Overwrite request, to be able to return the json value if possible. Else it will fail silently."""
