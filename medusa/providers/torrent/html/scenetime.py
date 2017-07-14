@@ -96,7 +96,7 @@ class SceneTimeProvider(TorrentProvider):
                               {'search': search_string})
                     search_params['search'] = search_string
 
-                response = self.session.get(self.urls['search'], post_data=search_params, returns='response')
+                response = self.session.post(self.urls['search'], data=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

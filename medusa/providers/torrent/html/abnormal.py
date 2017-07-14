@@ -186,7 +186,7 @@ class ABNormalProvider(TorrentProvider):
             'password': self.password,
         }
 
-        response = self.session.get(self.urls['login'], post_data=login_params)
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False
