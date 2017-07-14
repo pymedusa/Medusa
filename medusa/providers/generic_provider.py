@@ -97,6 +97,7 @@ class GenericProvider(object):
         self.search_fallback = False
         self.search_mode = None
         self.session = MedusaSafeSession(hooks=[cloudflare])
+        self.session.headers.update(self.headers)
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
