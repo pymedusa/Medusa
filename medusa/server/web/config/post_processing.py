@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import os
 
-import rarfile
+from medusa.helpers import is_rar_supported
 
 from tornroutes import route
 
@@ -64,7 +64,7 @@ class ConfigPostProcessing(Config):
         if unpack:
             # If nothing has changed, don't check again for supported rar
             if unrar_tool != app.UNRAR_TOOL:
-                if self.isRarSupported(unrar_tool):
+                if is_rar_supported(unrar_tool):
                     app.UNPACK = config.checkbox_to_value(unpack)
                     # Use the new custom install
                     app.UNRAR_TOOL = unrar_tool
@@ -72,7 +72,7 @@ class ConfigPostProcessing(Config):
                     app.UNPACK = 0
                     # Reset the custom install
                     app.UNRAR_TOOL = ''
-                    results.append('Unpacking Not Supported, disabling unpack setting')
+                    results.append('Invalid UNRAR executable path, disabling unpack setting')
         else:
             app.UNPACK = config.checkbox_to_value(unpack)
         app.NO_DELETE = config.checkbox_to_value(no_delete)
@@ -218,15 +218,3 @@ class ConfigPostProcessing(Config):
             return 'seasonfolders'
         else:
             return 'invalid'
-
-    @staticmethod
-    def isRarSupported(unrar_tool):
-        """Test if UNRAR_TOOL works."""
-        try:
-            rarfile.custom_check(unrar_tool)
-        except (rarfile.RarCannotExec, rarfile.RarExecError, OSError) as error:
-            # Executable not found or Problem reported by unrar/rar or OSError
-            logger.log('Rar Not Supported: {error}'.format(error=error.message), logger.WARNING)
-            return False
-        else:
-            return True

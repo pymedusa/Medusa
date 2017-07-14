@@ -2094,8 +2094,8 @@ class Application(object):
                 # Make a set of unique paths to check from existing environment variables
                 check_locations = {
                     os.path.join(location, winrar_path) for location in (
-                        os.environ.get("ProgramW6432"), os.environ.get("ProgramFiles(x86)"),
-                        os.environ.get("ProgramFiles"), re.sub(r'\s?\(x86\)', '', os.environ["ProgramFiles"])
+                        os.environ.get('ProgramW6432'), os.environ.get('ProgramFiles(x86)'),
+                        os.environ.get('ProgramFiles'), re.sub(r'\s?\(x86\)', '', os.environ['ProgramFiles'])
                     ) if location
                 }
                 # If custom fails, try PATH again

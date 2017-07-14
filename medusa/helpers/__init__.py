@@ -49,6 +49,8 @@ from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.show.show import Show
 
+from rarfile import RarCannotExec, RarExecError, custom_check
+
 import requests
 from requests.compat import urlparse
 
@@ -1874,3 +1876,15 @@ def get_title_without_year(title, title_year):
     if year in title:
         title = title.replace(year, '')
     return title
+
+
+def is_rar_supported(unrar_tool):
+    """Test if UNRAR_TOOL works."""
+    try:
+        custom_check(unrar_tool)
+    except (RarCannotExec, RarExecError, OSError) as error:
+        # Executable not found or Problem reported by unrar/rar or OSError
+        log.warning('Rar Not Supported: {error}'.format(error=error.message))
+        return False
+    else:
+        return True
