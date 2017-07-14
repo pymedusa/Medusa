@@ -48,8 +48,8 @@
         <input type="hidden" id="selectSubLang" name="selectSubLang" value="${whichSubs}" />
         <form action="manage/downloadSubtitleMissed" method="post">
             % if app.SUBTITLES_MULTI:
-                <% subLanguage = '({0}) '.format(whichSubs) if not whichSubs == 'all' else '' %>
-                <h2>Episodes without ${subsLanguage} ${subLanguage}subtitles.</h2>
+                <% sub_code = '({0}) '.format(whichSubs) if not whichSubs == 'all' else '' %>
+                <h2>Episodes without ${subsLanguage} ${subtitles.from_code(sub_code)}subtitles.</h2>
             % else:
                 % for index, sub_code in enumerate(subtitles.wanted_languages()):
                     % if index == 0:
