@@ -25,7 +25,7 @@
                 Manage episodes without <select name="whichSubs" class="form-control form-control-inline input-sm">
                 <option value="all">All</option>
                 % for sub_code in subtitles.wanted_languages():
-                    <option value="${sub_code}">${subtitles.name_from_code(sub_code)}</option>
+                    <option value="${sub_code}">${subtitles.name_from_code(sub_code)} (${sub_code})</option>
                 % endfor
                 </select>
             % else:
@@ -35,7 +35,7 @@
                 % else:
                     % for index, sub_code in enumerate(subtitles.wanted_languages()):
                         % if index == 0:
-                            <option value="und">${subtitles.name_from_code(sub_code)}</option>
+                            <option value="und">${subtitles.name_from_code(sub_code)} (${sub_code})</option>
                         % endif
                     % endfor
                 % endif
@@ -48,7 +48,8 @@
         <input type="hidden" id="selectSubLang" name="selectSubLang" value="${whichSubs}" />
         <form action="manage/downloadSubtitleMissed" method="post">
             % if app.SUBTITLES_MULTI:
-                <h2>Episodes without ${subsLanguage} subtitles.</h2>
+                <% subLanguage = '({0}) '.format(whichSubs) if not whichSubs == 'all' else '' %>
+                <h2>Episodes without ${subsLanguage} ${subLanguage}subtitles.</h2>
             % else:
                 % for index, sub_code in enumerate(subtitles.wanted_languages()):
                     % if index == 0:
