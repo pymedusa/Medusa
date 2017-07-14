@@ -63,7 +63,7 @@ import time
 
 from configobj import ConfigObj
 
-import rarfile
+from rarfile import RarCannotExec, RarExecError, UNRAR_TOOL, _check_unrar_tool, custom_check
 
 from six import text_type
 
@@ -306,7 +306,7 @@ class Application(object):
         app.PID = os.getpid()
 
         # Configure UNRAR:
-        self.configure_unrar()
+        self.verify_unrar()
 
         # Build from the DB to start with
         self.load_shows_from_db()
@@ -2079,15 +2079,16 @@ class Application(object):
             os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
 
     @staticmethod
-    def configure_unrar():
-        """Check if user has a valid UNRAR installation and set accordinly."""
+    def verify_unrar():
+        """Verify if user has a valid UNRAR installation and set accordinly."""
         try:
             # If previously set from PATH or custom, try it first
             if app.UNRAR_TOOL:
-                rarfile.custom_check(app.UNRAR_TOOL)
+                custom_check(app.UNRAR_TOOL)
             else:
-                rarfile._check_unrar_tool()
-        except (rarfile.RarCannotExec, rarfile.RarExecError, OSError):
+                _check_unrar_tool()
+        except (RarCannotExec, RarExecError, OSError) as error:
+            logger.debug('Failed to verify unrar at: %s. Error: %s', app.UNRAR_TOOL or UNRAR_TOOL, error.message)
             if platform.system() == 'Windows':
                 logger.info('Looking for UNRAR in your installed programs')
                 winrar_path = 'WinRAR\\UnRAR.exe'
@@ -2100,23 +2101,22 @@ class Application(object):
                 }
                 # If custom fails, try PATH again
                 check_locations.add('unrar')
-
+                app.UNRAR_TOOL = ''
                 for location in check_locations:
                     if os.path.isfile(location):
                         try:
-                            rarfile.custom_check(location)
-                            rarfile.UNRAR_TOOL = location
+                            custom_check(location)
+                            app.UNRAR_TOOL = location
                             break
-                        except (rarfile.RarCannotExec, rarfile.RarExecError, OSError):
-                            rarfile.UNRAR_TOOL = ''
+                        except (RarCannotExec, RarExecError, OSError) as error:
+                            logger.debug('Failed to verify unrar at: %s. Error: %s', location, error.message)
+                    logger.debug('Unable to locate unrar at: %s', location)
 
         finally:
-            if rarfile.UNRAR_TOOL:
-                app.UNRAR_TOOL = rarfile.UNRAR_TOOL
-                logger.info('Using unrar tool: %s', rarfile.UNRAR_TOOL)
+            if app.UNRAR_TOOL:
+                logger.info('Using unrar tool: %s', app.UNRAR_TOOL)
             else:
                 # Disable unpack
-                app.UNRAR_TOOL = ''
                 app.UNPACK = 0
                 logger.warning('Unable to locate unrar installation in your OS. '
                                'Please follow this instructions: '
