@@ -63,6 +63,7 @@ class ConfigHandler(BaseRequestHandler):
         'theme.name': StringField(app, 'THEME_NAME'),
         'backlogOverview.period': StringField(app, 'BACKLOG_PERIOD'),
         'backlogOverview.status': StringField(app, 'BACKLOG_STATUS'),
+        'unrarTool': StringField(app, 'UNRAR_TOOL'),
     }
 
     def get(self, identifier, path_param=None):
@@ -174,6 +175,7 @@ class ConfigHandler(BaseRequestHandler):
         config_data['backlogOverview'] = NonEmptyDict()
         config_data['backlogOverview']['period'] = app.BACKLOG_PERIOD
         config_data['backlogOverview']['status'] = app.BACKLOG_STATUS
+        config_data['unrar_tool'] = app.UNRAR_TOOL
 
         if not identifier:
             return self._paginate([config_data])

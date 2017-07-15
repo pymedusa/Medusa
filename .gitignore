@@ -61,10 +61,6 @@ Thumbs.db
 *~
 *.torrent
 
-# Unrar Executable   #
-######################
-lib/unrar2/UnRAR.exe
-
 # Grunt #
 ######################
 **/bower_components

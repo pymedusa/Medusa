@@ -13,19 +13,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         };
     })();
 
-    function isRarSupported() {
-        $.get('config/postProcessing/isRarSupported', function(data) {
-            if (data !== 'supported') {
-                $('#unpack').qtip('option', {
-                    'content.text': 'Unrar Executable not found.',
-                    'style.classes': 'qtip-rounded qtip-shadow qtip-red'
-                });
-                $('#unpack').qtip('toggle', true);
-                $('#unpack').css('background-color', '#FFFFDD');
-            }
-        });
-    }
-
     function fillExamples() {
         var example = {};
 
@@ -283,14 +270,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
         fillAnimeExamples();
     }
 
-    $('#unpack').on('change', function() {
-        if (this.checked) {
-            isRarSupported();
-        } else {
-            $('#unpack').qtip('toggle', false);
-        }
-    });
-
     // @TODO all of these on change funcitons should be able to be rolled into a generic jQuery function or maybe we could
     //       move all of the setup functions into these handlers?
 
@@ -498,25 +477,6 @@ MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines
                 method: 'polygon'
             },
             classes: 'qtip-rounded qtip-shadow ui-tooltip-sb'
-        }
-    });
-    $('.custom-pattern,#unpack').qtip({
-        content: 'validating...',
-        show: {
-            event: false,
-            ready: false
-        },
-        hide: false,
-        position: {
-            at: 'center left',
-            my: 'center right'
-        },
-        style: {
-            tip: {
-                corner: true,
-                method: 'polygon'
-            },
-            classes: 'qtip-rounded qtip-shadow qtip-red'
         }
     });
 };

@@ -6,12 +6,13 @@ from __future__ import unicode_literals
 
 import os
 
+from medusa.helpers import is_rar_supported
+
 from tornroutes import route
-from unrar2 import RarFile
+
 from .handler import Config
 from ..core import PageTemplate
 from .... import app, config, logger, naming, ui
-from ....helper.exceptions import ex
 
 
 @route('/config/postProcessing(/?.*)')
@@ -49,7 +50,7 @@ class ConfigPostProcessing(Config):
                            naming_abd_pattern=None, naming_strip_year=None,
                            naming_custom_sports=None, naming_sports_pattern=None,
                            naming_custom_anime=None, naming_anime_pattern=None,
-                           naming_anime_multi_ep=None, autopostprocessor_frequency=None):
+                           naming_anime_multi_ep=None, autopostprocessor_frequency=None, unrar_tool=None):
 
         results = []
 
@@ -61,11 +62,17 @@ class ConfigPostProcessing(Config):
         config.change_PROCESS_AUTOMATICALLY(process_automatically)
 
         if unpack:
-            if self.isRarSupported() != 'not supported':
-                app.UNPACK = config.checkbox_to_value(unpack)
-            else:
-                app.UNPACK = 0
-                results.append('Unpacking Not Supported, disabling unpack setting')
+            # If nothing has changed, don't check again for supported rar
+            if unrar_tool != app.UNRAR_TOOL:
+                if is_rar_supported(unrar_tool):
+                    app.UNPACK = config.checkbox_to_value(unpack)
+                    # Use the new custom install
+                    app.UNRAR_TOOL = unrar_tool
+                else:
+                    app.UNPACK = 0
+                    # Reset the custom install
+                    app.UNRAR_TOOL = ''
+                    results.append('Invalid UNRAR executable path, disabling unpack setting')
         else:
             app.UNPACK = config.checkbox_to_value(unpack)
         app.NO_DELETE = config.checkbox_to_value(no_delete)
@@ -211,21 +218,3 @@ class ConfigPostProcessing(Config):
             return 'seasonfolders'
         else:
             return 'invalid'
-
-    @staticmethod
-    def isRarSupported():
-        """
-        Test Packing Support:
-            - Simulating in memory rar extraction on test.rar file
-        """
-
-        try:
-            rar_path = os.path.join(app.PROG_DIR, 'lib', 'unrar2', 'test.rar')
-            testing = RarFile(rar_path).read_files('*test.txt')
-            if testing[0][1] == 'This is only a test.':
-                return 'supported'
-            logger.log('Rar Not Supported: Can not read the content of test file', logger.ERROR)
-            return 'not supported'
-        except Exception as msg:
-            logger.log('Rar Not Supported: {error}'.format(error=ex(msg)), logger.ERROR)
-            return 'not supported'

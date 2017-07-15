@@ -50,6 +50,7 @@ import io
 import locale
 import logging
 import os
+import platform
 import random
 import re
 import shutil
@@ -61,6 +62,8 @@ import threading
 import time
 
 from configobj import ConfigObj
+
+from rarfile import RarCannotExec, RarExecError, UNRAR_TOOL, _check_unrar_tool, custom_check
 
 from six import text_type
 
@@ -301,6 +304,9 @@ class Application(object):
 
         # Get PID
         app.PID = os.getpid()
+
+        # Configure UNRAR:
+        self.verify_unrar()
 
         # Build from the DB to start with
         self.load_shows_from_db()
@@ -594,6 +600,7 @@ class Application(object):
             app.PROCESS_AUTOMATICALLY = bool(check_setting_int(app.CFG, 'General', 'process_automatically', 0))
             app.NO_DELETE = bool(check_setting_int(app.CFG, 'General', 'no_delete', 0))
             app.UNPACK = bool(check_setting_int(app.CFG, 'General', 'unpack', 0))
+            app.UNRAR_TOOL = check_setting_str(app.CFG, 'General', 'unrar_tool', '')
             app.RENAME_EPISODES = bool(check_setting_int(app.CFG, 'General', 'rename_episodes', 1))
             app.AIRDATE_EPISODES = bool(check_setting_int(app.CFG, 'General', 'airdate_episodes', 0))
             app.FILE_TIMESTAMP_TIMEZONE = check_setting_str(app.CFG, 'General', 'file_timestamp_timezone', 'network')
@@ -1460,6 +1467,7 @@ class Application(object):
         new_config['General']['process_automatically'] = int(app.PROCESS_AUTOMATICALLY)
         new_config['General']['no_delete'] = int(app.NO_DELETE)
         new_config['General']['unpack'] = int(app.UNPACK)
+        new_config['General']['unrar_tool'] = app.UNRAR_TOOL
         new_config['General']['rename_episodes'] = int(app.RENAME_EPISODES)
         new_config['General']['airdate_episodes'] = int(app.AIRDATE_EPISODES)
         new_config['General']['file_timestamp_timezone'] = app.FILE_TIMESTAMP_TIMEZONE
@@ -2069,6 +2077,51 @@ class Application(object):
             # Make sure the logger has stopped, just in case
             logging.shutdown()
             os._exit(0)  # TODO: Remove in another PR. There's no need for this one.
+
+    @staticmethod
+    def verify_unrar():
+        """Verify if user has a valid UNRAR installation and set accordinly."""
+        try:
+            # If previously set from PATH or custom, try it first
+            if app.UNRAR_TOOL:
+                custom_check(app.UNRAR_TOOL)
+            else:
+                _check_unrar_tool()
+        except (RarCannotExec, RarExecError, OSError) as error:
+            logger.debug('Failed to verify unrar at: %s. Error: %s', app.UNRAR_TOOL or UNRAR_TOOL, error.message)
+            if platform.system() == 'Windows':
+                logger.info('Looking for UNRAR in your installed programs')
+                winrar_path = 'WinRAR\\UnRAR.exe'
+                # Make a set of unique paths to check from existing environment variables
+                check_locations = {
+                    os.path.join(location, winrar_path) for location in (
+                        os.environ.get('ProgramW6432'), os.environ.get('ProgramFiles(x86)'),
+                        os.environ.get('ProgramFiles'), re.sub(r'\s?\(x86\)', '', os.environ['ProgramFiles'])
+                    ) if location
+                }
+                # If custom fails, try PATH again
+                check_locations.add('unrar')
+                app.UNRAR_TOOL = ''
+                for location in check_locations:
+                    if os.path.isfile(location):
+                        try:
+                            custom_check(location)
+                            app.UNRAR_TOOL = location
+                            break
+                        except (RarCannotExec, RarExecError, OSError) as error:
+                            logger.debug('Failed to verify unrar at: %s. Error: %s', location, error.message)
+                    logger.debug('Unable to locate unrar at: %s', location)
+
+        finally:
+            if app.UNRAR_TOOL:
+                logger.info('Using unrar tool: %s', app.UNRAR_TOOL)
+            else:
+                # Disable unpack
+                app.UNPACK = 0
+                logger.warning('Unable to locate unrar installation in your OS. '
+                               'Please follow this instructions: '
+                               'https://github.com/pymedusa/Medusa/wiki/How-to-install-UNRAR')
+            app.instance.save_config()
 
 
 def main():
