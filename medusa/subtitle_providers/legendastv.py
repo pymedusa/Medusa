@@ -203,72 +203,116 @@ class LegendasTVProvider(Provider):
 
         self.session.close()
 
+    @staticmethod
+    def is_valid_title(title, title_id, sanitized_title, season, episode, year):
+        """Check if is a valid title."""
+        sanitized_result = sanitize(title['title'])
+        if sanitized_result != sanitized_title:
+            logger.debug("Mismatched title, discarding title %d (%s)",
+                         title_id, sanitized_result)
+            return
+
+        # episode
+        if season and episode:
+            # discard mismatches on type
+            if title['type'] != 'episode':
+                logger.debug("Mismatched 'episode' type, discarding title %d (%s)", title_id, sanitized_result)
+                return
+
+            # discard mismatches on season
+            if 'season' not in title or title['season'] != season:
+                logger.debug('Mismatched season %s, discarding title %d (%s)',
+                             title.get('season'), title_id, sanitized_result)
+                return
+        # movie
+        else:
+            # discard mismatches on type
+            if title['type'] != 'movie':
+                logger.debug("Mismatched 'movie' type, discarding title %d (%s)", title_id, sanitized_result)
+                return
+
+            # discard mismatches on year
+            if year is not None and 'year' in title and title['year'] != year:
+                logger.debug("Mismatched movie year, discarding title %d (%s)", title_id, sanitized_result)
+                return
+        return True
+
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME, should_cache_fn=lambda value: value)
-    def search_titles(self, title, season):
+    def search_titles(self, title, season, episode, title_year):
         """Search for titles matching the `title`.
 
         For episodes, each season has it own title
 
-        :param str title: the title to search for.
+        :param str title: title to search for.
         :param int season: season of the title
+        :param int episode: episode of the title
+        :param int title_year: year of the title
         :return: found titles.
         :rtype: dict
 
         """
-        # make the query
-        if season:
-            logger.info('Searching episode title %r for season %r', title, season)
-        else:
-            logger.info('Searching movie title %r', title)
-
-        r = self.session.get(self.server_url + 'legenda/sugestao/{}'.format(title), timeout=10)
-        r.raise_for_status()
-        results = json.loads(r.text)
-
-        # loop over results
         titles = {}
-        for result in results:
-            source = result['_source']
+        sanitized_titles = [sanitize(title)]
+        ignore_characters = {'\'', '.'}
+        if any(c in title for c in ignore_characters):
+            sanitized_titles.append(sanitize(title, ignore_characters=ignore_characters))
 
-            # extract id
-            title_id = int(source['id_filme'])
+        for sanitized_title in sanitized_titles:
+            # make the query
+            if season:
+                logger.info('Searching episode title %r for season %r', sanitized_title, season)
+            else:
+                logger.info('Searching movie title %r', sanitized_title)
 
-            # extract type
-            title = {'type': type_map[source['tipo']]}
+            r = self.session.get(self.server_url + 'legenda/sugestao/{}'.format(sanitized_title), timeout=10)
+            r.raise_for_status()
+            results = json.loads(r.text)
 
-            # extract title, year and country
-            name, year, country = title_re.match(source['dsc_nome']).groups()
-            title['title'] = name
+            # loop over results
+            for result in results:
+                source = result['_source']
 
-            # extract imdb_id
-            if source['id_imdb'] != '0':
-                if not source['id_imdb'].startswith('tt'):
-                    title['imdb_id'] = 'tt' + source['id_imdb'].zfill(7)
-                else:
-                    title['imdb_id'] = source['id_imdb']
+                # extract id
+                title_id = int(source['id_filme'])
 
-            # extract season
-            if title['type'] == 'episode':
-                if source['temporada'] and source['temporada'].isdigit():
-                    title['season'] = int(source['temporada'])
-                else:
-                    match = season_re.search(source['dsc_nome_br'])
-                    if match:
-                        title['season'] = int(match.group('season'))
+                # extract type
+                title = {'type': type_map[source['tipo']]}
+
+                # extract title, year and country
+                name, year, country = title_re.match(source['dsc_nome']).groups()
+                title['title'] = name
+
+                # extract imdb_id
+                if source['id_imdb'] != '0':
+                    if not source['id_imdb'].startswith('tt'):
+                        title['imdb_id'] = 'tt' + source['id_imdb'].zfill(7)
                     else:
-                        logger.warning('No season detected for title %d (%s)', title_id, name)
+                        title['imdb_id'] = source['id_imdb']
 
-            # extract year
-            if year:
-                title['year'] = int(year)
-            elif source['dsc_data_lancamento'] and source['dsc_data_lancamento'].isdigit():
-                # year is based on season air date hence the adjustment
-                title['year'] = int(source['dsc_data_lancamento']) - title.get('season', 1) + 1
+                # extract season
+                if title['type'] == 'episode':
+                    if source['temporada'] and source['temporada'].isdigit():
+                        title['season'] = int(source['temporada'])
+                    else:
+                        match = season_re.search(source['dsc_nome_br'])
+                        if match:
+                            title['season'] = int(match.group('season'))
+                        else:
+                            logger.warning('No season detected for title %d (%s)', title_id, name)
 
-            # add title
-            titles[title_id] = title
+                # extract year
+                if year:
+                    title['year'] = int(year)
+                elif source['dsc_data_lancamento'] and source['dsc_data_lancamento'].isdigit():
+                    # year is based on season air date hence the adjustment
+                    title['year'] = int(source['dsc_data_lancamento']) - title.get('season', 1) + 1
 
-        logger.debug('Found %d titles', len(titles))
+                # add title only if is valid
+                # Check against title without ignored chars
+                if self.is_valid_title(title, title_id, sanitized_titles[0], season, episode, title_year):
+                    titles[title_id] = title
+
+            logger.debug('Found %d titles', len(titles))
 
         return titles
 
@@ -359,47 +403,11 @@ class LegendasTVProvider(Provider):
 
     def query(self, language, title, season=None, episode=None, year=None):
         # search for titles
-        sanitized_title = sanitize(title)
-        titles = self.search_titles(sanitized_title, season)
-
-        # search for titles with the quote or dot character
-        ignore_characters = {'\'', '.'}
-        if any(c in title for c in ignore_characters):
-            titles.update(self.search_titles(sanitize(title, ignore_characters=ignore_characters), season))
+        titles = self.search_titles(title, season, episode, year)
 
         subtitles = []
         # iterate over titles
         for title_id, t in titles.items():
-            # discard mismatches on title
-            sanitized_result = sanitize(t['title'])
-            if sanitized_result != sanitized_title:
-                logger.debug("Mismatched title, discarding title %d (%s)",
-                             title_id, sanitized_result)
-                continue
-
-            # episode
-            if season and episode:
-                # discard mismatches on type
-                if t['type'] != 'episode':
-                    logger.debug("Mismatched 'episode' type, discarding title %d (%s)", title_id, sanitized_result)
-                    continue
-
-                # discard mismatches on season
-                if 'season' not in t or t['season'] != season:
-                    logger.debug('Mismatched season %s, discarding title %d (%s)',
-                                 t.get('season'), title_id, sanitized_result)
-                    continue
-            # movie
-            else:
-                # discard mismatches on type
-                if t['type'] != 'movie':
-                    logger.debug("Mismatched 'movie' type, discarding title %d (%s)", title_id, sanitized_result)
-                    continue
-
-                # discard mismatches on year
-                if year is not None and 'year' in t and t['year'] != year:
-                    logger.debug("Mismatched movie year, discarding title %d (%s)", title_id, sanitized_result)
-                    continue
 
             # iterate over title's archives
             for a in self.get_archives(title_id, language.legendastv):
