@@ -41,7 +41,7 @@ class DanishbitsProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = True
-        self.headers.update({'User-Agent': USER_AGENT})
+        self.session.headers['User-Agent'] = USER_AGENT
 
         # Torrent Stats
         self.minseed = 0
@@ -94,7 +94,9 @@ class DanishbitsProvider(TorrentProvider):
                         err_msg=e
                     )
                     continue
-
+                if data['error']:
+                    log.warn('Provider returned an error: {0}', data['error'])
+                    continue
                 if data['total_results'] == 0:
                     continue
 
@@ -113,9 +115,6 @@ class DanishbitsProvider(TorrentProvider):
         """
         items = []
 
-        if data['error']:
-            log.warn('Provider returned an error: {0}', data['error'])
-            return items
         del data['total_results']
         torrent_rows = data['results']
 
