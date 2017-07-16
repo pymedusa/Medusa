@@ -38,8 +38,6 @@ from medusa.helper.common import (
 )
 from medusa.helpers import (
     download_file,
-    get_url,
-    make_session,
 )
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -50,6 +48,8 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.search import PROPER_SEARCH
+from medusa.session.core import MedusaSafeSession
+from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
 from pytimeparse import parse
@@ -75,15 +75,17 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'http://itorrents.org/torrent/{info_hash}.torrent',
             'https://torrentproject.se/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
             'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'https://torcache.pro/{info_hash}.torrent',
             'http://piratepublic.com/download.php?id={info_hash}',
             'http://www.legittorrents.info/download.php?id={info_hash}',
             'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
+            'https://skytorrents.in/file/{info_hash}/.torrent',
+            'http://p2pdl.com/download/{info_hash}',
+            'http://itorrents.org/torrent/{info_hash}.torrent',
+            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -96,7 +98,8 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = make_session()
+        self.session = MedusaSafeSession(hooks=[cloudflare])
+        self.session.headers.update(self.headers)
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -112,6 +115,10 @@ class GenericProvider(object):
         # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
         self.stop_at = 3
+
+        # Police attributes
+        self.enable_api_hit_cooldown = False
+        self.enable_daily_request_reserve = False
 
     def download_result(self, result):
         """Download result from provider."""
@@ -150,6 +157,10 @@ class GenericProvider(object):
                         {'result': result.name})
 
         return False
+
+    def get_content(self, url, params=None, timeout=30, **kwargs):
+        """Retrieve the torrent/nzb content."""
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def find_propers(self, proper_candidates):
         """Find propers in providers."""
@@ -265,7 +276,8 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                log.debug(error.message)
+                log.debug('Error during parsing of release name: {release_name}, with error: {error}',
+                          {'release_name': search_result.name, 'error': error})
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
@@ -291,7 +303,7 @@ class GenericProvider(object):
                             continue
                         elif not [ep for ep in episodes if
                                   search_result.parsed_result.season_number == (ep.season, ep.scene_season)
-                                  [ep.show.is_scene]]:
+                                  [ep.series.is_scene]]:
                             log.debug(
                                 'This season result {0} is for a season we are not searching for, '
                                 'skipping it', search_result.name
@@ -446,8 +458,15 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
+        log.info('providers.generic_provider.get_url() is deprecated, '
+                 'please rewrite your provider to make use of the MedusaSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+
+        if not post_data:
+            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
+        else:
+            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
+                                     timeout=timeout, **kwargs)
 
     def image_name(self):
         """Return provider image name."""
@@ -728,3 +747,11 @@ class GenericProvider(object):
 
         return {'result': False,
                 'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+
+    def __str__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def __unicode__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

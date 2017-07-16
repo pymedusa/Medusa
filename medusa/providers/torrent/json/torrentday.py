@@ -96,7 +96,7 @@ class TorrentDayProvider(TorrentProvider):
                 if self.freeleech:
                     post_data.update({'free': 'on'})
 
-                response = self.get_url(self.urls['search'], post_data=post_data, returns='response')
+                response = self.session.post(self.urls['search'], data=post_data)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
@@ -198,7 +198,7 @@ class TorrentDayProvider(TorrentProvider):
             'submit.y': 0,
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not (response.content and response.status_code == 200):
             log.warning('Unable to connect to provider')
             return False

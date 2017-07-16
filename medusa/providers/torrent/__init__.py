@@ -45,7 +45,6 @@ from medusa.providers.torrent.json import (
     hdbits,
     norbits,
     rarbg,
-    t411,
     torrentday,
     xthor,
 )
@@ -65,6 +64,6 @@ __all__ = [
     'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
-    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat',
+    'hdbits', 'norbits', 'rarbg', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat',
     'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
 ]

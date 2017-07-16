@@ -74,6 +74,7 @@ class SearchTest(test.AppTestDBCase):
         :param something:
         :return:
         """
+        # TODO: Check the usage of .get_url here.
         for provider in providers.sortedProviderList():
             provider.get_url = self._fake_get_url
 

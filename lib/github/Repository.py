@@ -75,6 +75,7 @@ import github.Stargazer
 atLeastPython26 = sys.hexversion >= 0x02060000
 atLeastPython3 = sys.hexversion >= 0x03000000
 
+
 class Repository(github.GithubObject.CompletableGithubObject):
     """
     This class represents Repositories. The reference can be found here http://developer.github.com/v3/repos/
@@ -578,6 +579,14 @@ class Repository(github.GithubObject.CompletableGithubObject):
         """
         self._completeIfNotSet(self._subscribers_url)
         return self._subscribers_url.value
+    
+    @property
+    def subscribers_count(self):
+        """
+        :type: integer
+        """
+        self._completeIfNotSet(self._subscribers_count)
+        return self._subscribers_count.value
 
     @property
     def subscription_url(self):
@@ -856,12 +865,13 @@ class Repository(github.GithubObject.CompletableGithubObject):
         )
         return github.Hook.Hook(self._requester, headers, data, completed=True)
 
-    def create_issue(self, title, body=github.GithubObject.NotSet, assignee=github.GithubObject.NotSet, milestone=github.GithubObject.NotSet, labels=github.GithubObject.NotSet):
+    def create_issue(self, title, body=github.GithubObject.NotSet, assignee=github.GithubObject.NotSet, milestone=github.GithubObject.NotSet, labels=github.GithubObject.NotSet, assignees=github.GithubObject.NotSet):
         """
         :calls: `POST /repos/:owner/:repo/issues <http://developer.github.com/v3/issues>`_
         :param title: string
         :param body: string
         :param assignee: string or :class:`github.NamedUser.NamedUser`
+        :param assignees: list (of string or :class:`github.NamedUser.NamedUser`)
         :param milestone: :class:`github.Milestone.Milestone`
         :param labels: list of :class:`github.Label.Label`
         :rtype: :class:`github.Issue.Issue`
@@ -869,6 +879,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         assert isinstance(title, (str, unicode)), title
         assert body is github.GithubObject.NotSet or isinstance(body, (str, unicode)), body
         assert assignee is github.GithubObject.NotSet or isinstance(assignee, github.NamedUser.NamedUser) or isinstance(assignee, (str, unicode)), assignee
+        assert assignees is github.GithubObject.NotSet or all(isinstance(element, github.NamedUser.NamedUser) or isinstance(element, (str, unicode)) for element in assignees), assignees
         assert milestone is github.GithubObject.NotSet or isinstance(milestone, github.Milestone.Milestone), milestone
         assert labels is github.GithubObject.NotSet or all(isinstance(element, github.Label.Label) or isinstance(element, (str, unicode)) for element in labels), labels
 
@@ -882,6 +893,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
                 post_parameters["assignee"] = assignee
             else:
                 post_parameters["assignee"] = assignee._identity
+        if assignees is not github.GithubObject.NotSet:
+            post_parameters["assignees"] = [element._identity if isinstance(element, github.NamedUser.NamedUser) else element for element in assignees]
         if milestone is not github.GithubObject.NotSet:
             post_parameters["milestone"] = milestone._identity
         if labels is not github.GithubObject.NotSet:
@@ -1009,7 +1022,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self.url
         )
 
-    def edit(self, name, description=github.GithubObject.NotSet, homepage=github.GithubObject.NotSet, private=github.GithubObject.NotSet, has_issues=github.GithubObject.NotSet, has_wiki=github.GithubObject.NotSet, has_downloads=github.GithubObject.NotSet, default_branch=github.GithubObject.NotSet):
+    def edit(self, name=None, description=github.GithubObject.NotSet, homepage=github.GithubObject.NotSet, private=github.GithubObject.NotSet, has_issues=github.GithubObject.NotSet, has_wiki=github.GithubObject.NotSet, has_downloads=github.GithubObject.NotSet, default_branch=github.GithubObject.NotSet):
         """
         :calls: `PATCH /repos/:owner/:repo <http://developer.github.com/v3/repos>`_
         :param name: string
@@ -1022,6 +1035,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
         :param default_branch: string
         :rtype: None
         """
+        if name is None:
+            name = self.name
         assert isinstance(name, (str, unicode)), name
         assert description is github.GithubObject.NotSet or isinstance(description, (str, unicode)), description
         assert homepage is github.GithubObject.NotSet or isinstance(homepage, (str, unicode)), homepage
@@ -2342,6 +2357,7 @@ class Repository(github.GithubObject.CompletableGithubObject):
         self._stargazers_url = github.GithubObject.NotSet
         self._statuses_url = github.GithubObject.NotSet
         self._subscribers_url = github.GithubObject.NotSet
+        self._subscribers_count = github.GithubObject.NotSet
         self._subscription_url = github.GithubObject.NotSet
         self._svn_url = github.GithubObject.NotSet
         self._tags_url = github.GithubObject.NotSet
@@ -2477,6 +2493,8 @@ class Repository(github.GithubObject.CompletableGithubObject):
             self._statuses_url = self._makeStringAttribute(attributes["statuses_url"])
         if "subscribers_url" in attributes:  # pragma no branch
             self._subscribers_url = self._makeStringAttribute(attributes["subscribers_url"])
+        if "subscribers_count" in attributes:  # pragma no branch
+            self._subscribers_count = self._makeIntAttribute(attributes["subscribers_count"])
         if "subscription_url" in attributes:  # pragma no branch
             self._subscription_url = self._makeStringAttribute(attributes["subscription_url"])
         if "svn_url" in attributes:  # pragma no branch

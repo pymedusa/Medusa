@@ -83,7 +83,15 @@ MEDUSA.home.snatchSelection = function() {
                 columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
                 columnSelector_mediaquery: false, // eslint-disable-line camelcase
                 columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
-            }
+            },
+            textExtraction: (function() {
+                return {
+                    // 6: The size column needs an explicit field for the filtering on raw size.
+                    6: function(node) {
+                        return node.getAttribute('data-size');
+                    }
+                };
+            })()
         });
     }
 

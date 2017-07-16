@@ -526,7 +526,7 @@ class Organization(github.GithubObject.CompletableGithubObject):
     def get_repos(self, type=github.GithubObject.NotSet):
         """
         :calls: `GET /orgs/:org/repos <http://developer.github.com/v3/repos>`_
-        :param type: string
+        :param type: string ('all', 'public', 'private', 'forks', 'sources', 'member')
         :rtype: :class:`github.PaginatedList.PaginatedList` of :class:`github.Repository.Repository`
         """
         assert type is github.GithubObject.NotSet or isinstance(type, (str, unicode)), type
@@ -576,6 +576,11 @@ class Organization(github.GithubObject.CompletableGithubObject):
             "GET",
             self.url + "/members/" + member._identity
         )
+        if status == 302:
+            status, headers, data = self._requester.requestJson(
+                "GET",
+                headers['location']
+            )
         return status == 204
 
     def has_in_public_members(self, public_member):

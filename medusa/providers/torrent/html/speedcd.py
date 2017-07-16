@@ -95,7 +95,7 @@ class SpeedCDProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['search'] = search_string
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -184,7 +184,7 @@ class SpeedCDProvider(TorrentProvider):
         }
 
         for login_url in self.urls['login']:
-            response = self.get_url(login_url, post_data=login_params, returns='response')
+            response = self.session.post(login_url, data=login_params)
             if not response or not response.text:
                 log.debug('Unable to connect to provider using login URL: {url}',
                           {'url': login_url})

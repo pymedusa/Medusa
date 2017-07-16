@@ -86,7 +86,7 @@ class ThePirateBayProvider(TorrentProvider):
                     if self.confirmed:
                         log.debug('Searching only confirmed torrents')
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

@@ -64,7 +64,8 @@ PROVIDER_URLS = {
     'shooter': 'http://www.shooter.cn',
     'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
-    'tvsubtitles': 'http://www.tvsubtitles.net'
+    'tvsubtitles': 'http://www.tvsubtitles.net',
+    'wizdom': 'http://wizdom.xyz'
 }
 
 
@@ -343,6 +344,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """
     subtitle = cache.get(subtitle_key.format(id=subtitle_id).encode('utf-8'))
     if subtitle == NO_VALUE:
+        logger.error('Unable to find cached subtitle ID: %s', subtitle_id)
         return
 
     release_name = tv_episode.release_name
@@ -710,6 +712,8 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
+
+        video.alternative_series = list(tv_episode.series.aliases)
 
         payload['video'] = video
         memory_cache.set(key, payload)
