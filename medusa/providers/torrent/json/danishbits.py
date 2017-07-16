@@ -8,7 +8,8 @@ import logging
 import traceback
 
 from medusa import tv
-from medusa.helper.common import convert_size, USER_AGENT
+from medusa.common import USER_AGENT
+from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
