@@ -94,7 +94,7 @@ class DanishbitsProvider(TorrentProvider):
                         err_msg=e
                     )
                     continue
-                if data['error']:
+                if 'error' in data:
                     log.warn('Provider returned an error: {0}', data['error'])
                     continue
                 if data['total_results'] == 0:
