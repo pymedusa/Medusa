@@ -596,7 +596,11 @@ SHOWS_RECENT = []
 
 __INITIALIZED__ = False
 
+# TODO: Remove when NEWZNAB_PROVIDERS has been implemented
 NEWZNAB_DATA = None
+
+NEWZNAB_PROVIDERS = []
+
 TORRENTRSS_DATA = None
 
 RECENTLY_DELETED = set()

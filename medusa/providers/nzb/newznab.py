@@ -44,13 +44,13 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb, torznab
     """
 
-    def __init__(self, name, url, key='0', cat_ids='5030,5040', search_mode='eponly',
+    def __init__(self, name, url='', api_key='0', cat_ids='5030,5040', search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
 
         self.url = url
-        self.key = key
+        self.api_key = api_key
 
         self.search_mode = search_mode
         self.search_fallback = search_fallback
@@ -59,7 +59,7 @@ class NewznabProvider(NZBProvider):
         self.enable_backlog = enable_backlog
 
         # 0 in the key spot indicates that no key is needed
-        self.needs_auth = self.key != '0'
+        self.needs_auth = self.api_key != '0'
         self.public = not self.needs_auth
 
         self.cat_ids = cat_ids if cat_ids else '5030,5040'
@@ -104,8 +104,8 @@ class NewznabProvider(NZBProvider):
                 'maxage': app.USENET_RETENTION
             }
 
-            if self.needs_auth and self.key:
-                search_params['apikey'] = self.key
+            if self.needs_auth and self.api_key:
+                search_params['apikey'] = self.api_key
 
             if mode != 'RSS':
                 match_indexer = self._match_indexer()
@@ -245,7 +245,7 @@ class NewznabProvider(NZBProvider):
 
         :return: True/False
         """
-        if self.needs_auth and not self.key:
+        if self.needs_auth and not self.api_key:
             log.warning('Invalid api key. Check your settings')
             return False
 
@@ -282,10 +282,21 @@ class NewznabProvider(NZBProvider):
     def config_string(self):
         """Generate a '|' delimited string of instance attributes, for saving to config.ini."""
         return '|'.join([
-            self.name, self.url, self.key, self.cat_ids, str(int(self.enabled)),
+            self.name, self.url, self.api_key, self.cat_ids, str(int(self.enabled)),
             self.search_mode, str(int(self.search_fallback)),
             str(int(self.enable_daily)), str(int(self.enable_backlog)), str(int(self.enable_manualsearch))
         ])
+
+    @staticmethod
+    def get_newznab_providers_from_config(providers, config):
+        default_list = [
+            provider for provider in
+            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
+            if provider]
+
+        custom_newznab_providers = [NewznabProvider(custom_provider) for custom_provider in providers]
+
+        return default_list + custom_newznab_providers
 
     @staticmethod
     def get_providers_list(data):
@@ -395,7 +406,7 @@ class NewznabProvider(NZBProvider):
             # Pad values with None for each missing value
             values.extend([None for x in range(len(values), 10)])
 
-            (name, url, key, category_ids, enabled,
+            (name, url, api_key, category_ids, enabled,
              search_mode, search_fallback,
              enable_daily, enable_backlog, enable_manualsearch
              ) = values
@@ -406,7 +417,7 @@ class NewznabProvider(NZBProvider):
             return None
 
         new_provider = NewznabProvider(
-            name, url, key=key, cat_ids=category_ids,
+            name, url, api_key=api_key, cat_ids=category_ids,
             search_mode=search_mode or 'eponly',
             search_fallback=search_fallback or 0,
             enable_daily=enable_daily or 0,
@@ -447,8 +458,8 @@ class NewznabProvider(NZBProvider):
             return False, return_categories, 'Provider requires auth and your key is not set'
 
         url_params = {'t': 'caps'}
-        if self.needs_auth and self.key:
-            url_params['apikey'] = self.key
+        if self.needs_auth and self.api_key:
+            url_params['apikey'] = self.api_key
 
         response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
@@ -477,7 +488,7 @@ class NewznabProvider(NZBProvider):
 
     @staticmethod
     def _get_default_providers():
-        # name|url|key|cat_ids|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
+        # name|url|api_key|cat_ids|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
         return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
                'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
                'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \

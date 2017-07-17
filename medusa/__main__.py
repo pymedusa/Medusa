@@ -956,11 +956,11 @@ class Application(object):
 
             app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 
-            # initialize NZB and TORRENT providers
+            # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
 
-            app.NEWZNAB_DATA = check_setting_str(app.CFG, 'Newznab', 'newznab_data', '')
-            app.newznabProviderList = NewznabProvider.get_providers_list(app.NEWZNAB_DATA)
+            app.NEWZNAB_PROVIDERS = check_setting_list(app.CFG, 'Newznab', 'newznab_providers')
+            app.newznabProviderList = NewznabProvider.get_newznab_providers_from_config(app.NEWZNAB_PROVIDERS, app.CFG)
 
             app.TORRENTRSS_DATA = check_setting_str(app.CFG, 'TorrentRss', 'torrentrss_data', '')
             app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_DATA)
@@ -1002,6 +1002,11 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'bool', 'subtitle', 0)
                     if provider.enable_cookies:
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
+
+                if isinstance(provider, NewznabProvider):
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
+                    load_provider_setting(app.CFG, provider, 'string', 'cat_ids', '', censor_log='low')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
@@ -1502,7 +1507,7 @@ class Application(object):
 
             attributes = {
                 'all': [
-                    'api_key', 'username',
+                    'name', 'url', 'api_key', 'username',
                     'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch',
                 ],
@@ -1514,6 +1519,7 @@ class Application(object):
                     'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freelech', 'cat', 'subtitle', 'cookies',
                 ],
                 GenericProvider.NZB: [
+                    'cats_id'
                 ],
             }
 
@@ -1529,6 +1535,8 @@ class Application(object):
                 if provider_type == provider.provider_type:
                     for attr in attributes[provider_type]:
                         save_provider_setting(new_config, provider, attr)
+
+        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if isinstance(provider, NewznabProvider)]
 
         new_config['NZBs'] = {}
         new_config['NZBs']['nzbs'] = int(app.NZBS)
@@ -1769,7 +1777,7 @@ class Application(object):
         new_config['Email']['email_subject'] = app.EMAIL_SUBJECT
 
         new_config['Newznab'] = {}
-        new_config['Newznab']['newznab_data'] = app.NEWZNAB_DATA
+        new_config['Newznab']['newznab_providers'] = app.NEWZNAB_PROVIDERS
 
         new_config['TorrentRss'] = {}
         new_config['TorrentRss']['torrentrss_data'] = '!!!'.join([x.config_string() for x in app.torrentRssProviderList])
