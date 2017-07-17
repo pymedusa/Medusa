@@ -16,9 +16,9 @@
         <% subsLanguage = subtitles.name_from_code(whichSubs) if not whichSubs == 'all' else 'All' %>
     % endif
     <% wanted_languages = subtitles.wanted_languages()%>
+    <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
     % if not whichSubs or (whichSubs and not ep_counts):
         % if whichSubs:
-        <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
         <h2>All of your episodes have ${label} subtitles.</h2>
         <br>
         % endif
@@ -51,7 +51,7 @@
         <form action="manage/downloadSubtitleMissed" method="post">
             % if app.SUBTITLES_MULTI:
                 <% sub_code = '({0}) '.format(whichSubs) if not whichSubs == 'all' else '' %>
-                <h2>Episodes without ${subsLanguage} ${subtitles.from_code(sub_code)}subtitles.</h2>
+                <h2>Episodes without ${label} subtitles.</h2>
             % else:
                 % for index, sub_code in enumerate(wanted_languages):
                     % if index == 0:
