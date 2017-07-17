@@ -15,7 +15,7 @@
     % if whichSubs:
         <% subsLanguage = subtitles.name_from_code(whichSubs) if not whichSubs == 'all' else 'All' %>
     % endif
-    <% wanted_languages = subtitles.wanted_languages()%>
+    <% wanted_languages = subtitles.wanted_languages() %>
     <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
     % if not whichSubs or (whichSubs and not ep_counts):
         % if whichSubs:
