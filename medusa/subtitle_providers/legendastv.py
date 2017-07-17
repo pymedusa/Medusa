@@ -282,7 +282,6 @@ class LegendasTVProvider(Provider):
         :rtype: list of :class:`LegendasTVArchive`
 
         """
-        logger.info('Getting archives for title %d and language %d', title_id, language_code)
         archives = []
         page = 0
         while True:
@@ -401,8 +400,13 @@ class LegendasTVProvider(Provider):
                     logger.debug("Mismatched movie year, discarding title %d (%s)", title_id, sanitized_result)
                     continue
 
+            logger.info('Getting archives for title %d and language %d', title_id, language.legendastv)
+            archives = self.get_archives(title_id, language.legendastv)
+            if not archives:
+                logger.info('No archives found for title %d and language %d', title_id, language.legendastv)
+
             # iterate over title's archives
-            for a in self.get_archives(title_id, language.legendastv):
+            for a in archives:
                 # clean name of path separators and pack flags
                 clean_name = a.name.replace('/', '-')
                 if a.pack and clean_name.startswith('(p)'):
