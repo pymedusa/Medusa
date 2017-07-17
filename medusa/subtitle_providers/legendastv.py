@@ -204,7 +204,7 @@ class LegendasTVProvider(Provider):
         self.session.close()
 
     @staticmethod
-    def is_valid_title(title, title_id, sanitized_title, season, episode, year):
+    def is_valid_title(title, title_id, sanitized_title, season, year):
         """Check if is a valid title."""
         sanitized_result = sanitize(title['title'])
         if sanitized_result != sanitized_title:
@@ -212,8 +212,8 @@ class LegendasTVProvider(Provider):
                          title_id, sanitized_result)
             return
 
-        # episode
-        if season and episode:
+        # episode type
+        if season:
             # discard mismatches on type
             if title['type'] != 'episode':
                 logger.debug("Mismatched 'episode' type, discarding title %d (%s)", title_id, sanitized_result)
@@ -224,7 +224,7 @@ class LegendasTVProvider(Provider):
                 logger.debug('Mismatched season %s, discarding title %d (%s)',
                              title.get('season'), title_id, sanitized_result)
                 return
-        # movie
+        # movie type
         else:
             # discard mismatches on type
             if title['type'] != 'movie':
@@ -238,14 +238,13 @@ class LegendasTVProvider(Provider):
         return True
 
     @region.cache_on_arguments(expiration_time=SHOW_EXPIRATION_TIME, should_cache_fn=lambda value: value)
-    def search_titles(self, title, season, episode, title_year):
+    def search_titles(self, title, season, title_year):
         """Search for titles matching the `title`.
 
         For episodes, each season has it own title
 
         :param str title: title to search for.
         :param int season: season of the title
-        :param int episode: episode of the title
         :param int title_year: year of the title
         :return: found titles.
         :rtype: dict
@@ -309,7 +308,7 @@ class LegendasTVProvider(Provider):
 
                 # add title only if is valid
                 # Check against title without ignored chars
-                if self.is_valid_title(title, title_id, sanitized_titles[0], season, episode, title_year):
+                if self.is_valid_title(title, title_id, sanitized_titles[0], season, title_year):
                     titles[title_id] = title
 
             logger.debug('Found %d titles', len(titles))
@@ -403,7 +402,7 @@ class LegendasTVProvider(Provider):
 
     def query(self, language, title, season=None, episode=None, year=None):
         # search for titles
-        titles = self.search_titles(title, season, episode, year)
+        titles = self.search_titles(title, season, year)
 
         subtitles = []
         # iterate over titles
