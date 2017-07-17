@@ -48,7 +48,7 @@ CFG = None
 CONFIG_FILE = None
 
 # This is the version of the config we EXPECT to find
-CONFIG_VERSION = 9
+CONFIG_VERSION = 10
 
 # Default encryption version (0 for None)
 ENCRYPTION_VERSION = 0
@@ -100,7 +100,7 @@ CUR_COMMIT_HASH = None
 BRANCH = ''
 
 GIT_RESET = True
-GIT_RESET_BRANCHES = 'develop,master'
+GIT_RESET_BRANCHES = ['develop', 'master']
 GIT_REMOTE_BRANCHES = ''
 GIT_REMOTE = ''
 GIT_REMOTE_URL = ''
@@ -119,7 +119,7 @@ NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
 
-BROKEN_PROVIDERS = ''
+BROKEN_PROVIDERS = []
 BROKEN_PROVIDERS_UPDATE = None
 
 INIT_LOCK = Lock()
@@ -170,7 +170,7 @@ EP_DEFAULT_DELETED_STATUS = None
 LAUNCH_BROWSER = False
 CACHE_DIR = None
 ACTUAL_CACHE_DIR = None
-ROOT_DIRS = None
+ROOT_DIRS = []
 
 TRASH_REMOVE_SHOW = False
 TRASH_ROTATE_LOGS = False
@@ -183,13 +183,13 @@ SEEDERS_LEECHERS_IN_NOTIFY = True
 
 
 USE_LISTVIEW = False
-METADATA_KODI = None
-METADATA_KODI_12PLUS = None
-METADATA_MEDIABROWSER = None
-METADATA_PS3 = None
-METADATA_WDTV = None
-METADATA_TIVO = None
-METADATA_MEDE8ER = None
+METADATA_KODI = []
+METADATA_KODI_12PLUS = []
+METADATA_MEDIABROWSER = []
+METADATA_PS3 = []
+METADATA_WDTV = []
+METADATA_TIVO = []
+METADATA_MEDE8ER = []
 
 QUALITY_DEFAULT = None
 STATUS_DEFAULT = None
@@ -271,7 +271,7 @@ NFO_RENAME = True
 TV_DOWNLOAD_DIR = None
 UNPACK = False
 SKIP_REMOVED_FILES = False
-ALLOWED_EXTENSIONS = "srt,nfo,sub,idx"
+ALLOWED_EXTENSIONS = ('srt', 'nfo', 'sub', 'idx')
 
 NZBS = False
 NZBS_UID = None
@@ -554,27 +554,28 @@ DELETE_FAILED = False
 
 EXTRA_SCRIPTS = []
 
-IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
+IGNORE_WORDS = ['german', 'french', 'core2hd', 'dutch', 'swedish', 'reenc', 'MrLss', 'dubbed']
 
-PREFERRED_WORDS = ""
+PREFERRED_WORDS = []
 
-UNDESIRED_WORDS = "internal,xvid"
+UNDESIRED_WORDS = ['internal', 'xvid']
 
-TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
-    udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\
-    http://tracker.opentrackr.org:1337/announce,udp://p4p.arenabg.com:1337/announce,\
-    http://p4p.arenabg.com:1337/announce,udp://explodie.org:6969/announce,\
-    udp://9.rarbg.com:2710/announce,http://explodie.org:6969/announce,\
-    http://tracker.dler.org:6969/announce,udp://public.popcorn-tracker.org:6969/announce,\
-    udp://tracker.internetwarriors.net:1337/announce,udp://ipv4.tracker.harry.lu:80/announce,\
-    http://ipv4.tracker.harry.lu:80/announce,udp://mgtracker.org:2710/announce,\
-    http://mgtracker.org:6969/announce,udp://tracker.mg64.net:6969/announce,\
-    http://tracker.mg64.net:6881/announce,http://torrentsmd.com:8080/announce"
+TRACKERS_LIST = ['udp://tracker.coppersurfer.tk:6969/announce',
+                 'udp://tracker.leechers-paradise.org:6969/announce',
+                 'udp://tracker.zer0day.to:1337/announce', 'udp://tracker.opentrackr.org:1337/announce',
+                 'http://tracker.opentrackr.org:1337/announce', 'udp://p4p.arenabg.com:1337/announce',
+                 'http://p4p.arenabg.com:1337/announce', 'udp://explodie.org:6969/announce',
+                 'udp://9.rarbg.com:2710/announce', 'http://explodie.org:6969/announce',
+                 'http://tracker.dler.org:6969/announce', 'udp://public.popcorn-tracker.org:6969/announce',
+                 'udp://tracker.internetwarriors.net:1337/announce', 'udp://ipv4.tracker.harry.lu:80/announce',
+                 'http://ipv4.tracker.harry.lu:80/announce', 'udp://mgtracker.org:2710/announce',
+                 'http://mgtracker.org:6969/announce', 'udp://tracker.mg64.net:6969/announce',
+                 'http://tracker.mg64.net:6881/announce', 'http://torrentsmd.com:8080/announce']
 
-REQUIRE_WORDS = ""
-IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
+REQUIRE_WORDS = []
+IGNORED_SUBS_LIST = ['dk', 'fin', 'heb', 'kor', 'nor', 'nordic', 'pl', 'swe']
 IGNORE_UND_SUBS = False
-SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb,!qB"
+SYNC_FILES = ['!sync', 'lftp-pget-status', 'part', 'bts', '!qb', '!qB']
 
 CALENDAR_UNPROTECTED = False
 CALENDAR_ICONS = False

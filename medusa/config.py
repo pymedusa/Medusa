@@ -536,6 +536,20 @@ def clean_url(url):
     return cleaned_url
 
 
+def convert_csv_string_to_list(value, delimiter=',', trim=False):
+    values = []
+    if isinstance(value, list):
+        return value
+
+    try:
+        values = value.split(delimiter)
+        if trim:
+            values = [_.strip() for _ in values]
+    except Exception as error:
+        pass
+
+    return values
+
 ################################################################################
 # Check_setting_int                                                            #
 ################################################################################
@@ -652,6 +666,26 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 
 
 ################################################################################
+# Check_setting_list                                                           #
+################################################################################
+def check_setting_list(config, cfg_name, item_name, default=None):
+    default = default or []
+    try:
+        my_val = config[cfg_name][item_name]
+        if not isinstance(my_val, list):
+            raise Exception('Error during configobj parsing. Expected an Iterable, got an {0!r}'.format(my_val))
+    except Exception:
+        my_val = default
+        try:
+            config[cfg_name][item_name] = my_val
+        except Exception:
+            config[cfg_name] = {}
+            config[cfg_name][item_name] = my_val
+
+    return list(my_val)
+
+
+################################################################################
 # Check_setting                                                                #
 ################################################################################
 def check_setting(config, section, attr_type, attr, default=None, silent=True, **kwargs):
@@ -706,7 +740,7 @@ class ConfigMigrator(object):
     def __init__(self, config_obj):
         """
         Initializes a config migrator that can take the config from the version indicated in the config
-        file up to the version required by SB
+        file up to the version required by Medusa
         """
 
         self.config_obj = config_obj
@@ -722,7 +756,9 @@ class ConfigMigrator(object):
             5: 'Metadata update',
             6: 'Convert from XBMC to new KODI variables',
             7: 'Use version 2 for password encryption',
-            8: 'Convert Plex setting keys'
+            8: 'Convert Plex setting keys',
+            9: 'Added setting "enable_manualsearch" for providers (dynamic setting)',
+            10: 'Convert all csv config items to lists'
         }
 
     def migrate_config(self):
@@ -1022,3 +1058,38 @@ class ConfigMigrator(object):
         """
         # Added setting "enable_manualsearch" for providers (dynamic setting)
         pass
+
+    def _migrate_v10(self):
+        """
+        Convert all csv stored items as 'real' lists. ConfigObj provides a way for storing lists. These are saved
+        as comma separated values, using this the format documented here:
+        http://configobj.readthedocs.io/en/latest/configobj.html?highlight=lists#list-values
+        """
+        # General
+        app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
+        app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
+        app.PROVIDER_ORDER = convert_csv_string_to_list(self.config_obj['General']['provider_order'])
+        app.ROOT_DIRS = convert_csv_string_to_list(self.config_obj['General']['root_dirs'])
+        app.SYNC_FILES = convert_csv_string_to_list(self.config_obj['General']['sync_files'])
+        app.IGNORE_WORDS = convert_csv_string_to_list(self.config_obj['General']['ignore_words'])
+        app.PREFERRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['preferred_words'])
+        app.UNDESIRED_WORDS= convert_csv_string_to_list(self.config_obj['General']['undesired_words'])
+        app.TRACKERS_LIST = convert_csv_string_to_list(self.config_obj['General']['trackers_list'])
+        app.REQUIRE_WORDS = convert_csv_string_to_list(self.config_obj['General']['require_words'])
+        app.IGNORED_SUBS_LIST = convert_csv_string_to_list(self.config_obj['General']['ignored_subs_list'])
+        app.BROKEN_PROVIDERS = convert_csv_string_to_list(self.config_obj['General']['broken_providers'])
+        app.EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['General']['extra_scripts'])
+
+        # Metadata
+        app.METADATA_KODI = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi'], '|')
+        app.METADATA_KODI_12PLUS = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi_12plus'], '|')
+        app.METADATA_MEDIABROWSER = convert_csv_string_to_list(self.config_obj['General']['metadata_mediabrowser'], '|')
+        app.METADATA_PS3 = convert_csv_string_to_list(self.config_obj['General']['metadata_ps3'], '|')
+        app.METADATA_WDTV = convert_csv_string_to_list(self.config_obj['General']['metadata_wdtv'], '|')
+        app.METADATA_TIVO = convert_csv_string_to_list(self.config_obj['General']['metadata_tivo'], '|')
+        app.METADATA_MEDE8ER = convert_csv_string_to_list(self.config_obj['General']['metadata_mede8er'], '|')
+
+        # Subtitles
+        app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
+        app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
+        app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'])
