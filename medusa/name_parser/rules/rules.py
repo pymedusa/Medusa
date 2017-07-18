@@ -1274,6 +1274,7 @@ class ReleaseGroupPostProcessor(Rule):
 
         # https://github.com/guessit-io/guessit/issues/302
         re.compile(r'\W*\b(obfuscated)\b\W*', flags=re.IGNORECASE),
+        re.compile(r'\W*\b(scrambled)\b\W*', flags=re.IGNORECASE),
         re.compile(r'\W*\b(vtv|sd|rp|norar|re-?up(loads?)?)\b\W*', flags=re.IGNORECASE),
         re.compile(r'\W*\b(hebits)\b\W*', flags=re.IGNORECASE),
 
