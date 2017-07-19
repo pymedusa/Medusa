@@ -31,6 +31,7 @@ from medusa.providers.torrent.html import (
     tokyotoshokan,
     torrent9,
     torrentbytes,
+    torrenting,
     torrentleech,
     torrentproject,
     tvchaosuk,
