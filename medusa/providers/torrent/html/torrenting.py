@@ -43,8 +43,7 @@ class TorrentingProvider(TorrentProvider):
         }
 
         # Proper Strings
-        # Provider always returns propers and non-propers in a show search
-        self.proper_strings = ['']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.enable_cookies = True
