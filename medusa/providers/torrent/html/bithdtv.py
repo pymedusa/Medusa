@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from medusa import tv
+from medusa import tv, ui
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
@@ -17,7 +17,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -42,7 +41,6 @@ class BithdtvProvider(TorrentProvider):
         # URLs
         self.url = 'https://www.bit-hdtv.com/'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
             'search': urljoin(self.url, 'torrents.php'),
         }
 
@@ -74,7 +72,7 @@ class BithdtvProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'cat': 10,
+            'cat': '10',
         }
 
         for mode in search_strings:
@@ -110,7 +108,7 @@ class BithdtvProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html.parser') as html:  # Use html.parser, since html5parser has issues with this site.
-            tables = html('table', width='750')  # Get the last table with a width of 750px.
+            tables = html('table', width='800')  # Get the last table with a width of 800px.
             torrent_table = tables[-1] if tables else []
             torrent_rows = torrent_table('tr') if torrent_table else []
 
@@ -123,7 +121,7 @@ class BithdtvProvider(TorrentProvider):
             for row in torrent_rows[1:]:
                 cells = row('td')
                 if len(cells) < 3:
-                    # We must have cells[2] because it containts the title
+                    # We must have cells[2] because it contains the title
                     continue
 
                 if self.freeleech and not row.get('bgcolor'):
@@ -172,22 +170,21 @@ class BithdtvProvider(TorrentProvider):
         return items
 
     def login(self):
-        """Login method used for logging in before doing search and torrent downloads."""
+        """Login method used for logging in before doing a search and torrent downloads."""
         if self.check_required_cookies():
             return True
 
         if self.cookies:
-            self.add_cookies_from_ui()
+            result = self.add_cookies_from_ui()
+            if not result['result']:
+                ui.notifications.message(result['message'])
+                log.warning(result['message'])
+                return False
         else:
-            logger.log('Failed to login, you must add your cookies in the provider settings', logger.WARNING)
+            log.warning('Failed to login, you must add your cookies in the provider settings')
             return False
 
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-        }
-
-        response = self.session.post(self.urls['login'], data=login_params)
+        response = self.session.get(self.urls['search'])
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             self.session.cookies.clear()

@@ -726,33 +726,47 @@ class GenericProvider(object):
         :return: A dict with the the keys result as bool and message as string
         """
         # This is the generic attribute used to manually add cookies for provider authentication
-        if self.enable_cookies:
-            if self.cookies:
-                cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
-                if not cookie_validator.match(self.cookies):
-                    ui.notifications.message(
-                        'Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                        'Cookie is not correctly formatted: {0}'.format(self.cookies))
-                    return {'result': False,
-                            'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
+        if not self.enable_cookies:
+            return {'result': False,
+                    'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
 
-                # cookie_validator got at least one cookie key/value pair, let's return success
-                add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
-                return {'result': True,
-                        'message': ''}
+        if not self.cookies:
+            return {'result': False,
+                    'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
-            else:  # Cookies not set. Don't need to check cookies
-                return {'result': True,
-                        'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
+        cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
+        if not cookie_validator.match(self.cookies):
+            ui.notifications.message(
+                'Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                'Cookie is not correctly formatted: {0}'.format(self.cookies))
+            return {'result': False,
+                    'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        return {'result': False,
-                'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')] for req_cookie in self.required_cookies):
+            return {
+                'result': False,
+                'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
+                           "and make sure you have copied the following cookies: {required_cookies!r}"
+                           .format(provider_url=self.name, required_cookies=self.required_cookies)
+            }
+
+        # cookie_validator got at least one cookie key/value pair, let's return success
+        add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
+        return {'result': True,
+                'message': ''}
 
     def check_required_cookies(self):
-        """Check we have the required cookies, available in the request sessions object."""
+        """
+        Check if we have the required cookies, available in the request sessions object. Meaning that we've already
+        successfully authenticated once, and we don't need to go through this again.
+
+        Note! This doesn't mean the cookies are correct!
+        """
         if not hasattr(self, 'required_cookies'):
-            logger.log('You need to configure the required_cookies attribute, for the provider: {provider}'.format(
-                provider=self.name), logger.ERROR
+            # A reminder for the developer, implementing cookie based authentication.
+            log.error(
+                'You need to configure the required_cookies attribute, for the provider: {provider}',
+                {'provider': self.name}
             )
             return False
         return all(dict_from_cookiejar(self.session.cookies).get(cookie) for cookie in self.required_cookies)
