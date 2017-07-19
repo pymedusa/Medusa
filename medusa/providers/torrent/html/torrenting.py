@@ -156,8 +156,7 @@ class TorrentingProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider')
 
         return items
 
@@ -185,7 +184,7 @@ class TorrentingProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if re.search('Username or password incorrect', response.text):
+        if 'Username or password incorrect' in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
