@@ -263,6 +263,31 @@ class ConfigProviders(Config):
                             kwargs['{id}_enable_backlog'.format(id=cur_id)])
                     except (AttributeError, KeyError):
                         newznab_provider_dict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+
+                    try:
+                        newznab_provider_dict[cur_id].enable_api_hit_cooldown = config.checkbox_to_value(
+                            kwargs['{id}_enable_api_hit_cooldown'.format(id=cur_id)])
+                        newznab_provider_dict[cur_id].session.enable_api_hit_cooldown = newznab_provider_dict[
+                            cur_id].enable_api_hit_cooldown
+                        newznab_provider_dict[cur_id].session.configure_hooks()
+                    except (AttributeError, KeyError):
+                        newznab_provider_dict[cur_id].enable_api_hit_cooldown = 0  # these exceptions are actually catching unselected checkboxes
+
+                    try:
+                        newznab_provider_dict[cur_id].api_hit_limit = int(str(kwargs['{id}_api_hit_limit'.format(id=cur_id)]))
+                        newznab_provider_dict[cur_id].session.api_hit_limit = newznab_provider_dict[cur_id].api_hit_limit
+                        newznab_provider_dict[cur_id].session.configure_hooks()
+                    except (AttributeError, KeyError):
+                        newznab_provider_dict[cur_id].api_hit_limit = 0  # these exceptions are actually catching unselected checkboxes
+
+                    try:
+                        newznab_provider_dict[cur_id].daily_reserve_calls = int(str(kwargs['{id}_daily_reserve_calls'.format(id=cur_id)]))
+                        newznab_provider_dict[cur_id].session.daily_reserve_calls = newznab_provider_dict[
+                            cur_id].daily_reserve_calls
+                        newznab_provider_dict[cur_id].session.configure_hooks()
+                    except (AttributeError, KeyError):
+                        newznab_provider_dict[cur_id].daily_reserve_calls = 0  # these exceptions are actually catching unselected checkboxes
+
                 else:
                     app.newznabProviderList.append(new_provider)
 

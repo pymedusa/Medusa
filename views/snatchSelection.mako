@@ -4,7 +4,6 @@
     from medusa.helpers import anon_url
 %>
 <%block name="scripts">
-<script type="text/javascript" src="js/lib/jquery.bookmarkscroll.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/rating-tooltip.js?${sbPID}"></script>
 <script type="text/javascript" src="js/ajax-episode-subtitles.js?${sbPID}"></script>
@@ -12,6 +11,7 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="showID" value="${show.indexerid}" />
+<input type="hidden" id="series_slug" value="${show.slug}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
 
 <%include file="/partials/showheader.mako"/>
@@ -25,7 +25,7 @@
                 <table id="snatchhistory" class="${"displayShowTableFanArt tablesorterFanArt" if app.FANART_BACKGROUND else "displayShowTable"} display_show tablesorter tablesorter-default" cellspacing="1" border="0" cellpadding="0">
                     <tbody class="tablesorter-no-sort" aria-live="polite" aria-relevant="all">
                         <tr role="row">
-                            <th colspan="4" class="row-seasonheader">
+                            <th colspan="5" class="row-seasonheader">
                                 <h3>
                                     History
                                 </h3>
@@ -41,6 +41,7 @@
                             <th>Status</th>
                             <th>Provider/Group</th>
                             <th>Release</th>
+                            <th>Size</th>
                         </tr>
                     </tbody>
                     <tbody class="toggle collapse" aria-live="polite" aria-relevant="all" id="historydata">
@@ -62,17 +63,22 @@
                                 <td>
                                 ${item['resource_file']}
                                 </td>
+                                <td class="col-size">
+                                ${item['pretty_size']}
+                                </td>
                             </tr>
                         % endfor
                         <tr id="history-footer" class="tablesorter-no-sort border-bottom shadow">
-                            <th class="tablesorter-no-sort" colspan=4></th>
+                            <th class="tablesorter-no-sort" colspan="5"></th>
                         </tr>
                     </tbody>
-                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan=4></td></tr></tbody>
+                    <tbody class="tablesorter-no-sort"><tr><th class="row-seasonheader" colspan="5"></td></tr></tbody>
                 </table>
             % endif
             <!-- add provider meta data -->
-                <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                <div id='manualSearchMeta'>
+                    <meta data-last-prov-updates='${provider_results["last_prov_updates"]}' data-show="${show.indexerid}" data-season="${season}" data-episode="${episode}" data-manual-search-type="${manual_search_type}">
+                </div>
                 <div class="col-md-12 bottom-15">
                     <div class="col-md-8 left-30">
                     <input class="btn manualSearchButton" type="button" id="reloadResults" value="Reload Results" data-force-search="0" />
@@ -102,7 +108,7 @@
                             <th data-priority="critical" class="col-search">Snatch</th>
                         </tr>
                     </thead>
-                    <tbody aria-live="polite" aria-relevant="all">
+                    <tbody id="manualSearchTbody" aria-live="polite" aria-relevant="all">
                     % for hItem in provider_results['found_items']:
                         <tr id='${hItem["name"]}' class="skipped season-${season} seasonstyle ${hItem['status_highlight']}" role="row">
                             <td class="release-name-ellipses triggerhighlight">
@@ -127,8 +133,8 @@
                             <td class="triggerhighlight">
                                 <span class="${hItem['leech_highlight']}">${hItem["leechers"]}</span>
                             </td>
-                            <td class="col-size triggerhighlight">${hItem["pretty_size"]}</td>
-                            <td class="triggerhighlight">${hItem["provider_type"]}</tdclass>
+                            <td class="col-size triggerhighlight" data-size="${hItem["size"]}">${hItem["pretty_size"]}</td>
+                            <td class="triggerhighlight">${hItem["provider_type"]}</td>
                             <td class="col-date triggerhighlight">
                                 <span data-qtip-my="top middle" data-qtip-at="bottom middle" title='${hItem["time"]}' class="addQTip"><time datetime="${hItem['time'].isoformat('T')}" class="date">${hItem["time"]}</time></span>
                             </td>
@@ -139,9 +145,9 @@
                     </tbody>
                     <tbody class="tablesorter-no-sort">
                     <tr id="search-footer" class="tablesorter-no-sort border-bottom shadow">
-                        <th class="tablesorter-no-sort" colspan=11></td>
+                        <th class="tablesorter-no-sort" colspan="11"></td>
                     </tr>
-                    <tr><th class="row-seasonheader" colspan=11></th></tr></tbody>
+                    <tr><th class="row-seasonheader" colspan="11"></th></tr></tbody>
                 </table>
             </div><!-- #container //-->
         </div><!-- #wrapper //-->

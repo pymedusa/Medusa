@@ -60,7 +60,7 @@ MEDUSA.manage.backlogOverview = function() {
     });
 
     $('#backlog_period').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             backlogOverview: {
                 period: $(this).val()
             }
@@ -68,20 +68,20 @@ MEDUSA.manage.backlogOverview = function() {
             log.info(response);
             window.location.reload();
         }).catch(function(err) {
-            log.error();
+            log.error(err);
         });
     });
 
     $('#backlog_status').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             backlogOverview: {
-                status : $(this).val()
+                status: $(this).val()
             }
         }).then(function(response) {
             log.info(response);
             window.location.reload();
         }).catch(function(err) {
-            log.error();
+            log.error(err);
         });
     });
 

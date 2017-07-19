@@ -13,12 +13,20 @@ class NoValue(object):
     def payload(self):
         return self
 
+    def __repr__(self):
+        """Ensure __repr__ is a consistent value in case NoValue is used to
+        fill another cache key.
+
+        """
+        return '<dogpile.cache.api.NoValue object>'
+
     if py3k:
         def __bool__(self):  # pragma NO COVERAGE
             return False
     else:
         def __nonzero__(self):  # pragma NO COVERAGE
             return False
+
 
 NO_VALUE = NoValue()
 """Value returned from ``get()`` that describes

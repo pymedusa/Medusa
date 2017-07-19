@@ -1,33 +1,22 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-# Author: Gordon Turner <gordonturner@gordonturner.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
 import datetime
 import io
+import logging
 import os
 
-from .. import helpers, logger
-from ..helper.common import episode_num
-from ..helper.exceptions import ex
-from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
-from ..metadata import generic
+from medusa import helpers
+from medusa.helper.common import episode_num
+from medusa.helper.exceptions import ex
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.metadata import generic
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class TIVOMetadata(generic.GenericMetadata):
@@ -144,8 +133,8 @@ class TIVOMetadata(generic.GenericMetadata):
             metadata_dir_name = os.path.join(os.path.dirname(ep_obj.location), '.meta')
             metadata_file_path = os.path.join(metadata_dir_name, metadata_file_name)
         else:
-            logger.log(u'Episode location does not exist: {path}'.format
-                       (path=ep_obj.location), logger.DEBUG)
+            log.debug(u'Episode location does not exist: {path}',
+                      {'path': ep_obj.location})
             return u''
         return metadata_file_path
 
@@ -171,7 +160,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -180,10 +169,12 @@ class TIVOMetadata(generic.GenericMetadata):
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
-                logger.log(u'Unable to find episode {ep_num} on {indexer}... '
-                           u'has it been removed? Should I delete from db?'.format
-                           (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=indexerApi(ep_obj.show.indexer).name))
+                log.debug(
+                    u'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
+                        'number': episode_num(ep_to_write.season, ep_to_write.episode),
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                    }
+                )
                 return None
 
             if ep_obj.season == 0 and not getattr(my_ep, 'firstaired', None):
@@ -263,8 +254,8 @@ class TIVOMetadata(generic.GenericMetadata):
                 data += ('tvRating : {rating}\n'.format(rating=my_show['contentrating']))
 
             # This field can be repeated as many times as necessary or omitted completely.
-            if ep_obj.show.genre:
-                for genre in ep_obj.show.genre.split('|'):
+            if ep_obj.series.genre:
+                for genre in ep_obj.series.genre.split('|'):
                     if genre:
                         data += ('vProgramGenre : {genre}\n'.format(genre=genre))
 
@@ -303,13 +294,13 @@ class TIVOMetadata(generic.GenericMetadata):
 
         try:
             if not os.path.isdir(nfo_file_dir):
-                logger.log(u'Metadata directory did not exist, creating it at {path}'.format
-                           (path=nfo_file_dir), logger.DEBUG)
+                log.debug(u'Metadata directory missing, creating it at {location}',
+                          {'location': nfo_file_dir})
                 os.makedirs(nfo_file_dir)
                 helpers.chmod_as_parent(nfo_file_dir)
 
-            logger.log(u'Writing episode nfo file to {path}'.format
-                       (path=nfo_file_path), logger.DEBUG)
+            log.debug(u'Writing episode nfo file to {location}',
+                      {'location': nfo_file_path})
 
             with io.open(nfo_file_path, 'wb') as nfo_file:
                 # Calling encode directly, b/c often descriptions have wonky characters.
@@ -318,9 +309,10 @@ class TIVOMetadata(generic.GenericMetadata):
             helpers.chmod_as_parent(nfo_file_path)
 
         except EnvironmentError as e:
-            logger.log(u'Unable to write file to {path} - '
-                       u'are you sure the folder is writable? {exception}'.format
-                       (path=nfo_file_path, exception=ex(e)), logger.ERROR)
+            log.error(
+                u'Unable to write file to {path} - are you sure the folder is writable? {error}',
+                {'path': nfo_file_path, 'error': ex(e)}
+            )
             return False
 
         return True

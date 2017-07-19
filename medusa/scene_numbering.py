@@ -25,7 +25,7 @@ import datetime
 import time
 import traceback
 
-from . import app, db, helpers, logger
+from . import app, db, logger
 from .helper.exceptions import ex
 from .indexers.indexer_api import indexerApi
 from .scene_exceptions import xem_session
@@ -223,6 +223,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
     # Reload data from DB so that cache and db are in sync
     show = Show.find(app.showList, indexer_id)
     show.flush_episodes()
+    show.erase_cached_parse()
 
 
 def find_xem_numbering(indexer_id, indexer, season, episode):
@@ -496,7 +497,8 @@ def xem_refresh(indexer_id, indexer, force=False):
                 return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
-            parsedJSON = helpers.get_url(url, session=xem_session, returns='json')
+            # TODO: Check if this needs exception handling
+            parsedJSON = xem_session.get(url).json()
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
                 return
@@ -504,7 +506,8 @@ def xem_refresh(indexer_id, indexer, force=False):
             # XEM API URL
             url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer).config['xem_origin'])
 
-            parsedJSON = helpers.get_url(url, session=xem_session, returns='json')
+            # TODO: Check if this needs exception handling.
+            parsedJSON = xem_session.get(url).json()
             if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
                 return

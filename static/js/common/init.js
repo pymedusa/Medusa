@@ -2,11 +2,11 @@ MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
 
+    // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
         var showID = $('#showID').attr('value');
         if (showID) {
-            let asset = 'show/' + $('#showID').attr('value') + '?type=fanart';
-            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            let path = apiRoot + 'series/' + $('#series_slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
@@ -26,6 +26,36 @@ MEDUSA.common.init = function() {
 
     $(window).resize(function() {
         $('.backstretch').css('top', backstretchOffset());
+    });
+
+    // Scroll Functions
+    function scrollTo(dest) {
+        $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
+    }
+
+    $(document).on('scroll', function() {
+        if ($(window).scrollTop() > 100) {
+            $('.scroll-top-wrapper').addClass('show');
+        } else {
+            $('.scroll-top-wrapper').removeClass('show');
+        }
+    });
+
+    $('.scroll-top-wrapper').on('click', function() {
+        scrollTo($('body'));
+    });
+
+    // Scroll to Anchor
+    $('a[href^="#season"]').on('click', function(e) {
+        e.preventDefault();
+        scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
+    });
+
+    // Hover Dropdown for Nav
+    $('ul.nav li.dropdown').hover(function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeIn(500);
+    }, function() {
+        $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
     });
 
     // function to change luminance of #000000 color - used in triggerhighlighting
@@ -62,6 +92,27 @@ MEDUSA.common.init = function() {
     }).on('mouseout', function() {
         $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
     });
+
+    $.rootDirCheck = function() {
+        if ($('#rootDirs option:selected').length === 0) {
+            $('button[data-add-show]').prop('disabled', true);
+            if (!$('#configure_show_options').is(':checked')) {
+                $('#configure_show_options').prop('checked', true);
+                $('#content_configure_show_options').fadeIn('fast', 'linear');
+            }
+            if ($('#rootDirAlert').length === 0) {
+                $('#content-row').before('<div id="rootDirAlert"><div class="text-center">' +
+                  '<div class="alert alert-danger upgrade-notification hidden-print role="alert">' +
+                  '<strong>ERROR!</strong> Unable to add recommended shows.  Please set a default directory first.' +
+                  '</div></div></div>');
+            } else {
+                $('#rootDirAlert').show();
+            }
+        } else {
+            $('#rootDirAlert').hide();
+            $('button[data-add-show]').prop('disabled', false);
+        }
+    };
 
     $.confirm.options = {
         confirmButton: 'Yes',

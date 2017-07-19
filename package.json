@@ -12,10 +12,13 @@
   "scripts": {
     "test-js": "xo",
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
+    "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
-    "build": "node_modules/grunt-cli/bin/grunt"
+    "build": "node_modules/grunt-cli/bin/grunt",
+    "install": "yarn run test-js"
   },
   "devDependencies": {
+    "dredd": "^3.3.0",
     "grunt": "^0.4.5",
     "grunt-bower-concat": "^1.0.0",
     "grunt-bower-task": "^0.4.0",
@@ -49,13 +52,15 @@
       "MEDUSA",
       "api",
       "apiKey",
-      "apiRoot"
+      "apiRoot",
+      "s"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
       "static/js/vender.js",
-      "static/js/api.js"
+      "static/js/api.js",
+      "vue/**/*.js"
     ]
   },
   "stylelint": {
@@ -73,8 +78,8 @@
       ]
     },
     "ignoreFiles": [
-        "static/css/lib/**",
-        "static/css/*.min.css"
+      "static/css/lib/**",
+      "static/css/*.min.css"
     ]
   },
   "dependencies": {

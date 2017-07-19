@@ -1,25 +1,11 @@
 # coding=utf-8
-# Author: p0psicles
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from .indexer_config import indexerConfig, initConfig
-from .. import app
-from ..helper.common import try_int
+
+from medusa import app
+from medusa.helper.common import try_int
+from medusa.indexers.indexer_config import indexerConfig, initConfig
+from medusa.indexers.tvdbv2.fallback import PlexFallBackConfig
 
 
 class indexerApi(object):
@@ -29,6 +15,7 @@ class indexerApi(object):
     def __del__(self):
         pass
 
+    @PlexFallBackConfig
     def indexer(self, *args, **kwargs):
         if self.indexer_id:
             return indexerConfig[self.indexer_id]['module'](*args, **kwargs)

@@ -1,42 +1,35 @@
 # coding=utf-8
-# Author: p0psicles
-#
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Manual search module."""
 
 import json
+import logging
 import threading
 import time
-
 from datetime import datetime
 
 from dateutil import parser
 
-from .queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
-from .. import app, db, logger
-from ..common import Overview, Quality, cpu_presets, statusStrings
-from ..helper.common import enabled_providers, pretty_file_size
-from ..sbdatetime import sbdatetime
-from ..show.show import Show
-from ..show_name_helpers import containsAtLeastOneWord, filterBadReleases
+from medusa import app, db
+from medusa.common import (
+    Overview,
+    Quality,
+    cpu_presets,
+    statusStrings,
+)
+from medusa.helper.common import enabled_providers, pretty_file_size
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.sbdatetime import sbdatetime
+from medusa.search.queue import FORCED_SEARCH_HISTORY, ForcedSearchQueueItem
+from medusa.show.naming import contains_at_least_one_word, filter_bad_releases
+from medusa.show.show import Show
 
-SEARCH_STATUS_FINISHED = "finished"
-SEARCH_STATUS_QUEUED = "queued"
-SEARCH_STATUS_SEARCHING = "searching"
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
+
+SEARCH_STATUS_FINISHED = 'finished'
+SEARCH_STATUS_QUEUED = 'queued'
+SEARCH_STATUS_SEARCHING = 'searching'
 
 
 def get_quality_class(ep_obj):
@@ -51,7 +44,8 @@ def get_quality_class(ep_obj):
 
 
 def get_episode(show, season=None, episode=None, absolute=None):
-    """Get a specific episode object based on show, season and episode number.
+    """
+    Get a specific episode object based on show, season and episode number.
 
     :param show: Season number
     :param season: Season number
@@ -60,22 +54,22 @@ def get_episode(show, season=None, episode=None, absolute=None):
     :return: episode object
     """
     if show is None:
-        return "Invalid show parameters"
+        return 'Invalid show parameters'
 
     show_obj = Show.find(app.showList, int(show))
 
     if show_obj is None:
-        return "Invalid show paramaters"
+        return 'Invalid show parameters'
 
     if absolute:
         ep_obj = show_obj.get_episode(absolute_number=absolute)
     elif season and episode:
         ep_obj = show_obj.get_episode(season, episode)
     else:
-        return "Invalid paramaters"
+        return 'Invalid parameters'
 
     if ep_obj is None:
-        return "Episode couldn't be retrieved"
+        return 'Unable to retrieve episode'
 
     return ep_obj
 
@@ -88,8 +82,8 @@ def get_episodes(search_thread, searchstatus):
 
     if not show_obj:
         if not search_thread.show.is_recently_deleted:
-            logger.log(u'No Show Object found for show with indexerID: {0}'.
-                       format(search_thread.show.indexerid), logger.ERROR)
+            log.error(u'No Show Object found for show with indexerID: {0}',
+                      search_thread.show.indexerid)
         return results
 
     if not isinstance(search_thread.segment, list):
@@ -177,12 +171,9 @@ def collect_episodes_from_search_thread(show):
     return episodes
 
 
-def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, **search_show):  # pylint: disable=too-many-locals,unused-argument
+def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None,
+                               season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    show = search_show.get('show')
-    season = search_show.get('season')
-    episode = search_show.get('episode')
-    manual_search_type = search_show.get('manual_search_type')
     sql_episode = '' if manual_search_type == 'season' else episode
 
     down_cur_quality = 0
@@ -205,21 +196,33 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name, provider=cur_provider.name)
 
         # Let's check if this provider table already exists
-        table_exists = main_db_con.select(b"SELECT name FROM sqlite_master WHERE type='table' AND name=?", [cur_provider.get_id()])
+        table_exists = main_db_con.select(
+            b"SELECT name "
+            b"FROM sqlite_master "
+            b"WHERE type='table'"
+            b" AND name=?",
+            [cur_provider.get_id()]
+        )
         columns = [i[1] for i in main_db_con.select("PRAGMA table_info('{0}')".format(cur_provider.get_id()))] if table_exists else []
-        minseed = int(cur_provider.minseed) if hasattr(cur_provider, 'minseed') else -1
-        minleech = int(cur_provider.minleech) if hasattr(cur_provider, 'minleech') else -1
+        minseed = int(cur_provider.minseed) if getattr(cur_provider, 'minseed', None) else -1
+        minleech = int(cur_provider.minleech) if getattr(cur_provider, 'minleech', None) else -1
 
         # TODO: the implicit sqlite rowid is used, should be replaced with an explicit PK column
         # If table doesn't exist, start a search to create table and new columns seeders, leechers and size
         required_columns = ['seeders', 'leechers', 'size', 'proper_tags']
         if table_exists and all(required_column in columns for required_column in required_columns):
             # The default sql, that's executed for each providers cache table
-            common_sql = b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image', \
-                          ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed', ? 'provider_minleech', \
-                          name, season, episodes, indexerid, url, time, proper_tags, \
-                          quality, release_group, version, seeders, leechers, size, time, pubdate \
-                          FROM '{provider_id}' WHERE indexerid = ? AND quality > 0 ".format(provider_id=cur_provider.get_id())
+            common_sql = (
+                b"SELECT rowid, ? AS 'provider_type', ? AS 'provider_image',"
+                b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
+                b" ? 'provider_minleech', name, season, episodes, indexerid,"
+                b" url, time, proper_tags, quality, release_group, version,"
+                b" seeders, leechers, size, time, pubdate "
+                b"FROM '{provider_id}' "
+                b"WHERE indexerid = ? AND quality > 0 ".format(
+                    provider_id=cur_provider.get_id()
+                )
+            )
             additional_sql = " AND episodes LIKE ? AND season = ? "
 
             # The params are always the same for both queries
@@ -236,7 +239,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             combined_sql_params += add_params
 
             # Get the last updated cache items timestamp
-            last_update = main_db_con.select(b"select max(time) AS lastupdate from '{provider_id}'".format(provider_id=cur_provider.get_id()))
+            last_update = main_db_con.select(b"SELECT max(time) AS lastupdate "
+                                             b"FROM '{provider_id}'".format(provider_id=cur_provider.get_id()))
             provider_results['last_prov_updates'][cur_provider.get_id()] = last_update[0]['lastupdate'] if last_update[0]['lastupdate'] else 0
 
     # Check if we have the combined sql strings
@@ -261,7 +265,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
+        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), True, manual_search_type)  # pylint: disable=maybe-no-member
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
@@ -292,13 +296,13 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 i['rg_highlight'] = 'undesired'
             else:
                 i['rg_highlight'] = ''
-            if containsAtLeastOneWord(i['name'], required_words):
+            if contains_at_least_one_word(i['name'], required_words):
                 i['name_highlight'] = 'required'
-            elif containsAtLeastOneWord(i['name'], ignored_words) or not filterBadReleases(i['name'], parse=False):
+            elif contains_at_least_one_word(i['name'], ignored_words) or not filter_bad_releases(i['name'], parse=False):
                 i['name_highlight'] = 'ignored'
-            elif containsAtLeastOneWord(i['name'], undesired_words):
+            elif contains_at_least_one_word(i['name'], undesired_words):
                 i['name_highlight'] = 'undesired'
-            elif containsAtLeastOneWord(i['name'], preferred_words):
+            elif contains_at_least_one_word(i['name'], preferred_words):
                 i['name_highlight'] = 'preferred'
             else:
                 i['name_highlight'] = ''

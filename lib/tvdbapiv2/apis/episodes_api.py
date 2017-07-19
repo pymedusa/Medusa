@@ -66,8 +66,7 @@ class EpisodesApi(object):
                  returns the request thread.
         """
 
-        all_params = ['id', 'accept_language']
-        all_params.append('callback')
+        all_params = ['id', 'accept_language', 'callback']
 
         params = locals()
         for key, val in iteritems(params['kwargs']):

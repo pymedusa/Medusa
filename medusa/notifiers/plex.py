@@ -1,34 +1,22 @@
 # coding=utf-8
 
-# Author: Dustyn Gibson <miigotu@gmail.com>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
-
+import logging
 import re
 
+from medusa import app, common
+from medusa.helper.exceptions import ex
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
+
 from six import iteritems
-from .. import app, common, logger
-from ..helper.exceptions import ex
-from ..helpers import get_url, make_session
 
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
     import xml.etree.ElementTree as etree
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
@@ -39,7 +27,7 @@ class Notifier(object):
             'X-Plex-Client-Identifier': common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
-        self.session = make_session()
+        self.session = MedusaSession()
 
     @staticmethod
     def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
@@ -67,7 +55,7 @@ class Notifier(object):
         username = username or app.PLEX_CLIENT_USERNAME
         password = password or app.PLEX_CLIENT_PASSWORD
 
-        return kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app="PLEX")  # pylint: disable=protected-access
+        return kodi_notifier._notify_kodi(message, title=title, host=host, username=username, password=password, force=force, dest_app='PLEX')  # pylint: disable=protected-access
 
 ##############################################################################
 # Public functions
@@ -92,7 +80,7 @@ class Notifier(object):
             if update_text and title and new_version:
                 self._notify_pht(update_text + new_version, title)
 
-    def notify_login(self, ipaddress=""):
+    def notify_login(self, ipaddress=''):
         if app.NOTIFY_ON_LOGIN:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
@@ -125,11 +113,11 @@ class Notifier(object):
 
         host = host or app.PLEX_SERVER_HOST
         if not host:
-            logger.log(u'PLEX: No Plex Media Server host specified, check your settings', logger.DEBUG)
+            log.debug(u'PLEX: No Plex Media Server host specified, check your settings')
             return False
 
         if not self.get_token(username, password, plex_server_token):
-            logger.log(u'PLEX: Error getting auth token for Plex Media Server, check your settings', logger.WARNING)
+            log.warning(u'PLEX: Error getting auth token for Plex Media Server, check your settings')
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
@@ -141,32 +129,29 @@ class Notifier(object):
 
             url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
-                xml_response = get_url(url, headers=self.headers, session=self.session, returns='text')
+                # TODO: SESSION: Check if this needs exception handling.
+                xml_response = self.session.get(url, headers=self.headers).text
                 if not xml_response:
-                    logger.log(u'PLEX: Error while trying to contact Plex Media Server: {0}'.format
-                               (cur_host), logger.WARNING)
+                    log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
                     hosts_failed.add(cur_host)
                     continue
 
                 media_container = etree.fromstring(xml_response)
             except IOError as error:
-                logger.log(u'PLEX: Error while trying to contact Plex Media Server: {0}'.format
-                           (ex(error)), logger.WARNING)
+                log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
                 hosts_failed.add(cur_host)
                 continue
             except Exception as error:
                 if 'invalid token' in str(error):
-                    logger.log(u'PLEX: Please set TOKEN in Plex settings: ', logger.WARNING)
+                    log.warning(u'PLEX: Please set TOKEN in Plex settings: ')
                 else:
-                    logger.log(u'PLEX: Error while trying to contact Plex Media Server: {0}'.format
-                               (ex(error)), logger.WARNING)
+                    log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
                 hosts_failed.add(cur_host)
                 continue
 
             sections = media_container.findall('.//Directory')
             if not sections:
-                logger.log(u'PLEX: Plex Media Server not running on: {0}'.format
-                           (cur_host), logger.DEBUG)
+                log.debug(u'PLEX: Plex Media Server not running on: {0}', cur_host)
                 hosts_failed.add(cur_host)
                 continue
 
@@ -191,19 +176,19 @@ class Notifier(object):
             return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
 
         if hosts_match:
-            logger.log(u'PLEX: Updating hosts where TV section paths match the downloaded show: ' + ', '.join(set(hosts_match)), logger.DEBUG)
+            log.debug(u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}', ', '.join(set(hosts_match)))
         else:
-            logger.log(u'PLEX: Updating all hosts with TV sections: ' + ', '.join(set(hosts_all)), logger.DEBUG)
+            log.debug(u'PLEX: Updating all hosts with TV sections: {0}', ', '.join(set(hosts_all)))
 
         hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
         for section_key, cur_host in iteritems(hosts_try):
 
             url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
             try:
-                get_url(url, headers=self.headers, session=self.session, returns='text')
+                # TODO: Check if this needs exception handling
+                self.session.get(url, headers=self.headers).text
             except Exception as error:
-                logger.log(u'PLEX: Error updating library section for Plex Media Server: {0}'.format
-                           (ex(error)), logger.WARNING)
+                log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
                 hosts_failed.add(cur_host)
 
         return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
@@ -222,7 +207,7 @@ class Notifier(object):
         if not (username and password):
             return True
 
-        logger.log(u'PLEX: fetching plex.tv credentials for user: ' + username, logger.DEBUG)
+        log.debug(u'PLEX: fetching plex.tv credentials for user: {0}', username)
 
         params = {
             'user[login]': username,
@@ -230,17 +215,14 @@ class Notifier(object):
         }
 
         try:
-            response = get_url('https://plex.tv/users/sign_in.json',
-                               post_data=params,
-                               headers=self.headers,
-                               session=self.session,
-                               returns='json')
+            response = self.session.post('https://plex.tv/users/sign_in.json',
+                                         data=params,
+                                         headers=self.headers).json()
 
             self.headers['X-Plex-Token'] = response['user']['authentication_token']
 
         except Exception as error:
             self.headers.pop('X-Plex-Token', '')
-            logger.log(u'PLEX: Error fetching credentials from from plex.tv for user {0}: {1}'.format
-                       (username, error), logger.DEBUG)
+            log.debug(u'PLEX: Error fetching credentials from from plex.tv for user {0}: {1}', username, error)
 
         return 'X-Plex-Token' in self.headers

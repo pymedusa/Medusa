@@ -11,7 +11,7 @@ from tornroutes import route
 
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import app, db, helpers, logger, network_timezones, post_processor, sbdatetime, subtitles, ui
+from .... import app, db, helpers, logger, network_timezones, sbdatetime, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -24,6 +24,7 @@ from ....helper.exceptions import (
 )
 from ....helpers import is_media_file
 from ....network_timezones import app_timezone
+from ....post_processor import PostProcessor
 from ....show.show import Show
 from ....tv import Episode
 
@@ -277,6 +278,9 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_subtitleMissedPP.mako')
         app.RELEASES_IN_PP = []
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             for filename in sorted(files):
                 if not is_media_file(filename):
                     continue
@@ -299,10 +303,10 @@ class Manage(Home, WebRoot):
                 else:
                     continue
 
-                if not tv_episode.show.subtitles:
+                if not tv_episode.series.subtitles:
                     continue
 
-                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                related_files = PostProcessor(video_path).list_associated_files(video_path, subtitles_only=True)
                 if related_files:
                     continue
 
@@ -318,10 +322,9 @@ class Manage(Home, WebRoot):
                     age_unit = 'm'
                     age_value = age_minutes
 
-                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
+                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.series.indexerid, 'show_name': tv_episode.series.name,
                                            'season': tv_episode.season, 'episode': tv_episode.episode, 'status': status,
-                                           'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
-        app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
+                                           'age': age_value, 'age_unit': age_unit, 'date': video_date})
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
                         header='Missing Subtitles in Post Process folder', topmenu='manage',
@@ -461,6 +464,9 @@ class Manage(Home, WebRoot):
         air_by_date_all_same = True
         last_air_by_date = None
 
+        dvd_order_all_same = True
+        last_dvd_order = None
+
         root_dir_list = []
 
         for cur_show in show_list:
@@ -526,6 +532,12 @@ class Manage(Home, WebRoot):
                 else:
                     last_air_by_date = cur_show.air_by_date
 
+            if dvd_order_all_same:
+                if last_dvd_order not in (None, cur_show.dvd_order):
+                    dvd_order_all_same = False
+                else:
+                    last_dvd_order = cur_show.dvd_order
+
         default_ep_status_value = last_default_ep_status if default_ep_status_all_same else None
         paused_value = last_paused if paused_all_same else None
         anime_value = last_anime if anime_all_same else None
@@ -535,14 +547,15 @@ class Manage(Home, WebRoot):
         scene_value = last_scene if scene_all_same else None
         sports_value = last_sports if sports_all_same else None
         air_by_date_value = last_air_by_date if air_by_date_all_same else None
+        dvd_order_value = last_dvd_order if dvd_order_all_same else None
         root_dir_list = root_dir_list
 
-        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value,
+        return t.render(showList=toEdit, showNames=show_names, default_ep_status_value=default_ep_status_value, dvd_order_value=dvd_order_value,
                         paused_value=paused_value, anime_value=anime_value, flatten_folders_value=flatten_folders_value,
                         quality_value=quality_value, subtitles_value=subtitles_value, scene_value=scene_value, sports_value=sports_value,
                         air_by_date_value=air_by_date_value, root_dir_list=root_dir_list, title='Mass Edit', header='Mass Edit', topmenu='manage')
 
-    def massEditSubmit(self, paused=None, default_ep_status=None,
+    def massEditSubmit(self, paused=None, default_ep_status=None, dvd_order=None,
                        anime=None, sports=None, scene=None, flatten_folders=None, quality_preset=None,
                        subtitles=None, air_by_date=None, allowed_qualities=None, preferred_qualities=None, toEdit=None, *args,
                        **kwargs):
@@ -557,10 +570,9 @@ class Manage(Home, WebRoot):
             end_dir = kwargs['new_root_dir_{index}'.format(index=which_index)]
             dir_map[kwargs[cur_arg]] = end_dir
 
-        show_ids = toEdit.split('|')
-        errors = []
+        show_ids = toEdit.split('|') if toEdit else []
+        errors = 0
         for cur_show in show_ids:
-            cur_errors = []
             show_obj = Show.find(app.showList, int(cur_show))
             if not show_obj:
                 continue
@@ -609,6 +621,12 @@ class Manage(Home, WebRoot):
                 new_air_by_date = True if air_by_date == 'enable' else False
             new_air_by_date = 'on' if new_air_by_date else 'off'
 
+            if dvd_order == 'keep':
+                new_dvd_order = show_obj.dvd_order
+            else:
+                new_dvd_order = True if dvd_order == 'enable' else False
+            new_dvd_order = 'on' if new_dvd_order else 'off'
+
             if flatten_folders == 'keep':
                 new_flatten_folders = show_obj.flatten_folders
             else:
@@ -629,31 +647,18 @@ class Manage(Home, WebRoot):
 
             exceptions_list = []
 
-            cur_errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
-                                        preferred_qualities, exceptions_list,
-                                        defaultEpStatus=new_default_ep_status,
-                                        flatten_folders=new_flatten_folders,
-                                        paused=new_paused, sports=new_sports,
-                                        subtitles=new_subtitles, anime=new_anime,
-                                        scene=new_scene, air_by_date=new_air_by_date,
-                                        directCall=True)
+            errors += self.editShow(cur_show, new_show_dir, allowed_qualities,
+                                    preferred_qualities, exceptions_list,
+                                    defaultEpStatus=new_default_ep_status,
+                                    flatten_folders=new_flatten_folders,
+                                    paused=new_paused, sports=new_sports, dvd_order=new_dvd_order,
+                                    subtitles=new_subtitles, anime=new_anime,
+                                    scene=new_scene, air_by_date=new_air_by_date,
+                                    directCall=True)
 
-            if cur_errors:
-                logger.log(u'Errors: {errors}'.format(errors=cur_errors), logger.ERROR)
-                errors.append(
-                    '<b>{show}:</b>\n<ul>{errors}</ul>'.format(
-                        show=show_obj.name,
-                        errors=' '.join(['<li>{error}</li>'.format(error=error)
-                                         for error in cur_errors])
-                    )
-                )
         if errors:
-            ui.notifications.error(
-                '{num} error{s} while saving changes:'.format(
-                    num=len(errors),
-                    s='s' if len(errors) > 1 else ''),
-                ' '.join(errors)
-            )
+            ui.notifications.error('Errors', '{num} error{s} while saving changes. Please check logs'.format
+                                   (num=errors, s='s' if errors > 1 else ''))
 
         return self.redirect('/manage/')
 
@@ -710,37 +715,22 @@ class Manage(Home, WebRoot):
             ui.notifications.error('Errors encountered',
                                    '<br />\n'.join(errors))
 
-        def message_detail(title, items):
-            """
-            Create an unordered list of items with a title.
-            :return: The message if items else ''
-            """
-            return '' if not items else """
-                <br />
-                <b>{title}</b>
-                <br />
-                <ul>
-                  {list}
-                </ul>
-                """.format(title=title,
-                           list='\n'.join(['  <li>{item}</li>'.format(item=cur_item)
-                                           for cur_item in items]))
-
         message = ''
-        message += message_detail('Updates', updates)
-        message += message_detail('Refreshes', refreshes)
-        message += message_detail('Renames', renames)
-        message += message_detail('Subtitles', subtitles)
+        if updates:
+            message += '\nUpdates: {0}'.format(len(updates))
+        if refreshes:
+            message += '\nRefreshes: {0}'.format(len(refreshes))
+        if renames:
+            message += '\nRenames: {0}'.format(len(renames))
+        if subtitles:
+            message += '\nSubtitles: {0}'.format(len(subtitles))
 
         if message:
-            ui.notifications.message('The following actions were queued:', message)
+            ui.notifications.message('Queued actions:', message)
 
         return self.redirect('/manage/')
 
     def manageTorrents(self):
-        t = PageTemplate(rh=self, filename='manage_torrents.mako')
-        info_download_station = ''
-
         if re.search('localhost', app.TORRENT_HOST):
 
             if app.LOCALHOST_IP == '':
@@ -756,26 +746,9 @@ class Manage(Home, WebRoot):
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
-                info_download_station = """
-                <p>
-                    To have a better experience please set the Download Station alias as <code>download</code>, you can check
-                    this setting in the Synology DSM <b>Control Panel</b> > <b>Application Portal</b>.  Make sure you allow
-                    DSM to be embedded with iFrames too in <b>Control Panel</b> > <b>DSM Settings</b> > <b>Security</b>.
-                </p>
-                <br />
-                <p>
-                    There is more information about this available <a href="https://github.com/midgetspy/Sick-Beard/pull/338">here</a>.
-                </p>
-                <br />
-                """
+                webui_url = 'https://github.com/pymedusa/Medusa/wiki/Download-Station'
 
-        if not app.TORRENT_PASSWORD == '' and not app.TORRENT_USERNAME == '':
-            webui_url = re.sub('://', '://{username}:{password}@'.format(username=app.TORRENT_USERNAME,
-                                                                         password=app.TORRENT_PASSWORD), webui_url)
-
-        return t.render(
-            webui_url=webui_url, info_download_station=info_download_station,
-            title='Manage Torrents', header='Manage Torrents', topmenu='manage')
+        return self.redirect(webui_url)
 
     def failedDownloads(self, limit=100, toRemove=None):
         failed_db_con = db.DBConnection('failed.db')

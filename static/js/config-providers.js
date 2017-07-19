@@ -72,7 +72,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var newData = [isDefault, [name, url, key, cat]];
         newznabProviders[id] = newData;
 
-        $('#editANewznabProvider').addOption(id, name);
+        $('#editANewznabProvider').append('<option value=' + id + '>' + name + '</option>');
         $('select#editANewznabProvider').prop('selectedIndex', 0);
 
         if ($('#provider_order_list > #' + id).length === 0 && showProvider !== false) {
@@ -89,7 +89,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
         var newData = [name, url, cookies, titleTag];
         torrentRssProviders[id] = newData;
 
-        $('#editATorrentRssProvider').addOption(id, name);
+        $('#editATorrentRssProvider').append('<option value=' + id + '>' + name + '</option>');
         $(this).populateTorrentRssSection();
 
         if ($('#provider_order_list > #' + id).length === 0) {
@@ -111,7 +111,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
     };
 
     $.fn.deleteProvider = function(id) {
-        $('#editANewznabProvider').removeOption(id);
+        $('#editANewznabProvider option[value=' + id + ']').remove();
         delete newznabProviders[id];
         $(this).populateNewznabSection();
         $('li').remove('#' + id);
@@ -127,7 +127,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
     };
 
     $.fn.deleteTorrentRssProvider = function(id) {
-        $('#editATorrentRssProvider').removeOption(id);
+        $('#editATorrentRssProvider option[value=' + id + ']').remove();
         delete torrentRssProviders[id];
         $(this).populateTorrentRssSection();
         $('li').remove('#' + id);
@@ -481,7 +481,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
             name: name,
             url: url,
             cookies: cookies,
-            titleTag: titleTag
+            title_tag: titleTag // eslint-disable-line camelcase
         };
 
         // @TODO: Move to the API

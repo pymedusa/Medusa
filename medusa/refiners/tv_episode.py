@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
+
 """Episode refiner."""
+
 from __future__ import unicode_literals
 
 import logging
 import re
 
-from subliminal.video import Episode
-from ..common import Quality
+from medusa.common import Quality
+from medusa.logger.adapters.style import BraceAdapter
 
-logger = logging.getLogger(__name__)
+from subliminal.video import Episode
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 SHOW_MAPPING = {
     'series_tvdb_id': 'tvdb_id',
@@ -41,24 +46,25 @@ def refine(video, tv_episode=None, **kwargs):
     :param kwargs:
     """
     if video.series_tvdb_id and video.tvdb_id:
-        logger.debug('No need to refine with Episode')
+        log.debug('No need to refine with Episode')
         return
 
     if not tv_episode:
-        logger.debug('No Episode to be used to refine')
+        log.debug('No Episode to be used to refine')
         return
 
     if not isinstance(video, Episode):
-        logger.debug('Video {name} is not an episode. Skipping refiner...', name=video.name)
+        log.debug('Video {name} is not an episode. Skipping refiner...',
+                  {'name': video.name})
         return
 
-    if tv_episode.show:
-        logger.debug('Refining using Series information.')
-        series, year, _ = series_re.match(tv_episode.show.name).groups()
+    if tv_episode.series:
+        log.debug('Refining using Series information.')
+        series, year, _ = series_re.match(tv_episode.series.name).groups()
         enrich({'series': series, 'year': int(year) if year else None}, video)
-        enrich(SHOW_MAPPING, video, tv_episode.show)
+        enrich(SHOW_MAPPING, video, tv_episode.series)
 
-    logger.debug('Refining using Episode information.')
+    log.debug('Refining using Episode information.')
     enrich(EPISODE_MAPPING, video, tv_episode)
     enrich(ADDITIONAL_MAPPING, video, tv_episode, overwrite=False)
     guess = Quality.to_guessit(tv_episode.status)
@@ -84,4 +90,5 @@ def enrich(attributes, target, source=None, overwrite=True):
 
         if new_value and old_value != new_value:
             setattr(target, key, new_value)
-            logger.debug('Attribute {key} changed from {old} to {new}', key=key, old=old_value, new=new_value)
+            log.debug('Attribute {key} changed from {old} to {new}',
+                      {'key': key, 'old': old_value, 'new': new_value})

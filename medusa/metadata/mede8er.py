@@ -1,38 +1,29 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 
 import datetime
 import io
+import logging
 import os
 
+from medusa import helpers
+from medusa.helper.common import dateFormat, episode_num, replace_extension
+from medusa.helper.exceptions import ex
+from medusa.indexers.indexer_api import indexerApi
+from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.metadata import media_browser
+
 from six import string_types
-from .. import helpers, logger
-from ..helper.common import dateFormat, episode_num, replace_extension
-from ..helper.exceptions import ex
-from ..indexers.indexer_api import indexerApi
-from ..indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
-from ..metadata import media_browser
 
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
     import xml.etree.ElementTree as etree
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Mede8erMetadata(media_browser.MediaBrowserMetadata):
@@ -191,7 +182,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -208,10 +199,13 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             try:
                 my_ep = my_show[ep_to_write.season][ep_to_write.episode]
             except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
-                logger.log(u'Unable to find episode {ep_num} on {indexer}... '
-                           u'has it been removed? Should I delete from db?'.format
-                           (ep_num=episode_num(ep_to_write.season, ep_to_write.episode),
-                            indexer=indexerApi(ep_obj.show.indexer).name))
+                log.info(
+                    'Unable to find episode {ep_num} on {indexer}...'
+                    ' has it been removed? Should I delete from db?', {
+                        'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
+                    }
+                )
                 return None
 
             if ep_to_write == ep_obj:
@@ -295,13 +289,13 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     if not episode_name.text:
                         episode_name.text = ep_to_write.name
                     else:
-                        episode_name.text = u', '.join([episode_name.text, ep_to_write.name])
+                        episode_name.text = ', '.join([episode_name.text, ep_to_write.name])
 
                 if ep_to_write.description:
                     if not overview.text:
                         overview.text = ep_to_write.description
                     else:
-                        overview.text = u'\r'.join([overview.text, ep_to_write.description])
+                        overview.text = '\r'.join([overview.text, ep_to_write.description])
 
         # Make it purdy
         helpers.indent_xml(root_node)
@@ -335,24 +329,28 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         try:
             if not os.path.isdir(nfo_file_dir):
-                logger.log(u'Metadata directory did not exist, creating it at {path}'.format
-                           (path=nfo_file_dir), logger.DEBUG)
+                log.debug(
+                    'Metadata directory did not exist, creating it at {location}',
+                    {'location': nfo_file_dir}
+                )
                 os.makedirs(nfo_file_dir)
                 helpers.chmod_as_parent(nfo_file_dir)
 
-            logger.log(u'Writing show nfo file to {path}'.format
-                       (path=nfo_file_path), logger.DEBUG)
+            log.debug(
+                'Writing show nfo file to {location}',
+                {'location': nfo_file_dir}
+            )
 
             nfo_file = io.open(nfo_file_path, 'wb')
 
             data.write(nfo_file, encoding='utf-8', xml_declaration=True)
             nfo_file.close()
             helpers.chmod_as_parent(nfo_file_path)
-        except IOError as e:
-            logger.log(u'Unable to write file to {path} - '
-                       u'are you sure the folder is writable? {exception}'.format
-                       (path=nfo_file_path, exception=ex(e)),
-                       logger.ERROR)
+        except IOError as error:
+            log.error(
+                'Unable to write file to {location} - are you sure the folder is writable? {error}',
+                {'location': nfo_file_path, 'error': ex(error)}
+            )
             return False
 
         return True
@@ -384,13 +382,13 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         try:
             if not os.path.isdir(nfo_file_dir):
-                logger.log(u'Metadata directory did not exist, creating it at {path}'.format
-                           (path=nfo_file_dir), logger.DEBUG)
+                log.debug('Metadata directory did not exist, creating it at {location}',
+                          {'location': nfo_file_dir})
                 os.makedirs(nfo_file_dir)
                 helpers.chmod_as_parent(nfo_file_dir)
 
-            logger.log(u'Writing episode nfo file to {path}'.format
-                       (path=nfo_file_path), logger.DEBUG)
+            log.debug('Writing episode nfo file to {location}',
+                      {'location': nfo_file_path})
 
             with io.open(nfo_file_path, 'wb') as nfo_file:
                 # Calling encode directly, b/c often descriptions have wonky characters.
@@ -399,9 +397,8 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
             helpers.chmod_as_parent(nfo_file_path)
 
         except IOError as e:
-            logger.log(u'Unable to write file to {path} - '
-                       u'are you sure the folder is writable? {exception}'.format
-                       (path=nfo_file_path, exception=ex(e)), logger.ERROR)
+            log.error('Unable to write file to {location} - are you sure the folder is writable? {error}',
+                      {'location': nfo_file_path, 'error': ex(e)})
             return False
 
         return True

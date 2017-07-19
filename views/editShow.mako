@@ -20,8 +20,8 @@
 % endif
 </%block>
 <%block name="content">
+<input type="hidden" id="series_slug" value="${show.slug}" />
 <input type="hidden" id="showID" value="${show.indexerid}" />
-<input type="hidden" id="showIndexerSlug" value="${show.indexer_slug}" />
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>
 % else:
@@ -153,7 +153,7 @@
                             <label for="dvdorder">
                                 <span class="component-title">DVD Order</span>
                                 <span class="component-desc">
-                                    <input type="checkbox" id="dvdorder" name="dvdorder" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
+                                    <input type="checkbox" id="dvdorder" name="dvd_order" ${'checked="checked"' if show.dvd_order == 1 else ''} /> use the DVD order instead of the air order<br>
                                     <div class="clear-left"><p>A "Force Full Update" is necessary, and if you have existing episodes you need to sort them manually.</p></div>
                                 </span>
                             </label>

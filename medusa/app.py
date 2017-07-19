@@ -316,6 +316,8 @@ TORRENT_LABEL_ANIME = ''
 TORRENT_VERIFY_CERT = False
 TORRENT_RPCURL = 'transmission'
 TORRENT_AUTH_TYPE = 'none'
+TORRENT_SEED_LOCATION = None
+TORRENT_CHECKER_FREQUENCY = None
 
 USE_KODI = False
 KODI_ALWAYS_ON = True
@@ -533,6 +535,7 @@ SUBTITLES_MULTI = False
 SUBTITLES_EXTRA_SCRIPTS = []
 SUBTITLES_PRE_SCRIPTS = []
 SUBTITLES_KEEP_ONLY_WANTED = False
+SUBTITLES_ERASE_CACHE = False
 
 ADDIC7ED_USER = None
 ADDIC7ED_PASS = None
@@ -555,7 +558,7 @@ IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
 
 PREFERRED_WORDS = ""
 
-UNDESIRED_WORDS = ""
+UNDESIRED_WORDS = "internal,xvid"
 
 TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
     udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\
@@ -597,6 +600,24 @@ TORRENTRSS_DATA = None
 
 RECENTLY_DELETED = set()
 
+RECENTLY_POSTPROCESSED = {}
+
 RELEASES_IN_PP = []
 
 PRIVACY_LEVEL = 'normal'
+
+PROPERS_SEARCH_INTERVAL = {'15m': 15, '45m': 45, '90m': 90, '4h': 4 * 60, 'daily': 24 * 60}
+
+PROPERS_INTERVAL_LABELS = {'daily': '24 hours',
+                           '4h': '4 hours',
+                           '90m': '90 mins',
+                           '45m': '45 mins',
+                           '15m': '15 mins'
+                           }
+
+# Plex fallback settings
+FALLBACK_PLEX_ENABLE = True
+FALLBACK_PLEX_NOTIFICATIONS = True
+FALLBACK_PLEX_TIMEOUT = 3
+FALLBACK_PLEX_API_URL = 'https://tvdb2.plex.tv'
+TVDB_API_KEY = '0629B785CE550C8D'

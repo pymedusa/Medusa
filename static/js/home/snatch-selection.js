@@ -40,7 +40,8 @@ MEDUSA.home.snatchSelection = function() {
 
     $.fn.loadContainer = function(path, loadingTxt, errorTxt, callback) {
         updateSpinner(loadingTxt);
-        $(this).load(path + ' #container', function(response, status) {
+        $('#manualSearchMeta').load(path + ' #manualSearchMeta meta');
+        $(this).load(path + ' #manualSearchTbody tr', function(response, status) {
             if (status === 'error') {
                 updateSpinner(errorTxt, false);
             }
@@ -82,7 +83,15 @@ MEDUSA.home.snatchSelection = function() {
                 columnSelector_layout: '<label><input type="checkbox">{name}</label>', // eslint-disable-line camelcase
                 columnSelector_mediaquery: false, // eslint-disable-line camelcase
                 columnSelector_cssChecked: 'checked' // eslint-disable-line camelcase
-            }
+            },
+            textExtraction: (function() {
+                return {
+                    // 6: The size column needs an explicit field for the filtering on raw size.
+                    6: function(node) {
+                        return node.getAttribute('data-size');
+                    }
+                };
+            })()
         });
     }
 
@@ -112,7 +121,7 @@ MEDUSA.home.snatchSelection = function() {
         }
 
         self.refreshResults = function() {
-            $('#wrapper').loadContainer(
+            $('#manualSearchTbody').loadContainer(
                     'home/snatchSelection?show=' + urlParams,
                     'Loading new search results...',
                     'Time out, refresh page to try again',
@@ -141,28 +150,25 @@ MEDUSA.home.snatchSelection = function() {
             if (data.result === 'refresh') {
                 self.refreshResults();
                 updateSpinner('Refreshed results...', true);
-                initTableSorter('#srchresults');
             }
             if (data.result === 'searching') {
                 // ep is searched, you will get a results any minute now
                 pollInterval = 5000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode is being searched, please wait......', true);
-                initTableSorter('#srchresults');
             }
             if (data.result === 'queued') {
                 // ep is queued, this might take some time to get results
                 pollInterval = 7000;
                 $('.manualSearchButton').prop('disabled', true);
                 updateSpinner('The episode has been queued, because another search is taking place. please wait..', true);
-                initTableSorter('#srchresults');
             }
             if (data.result === 'finished') {
                 // ep search is finished
                 updateSpinner('Search finished', false);
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = false;
-                initTableSorter('#srchresults');
+                $('#srchresults').trigger('update', true);
                 $('[datetime]').timeago();
             }
             if (data.result === 'error') {
@@ -170,7 +176,6 @@ MEDUSA.home.snatchSelection = function() {
                 console.log('Probably tried to call manualSelectCheckCache, while page was being refreshed.');
                 $('.manualSearchButton').removeAttr('disabled');
                 repeat = true;
-                initTableSorter('#srchresults');
             }
         });
     }
@@ -205,7 +210,6 @@ MEDUSA.home.snatchSelection = function() {
 
     // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the
     // "Show History" button to show or hide the snatch/download/failed history for a manual searched episode or pack.
-    initTableSorter('#showTable');
 
     $('#popover').popover({
         placement: 'bottom',
@@ -223,6 +227,7 @@ MEDUSA.home.snatchSelection = function() {
     });
 
     $(function() {
+        initTableSorter('#srchresults');
         moveSummaryBackground();
         $('body').on('hide.bs.collapse', '.collapse.toggle', function() {
             $('#showhistory').text('Show History');

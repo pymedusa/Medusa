@@ -17,8 +17,8 @@
 
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-
 <input type="hidden" id="showID" value="${choice(results)['showid'] if results else ''}" />
+<input type="hidden" id="series_slug" value="${choice(results)['series_slug'] if results else ''}" />
 <div class="row">
     <div class="col-md-12">
         <h1 class="header">${header}</h1>
@@ -271,7 +271,7 @@
         <tr>
             <th ${('class="nobg"', 'rowspan="2"')[layout == 'poster']} valign="top">
                 <a href="home/displayShow?show=${cur_result['showid']}">
-                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" asset="show/${cur_result['showid']}?type=${(layout, 'posterThumb')[layout == 'poster']}"/>
+                    <img alt="" class="${('posterThumb', 'bannerThumb')[layout == 'banner']}" series="${cur_result['series_slug']}" asset="${(layout, 'posterThumb')[layout == 'poster']}"/>
                 </a>
             </th>
 % if 'banner' == layout:
@@ -357,7 +357,7 @@
                 <tr>
                     <td class="calendarShow">
                         <div class="poster">
-                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" asset="show/${cur_result['showid']}?type=posterThumb" /></a>
+                            <a title="${cur_result['show_name']}" href="home/displayShow?show=${cur_result['showid']}"><img alt="" series="${cur_result['series_slug']}" asset="posterThumb" /></a>
                         </div>
                         <div class="text">
                             <span class="airtime">
