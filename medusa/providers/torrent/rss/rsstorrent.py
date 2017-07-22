@@ -93,20 +93,11 @@ class TorrentRssProvider(TorrentProvider):
         )
 
     @staticmethod
-    def get_providers_list(data):
-        """Get RSS torrent provider list."""
-        providers_list = [x for x in (TorrentRssProvider._make_provider(x) for x in data.split('!!!')) if x]
-        seen_values = set()
-        providers_set = []
+    def get_providers_list(providers):
 
-        for provider in providers_list:
-            value = provider.name
+        custom_newznab_providers = [TorrentRssProvider(custom_provider) for custom_provider in providers]
 
-            if value not in seen_values:
-                providers_set.append(provider)
-                seen_values.add(value)
-
-        return [x for x in providers_set if x]
+        return custom_newznab_providers
 
     def image_name(self):
         """Return RSS torrent image."""

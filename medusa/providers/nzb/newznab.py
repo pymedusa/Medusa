@@ -288,7 +288,7 @@ class NewznabProvider(NZBProvider):
         ])
 
     @staticmethod
-    def get_newznab_providers_from_config(providers, config):
+    def get_newznab_providers(providers):
         default_list = [
             provider for provider in
             (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))

@@ -960,10 +960,10 @@ class Application(object):
             app.providerList = providers.make_provider_list()
 
             app.NEWZNAB_PROVIDERS = check_setting_list(app.CFG, 'Newznab', 'newznab_providers')
-            app.newznabProviderList = NewznabProvider.get_newznab_providers_from_config(app.NEWZNAB_PROVIDERS, app.CFG)
+            app.newznabProviderList = NewznabProvider.get_newznab_providers(app.NEWZNAB_PROVIDERS)
 
-            app.TORRENTRSS_DATA = check_setting_str(app.CFG, 'TorrentRss', 'torrentrss_data', '')
-            app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_DATA)
+            app.TORRENTRSS_PROVIDERS = check_setting_list(app.CFG, 'TorrentRss', 'torrentrss_providers')
+            app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_PROVIDERS)
 
             all_providers = providers.sorted_provider_list()
 
@@ -1536,7 +1536,11 @@ class Application(object):
                     for attr in attributes[provider_type]:
                         save_provider_setting(new_config, provider, attr)
 
-        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if isinstance(provider, NewznabProvider)]
+        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if
+                                 isinstance(provider, NewznabProvider)]
+
+        app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in all_providers if
+                                    isinstance(provider, TorrentRssProvider)]
 
         new_config['NZBs'] = {}
         new_config['NZBs']['nzbs'] = int(app.NZBS)
@@ -1780,7 +1784,7 @@ class Application(object):
         new_config['Newznab']['newznab_providers'] = app.NEWZNAB_PROVIDERS
 
         new_config['TorrentRss'] = {}
-        new_config['TorrentRss']['torrentrss_data'] = '!!!'.join([x.config_string() for x in app.torrentRssProviderList])
+        new_config['TorrentRss']['torrentrss_providers'] = app.TORRENTRSS_PROVIDERS
 
         new_config['GUI'] = {}
         new_config['GUI']['theme_name'] = app.THEME_NAME
