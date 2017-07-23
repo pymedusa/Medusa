@@ -275,6 +275,8 @@ class ConfigProviders(Config):
             if cur_provider.get_id() not in finished_names:
                 app.newznabProviderList.remove(cur_provider)
 
+
+
         torrent_rss_provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
         finished_names = []

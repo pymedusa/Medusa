@@ -1004,8 +1004,11 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
 
                 if isinstance(provider, NewznabProvider):
-                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
-                    load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
+                    # non configurable
+                    if not provider.default:
+                        load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                        load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
+                    # configurable
                     load_provider_setting(app.CFG, provider, 'string', 'cat_ids', '', censor_log='low')
 
             if not os.path.isfile(app.CONFIG_FILE):
@@ -1536,11 +1539,11 @@ class Application(object):
                     for attr in attributes[provider_type]:
                         save_provider_setting(new_config, provider, attr)
 
-        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if
-                                 isinstance(provider, NewznabProvider)]
-
-        app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in all_providers if
-                                    isinstance(provider, TorrentRssProvider)]
+        # app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if
+        #                          isinstance(provider, NewznabProvider)]
+        #
+        # app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in all_providers if
+        #                             isinstance(provider, TorrentRssProvider)]
 
         new_config['NZBs'] = {}
         new_config['NZBs']['nzbs'] = int(app.NZBS)

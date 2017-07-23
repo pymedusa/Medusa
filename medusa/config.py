@@ -28,6 +28,7 @@ from . import app, common, db, helpers, logger, naming, scheduler
 from .helper.common import try_int
 from .version_checker import CheckVersion
 
+
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
 # http://bugs.python.org/issue23636
@@ -1065,6 +1066,18 @@ class ConfigMigrator(object):
         as comma separated values, using this the format documented here:
         http://configobj.readthedocs.io/en/latest/configobj.html?highlight=lists#list-values
         """
+
+        def get_providers_from_data(providers_string):
+            """Split the provider string into providers, and get the provider names."""
+            return [provider.split('|')[0].upper() for provider in providers_string.split('!!!')]
+
+        def make_id(name):
+            """Make ID of the provider."""
+            if not name:
+                return ''
+
+            return re.sub(r'[^\w\d_]', '_', str(name).strip().upper())
+
         # General
         app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
         app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
@@ -1093,3 +1106,25 @@ class ConfigMigrator(object):
         app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
         app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
         app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'])
+
+        try:
+            # migrate rsstorrent providers
+            app.TORRENTRSS_PROVIDERS = get_providers_from_data(self.config_obj['TorrentRss']['torrentrss_data'])
+            app.TORRENTRSS_PROVIDERS = [app.TORRENTRSS_PROVIDERS]
+        except KeyError:
+            app.TORRENTRSS_PROVIDERS = []
+
+        try:
+            # migrate newznab providers
+
+            from medusa.providers.nzb.newznab import NewznabProvider
+
+            app.newznabProviderList = NewznabProvider.get_providers_list(
+                self.config_obj['Newznab']['newznab_data']
+            )
+
+            app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
+
+        except KeyError:
+            app.NEWZNAB_PROVIDERS = []
+

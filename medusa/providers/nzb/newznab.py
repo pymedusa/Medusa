@@ -44,13 +44,15 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb, torznab
     """
 
-    def __init__(self, name, url='', api_key='0', cat_ids='5030,5040', search_mode='eponly',
+    def __init__(self, name, url='', api_key='0', cat_ids='5030,5040', default=False, search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
 
         self.url = url
         self.api_key = api_key
+
+        self.default = default
 
         self.search_mode = search_mode
         self.search_fallback = search_fallback
@@ -66,15 +68,10 @@ class NewznabProvider(NZBProvider):
 
         self.torznab = False
 
-        self.default = False
-
         self.caps = False
         self.cap_tv_search = None
         self.force_query = False
         self.providers_without_caps = ['gingadaddy', '6box']
-        # self.cap_search = None
-        # self.cap_movie_search = None
-        # self.cap_audio_search = None
 
         self.cache = tv.Cache(self)
 
@@ -289,22 +286,32 @@ class NewznabProvider(NZBProvider):
 
     @staticmethod
     def get_newznab_providers(providers):
+        """Return a list of available newznab providers, including the default newznab providers."""
         default_list = [
-            provider for provider in
-            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
-            if provider]
+            NewznabProvider._create_default_provider(default_provider)
+            for default_provider in NewznabProvider._get_default_providers()
+        ]
 
         custom_newznab_providers = [NewznabProvider(custom_provider) for custom_provider in providers]
 
         return default_list + custom_newznab_providers
 
     @staticmethod
+    def save_newnab_providers():
+        """update the app.NEWZNAB_PROVIDERS list with provider names."""
+        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in app.newznabProviderList if not provider.default]
+
+    @staticmethod
     def get_providers_list(data):
-        """Return list of nzb providers."""
+        """
+        Return list of nzb providers.
+
+        Deprecated and only used to migrate configs prior to v10.
+        """
         default_list = [
-            provider for provider in
-            (NewznabProvider._make_provider(x) for x in NewznabProvider._get_default_providers().split('!!!'))
-            if provider]
+            NewznabProvider._create_default_provider(default_provider)
+            for default_provider in NewznabProvider._get_default_providers()
+        ]
 
         providers_list = [
             provider for provider in
@@ -397,12 +404,17 @@ class NewznabProvider(NZBProvider):
         return return_mapping
 
     @staticmethod
-    def _make_provider(config):
-        if not config:
+    def _make_provider(provider_config):
+        """
+        Create providers using a !!! separated string of providers.
+
+        This is only still used for migration old configs prior to v10.
+        """
+        if not provider_config:
             return None
 
         try:
-            values = config.split('|')
+            values = provider_config.split('|')
             # Pad values with None for each missing value
             values.extend([None for x in range(len(values), 10)])
 
@@ -413,7 +425,7 @@ class NewznabProvider(NZBProvider):
 
         except ValueError:
             log.error('Skipping Newznab provider string: {config!r}, incorrect format',
-                      {'config': config})
+                      {'config': provider_config})
             return None
 
         new_provider = NewznabProvider(
@@ -487,11 +499,95 @@ class NewznabProvider(NZBProvider):
             return True, return_categories, ''
 
     @staticmethod
+    def _create_default_provider(config):
+        """Use the providers in get_default_provider to create a new NewznabProvider."""
+        return NewznabProvider(
+            config['name'], config['url'], api_key=config['api_key'], cat_ids=config['category_ids'],
+            default=config['default'], search_mode=config['search_mode'] or 'eponly',
+            search_fallback=config['search_fallback'] or 0, enable_daily=config['enable_daily'] or 0,
+            enable_backlog=config['enable_backlog'] or 0, enable_manualsearch=config['enable_manualsearch'] or 0
+        )
+
+    @staticmethod
     def _get_default_providers():
-        # name|url|api_key|cat_ids|enabled|search_mode|search_fallback|enable_daily|enable_backlog|enable_manualsearch
-        return 'NZB.Cat|https://nzb.cat/||5030,5040,5010|0|eponly|0|0|0|0!!!' + \
-               'NZBGeek|https://api.nzbgeek.info/||5030,5040|0|eponly|0|0|0|0!!!' + \
-               'NZBs.org|https://nzbs.org/||5030,5040|0|eponly|0|0|0|0!!!' + \
-               'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040|0|eponly|0|0|0|0!!!' + \
-               'DOGnzb|https://api.dognzb.cr/||5030,5040,5060,5070|0|eponly|0|0|0|0!!!' + \
-               'Omgwtfnzbs|https://api.omgwtfnzbs.me||5030,5040,5060,5070|0|eponly|0|0|0|0'
+        """Configuration of default newznab providers."""
+        return [
+            {
+                'name': 'NZB.Cat',
+                'url': 'https://nzb.cat/',
+                'api_key': '',
+                'category_ids': '5030,5040,5010',
+                'enabled': False,
+                'default': True,
+                'search_mode': 'eponly',
+                'search_fallback': False,
+                'enable_daily': False,
+                'enable_backlog': False,
+                'enable_manualsearch': False,
+            },
+            {
+                'name': 'NZBGeek',
+                'url': 'https://api.nzbgeek.info/',
+                'api_key': '',
+                'category_ids': '5030,5040',
+                'enabled': False,
+                'default': True,
+                'search_mode': 'eponly',
+                'search_fallback': False,
+                'enable_daily': False,
+                'enable_backlog': False,
+                'enable_manualsearch': False,
+            },
+            {
+                'name': 'NZBs.org',
+                'url': 'https://nzbs.org/',
+                'api_key': '',
+                'category_ids': '5030,5040',
+                'enabled': False,
+                'default': True,
+                'search_mode': 'eponly',
+                'search_fallback': False,
+                'enable_daily': False,
+                'enable_backlog': False,
+                'enable_manualsearch': False,
+            },
+            {
+                'name': 'Usenet-Crawler',
+                'url': 'https://www.usenet-crawler.com/',
+                'api_key': '',
+                'category_ids': '5030,5040',
+                'enabled': False,
+                'default': True,
+                'search_mode': 'eponly',
+                'search_fallback': False,
+                'enable_daily': False,
+                'enable_backlog': False,
+                'enable_manualsearch': False,
+            },
+            {
+                'name': 'DOGnzb',
+                'url': 'https://api.dognzb.cr/',
+                'api_key': '',
+                'category_ids': '5030,5040,5060,5070',
+                'enabled': False,
+                'default': True,
+                'search_mode': 'eponly',
+                'search_fallback': False,
+                'enable_daily': False,
+                'enable_backlog': False,
+                'enable_manualsearch': False,
+            },
+            {
+                'name': 'Omgwtfnzbs',
+                'url': 'https://api.omgwtfnzbs.me/',
+                'api_key': '',
+                'category_ids': '5030,5040,5060,5070',
+                'enabled': False,
+                'default': True,
+                'search_mode': 'eponly',
+                'search_fallback': False,
+                'enable_daily': False,
+                'enable_backlog': False,
+                'enable_manualsearch': False,
+            }
+        ]

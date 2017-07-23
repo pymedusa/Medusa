@@ -26,7 +26,7 @@ log.logger.addHandler(logging.NullHandler())
 class TorrentRssProvider(TorrentProvider):
     """Torrent RSS provider."""
 
-    def __init__(self, name, url, cookies='',
+    def __init__(self, name, url='', cookies='',
                  title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
@@ -95,54 +95,15 @@ class TorrentRssProvider(TorrentProvider):
     @staticmethod
     def get_providers_list(providers):
 
-        custom_newznab_providers = [TorrentRssProvider(custom_provider) for custom_provider in providers]
+        custom_rsstorrent_providers = [TorrentRssProvider(custom_provider) for custom_provider in providers]
 
-        return custom_newznab_providers
+        return custom_rsstorrent_providers
 
     def image_name(self):
         """Return RSS torrent image."""
         if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
-
-    @staticmethod
-    def _make_provider(config):
-        """Create new RSS provider."""
-        if not config:
-            return None
-
-        cookies = ''
-        enable_backlog = 0
-        enable_daily = 0
-        enable_manualsearch = 0
-        search_fallback = 0
-        search_mode = 'eponly'
-        title_tag = 'title'
-
-        try:
-            values = config.split('|')
-
-            if len(values) == 9:
-                name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
-            elif len(values) == 10:
-                name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
-            elif len(values) == 8:
-                name, url, cookies, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
-            else:
-                enabled = values[4]
-                name = values[0]
-                url = values[1]
-        except ValueError:
-            log.error('Skipping RSS Torrent provider string: {0}, incorrect format', config)
-            return None
-
-        new_provider = TorrentRssProvider(
-            name, url, cookies=cookies, title_tag=title_tag, search_mode=search_mode, search_fallback=search_fallback,
-            enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
-        )
-        new_provider.enabled = enabled == '1'
-
-        return new_provider
 
     def validate_rss(self):
         """Validate if RSS."""
