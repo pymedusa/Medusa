@@ -115,7 +115,7 @@ def build_name_cache(show=None):
 
         logger.log(u'Internal name cache for {show} set to: {names}'.format(
             show=show.name,
-            names=names.keys()
+            names=', '.join(names.keys())
         ), logger.DEBUG)
 
     with nameCacheLock:

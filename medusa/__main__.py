@@ -1407,7 +1407,8 @@ class Application(object):
         new_config['General']['check_propers_interval'] = app.CHECK_PROPERS_INTERVAL
         new_config['General']['allow_high_priority'] = int(app.ALLOW_HIGH_PRIORITY)
         new_config['General']['skip_removed_files'] = int(app.SKIP_REMOVED_FILES)
-        new_config['General']['allowed_extensions'] = app.ALLOWED_EXTENSIONS
+        # Need to explicitly cast set to list, as configObj can't handle sets.
+        new_config['General']['allowed_extensions'] = list(app.ALLOWED_EXTENSIONS)
         new_config['General']['quality_default'] = int(app.QUALITY_DEFAULT)
         new_config['General']['status_default'] = int(app.STATUS_DEFAULT)
         new_config['General']['status_default_after'] = int(app.STATUS_DEFAULT_AFTER)

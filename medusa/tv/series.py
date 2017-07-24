@@ -797,11 +797,11 @@ class Series(TV):
         """Return all related words to show: preferred, undesired, ignore, require."""
         words = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignored_words', 'required_words'])
 
-        preferred_words = ','.join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''
-        undesired_words = ','.join(app.UNDESIRED_WORDS.split(',')) if app.UNDESIRED_WORDS.split(',') else ''
+        preferred_words = app.PREFERRED_WORDS
+        undesired_words = app.UNDESIRED_WORDS
 
-        global_ignore = app.IGNORE_WORDS.split(',') if app.IGNORE_WORDS else []
-        global_require = app.REQUIRE_WORDS.split(',') if app.REQUIRE_WORDS else []
+        global_ignore = app.IGNORE_WORDS
+        global_require = app.REQUIRE_WORDS
         show_ignore = self.rls_ignore_words.split(',') if self.rls_ignore_words else []
         show_require = self.rls_require_words.split(',') if self.rls_require_words else []
 
@@ -812,8 +812,8 @@ class Series(TV):
         # Join new global required with show require
         final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
 
-        ignored_words = ','.join(final_ignore)
-        required_words = ','.join(final_require)
+        ignored_words = final_ignore
+        required_words = final_require
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 

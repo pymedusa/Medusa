@@ -101,7 +101,7 @@ BRANCH = ''
 
 GIT_RESET = True
 GIT_RESET_BRANCHES = ['develop', 'master']
-GIT_REMOTE_BRANCHES = ''
+GIT_REMOTE_BRANCHES = []
 GIT_REMOTE = ''
 GIT_REMOTE_URL = ''
 CUR_COMMIT_BRANCH = ''
@@ -271,7 +271,7 @@ NFO_RENAME = True
 TV_DOWNLOAD_DIR = None
 UNPACK = False
 SKIP_REMOVED_FILES = False
-ALLOWED_EXTENSIONS = ('srt', 'nfo', 'sub', 'idx')
+ALLOWED_EXTENSIONS = {'srt', 'nfo', 'sub', 'idx'}
 
 NZBS = False
 NZBS_UID = None

@@ -79,7 +79,7 @@ class ConfigPostProcessing(Config):
         app.AIRDATE_EPISODES = config.checkbox_to_value(airdate_episodes)
         app.FILE_TIMESTAMP_TIMEZONE = file_timestamp_timezone
         app.MOVE_ASSOCIATED_FILES = config.checkbox_to_value(move_associated_files)
-        app.SYNC_FILES = sync_files
+        app.SYNC_FILES = [_.strip() for _ in sync_files.split(',') if x.strip()]
         app.POSTPONE_IF_SYNC_FILES = config.checkbox_to_value(postpone_if_sync_files)
         app.POSTPONE_IF_NO_SUBS = config.checkbox_to_value(postpone_if_no_subs)
         # If 'postpone if no subs' is enabled, we must have SRT in allowed extensions list
@@ -87,20 +87,20 @@ class ConfigPostProcessing(Config):
             allowed_extensions += ',srt'
             # # Auto PP must be disabled because FINDSUBTITLE thread that calls manual PP (like nzbtomedia)
             # app.PROCESS_AUTOMATICALLY = 0
-        app.ALLOWED_EXTENSIONS = ','.join({x.strip() for x in allowed_extensions.split(',') if x.strip()})
+        app.ALLOWED_EXTENSIONS = {x.strip() for x in allowed_extensions.split(',') if x.strip()}
         app.NAMING_CUSTOM_ABD = config.checkbox_to_value(naming_custom_abd)
         app.NAMING_CUSTOM_SPORTS = config.checkbox_to_value(naming_custom_sports)
         app.NAMING_CUSTOM_ANIME = config.checkbox_to_value(naming_custom_anime)
         app.NAMING_STRIP_YEAR = config.checkbox_to_value(naming_strip_year)
         app.NFO_RENAME = config.checkbox_to_value(nfo_rename)
 
-        app.METADATA_KODI = kodi_data
-        app.METADATA_KODI_12PLUS = kodi_12plus_data
-        app.METADATA_MEDIABROWSER = mediabrowser_data
-        app.METADATA_PS3 = sony_ps3_data
-        app.METADATA_WDTV = wdtv_data
-        app.METADATA_TIVO = tivo_data
-        app.METADATA_MEDE8ER = mede8er_data
+        app.METADATA_KODI = kodi_data.split('|')
+        app.METADATA_KODI_12PLUS = kodi_12plus_data.split('|')
+        app.METADATA_MEDIABROWSER = mediabrowser_data.split('|')
+        app.METADATA_PS3 = sony_ps3_data.split('|')
+        app.METADATA_WDTV = wdtv_data.split('|')
+        app.METADATA_TIVO = tivo_data.split('|')
+        app.METADATA_MEDE8ER = mede8er_data.split('|')
 
         app.metadata_provider_dict['KODI'].set_config(app.METADATA_KODI)
         app.metadata_provider_dict['KODI 12+'].set_config(app.METADATA_KODI_12PLUS)

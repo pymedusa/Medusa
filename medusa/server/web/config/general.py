@@ -39,8 +39,8 @@ class ConfigGeneral(Config):
     def saveAddShowDefaults(defaultStatus, allowed_qualities, preferred_qualities, defaultFlattenFolders, subtitles=False,
                             anime=False, scene=False, defaultStatusAfter=WANTED):
 
-        allowed_qualities = allowed_qualities.split(',') if allowed_qualities else []
-        preferred_qualities = preferred_qualities.split(',') if preferred_qualities else []
+        allowed_qualities = [_.strip() for _ in allowed_qualities.split(',')] if allowed_qualities else []
+        preferred_qualities = [_.strip() for _ in preferred_qualities.split(',')] if preferred_qualities else []
 
         new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
