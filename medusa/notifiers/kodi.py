@@ -114,7 +114,7 @@ class Notifier(object):
             return False
 
         result = ''
-        for curHost in [x.strip() for x in host.split(',') if x.strip()]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             log.debug(u'Sending {app} notification to {host} - {msg}',
                       {'app': dest_app, 'host': curHost, 'msg': message})
 
@@ -420,7 +420,7 @@ class Notifier(object):
         if not app.USE_KODI:
             return True
         clean_library = True
-        for host in [x.strip() for x in app.KODI_HOST.split(',')]:
+        for host in [x.strip() for x in app.KODI_HOST]:
             log.info(u'Cleaning KODI library via JSON method for host: {0}', host)
             update_command = json.dumps({
                 'jsonrpc': '2.0',
@@ -644,7 +644,7 @@ class Notifier(object):
 
             # either update each host, or only attempt to update until one successful result
             result = 0
-            for host in [x.strip() for x in app.KODI_HOST.split(',')]:
+            for host in [x.strip() for x in app.KODI_HOST]:
                 if self._send_update_library(host, showName):
                     if app.KODI_UPDATE_ONLYFIRST:
                         log.debug(u'Successfully updated {0}, stopped sending update library commands.', host)

@@ -506,7 +506,7 @@ def clean_hosts(hosts, default_port=None):
         if cleaned_host:
             cleaned_hosts.append(cleaned_host)
 
-    cleaned_hosts = ",".join(cleaned_hosts) if cleaned_hosts else ''
+    cleaned_hosts = cleaned_hosts or []
 
     return cleaned_hosts
 
@@ -629,7 +629,8 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 # Check_setting_str                                                            #
 ################################################################################
 def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
-    # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
+    # For passwords you must include the word `password` in the item_name
+    # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
         censor_level = common.privacy_levels['stupid']
     else:
@@ -669,8 +670,16 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 ################################################################################
 # Check_setting_list                                                           #
 ################################################################################
-def check_setting_list(config, cfg_name, item_name, default=None):
+def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False):
     default = default or []
+    censor_log = False
+
+    if not censor_log:
+        censor_level = common.privacy_levels['stupid']
+    else:
+        censor_level = common.privacy_levels[censor_log]
+    privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+
     try:
         my_val = config[cfg_name][item_name]
         if not isinstance(my_val, list):
@@ -682,6 +691,11 @@ def check_setting_list(config, cfg_name, item_name, default=None):
         except Exception:
             config[cfg_name] = {}
             config[cfg_name][item_name] = my_val
+
+    if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
+        if not item_name.endswith('custom_url'):
+            logger.censored_items[cfg_name, item_name] = my_val
+            logger.rebuild_censored_list()
 
     return list(my_val)
 
@@ -1106,6 +1120,15 @@ class ConfigMigrator(object):
         app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
         app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
         app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'])
+
+        # Notifications
+        app.KODI_HOST = convert_csv_string_to_list(self.config_obj['KODI']['kodi_host'])
+        app.PLEX_SERVER_HOST = convert_csv_string_to_list(self.config_obj['KODI']['plex_server_host'])
+        app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['KODI']['plex_client_host'])
+        app.PROWL_API = convert_csv_string_to_list(self.config_obj['Prowl']['prowl_api'])
+        app.PUSHOVER_DEVICE = convert_csv_string_to_list(self.config_obj['Pushover']['pushover_device'])
+        app.NMA_API = convert_csv_string_to_list(self.config_obj['NMA', 'nma_api'])
+        app.EMAIL_LIST = convert_csv_string_to_list(self.config_obj['Email', 'email_list'])
 
         try:
             # migrate rsstorrent providers

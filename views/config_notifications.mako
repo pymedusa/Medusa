@@ -117,7 +117,7 @@
                                 <div class="field-pair">
                                     <label for="kodi_host">
                                         <span class="component-title">KODI IP:Port</span>
-                                        <input type="text" name="kodi_host" id="kodi_host" value="${app.KODI_HOST}" class="form-control input-sm input350"/>
+                                        <input type="text" name="kodi_host" id="kodi_host" value="${','.join(app.KODI_HOST)}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -223,7 +223,7 @@
                                             <label for="plex_server_host">
                                                 <span class="component-title">Plex Media Server IP:Port</span>
                                                 <span class="component-desc">
-                                                    <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', app.PLEX_SERVER_HOST)}" class="form-control input-sm input350"/>
+                                                    <input type="text" name="plex_server_host" id="plex_server_host" value="${re.sub(r'\b,\b', ', ', ','.join(app.PLEX_SERVER_HOST))}" class="form-control input-sm input350"/>
                                                     <div class="clear-left">
                                                         <p>one or more hosts running Plex Media Server<br>(eg. 192.168.1.1:32400, 192.168.1.2:32400)</p>
                                                     </div>
@@ -297,7 +297,7 @@
                                     <label for="plex_client_host">
                                         <span class="component-title">Plex Home Theater IP:Port</span>
                                         <span class="component-desc">
-                                            <input type="text" name="plex_client_host" id="plex_client_host" value="${app.PLEX_CLIENT_HOST}" class="form-control input-sm input350"/>
+                                            <input type="text" name="plex_client_host" id="plex_client_host" value="${','.join(app.PLEX_CLIENT_HOST)}" class="form-control input-sm input350"/>
                                             <div class="clear-left">
                                                 <p>one or more hosts running Plex Home Theater<br>(eg. 192.168.1.100:3000, 192.168.1.101:3000)</p>
                                             </div>
@@ -782,7 +782,7 @@
                                 <div class="field-pair">
                                     <label for="prowl_api">
                                         <span class="component-title">Global Prowl API key(s):</span>
-                                        <input type="text" name="prowl_api" id="prowl_api" value="${app.PROWL_API}" class="form-control input-sm input250"/>
+                                        <input type="text" name="prowl_api" id="prowl_api" value="${','.join(app.PROWL_API)}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -955,7 +955,7 @@
                                 <div class="field-pair">
                                     <label for="pushover_device">
                                         <span class="component-title">Pushover devices</span>
-                                        <input type="text" name="pushover_device" id="pushover_device" value="${app.PUSHOVER_DEVICE}" class="form-control input-sm input250"/>
+                                        <input type="text" name="pushover_device" id="pushover_device" value="${','.join(app.PUSHOVER_DEVICE)}" class="form-control input-sm input250"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1109,7 +1109,7 @@
                                 <div class="field-pair">
                                     <label for="nma_api">
                                            <span class="component-title">NMA API key:</span>
-                                        <input type="text" name="nma_api" id="nma_api" value="${app.NMA_API}" class="form-control input-sm input350"/>
+                                        <input type="text" name="nma_api" id="nma_api" value="${','.join(app.NMA_API)}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>
@@ -1787,7 +1787,7 @@
                                 <div class="field-pair">
                                     <label for="email_list">
                                         <span class="component-title">Global email list</span>
-                                        <input type="text" name="email_list" id="email_list" value="${app.EMAIL_LIST}" class="form-control input-sm input350"/>
+                                        <input type="text" name="email_list" id="email_list" value="${','.join(app.EMAIL_LIST)}" class="form-control input-sm input350"/>
                                     </label>
                                     <label>
                                         <span class="component-title">&nbsp;</span>

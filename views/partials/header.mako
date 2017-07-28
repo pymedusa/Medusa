@@ -54,10 +54,10 @@
                         <li><a href="manage/backlogOverview/"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
                         <li><a href="manage/manageSearches/"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
                         <li><a href="manage/episodeStatuses/"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
-                    % if app.USE_PLEX_SERVER and app.PLEX_SERVER_HOST != "":
+                    % if app.USE_PLEX_SERVER and app.PLEX_SERVER_HOST != []:
                         <li><a href="home/updatePLEX/"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
                     % endif
-                    % if app.USE_KODI and app.KODI_HOST != "":
+                    % if app.USE_KODI and app.KODI_HOST != []:
                         <li><a href="home/updateKODI/"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
                     % endif
                     % if app.USE_EMBY and app.EMBY_HOST != "" and app.EMBY_APIKEY != "":

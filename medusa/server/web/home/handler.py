@@ -386,7 +386,7 @@ class Home(WebRoot):
     def testKODI(host=None, username=None, password=None):
         host = config.clean_hosts(host)
         final_result = ''
-        for curHost in [x.strip() for x in host.split(',')]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             cur_result = notifiers.kodi_notifier.test_notify(unquote_plus(curHost), username, password)
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Test KODI notice sent successfully to {host}<br>\n'.format(host=unquote_plus(curHost))
@@ -1819,9 +1819,9 @@ class Home(WebRoot):
                 show_name = quote_plus(show_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
-            host = app.KODI_HOST.split(',')[0].strip()
+            host = app.KODI_HOST[0].strip()
         else:
-            host = app.KODI_HOST
+            host = ', '.join(app.KODI_HOST)
 
         if notifiers.kodi_notifier.update_library(showName=show_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
@@ -1836,9 +1836,9 @@ class Home(WebRoot):
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
     def updateEMBY(self, show=None):

@@ -121,7 +121,7 @@ class Notifier(object):
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
-        host_list = {x.strip() for x in host.split(',') if x.strip()}
+        host_list = {x.strip() for x in host if x.strip()}
         hosts_all = hosts_match = {}
         hosts_failed = set()
 
