@@ -95,7 +95,6 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
-from medusa.subtitles import name_from_code
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
@@ -1561,10 +1560,12 @@ class Series(TV):
         tmdb = Tmdb()
         tmdb_id = self.externals.get('tmdb_id')
         country_code = ''
+        country = ''
         if tmdb_id:
             show_info = tmdb._get_show_by_id(tmdb_id)
             country_code = show_info['series']['origin_country']
             print(country_code)
+            country = babelfish.Country(country_code).name
 
         self.imdb_info = {
             'imdb_id': imdb_obj.imdb_id,
@@ -1572,7 +1573,7 @@ class Series(TV):
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': babelfish.Country(country_code).name or '',
+            'countries': country,
             'country_codes': country_code.lower(),
             'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
