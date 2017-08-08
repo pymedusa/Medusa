@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
+from contextlib2 import suppress
 import datetime
 import os.path
 import re
@@ -538,16 +539,22 @@ def clean_url(url):
 
 
 def convert_csv_string_to_list(value, delimiter=',', trim=False):
+    """
+    Convert comma or other character delimited strings to a list.
+
+    :param value: The value to convert.f
+    :param delimiter: Optionally Change the default delimiter ',' if required.
+    :param trim: Optionally trim the individual list items.
+    :return: The delimited value as a list.
+    """
     values = []
     if isinstance(value, list):
         return value
 
-    try:
+    with suppress(ValueError):
         values = value.split(delimiter)
         if trim:
             values = [_.strip() for _ in values]
-    except Exception as error:
-        pass
 
     return values
 
@@ -671,6 +678,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 # Check_setting_list                                                           #
 ################################################################################
 def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False):
+    """Check a setting, using the settings section and item name. Expect to return a list."""
     default = default or []
     censor_log = False
 
@@ -1138,8 +1146,8 @@ class ConfigMigrator(object):
             app.TORRENTRSS_PROVIDERS = []
 
         try:
-            # migrate newznab providers
-
+            # migrate newznab providers.
+            # Newznabprovider needs to be imported lazy, as the module will also import other providers to early.
             from medusa.providers.nzb.newznab import NewznabProvider
 
             app.newznabProviderList = NewznabProvider.get_providers_list(
@@ -1147,7 +1155,6 @@ class ConfigMigrator(object):
             )
 
             app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
-
         except KeyError:
             app.NEWZNAB_PROVIDERS = []
 
