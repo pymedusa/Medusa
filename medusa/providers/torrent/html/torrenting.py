@@ -107,7 +107,7 @@ class TorrentingProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find("table", {"id": "torrentsTable"})
+            torrent_table = html.find('table', {'id': 'torrentsTable'})
             if torrent_table:
                 torrent_rows = torrent_table.find_all('tr')
 
@@ -121,9 +121,10 @@ class TorrentingProvider(TorrentProvider):
                     try:
                         torrent_items = row.find_all('td')
                         title = torrent_items[1].find('a').get_text(strip=True)
-                        download_url = urljoin(self.url, torrent_items[2].find('a')['href'])
+                        download_url = torrent_items[2].find('a')['href']
                         if not all([title, download_url]):
                             continue
+                        download_url = urljoin(self.url, download_url)
 
                         seeders = try_int(torrent_items[5].get_text(strip=True))
                         leechers = try_int(torrent_items[6].get_text(strip=True))
@@ -184,11 +185,11 @@ class TorrentingProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if 'Username or password incorrect' in response.text:
+        elif 'Invalid username or password' in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
-        if (dict_from_cookiejar(self.session.cookies).get('uid') and
+        elif (dict_from_cookiejar(self.session.cookies).get('uid') and
                 dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
             return True
         else:
