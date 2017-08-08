@@ -71,8 +71,8 @@ from . import (
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_list, check_setting_float,
-    check_setting_int, check_setting_str, load_provider_setting, save_provider_setting
+    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
+    check_setting_str, load_provider_setting, save_provider_setting
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events

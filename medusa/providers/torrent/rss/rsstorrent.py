@@ -94,10 +94,8 @@ class TorrentRssProvider(TorrentProvider):
 
     @staticmethod
     def get_providers_list(providers):
-
-        custom_rsstorrent_providers = [TorrentRssProvider(custom_provider) for custom_provider in providers]
-
-        return custom_rsstorrent_providers
+        """Return custom rss torrent providers."""
+        return [TorrentRssProvider(custom_provider) for custom_provider in providers]
 
     def image_name(self):
         """Return RSS torrent image."""

@@ -298,7 +298,7 @@ class NewznabProvider(NZBProvider):
 
     @staticmethod
     def save_newnab_providers():
-        """update the app.NEWZNAB_PROVIDERS list with provider names."""
+        """Update the app.NEWZNAB_PROVIDERS list with provider names."""
         app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in app.newznabProviderList if not provider.default]
 
     @staticmethod
@@ -510,7 +510,7 @@ class NewznabProvider(NZBProvider):
 
     @staticmethod
     def _get_default_providers():
-        """Configuration of default newznab providers."""
+        """Return default newznab providers configuration."""
         return [
             {
                 'name': 'NZB.Cat',

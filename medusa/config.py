@@ -17,11 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
-from contextlib2 import suppress
 import datetime
 import os.path
 import re
 
+from contextlib2 import suppress
 from requests.compat import urlsplit
 from six import iteritems
 from six.moves.urllib.parse import urlunsplit, uses_netloc
@@ -557,6 +557,7 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
             values = [_.strip() for _ in values]
 
     return values
+
 
 ################################################################################
 # Check_setting_int                                                            #
@@ -1108,7 +1109,7 @@ class ConfigMigrator(object):
         app.SYNC_FILES = convert_csv_string_to_list(self.config_obj['General']['sync_files'])
         app.IGNORE_WORDS = convert_csv_string_to_list(self.config_obj['General']['ignore_words'])
         app.PREFERRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['preferred_words'])
-        app.UNDESIRED_WORDS= convert_csv_string_to_list(self.config_obj['General']['undesired_words'])
+        app.UNDESIRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['undesired_words'])
         app.TRACKERS_LIST = convert_csv_string_to_list(self.config_obj['General']['trackers_list'])
         app.REQUIRE_WORDS = convert_csv_string_to_list(self.config_obj['General']['require_words'])
         app.IGNORED_SUBS_LIST = convert_csv_string_to_list(self.config_obj['General']['ignored_subs_list'])
@@ -1157,4 +1158,3 @@ class ConfigMigrator(object):
             app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
         except KeyError:
             app.NEWZNAB_PROVIDERS = []
-

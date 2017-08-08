@@ -264,7 +264,6 @@ class ConfigProviders(Config):
                     except (AttributeError, KeyError):
                         newznab_provider_dict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
-
                 else:
                     app.newznabProviderList.append(new_provider)
 
@@ -274,8 +273,6 @@ class ConfigProviders(Config):
         for cur_provider in app.newznabProviderList:
             if cur_provider.get_id() not in finished_names:
                 app.newznabProviderList.remove(cur_provider)
-
-
 
         torrent_rss_provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
