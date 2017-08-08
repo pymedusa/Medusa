@@ -1556,16 +1556,17 @@ class Series(TV):
             log.debug(u'{id}: IMDb returned invalid info for {imdb_id}, skipping update.',
                       {'id': self.indexerid, 'imdb_id': self.imdb_id})
             return
-            
+
         tmdb = Tmdb()
         tmdb_id = self.externals.get('tmdb_id')
         country_code = ''
-        country = ''
         if tmdb_id:
             show_info = tmdb._get_show_by_id(tmdb_id)
-            country_code = show_info['series']['origin_country']
-            print(country_code)
-            country = babelfish.Country(country_code).name
+            country_code = show_info['series'].get('origin_country')
+            countries = []
+            if country_code:
+                for country in country_code.split('|'):
+                    countries.append(babelfish.Country(country).name)
 
         self.imdb_info = {
             'imdb_id': imdb_obj.imdb_id,
@@ -1573,8 +1574,8 @@ class Series(TV):
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': country,
-            'country_codes': country_code.lower(),
+            'countries': '|'.join(countries or ''),
+            'country_codes': country_code.lower() if country_code else '',
             'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
