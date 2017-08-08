@@ -40,7 +40,7 @@ $(document).ready(function() { // eslint-disable-line max-lines
             return;
         }
 
-        var params = {'url': url, 'name': name, 'api_key' : key};
+        var params = {url: url, name: name, api_key: key}; // eslint-disable-line camelcase
 
         $('.updating_categories').wrapInner('<span><img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif"> Updating Categories ...</span>'); // eslint-disable-line no-undef
         var jqxhr = $.getJSON('config/providers/getNewznabCategories', params, function(data) {
