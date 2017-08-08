@@ -1,32 +1,24 @@
 # coding=utf-8
-# Author: Tyler Fenby <tylerfenby@gmail.com>
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
 
+import logging
+
+from medusa import app, logger
+from medusa.helper.exceptions import FailedPostProcessingFailedException
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.search.queue import FailedQueueItem
 from medusa.show import naming
-from . import app, logger
-from .helper.exceptions import FailedPostProcessingFailedException
-from .name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from .search.queue import FailedQueueItem
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class FailedProcessor(object):
     """Take appropriate action when a download fails to complete."""
 
     def __init__(self, dirName, nzbName):
-        """
+        """Initialize the class.
+
         :param dirName: Full path to the folder of the failed download
         :param nzbName: Full name of the nzb file that failed
         """
@@ -37,11 +29,11 @@ class FailedProcessor(object):
 
     def process(self):
         """
-        Do the actual work
+        Do the actual work.
 
         :return: True
         """
-        self._log(u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.nzb_name, dir=self.dir_name))
+        self._log(u'Failed download detected: ({nzb}, {dir})', {'nzb': self.nzb_name, 'dir': self.dir_name})
 
         releaseName = naming.determine_release_name(self.dir_name, self.nzb_name)
         if not releaseName:
@@ -77,5 +69,5 @@ class FailedProcessor(object):
 
     def _log(self, message, level=logger.INFO):
         """Log to regular logfile and save for return for PP script log."""
-        logger.log(message, level)
+        log.log(level, message)
         self.log += message + "\n"
