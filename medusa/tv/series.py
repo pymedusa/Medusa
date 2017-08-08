@@ -81,6 +81,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerSeasonNotFound,
 )
+from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -94,11 +95,14 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
+from medusa.subtitles import name_from_code
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
 from six import text_type
+
+import babelfish
 
 try:
     from send2trash import send2trash
@@ -1553,6 +1557,14 @@ class Series(TV):
             log.debug(u'{id}: IMDb returned invalid info for {imdb_id}, skipping update.',
                       {'id': self.indexerid, 'imdb_id': self.imdb_id})
             return
+            
+        tmdb = Tmdb()
+        tmdb_id = self.externals.get('tmdb_id')
+        country_code = ''
+        if tmdb_id:
+            show_info = tmdb._get_show_by_id(tmdb_id)
+            country_code = show_info['series']['origin_country']
+            print(country_code)
 
         self.imdb_info = {
             'imdb_id': imdb_obj.imdb_id,
@@ -1560,8 +1572,8 @@ class Series(TV):
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': '',
-            'country_codes': '',
+            'countries': babelfish.Country(country_code).name or '',
+            'country_codes': country_code.lower(),
             'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
