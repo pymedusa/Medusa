@@ -588,17 +588,17 @@ class Tmdb(BaseIndexer):
         :param imdb_id: An imdb id (inc. tt).
         :returns: A dict with externals, including the tvmaze id.
         """
-        for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
+        wanted_externals = ['tvdb_id', 'imdb_id', 'tvrage_id']
+        for external_id in wanted_externals:
             if kwargs.get(external_id):
                 result = self.tmdb.Find(kwargs.get(external_id)).info(**{'external_source': external_id})
                 if result.get('tv_results') and result['tv_results'][0]:
                     # Get the external id's for the passed shows id.
                     externals = self.tmdb.TV(result['tv_results'][0]['id']).external_ids()
-                    externals['tmdb_id'] = result['tv_results'][0]['id']
-
                     externals = {tmdb_external_id: external_value
                                  for tmdb_external_id, external_value
                                  in externals.items()
-                                 if external_value and tmdb_external_id in ['tvrage_id', 'imdb_id', 'tvdb_id']}
+                                 if external_value and tmdb_external_id in wanted_externals}
+                    externals['tmdb_id'] = result['tv_results'][0]['id']
                     return externals
         return {}
