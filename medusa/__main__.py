@@ -1813,9 +1813,9 @@ class Application(object):
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
         new_config['Subtitles']['subtitles_erase_cache'] = int(app.SUBTITLES_ERASE_CACHE)
-        new_config['Subtitles']['subtitles_languages'] = ','.join(app.SUBTITLES_LANGUAGES)
-        new_config['Subtitles']['SUBTITLES_SERVICES_LIST'] = ','.join(app.SUBTITLES_SERVICES_LIST)
-        new_config['Subtitles']['SUBTITLES_SERVICES_ENABLED'] = '|'.join([str(x) for x in app.SUBTITLES_SERVICES_ENABLED])
+        new_config['Subtitles']['subtitles_languages'] = app.SUBTITLES_LANGUAGES
+        new_config['Subtitles']['SUBTITLES_SERVICES_LIST'] = app.SUBTITLES_SERVICES_LIST
+        new_config['Subtitles']['SUBTITLES_SERVICES_ENABLED'] = [str(_) for _ in app.SUBTITLES_SERVICES_ENABLED]
         new_config['Subtitles']['subtitles_dir'] = app.SUBTITLES_DIR
         new_config['Subtitles']['subtitles_default'] = int(app.SUBTITLES_DEFAULT)
         new_config['Subtitles']['subtitles_history'] = int(app.SUBTITLES_HISTORY)
@@ -1826,8 +1826,8 @@ class Application(object):
         new_config['Subtitles']['subtitles_hearing_impaired'] = int(app.SUBTITLES_HEARING_IMPAIRED)
         new_config['Subtitles']['subtitles_finder_frequency'] = int(app.SUBTITLES_FINDER_FREQUENCY)
         new_config['Subtitles']['subtitles_multi'] = int(app.SUBTITLES_MULTI)
-        new_config['Subtitles']['subtitles_extra_scripts'] = '|'.join(app.SUBTITLES_EXTRA_SCRIPTS)
-        new_config['Subtitles']['subtitles_pre_scripts'] = '|'.join(app.SUBTITLES_PRE_SCRIPTS)
+        new_config['Subtitles']['subtitles_extra_scripts'] = app.SUBTITLES_EXTRA_SCRIPTS
+        new_config['Subtitles']['subtitles_pre_scripts'] = app.SUBTITLES_PRE_SCRIPTS
         new_config['Subtitles']['subtitles_keep_only_wanted'] = int(app.SUBTITLES_KEEP_ONLY_WANTED)
         new_config['Subtitles']['addic7ed_username'] = app.ADDIC7ED_USER
         new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(app.ADDIC7ED_PASS, app.ENCRYPTION_VERSION)

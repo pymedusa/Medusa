@@ -552,9 +552,9 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
         return value
 
     with suppress(AttributeError, ValueError):
-        values = value.split(delimiter)
+        value = value.split(delimiter)
         if trim:
-            value = [_.strip() for _ in values]
+            value = [_.strip() for _ in value]
 
     return value
 
@@ -691,8 +691,6 @@ def check_setting_list(config, cfg_name, item_name, default=None, censor_log=Fal
 
     try:
         my_val = config[cfg_name][item_name]
-        if not isinstance(my_val, list):
-            raise Exception('Error during configobj parsing. Expected an Iterable, got an {0!r}'.format(my_val))
     except Exception:
         my_val = default
         try:
@@ -706,7 +704,7 @@ def check_setting_list(config, cfg_name, item_name, default=None, censor_log=Fal
             logger.censored_items[cfg_name, item_name] = my_val
             logger.rebuild_censored_list()
 
-    return list(my_val)
+    return my_val
 
 
 ################################################################################
@@ -1105,7 +1103,7 @@ class ConfigMigrator(object):
         app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
         app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
         app.PROVIDER_ORDER = convert_csv_string_to_list(self.config_obj['General']['provider_order'])
-        app.ROOT_DIRS = convert_csv_string_to_list(self.config_obj['General']['root_dirs'])
+        app.ROOT_DIRS = convert_csv_string_to_list(self.config_obj['General']['root_dirs'], '|')
         app.SYNC_FILES = convert_csv_string_to_list(self.config_obj['General']['sync_files'])
         app.IGNORE_WORDS = convert_csv_string_to_list(self.config_obj['General']['ignore_words'])
         app.PREFERRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['preferred_words'])
