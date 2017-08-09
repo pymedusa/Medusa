@@ -209,6 +209,20 @@ def from_ietf_code(code, unknown='und'):
         return Language(unknown) if unknown else None
 
 
+def from_code_to_name(code):
+    """Return the language name for the given 2 letter language code.
+
+    :param code: the 2 letter language code
+    :type code: str
+    :return: the language name
+    :rtype: str
+    """
+
+    language_name = babelfish.Country(country).name if country_code and country in babelfish.COUNTRIES else ''
+
+    return language_name
+
+
 def name_from_code(code):
     """Return the language name for the given language code.
 

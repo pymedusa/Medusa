@@ -101,8 +101,6 @@ from medusa.tv.indexer import Indexer
 
 from six import text_type
 
-import babelfish
-
 try:
     from send2trash import send2trash
 except ImportError:
@@ -1557,16 +1555,12 @@ class Series(TV):
                       {'id': self.indexerid, 'imdb_id': self.imdb_id})
             return
 
-        tmdb = Tmdb()
         tmdb_id = self.externals.get('tmdb_id')
-        country_code = ''
         if tmdb_id:
-            show_info = tmdb._get_show_by_id(tmdb_id)
-            country_code = show_info['series'].get('origin_country')
-            countries = []
-            if country_code:
-                for country in country_code.split('|'):
-                    countries.append(babelfish.Country(country).name)
+            country_code = Tmdb()._get_shows_countries(tmdb_id)
+            countries = '|'
+            for country in country_code.split('|'):
+                countries = countries.join(subtitles.name_from_code(country))
 
         self.imdb_info = {
             'imdb_id': imdb_obj.imdb_id,
@@ -1574,8 +1568,8 @@ class Series(TV):
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': '|'.join(countries or ''),
-            'country_codes': country_code.lower() if country_code else '',
+            'countries': '|'.join(countries),
+            'country_codes': country_code.lower(),
             'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
