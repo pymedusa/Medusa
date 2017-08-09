@@ -23,7 +23,7 @@ import re
 
 from contextlib2 import suppress
 from requests.compat import urlsplit
-from six import iteritems
+from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 from . import app, common, db, helpers, logger, naming, scheduler
 from .helper.common import try_int
@@ -547,16 +547,16 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
     :param trim: Optionally trim the individual list items.
     :return: The delimited value as a list.
     """
-    values = []
-    if isinstance(value, list):
+
+    if not isinstance(value, (string_types, text_type)):
         return value
 
-    with suppress(ValueError):
+    with suppress(AttributeError, ValueError):
         values = value.split(delimiter)
         if trim:
-            values = [_.strip() for _ in values]
+            value = [_.strip() for _ in values]
 
-    return values
+    return value
 
 
 ################################################################################
