@@ -1132,8 +1132,8 @@ class ConfigMigrator(object):
 
         # Notifications
         app.KODI_HOST = convert_csv_string_to_list(self.config_obj['KODI']['kodi_host'])
-        app.PLEX_SERVER_HOST = convert_csv_string_to_list(self.config_obj['KODI']['plex_server_host'])
-        app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['KODI']['plex_client_host'])
+        app.PLEX_SERVER_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_server_host'])
+        app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_client_host'])
         app.PROWL_API = convert_csv_string_to_list(self.config_obj['Prowl']['prowl_api'])
         app.PUSHOVER_DEVICE = convert_csv_string_to_list(self.config_obj['Pushover']['pushover_device'])
         app.NMA_API = convert_csv_string_to_list(self.config_obj['NMA', 'nma_api'])
