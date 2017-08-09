@@ -91,7 +91,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # video root
         if app.ROOT_DIRS:
-            root_dirs = app.ROOT_DIRS.split('|')
+            root_dirs = app.ROOT_DIRS
             self.video_root = root_dirs[int(root_dirs[0]) + 1]
         else:
             self.video_root = None

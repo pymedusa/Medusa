@@ -256,7 +256,7 @@
                         % if app.DOWNLOAD_URL and epResult['location'] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             <%
                                 filename = epResult['location']
-                                for rootDir in app.ROOT_DIRS.split('|'):
+                                for rootDir in app.ROOT_DIRS:
                                     if rootDir.startswith('/'):
                                         filename = filename.replace(rootDir, "")
                                 filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))

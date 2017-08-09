@@ -136,7 +136,7 @@ class Home(WebRoot):
         selected_root = int(app.SELECTED_ROOT)
         shows_dir = None
         if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
             try:
                 shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
@@ -659,7 +659,7 @@ class Home(WebRoot):
         tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
         root_dir = {}
         if app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
         else:
             backend_dirs = []
