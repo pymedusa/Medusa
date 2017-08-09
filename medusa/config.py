@@ -1126,7 +1126,7 @@ class ConfigMigrator(object):
         # Subtitles
         app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
         app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
-        app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'])
+        app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'], '|')
 
         # Notifications
         app.KODI_HOST = convert_csv_string_to_list(self.config_obj['KODI']['kodi_host'])
