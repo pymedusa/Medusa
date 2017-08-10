@@ -65,7 +65,7 @@ class CommonTests(unittest.TestCase):
                 self.assertEqual(http_code_description(http_code), result)
 
     def test_is_sync_file(self):
-        app.SYNC_FILES = '!sync,lftp-pget-status,part'
+        app.SYNC_FILES = ['!sync', 'lftp-pget-status', 'part']
 
         test_cases = {
             None: False,
