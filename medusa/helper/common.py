@@ -207,7 +207,7 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
         else:
             regex_units = re.search(r'(\d*[\\.|\\,]?\d*)(\s?({scale}))'.format(scale='|'.join(scale)), size, re.IGNORECASE)
             units = regex_units.group(2) if regex_units else default_units
-            scalar = size.strip(units)
+            scalar = regex_units.group(1)
 
         scalar = float(scalar)
         scalar *= (1024 if not use_decimal else 1000) ** scale.index(units)
