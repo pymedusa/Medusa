@@ -410,10 +410,10 @@ class CommonTests(unittest.TestCase):
         self.assertEqual(convert_size('1 MB', units=oops), None)
 
         # utilize the regex to parse sizes without separator
-        self.assertEqual(convert_size('1GB', sep=None), 1073741824)
-        self.assertEqual(convert_size('1.00GB', sep=None), 1073741824)
-        self.assertEqual(convert_size('1.01GB', sep=None), 1084479242)
-        self.assertEqual(convert_size('1B', sep=None), 1)
+        self.assertEqual(convert_size('1GB', sep=''), 1073741824)
+        self.assertEqual(convert_size('1.00GB', sep=''), 1073741824)
+        self.assertEqual(convert_size('1.01GB', sep=''), 1084479242)
+        self.assertEqual(convert_size('1B', sep=''), 1)
 
     def test_episode_num(self):
         # Standard numbering

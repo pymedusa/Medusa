@@ -96,7 +96,6 @@ class YggtorrentProvider(TorrentProvider):
 
         :return: A list of items found
         """
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -123,7 +122,7 @@ class YggtorrentProvider(TorrentProvider):
                     leechers = try_int(cells[5].get_text(strip=True))
 
                     torrent_size = cells[3].get_text()
-                    size = convert_size(torrent_size, sep=None) or -1
+                    size = convert_size(torrent_size, sep='') or -1
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -153,7 +152,6 @@ class YggtorrentProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-
         login_params = {
             'id': self.username,
             'pass': self.password,
