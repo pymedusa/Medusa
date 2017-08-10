@@ -409,6 +409,12 @@ class CommonTests(unittest.TestCase):
         self.assertEqual(convert_size('1 Mb', units=oops), None)
         self.assertEqual(convert_size('1 MB', units=oops), None)
 
+        # utilize the regex to parse sizes without separator
+        self.assertEqual(convert_size('1GB', units=oops), 1073741824)
+        self.assertEqual(convert_size('1.00GB', units=oops), 1073741824)
+        self.assertEqual(convert_size('1.01GB', units=oops), 1084479242)
+        self.assertEqual(convert_size('1B', units=oops), 1)
+
     def test_episode_num(self):
         # Standard numbering
         self.assertEqual(episode_num(0, 1), 'S00E01')  # Seasons start at 0 for specials
