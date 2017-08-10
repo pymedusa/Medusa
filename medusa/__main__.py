@@ -518,9 +518,6 @@ class Application(object):
             app.HTTPS_KEY = check_setting_str(app.CFG, 'General', 'https_key', 'server.key')
             app.HANDLE_REVERSE_PROXY = bool(check_setting_int(app.CFG, 'General', 'handle_reverse_proxy', 0))
             app.ROOT_DIRS = check_setting_list(app.CFG, 'General', 'root_dirs')
-            if not all([re.match(r'\d+\|[^|]+(?:\|[^|]+)*', root_dir) for root_dir in app.ROOT_DIRS]):
-                app.ROOT_DIRS = ''
-
             app.QUALITY_DEFAULT = check_setting_int(app.CFG, 'General', 'quality_default', SD)
             app.STATUS_DEFAULT = check_setting_int(app.CFG, 'General', 'status_default', SKIPPED)
             app.STATUS_DEFAULT_AFTER = check_setting_int(app.CFG, 'General', 'status_default_after', WANTED)
