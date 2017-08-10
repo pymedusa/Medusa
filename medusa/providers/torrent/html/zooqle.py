@@ -79,7 +79,7 @@ class ZooqleProvider(TorrentProvider):
                               {'search': search_string})
                     search_params = {'q': '{0} category:TV'.format(search_string)}
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

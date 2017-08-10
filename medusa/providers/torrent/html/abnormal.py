@@ -94,7 +94,7 @@ class ABNormalProvider(TorrentProvider):
                     search_params['order'] = 'Seeders'
 
                 search_params['search'] = re.sub(r'[()]', '', search_string)
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -186,7 +186,7 @@ class ABNormalProvider(TorrentProvider):
             'password': self.password,
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False

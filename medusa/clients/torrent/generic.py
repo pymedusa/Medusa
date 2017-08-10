@@ -14,9 +14,10 @@ from hashlib import sha1
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
 
-from medusa import app, db, helpers
+from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 import requests
 
@@ -48,7 +49,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = helpers.make_session()
+        self.session = MedusaSession()
         self.session.auth = (self.username, self.password)
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
