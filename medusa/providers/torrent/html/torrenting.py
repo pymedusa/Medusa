@@ -192,10 +192,10 @@ class TorrentingProvider(TorrentProvider):
         elif (dict_from_cookiejar(self.session.cookies).get('uid') and
                 dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
             return True
-        else:
-            log.warning('Failed to login, check your cookies')
-            self.session.cookies.clear()
-            return False
+
+        log.warning('Failed to login, check your cookies')
+        self.session.cookies.clear()
+        return False
 
 
 provider = TorrentingProvider()
