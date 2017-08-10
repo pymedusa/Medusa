@@ -552,7 +552,7 @@ def convert_csv_string_to_list(value, delimiter=',', trim=False):
         return value
 
     with suppress(AttributeError, ValueError):
-        value = value.split(delimiter)
+        value = value.split(delimiter) if value else []
         if trim:
             value = [_.strip() for _ in value]
 
