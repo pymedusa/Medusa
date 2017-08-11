@@ -757,9 +757,9 @@ class GenericProvider(object):
 
     def check_required_cookies(self):
         """
-        Check if we have the required cookies, available in the request sessions object. Meaning that we've already
-        successfully authenticated once, and we don't need to go through this again.
+        Check if we have the required cookies in the requests sessions object.
 
+        Meaning that we've already successfully authenticated once, and we don't need to go through this again.
         Note! This doesn't mean the cookies are correct!
         """
         if not hasattr(self, 'required_cookies'):
