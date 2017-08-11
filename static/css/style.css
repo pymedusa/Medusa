@@ -1994,6 +1994,7 @@ config*.mako
 }
 
 .component-group-desc {
+    margin-top: 5px;
     float: left;
     width: 250px;
 }
@@ -2475,7 +2476,7 @@ div.metadataDiv .disabled {
 }
 
 .icon-notifiers-trakt {
-    background-position: -659px 0;
+    background-position: -660px 0;
 }
 
 .icon-notifiers-email {
@@ -2488,6 +2489,14 @@ div.metadataDiv .disabled {
 
 .icon-notifiers-look {
     background-position: -769px 0;
+}
+
+.icon-notifiers-slack {
+    background-position: -804px 0;
+}
+
+div#config-components h3 > a {
+    padding-left: 5px;
 }
 
 /* =======================================================================
