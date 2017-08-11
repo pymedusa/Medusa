@@ -705,7 +705,7 @@ def check_setting_list(config, cfg_name, item_name, default=None, censor_log=Fal
             logger.rebuild_censored_list()
 
     # Make an attempt to cast the lists values.
-    if transform:
+    if isinstance(my_val, list) and transform:
         for index, value in enumerate(my_val):
             with suppress(ValueError):
                 my_val[index] = transform(value)

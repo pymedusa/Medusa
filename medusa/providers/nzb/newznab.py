@@ -302,7 +302,7 @@ class NewznabProvider(NZBProvider):
         app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in app.newznabProviderList if not provider.default]
 
     @staticmethod
-    def get_providers_list(data):
+    def get_providers_list(provider_data):
         """
         Return list of nzb providers.
 
@@ -315,8 +315,9 @@ class NewznabProvider(NZBProvider):
 
         providers_list = [
             provider for provider in
-            (NewznabProvider._make_provider(x) for x in data.split('!!!'))
-            if provider]
+            (NewznabProvider._make_provider(x) for x in provider_data.split('!!!'))
+            if provider
+        ]
 
         seen_values = set()
         providers_set = []
@@ -340,14 +341,8 @@ class NewznabProvider(NZBProvider):
                 providers_list.append(default)
             else:
                 providers_dict[default.name].default = True
-                providers_dict[default.name].name = default.name
                 providers_dict[default.name].url = default.url
                 providers_dict[default.name].needs_auth = default.needs_auth
-                providers_dict[default.name].search_mode = default.search_mode
-                providers_dict[default.name].search_fallback = default.search_fallback
-                providers_dict[default.name].enable_daily = default.enable_daily
-                providers_dict[default.name].enable_backlog = default.enable_backlog
-                providers_dict[default.name].enable_manualsearch = default.enable_manualsearch
 
         return [provider for provider in providers_list if provider]
 
@@ -431,11 +426,11 @@ class NewznabProvider(NZBProvider):
         new_provider = NewznabProvider(
             name, url, api_key=api_key, cat_ids=category_ids,
             search_mode=search_mode or 'eponly',
-            search_fallback=search_fallback or 0,
-            enable_daily=enable_daily or 0,
-            enable_backlog=enable_backlog or 0,
-            enable_manualsearch=enable_manualsearch or 0)
-        new_provider.enabled = enabled == '1'
+            search_fallback=bool(int(search_fallback)),
+            enable_daily=bool(int(enable_daily)),
+            enable_backlog=bool(int(enable_backlog)),
+            enable_manualsearch=bool(int(enable_manualsearch)))
+        new_provider.enabled = bool(int(enabled))
 
         return new_provider
 
@@ -504,8 +499,8 @@ class NewznabProvider(NZBProvider):
         return NewznabProvider(
             config['name'], config['url'], api_key=config['api_key'], cat_ids=config['category_ids'],
             default=config['default'], search_mode=config['search_mode'] or 'eponly',
-            search_fallback=config['search_fallback'] or 0, enable_daily=config['enable_daily'] or 0,
-            enable_backlog=config['enable_backlog'] or 0, enable_manualsearch=config['enable_manualsearch'] or 0
+            search_fallback=config['search_fallback'], enable_daily=config['enable_daily'],
+            enable_backlog=config['enable_backlog'], enable_manualsearch=config['enable_manualsearch']
         )
 
     @staticmethod
