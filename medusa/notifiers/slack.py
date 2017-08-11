@@ -60,7 +60,7 @@ class Notifier(object):
         try:
             r = requests.post(slack_webhook, data=json.dumps(dict(text=message, username='MedusaBot')), headers=headers)
             r.raise_for_status()
-        except Exception as e:
+        except Exception:
             log.exception('Error Sending Slack message')
             return False
 
