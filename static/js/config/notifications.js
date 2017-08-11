@@ -378,7 +378,6 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         });
     });
 
-
     $('#testSlack').on('click', function() {
         var slack = {};
         slack.webhook = $.trim($('#slack_webhook').val());
@@ -392,13 +391,12 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         $(this).prop('disabled', true);
         $('#testSlack-result').html(MEDUSA.config.loading);
         $.get('home/testslack', {
-            slack_webhook: slack.webhook, // eslint-disable-line camelcase
+            slack_webhook: slack.webhook // eslint-disable-line camelcase
         }).done(function(data) {
             $('#testSlack-result').html(data);
             $('#testSlack').prop('disabled', false);
         });
     });
-
 
     $('#TraktGetPin').on('click', function() {
         window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
