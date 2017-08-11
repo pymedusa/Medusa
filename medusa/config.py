@@ -1090,7 +1090,7 @@ class ConfigMigrator(object):
 
         def get_providers_from_data(providers_string):
             """Split the provider string into providers, and get the provider names."""
-            return [provider.split('|')[0].upper() for provider in providers_string.split('!!!')]
+            return [provider.split('|')[0].upper() for provider in providers_string.split('!!!') if provider]
 
         def make_id(name):
             """Make ID of the provider."""
@@ -1102,7 +1102,7 @@ class ConfigMigrator(object):
         # General
         app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
         app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
-        app.PROVIDER_ORDER = convert_csv_string_to_list(self.config_obj['General']['provider_order'])
+        app.PROVIDER_ORDER = convert_csv_string_to_list(self.config_obj['General']['provider_order'], ' ')
         app.ROOT_DIRS = convert_csv_string_to_list(self.config_obj['General']['root_dirs'], '|')
         app.SYNC_FILES = convert_csv_string_to_list(self.config_obj['General']['sync_files'])
         app.IGNORE_WORDS = convert_csv_string_to_list(self.config_obj['General']['ignore_words'])
@@ -1140,7 +1140,6 @@ class ConfigMigrator(object):
         try:
             # migrate rsstorrent providers
             app.TORRENTRSS_PROVIDERS = get_providers_from_data(self.config_obj['TorrentRss']['torrentrss_data'])
-            app.TORRENTRSS_PROVIDERS = [app.TORRENTRSS_PROVIDERS]
         except KeyError:
             app.TORRENTRSS_PROVIDERS = []
 
