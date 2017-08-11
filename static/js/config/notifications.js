@@ -378,6 +378,28 @@ MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
         });
     });
 
+
+    $('#testSlack').on('click', function() {
+        var slack = {};
+        slack.webhook = $.trim($('#slack_webhook').val());
+
+        if (!slack.webhook) {
+            $('#testSlack-result').html('Please fill out the necessary fields above.');
+            $('#slack_webhook').addRemoveWarningClass(slack.webhook);
+            return;
+        }
+        $('#slack_webhook').removeClass('warning');
+        $(this).prop('disabled', true);
+        $('#testSlack-result').html(MEDUSA.config.loading);
+        $.get('home/testslack', {
+            slack_webhook: slack.webhook, // eslint-disable-line camelcase
+        }).done(function(data) {
+            $('#testSlack-result').html(data);
+            $('#testSlack').prop('disabled', false);
+        });
+    });
+
+
     $('#TraktGetPin').on('click', function() {
         window.open($('#trakt_pin_url').val(), 'popUp', 'toolbar=no, scrollbars=no, resizable=no, top=200, left=200, width=650, height=550');
         $('#trakt_pin').prop('disabled', false);

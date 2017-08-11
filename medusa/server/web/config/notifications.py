@@ -79,7 +79,9 @@ class ConfigNotifications(Config):
                           use_email=None, email_notify_onsnatch=None, email_notify_ondownload=None,
                           email_notify_onsubtitledownload=None, email_host=None, email_port=25, email_from=None,
                           email_tls=None, email_user=None, email_password=None, email_list=None, email_subject=None, email_show_list=None,
-                          email_show=None):
+                          email_show=None,
+                          use_slack=None, slack_notify_onsnatch=None, slack_notify_ondownload=None, slack_notify_onsubtitledownload=None,
+                          slack_webhook=None):
         """
         Save notification related settings
         """
@@ -194,6 +196,12 @@ class ConfigNotifications(Config):
         app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(synologynotifier_notify_ondownload)
         app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(
             synologynotifier_notify_onsubtitledownload)
+
+        app.USE_SLACK = config.checkbox_to_value(use_slack)
+        app.SLACK_NOTIFY_DOWNLOAD = config.checkbox_to_value(slack_notify_ondownload)
+        app.SLACK_NOTIFY_SNATCH = config.checkbox_to_value(slack_notify_onsnatch)
+        app.SLACK_NOTIFY_SUBTITLEDOWNLOAD= config.checkbox_to_value(slack_notify_onsubtitledownload)
+        app.SLACK_WEBHOOK = slack_webhook
 
         config.change_USE_TRAKT(use_trakt)
         app.TRAKT_USERNAME = trakt_username
