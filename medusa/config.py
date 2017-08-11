@@ -678,7 +678,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 ################################################################################
 # Check_setting_list                                                           #
 ################################################################################
-def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False):
+def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False, transform=None):
     """Check a setting, using the settings section and item name. Expect to return a list."""
     default = default or []
     censor_log = False
@@ -703,6 +703,12 @@ def check_setting_list(config, cfg_name, item_name, default=None, censor_log=Fal
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
             logger.rebuild_censored_list()
+
+    # Make an attempt to cast the lists values.
+    if transform:
+        for index, value in enumerate(my_val):
+            with suppress(ValueError):
+                my_val[index] = transform(value)
 
     return my_val
 
