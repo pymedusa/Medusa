@@ -678,7 +678,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 ################################################################################
 # Check_setting_list                                                           #
 ################################################################################
-def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False, transform=None):
+def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False, transform=None, transform_default=0):
     """Check a setting, using the settings section and item name. Expect to return a list."""
     default = default or []
     censor_log = False
@@ -707,8 +707,10 @@ def check_setting_list(config, cfg_name, item_name, default=None, censor_log=Fal
     # Make an attempt to cast the lists values.
     if isinstance(my_val, list) and transform:
         for index, value in enumerate(my_val):
-            with suppress(ValueError):
+            try:
                 my_val[index] = transform(value)
+            except ValueError:
+                my_val[index] = transform_default
 
     return my_val
 
