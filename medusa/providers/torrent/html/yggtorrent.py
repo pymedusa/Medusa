@@ -41,7 +41,7 @@ class YggtorrentProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.translation = {
