@@ -379,7 +379,7 @@ class Application(object):
 
             sections = [
                 'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'SynologyNotifier', 'pyTivo', 'NMA', 'Pushalot', 'Pushbullet',
+                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'NMA', 'Pushalot', 'Pushbullet',
                 'Subtitles', 'pyTivo',
             ]
 
@@ -755,6 +755,12 @@ class Application(object):
             app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'SynologyNotifier', 'synologynotifier_notify_ondownload', 0))
             app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD = bool(
                 check_setting_int(app.CFG, 'SynologyNotifier', 'synologynotifier_notify_onsubtitledownload', 0))
+
+            app.USE_SLACK = bool(check_setting_bool(app.CFG, 'Slack', 'use_slack', 0))
+            app.SLACK_NOTIFY_SNATCH = bool(check_setting_bool(app.CFG, 'Slack', 'slack_notify_snatch', 0))
+            app.SLACK_NOTIFY_DOWNLOAD = bool(check_setting_bool(app.CFG, 'Slack', 'slack_notify_download', 0))
+            app.SLACK_NOTIFY_SUBTITLEDOWNLOAD = bool(check_setting_bool(app.CFG, 'Slack', 'slack_notify_onsubtitledownload', 0))
+            app.SLACK_WEBHOOK = check_setting_str(app.CFG, 'Slack', 'slack_webhook', '', censor_log='normal')
 
             app.USE_TRAKT = bool(check_setting_int(app.CFG, 'Trakt', 'use_trakt', 0))
             app.TRAKT_USERNAME = check_setting_str(app.CFG, 'Trakt', 'trakt_username', '', censor_log='normal')
@@ -1715,6 +1721,13 @@ class Application(object):
         new_config['SynologyNotifier']['synologynotifier_notify_ondownload'] = int(app.SYNOLOGYNOTIFIER_NOTIFY_ONDOWNLOAD)
         new_config['SynologyNotifier']['synologynotifier_notify_onsubtitledownload'] = int(
             app.SYNOLOGYNOTIFIER_NOTIFY_ONSUBTITLEDOWNLOAD)
+
+        new_config['Slack'] = {}
+        new_config['Slack']['use_slack'] = int(app.USE_SLACK)
+        new_config['Slack']['slack_notify_snatch'] = int(app.SLACK_NOTIFY_SNATCH)
+        new_config['Slack']['slack_notify_download'] = int(app.SLACK_NOTIFY_DOWNLOAD)
+        new_config['Slack']['slack_notify_onsubtitledownload'] = int(app.SLACK_NOTIFY_SUBTITLEDOWNLOAD)
+        new_config['Slack']['slack_webhook'] = app.SLACK_WEBHOOK
 
         new_config['Trakt'] = {}
         new_config['Trakt']['use_trakt'] = int(app.USE_TRAKT)

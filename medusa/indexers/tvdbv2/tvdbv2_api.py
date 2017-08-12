@@ -267,7 +267,7 @@ class TVDBv2(BaseIndexer):
             raise IndexerShowIncomplete(
                 'Show episode search exception, '
                 'could not get any episodes. Did a {search_type} search. Exception: {e}'.format
-                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), e=e.message)
+                (search_type='full' if not aired_season else 'season {season}'.format(season=aired_season), e=e.reason)
             )
         except RequestException as e:
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {e}'.format(e=e.message))

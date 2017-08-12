@@ -329,6 +329,14 @@ class Home(WebRoot):
             return 'Error sending Telegram notification: {msg}'.format(msg=message)
 
     @staticmethod
+    def testslack(slack_webhook=None):
+        result = notifiers.slack_notifier.test_notify(slack_webhook)
+        if result:
+            return 'Slack notification succeeded. Check your Slack channel to make sure it worked'
+        else:
+            return 'Error sending Slack notification'
+
+    @staticmethod
     def testGrowl(host=None, password=None):
         success = 'Registered and Tested growl successfully'
         failure = 'Registration and Testing of growl failed'
