@@ -1,52 +1,90 @@
+"""Slack notifier."""
 # coding=utf-8
 
 from __future__ import unicode_literals
 
-import logging
 import json
+import logging
 
 import requests
-import six
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
+import six
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
 class Notifier(object):
+    """Slack notifier class."""
 
     SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/'
 
-    def notify_snatch(self, ep_name):
+    def notify_snatch(self, ep_name, is_proper):
+        """
+        Send a notification to a Slack channel when an episode is snatched.
+
+        :param ep_name: The name of the episode snatched
+        :param is_proper: Boolean. If snatch is proper or not
+        """
         if app.SLACK_NOTIFY_SNATCH:
-            self._notify_slack(common.notifyStrings[common.NOTIFY_SNATCH] + ': ' + ep_name)
+            message = common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
+            self._notify_slack('{message} : {ep_name}'.format(message=message, ep_name=ep_name))
 
     def notify_download(self, ep_name):
+        """
+        Send a notification to a slack channel when an episode is downloaded.
+
+        :param ep_name: The name of the episode downloaded
+        """
         if app.SLACK_NOTIFY_DOWNLOAD:
-            self._notify_slack(common.notifyStrings[common.NOTIFY_DOWNLOAD] + ': ' + ep_name)
+            message = common.notifyStrings[common.NOTIFY_DOWNLOAD]
+            self._notify_slack('{message} : {ep_name}'.format(message=message, ep_name=ep_name))
 
     def notify_subtitle_download(self, ep_name, lang):
+        """
+        Send a notification to a Slack channel when subtitles for an episode are downloaded.
+
+        :param ep_name: The name of the episode subtitles were downloaded for
+        :param lang: The language of the downloaded subtitles
+        """
         if app.SLACK_NOTIFY_SUBTITLEDOWNLOAD:
-            self._notify_slack(common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD] + ' ' + ep_name + ': ' + lang)
+            message = common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD]
+            self._notify_slack('{message} {ep_name}: {lang}'.format(message=message, ep_name=ep_name, lang=lang))
 
     def notify_git_update(self, new_version='??'):
+        """
+        Send a notification to a Slack channel for git updates.
+
+        :param new_version: The new version available from git
+        """
         if app.USE_SLACK:
-            update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
+            message = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
-            self._notify_slack(title + ' - ' + update_text + new_version)
+            self._notify_slack('{title} - {message} {version}'.format(title=title, message=message, version=new_version))
 
     def notify_login(self, ipaddress=''):
+        """
+        Send a notification to a Slack channel on login.
+
+        :param ipaddress: The ip address the login is originating from
+        """
         if app.USE_SLACK:
-            update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
+            message = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
-            self._notify_slack(title + ' - ' + update_text.format(ipaddress))
+            self._notify_slack(title + '{title} - {message}'.format(title=title, message=message.format(ipaddress)))
 
     def test_notify(self, slack_webhook):
+        """
+        Send a test notification
+        :param slack_webhook: The slack webhook to send the message to
+        :returns: the notification
+        """
         return self._notify_slack('This is a test notification from Medusa', force=True, webhook=slack_webhook)
 
     def _send_slack(self, message=None, webhook=None):
+        """Send the http request using the Slack webhook."""
         app.SLACK_WEBHOOK = webhook or app.SLACK_WEBHOOK
         slack_webhook = self.SLACK_WEBHOOK_URL + app.SLACK_WEBHOOK.replace(self.SLACK_WEBHOOK_URL, '')
 
@@ -67,6 +105,7 @@ class Notifier(object):
         return True
 
     def _notify_slack(self, message='', force=False, webhook=None):
+        """Send the Slack notification."""
         if not app.USE_SLACK and not force:
             return False
 
