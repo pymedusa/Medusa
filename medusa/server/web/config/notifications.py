@@ -200,7 +200,7 @@ class ConfigNotifications(Config):
         app.USE_SLACK = config.checkbox_to_value(use_slack)
         app.SLACK_NOTIFY_DOWNLOAD = config.checkbox_to_value(slack_notify_ondownload)
         app.SLACK_NOTIFY_SNATCH = config.checkbox_to_value(slack_notify_onsnatch)
-        app.SLACK_NOTIFY_SUBTITLEDOWNLOAD= config.checkbox_to_value(slack_notify_onsubtitledownload)
+        app.SLACK_NOTIFY_SUBTITLEDOWNLOAD = config.checkbox_to_value(slack_notify_onsubtitledownload)
         app.SLACK_WEBHOOK = slack_webhook
 
         config.change_USE_TRAKT(use_trakt)

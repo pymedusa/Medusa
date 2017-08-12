@@ -5,11 +5,9 @@ from __future__ import unicode_literals
 
 import json
 import logging
-
-import requests
-
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
+import requests
 import six
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -77,7 +75,8 @@ class Notifier(object):
 
     def test_notify(self, slack_webhook):
         """
-        Send a test notification
+        Send a test notification.
+
         :param slack_webhook: The slack webhook to send the message to
         :returns: the notification
         """

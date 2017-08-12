@@ -1717,7 +1717,7 @@ class Application(object):
         new_config['Slack']['slack_notify_snatch'] = int(app.SLACK_NOTIFY_SNATCH)
         new_config['Slack']['slack_notify_download'] = int(app.SLACK_NOTIFY_DOWNLOAD)
         new_config['Slack']['slack_notify_onsubtitledownload'] = int(app.SLACK_NOTIFY_SUBTITLEDOWNLOAD)
-        new_config['Slack']['slack_webhook'] =app.SLACK_WEBHOOK
+        new_config['Slack']['slack_webhook'] = app.SLACK_WEBHOOK
 
         new_config['Trakt'] = {}
         new_config['Trakt']['use_trakt'] = int(app.USE_TRAKT)
