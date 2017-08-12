@@ -44,6 +44,13 @@ class YggtorrentProvider(TorrentProvider):
         self.proper_strings = ['PROPER']
 
         # Miscellaneous Options
+        self.translation = {
+            'jour': 'hour',
+            'jours': 'hours',
+            'mois': 'month',
+            'an': 'year',
+            'années': 'years'
+        }
 
         # Torrent Stats
         self.minseed = None
@@ -124,6 +131,14 @@ class YggtorrentProvider(TorrentProvider):
                     torrent_size = cells[3].get_text()
                     size = convert_size(torrent_size, sep='') or -1
 
+                    pubdate = None
+                    pubdate_match = re.match(r'(\d+)\s(\w+)', cells[2].get_text(strip=True))
+                    if pubdate_match:
+                        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), self.translation.get(pubdate_match.group(2)))
+                        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                    else:
+                        log.warning('Could not translate publishing date with value: {0}', cells[2].get_text(strip=True))
+
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
@@ -138,7 +153,7 @@ class YggtorrentProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
