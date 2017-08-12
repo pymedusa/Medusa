@@ -179,7 +179,7 @@ class YggtorrentProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if 'Connexion' in response.text:
+        if 'Mon compte' not in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
