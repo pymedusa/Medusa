@@ -771,6 +771,24 @@ class GenericProvider(object):
             return False
         return all(dict_from_cookiejar(self.session.cookies).get(cookie) for cookie in self.required_cookies)
 
+    def validate_cookie_login(self, response, check_login_text):
+        """
+        Check the response for text that indicates a login prompt.
+
+        In that case, the cookie authentication was not successful.
+        :param response: Requests response object.
+        :param check_login_text: A string that's visible when the authentication failed.
+        :return: False when authentication was not successful. True if successful.
+        """
+        if check_login_text.lower() in response.text.lower():
+            log.warning('Please configure the required cookies for this provider. Check your provider settings')
+            ui.notifications.error('Please configure the required cookies for {provider}. ',
+                                   'Check your provider settings'.format(provider=self.name))
+            self.session.cookies.clear()
+            return False
+        else:
+            return True
+
     def __str__(self):
         """Return provider name and provider type."""
         return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

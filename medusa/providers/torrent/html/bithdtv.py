@@ -29,10 +29,6 @@ class BithdtvProvider(TorrentProvider):
         """Initialize the class."""
         super(BithdtvProvider, self).__init__('BITHDTV')
 
-        # Credentials
-        self.username = None
-        self.password = None
-
         # Torrent Stats
         self.minseed = 0
         self.minleech = 0
@@ -50,7 +46,7 @@ class BithdtvProvider(TorrentProvider):
         # Miscellaneous Options
         self.enable_cookies = True
         self.cookies = ''
-        self.required_cookies = ['h_sl', 'h_sp', 'h_su']
+        self.required_cookies = ('h_sl', 'h_sp', 'h_su')
 
         # Torrent Stats
 
@@ -190,12 +186,7 @@ class BithdtvProvider(TorrentProvider):
             self.session.cookies.clear()
             return False
 
-        if '<h2>Login failed!</h2>' in response.text:
-            log.warning('Invalid username or password. Check your settings')
-            self.session.cookies.clear()
-            return False
-
-        return True
+        return self.validate_cookie_login(response, '<h2>Login failed!</h2>')
 
 
 provider = BithdtvProvider()

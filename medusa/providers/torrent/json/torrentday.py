@@ -8,13 +8,12 @@ import logging
 import re
 import traceback
 
-from medusa import tv
+from medusa import tv, ui
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -26,10 +25,6 @@ class TorrentDayProvider(TorrentProvider):
     def __init__(self):
         """Initialize the class."""
         super(TorrentDayProvider, self).__init__('TorrentDay')
-
-        # Credentials
-        self.username = None
-        self.password = None
 
         # URLs
         self.url = 'https://www.torrentday.com'
@@ -45,6 +40,7 @@ class TorrentDayProvider(TorrentProvider):
         self.freeleech = False
         self.enable_cookies = True
         self.cookies = ''
+        self.required_cookies = ('uid', 'pass')
 
         # TV/480p - 24
         # TV/Bluray - 32
@@ -181,39 +177,26 @@ class TorrentDayProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if dict_from_cookiejar(self.session.cookies).get('uid') and \
-                dict_from_cookiejar(self.session.cookies).get('pass'):
+        if self.check_required_cookies():
             return True
 
         if self.cookies:
-            self.add_cookies_from_ui()
+            result = self.add_cookies_from_ui()
+            if not result['result']:
+                ui.notifications.message(result['message'])
+                log.warning(result['message'])
+                return False
         else:
             log.warning('Failed to login, you must add your cookies in the provider settings')
             return False
 
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'submit.x': 0,
-            'submit.y': 0,
-        }
-
-        response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not (response.content and response.status_code == 200):
+        response = self.session.get(self.url)
+        if not response or not (response.text and response.status_code == 200):
             log.warning('Unable to connect to provider')
-            return False
-
-        if re.search('You tried too often', response.text):
-            log.warning('Too many login access attempts')
-            return False
-
-        if (dict_from_cookiejar(self.session.cookies).get('uid') and
-                dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
-            return True
-        else:
-            log.warning('Failed to login, check your cookies')
             self.session.cookies.clear()
             return False
+
+        return self.validate_cookie_login(response, 'Sign In')
 
 
 provider = TorrentDayProvider()

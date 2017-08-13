@@ -387,7 +387,10 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
-                                    <p>eg. uid=xx;pass=yy</p>
+                                    % if hasattr(cur_torrent_provider, 'required_cookies'):
+                                        <p>eg. ${'=xx;'.join(cur_torrent_provider.required_cookies) + '=xx'}</p>
+                                        <p>This provider requires the following cookies: ${', '.join(cur_torrent_provider.required_cookies)}</p>
+                                    % endif
                                 </span>
                             </label>
                         </div>
