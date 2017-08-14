@@ -6,7 +6,6 @@ import datetime
 import logging
 import os
 import threading
-import traceback
 
 from medusa import (
     app,
@@ -449,10 +448,6 @@ def search_for_needed_episodes(force=False):
             cur_found_results = cur_provider.search_rss(episodes)
         except AuthException as error:
             log.error(u'Authentication error: {0}', ex(error))
-            continue
-        except Exception as error:
-            log.debug(traceback.format_exc())
-            log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
             continue
 
         # pick a single result for each episode, respecting existing results
