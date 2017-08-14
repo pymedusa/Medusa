@@ -593,7 +593,7 @@ class TraktChecker(object):
                 tries = 0
                 while tries < 3:
                     if Show.find(app.showList, indexer_id, indexer):
-                        return True
+                        return
                     # Wait before show get's added and refreshed
                     time.sleep(60)
                     tries += 1
