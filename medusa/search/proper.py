@@ -1,43 +1,27 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Proper finder module."""
+
 from __future__ import unicode_literals
 
 import datetime
-import errno
+import logging
 import operator
 import re
 import threading
 import time
-import traceback
 
-from socket import timeout as socket_timeout
+from medusa import app, db, helpers
+from medusa.common import Quality, cpu_presets
+from medusa.helper.common import enabled_providers
+from medusa.helper.exceptions import AuthException, ex
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
+from medusa.search.core import pick_best_result, snatch_episode
+from medusa.show.history import History
 
-from requests import exceptions as requests_exceptions
-
-from .. import app, db, helpers, logger
-from ..common import Quality, cpu_presets
-from ..helper.common import enabled_providers
-from ..helper.exceptions import AuthException, ex
-from ..name_parser.parser import InvalidNameException, InvalidShowException, NameParser
-from ..search.core import pick_best_result, snatch_episode
-from ..show.history import History
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class ProperFinder(object):  # pylint: disable=too-few-public-methods
@@ -55,14 +39,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         :param force: Start even if already running (currently not used, defaults to False)
         """
-        logger.log('Beginning the search for new propers')
+        log.info('Beginning the search for new propers')
 
         if self.amActive:
-            logger.log('Find propers is still running, not starting it again', logger.DEBUG)
+            log.debug('Find propers is still running, not starting it again')
             return
 
         if app.forced_search_queue_scheduler.action.is_forced_search_in_progress():
-            logger.log("Manual search is running. Can't start Find propers", logger.WARNING)
+            log.warning("Manual search is running. Can't start Find propers")
             return
 
         self.amActive = True
@@ -71,9 +55,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         self.ignore_processed_propers = False
         if force:
             self.ignore_processed_propers = True
-            logger.log("Ignoring already processed propers as it's a forced search", logger.DEBUG)
+            log.debug("Ignoring already processed propers as it's a forced search")
 
-        logger.log('Using proper search days: {0}'.format(app.PROPERS_SEARCH_DAYS))
+        log.info('Using proper search days: {search_days}', {'search_days': app.PROPERS_SEARCH_DAYS})
 
         propers = self._get_proper_results()
 
@@ -91,7 +75,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             run_at = ', next check in approx. {0}'.format(
                 '{0}h, {1}m'.format(hours, minutes) if 0 < hours else '{0}m, {1}s'.format(minutes, seconds))
 
-        logger.log('Completed the search for new propers{0}'.format(run_at))
+        log.info('Completed the search for new propers{run_at}', {'run_at': run_at})
 
         self.amActive = False
 
@@ -123,7 +107,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                                                 b"WHERE date >= ? AND action LIKE '%10'", [last_subtitled])
 
         if not recently_aired:
-            logger.log('No recently aired new episodes, nothing to search for')
+            log.info('No recently aired new episodes, nothing to search for')
             return []
 
         # Loop through the providers, and search for releases
@@ -131,53 +115,19 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             threading.currentThread().name = '{thread} :: [{provider}]'.format(thread=original_thread_name,
                                                                                provider=cur_provider.name)
 
-            logger.log('Searching for any new PROPER releases from {provider}'.format
-                       (provider=cur_provider.name))
+            log.info('Searching for any new PROPER releases from {provider}', {'provider': cur_provider.name})
 
             try:
                 cur_propers = cur_provider.find_propers(recently_aired)
             except AuthException as e:
-                logger.log('Authentication error: {error}'.format
-                           (error=ex(e)), logger.DEBUG)
-                continue
-            except socket_timeout as e:
-                logger.log('Socket time out while searching for propers in {provider}, skipping: {error}'.format
-                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                continue
-            except (requests_exceptions.HTTPError, requests_exceptions.TooManyRedirects) as e:
-                logger.log('HTTP error while searching for propers in {provider}, skipping: {error}'.format
-                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                continue
-            except requests_exceptions.ConnectionError as e:
-                logger.log('Connection error while searching for propers in {provider}, skipping: {error}'.format
-                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                continue
-            except requests_exceptions.Timeout as e:
-                logger.log('Connection timed out while searching for propers in {provider}, skipping: {error}'.format
-                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                continue
-            except requests_exceptions.ContentDecodingError as e:
-                logger.log('Content-Encoding was gzip, but content was not compressed while'
-                           ' searching for propers in {provider}, sipping: {error}'.format
-                           (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                continue
-            except Exception as e:
-                if 'ECONNRESET' in e or getattr(e, 'errno', None) == errno.ECONNRESET:
-                    logger.log('Connection reset by peer while searching for propers in {provider}. '
-                               'Skipping: {error}'.format
-                               (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                else:
-                    logger.log('Unknown exception while searching for propers in {provider}, skipping: {error}'.format
-                               (provider=cur_provider.name, error=ex(e)), logger.DEBUG)
-                    logger.log(traceback.format_exc(), logger.DEBUG)
+                log.debug('Authentication error: {error}', {'error': ex(e)})
                 continue
 
             # if they haven't been added by a different provider than add the proper to the list
             for proper in cur_propers:
                 name = self._sanitize_name(proper.name)
                 if name not in propers:
-                    logger.log('Found new possible proper result: {name}'.format
-                               (name=proper.name), logger.DEBUG)
+                    log.debug('Found new possible proper result: {name}', {'name': proper.name})
                     propers[name] = proper
 
         threading.currentThread().name = original_thread_name
@@ -196,38 +146,40 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
         for cur_proper in sorted_propers:
 
             if not self.ignore_processed_propers and cur_proper.name in processed_propers_names:
-                logger.log(u'Proper already processed. Skipping: {0}'.format(cur_proper.name), logger.DEBUG)
+                log.debug(u'Proper already processed. Skipping: {proper_name}', {'proper_name': cur_proper.name})
                 continue
 
             try:
                 cur_proper.parse_result = NameParser().parse(cur_proper.name)
             except (InvalidNameException, InvalidShowException) as error:
-                logger.log('{0}'.format(error), logger.DEBUG)
+                log.debug('{error}', {'error': error})
                 continue
 
             if not cur_proper.parse_result.proper_tags:
-                logger.log('Skipping non-proper: {name}'.format(name=cur_proper.name))
+                log.info('Skipping non-proper: {name}', {'name': cur_proper.name})
                 continue
 
-            logger.log('Proper tags for {proper}: {tags}'.format
-                       (proper=cur_proper.name, tags=cur_proper.parse_result.proper_tags), logger.DEBUG)
+            log.debug('Proper tags for {proper}: {tags}', {
+                'proper': cur_proper.name,
+                'tags': cur_proper.parse_result.proper_tags
+            })
 
             if not cur_proper.parse_result.series_name:
-                logger.log('Ignoring invalid show: {name}'.format
-                           (name=cur_proper.name), logger.DEBUG)
+                log.debug('Ignoring invalid show: {name}', {'name': cur_proper.name})
                 if cur_proper.name not in processed_propers_names:
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
                 continue
 
             if not cur_proper.parse_result.episode_numbers:
-                logger.log('Ignoring full season instead of episode: {name}'.format
-                           (name=cur_proper.name), logger.DEBUG)
+                log.debug('Ignoring full season instead of episode: {name}', {'name': cur_proper.name})
                 if cur_proper.name not in processed_propers_names:
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
                 continue
 
-            logger.log('Successful match! Matched {original_name} to show {new_name}'.format
-                       (original_name=cur_proper.parse_result.original_name, new_name=cur_proper.parse_result.show.name), logger.DEBUG)
+            log.debug('Successful match! Matched {original_name} to show {new_name}',
+                      {'original_name': cur_proper.parse_result.original_name,
+                       'new_name': cur_proper.parse_result.show.name
+                       })
 
             # Map the indexerid in the db to the show's indexerid
             cur_proper.indexerid = cur_proper.parse_result.show.indexerid
@@ -237,7 +189,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # Map our Proper instance
             cur_proper.show = cur_proper.parse_result.show
-            cur_proper.actual_season = cur_proper.parse_result.season_number if cur_proper.parse_result.season_number is not None else 1
+            cur_proper.actual_season = cur_proper.parse_result.season_number \
+                if cur_proper.parse_result.season_number is not None else 1
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers
             cur_proper.release_group = cur_proper.parse_result.release_group
             cur_proper.version = cur_proper.parse_result.version
@@ -249,8 +202,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             best_result = pick_best_result(cur_proper)
 
             if not best_result:
-                logger.log('Rejected proper: {name}'.format
-                           (name=cur_proper.name))
+                log.info('Rejected proper: {name}', {'name': cur_proper.name})
                 if cur_proper.name not in processed_propers_names:
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
                 continue
@@ -258,8 +210,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # only get anime proper if it has release group and version
             if best_result.show.is_anime:
                 if not best_result.release_group and best_result.version == -1:
-                    logger.log('Ignoring proper without release group and version: {name}'.format
-                               (name=best_result.name))
+                    log.info('Ignoring proper without release group and version: {name}', {'name': best_result.name})
                     if cur_proper.name not in processed_propers_names:
                         self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
                     continue
@@ -268,16 +219,19 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             main_db_con = db.DBConnection()
             sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
                                              b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
-                                             [best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]])
+                                             [best_result.indexerid,
+                                              best_result.actual_season,
+                                              best_result.actual_episodes[0]])
             if not sql_results:
-                logger.log("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}".format
-                           (name=best_result.name))
+                log.info("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}", {
+                    'name': best_result.name
+                })
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
             _, old_quality = Quality.split_composite_status(int(sql_results[0][b'status']))
             if old_quality != best_result.quality:
-                logger.log('Ignoring proper because quality is different: {name}'.format(name=best_result.name))
+                log.info('Ignoring proper because quality is different: {name}', {'name': best_result.name})
                 if cur_proper.name not in processed_propers_names:
                     self.processed_propers.append({'name': cur_proper.name, 'date': cur_proper.date})
                 continue
@@ -287,14 +241,16 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if release_name:
                 current_codec = NameParser()._parse_string(release_name).video_codec
                 # Ignore proper if codec differs from downloaded release codec
-                if all([current_codec, best_result.parse_result.video_codec, best_result.parse_result.video_codec != current_codec]):
-                    logger.log('Ignoring proper because codec is different: {name}'.format(name=best_result.name))
+                if all([current_codec, best_result.parse_result.video_codec,
+                        best_result.parse_result.video_codec != current_codec]):
+                    log.info('Ignoring proper because codec is different: {name}', {'name': best_result.name})
                     if best_result.name not in processed_propers_names:
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
             else:
-                logger.log("Coudn't find a release name in database. Skipping codec comparison for: {name}".format
-                           (name=best_result.name), logger.DEBUG)
+                log.debug("Coudn't find a release name in database. Skipping codec comparison for: {name}", {
+                    'name': best_result.name
+                })
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
@@ -307,18 +263,21 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 old_release_group = (sql_results[0][b'release_group'])
 
                 if -1 < old_version < best_result.version:
-                    logger.log('Found new anime version {new} to replace existing version {old}: {name}'.format
-                               (old=old_version, new=best_result.version, name=best_result.name))
+                    log.info('Found new anime version {new} to replace existing version {old}: {name}',
+                             {'old': old_version,
+                              'new': best_result.version,
+                              'name': best_result.name
+                              })
                 else:
-                    logger.log('Ignoring proper with the same or lower version: {name}'.format
-                               (name=best_result.name))
+                    log.info('Ignoring proper with the same or lower version: {name}', {'name': best_result.name})
                     if cur_proper.name not in processed_propers_names:
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
 
                 if old_release_group != best_result.release_group:
-                    logger.log('Ignoring proper from release group {new} instead of current group {old}'.format
-                               (new=best_result.release_group, old=old_release_group))
+                    log.info('Ignoring proper from release group {new} instead of current group {old}',
+                             {'new': best_result.release_group,
+                              'old': old_release_group})
                     if best_result.name not in processed_propers_names:
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
@@ -328,7 +287,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             if best_result.indexerid != -1 and (
                 best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]
             ) not in map(operator.attrgetter('indexerid', 'actual_season', 'actual_episode'), final_propers):
-                logger.log('Found a desired proper: {name}'.format(name=best_result.name))
+                log.info('Found a desired proper: {name}', {'name': best_result.name})
                 final_propers.append(best_result)
 
             if best_result.name not in processed_propers_names:
@@ -363,16 +322,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             clean_proper_name = self._canonical_name(cur_proper.name, clear_extension=True)
             if any(clean_proper_name == self._canonical_name(cur_result[b'resource'], clear_extension=True)
                    for cur_result in history_results):
-                logger.log('This proper {result!r} is already in history, skipping it'.format
-                           (result=cur_proper.name), logger.DEBUG)
+                log.debug('This proper {result!r} is already in history, skipping it', {'result': cur_proper.name})
                 continue
             else:
                 # make sure that none of the existing history downloads are the same proper we're trying to download
                 clean_proper_name = self._canonical_name(cur_proper.name)
                 if any(clean_proper_name == self._canonical_name(cur_result[b'resource'])
                        for cur_result in history_results):
-                    logger.log('This proper {result!r} is already in history, skipping it'.format
-                               (result=cur_proper.name), logger.DEBUG)
+                    log.debug('This proper {result!r} is already in history, skipping it', {'result': cur_proper.name})
                     continue
 
                 cur_proper.create_episode_object()
@@ -396,7 +353,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
         :param when: When was the last proper search
         """
-        logger.log('Setting the last Proper search in the DB to {0}'.format(when), logger.DEBUG)
+        log.debug('Setting the last Proper search in the DB to {when}', {'when': when})
 
         main_db_con = db.DBConnection()
         sql_results = main_db_con.select(b'SELECT last_proper_search FROM info')
