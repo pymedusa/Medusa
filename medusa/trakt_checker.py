@@ -517,6 +517,8 @@ class TraktChecker(object):
                     if new_show:
                         set_episode_to_wanted(new_show, 1, 1)
                     else:
+                        log.warning('Unable to find the new added show.'
+                                    'Pilot will be set to wanted in the next Trakt run')
                         self.todoWanted.append(indexer_id)
             log.debug('Synced shows with Trakt watchlist')
 
