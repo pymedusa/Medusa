@@ -159,10 +159,10 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 log.info('Skipping non-proper: {name}', {'name': cur_proper.name})
                 continue
 
-            log.debug('Proper tags for {proper}: {tags}',
-                      {'proper': cur_proper.name,
-                       'tags': cur_proper.parse_result.proper_tags
-                       })
+            log.debug('Proper tags for {proper}: {tags}', {
+                'proper': cur_proper.name,
+                'tags': cur_proper.parse_result.proper_tags
+            })
 
             if not cur_proper.parse_result.series_name:
                 log.debug('Ignoring invalid show: {name}', {'name': cur_proper.name})
@@ -189,7 +189,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
 
             # Map our Proper instance
             cur_proper.show = cur_proper.parse_result.show
-            cur_proper.actual_season = cur_proper.parse_result.season_number if cur_proper.parse_result.season_number is not None else 1
+            cur_proper.actual_season = cur_proper.parse_result.season_number \
+                if cur_proper.parse_result.season_number is not None else 1
             cur_proper.actual_episodes = cur_proper.parse_result.episode_numbers
             cur_proper.release_group = cur_proper.parse_result.release_group
             cur_proper.version = cur_proper.parse_result.version
@@ -218,10 +219,13 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             main_db_con = db.DBConnection()
             sql_results = main_db_con.select(b"SELECT status, release_name FROM tv_episodes WHERE "
                                              b"showid = ? AND season = ? AND episode = ? AND status LIKE '%04'",
-                                             [best_result.indexerid, best_result.actual_season, best_result.actual_episodes[0]])
+                                             [best_result.indexerid,
+                                              best_result.actual_season,
+                                              best_result.actual_episodes[0]])
             if not sql_results:
-                log.info("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}".format
-                         (name=best_result.name))
+                log.info("Ignoring proper because this episode doesn't have 'DOWNLOADED' status: {name}", {
+                    'name': best_result.name
+                })
                 continue
 
             # only keep the proper if we have already downloaded an episode with the same quality
@@ -244,8 +248,9 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
             else:
-                log.debug("Coudn't find a release name in database. Skipping codec comparison for: {name}".format
-                          (name=best_result.name))
+                log.debug("Coudn't find a release name in database. Skipping codec comparison for: {name}", {
+                    'name': best_result.name
+                })
 
             # check if we actually want this proper (if it's the right release group and a higher version)
             if best_result.show.is_anime:
