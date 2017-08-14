@@ -512,7 +512,7 @@ class TraktChecker(object):
                     self.add_show(trakt_default_indexer, indexer_id, show_name, WANTED)
 
                 if int(app.TRAKT_METHOD_ADD) == 1:
-                    new_show = Show.find(app.showList, indexer_id)
+                    new_show = Show.find(app.showList, indexer_id, indexer)
 
                     if new_show:
                         set_episode_to_wanted(new_show, 1, 1)
@@ -572,7 +572,7 @@ class TraktChecker(object):
     @staticmethod
     def add_show(indexer, indexer_id, show_name, status):
         """Add a new show with default settings."""
-        if not Show.find(app.showList, int(indexer_id)):
+        if not Show.find(app.showList, int(indexer_id), indexer):
             root_dirs = app.ROOT_DIRS.split('|')
 
             location = root_dirs[int(root_dirs[0]) + 1] if root_dirs else None
@@ -592,7 +592,7 @@ class TraktChecker(object):
                                                         default_status_after=status, root_dir=location)
                 tries = 0
                 while tries < 3:
-                    if Show.find(app.showList, indexer_id):
+                    if Show.find(app.showList, indexer_id, indexer):
                         return True
                     # Wait before show get's added and refreshed
                     time.sleep(60)
