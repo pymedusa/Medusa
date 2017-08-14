@@ -32,7 +32,7 @@ def set_episode_to_wanted(show, season, episode):
 
         with ep_obj.lock:
             if ep_obj.status != SKIPPED or ep_obj.airdate == datetime.date.fromordinal(1):
-                log.info("Setting episode '{show}' {ep} to WANTED because current status is not SKIPPED "
+                log.info("Not setting episode '{show}' {ep} to WANTED because current status is not SKIPPED "
                          "or it doesn't have a valid airdate", {'show': show.name, 'ep': episode_num(season, episode)})
                 return
 
