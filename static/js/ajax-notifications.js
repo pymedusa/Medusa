@@ -30,8 +30,9 @@ function displayPNotify(type, title, message, id) {
 }
 
 function wsCheckNotifications() {
-    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + MEDUSA.config.webRoot + '/ws' + WSMessageUrl);
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const webRoot = MEDUSA.config.webRoot || '';
+    const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
         var msg;
         try {
