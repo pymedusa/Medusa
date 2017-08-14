@@ -1,5 +1,7 @@
 # coding=utf-8
 
+"""Name cache module."""
+
 import logging
 
 import threading
@@ -101,10 +103,10 @@ def build_name_cache(show=None):
         # Add scene exceptions to name cache
         name_cache.update(names)
 
-        log.debug(u'Internal name cache for {show} set to: {names}',
-                  {'show': show.name,
-                   'names': names.keys()
-                   })
+        log.debug(u'Internal name cache for {show} set to: {names}', {
+            'show': show.name,
+            'names': names.keys()
+        })
 
     with nameCacheLock:
         retrieve_exceptions()
