@@ -782,8 +782,8 @@ class GenericProvider(object):
         """
         if check_login_text.lower() in response.text.lower():
             log.warning('Please configure the required cookies for this provider. Check your provider settings')
-            ui.notifications.error('Please configure the required cookies for {provider}. ',
-                                   'Check your provider settings'.format(provider=self.name))
+            ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
+                                   'Check your provider settings')
             self.session.cookies.clear()
             return False
         else:

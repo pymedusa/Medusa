@@ -186,7 +186,7 @@ class BithdtvProvider(TorrentProvider):
             self.session.cookies.clear()
             return False
 
-        return self.validate_cookie_login(response, '<h2>Login failed!</h2>')
+        return self.validate_cookie_login(response, 'Login failed')
 
 
 provider = BithdtvProvider()
