@@ -31,7 +31,7 @@ function displayPNotify(type, title, message, id) {
 
 function wsCheckNotifications() {
     var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
+    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + MEDUSA.config.webRoot + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
         var msg;
         try {
