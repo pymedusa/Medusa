@@ -3,12 +3,10 @@
 """Search core module."""
 
 import datetime
-import errno
 import logging
 import os
 import threading
 import traceback
-from socket import timeout as socket_timeout
 
 from medusa import (
     app,
@@ -48,8 +46,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers import sorted_provider_list
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
-
-import requests
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -555,35 +551,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                                                                   down_cur_quality, manual_search, manual_search_type)
             except AuthException as error:
                 log.error(u'Authentication error: {0}', ex(error))
-                break
-            except socket_timeout as error:
-                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as error:
-                log.debug(u'HTTP error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ConnectionError as error:
-                log.debug(u'Connection error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.Timeout as error:
-                log.debug(u'Connection timed out while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ContentDecodingError as error:
-                log.debug(u'Content-Encoding was gzip, but content was not compressed while searching {0}.'
-                          u' Error: {1!r}', cur_provider.name, ex(error))
-                break
-            except Exception as error:
-                if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
-                    log.warning(u'Connection reseted by peer while searching {0}. Error: {1!r}',
-                                cur_provider.name, ex(error))
-                else:
-                    log.debug(traceback.format_exc())
-                    log.error(u'Unknown exception while searching {0}. Error: {1!r}',
-                              cur_provider.name, ex(error))
                 break
 
             did_search = True
