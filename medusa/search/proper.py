@@ -5,15 +5,11 @@
 from __future__ import unicode_literals
 
 import datetime
-import errno
 import logging
 import operator
 import re
 import threading
 import time
-import traceback
-
-from socket import timeout as socket_timeout
 
 from medusa import app, db, helpers
 from medusa.common import Quality, cpu_presets
@@ -23,8 +19,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.search.core import pick_best_result, snatch_episode
 from medusa.show.history import History
-
-from requests import exceptions as requests_exceptions
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -127,36 +121,6 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 cur_propers = cur_provider.find_propers(recently_aired)
             except AuthException as e:
                 log.debug('Authentication error: {error}', {'error': ex(e)})
-                continue
-            except socket_timeout as e:
-                log.debug('Socket time out while searching for propers in {provider}, skipping: {error}',
-                          {'provider': cur_provider.name, 'error': ex(e)})
-                continue
-            except (requests_exceptions.HTTPError, requests_exceptions.TooManyRedirects) as e:
-                log.debug('HTTP error while searching for propers in {provider}, skipping: {error}',
-                          {'provider': cur_provider.name, 'error': ex(e)})
-                continue
-            except requests_exceptions.ConnectionError as e:
-                log.debug('Connection error while searching for propers in {provider}, skipping: {error}',
-                          {'provider': cur_provider.name, 'error': ex(e)})
-                continue
-            except requests_exceptions.Timeout as e:
-                log.debug('Connection timed out while searching for propers in {provider}, skipping: {error}',
-                          {'provider': cur_provider.name, 'error': ex(e)})
-                continue
-            except requests_exceptions.ContentDecodingError as e:
-                log.debug('Content-Encoding was gzip, but content was not compressed while'
-                          ' searching for propers in {provider}, sipping: {error}',
-                          {'provider': cur_provider.name, 'error': ex(e)})
-                continue
-            except Exception as e:
-                if 'ECONNRESET' in e or getattr(e, 'errno', None) == errno.ECONNRESET:
-                    log.debug('Connection reset by peer while searching for propers in {provider}. '
-                              'Skipping: {error}', {'provider': cur_provider.name, 'error': ex(e)})
-                else:
-                    log.debug('Unknown exception while searching for propers in {provider}, skipping: {error}',
-                              {'provider': cur_provider.name, 'error': ex(e)})
-                    log.debug(traceback.format_exc())
                 continue
 
             # if they haven't been added by a different provider than add the proper to the list
