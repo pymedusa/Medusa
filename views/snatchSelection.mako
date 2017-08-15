@@ -16,7 +16,7 @@
 
 <%include file="/partials/showheader.mako"/>
 
-<div class="row">
+<div class="row horizontal-scroll">
     <div class="col-md-12">
         <div class="clearfix"></div><!-- .clearfix //-->
         <div id="wrapper" data-history-toggle="hide">
