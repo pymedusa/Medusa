@@ -19,8 +19,9 @@ from medusa.helpers import (
 )
 from medusa.logger.adapters.style import BraceAdapter
 
+from requests.adapters import HTTPAdapter
 from requests.compat import urljoin
-
+from requests.packages.urllib3.util.retry import Retry
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -43,6 +44,17 @@ class TransmissionAPI(GenericClient):
 
         self.rpcurl = self.rpcurl.strip('/')
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
+
+        # Adds retry when '409 - Conflict' status code
+        # https://github.com/transmission/transmission/issues/231#issuecomment-296385711
+        retry_count = 3
+        retry = Retry(total=retry_count,
+                      read=retry_count,
+                      connect=retry_count,
+                      backoff_factor=0.3, status_forcelist=(409,))
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount('http://', adapter)
+        self.session.mount('https://', adapter)
 
     def check_response(self):
         """Check if response is a valid json and its a success one."""
