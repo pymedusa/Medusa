@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import logging
 import traceback
 
-from medusa import tv, ui
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
@@ -167,26 +167,7 @@ class BithdtvProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing a search and torrent downloads."""
-        if self.check_required_cookies():
-            return True
-
-        if self.cookies:
-            result = self.add_cookies_from_ui()
-            if not result['result']:
-                ui.notifications.message(result['message'])
-                log.warning(result['message'])
-                return False
-        else:
-            log.warning('Failed to login, you must add your cookies in the provider settings')
-            return False
-
-        response = self.session.get(self.urls['search'])
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            self.session.cookies.clear()
-            return False
-
-        return self.validate_cookie_login(response, 'Login failed')
+        return self.cookie_login('login failed', check_url=self.urls['search'])
 
 
 provider = BithdtvProvider()

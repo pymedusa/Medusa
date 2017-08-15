@@ -8,7 +8,7 @@ import logging
 import re
 import traceback
 
-from medusa import tv, ui
+from medusa import tv
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -177,26 +177,7 @@ class TorrentDayProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if self.check_required_cookies():
-            return True
-
-        if self.cookies:
-            result = self.add_cookies_from_ui()
-            if not result['result']:
-                ui.notifications.message(result['message'])
-                log.warning(result['message'])
-                return False
-        else:
-            log.warning('Failed to login, you must add your cookies in the provider settings')
-            return False
-
-        response = self.session.get(self.url)
-        if not response or not (response.text and response.status_code == 200):
-            log.warning('Unable to connect to provider')
-            self.session.cookies.clear()
-            return False
-
-        return self.validate_cookie_login(response, 'Sign In')
+        return self.cookie_login('sign In')
 
 
 provider = TorrentDayProvider()
