@@ -125,8 +125,8 @@ class YggtorrentProvider(TorrentProvider):
                     if not (title and download_url):
                         continue
 
-                    seeders = try_int(cells[4].get_text(strip=True))
-                    leechers = try_int(cells[5].get_text(strip=True))
+                    seeders = try_int(cells[4].get_text(strip=True), 1)
+                    leechers = try_int(cells[5].get_text(strip=True), 0)
 
                     torrent_size = cells[3].get_text()
                     size = convert_size(torrent_size, sep='') or -1
