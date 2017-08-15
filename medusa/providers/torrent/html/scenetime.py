@@ -30,10 +30,6 @@ class SceneTimeProvider(TorrentProvider):
         """Initialize the class."""
         super(SceneTimeProvider, self).__init__('SceneTime')
 
-        # Credentials
-        self.username = None
-        self.password = None
-
         # URLs
         self.url = 'https://www.scenetime.com'
         self.urls = {
