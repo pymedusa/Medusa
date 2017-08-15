@@ -154,36 +154,7 @@ class IPTorrentsProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if self.check_required_cookies():
-            return True
-
-        if self.cookies:
-            result = self.add_cookies_from_ui()
-            if not result['result']:
-                ui.notifications.message(result['message'])
-                log.warning(result['message'])
-                return False
-        else:
-            log.warning('Failed to login, you must add your cookies in the provider settings')
-            return False
-
-        # Initialize session with a GET to have cookies
-        response = self.session.get(self.url)
-
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            self.session.cookies.clear()
-            return False
-
-        return self.validate_cookie_login(response, 'Sign In')
-
-    def _check_auth(self):
-
-        if not self.username or not self.password:
-            raise AuthException('Your authentication credentials for {0} are missing,'
-                                ' check your config.'.format(self.name))
-
-        return True
+        return self.cookie_login('sign in')
 
 
 provider = IPTorrentsProvider()
