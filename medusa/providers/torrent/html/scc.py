@@ -43,7 +43,7 @@ class SCCProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.categories = {
@@ -61,7 +61,7 @@ class SCCProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=20)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -138,13 +138,16 @@ class SCCProvider(TorrentProvider):
                     torrent_size = row.find('td', class_='ttr_size').contents[0]
                     size = convert_size(torrent_size) or -1
 
+                    pubdate_raw = row.find('td', class_='ttr_added').get_text(separator=' ')
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
@@ -168,11 +171,10 @@ class SCCProvider(TorrentProvider):
             'submit': 'come on in',
         }
 
-        response = self.session.get(self.urls['login'], data=login_params)
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False
-
         if any([re.search(r'Username or password incorrect', response.text),
                 re.search(r'<title>SceneAccess \| Login</title>', response.text), ]):
             log.warning('Invalid username or password. Check your settings')
