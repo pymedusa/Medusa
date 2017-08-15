@@ -8,10 +8,9 @@ import logging
 import re
 import traceback
 
-from medusa import tv, ui
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
-from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
