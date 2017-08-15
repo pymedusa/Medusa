@@ -4289,7 +4289,7 @@ CSS helper classes
 /* =======================================================================
  Scroll to top
 ========================================================================== */
-.scroll-top-wrapper {
+.scroll-wrapper {
     position: fixed;
     opacity: 0;
     visibility: hidden;
@@ -4332,3 +4332,37 @@ CSS helper classes
     display: block;
 }
 */
+
+/* =======================================================================
+ overflow for horizontal scrolling, without breaking ui.
+========================================================================== */
+
+.full-screen-scroll {
+    clear: none;
+}
+
+.scroll-wrap {
+    overflow-x: auto;
+}
+
+div#imageContainer {
+    position: fixed;
+    bottom: 50px;
+    right: 100px;
+}
+
+.scroll-wrapper.show {
+    visibility: visible;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.scroll-wrapper.left {
+    position: fixed;
+    right: 150px;
+}
+
+.scroll-wrapper.right {
+    position: fixed;
+    right: 90px;
+}

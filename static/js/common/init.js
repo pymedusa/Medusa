@@ -1,6 +1,7 @@
 MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
+    let self = this;
 
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
@@ -24,8 +25,33 @@ MEDUSA.common.init = function() {
         return offset;
     }
 
+    let initHorizontalScroll = function() {
+        let scrollDiv = $('div.scroll-wrap');
+        if (!scrollDiv) {
+            return
+        }
+
+        let scrollbarVisible = false;
+        $.each(scrollDiv, function(index, el) {
+            if (el.scrollWidth > el.clientWidth) {
+                scrollbarVisible = true;
+            }
+        });
+
+        if (scrollbarVisible) {
+            $('.scroll-wrapper.left').addClass('show');
+            $('.scroll-wrapper.right').addClass('show');
+        } else {
+            $('.scroll-wrapper.left').removeClass('show');
+            $('.scroll-wrapper.right').removeClass('show');
+        }
+    };
+
+    initHorizontalScroll();
+
     $(window).resize(function() {
         $('.backstretch').css('top', backstretchOffset());
+        initHorizontalScroll();
     });
 
     // Scroll Functions
@@ -33,15 +59,29 @@ MEDUSA.common.init = function() {
         $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
     }
 
+    $('#scroll-left').click(function (e) {
+        e.preventDefault();
+        $('.scroll-wrap').animate({
+            scrollLeft: '-=153'
+        }, 1000, 'easeOutQuad');
+    });
+
+    $('#scroll-right').click(function (e) {
+        e.preventDefault();
+        $('.scroll-wrap').animate({
+            scrollLeft: '+=153'
+        }, 1000, 'easeOutQuad');
+    });
+
     $(document).on('scroll', function() {
         if ($(window).scrollTop() > 100) {
-            $('.scroll-top-wrapper').addClass('show');
+            $('.scroll-wrapper.top').addClass('show');
         } else {
-            $('.scroll-top-wrapper').removeClass('show');
+            $('.scroll-wrapper.top').removeClass('show');
         }
     });
 
-    $('.scroll-top-wrapper').on('click', function() {
+    $('.scroll-wrapper.top').on('click', function() {
         scrollTo($('body'));
     });
 
