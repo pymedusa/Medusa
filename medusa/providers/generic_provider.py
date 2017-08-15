@@ -796,15 +796,14 @@ class GenericProvider(object):
                 return False
         else:
             log.warning('Failed to login, you will need to add your cookies in the provider settings')
+            ui.notifications.error('Failed to auth with {provider}'.format(provider=self.name),
+                                   'You will need to add your cookies in the provider settings')
             return False
 
         response = self.session.get(check_url)
-        if not response or not (response.text and response.status_code == 200):
-            log.warning('Unable to connect to provider')
-            self.session.cookies.clear()
-            return False
-
-        if check_login_text.lower() in response.text.lower():
+        if any([not response,
+                not (response.text and response.status_code == 200),
+                check_login_text.lower() in response.text.lower()]):
             log.warning('Please configure the required cookies for this provider. Check your provider settings')
             ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
                                    'Check your provider settings')
