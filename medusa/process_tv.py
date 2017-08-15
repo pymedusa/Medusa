@@ -540,7 +540,7 @@ class ProcessResult(object):
                 process_fail_message = ex(error)
 
             if processor:
-                self._output.append(processor.log)
+                self._output.append(processor.output)
 
             if self.result:
                 self._log('Processing succeeded for {0}'.format(file_path))

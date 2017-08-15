@@ -91,7 +91,7 @@ class PostProcessor(object):
         self.release_name = None
         self.is_proper = False
         self.is_priority = is_priority
-        self.log = ''
+        self._output = []
         self.version = None
         self.anidbEpisode = None
         self.manually_searched = False
@@ -108,7 +108,11 @@ class PostProcessor(object):
         :param level: The log level to use (optional)
         """
         logger.log(message, level)
-        self.log += message + '\n'
+        self._output.append(message)
+
+    @property
+    def output(self):
+        return '\n'.join(self._output)
 
     def _get_rel_path(self):
         """
