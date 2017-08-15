@@ -1558,9 +1558,7 @@ class Series(TV):
         tmdb_id = self.externals.get('tmdb_id')
         if tmdb_id:
             country_code = Tmdb()._get_shows_countries(tmdb_id)
-            countries = '|'
-            for country in country_code.split('|'):
-                countries = countries.join(subtitles.from_code_to_name(country))
+            countries = (subtitles.from_country_letter_to_name(country) for country in country_code.split('|'))
 
         self.imdb_info = {
             'imdb_id': imdb_obj.imdb_id,
@@ -1568,8 +1566,8 @@ class Series(TV):
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': '|'.join(countries), # Info obtained from TMDB's api, as imdbpie doesn't have it. Not IMDb info.
-            'country_codes': country_code.lower(), # Obtained with Babelfish from the TMDb info. Not IMDb info.
+            'countries': '|'.join(countries),  # Obtained from TMDB's api, as imdbpie doesn't have it. Not IMDb info.
+            'country_codes': country_code.lower(),  # Obtained with Babelfish from the TMDb info. Not IMDb info.
             'rating': str(imdb_obj.rating) or '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds

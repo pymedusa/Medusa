@@ -1,5 +1,8 @@
 # coding=utf-8
 
+"""TMDB module."""
+
+
 from __future__ import unicode_literals
 
 import logging
@@ -188,7 +191,7 @@ class Tmdb(BaseIndexer):
         return OrderedDict({'series': mapped_results})['series']
 
     def _get_shows_countries(self, tmdb_id):
-        """Retrieve show's countries from TMDB
+        """Retrieve show's countries from TMDB.
 
         :param tmdb_id: The shows tmdb id
         :return: A string with the show's countries
@@ -379,9 +382,7 @@ class Tmdb(BaseIndexer):
         return _images
 
     def _parse_actors(self, sid):
-        """Parse actors XML.
-
-        """
+        """Parse actors XML."""
         log.debug('Getting actors for {0}', sid)
 
         # TMDB also support passing language here as a param.
