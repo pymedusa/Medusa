@@ -35,6 +35,7 @@ from medusa.providers.torrent.html import (
     torrentleech,
     torrentproject,
     tvchaosuk,
+    yggtorrent,
     zooqle,
 )
 
@@ -66,5 +67,5 @@ __all__ = [
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
     'hdbits', 'norbits', 'rarbg', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat',
-    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting'
+    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent'
 ]
