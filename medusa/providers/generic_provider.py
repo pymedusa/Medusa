@@ -781,7 +781,6 @@ class GenericProvider(object):
 
         :return: False when authentication was not successful. True if successful.
         """
-
         check_url = check_url or self.url
 
         if self.check_required_cookies():
