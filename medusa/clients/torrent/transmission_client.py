@@ -48,10 +48,17 @@ class TransmissionAPI(GenericClient):
         # Adds retry when '409 - Conflict' status code
         # https://github.com/transmission/transmission/issues/231#issuecomment-296385711
         retry_count = 3
+
+        # POST needs to be whitelisted as it's not default
+        # urllib3.readthedocs.io/en/latest/reference/urllib3.util.html#urllib3.util.retry.Retry.DEFAULT_METHOD_WHITELIST
+        method_whitelist = Retry.DEFAULT_METHOD_WHITELIST.union({'POST'})
+
         retry = Retry(total=retry_count,
                       read=retry_count,
                       connect=retry_count,
-                      backoff_factor=0.3, status_forcelist=(409,))
+                      backoff_factor=0.3,
+                      status_forcelist=(409,),
+                      method_whitelist=method_whitelist)
         adapter = HTTPAdapter(max_retries=retry)
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
