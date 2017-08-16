@@ -44,8 +44,8 @@ class FailedProcessor(object):
             parsed = NameParser().parse(releaseName)
         except (InvalidNameException, InvalidShowException):
             self.log(logger.WARNING, u'Not enough information to parse release name into a valid show. '
-                      u'Consider adding scene exceptions or improve naming for: {release}'.format
-                      (release=releaseName))
+                     u'Consider adding scene exceptions or improve naming for: {release}'.format
+                     (release=releaseName))
             raise FailedPostProcessingFailedException()
 
         self.log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
@@ -74,4 +74,5 @@ class FailedProcessor(object):
 
     @property
     def output(self):
+        """Return the concatenated log messages."""
         return '\n'.join(self._output)
