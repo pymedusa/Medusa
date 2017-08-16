@@ -13,7 +13,7 @@
         <h1 class="title">${title}</h1>
     % endif
     <% subsLanguage = subtitles.name_from_code(whichSubs) if whichSubs and whichSubs != 'all' else 'All' %>
-    <% wanted_languages = subtitles.wanted_languages()%>
+    <% wanted_languages = subtitles.wanted_languages() %>
     <% label = 'all wanted' if subsLanguage == 'All' else str(subsLanguage) + ' (' + str(subtitles.from_code(whichSubs)) + ')' %>
     % if not whichSubs or (whichSubs and not ep_counts):
         % if whichSubs:
