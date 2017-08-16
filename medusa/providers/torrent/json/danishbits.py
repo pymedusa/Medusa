@@ -8,6 +8,7 @@ import logging
 import traceback
 
 from medusa import tv
+from medusa.common import USER_AGENT
 from medusa.helper.common import convert_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
@@ -40,6 +41,7 @@ class DanishbitsProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.freeleech = True
+        self.session.headers['User-Agent'] = USER_AGENT
 
         # Torrent Stats
         self.minseed = 0
@@ -92,7 +94,9 @@ class DanishbitsProvider(TorrentProvider):
                         err_msg=e
                     )
                     continue
-
+                if 'error' in data:
+                    log.warning('Provider returned an error: {0}', data['error'])
+                    continue
                 if data['total_results'] == 0:
                     continue
 

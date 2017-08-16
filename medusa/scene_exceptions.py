@@ -302,9 +302,8 @@ def _get_custom_exceptions(force):
                     location=location
                 )
 
-                response = indexerApi(indexer).session.get(location, timeout=60)
                 try:
-                    jdata = response.json()
+                    jdata = indexerApi(indexer).session.get(location, timeout=60).json()
                 except (ValueError, AttributeError, RequestException) as error:
                     logger.debug(
                         'Check scene exceptions update failed. Unable to '

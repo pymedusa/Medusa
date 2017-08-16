@@ -346,7 +346,7 @@ class MediaInfoProvider(Provider):
             elif track_type == 'Text':
                 subtitle_tracks.append(track)
 
-        result = self._describe_tracks(general_tracks[0] if general_tracks else None,
+        result = self._describe_tracks(general_tracks[0] if general_tracks else {},
                                        video_tracks, audio_tracks, subtitle_tracks, context)
         if not result:
             logger.warning('Invalid file %r', video_path)
