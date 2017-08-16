@@ -592,7 +592,7 @@ class ProcessResult(object):
                 process_fail_message = ex(error)
 
             if processor:
-                self._output.append(processor.log)
+                self._output.append(processor.output)
 
             if app.DELETE_FAILED and self.result:
                 if self.delete_folder(path, check_empty=False):

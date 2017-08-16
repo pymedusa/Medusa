@@ -25,7 +25,7 @@ class FailedProcessor(object):
         self.dir_name = dirName
         self.nzb_name = nzbName
 
-        self.log = ""
+        self._output = []
 
     def process(self):
         """
@@ -70,4 +70,8 @@ class FailedProcessor(object):
     def _log(self, level, message):
         """Log to regular logfile and save for return for PP script log."""
         log.log(level, message)
-        self.log += message + "\n"
+        self._output.append(message)
+
+    @property
+    def output(self):
+        return '\n'.join(self._output)
