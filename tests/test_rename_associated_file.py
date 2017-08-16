@@ -83,9 +83,9 @@ import pytest
     },
     {  # p12: MKV with new basename
         'new_path': 'media/shows/riko or marty/season 3/',
-        'new_basename': 'Riko or Morty S03E05 Episode Name',
+        'new_basename': 'Riko or Marty S03E05 Episode Name',
         'filepath': 'downloads/tv/riko.or.marty.s03e05.1080p.web-dl.mkv',
-        'expected': 'media/shows/riko or marty/season 3/Riko or Morty S03E05 Episode Name.mkv'
+        'expected': 'media/shows/riko or marty/season 3/Riko or Marty S03E05 Episode Name.mkv'
     },
 ])
 def test_rename_associated_file(p, create_dir, monkeypatch):

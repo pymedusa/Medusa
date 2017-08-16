@@ -113,6 +113,7 @@ class PostProcessor(object):
 
     @property
     def output(self):
+        """Return the concatenated log messages."""
         return '\n'.join(self._output)
 
     def _get_rel_path(self):
