@@ -80,9 +80,9 @@ class ProcessResult(object):
                      logger.DEBUG)
         else:
             self.log("Unable to figure out what folder to process."
-                      " If your download client and Medusa aren't on the same"
-                      " machine, make sure to fill out the Post Processing Dir"
-                      " field in the config.", logger.WARNING)
+                     " If your download client and Medusa aren't on the same"
+                     " machine, make sure to fill out the Post Processing Dir"
+                     " field in the config.", logger.WARNING)
         setattr(self, '_directory', directory)
 
     @property
@@ -442,13 +442,13 @@ class ProcessResult(object):
                                             if not each.isdir]:
                         if not force and self.already_postprocessed(file_in_archive):
                             self.log('Archive file already post-processed, extraction skipped: {0}'.format
-                                      (file_in_archive), logger.DEBUG)
+                                     (file_in_archive), logger.DEBUG)
                             skip_extraction = True
                             break
 
                         if app.POSTPONE_IF_NO_SUBS and os.path.isfile(os.path.join(path, file_in_archive)):
                             self.log('Archive file already extracted, extraction skipped: {0}'.format
-                                      (file_in_archive), logger.DEBUG)
+                                     (file_in_archive), logger.DEBUG)
                             skip_extraction = True
                             break
 
@@ -502,7 +502,7 @@ class ProcessResult(object):
 
         if history_result:
             self.log("You're trying to post-process a file that has already "
-                      "been processed, skipping: {0}".format(video_file), logger.DEBUG)
+                     "been processed, skipping: {0}".format(video_file), logger.DEBUG)
             return True
 
     def process_media(self, path, video_files, force=False, is_priority=None, ignore_subs=False):
@@ -557,26 +557,26 @@ class ProcessResult(object):
                 # We want to ignore embedded subtitles and video has at least one
                 if accept_unknown(embedded_subs):
                     self.log("Found embedded unknown subtitles and we don't want to ignore them. "
-                              "Continuing the post-processing of this file: {0}".format(video))
+                             "Continuing the post-processing of this file: {0}".format(video))
                 elif accept_any(embedded_subs):
                     self.log('Found wanted embedded subtitles. '
-                              'Continuing the post-processing of this file: {0}'.format(video))
+                             'Continuing the post-processing of this file: {0}'.format(video))
                 else:
                     associated_subs = processor.list_associated_files(path, subtitles_only=True)
                     if not associated_subs:
                         self.log('No subtitles associated. Postponing the post-processing of this file: '
-                                  '{0}'.format(video), logger.DEBUG)
+                                 '{0}'.format(video), logger.DEBUG)
                         self.postpone_processing = True
                         return False
                     else:
                         self.log('Found associated subtitles. '
-                                  'Continuing the post-processing of this file: {0}'.format(video))
+                                 'Continuing the post-processing of this file: {0}'.format(video))
             else:
                 self.log('Subtitles disabled for this show. '
-                          'Continuing the post-processing of this file: {0}'.format(video))
+                         'Continuing the post-processing of this file: {0}'.format(video))
         else:
             self.log('Subtitles check was disabled for this episode in manual post-processing. '
-                      'Continuing the post-processing of this file: {0}'.format(video))
+                     'Continuing the post-processing of this file: {0}'.format(video))
         return True
 
     def process_failed(self, path):
@@ -600,10 +600,10 @@ class ProcessResult(object):
 
             if self.result:
                 self.log('Failed Download Processing succeeded: {0}, {1}'.format
-                          (self.resource_name, path))
+                         (self.resource_name, path))
             else:
                 self.log('Failed Download Processing failed: {0}, {1}: {2}'.format
-                          (self.resource_name, path, process_fail_message), logger.WARNING)
+                         (self.resource_name, path, process_fail_message), logger.WARNING)
 
     @staticmethod
     def subtitles_enabled(*args):
