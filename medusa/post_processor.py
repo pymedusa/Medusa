@@ -850,24 +850,24 @@ class PostProcessor(object):
                         return
 
     def _is_priority(self, old_ep_quality, new_ep_quality):
-            """
-            Determine if the episode is a priority download or not (if it is expected).
+        """
+        Determine if the episode is a priority download or not (if it is expected).
 
-            Episodes which are expected (snatched) are priority, others are not.
+        Episodes which are expected (snatched) are priority, others are not.
 
-            :param old_ep_quality: The old quality of the episode that is being processed
-            :param new_ep_quality: The new quality of the episode that is being processed
-            :return: True if the episode is priority, False otherwise.
-            """
-            level = logger.DEBUG
-            self.log(u'Snatch in history: {0}'.format(self.in_history), level)
-            self.log(u'Manually snatched: {0}'.format(self.manually_searched), level)
-            self.log(u'Current quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
-            self.log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
-            self.log(u'Proper: {0}'.format(self.is_proper), level)
+        :param old_ep_quality: The old quality of the episode that is being processed
+        :param new_ep_quality: The new quality of the episode that is being processed
+        :return: True if the episode is priority, False otherwise.
+        """
+        level = logger.DEBUG
+        self.log(u'Snatch in history: {0}'.format(self.in_history), level)
+        self.log(u'Manually snatched: {0}'.format(self.manually_searched), level)
+        self.log(u'Current quality: {0}'.format(common.Quality.qualityStrings[old_ep_quality]), level)
+        self.log(u'New quality: {0}'.format(common.Quality.qualityStrings[new_ep_quality]), level)
+        self.log(u'Proper: {0}'.format(self.is_proper), level)
 
-            # If in_history is True it must be a priority download
-            return bool(self.in_history or self.is_priority)
+        # If in_history is True it must be a priority download
+        return bool(self.in_history or self.is_priority)
 
     @staticmethod
     def _should_process(current_quality, new_quality, allowed, preferred):
