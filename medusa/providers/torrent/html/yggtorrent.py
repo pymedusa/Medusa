@@ -1,12 +1,11 @@
 # coding=utf-8
 
-"""Provider code for SCC."""
+"""Provider code for Yggtorrent."""
 
 from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -18,42 +17,39 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
-class SCCProvider(TorrentProvider):
-    """SceneAccess Torrent provider."""
+class YggtorrentProvider(TorrentProvider):
+    """Yggtorrent Torrent provider."""
 
     def __init__(self):
         """Initialize the class."""
-        super(SCCProvider, self).__init__('SceneAccess')
+        super(YggtorrentProvider, self).__init__('Yggtorrent')
 
         # Credentials
         self.username = None
         self.password = None
 
         # URLs
-        self.url = 'https://sceneaccess.eu'
+        self.url = 'https://yggtorrent.com/'
         self.urls = {
-            'login': urljoin(self.url, 'login'),
-            'search': urljoin(self.url, 'all?search={string}&method=1&{cats}'),
+            'login': urljoin(self.url, 'user/login'),
+            'search': urljoin(self.url, 'engine/search'),
         }
 
         # Proper Strings
         self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
-        self.categories = {
-            # Archive, non-scene HD, non-scene SD;
-            # need to include non-scene because WEB-DL packs get added to those categories
-            'Season': 'c26=26&c44=44&c45=45',
-            # TV HD, TV SD, non-scene HD, non-scene SD, foreign XviD, foreign x264
-            'Episode': 'c11=11&c17=17&c27=27&c33=33&c34=34&c44=44&c45=45',
-            # Season + Episode
-            'RSS': 'c11=11&c17=17&c26=26&c27=27&c33=33&c34=34&c44=44&c45=45',
+        self.translation = {
+            'jour': 'hour',
+            'jours': 'hours',
+            'mois': 'month',
+            'an': 'year',
+            'années': 'years'
         }
 
         # Torrent Stats
@@ -61,7 +57,7 @@ class SCCProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self)
+        self.cache = tv.Cache(self, min_time=30)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -76,6 +72,9 @@ class SCCProvider(TorrentProvider):
         if not self.login():
             return results
 
+        # Search Params
+        search_params = {}
+
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
@@ -85,9 +84,8 @@ class SCCProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_url = self.urls['search'].format(string=self._strip_year(search_string),
-                                                        cats=self.categories[mode])
-                response = self.session.get(search_url)
+                search_params['q'] = re.sub(r'[()]', '', search_string)
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -108,24 +106,38 @@ class SCCProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
-            torrent_table = html.find('table', attrs={'id': 'torrents-table'})
+            torrent_table = html.find(class_='table table-striped')
             torrent_rows = torrent_table('tr') if torrent_table else []
 
-            # Continue only if at least one release is found
+            # Continue only if at least one Release is found
             if len(torrent_rows) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            for row in torrent_rows[1:]:
+            # Skip column headers
+            for result in torrent_rows[1:]:
+                cells = result('td')
+                if len(cells) < 5:
+                    continue
                 try:
-                    title = row.find('td', class_='ttr_name').find('a').get('title')
-                    torrent_url = row.find('td', class_='td_dl').find('a').get('href')
-                    download_url = urljoin(self.url, torrent_url)
-                    if not all([title, torrent_url]):
+                    title = cells[0].find('a', class_='torrent-name').get_text(strip=True)
+                    download_url = urljoin(self.url, cells[0].find('a', target='_blank')['href'])
+                    if not (title and download_url):
                         continue
 
-                    seeders = try_int(row.find('td', class_='ttr_seeders').get_text(), 1)
-                    leechers = try_int(row.find('td', class_='ttr_leechers').get_text())
+                    seeders = try_int(cells[4].get_text(strip=True), 1)
+                    leechers = try_int(cells[5].get_text(strip=True), 0)
+
+                    torrent_size = cells[3].get_text()
+                    size = convert_size(torrent_size, sep='') or -1
+
+                    pubdate = None
+                    pubdate_match = re.match(r'(\d+)\s(\w+)', cells[2].get_text(strip=True))
+                    if pubdate_match:
+                        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), self.translation.get(pubdate_match.group(2)))
+                        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                    else:
+                        log.warning('Could not translate publishing date with value: {0}', cells[2].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -134,12 +146,6 @@ class SCCProvider(TorrentProvider):
                                       " minimum seeders: {0}. Seeders: {1}",
                                       title, seeders)
                         continue
-
-                    torrent_size = row.find('td', class_='ttr_size').contents[0]
-                    size = convert_size(torrent_size) or -1
-
-                    pubdate_raw = row.find('td', class_='ttr_added').get_text(separator=' ')
-                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -155,39 +161,33 @@ class SCCProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
         login_params = {
-            'username': self.username,
-            'password': self.password,
-            'submit': 'come on in',
+            'id': self.username,
+            'pass': self.password,
+            'submit': ''
         }
 
-        response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not response.text:
+        self.session.post(self.urls['login'], data=login_params)
+        response = self.session.get(self.url)
+        if not response:
             log.warning('Unable to connect to provider')
             return False
-        if any([re.search(r'Username or password incorrect', response.text),
-                re.search(r'<title>SceneAccess \| Login</title>', response.text), ]):
+
+        if 'Ces identifiants sont invalides' in response.text:
             log.warning('Invalid username or password. Check your settings')
+            return False
+
+        if 'Mon compte' not in response.text:
+            log.warning('Unable to login to provider')
             return False
 
         return True
 
-    @staticmethod
-    def _strip_year(search_string):
-        """Remove brackets from search string year."""
-        if not search_string:
-            return search_string
-        return re.sub(r'\((?P<year>\d{4})\)', '\g<year>', search_string)
 
-
-provider = SCCProvider()
+provider = YggtorrentProvider()
