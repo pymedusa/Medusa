@@ -1,5 +1,7 @@
 # coding=utf-8
 
+"""Session core method."""
+
 from __future__ import unicode_literals
 
 import errno
@@ -15,6 +17,7 @@ from medusa import app
 from medusa.session import hooks
 
 import requests
+import retry
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -62,12 +65,18 @@ class MedusaSession(BaseSession):
         # Pop the cache_control config
         cache_control = kwargs.pop('cache_control', None)
 
+        # Pop the retry config
+        retry_session = kwargs.pop('retry_session', None)
+
         # Initialize request.session after we've done the pop's.
         super(MedusaSession, self).__init__(**kwargs)
 
         # Add cache control of provided as a dict. Needs to be attached after super init.
         if cache_control:
             factory.add_cache_control(self, cache_control)
+
+        if retry_session:
+            retry.requests_retry_session(self, retry_session)
 
         # add proxies
         self.proxies = proxies or factory.add_proxies()
@@ -119,7 +128,7 @@ class MedusaSafeSession(MedusaSession):
     """
 
     def __init__(self, verify=True, *args, **kwargs):
-        # Initialize request.session
+        """Initialize request.session."""
         super(MedusaSafeSession, self).__init__(**kwargs)
 
     def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
