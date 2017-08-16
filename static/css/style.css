@@ -1788,7 +1788,6 @@ schedule.mako
     padding: 2px 5px;
     font-size: 13px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 .listing-default {
@@ -2553,6 +2552,12 @@ td.tableright {
 
 a.whitelink {
     color: rgb(255, 255, 255);
+}
+
+/* BacklogOverview */
+div#status-summary {
+    padding-top: 10px;
+    padding-bottom: 2px;
 }
 
 /* =======================================================================
@@ -4334,22 +4339,9 @@ CSS helper classes
 */
 
 /* =======================================================================
- overflow for horizontal scrolling, without breaking ui.
+ overflow buttons for scrolling left and right.
+ For horizontal scrolling, without breaking the ui.
 ========================================================================== */
-
-.full-screen-scroll {
-    clear: none;
-}
-
-.scroll-wrap {
-    overflow-x: auto;
-}
-
-div#imageContainer {
-    position: fixed;
-    bottom: 50px;
-    right: 100px;
-}
 
 .scroll-wrapper.show {
     visibility: visible;

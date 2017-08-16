@@ -26,7 +26,7 @@ MEDUSA.common.init = function() {
     }
 
     let initHorizontalScroll = function() {
-        let scrollDiv = $('div.scroll-wrap');
+        let scrollDiv = $('div.horizontal-scroll');
         if (!scrollDiv) {
             return
         }
@@ -61,14 +61,14 @@ MEDUSA.common.init = function() {
 
     $('#scroll-left').click(function (e) {
         e.preventDefault();
-        $('.scroll-wrap').animate({
+        $('div.horizontal-scroll').animate({
             scrollLeft: '-=153'
         }, 1000, 'easeOutQuad');
     });
 
     $('#scroll-right').click(function (e) {
         e.preventDefault();
-        $('.scroll-wrap').animate({
+        $('div.horizontal-scroll').animate({
             scrollLeft: '+=153'
         }, 1000, 'easeOutQuad');
     });
