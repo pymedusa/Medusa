@@ -349,7 +349,7 @@ class PostProcessor(object):
                         self.log(
                             u'Cannot change permissions of {filename}. Error: {msg}'.format(
                                 filename=cur_file, msg=error), logger.WARNING
-                            )
+                        )
 
                 os.remove(cur_file)
 
