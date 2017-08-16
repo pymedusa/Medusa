@@ -43,9 +43,11 @@ class FailedProcessor(object):
         try:
             parsed = NameParser().parse(releaseName)
         except (InvalidNameException, InvalidShowException):
-            self.log(logger.WARNING, u'Not enough information to parse release name into a valid show. '
-                      u'Consider adding scene exceptions or improve naming for: {release}'.format
-                      (release=releaseName))
+            self.log(
+                logger.WARNING, u'Not enough information to parse release name into a valid show. '
+                u'Consider adding scene exceptions or improve naming for: {release}'.format
+                (release=releaseName)
+            )
             raise FailedPostProcessingFailedException()
 
         self.log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
@@ -74,4 +76,5 @@ class FailedProcessor(object):
 
     @property
     def output(self):
+        """Return the pp output."""
         return '\n'.join(self._output)
