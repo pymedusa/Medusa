@@ -33,41 +33,41 @@ class FailedProcessor(object):
 
         :return: True
         """
-        self._log(logger.INFO, u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.nzb_name, dir=self.dir_name))
+        self.log(logger.INFO, u'Failed download detected: ({nzb}, {dir})'.format(nzb=self.nzb_name, dir=self.dir_name))
 
         releaseName = naming.determine_release_name(self.dir_name, self.nzb_name)
         if not releaseName:
-            self._log(logger.WARNING, u'Warning: unable to find a valid release name.')
+            self.log(logger.WARNING, u'Warning: unable to find a valid release name.')
             raise FailedPostProcessingFailedException()
 
         try:
             parsed = NameParser().parse(releaseName)
         except (InvalidNameException, InvalidShowException):
-            self._log(logger.WARNING, u'Not enough information to parse release name into a valid show. '
+            self.log(logger.WARNING, u'Not enough information to parse release name into a valid show. '
                       u'Consider adding scene exceptions or improve naming for: {release}'.format
                       (release=releaseName))
             raise FailedPostProcessingFailedException()
 
-        self._log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
+        self.log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
 
         segment = []
         if not parsed.episode_numbers:
             # Get all episode objects from that season
-            self._log(logger.DEBUG, 'Detected as season pack: {release}'.format(release=releaseName))
+            self.log(logger.DEBUG, 'Detected as season pack: {release}'.format(release=releaseName))
             segment.extend(parsed.show.get_all_episodes(parsed.season_number))
         else:
-            self._log(logger.DEBUG, u'Detected as single/multi episode: {release}'.format(release=releaseName))
+            self.log(logger.DEBUG, u'Detected as single/multi episode: {release}'.format(release=releaseName))
             for episode in parsed.episode_numbers:
                 segment.append(parsed.show.get_episode(parsed.season_number, episode))
 
         if segment:
-            self._log(logger.DEBUG, u'Adding this release to failed queue: {release}'.format(release=releaseName))
+            self.log(logger.DEBUG, u'Adding this release to failed queue: {release}'.format(release=releaseName))
             cur_failed_queue_item = FailedQueueItem(parsed.show, segment)
             app.forced_search_queue_scheduler.action.add_item(cur_failed_queue_item)
 
         return True
 
-    def _log(self, level, message):
+    def log(self, level, message):
         """Log to regular logfile and save for return for PP script log."""
         log.log(level, message)
         self._output.append(message)
