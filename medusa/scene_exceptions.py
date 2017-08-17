@@ -15,14 +15,14 @@ from medusa.indexers.indexer_api import indexerApi
 from six import iteritems
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
-from .session.core import MedusaSession
+from .session.core import MedusaSafeSession
 
 logger = logging.getLogger(__name__)
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
-xem_session = MedusaSession()
+xem_session = MedusaSafeSession()
 
 # TODO: Fix multiple indexer support
 
@@ -286,7 +286,7 @@ def _get_custom_exceptions(force):
             )
             try:
                 # When any Medusa Safe session exception, session returns None and then AttributeError when json()
-                jdata = indexerApi(indexer).session.get(location, timeout=60).json()
+                jdata = MedusaSafeSession().get(location, timeout=60).json()
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed. Unable to '

@@ -8,7 +8,7 @@ from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
 from ..app import BASE_PYMEDUSA_URL
-from ..session.core import MedusaSafeSession
+from ..session.core import MedusaSession
 
 
 initConfig = {
@@ -69,7 +69,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSafeSession(cache_control={'cache_etags': False}),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
@@ -87,7 +87,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSafeSession(cache_control={'cache_etags': False}),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
@@ -105,7 +105,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': MedusaSafeSession(cache_control={'cache_etags': False}),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
