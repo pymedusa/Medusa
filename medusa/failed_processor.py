@@ -48,7 +48,7 @@ class FailedProcessor(object):
                      (release=releaseName))
             raise FailedPostProcessingFailedException()
 
-        self.log(u'Parsed info: {result}'.format(result=parsed), logger.DEBUG)
+        self.log(logger.DEBUG, u'Parsed info: {result}'.format(result=parsed))
 
         segment = []
         if not parsed.episode_numbers:
