@@ -286,7 +286,8 @@ def _get_custom_exceptions(force):
             )
             try:
                 # When any Medusa Safe session exception, session returns None and then AttributeError when json()
-                jdata = MedusaSafeSession().get(location, timeout=60).json()
+                # Reusing xem_session even this is not xem related
+                jdata = xem_session.get(location, timeout=60).json()
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed. Unable to '
