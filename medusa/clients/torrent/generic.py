@@ -28,6 +28,8 @@ log.logger.addHandler(logging.NullHandler())
 class GenericClient(object):
     """Base class for all torrent clients."""
 
+    session = MedusaSession()
+
     def __init__(self, name, host=None, username=None, password=None):
         """Constructor.
 
@@ -49,7 +51,7 @@ class GenericClient(object):
         self.response = None
         self.auth = None
         self.last_time = time.time()
-        self.session = MedusaSession()
+        self.session = GenericClient.session
         self.session.auth = (self.username, self.password)
 
     def _request(self, method='get', params=None, data=None, files=None, cookies=None):
@@ -309,8 +311,10 @@ class GenericClient(object):
             return False, 'Error: {name} Connection Error'.format(name=self.name)
         except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
             return False, 'Error: Invalid {name} host'.format(name=self.name)
+        except requests.exceptions.RetryError as error:
+            pass
 
-        if self.response.status_code == 401:
+        if self.response and self.response.status_code == 401:
             return False, 'Error: Invalid {name} Username or Password, check your config!'.format(name=self.name)
 
         try:

@@ -18,9 +18,11 @@ from medusa.helpers import (
     is_info_hash_processed,
 )
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 from requests.adapters import HTTPAdapter
 from requests.compat import urljoin
+from requests.exceptions import RetryError
 from requests.packages.urllib3.util.retry import Retry
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -29,6 +31,8 @@ log.logger.addHandler(logging.NullHandler())
 
 class TransmissionAPI(GenericClient):
     """Transmission API class."""
+
+    session = MedusaSession()
 
     def __init__(self, host=None, username=None, password=None):
         """Constructor.
@@ -44,14 +48,19 @@ class TransmissionAPI(GenericClient):
 
         self.rpcurl = self.rpcurl.strip('/')
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
+        self.session = TransmissionAPI.session
+        self.session.auth = (self.username, self.password)
 
         # Adds retry when '409 - Conflict' status code
         # https://github.com/transmission/transmission/issues/231#issuecomment-296385711
+
         retry_count = 3
         retry = Retry(total=retry_count,
                       read=retry_count,
                       connect=retry_count,
-                      backoff_factor=0.3, status_forcelist=(409,))
+                      backoff_factor=0.3,
+                      status_forcelist=(409,),
+                      method_whitelist={'POST'})
         adapter = HTTPAdapter(max_retries=retry)
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
@@ -73,7 +82,9 @@ class TransmissionAPI(GenericClient):
             self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
                                               verify=app.TORRENT_VERIFY_CERT)
             self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
-        except Exception:
+        except RetryError as error:
+            self.auth = self.response.headers.get('x-transmission-session-id') or re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
+        except Exception as error:
             return None
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
