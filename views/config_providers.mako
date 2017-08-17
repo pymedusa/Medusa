@@ -387,7 +387,10 @@ $('#config-components').tabs();
                             <label>
                                 <span class="component-title">&nbsp;</span>
                                 <span class="component-desc">
-                                    <p>eg. uid=xx;pass=yy</p>
+                                    % if hasattr(cur_torrent_provider, 'required_cookies'):
+                                        <p>eg. ${'=xx;'.join(cur_torrent_provider.required_cookies) + '=xx'}</p>
+                                        <p>This provider requires the following cookies: ${', '.join(cur_torrent_provider.required_cookies)}. <br/>For a step by step guide please follow the link to our <a target="_blank" href="${anon_url('https://github.com/pymedusa/Medusa/wiki/Configure-Providers-with-captcha-protection')}">WIKI</a></p>
+                                    % endif
                                 </span>
                             </label>
                         </div>
