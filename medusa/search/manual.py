@@ -174,10 +174,19 @@ def collect_episodes_from_search_thread(show):
 def get_provider_cache_results(indexer, show_all_results=None, perform_search=None, show=None,
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
-    sql_episode = '' if manual_search_type == 'season' else episode
+
+    season_search = False
+    show_obj = Show.find(app.showList, int(show))
+
+    if manual_search_type == 'season':
+        # let's get all the episodes for the season and for later use as a multe-ep search string.
+        sql_episode = '|'.join([str(ep.episode) for ep in show_obj.get_all_episodes(season)])
+        season_search = True
+    else:
+        sql_episode = episode
 
     down_cur_quality = 0
-    show_obj = Show.find(app.showList, int(show))
+
     preferred_words = show_obj.show_words().preferred_words.lower().split(',')
     undesired_words = show_obj.show_words().undesired_words.lower().split(',')
     ignored_words = show_obj.show_words().ignored_words.lower().split(',')
@@ -223,16 +232,29 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                     provider_id=cur_provider.get_id()
                 )
             )
-            additional_sql = " AND episodes LIKE ? AND season = ? "
 
-            # The params are always the same for both queries
+            # If this is a season search, we've changed the sql_episode search string. But we also want to look for the
+            # episode sql field being empty.
             add_params = [cur_provider.provider_type.title(), cur_provider.image_name(),
                           cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
 
-            # If were not looking for all results, meaning don't do the filter on season + ep, add sql
-            if not int(show_all_results):
-                common_sql += additional_sql
-                add_params += ["%|{0}|%".format(sql_episode), season]
+            if not season_search:
+                additional_sql = " AND season = ? AND episodes LIKE ? "
+
+                # If were not looking for all results, meaning don't do the filter on season + ep, add sql
+                if not int(show_all_results):
+                    common_sql += additional_sql
+                    add_params += [season, "%|{0}|%".format(sql_episode)]
+            else:
+                list_of_episodes = '{0}{1}'.format(' episodes LIKE ', ' AND episodes LIKE '.join(
+                    ['?' for _ in show_obj.get_all_episodes(season)]))
+                additional_sql = " AND season = ? AND episodes LIKE ? OR ({list_of_episodes})".format(list_of_episodes=list_of_episodes)
+
+                # If were not looking for all results, meaning don't do the filter on season + ep, add sql
+                if not int(show_all_results):
+                    common_sql += additional_sql
+                    add_params += [season, '||']  # When the episodes field is empty.
+                    add_params += ['%|{episode}|%'.format(episode=ep.episode) for ep in show_obj.get_all_episodes(season)]
 
             # Add the created sql, to lists, that are used down below to perform one big UNIONED query
             combined_sql_q.append(common_sql)
@@ -259,8 +281,6 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
         # retrieve the episode object and fail if we can't get one
         ep_obj = get_episode(show, season, episode)
         if isinstance(ep_obj, str):
-            # ui.notifications.error(u"Something went wrong when starting the manual search for show {0}, and episode: {1}x{2}".
-            # format(show_obj.name, season, episode))
             provider_results['error'] = 'Something went wrong when starting the manual search for show {0}, \
             and episode: {1}x{2}'.format(show_obj.name, season, episode)
 

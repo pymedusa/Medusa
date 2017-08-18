@@ -143,5 +143,21 @@ class NyaaProvider(TorrentProvider):
 
         return items
 
+    def _get_season_search_strings(self, episode):
+        search_string = {
+            'Season': []
+        }
+        season_search_keywords = ('batch', 'complete', 'season')
+
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+
+            episode_string = show_name + ' '
+
+            for keyword in season_search_keywords:
+                search_string['Season'].append('{series} {keyword}'.format(
+                    series=episode_string, keyword=keyword).strip())
+
+        return [search_string]
+
 
 provider = NyaaProvider()
