@@ -175,10 +175,8 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                                season=None, episode=None, manual_search_type=None, **search_show):
     """Check all provider cache tables for search results."""
 
-    show_obj = Show.find(app.showList, int(show))
-
     down_cur_quality = 0
-
+    show_obj = Show.find(app.showList, int(show))
     preferred_words = show_obj.show_words().preferred_words.lower().split(',')
     undesired_words = show_obj.show_words().undesired_words.lower().split(',')
     ignored_words = show_obj.show_words().ignored_words.lower().split(',')
