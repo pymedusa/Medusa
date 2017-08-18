@@ -9,6 +9,7 @@ import logging
 import os
 import re
 from base64 import b64encode
+from time import time
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -20,6 +21,8 @@ from medusa.helpers import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
+import requests
+from requests import auth
 from requests.adapters import HTTPAdapter
 from requests.compat import urljoin
 from requests.exceptions import RetryError
@@ -27,6 +30,52 @@ from requests.packages.urllib3.util.retry import Retry
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class TransmissionBasicAuth(auth.HTTPBasicAuth):
+    """Attaches JWT Bearer Authentication to a TVDB request."""
+
+    refresh_window = 3600  # seconds
+
+    def __init__(self, username, password):
+        """Create a new TVDB request auth."""
+        super(TransmissionBasicAuth, self).__init__(username, password)
+        self.token = None
+        self.token_expires = None
+
+    def login(self, request, data):
+        if self.token:
+            request.headers.update({'x-transmission-session-id': self.token})
+
+        return requests.post(
+            request.url,
+            headers=request.headers,
+            data=data,
+            verify=False,
+            auth=auth.HTTPBasicAuth(self.username, self.password)
+        )
+
+    def authenticate(self, request):
+        """Acquire or refresh a JSON Web Token."""
+        if not self.token or self.token_expires < time():
+            # get token
+            data = {'method': 'session-get'}
+            r = self.login(request, json.dumps(data))
+
+            if r.status_code == 409 and r.headers.get('x-transmission-session-id'):
+                self.token = r.headers.get('x-transmission-session-id')
+                self.token_expires = time() + 3600
+
+            request.headers.update({'x-transmission-session-id': self.token})
+
+    def __call__(self, request):
+        self.authenticate(request)
+        request.headers.update({'x-transmission-session-id': self.token})
+        return super(TransmissionBasicAuth, self).__call__(request)
+
+    def __repr__(self):
+        representation = '{obj.__class__.__name__}(token={obj.token!r})'
+        return representation.format(obj=self)
 
 
 class TransmissionAPI(GenericClient):
@@ -49,7 +98,11 @@ class TransmissionAPI(GenericClient):
         self.rpcurl = self.rpcurl.strip('/')
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
         self.session = TransmissionAPI.session
-        self.session.auth = (self.username, self.password)
+        if not self.session.auth:
+            self.session.auth = TransmissionBasicAuth(username, password)
+        else:
+            self.session.auth.username = username
+            self.session.auth.password = password
 
         # Adds retry when '409 - Conflict' status code
         # https://github.com/transmission/transmission/issues/231#issuecomment-296385711
@@ -73,31 +126,32 @@ class TransmissionAPI(GenericClient):
             return False
 
     def _get_auth(self):
+        """
+        Overwrite the default _get_auth method.
 
-        post_data = json.dumps({
-            'method': 'session-get',
-        })
+        We are using an authentication hook for retrieving the token.
+        """
+        self.auth = True
+        return self.auth
 
-        try:
-            self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
-                                              verify=app.TORRENT_VERIFY_CERT)
-            self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
-        except RetryError as error:
-            self.auth = self.response.headers.get('x-transmission-session-id') or re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
-        except Exception as error:
-            return None
-
-        self.session.headers.update({'x-transmission-session-id': self.auth})
-
-        # Validating Transmission authorization
+    def test_authentication(self):
+        """Validate Transmission authorization"""
         post_data = json.dumps({
             'arguments': {},
             'method': 'session-get',
         })
 
-        self._request(method='post', data=post_data)
+        try:
+            success = self._request(method='post', data=post_data)
+        except requests.exceptions.ConnectionError:
+            return False, 'Error: {name} Connection Error'.format(name=self.name)
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
+            return False, 'Error: Invalid {name} host'.format(name=self.name)
 
-        return self.auth
+        if success and self.response.status_code == 200:
+            return True, 'Success: Connected and Authenticated'
+        else:
+            return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
 
     def _add_torrent_uri(self, result):
 

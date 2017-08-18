@@ -94,6 +94,10 @@ class GenericClient(object):
             log.warning('{name}: Connection Timeout {error}',
                         {'name': self.name, 'error': msg})
             return False
+        except requests.exceptions.RetryError as msg:
+            log.warning('{name}: Max number of retires exceeded {error}',
+                        {'name': self.name, 'error': msg})
+            return False
         except Exception as msg:
             log.error('{name}: Unknown exception raised when send torrent to'
                       ' {name} : {error}', {'name': self.name, 'error': msg})
