@@ -148,7 +148,7 @@ class NewznabProvider(NZBProvider):
 
                 time.sleep(cpu_presets[app.CPU_PRESET])
 
-                response = self.get_url(urljoin(self.url, 'api'), params=search_params, returns='response')
+                response = self.session.get(urljoin(self.url, 'api'), params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -450,7 +450,7 @@ class NewznabProvider(NZBProvider):
         if self.needs_auth and self.key:
             url_params['apikey'] = self.key
 
-        response = self.get_url(urljoin(self.url, 'api'), params=url_params, returns='response')
+        response = self.session.get(urljoin(self.url, 'api'), params=url_params)
         if not response or not response.text:
             error_string = 'Error getting caps xml for [{0}]'.format(self.name)
             log.warning(error_string)

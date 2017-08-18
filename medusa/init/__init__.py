@@ -140,7 +140,7 @@ def _configure_subliminal():
                  'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
                  'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename),
                  'subscenter = {basename}.subtitle_providers.subscenter:SubsCenterProvider'.format(basename=basename),
-                 'thewiz = {basename}.subtitle_providers.thewiz:TheWizProvider'.format(basename=basename)):
+                 'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
         provider_manager.register(name)
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))

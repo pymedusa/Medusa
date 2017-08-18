@@ -2,14 +2,14 @@
 
 import logging
 
-from medusa import helpers
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSafeSession
 
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-meta_session = helpers.make_session()
+meta_session = MedusaSafeSession()
 
 
 def getShowImage(url, imgNum=None):
@@ -24,9 +24,10 @@ def getShowImage(url, imgNum=None):
 
     log.debug(u'Fetching image from {url}', {'url': tempURL})
 
-    image_data = helpers.get_url(tempURL, session=meta_session, returns='content')
-    if image_data is None:
+    # TODO: SESSION: Check if this needs exception handling.
+    image_data = meta_session.get(tempURL)
+    if not image_data:
         log.warning(u'There was an error trying to retrieve the image, aborting')
         return
 
-    return image_data
+    return image_data.content

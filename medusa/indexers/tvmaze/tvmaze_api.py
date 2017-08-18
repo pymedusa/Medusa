@@ -483,7 +483,7 @@ class TVmaze(BaseIndexer):
         :returns: A dict with externals, including the tvmaze id.
         """
         mapping = {'thetvdb': 'tvdb_id', 'tvrage': 'tvrage_id', 'imdb': 'imdb_id'}
-        for external_id in ['tvdb_id', 'imdb_id', 'tvrage_id']:
+        for external_id in mapping.values():
             if kwargs.get(external_id):
                 try:
                     result = self.tvmaze_api.get_show(**{external_id: kwargs.get(external_id)})

@@ -15,10 +15,13 @@ PNotify.prototype.options.styling = 'jqueryui';
 PNotify.prototype.options.width = '340px';
 PNotify.desktop.permission();
 
-function displayPNotify(type, title, message) {
+function displayPNotify(type, title, message, id) {
     new PNotify({ // eslint-disable-line no-new
         type: type,
         title: title,
+        desktop: {
+            tag: id
+        },
         text: String(message).replace(/<br[\s/]*(?:\s[^>]*)?>/ig, '\n')
             .replace(/<[/]?b(?:\s[^>]*)?>/ig, '*')
             .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
@@ -27,8 +30,9 @@ function displayPNotify(type, title, message) {
 }
 
 function wsCheckNotifications() {
-    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const webRoot = MEDUSA.config.webRoot || '';
+    const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
         var msg;
         try {
@@ -39,7 +43,7 @@ function wsCheckNotifications() {
 
         // Add handling for different kinds of events. For ex: {"event": "notification", "data": {"title": ..}}
         if (msg.event === 'notification') {
-            displayPNotify(msg.data.type, msg.data.title, msg.data.body);
+            displayPNotify(msg.data.type, msg.data.title, msg.data.body, msg.data.hash);
         } else {
             displayPNotify('info', '', msg);
         }
@@ -56,6 +60,6 @@ function wsCheckNotifications() {
 $(document).ready(function() {
     wsCheckNotifications();
     if (test) {
-        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>');
+        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
     }
 });
