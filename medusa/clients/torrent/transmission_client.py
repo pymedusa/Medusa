@@ -54,7 +54,7 @@ class TransmissionBasicAuth(auth.HTTPBasicAuth):
             request.url,
             headers=request.headers,
             data=data,
-            verify=False,
+            verify=request.verify,
             auth=auth.HTTPBasicAuth(self.username, self.password)
         )
 
@@ -149,7 +149,7 @@ class TransmissionAPI(GenericClient):
         return self.auth
 
     def test_authentication(self):
-        """Validate Transmission authorization"""
+        """Validate Transmission authorization."""
         post_data = json.dumps({
             'arguments': {},
             'method': 'session-get',
