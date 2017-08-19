@@ -1,7 +1,6 @@
 MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
-    let self = this;
 
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
@@ -28,7 +27,7 @@ MEDUSA.common.init = function() {
     let initHorizontalScroll = function() {
         let scrollDiv = $('div.horizontal-scroll');
         if (!scrollDiv) {
-            return
+            return;
         }
 
         let scrollbarVisible = false;
@@ -59,14 +58,14 @@ MEDUSA.common.init = function() {
         $('html, body').animate({scrollTop: $(dest).offset().top}, 500, 'linear');
     }
 
-    $('#scroll-left').click(function (e) {
+    $('#scroll-left').click(function(e) {
         e.preventDefault();
         $('div.horizontal-scroll').animate({
             scrollLeft: '-=153'
         }, 1000, 'easeOutQuad');
     });
 
-    $('#scroll-right').click(function (e) {
+    $('#scroll-right').click(function(e) {
         e.preventDefault();
         $('div.horizontal-scroll').animate({
             scrollLeft: '+=153'
