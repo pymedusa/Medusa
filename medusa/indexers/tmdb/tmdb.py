@@ -198,7 +198,7 @@ class Tmdb(BaseIndexer):
         """
         show_info = self._get_show_by_id(tmdb_id)['series']
 
-        return show_info.get('origin_country') or ''
+        return show_info.get('origin_country', '')
 
     def _get_show_by_id(self, tmdb_id, request_language='en'):  # pylint: disable=unused-argument
         """Retrieve tmdb show information by tmdb id, or if no tmdb id provided by passed external id.
