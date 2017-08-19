@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import json
 import logging
 import os
-import re
 from base64 import b64encode
 from time import time
 
@@ -25,7 +24,6 @@ import requests
 from requests import auth
 from requests.adapters import HTTPAdapter
 from requests.compat import urljoin
-from requests.exceptions import RetryError
 from requests.packages.urllib3.util.retry import Retry
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -33,21 +31,26 @@ log.logger.addHandler(logging.NullHandler())
 
 
 class TransmissionBasicAuth(auth.HTTPBasicAuth):
-    """Attaches JWT Bearer Authentication to a TVDB request."""
+    """
+    Attaches the servers session id to the Transmission requests.
+
+    This is a security measure to prevent cross site scripting.
+    """
 
     refresh_window = 3600  # seconds
 
     def __init__(self, username, password):
-        """Create a new TVDB request auth."""
+        """Create a new Transmission auth."""
         super(TransmissionBasicAuth, self).__init__(username, password)
-        self.token = None
-        self.token_expires = None
+        self.session = None
+        self.session_expires = None
 
     def login(self, request, data):
-        if self.token:
-            request.headers.update({'x-transmission-session-id': self.token})
+        """Run a test request to get the 409 status and the session id."""
+        if self.session:
+            request.headers.update({'x-transmission-session-id': self.session})
 
-        return requests.post(
+        return requests.get(
             request.url,
             headers=request.headers,
             data=data,
@@ -56,25 +59,33 @@ class TransmissionBasicAuth(auth.HTTPBasicAuth):
         )
 
     def authenticate(self, request):
-        """Acquire or refresh a JSON Web Token."""
-        if not self.token or self.token_expires < time():
-            # get token
-            data = {'method': 'session-get'}
-            r = self.login(request, json.dumps(data))
+        """Acquire the session id."""
+        if not self.session or self.session_expires < time():
+            # get session id
+            r = self.login(request, json.dumps({'method': 'session-get'}))
 
             if r.status_code == 409 and r.headers.get('x-transmission-session-id'):
-                self.token = r.headers.get('x-transmission-session-id')
-                self.token_expires = time() + 3600
+                self.session = r.headers.get('x-transmission-session-id')
+                self.session_expires = time() + TransmissionBasicAuth.refresh_window
 
-            request.headers.update({'x-transmission-session-id': self.token})
+        request.headers.update({'x-transmission-session-id': self.session})
 
     def __call__(self, request):
+        """Authenticate if needed and return the preped request."""
         self.authenticate(request)
-        request.headers.update({'x-transmission-session-id': self.token})
         return super(TransmissionBasicAuth, self).__call__(request)
 
+    def __eq__(self, other):
+        """Test for object evaluation."""
+        return all([
+            self.session == getattr(other, 'session', None),
+            self.username == getattr(other, 'username', None),
+            self.password == getattr(other, 'password', None)
+        ])
+
     def __repr__(self):
-        representation = '{obj.__class__.__name__}(token={obj.token!r})'
+        """Repr the session object."""
+        representation = '{obj.__class__.__name__}(session={obj.session!r})'
         return representation.format(obj=self)
 
 
