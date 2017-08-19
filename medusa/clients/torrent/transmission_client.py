@@ -54,7 +54,7 @@ class TransmissionBasicAuth(auth.HTTPBasicAuth):
             request.url,
             headers=request.headers,
             data=data,
-            verify=request.verify,
+            verify=False,
             auth=auth.HTTPBasicAuth(self.username, self.password)
         )
 
