@@ -110,10 +110,10 @@ class TransmissionAPI(GenericClient):
         self.url = urljoin(self.host, self.rpcurl + '/rpc')
         self.session = TransmissionAPI.session
         if not self.session.auth:
-            self.session.auth = TransmissionBasicAuth(username, password)
+            self.session.auth = TransmissionBasicAuth(self.username, self.password)
         else:
-            self.session.auth.username = username
-            self.session.auth.password = password
+            self.session.auth.username = self.username
+            self.session.auth.password = self.password
 
         # Adds retry when '409 - Conflict' status code
         # https://github.com/transmission/transmission/issues/231#issuecomment-296385711
