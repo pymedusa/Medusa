@@ -142,7 +142,10 @@ class TransmissionAPI(GenericClient):
 
         We are using an authentication hook for retrieving the token.
         """
+        # These are here to fake the _request() method into believing we have a valid session.
+        # We need to work around this because 1. bad design and 2. session invalidation is handled by the auth hook.
         self.auth = True
+        self.last_time = time()
         return self.auth
 
     def test_authentication(self):
