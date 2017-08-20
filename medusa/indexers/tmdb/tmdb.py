@@ -1,5 +1,8 @@
 # coding=utf-8
 
+"""TMDB module."""
+
+
 from __future__ import unicode_literals
 
 import logging
@@ -170,7 +173,7 @@ class Tmdb(BaseIndexer):
 
     # Tvdb implementation
     def search(self, series):
-        """Search tmdb.com for the series name.
+        """Search TMDB (themoviedb.org) for the series name.
 
         :param series: the query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
@@ -186,6 +189,16 @@ class Tmdb(BaseIndexer):
         mapped_results = self._map_results(results, self.series_map, '|')
 
         return OrderedDict({'series': mapped_results})['series']
+
+    def _get_shows_countries(self, tmdb_id):
+        """Retrieve show's countries from TMDB.
+
+        :param tmdb_id: The shows tmdb id
+        :return: A string with the show's countries
+        """
+        show_info = self._get_show_by_id(tmdb_id)['series']
+
+        return show_info.get('origin_country', '')
 
     def _get_show_by_id(self, tmdb_id, request_language='en'):  # pylint: disable=unused-argument
         """Retrieve tmdb show information by tmdb id, or if no tmdb id provided by passed external id.
@@ -205,7 +218,7 @@ class Tmdb(BaseIndexer):
         return OrderedDict({'series': mapped_results})
 
     def _get_episodes(self, tmdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
-        """Get all the episodes for a show by tmdb id.
+        """Get all the episodes for a show by TMDB id.
 
         :param tmdb_id: Series tmdb id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
@@ -287,18 +300,6 @@ class Tmdb(BaseIndexer):
     def _parse_images(self, sid):
         """Parse images.
 
-        http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/banners.xml
-        images are retrieved using t['show name]['_banners'], for example:
-        >>> indexer_api = TMDB(images = True)
-        >>> indexer_api['scrubs']['_banners'].keys()
-        ['fanart', 'poster', 'series', 'season']
-        >>> t['scrubs']['_banners']['poster']['680x1000']['35308']['_bannerpath']
-        u'http://theTMDB.com/banners/posters/76156-2.jpg'
-        >>>
-
-        Any key starting with an underscore has been processed (not the raw
-        data from the XML)
-
         This interface will be improved in future versions.
         """
         key_mapping = {'file_path': 'bannerpath', 'vote_count': 'ratingcount', 'vote_average': 'rating', 'id': 'id'}
@@ -307,7 +308,7 @@ class Tmdb(BaseIndexer):
         log.debug('Getting show banners for {0}', sid)
         _images = {}
 
-        # Let's fget the different type of images available for this series
+        # Let's get the different type of images available for this series
         params = {'include_image_language': '{search_language},null'.format(search_language=self.config['language'])}
 
         images = self.tmdb.TV(sid).images(params=params)
@@ -361,7 +362,7 @@ class Tmdb(BaseIndexer):
         self._set_show_data(sid, '_banners', _images)
 
     def _parse_season_images(self, sid):
-        """Get all season posters for a tmdb show."""
+        """Get all season posters for a TMDB show."""
         # Let's fget the different type of images available for this series
         season_posters = getattr(self[sid], 'seasons', None)
         if not season_posters:
@@ -381,28 +382,7 @@ class Tmdb(BaseIndexer):
         return _images
 
     def _parse_actors(self, sid):
-        """Parse actors XML.
-
-        From http://theTMDB.com/api/[APIKEY]/series/[SERIES ID]/actors.xml
-        Actors are retrieved using t['show name]['_actors'], for example:
-        >>> indexer_api = TMDB(actors = True)
-        >>> actors = indexer_api['scrubs']['_actors']
-        >>> type(actors)
-        <class 'TMDB_api.Actors'>
-        >>> type(actors[0])
-        <class 'TMDB_api.Actor'>
-        >>> actors[0]
-        <Actor "Zach Braff">
-        >>> sorted(actors[0].keys())
-        ['id', 'image', 'name', 'role', 'sortorder']
-        >>> actors[0]['name']
-        u'Zach Braff'
-        >>> actors[0]['image']
-        u'http://theTMDB.com/banners/actors/43640.jpg'
-
-        Any key starting with an underscore has been processed (not the raw
-        data from the XML)
-        """
+        """Parse actors XML."""
         log.debug('Getting actors for {0}', sid)
 
         # TMDB also support passing language here as a param.
@@ -427,7 +407,7 @@ class Tmdb(BaseIndexer):
         self._set_show_data(sid, '_actors', cur_actors)
 
     def _get_show_data(self, sid, language='en'):  # pylint: disable=too-many-branches,too-many-statements,too-many-locals
-        """Take a series ID, gets the epInfo URL and parses the TheTMDB json response.
+        """Take a series ID, gets the epInfo URL and parses the TMDB json response.
 
         into the shows dict in layout:
         shows[series_id][season_number][episode_number]

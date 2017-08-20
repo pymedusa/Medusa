@@ -26,6 +26,8 @@ import re
 import subprocess
 import time
 
+import babelfish
+
 from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
 import knowit
@@ -207,6 +209,19 @@ def from_ietf_code(code, unknown='und'):
         return Language.fromietf(code)
     except ValueError:
         return Language(unknown) if unknown else None
+
+
+def from_country_letter_to_name(country):
+    """Return the country name for the given 2 letter country.
+
+    :param code: the 2 letter language code
+    :type code: str
+    :return: the country name
+    :rtype: str
+    """
+    country_name = babelfish.Country(country).name if country and country in babelfish.COUNTRIES else ''
+
+    return country_name
 
 
 def name_from_code(code):
