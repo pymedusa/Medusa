@@ -2555,7 +2555,7 @@ a.whitelink {
 }
 
 /* BacklogOverview */
-div#status-summary {
+#status-summary {
     padding-top: 10px;
     padding-bottom: 2px;
 }

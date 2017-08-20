@@ -50,7 +50,7 @@ MEDUSA.common.init = function() {
 
     initHorizontalScroll();
 
-    $(window).resize(function() {
+    $(window).on('resize', function() {
         $('.backstretch').css('top', backstretchOffset());
         initHorizontalScroll();
     });
