@@ -1250,13 +1250,6 @@ div#container-display-show {
     }
 }
 
-@media (min-width: 992px) {
-    .row.wide {
-        margin-left: -11%;
-        margin-right: -11%;
-    }
-}
-
 @media (max-width: 991px) and (min-width: 768px) {
     .show-poster-container {
         float: left;
