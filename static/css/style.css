@@ -1788,7 +1788,6 @@ schedule.mako
     padding: 2px 5px;
     font-size: 13px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 .listing-default {
@@ -1994,6 +1993,7 @@ config*.mako
 }
 
 .component-group-desc {
+    margin-top: 5px;
     float: left;
     width: 250px;
 }
@@ -2470,13 +2470,12 @@ div.metadataDiv .disabled {
 .icon-notifiers-telegram {
     background-position: -587px 0;
 }
-
 .icon-notifiers-twitter {
     background-position: -624px 0;
 }
 
 .icon-notifiers-trakt {
-    background-position: -659px 0;
+    background-position: -660px 0;
 }
 
 .icon-notifiers-email {
@@ -2489,6 +2488,14 @@ div.metadataDiv .disabled {
 
 .icon-notifiers-look {
     background-position: -769px 0;
+}
+
+.icon-notifiers-slack {
+    background-position: -804px 0;
+}
+
+div#config-components h3 > a {
+    padding-left: 5px;
 }
 
 /* =======================================================================
@@ -2545,6 +2552,12 @@ td.tableright {
 
 a.whitelink {
     color: rgb(255, 255, 255);
+}
+
+/* BacklogOverview */
+#status-summary {
+    padding-top: 10px;
+    padding-bottom: 2px;
 }
 
 /* =======================================================================
@@ -4281,7 +4294,7 @@ CSS helper classes
 /* =======================================================================
  Scroll to top
 ========================================================================== */
-.scroll-top-wrapper {
+.scroll-wrapper {
     position: fixed;
     opacity: 0;
     visibility: hidden;
@@ -4324,3 +4337,24 @@ CSS helper classes
     display: block;
 }
 */
+
+/* =======================================================================
+ overflow buttons for scrolling left and right.
+ For horizontal scrolling, without breaking the ui.
+========================================================================== */
+
+.scroll-wrapper.show {
+    visibility: visible;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.scroll-wrapper.left {
+    position: fixed;
+    right: 150px;
+}
+
+.scroll-wrapper.right {
+    position: fixed;
+    right: 90px;
+}
