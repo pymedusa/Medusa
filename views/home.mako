@@ -12,9 +12,13 @@
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
-<% random_show = choice(app.showList) if app.showList else None %>
-<input type="hidden" id="showID" value="${getattr(random_show, 'indexerid', '')}" />
-<input type="hidden" id="series_slug" value="${getattr(random_show, 'slug', '')}" />
+<%!
+    # pick a random series to show as background
+    random_show = choice(app.showList) if app.showList else None
+%>
+<input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
+<input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
+
 <div class="row">
     <div class="col-lg-9 col-md-${'12' if(app.HOME_LAYOUT == 'poster') else '9'} col-sm-${'12' if(app.HOME_LAYOUT == 'poster') else '8'} col-xs-12 pull-right">
         <div class="pull-right">
