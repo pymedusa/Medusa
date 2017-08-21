@@ -1269,7 +1269,10 @@ class PostProcessor(object):
         # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
         if self.info_hash:
             existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
-            existing_release_names.append(self.release_name)
+            existing_release_names.append(self.release_name or 'N/A')
             app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
+        else:
+            logger.log(u'Unable to get info to move torrent later as no info hash available for: {0}'.format
+                       (self.file_path), logger.WARNING)
 
         return True
