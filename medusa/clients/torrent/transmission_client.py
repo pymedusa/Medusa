@@ -133,7 +133,7 @@ class TransmissionAPI(GenericClient):
         """Check if response is a valid json and its a success one."""
         try:
             return self.response.json()['result'] == 'success'
-        except ValueError:
+        except (AttributeError, ValueError):
             return False
 
     def _get_auth(self):
