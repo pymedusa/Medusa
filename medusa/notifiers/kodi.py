@@ -33,7 +33,7 @@ class Notifier(object):
         Sends a request to the KODI host using the JSON-RPC to determine if
         the legacy API or if the JSON-RPC API functions should be used.
 
-        Fallback to testing legacy HTTPAPI before assuming it is just a badly configured host.
+        Warn the user if it's trying to connect to a legacy Kodi (< v.12).
 
         Args:
             host: KODI webserver host:port
@@ -46,11 +46,12 @@ class Notifier(object):
             List of possible known values:
                 API | KODI Version
                -----+---------------
-                 2  | v10 (Dharma)
-                 3  | (pre Eden)
-                 4  | v11 (Eden)
-                 5  | (pre Frodo)
-                 6  | v12 (Frodo) / v13 (Gotham)
+                 2  | v10 (Dharma) (not supported)
+                 3  | (pre Eden) (not supported)
+                 4  | v11 (Eden) (not supported)
+                 5  | (pre Frodo) (not supported)
+                 6  | v12 (Frodo) / v13 (Gotham) / v14 (Helix) / v15 (Isengard) / 16 (Jarvis)
+                 8  | v18 (Krypton)
 
         """
 
@@ -59,19 +60,12 @@ class Notifier(object):
             'method': 'JSONRPC.Version',
             'id': 1,
         }
-        result = self._send_to_kodi_json(check_command, host, username, password, dest_app)
+        result = self._send_to_kodi(check_command, host, username, password, dest_app)
 
         if result and 'error' not in result:
             return result['result']['version']
         else:
-            # fallback to legacy HTTPAPI method
-            test_command = {'command': 'Help'}
-            request = self._send_to_kodi(test_command, host, username, password, dest_app)
-            if request:
-                # return a fake version number, so it uses the legacy method
-                return 1
-            else:
-                return False
+            return False
 
     def _notify_kodi(self, message, title='Medusa', host=None, username=None, password=None, force=False, dest_app='KODI'):  # pylint: disable=too-many-arguments
         """Internal wrapper for the notify_snatch and notify_download functions
@@ -111,21 +105,12 @@ class Notifier(object):
             log.debug(u'Sending {app} notification to {host} - {msg}',
                       {'app': dest_app, 'host': curHost, 'msg': message})
 
-            kodiapi = self._get_kodi_version(curHost, username, password, dest_app)
-            if kodiapi:
-                if kodiapi <= 4:
-                    log.debug(u'Detected {app} version <= 11, using {app} HTTP API',
-                              {'app': dest_app})
-                    command = {
-                        'command': 'ExecBuiltIn',
-                        'parameter': 'Notification({title},{msg})'.format(
-                            title=title.encode('utf-8'),
-                            msg=message.encode('utf-8'),
-                        )
-                    }
-                    notify_result = self._send_to_kodi(command, curHost, username, password)
-                    if notify_result:
-                        result += curHost + ':' + str(notify_result)
+            kodi_api = self._get_kodi_version(curHost, username, password, dest_app)
+            if kodi_api:
+                if kodi_api <= 4:
+                    log.warning(u'Detected {app} version <= 11, this version is not supported by Medusa. '
+                                u'Please upgrade to the Kodi 12 or above.',
+                                {'app': dest_app})
                 else:
                     log.debug(u'Detected {app} version >= 12, using {app} JSON API',
                               {'app': dest_app})
@@ -139,7 +124,7 @@ class Notifier(object):
                         },
                         'id': '1',
                     }
-                    notify_result = self._send_to_kodi_json(command, curHost, username, password, dest_app)
+                    notify_result = self._send_to_kodi(command, curHost, username, password, dest_app)
                     if notify_result and notify_result.get('result'):  # pylint: disable=no-member
                         result += curHost + ':' + notify_result['result'].decode(app.SYS_ENCODING)
             else:
@@ -154,9 +139,7 @@ class Notifier(object):
         return result
 
     def _send_update_library(self, host, series_name=None):
-        """Internal wrapper for the update library function to branch the logic for JSON-RPC or legacy HTTP API
-
-        Checks the KODI API version to branch the logic to call either the legacy HTTP API or the newer JSON-RPC over HTTP methods.
+        """Internal wrapper for the update library function.
 
         Args:
             host: KODI webserver host:port
@@ -169,9 +152,9 @@ class Notifier(object):
 
         log.debug(u'Sending request to update library for KODI host: {0}', host)
 
-        kodiapi = self._get_kodi_version(host, app.KODI_USERNAME, app.KODI_PASSWORD)
-        if kodiapi:
-            update = self._update_library if kodiapi <= 4 else self._update_library_json
+        kodi_api = self._get_kodi_version(host, app.KODI_USERNAME, app.KODI_PASSWORD)
+        if kodi_api:
+            update = self._update_library
             # try to update for just the show, if it fails, do full update if enabled
             if not update(host, series_name) and app.KODI_UPDATE_FULL:
                 log.debug(u'Single show update failed, falling back to full update')
@@ -185,159 +168,12 @@ class Notifier(object):
 
         return False
 
-    # #############################################################################
-    # Legacy HTTP API (pre KODI 12) methods
-    ##############################################################################
-
-    @staticmethod
-    def _send_to_kodi(command, host=None, username=None, password=None, dest_app='KODI'):  # pylint: disable=too-many-arguments
-        """Handles communication to KODI servers via HTTP API
-
-        Args:
-            command: Dictionary of field/data pairs, encoded via urllib and passed to the KODI API via HTTP
-            host: KODI webserver host:port
-            username: KODI webserver username
-            password: KODI webserver password
-
-        Returns:
-            Returns response.result for successful commands or False if there was an error
-
-        """
-
-        # fill in omitted parameters
-        username = username or app.KODI_USERNAME
-        password = password or app.KODI_PASSWORD
-
-        if not host:
-            log.warning(u'No {app} host passed, aborting update',
-                        {'app': dest_app})
-            return False
-
-        log.debug(u'{app} encoded API command: {cmd!r}',
-                  {'app': dest_app, 'cmd': command})
-
-        # url = 'http://%s/xbmcCmds/xbmcHttp/?%s' % (host, enc_command)  # maybe need for old plex?
-        url = 'http://{host}/kodiCmds/kodiHttp/'.format(host=host)
-
-        # if we have a password, use authentication
-        if password:
-            basic_auth = HTTPBasicAuth(username, password)
-            log.debug(u'Contacting {0} (with auth header) via url: {1}', dest_app, url)
-        else:
-            basic_auth = None
-            log.debug(u'Contacting {0} via url: {1}', dest_app, url)
-
-        try:
-            response = session.get(url, param=command, auth=basic_auth, timeout=app.SOCKET_TIMEOUT)
-        except (BadStatusLine, URLError) as error:
-            log.debug(u'Unable to contact {0} HTTP at {1!r} : {2!r}', dest_app, url, error)
-            return False
-        except Exception as error:
-            log.debug(u'Unable to contact {0} HTTP at {1!r} : {2!r}', dest_app, url, error)
-            return False
-
-        result = response.text
-
-        log.debug(u'{0} HTTP response: {1}', dest_app, result.replace('\n', ''))
-        return result
-
-    def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-locals, too-many-return-statements
-        """Handles updating KODI host via HTTP API
-
-        Attempts to update the KODI video library for a specific tv show if passed,
-        otherwise update the whole library if enabled.
-
-        Args:
-            host: KODI webserver host:port
-            series_name: Name of a TV show to specifically target the library update for
-
-        Returns:
-            Returns True or False
-
-        """
-
-        if not host:
-            log.warning(u'No KODI host passed, aborting update')
-            return False
-
-        log.debug(u'Updating KODI library via HTTP method for host: {0}', host)
-
-        # if we're doing per-show
-        if series_name:
-            log.debug(u'Updating library in KODI via HTTP method for show {0}', series_name)
-
-            path_sql = (
-                "SELECT path.strPath "
-                "FROM path, tvshow, tvshowlinkpath "
-                "WHERE tvshow.c00 = '%s'"
-                " AND tvshowlinkpath.idShow = tvshow.idShow"
-                " AND tvshowlinkpath.idPath = path.idPath" % series_name
-            )
-
-            # use this to get xml back for the path lookups
-            xml_command = {
-                'command': 'SetResponseFormat(webheader;false;webfooter;false;header;<xml>;footer;</xml>;opentag;<tag>;closetag;</tag>;closefinaltag;false)'
-            }
-            # sql used to grab path(s)
-            sql_command = {'command': 'QueryVideoDatabase(%s)' % path_sql}
-            # set output back to default
-            reset_command = {'command': 'SetResponseFormat()'}
-
-            # set xml response format, if this fails then don't bother with the rest
-            request = self._send_to_kodi(xml_command, host)
-            if not request:
-                return False
-
-            sql_xml = self._send_to_kodi(sql_command, host)
-            self._send_to_kodi(reset_command, host)
-
-            if not sql_xml:
-                log.debug(u'Invalid response for {0} on {1}', series_name, host)
-                return False
-
-            encsql_xml = quote(sql_xml, ':\\/<>')
-            try:
-                et = etree.fromstring(encsql_xml)
-            except SyntaxError as error:
-                log.error(u'Unable to parse XML returned from KODI: {0}', error)
-                return False
-
-            paths = et.findall('.//field')
-
-            if not paths:
-                log.debug(u'No valid paths found for {0} on {1}', series_name, host)
-                return False
-
-            for path in paths:
-                # we do not need it double-encoded, gawd this is dumb
-                un_enc_path = unquote(path.text).decode(app.SYS_ENCODING)
-                log.debug(u'KODI Updating {0} on {1} at {2}', series_name, host, un_enc_path)
-                update_command = {'command': 'ExecBuiltIn', 'parameter': 'KODI.updatelibrary(video, %s)' % un_enc_path}
-                request = self._send_to_kodi(update_command, host)
-                if not request:
-                    log.warning(u'Update of show directory failed on {0} on {1} at {2}', series_name, host, un_enc_path)
-                    return False
-                # sleep for a few seconds just to be sure kodi has a chance to finish each directory
-                if len(paths) > 1:
-                    time.sleep(5)
-        # do a full update if requested
-        else:
-            log.debug(u'Doing Full Library KODI update on host: {0}', host)
-            update_command = {'command': 'ExecBuiltIn', 'parameter': 'KODI.updatelibrary(video)'}
-            request = self._send_to_kodi(update_command, host)
-
-            if not request:
-                log.warning(u'KODI Full Library update failed on: {0}', host)
-                return False
-
-        return True
-
     ##############################################################################
     # JSON-RPC API (KODI 12+) methods
     ##############################################################################
 
     @staticmethod
-    def _send_to_kodi_json(command, host=None, username=None, password=None, dest_app='KODI'):
+    def _send_to_kodi(command, host=None, username=None, password=None, dest_app='KODI'):
         """Handles communication to KODI servers via JSONRPC
 
         Args:
@@ -381,11 +217,13 @@ class Notifier(object):
                 response.raise_for_status()
             except HTTPError as error:
                 if app.KODI_ALWAYS_ON:
-                    log.warning(u'Http error while trying to retrieve {0} API version for {1}: {2!r}', dest_app, host, error)
+                    log.warning(u'Http error while trying to retrieve {0} API version for {1}: {2!r}',
+                                dest_app, host, error)
                 return False
             except RequestException as error:
                 if app.KODI_ALWAYS_ON:
-                    log.warning(u'Connection error while trying to retrieve {0} API version for {1}: {2!r}', dest_app, host, error)
+                    log.warning(u'Connection error while trying to retrieve {0} API version for {1}: {2!r}',
+                                dest_app, host, error)
                 return False
             except Exception:
                 return False
@@ -395,7 +233,7 @@ class Notifier(object):
                 result = response.json()
                 log.debug(u'{0} JSON response: {1}', dest_app, result)
                 return result  # need to return response for parsing
-            except ValueError as e:
+            except ValueError:
                 log.warning(u'Unable to decode JSON: {0}', response.text)
                 return False
 
@@ -411,15 +249,12 @@ class Notifier(object):
         clean_library = True
         for host in [x.strip() for x in app.KODI_HOST.split(',')]:
             log.info(u'Cleaning KODI library via JSON method for host: {0}', host)
-            update_command ={
+            update_command = {
                 'jsonrpc': '2.0',
                 'method': 'VideoLibrary.Clean',
-                'params': {
-                    'showdialogs': False,
-                },
                 'id': 1,
             }
-            request = self._send_to_kodi_json(update_command, host)
+            request = self._send_to_kodi(update_command, host)
             if not request:
                 if app.KODI_ALWAYS_ON:
                     log.warning(u'KODI library clean failed for host: {0}', host)
@@ -441,7 +276,7 @@ class Notifier(object):
         # If no errors, return True. Otherwise keep sending command until all hosts are cleaned
         return clean_library
 
-    def _update_library_json(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
+    def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
         """Handles updating KODI host via HTTP JSON-RPC
 
         Attempts to update the KODI video library for a specific tv show if passed,
@@ -486,7 +321,7 @@ class Notifier(object):
             }
 
             # get tvshowid by series_name
-            series_response = self._send_to_kodi_json(shows_command, host)
+            series_response = self._send_to_kodi(shows_command, host)
 
             if series_response and 'result' in series_response and 'tvshows' in series_response['result']:
                 shows = series_response['result']['tvshows']
@@ -497,7 +332,7 @@ class Notifier(object):
                     'method': 'VideoLibrary.GetTVShows',
                     'id': 1,
                 }
-                series_response = self._send_to_kodi_json(shows_command, host)
+                series_response = self._send_to_kodi(shows_command, host)
 
                 if series_response and 'result' in series_response and 'tvshows' in series_response['result']:
                     shows = series_response['result']['tvshows']
@@ -533,7 +368,7 @@ class Notifier(object):
                     },
                     'id': 1,
                 }
-                path_response = self._send_to_kodi_json(path_command, host)
+                path_response = self._send_to_kodi(path_command, host)
 
                 path = path_response['result']['tvshowdetails']['file']
 
@@ -552,7 +387,7 @@ class Notifier(object):
                 },
                 'id': 1,
             }
-            request = self._send_to_kodi_json(update_command, host)
+            request = self._send_to_kodi(update_command, host)
             if not request:
                 log.warning(u'Update of show directory failed on {0} on {1} at {2}', series_name, host, path)
                 return False
@@ -560,7 +395,8 @@ class Notifier(object):
             # catch if there was an error in the returned request
             for r in request:
                 if 'error' in r:
-                    log.warning(u'Error while attempting to update show directory for {0} on {1} at {2} ', series_name, host, path)
+                    log.warning(u'Error while attempting to update show directory for {0} on {1} at {2} ',
+                                series_name, host, path)
                     return False
 
         # do a full update if requested
@@ -571,7 +407,7 @@ class Notifier(object):
                 'method': 'VideoLibrary.Scan',
                 'id': 1,
             }
-            request = self._send_to_kodi_json(update_command, host)
+            request = self._send_to_kodi(update_command, host)
 
             if not request:
                 log.warning(u'KODI Full Library update failed on: {0}', host)
@@ -585,7 +421,8 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         if app.KODI_NOTIFY_ONSNATCH:
-            self._notify_kodi(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]])
+            self._notify_kodi(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH,
+                                                             common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_name):
         if app.KODI_NOTIFY_ONDOWNLOAD:
@@ -608,7 +445,8 @@ class Notifier(object):
             self._notify_kodi(update_text.format(ipaddress), title)
 
     def test_notify(self, host, username, password):
-        return self._notify_kodi('Testing KODI notifications from Medusa', 'Test Notification', host, username, password, force=True)
+        return self._notify_kodi('Testing KODI notifications from Medusa', 'Test Notification', host, username,
+                                 password, force=True)
 
     def update_library(self, series_name=None):
         """Public wrapper for the update library functions to branch the logic for JSON-RPC or legacy HTTP API
