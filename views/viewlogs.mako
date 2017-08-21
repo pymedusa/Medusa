@@ -16,7 +16,7 @@ pre {
 </%block>
 <%block name="content">
 
-<%!
+<%
     # pick a random series to show as background
     random_show = choice(app.showList) if app.showList else None
 %>
