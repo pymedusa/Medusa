@@ -12,7 +12,7 @@
 <meta data-var="max_download_count" data-content="${max_download_count}">
 </%block>
 <%block name="content">
-<%!
+<%
     # pick a random series to show as background
     random_show = choice(app.showList) if app.showList else None
 %>
