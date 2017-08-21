@@ -249,9 +249,12 @@ class Notifier(object):
         clean_library = True
         for host in [x.strip() for x in app.KODI_HOST.split(',')]:
             log.info(u'Cleaning KODI library via JSON method for host: {0}', host)
-            update_command = {
+            update_command ={
                 'jsonrpc': '2.0',
                 'method': 'VideoLibrary.Clean',
+                'params': {
+                    'showdialogs': False,
+                },
                 'id': 1,
             }
             request = self._send_to_kodi(update_command, host)
