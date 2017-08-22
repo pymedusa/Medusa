@@ -210,6 +210,39 @@ def test_from_ietf_code__unknown_code_returning_none():
     assert actual is None
 
 
+def test_from_country_code_to_name__valid_code():
+    # Given
+    code = 'IT'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert 'ITALY' == actual
+
+
+def test_from_country_code_to_name__valid_lower_code():
+    # Given
+    code = 'fr'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert 'FRANCE' == actual
+
+
+def test_from_country_code_to_name__invalid_code():
+    # Given
+    code = 'XY'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert None is actual
+
+
 def test_name_from_code__valid_code():
     # Given
     code = 'pob'
