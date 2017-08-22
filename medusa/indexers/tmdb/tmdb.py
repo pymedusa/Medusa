@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import logging
 from collections import OrderedDict
 from datetime import datetime, timedelta
+
 from dateutil import parser
 
 from medusa.app import TMDB_API_KEY
@@ -16,6 +17,7 @@ from medusa.indexers.indexer_exceptions import IndexerError, IndexerException, I
 from medusa.logger.adapters.style import BraceAdapter
 
 from requests.exceptions import RequestException
+
 import tmdbsimple as tmdb
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -175,7 +177,7 @@ class Tmdb(BaseIndexer):
     def search(self, series):
         """Search TMDB (themoviedb.org) for the series name.
 
-        :param series: the query for the series name
+        :param series: The query for the series name
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"series": [list of shows]}
         """
         series = series.encode('utf-8')
@@ -190,25 +192,25 @@ class Tmdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})['series']
 
-    def get_shows_countries(self, tmdb_id):
-        """Retrieve show's countries from TMDB.
+    def get_show_country_codes(self, tmdb_id):
+        """Retrieve show's 2 letter country codes from TMDB.
 
-        :param tmdb_id: The shows tmdb id
-        :return: A string with the show's countries
+        :param tmdb_id: The show's tmdb id
+        :return: A list with the show's country codes
         """
         show_info = self._get_show_by_id(tmdb_id)['series']
 
-        return show_info.get('origin_country', '')
+        if show_info and show_info.get('origin_country'):
+            return show_info['origin_country'].split('|')
 
     def _get_show_by_id(self, tmdb_id, request_language='en'):  # pylint: disable=unused-argument
-        """Retrieve tmdb show information by tmdb id, or if no tmdb id provided by passed external id.
+        """Retrieve tmdb show information by tmdb id.
 
-        :param tmdb_id: The shows tmdb id
+        :param tmdb_id: The show's tmdb id
         :return: An ordered dict with the show searched for.
         """
-        if tmdb_id:
-            log.debug('Getting all show data for {0}', tmdb_id)
-            results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
+        log.debug('Getting all show data for {0}', tmdb_id)
+        results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
 
         if not results:
             return
