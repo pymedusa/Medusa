@@ -224,7 +224,7 @@ def from_country_code_to_name(code):
     :rtype: str
     """
     try:
-        return Country(code).name
+        return Country(code.upper()).name
     except ValueError:
         return
 

@@ -184,7 +184,6 @@ class Tmdb(BaseIndexer):
         log.debug('Searching for show: {0}', series)
 
         results = self._show_search(series, request_language=self.config['language'])
-
         if not results:
             return
 
@@ -211,7 +210,6 @@ class Tmdb(BaseIndexer):
         """
         log.debug('Getting all show data for {0}', tmdb_id)
         results = self.tmdb.TV(tmdb_id).info(language='{0},null'.format(request_language))
-
         if not results:
             return
 
