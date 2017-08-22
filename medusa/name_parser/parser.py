@@ -163,10 +163,21 @@ class NameParser(object):
                 new_episode_numbers.append(episode)
                 new_season_numbers.append(season)
 
-        elif result.show.is_anime and result.is_anime:
+        # result.is_anime, means that guessit detected the episode like an absolute number.
+        elif result.show.is_anime and (result.is_anime or (result.season_number is None and result.episode_numbers)):
             log.debug('Scene numbering enabled series {name} is anime',
                       {'name': result.show.name})
-            scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
+
+            if result.season_number is None and not result.ab_episode_numbers and result.episode_numbers:
+                result.ab_episode_numbers = result.episode_numbers
+                log.debug(
+                    "Apparently whe are missing a season number and we couldn't detect one or more "
+                    "absolute episode numbers for the series {name}. "
+                    "We are going to assume the detected episode numbers {episode!r} as absolute.",
+                    {'name': result.show.name, 'episode': result.episode_numbers}
+                )
+
+            scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
 
