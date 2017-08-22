@@ -26,17 +26,21 @@ import re
 import subprocess
 import time
 
-import babelfish
+from babelfish import Country, Language, language_converters
 
-from babelfish import Language, language_converters
 from dogpile.cache.api import NO_VALUE
+
 import knowit
+
 from medusa.subtitle_providers.utils import hash_itasa
+
 from six import iteritems, string_types, text_type
+
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
+
 from . import app, db, helpers, history
 from .cache import cache, memory_cache
 from .common import Quality, cpu_presets
@@ -211,17 +215,18 @@ def from_ietf_code(code, unknown='und'):
         return Language(unknown) if unknown else None
 
 
-def from_country_letter_to_name(country):
-    """Return the country name for the given 2 letter country.
+def from_country_code_to_name(code):
+    """Convert a 2 letter country code to a country name.
 
-    :param code: the 2 letter language code
+    :param code: the 2 letter country code
     :type code: str
     :return: the country name
     :rtype: str
     """
-    country_name = babelfish.Country(country).name if country and country in babelfish.COUNTRIES else ''
-
-    return country_name
+    try:
+        return Country(code).name
+    except ValueError:
+        return
 
 
 def name_from_code(code):
