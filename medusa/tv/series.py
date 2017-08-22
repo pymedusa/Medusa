@@ -1556,6 +1556,8 @@ class Series(TV):
             return
 
         tmdb_id = self.externals.get('tmdb_id')
+        country_code = ''
+        countries = ''
         if tmdb_id:
             country_code = Tmdb()._get_shows_countries(tmdb_id)
             countries = (subtitles.from_country_letter_to_name(country) for country in country_code.split('|'))
