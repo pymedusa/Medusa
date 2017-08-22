@@ -190,7 +190,7 @@ class Tmdb(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})['series']
 
-    def _get_shows_countries(self, tmdb_id):
+    def get_shows_countries(self, tmdb_id):
         """Retrieve show's countries from TMDB.
 
         :param tmdb_id: The shows tmdb id
