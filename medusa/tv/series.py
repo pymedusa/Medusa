@@ -498,6 +498,11 @@ class Series(TV):
         )
 
     @property
+    def countries(self):
+        """Return countries."""
+        return [v for v in self.imdb_info.get('countries', '').split('|') if v]
+
+    @property
     def genres(self):
         """Return genres list."""
         return list({i for i in (self.genre or '').split('|') if i} |
@@ -2006,7 +2011,8 @@ class Series(TV):
         data['cache'] = NonEmptyDict()
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
-        data['countries'] = self.imdb_countries
+        data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
+        data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.imdb_plot or self.plot
         data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location
