@@ -10,8 +10,8 @@
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="showID" value="${show.indexerid}" />
-<input type="hidden" id="series_slug" value="${show.slug}" />
+<input type="hidden" id="series-id" value="${show.indexerid}" />
+<input type="hidden" id="series-slug" value="${show.slug}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
 
 <%include file="/partials/showheader.mako"/>
