@@ -4,7 +4,7 @@
     import urllib
     import ntpath
     from medusa import app, helpers, subtitles, sbdatetime, network_timezones
-    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED
+    from medusa.common import SKIPPED, WANTED, UNAIRED, ARCHIVED, IGNORED, FAILED, DOWNLOADED, SNATCHED, SNATCHED_PROPER, SNATCHED_BEST
     from medusa.common import Quality, qualityPresets, statusStrings, Overview
     from medusa.helpers import anon_url
     from medusa.helper.common import pretty_file_size
@@ -233,9 +233,9 @@
                     % endif
                     ${epResult["name"]}
                     </td>
-                    <td class="col-name hidden-xs triggerhighlight">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED] else ''}</td>
+                    <td class="col-name hidden-xs triggerhighlight">${epLoc if Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER] else ''}</td>
                     <td class="col-ep triggerhighlight">
-                        % if epResult["file_size"] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
+                        % if epResult["file_size"] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED, SNATCHED, SNATCHED_BEST, SNATCHED_PROPER]:
                             ${pretty_file_size(epResult["file_size"])}
                         % endif
                     </td>
