@@ -104,5 +104,5 @@ if (!document.location.pathname.endsWith('/login/')) {
     }).catch(function(err) {
         log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
-    })
+    });
 }

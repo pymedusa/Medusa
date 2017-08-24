@@ -58,7 +58,7 @@ function wsCheckNotifications() {
 }
 
 // Listen for the config loaded event.
-window.addEventListener('build', function (e) {
+window.addEventListener('build', function(e) {
     if (e.detail === 'medusa config loaded') {
         wsCheckNotifications();
         if (test) {
