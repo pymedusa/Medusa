@@ -1,23 +1,16 @@
 # coding=utf-8
 
+"""Kodi notifier module."""
+
 import logging
-import time
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
-from requests.compat import quote, unquote, unquote_plus
 from requests.auth import HTTPBasicAuth
+from requests.compat import unquote_plus
 from requests.exceptions import HTTPError, RequestException
-from six.moves.http_client import BadStatusLine
-from six.moves.urllib.error import URLError
-
-
-try:
-    import xml.etree.cElementTree as etree
-except ImportError:
-    import xml.etree.ElementTree as etree
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -27,8 +20,10 @@ session = MedusaSession()
 
 
 class Notifier(object):
+    """Kodi notifier class."""
+
     def _get_kodi_version(self, host, username, password, dest_app='KODI'):
-        """Returns KODI JSON-RPC API version (odd # = dev, even # = stable)
+        """Return KODI JSON-RPC API version (odd # = dev, even # = stable).
 
         Sends a request to the KODI host using the JSON-RPC to determine if
         the legacy API or if the JSON-RPC API functions should be used.
@@ -54,7 +49,6 @@ class Notifier(object):
                  8  | v18 (Krypton)
 
         """
-
         check_command = {
             'jsonrpc': '2.0',
             'method': 'JSONRPC.Version',
@@ -67,8 +61,9 @@ class Notifier(object):
         else:
             return False
 
-    def _notify_kodi(self, message, title='Medusa', host=None, username=None, password=None, force=False, dest_app='KODI'):  # pylint: disable=too-many-arguments
-        """Internal wrapper for the notify_snatch and notify_download functions
+    def _notify_kodi(self, message, title='Medusa', host=None, username=None, password=None,
+                     force=False, dest_app='KODI'):
+        """Private wrapper for the notify_snatch and notify_download functions.
 
         Detects JSON-RPC version then branches the logic for either the JSON-RPC or legacy HTTP API methods.
 
@@ -85,7 +80,6 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-
         # fill in omitted parameters
         if not host:
             host = app.KODI_HOST
@@ -139,7 +133,7 @@ class Notifier(object):
         return result
 
     def _send_update_library(self, host, series_name=None):
-        """Internal wrapper for the update library function.
+        """Private wrapper for the update library function.
 
         Args:
             host: KODI webserver host:port
@@ -149,7 +143,6 @@ class Notifier(object):
             Returns True or False, if the update was successful
 
         """
-
         log.debug(u'Sending request to update library for KODI host: {0}', host)
 
         kodi_api = self._get_kodi_version(host, app.KODI_USERNAME, app.KODI_PASSWORD)
@@ -174,7 +167,7 @@ class Notifier(object):
 
     @staticmethod
     def _send_to_kodi(command, host=None, username=None, password=None, dest_app='KODI'):
-        """Handles communication to KODI servers via JSONRPC
+        """Handle communication to KODI servers via JSONRPC.
 
         Args:
             command: Dictionary of field/data pairs, encoded via urllib and passed to the KODI JSON-RPC via HTTP
@@ -186,7 +179,6 @@ class Notifier(object):
             Returns response.result for successful commands or False if there was an error
 
         """
-
         # fill in omitted parameters
         if not username:
             username = app.KODI_USERNAME
@@ -243,13 +235,13 @@ class Notifier(object):
             return False
 
     def clean_library(self):
-        """Handles clean library KODI host via HTTP JSON-RPC."""
+        """Handle clean library KODI host via HTTP JSON-RPC."""
         if not app.USE_KODI:
             return True
         clean_library = True
         for host in [x.strip() for x in app.KODI_HOST.split(',')]:
             log.info(u'Cleaning KODI library via JSON method for host: {0}', host)
-            update_command ={
+            update_command = {
                 'jsonrpc': '2.0',
                 'method': 'VideoLibrary.Clean',
                 'params': {
@@ -280,7 +272,7 @@ class Notifier(object):
         return clean_library
 
     def _update_library(self, host=None, series_name=None):  # pylint: disable=too-many-return-statements, too-many-branches
-        """Handles updating KODI host via HTTP JSON-RPC
+        """Handle updating KODI host via HTTP JSON-RPC.
 
         Attempts to update the KODI video library for a specific tv show if passed,
         otherwise update the whole library if enabled.
@@ -293,7 +285,6 @@ class Notifier(object):
             Returns True or False
 
         """
-
         if not host:
             log.warning(u'No KODI host passed, aborting update')
             return False
@@ -423,36 +414,42 @@ class Notifier(object):
     ##############################################################################
 
     def notify_snatch(self, ep_name, is_proper):
+        """Send the snatch message."""
         if app.KODI_NOTIFY_ONSNATCH:
             self._notify_kodi(ep_name, common.notifyStrings[(common.NOTIFY_SNATCH,
                                                              common.NOTIFY_SNATCH_PROPER)[is_proper]])
 
     def notify_download(self, ep_name):
+        """Send the download message."""
         if app.KODI_NOTIFY_ONDOWNLOAD:
             self._notify_kodi(ep_name, common.notifyStrings[common.NOTIFY_DOWNLOAD])
 
     def notify_subtitle_download(self, ep_name, lang):
+        """Send the subtitle download message."""
         if app.KODI_NOTIFY_ONSUBTITLEDOWNLOAD:
             self._notify_kodi(ep_name + ': ' + lang, common.notifyStrings[common.NOTIFY_SUBTITLE_DOWNLOAD])
 
     def notify_git_update(self, new_version='??'):
+        """Send update available message."""
         if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_GIT_UPDATE_TEXT]
             title = common.notifyStrings[common.NOTIFY_GIT_UPDATE]
             self._notify_kodi(update_text + new_version, title)
 
     def notify_login(self, ipaddress=''):
+        """Send the new login message."""
         if app.USE_KODI:
             update_text = common.notifyStrings[common.NOTIFY_LOGIN_TEXT]
             title = common.notifyStrings[common.NOTIFY_LOGIN]
             self._notify_kodi(update_text.format(ipaddress), title)
 
     def test_notify(self, host, username, password):
+        """Test notifier."""
         return self._notify_kodi('Testing KODI notifications from Medusa', 'Test Notification', host, username,
                                  password, force=True)
 
     def update_library(self, series_name=None):
-        """Public wrapper for the update library functions to branch the logic for JSON-RPC or legacy HTTP API
+        """Public wrapper for the update library functions to branch the logic for JSON-RPC or legacy HTTP API.
 
         Checks the KODI API version to branch the logic to call either the legacy HTTP API or the newer JSON-RPC over HTTP methods.
         Do the ability of accepting a list of hosts delimited by comma, only one host is updated, the first to respond with success.
@@ -466,7 +463,6 @@ class Notifier(object):
             Returns True or False
 
         """
-
         if app.USE_KODI and app.KODI_UPDATE_LIBRARY:
             if not app.KODI_HOST:
                 log.debug(u'No KODI hosts specified, check your settings')
