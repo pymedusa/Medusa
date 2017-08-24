@@ -104,7 +104,7 @@ class Notifier(object):
                         '<footer style="margin-top: 2.5em; padding: .7em 0; '
                         'color: #777; border-top: #BBB solid 1px;">'
                         'Powered by Medusa.</footer></body>'.format
-                        (show, re.search('.+ - (.+?-.+) -.+', ep_name).group(1)),
+                        (show, ep_name),
                         'html'))
 
                 except Exception:
