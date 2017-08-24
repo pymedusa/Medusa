@@ -664,7 +664,6 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
-            logger.rebuild_censored_list()
 
     if not silent:
         logger.log(item_name + " -> " + my_val, logger.DEBUG)
@@ -681,7 +680,6 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
 def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False, transform=None, transform_default=0):
     """Check a setting, using the settings section and item name. Expect to return a list."""
     default = default or []
-    censor_log = False
 
     if not censor_log:
         censor_level = common.privacy_levels['stupid']
@@ -702,7 +700,6 @@ def check_setting_list(config, cfg_name, item_name, default=None, censor_log=Fal
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
-            logger.rebuild_censored_list()
 
     # Make an attempt to cast the lists values.
     if isinstance(my_val, list) and transform:

@@ -19,12 +19,14 @@
 
 from __future__ import unicode_literals
 
+import collections
 import datetime
 import io
 import logging
 import os
 import pkgutil
 import re
+import six
 import sys
 
 from collections import OrderedDict
@@ -68,7 +70,15 @@ censored = []
 def rebuild_censored_list():
     """Rebuild the censored list."""
     # set of censored items
-    results = {value for value in itervalues(censored_items) if value}
+    results = set()
+    for value in itervalues(censored_items):
+        if not value:
+            continue
+        if isinstance(value, collections.Iterable) and not isinstance(value, six.string_types):
+            results.update(value)
+        else:
+            results.add(value)
+
     # set of censored items and urlencoded counterparts
     results |= {quote(item) for item in results}
     # convert set items to unicode and typecast to list

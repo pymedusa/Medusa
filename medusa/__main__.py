@@ -1030,6 +1030,9 @@ class Application(object):
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
 
+            # Rebuild the censored list
+            app_logger.rebuild_censored_list()
+
             # initialize the main SB database
             main_db_con = db.DBConnection()
             db.upgradeDatabase(main_db_con, main_db.InitialSchema)
