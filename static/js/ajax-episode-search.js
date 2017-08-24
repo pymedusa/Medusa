@@ -89,7 +89,7 @@ function updateImages(data) {
 
 function checkManualSearches() {
     var pollInterval = 5000;
-    var showId = $('#showID').val();
+    var showId = $('#series-id').val();
     var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
     $.ajax({
         url: url,
