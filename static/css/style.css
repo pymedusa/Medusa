@@ -1116,6 +1116,12 @@ div#container-display-show {
     width: 300px;
 }
 
+#show-selector {
+    width: auto;
+    height:25px;
+    padding:1px;
+}
+
 .container-navShow {
     margin-top: -2px;
     margin-left: 305px;
