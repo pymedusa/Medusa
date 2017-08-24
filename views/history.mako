@@ -16,7 +16,7 @@
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
-<input type="hidden" id="show-id" value="${choice(app.showList).indexerid if historyResults else ''}" />
+<input type="hidden" id="series-id" value="${choice(app.showList).indexerid if historyResults else ''}" />
 <input type="hidden" id="series-slug" value="${choice(app.showList).slug if historyResults else ''}" />
 <div class="row">
     <div class="col-md-6"> <!-- Title -->
