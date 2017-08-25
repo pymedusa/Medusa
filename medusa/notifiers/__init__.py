@@ -62,7 +62,9 @@ trakt_notifier = trakt.Notifier()
 email_notifier = emailnotify.Notifier()
 slack_notifier = slack.Notifier()
 
-notifiers = [
+notifiers = [nma_notifier]
+
+old_notifiers = [
     libnotify_notifier,  # Libnotify notifier goes first because it doesn't involve blocking on network activity.
     kodi_notifier,
     plex_notifier,
@@ -87,10 +89,10 @@ notifiers = [
 ]
 
 
-def notify_download(ep_name):
+def notify_download(notify_info):
     for n in notifiers:
         try:
-            n.notify_download(ep_name)
+            n.notify_download(notify_info)
         except (RequestException, socket.gaierror) as error:
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
@@ -103,10 +105,10 @@ def notify_subtitle_download(ep_name, lang):
             log.debug(u'Unable to send download notification. Error: {0}', error.message)
 
 
-def notify_snatch(ep_name, is_proper):
+def notify_snatch(notify_info):
     for n in notifiers:
         try:
-            n.notify_snatch(ep_name, is_proper)
+            n.notify_snatch(notify_info)
         except (RequestException, socket.gaierror) as error:
             log.debug(u'Unable to send snatch notification. Error: {0}', error.message)
 

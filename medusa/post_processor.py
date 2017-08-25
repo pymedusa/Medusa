@@ -92,6 +92,7 @@ class PostProcessor(object):
         self.release_name = None
         self.is_proper = False
         self.is_priority = is_priority
+        self.replacing_file = False
         self._output = []
         self.version = None
         self.anidbEpisode = None
@@ -1044,6 +1045,7 @@ class PostProcessor(object):
             if existing_file_status != PostProcessor.DOESNT_EXIST:
                 if self.is_proper and new_ep_quality == old_ep_quality:
                     self.log(u'New file is a PROPER, marking it safe to replace')
+                    self.replacing_file = True
                     self.flag_kodi_clean_library()
                 else:
                     allowed_qualities, preferred_qualities = show.current_qualities
@@ -1057,6 +1059,7 @@ class PostProcessor(object):
                             u'File exists. Marking it unsafe to replace. Reason: {0}'.format(should_process_reason))
                     else:
                         self.log(u'File exists. Marking it safe to replace. Reason: {0}'.format(should_process_reason))
+                        self.replacing_file = True
                         self.flag_kodi_clean_library()
 
             # Check if the processed file season is already in our indexer. If not,
@@ -1080,6 +1083,7 @@ class PostProcessor(object):
         else:
             # Set to clean Kodi if file exists and it is priority_download
             if existing_file_status != PostProcessor.DOESNT_EXIST:
+                self.replacing_file = True
                 self.flag_kodi_clean_library()
             self.log(u"This download is marked a priority download so I'm going to replace "
                      u"an existing file if I find one")
@@ -1248,7 +1252,14 @@ class PostProcessor(object):
             history.log_download(cur_ep, self.file_path, new_ep_quality, self.release_group, new_ep_version)
 
         # send notifications
-        notifiers.notify_download(ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'))
+        notify_message = '{ep}. Release: {release}{replacing}'.format(
+            ep=ep_obj._format_pattern('%SN - %Sx%0E - %EN - %QN'),
+            release=self.file_name,
+            replacing=' (replacing existing file)' if self.replacing_file else '')
+        notify_info = {'message': notify_message,
+                       'is_proper': self.is_proper}
+
+        notifiers.notify_download(notify_info)
         # do the library update for KODI
         notifiers.kodi_notifier.update_library(ep_obj.series.name)
         # do the library update for Plex

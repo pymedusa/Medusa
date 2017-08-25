@@ -16,15 +16,18 @@ class Notifier(object):
         return self._sendNMA(nma_api, nma_priority, event='Test', message='Testing NMA settings from Medusa',
                              force=True)
 
-    def notify_snatch(self, ep_name, is_proper):
+    def notify_snatch(self, notify_info):
         if app.NMA_NOTIFY_ONSNATCH:
-            self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
-                          message=ep_name)
+            message = notify_info.get('message')
+            is_proper = notify_info.get('is_proper')
+            event = common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]]
+            self._sendNMA(nma_api=None, nma_priority=None, event=event, message=message)
 
-    def notify_download(self, ep_name):
+    def notify_download(self, notify_info):
         if app.NMA_NOTIFY_ONDOWNLOAD:
+            message = notify_info.get('message')
             self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[common.NOTIFY_DOWNLOAD],
-                          message=ep_name)
+                          message=message)
 
     def notify_subtitle_download(self, ep_name, lang):
         if app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD:
