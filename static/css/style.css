@@ -189,7 +189,6 @@ inc_top.mako
 
 #sub-menu {
     font-size: 12px;
-    float: right;
     padding-top: 2px;
 }
 
@@ -1103,17 +1102,12 @@ div#container-display-show {
     height: 31px;
     display: table-cell;
     left: 20px;
-    margin-top: 5px;
     margin-bottom: 5px;
 }
 
 .show-info-container {
     overflow: hidden;
     display: table-cell;
-}
-
-.select-show-group {
-    width: 300px;
 }
 
 .container-navShow {
@@ -1148,7 +1142,10 @@ div#container-display-show {
 @media (max-width: 767px) and (min-width: 341px) {
     .select-show-group {
         width: 100%;
-        margin: 1em;
+    }
+
+    .show-selector {
+        width: 100%;
     }
 
     .container-navShow {
@@ -1170,8 +1167,7 @@ div#container-display-show {
 
 @media (max-width: 340px) {
     .select-show-group {
-        width: 260px;
-        margin: 1em;
+        width: 100%;
     }
 
     .container-navShow {
@@ -1181,8 +1177,12 @@ div#container-display-show {
 
 @media (max-width: 767px) {
     #showSelector {
-        left: 5px;
-        margin-bottom: 5px;
+        float: left;
+        width: 100%;
+    }
+
+    .select-show {
+        width: 100%;
     }
 
     .pull-xs-left {
@@ -1772,7 +1772,6 @@ div.season-scene-exception {
 
 select#select-show {
     display: inline-block;
-    width: 100%;
     height: 25px;
     padding: 1px;
 }

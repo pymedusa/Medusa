@@ -1,4 +1,4 @@
-<div id="showSelector" class="hidden-print col-md-2 col-sm-12 col-xs-12 pull-md-left" style="margin-left:-21px">
+<div id="showSelector" class="hidden-print">
     <div class="form-inline">
             <div>
                 <div class="select-show-group pull-left top-5 bottom-5">
