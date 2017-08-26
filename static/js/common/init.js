@@ -4,9 +4,9 @@ MEDUSA.common.init = function() {
 
     // Background Fanart Functions
     if (MEDUSA.config.fanartBackground) {
-        var showID = $('#showID').attr('value');
-        if (showID) {
-            let path = apiRoot + 'series/' + $('#series_slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
+        var seriesId = $('#series-id').attr('value');
+        if (seriesId) {
+            let path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);

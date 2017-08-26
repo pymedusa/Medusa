@@ -1004,30 +1004,33 @@ def get_show(name, try_indexers=False):
     if not name:
         return show
 
-    try:
-        # check cache for show
-        cache = name_cache.retrieveNameFromCache(name)
-        if cache:
-            from_cache = True
-            show = Show.find(app.showList, int(cache))
+    # check cache for show
+    cache = name_cache.retrieveNameFromCache(name)
+    if cache:
+        from_cache = True
+        show = Show.find(app.showList, int(cache))
 
-        # try indexers
-        if not show and try_indexers:
-            show = Show.find(
-                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
+    # try indexers
+    if not show and try_indexers:
+        show = Show.find(
+            app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
 
-        # try scene exceptions
-        if not show:
-            show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
-            if show_id:
-                show = Show.find(app.showList, int(show_id))
+    # try scene exceptions
+    if not show:
+        show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
+        if show_id:
+            show = Show.find(app.showList, int(show_id))
 
-        # add show to cache
-        if show and not from_cache:
-            name_cache.addNameToCache(name, show.indexerid)
-    except Exception as msg:
-        log.debug(u'Error when attempting to find show: {name}.'
-                  u' Error: {msg!r}', {'name': name, 'msg': msg})
+    if not show:
+        match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
+                           name == s.name.replace(u' ({year})'.format(year=s.imdb_year), u''))
+        for found_show in match_name_only:
+            log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
+                        (name=name, show=found_show))
+
+    # add show to cache
+    if show and not from_cache:
+        name_cache.addNameToCache(name, show.indexerid)
 
     return show
 

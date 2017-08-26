@@ -39,11 +39,10 @@ class TVDBv2(BaseIndexer):
 
         self.indexer = 1
 
-        self.config['base_url'] = 'http://thetvdb.com'
         self.config['api_base_url'] = API_BASE_TVDB
 
         # Configure artwork prefix url
-        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url=self.config['base_url'])
+        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url='http://thetvdb.com')
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
         # client_id = ''  # (optional! Only required for the /user routes)
