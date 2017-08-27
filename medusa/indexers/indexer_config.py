@@ -6,7 +6,8 @@ from .tmdb.tmdb import Tmdb
 from .tvdbv2.tvdbv2_api import TVDBv2
 from .tvmaze.tvmaze_api import TVmaze
 from ..app import BASE_PYMEDUSA_URL
-from ..helpers import make_session
+from ..session.core import MedusaSession
+
 
 initConfig = {
     'valid_languages': [
@@ -66,12 +67,12 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': make_session(cache_etags=False),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'base_url': 'https://api.thetvdb.com',
+        'base_url': 'https://api.thetvdb.com/',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
         'identifier': 'tvdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
@@ -84,7 +85,7 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': make_session(cache_etags=False),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'xem_mapped_to': INDEXER_TVDBV2,
         'icon': 'tvmaze16.png',
@@ -102,11 +103,11 @@ indexerConfig = {
         'api_params': {
             'language': 'en',
             'use_zip': True,
-            'session': make_session(cache_etags=False),
+            'session': MedusaSession(cache_control={'cache_etags': False}),
         },
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'base_url': 'https://www.themoviedb.org',
+        'base_url': 'https://www.themoviedb.org/',
         'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map there tmdb id to
         'identifier': 'tmdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())

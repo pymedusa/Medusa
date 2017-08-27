@@ -94,7 +94,7 @@ class Notifier(object):
         :param ep_name: The name of the episode snatched
         :param is_proper: Boolean. If snatch is proper or not
         """
-        title=notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
+        title = notifyStrings[(NOTIFY_SNATCH, NOTIFY_SNATCH_PROPER)[is_proper]]
         if app.TELEGRAM_NOTIFY_ONSNATCH:
             self._notify_telegram(title, ep_name)
 

@@ -89,7 +89,7 @@ class LimeTorrentsProvider(TorrentProvider):
                     # search_url = self.urls['rss'].format(page=1)
                     search_url = self.urls['rss']
 
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -121,7 +121,7 @@ class LimeTorrentsProvider(TorrentProvider):
                 return items
 
             torrent_rows = torrent_table.find_all('tr')
-            labels = [process_column_header(label) for label in torrent_rows[0]]
+            labels = [process_column_header(label) for label in torrent_rows[0].find_all('th')]
 
             # Skip the first row, since it isn't a valid result
             for row in torrent_rows[1:]:
