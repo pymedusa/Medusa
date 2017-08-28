@@ -1023,7 +1023,7 @@ def get_show(name, try_indexers=False):
 
     if not show:
         match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
-                           name == s.name.replace(u' ({year})'.format(year=s.imdb_year), u''))
+                           name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
         for found_show in match_name_only:
             log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
                         (name=name, show=found_show))
