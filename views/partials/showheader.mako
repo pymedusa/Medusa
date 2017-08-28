@@ -283,8 +283,8 @@
                                 % endif
                             % endfor
                             </select>
-                            <input type="hidden" id="series_slug" value="${show.slug}" />
-                            <input type="hidden" id="showID" value="${show.indexerid}" />
+                            <input type="hidden" id="series-slug" value="${show.slug}" />
+                            <input type="hidden" id="series-id" value="${show.indexerid}" />
                             <input type="hidden" id="indexer" value="${show.indexer}" />
                             <input class="btn" type="button" id="changeStatus" value="Go" />
                         </div>

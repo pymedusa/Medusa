@@ -43,28 +43,29 @@ from medusa.providers.torrent import (
     shanaproject,
     shazbat,
     speedcd,
-    t411,
     thepiratebay,
     tntvillage,
     tokyotoshokan,
     torrent9,
     torrentbytes,
     torrentday,
+    torrenting,
     torrentleech,
     torrentproject,
     torrentz2,
     tvchaosuk,
     xthor,
+    yggtorrent,
     zooqle
 )
 
 __all__ = [
     'btn', 'thepiratebay', 'torrentleech', 'scc', 'hdtorrents', 'torrentday', 'hdbits', 'hounddawgs',
-    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 't411', 'tokyotoshokan', 'iptorrents',
+    'speedcd', 'nyaa', 'torrentbytes', 'torrent9', 'morethantv', 'tokyotoshokan', 'iptorrents',
     'alpharatio', 'sdbits', 'shazbat', 'rarbg', 'tntvillage', 'binsearch', 'xthor', 'abnormal', 'scenetime',
     'nebulance', 'tvchaosuk', 'torrentproject', 'bitcannon', 'torrentz2', 'pretome', 'gftracker', 'anizb',
     'hdspace', 'newpct', 'elitetorrent', 'danishbits', 'hd4free', 'limetorrents', 'norbits', 'bithdtv',
-    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject'
+    'zooqle', 'animebytes', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent'
 ]
 
 

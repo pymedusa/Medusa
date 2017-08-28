@@ -27,16 +27,18 @@ from collections import defaultdict
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
+from requests.exceptions import RequestException
 from six import iteritems
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
+from .session.core import MedusaSession
 
 logger = logging.getLogger(__name__)
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
-xem_session = helpers.make_session()
+xem_session = MedusaSession()
 
 # TODO: Fix multiple indexer support
 
@@ -300,15 +302,9 @@ def _get_custom_exceptions(force):
                     location=location
                 )
 
-                response = helpers.get_url(
-                    location,
-                    session=indexerApi(indexer).session,
-                    timeout=60,
-                    returns='response'
-                )
                 try:
-                    jdata = response.json()
-                except (ValueError, AttributeError) as error:
+                    jdata = indexerApi(indexer).session.get(location, timeout=60).json()
+                except (ValueError, AttributeError, RequestException) as error:
                     logger.debug(
                         'Check scene exceptions update failed. Unable to '
                         'update from {location}. Error: {error}'.format(
@@ -358,8 +354,7 @@ def _get_xem_exceptions(force):
             )
 
             url = xem_url.format(indexer_api.config['xem_origin'])
-            response = helpers.get_url(url, session=xem_session,
-                                       timeout=60, returns='response')
+            response = xem_session.get(xem_url, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

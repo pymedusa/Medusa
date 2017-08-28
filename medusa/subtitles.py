@@ -26,15 +26,21 @@ import re
 import subprocess
 import time
 
-from babelfish import Language, language_converters
+from babelfish import Country, Language, language_converters
+
 from dogpile.cache.api import NO_VALUE
+
 import knowit
+
 from medusa.subtitle_providers.utils import hash_itasa
+
 from six import iteritems, string_types, text_type
+
 from subliminal import ProviderPool, compute_score, provider_manager, refine, save_subtitles, scan_video
 from subliminal.core import search_external_subtitles
 from subliminal.score import episode_scores
 from subliminal.subtitle import get_subtitle_path
+
 from . import app, db, helpers, history
 from .cache import cache, memory_cache
 from .common import Quality, cpu_presets
@@ -64,7 +70,8 @@ PROVIDER_URLS = {
     'shooter': 'http://www.shooter.cn',
     'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
-    'tvsubtitles': 'http://www.tvsubtitles.net'
+    'tvsubtitles': 'http://www.tvsubtitles.net',
+    'wizdom': 'http://wizdom.xyz'
 }
 
 
@@ -208,6 +215,20 @@ def from_ietf_code(code, unknown='und'):
         return Language(unknown) if unknown else None
 
 
+def from_country_code_to_name(code):
+    """Convert a 2 letter country code to a country name.
+
+    :param code: the 2 letter country code
+    :type code: str
+    :return: the country name
+    :rtype: str
+    """
+    try:
+        return Country(code.upper()).name
+    except ValueError:
+        return
+
+
 def name_from_code(code):
     """Return the language name for the given language code.
 
@@ -343,6 +364,7 @@ def save_subtitle(tv_episode, subtitle_id, video_path=None):
     """
     subtitle = cache.get(subtitle_key.format(id=subtitle_id).encode('utf-8'))
     if subtitle == NO_VALUE:
+        logger.error('Unable to find cached subtitle ID: %s', subtitle_id)
         return
 
     release_name = tv_episode.release_name
@@ -710,6 +732,8 @@ def get_video(tv_episode, video_path, subtitles_dir=None, subtitles=True, embedd
 
         refine(video, episode_refiners=episode_refiners, embedded_subtitles=embedded_subtitles,
                release_name=release_name, tv_episode=tv_episode)
+
+        video.alternative_series = list(tv_episode.series.aliases)
 
         payload['video'] = video
         memory_cache.set(key, payload)

@@ -22,6 +22,7 @@ from medusa.notifiers import (
     pushbullet,
     pushover,
     pytivo,
+    slack,
     synoindex,
     synology_notifier,
     telegram,
@@ -59,6 +60,7 @@ telegram_notifier = telegram.Notifier()
 twitter_notifier = tweet.Notifier()
 trakt_notifier = trakt.Notifier()
 email_notifier = emailnotify.Notifier()
+slack_notifier = slack.Notifier()
 
 notifiers = [
     libnotify_notifier,  # Libnotify notifier goes first because it doesn't involve blocking on network activity.
@@ -81,6 +83,7 @@ notifiers = [
     twitter_notifier,
     trakt_notifier,
     email_notifier,
+    slack_notifier
 ]
 
 

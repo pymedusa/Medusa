@@ -33,8 +33,8 @@ def test_sorted_service_list(monkeypatch):
         {'name': 'opensubtitles', 'enabled': False},
         {'name': 'podnapisi', 'enabled': False},
         {'name': 'subscenter', 'enabled': False},
-        {'name': 'thewiz', 'enabled': False},
         {'name': 'tvsubtitles', 'enabled': False},
+        {'name': 'wizdom', 'enabled': False},
     ]
     assert expected == [{'name': a['name'], 'enabled': a['enabled']} for a in actual]
 
@@ -208,6 +208,39 @@ def test_from_ietf_code__unknown_code_returning_none():
 
     # Then
     assert actual is None
+
+
+def test_from_country_code_to_name__valid_code():
+    # Given
+    code = 'IT'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert 'ITALY' == actual
+
+
+def test_from_country_code_to_name__valid_lower_code():
+    # Given
+    code = 'fr'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert 'FRANCE' == actual
+
+
+def test_from_country_code_to_name__invalid_code():
+    # Given
+    code = 'XY'
+
+    # When
+    actual = sut.from_country_code_to_name(code)
+
+    # Then
+    assert None is actual
 
 
 def test_name_from_code__valid_code():

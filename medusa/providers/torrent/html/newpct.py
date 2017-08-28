@@ -89,7 +89,7 @@ class NewpctProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['q'] = search_string
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -173,22 +173,17 @@ class NewpctProvider(TorrentProvider):
 
         return title
 
-    def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
+    def get_content(self, url, params=None, timeout=30, **kwargs):
         """
         Parse URL to get the torrent file.
 
         :return: 'content' when trying access to torrent info (For calling torrent client).
         """
-        trickery = kwargs.pop('returns', '')
-        if trickery == 'content':
-            kwargs['returns'] = 'text'
-            data = super(NewpctProvider, self).get_url(url, post_data=post_data, params=params, timeout=timeout,
-                                                       **kwargs)
-            url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
+        data = self.session.get(url, params=params, timeout=timeout).text
+        url = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', data, re.DOTALL).group()
 
-        kwargs['returns'] = trickery
-        return super(NewpctProvider, self).get_url(url, post_data=post_data, params=params,
-                                                   timeout=timeout, **kwargs)
+        # kwargs['returns'] = trickery
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def download_result(self, result):
         """Save the result to disk."""
@@ -201,7 +196,7 @@ class NewpctProvider(TorrentProvider):
         for url in urls:
             # Search results don't return torrent files directly,
             # it returns show sheets so we must parse showSheet to access torrent.
-            response = self.get_url(url, returns='response')
+            response = self.session.get(url)
             url_torrent = re.search(r'http://tumejorserie.com/descargar/.+\.torrent', response.text, re.DOTALL).group()
 
             if url_torrent.startswith('http'):
