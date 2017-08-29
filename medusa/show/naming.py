@@ -20,7 +20,7 @@ log.logger.addHandler(logging.NullHandler())
 
 
 resultFilters = [
-    '(dir|sub|nfo)fix',
+    '(sub|nfo)fix',
     '(?<!shomin.)sample',
     '(dvd)?extras',
 ]

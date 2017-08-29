@@ -146,7 +146,7 @@ def snatch_episode(result):
         else:
             if not result.content and not result.url.startswith(u'magnet'):
                 if result.provider.login():
-                    result.content = result.provider.get_url(result.url, returns=u'content')
+                    result.content = result.provider.get_content(result.url)
 
             if result.content or result.url.startswith(u'magnet'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()

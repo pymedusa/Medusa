@@ -1,27 +1,18 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+
+import logging
+
 import threading
+
 import time
 
-from . import exception_handler, logger
+from medusa import exception_handler
+from medusa.logger.adapters.style import BraceAdapter
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class Scheduler(threading.Thread):
@@ -48,7 +39,8 @@ class Scheduler(threading.Thread):
 
     def timeLeft(self):
         """
-        Check how long we have until we run again
+        Check how long we have until we run again.
+
         :return: timedelta
         """
         if self.isAlive():
@@ -72,9 +64,7 @@ class Scheduler(threading.Thread):
         return False
 
     def run(self):
-        """
-        Runs the thread
-        """
+        """Run the thread."""
         try:
             while not self.stop.is_set():
                 if self.enable:
@@ -99,7 +89,7 @@ class Scheduler(threading.Thread):
                     if should_run:
                         self.lastRun = current_time
                         if not self.silent:
-                            logger.log(u"Starting new thread: " + self.name, logger.DEBUG)
+                            log.debug(u'Starting new thread: {name}', {'name': self.name})
                         self.action.run(self.force)
 
                     if self.force:

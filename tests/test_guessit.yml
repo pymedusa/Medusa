@@ -4146,3 +4146,27 @@
   language: und
   crc32: EDA6E7F1
   type: episode
+
+? "The.Walking.Dead.S07E13.720p.HDTV.x264-AVS-Scrambled/1e5e2f3464df439b92afea14932a87a4"
+: title: The Walking Dead
+  season: 7
+  episode: 13
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  video_encoder: x264
+  release_group: AVS
+  uuid: 1e5e2f3464df439b92afea14932a87a4
+  type: episode
+
+? "The.Walking.Dead.S07E13.720p.HDTV.x264-AVS-Obfuscated/1e5e2f3464df439b92afea14932a87a4"
+: title: The Walking Dead
+  season: 7
+  episode: 13
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  video_encoder: x264
+  release_group: AVS
+  uuid: 1e5e2f3464df439b92afea14932a87a4
+  type: episode

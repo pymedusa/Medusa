@@ -91,7 +91,7 @@ class TNTVillageProvider(TorrentProvider):
                     search_params['filter'] += search_string
                     search_params['cat'] = None
 
-                response = self.get_url(self.url, params=search_params, returns='response')
+                response = self.session.get(self.url, params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue
@@ -193,7 +193,7 @@ class TNTVillageProvider(TorrentProvider):
             'submit': 'Connettiti al Forum',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False

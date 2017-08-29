@@ -8,8 +8,6 @@ import logging
 import re
 import traceback
 
-from dateutil import parser
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size
@@ -82,8 +80,8 @@ class ShanaProjectProvider(TorrentProvider):
 
                 page = 1
                 while page and page <= self.max_pages:
-                    response = self.get_url(
-                        self.urls['search'].format(page=page), params=search_params, returns='response'
+                    response = self.session.get(
+                        self.urls['search'].format(page=page), params=search_params
                     )
                     if not response or not response.text:
                         log.debug('No data returned from provider')
@@ -138,8 +136,8 @@ class ShanaProjectProvider(TorrentProvider):
                     except AttributeError:
                         size = -1
 
-                    date = cells[0].find('div', class_='release_last').get_text()
-                    pubdate = parser.parse(date)
+                    pubdate_raw = cells[0].find('div', class_='release_last').get_text()
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,

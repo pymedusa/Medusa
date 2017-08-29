@@ -15,11 +15,13 @@ pre {
 </style>
 </%block>
 <%block name="content">
-<%!
-    random_show = choice(app.showList)
+
+<%
+    # pick a random series to show as background
+    random_show = choice(app.showList) if app.showList else None
 %>
-<input type="hidden" id="showID" value="${getattr(random_show, 'indexerid', '')}" />
-<input type="hidden" id="series_slug" value="${getattr(random_show, 'slug', '')}" />
+<input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
+<input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
 
 <div class="row wide">
         <div class="col-md-12">

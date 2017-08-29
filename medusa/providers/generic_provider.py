@@ -38,8 +38,6 @@ from medusa.helper.common import (
 )
 from medusa.helpers import (
     download_file,
-    get_url,
-    make_session,
 )
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 from medusa.logger.adapters.style import BraceAdapter
@@ -50,11 +48,13 @@ from medusa.name_parser.parser import (
 )
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.search import PROPER_SEARCH
+from medusa.session.core import MedusaSafeSession
+from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
 from pytimeparse import parse
 
-from requests.utils import add_dict_to_cookiejar
+from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -75,15 +75,17 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'http://itorrents.org/torrent/{info_hash}.torrent',
             'https://torrentproject.se/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
             'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'https://torcache.pro/{info_hash}.torrent',
             'http://piratepublic.com/download.php?id={info_hash}',
             'http://www.legittorrents.info/download.php?id={info_hash}',
             'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
+            'https://skytorrents.in/file/{info_hash}/.torrent',
+            'http://p2pdl.com/download/{info_hash}',
+            'http://itorrents.org/torrent/{info_hash}.torrent',
+            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -96,7 +98,8 @@ class GenericProvider(object):
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = make_session()
+        self.session = MedusaSafeSession(hooks=[cloudflare])
+        self.session.headers.update(self.headers)
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -112,6 +115,10 @@ class GenericProvider(object):
         # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
         self.stop_at = 3
+
+        # Police attributes
+        self.enable_api_hit_cooldown = False
+        self.enable_daily_request_reserve = False
 
     def download_result(self, result):
         """Download result from provider."""
@@ -150,6 +157,10 @@ class GenericProvider(object):
                         {'result': result.name})
 
         return False
+
+    def get_content(self, url, params=None, timeout=30, **kwargs):
+        """Retrieve the torrent/nzb content."""
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def find_propers(self, proper_candidates):
         """Find propers in providers."""
@@ -447,8 +458,15 @@ class GenericProvider(object):
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
+        log.info('providers.generic_provider.get_url() is deprecated, '
+                 'please rewrite your provider to make use of the MedusaSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+
+        if not post_data:
+            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
+        else:
+            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
+                                     timeout=timeout, **kwargs)
 
     def image_name(self):
         """Return provider image name."""
@@ -708,24 +726,95 @@ class GenericProvider(object):
         :return: A dict with the the keys result as bool and message as string
         """
         # This is the generic attribute used to manually add cookies for provider authentication
-        if self.enable_cookies:
-            if self.cookies:
-                cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
-                if not cookie_validator.match(self.cookies):
-                    ui.notifications.message(
-                        'Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                        'Cookie is not correctly formatted: {0}'.format(self.cookies))
-                    return {'result': False,
-                            'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
+        if not self.enable_cookies:
+            return {'result': False,
+                    'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
 
-                # cookie_validator got at least one cookie key/value pair, let's return success
-                add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
-                return {'result': True,
-                        'message': ''}
+        if not self.cookies:
+            return {'result': False,
+                    'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
-            else:  # Cookies not set. Don't need to check cookies
-                return {'result': True,
-                        'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
+        cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
+        if not cookie_validator.match(self.cookies):
+            ui.notifications.message(
+                'Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                'Cookie is not correctly formatted: {0}'.format(self.cookies))
+            return {'result': False,
+                    'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        return {'result': False,
-                'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')] for req_cookie in self.required_cookies):
+            return {
+                'result': False,
+                'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
+                           "and make sure you have copied the following cookies: {required_cookies!r}"
+                           .format(provider_url=self.name, required_cookies=self.required_cookies)
+            }
+
+        # cookie_validator got at least one cookie key/value pair, let's return success
+        add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
+        return {'result': True,
+                'message': ''}
+
+    def check_required_cookies(self):
+        """
+        Check if we have the required cookies in the requests sessions object.
+
+        Meaning that we've already successfully authenticated once, and we don't need to go through this again.
+        Note! This doesn't mean the cookies are correct!
+        """
+        if not hasattr(self, 'required_cookies'):
+            # A reminder for the developer, implementing cookie based authentication.
+            log.error(
+                'You need to configure the required_cookies attribute, for the provider: {provider}',
+                {'provider': self.name}
+            )
+            return False
+        return all(dict_from_cookiejar(self.session.cookies).get(cookie) for cookie in self.required_cookies)
+
+    def cookie_login(self, check_login_text, check_url=None):
+        """
+        Check the response for text that indicates a login prompt.
+
+        In that case, the cookie authentication was not successful.
+        :param check_login_text: A string that's visible when the authentication failed.
+        :param check_url: The url to use to test the login with cookies. By default the providers home page is used.
+
+        :return: False when authentication was not successful. True if successful.
+        """
+        check_url = check_url or self.url
+
+        if self.check_required_cookies():
+            # All required cookies have been found within the current session, we don't need to go through this again.
+            return True
+
+        if self.cookies:
+            result = self.add_cookies_from_ui()
+            if not result['result']:
+                ui.notifications.message(result['message'])
+                log.warning(result['message'])
+                return False
+        else:
+            log.warning('Failed to login, you will need to add your cookies in the provider settings')
+            ui.notifications.error('Failed to auth with {provider}'.format(provider=self.name),
+                                   'You will need to add your cookies in the provider settings')
+            return False
+
+        response = self.session.get(check_url)
+        if any([not response,
+                not (response.text and response.status_code == 200),
+                check_login_text.lower() in response.text.lower()]):
+            log.warning('Please configure the required cookies for this provider. Check your provider settings')
+            ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
+                                   'Check your provider settings')
+            self.session.cookies.clear()
+            return False
+        else:
+            return True
+
+    def __str__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def __unicode__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

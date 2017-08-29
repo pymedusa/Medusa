@@ -4,7 +4,6 @@
 
 from __future__ import unicode_literals
 
-import json
 import logging
 import traceback
 
@@ -79,8 +78,7 @@ class NorbitsProvider(TorrentProvider):
                     'search': search_string,
                 }
 
-                response = self.get_url(self.urls['search'], post_data=json.dumps(post_data),
-                                        returns='response')
+                response = self.session.post(self.urls['search'], data=post_data)
                 if not response or not response.content:
                     log.debug('No data returned from provider')
                     continue
