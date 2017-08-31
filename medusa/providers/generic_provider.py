@@ -6,6 +6,9 @@ from __future__ import unicode_literals
 
 import logging
 import re
+import ssl
+import sys
+
 
 from base64 import b16encode, b32decode
 from collections import defaultdict
@@ -13,6 +16,8 @@ from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
 from random import shuffle
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
 
 from dateutil import parser, tz
 
@@ -63,6 +68,20 @@ log.logger.addHandler(logging.NullHandler())
 recent_results = {}
 
 
+class TlsHttpAdapter(HTTPAdapter):
+    """" Transport adapter that chooses the TLS protocols based on python versions. """
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        ssl_version = ssl.PROTOCOL_TLSv1 if sys.version_info < (2, 7, 9) or sys.version_info[0:2] == (3, 3) \
+                                         else ssl.PROTOCOL_SSLv23
+        self.poolmanager = PoolManager(
+            num_pools=connections,
+            maxsize=maxsize,
+            block=block,
+            ssl_version=ssl_version
+        )
+
+
 class GenericProvider(object):
     """Generic provider."""
 
@@ -100,6 +119,7 @@ class GenericProvider(object):
         self.search_mode = None
         self.session = MedusaSafeSession(hooks=[cloudflare])
         self.session.headers.update(self.headers)
+        self.session.mount('https://', TlsHttpAdapter())
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
