@@ -25,7 +25,8 @@ def log_url(resp, **kwargs):
     log.debug('User-Agent: {}'.format(resp.request.headers['User-Agent']))
 
     if resp.request.method.upper() == 'POST':
-        log.debug('With post data: {data}'.format(data=resp.request.body))
+        data = resp.request.body.decode('utf-8')
+        log.debug('With post data: {data}'.format(data=data))
 
     return resp
 

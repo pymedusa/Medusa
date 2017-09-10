@@ -1831,7 +1831,7 @@ class Home(WebRoot):
         else:
             host = app.KODI_HOST
 
-        if notifiers.kodi_notifier.update_library(showName=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=show_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
