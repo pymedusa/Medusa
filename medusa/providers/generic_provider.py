@@ -454,7 +454,8 @@ class GenericProvider(object):
         log.debug('{0} URL: {1} [Status: {2}]', response.request.method, response.request.url, response.status_code)
 
         if response.request.method == 'POST':
-            log.debug('With post data: {0}', response.request.body)
+            data = response.request.body.decode('utf-8')
+            log.debug('With post data: {0}', data)
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
