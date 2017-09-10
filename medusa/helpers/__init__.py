@@ -702,7 +702,6 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
-    from medusa import db
     absolute_number = None
 
     if season and episode:
