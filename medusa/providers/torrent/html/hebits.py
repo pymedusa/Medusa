@@ -5,8 +5,8 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 import re
+import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -147,7 +147,7 @@ class HeBitsProvider(TorrentProvider):
                     torrent_size = row.find('div', class_='bSize').get_text(strip=True)
                     size = convert_size(torrent_size[5:], sep='') or -1
 
-                    pubdate_raw = row.find('div',class_=re.compile("bHow")).find_all('span')[1].next_sibling.strip()
+                    pubdate_raw = row.find('div', class_=re.compile("bHow")).find_all('span')[1].next_sibling.strip()
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
@@ -189,7 +189,7 @@ class HeBitsProvider(TorrentProvider):
         if response.text == 'OK':
             return True
         elif response.text == 'Banned':
-            log.warning('User {0} is banned from HeBits',self.userename)
+            log.warning('User {0} is banned from HeBits', self.userename)
             return False
         elif response.text == 'MaxAttempts':
             log.warning('Max number of login attempts exceeded - your IP is blocked')
