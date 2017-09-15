@@ -114,7 +114,7 @@ class HeBitsProvider(TorrentProvider):
 
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('div', class_='browse')
-            torrent_rows = torrent_table('div', class_=re.compile("^line")) if torrent_table else []
+            torrent_rows = torrent_table('div', class_=re.compile('^line')) if torrent_table else []
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
@@ -123,10 +123,10 @@ class HeBitsProvider(TorrentProvider):
 
             for row in torrent_rows:
                 try:
-                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile("details\.php")).find('b').get_text(strip=True)
+                    heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile('details\.php')).find('b').get_text()
                     title = heb_eng_title.split('/')[1].strip()
 
-                    download_id = row.find('div', class_='bTitle').find(href=re.compile("download\.php"))['href']
+                    download_id = row.find('div', class_='bTitle').find(href=re.compile('download\.php'))['href']
 
                     if not all([title, download_id]):
                         continue
@@ -147,7 +147,7 @@ class HeBitsProvider(TorrentProvider):
                     torrent_size = row.find('div', class_='bSize').get_text(strip=True)
                     size = convert_size(torrent_size[5:], sep='') or -1
 
-                    pubdate_raw = row.find('div', class_=re.compile("bHow")).find_all('span')[1].next_sibling.strip()
+                    pubdate_raw = row.find('div', class_=re.compile('bHow')).find_all('span')[1].next_sibling.strip()
                     pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
@@ -189,7 +189,7 @@ class HeBitsProvider(TorrentProvider):
         if response.text == 'OK':
             return True
         elif response.text == 'Banned':
-            log.warning('User {0} is banned from HeBits', self.userename)
+            log.warning('User {0} is banned from HeBits', self.username)
             return False
         elif response.text == 'MaxAttempts':
             log.warning('Max number of login attempts exceeded - your IP is blocked')
