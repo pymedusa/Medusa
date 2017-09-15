@@ -121,17 +121,17 @@ class HeBitsProvider(TorrentProvider):
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
-            # Skip column headers
             for row in torrent_rows:
                 try:
                     heb_eng_title = row.find('div', class_='bTitle').find(href=re.compile("details\.php")).find('b').get_text(strip=True)
-                    index = heb_eng_title.index('/')
-                    title = heb_eng_title[index+1:]
+                    title = heb_eng_title.split('/')[1].strip()
 
-                    download_url = urljoin(self.url, row.find('div', class_='bTitle').find(href=re.compile("download\.php"))['href'])
-                    
-                    if not all([title, download_url]):
+                    download_id = row.find('div', class_='bTitle').find(href=re.compile("download\.php"))['href']
+
+                    if not all([title, download_id]):
                         continue
+
+                    download_url = urljoin(self.url, download_id)
 
                     seeders = try_int(row.find('div', class_='bUping').get_text(strip=True))
                     leechers = try_int(row.find('div', class_='bDowning').get_text(strip=True))
@@ -147,13 +147,16 @@ class HeBitsProvider(TorrentProvider):
                     torrent_size = row.find('div', class_='bSize').get_text(strip=True)
                     size = convert_size(torrent_size[5:], sep='') or -1
 
+                    pubdate_raw = row.find('div',class_=re.compile("bHow")).find_all('span')[1].next_sibling.strip()
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
