@@ -46,8 +46,9 @@ class TorrentRssProvider(TorrentProvider):
         self.enable_daily = enable_daily
         self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
-        self.enable_cookies = True
+        self.enable_cookies = bool(cookies)
         self.cookies = cookies
+        self.required_cookies = ('uid', 'pass')
         self.title_tag = title_tag
 
         # Torrent Stats
@@ -156,9 +157,10 @@ class TorrentRssProvider(TorrentProvider):
     def validate_rss(self):
         """Validate if RSS."""
         try:
-            add_cookie = self.add_cookies_from_ui()
-            if not add_cookie.get('result'):
-                return add_cookie
+            if self.enable_cookies:
+                add_cookie = self.add_cookies_from_ui()
+                if not add_cookie.get('result'):
+                    return add_cookie
 
             data = self.cache._get_rss_data()['entries']
             if not data:
