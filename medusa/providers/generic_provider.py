@@ -463,7 +463,7 @@ class GenericProvider(object):
                     data = body.decode(codec)
                 except UnicodeError as error:
                     log.debug('Failed to decode post data as {codec}: {msg}',
-                              codec=codec, msg=error)
+                              {'codec': codec, 'msg': error})
                 else:
                     log.debug('With post data: {0}', data)
                     break
