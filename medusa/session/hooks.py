@@ -8,26 +8,31 @@ import cfscrape
 
 import requests
 from requests.utils import dict_from_cookiejar
+from medusa.logger.adapters.style import BraceAdapter
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def log_url(response, **kwargs):
     """Response hook to log request URL."""
     request = response.request
     log.debug(
-        '{method} URL: {url} [Status: {status}]'.format(
-            method=request.method,
-            url=request.url,
-            status=response.status_code,
-        )
+        '{method} URL: {url} [Status: {status}]', {
+            'method': request.method,
+            'url': request.url,
+            'status': response.status_code,
+        }
     )
     log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
     if request.method.upper() == 'POST':
         body = request.body
         # try to log post data using various codecs to decode
+        if isinstance(body, unicode):
+            log.debug('With post data: {0}', body)
+            return
+
         codecs = ('utf-8', 'latin1', 'cp1252')
         for codec in codecs:
             try:
@@ -40,7 +45,7 @@ def log_url(response, **kwargs):
                 break
         else:
             log.warning('Failed to decode post data with {codecs}',
-                        codecs=codecs)
+                        {'codecs': codecs})
 
 
 def cloudflare(resp, **kwargs):

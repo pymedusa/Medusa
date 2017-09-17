@@ -452,11 +452,22 @@ class GenericProvider(object):
     def get_url_hook(response, **kwargs):
         """Get URL hook."""
         request = response.request
-        log.debug('{0} URL: {1} [Status: {2}]', request.method, request.url, response.status_code)
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
-        if request.method == 'POST':
+        if request.method.upper() == 'POST':
             body = request.body
             # try to log post data using various codecs to decode
+            if isinstance(body, unicode):
+                log.debug('With post data: {0}', body)
+                return
+
             codecs = ('utf-8', 'latin1', 'cp1252')
             for codec in codecs:
                 try:
@@ -469,7 +480,7 @@ class GenericProvider(object):
                     break
             else:
                 log.warning('Failed to decode post data with {codecs}',
-                            codecs=codecs)
+                            {'codecs': codecs})
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
