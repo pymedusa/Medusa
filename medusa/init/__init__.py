@@ -134,8 +134,7 @@ def _configure_subliminal():
     basename = __name__.split('.')[0]
 
     # Unregister
-    for name in ('legendastv = subliminal.providers.legendastv:LegendasTVProvider',
-                 'subscenter = subliminal.providers.subscenter:SubsCenterProvider',):
+    for name in ('legendastv = subliminal.providers.legendastv:LegendasTVProvider',):
         provider_manager.internal_extensions.remove(name)
         provider_manager.registered_extensions.append(name)
         provider_manager.unregister(name)
@@ -144,7 +143,6 @@ def _configure_subliminal():
     for name in ('napiprojekt = subliminal.providers.napiprojekt:NapiProjektProvider',
                  'itasa = {basename}.subtitle_providers.itasa:ItaSAProvider'.format(basename=basename),
                  'legendastv = {basename}.subtitle_providers.legendastv:LegendasTVProvider'.format(basename=basename),
-                 'subscenter = {basename}.subtitle_providers.subscenter:SubsCenterProvider'.format(basename=basename),
                  'wizdom = {basename}.subtitle_providers.wizdom:WizdomProvider'.format(basename=basename)):
         provider_manager.register(name)
 
