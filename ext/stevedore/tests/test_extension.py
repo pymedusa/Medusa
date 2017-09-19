@@ -13,6 +13,8 @@
 """Tests for stevedore.extension
 """
 
+import operator
+
 import mock
 
 from stevedore import exception
@@ -48,6 +50,19 @@ class TestCallback(utils.TestCase):
         em = extension.ExtensionManager('stevedore.test.extension')
         e = em['t1']
         self.assertEqual(e.name, 't1')
+
+    def test_list_entry_points(self):
+        em = extension.ExtensionManager('stevedore.test.extension')
+        n = em.list_entry_points()
+        self.assertEqual(set(['e1', 'e2', 't1', 't2']),
+                         set(map(operator.attrgetter("name"), n)))
+        self.assertEqual(4, len(n))
+
+    def test_list_entry_points_names(self):
+        em = extension.ExtensionManager('stevedore.test.extension')
+        names = em.entry_points_names()
+        self.assertEqual(set(['e1', 'e2', 't1', 't2']), set(names))
+        self.assertEqual(4, len(names))
 
     def test_contains_by_name(self):
         em = extension.ExtensionManager('stevedore.test.extension')

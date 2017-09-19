@@ -21,7 +21,7 @@ git+https://github.com/joestump/python-oauth2.git@6689960ca23f79eccf9a25a39e93f6
 profilehooks==1.9.0
 python-dateutil==2.6.0
 requests==2.18.1
-stevedore==1.19.1
+stevedore==1.26.0
 git+https://github.com/Diaoul/subliminal.git@490f47e0546b3f2c4a70ca4d9612a1bb0e5c8477#egg=subliminal
 tornado==4.5.1
 tornroutes==0.5.1
