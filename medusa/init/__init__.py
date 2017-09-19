@@ -129,7 +129,6 @@ def _configure_guessit():
 def _configure_subliminal():
     """Load subliminal with our custom configuration."""
     from subliminal import provider_manager, refiner_manager
-    from subliminal.providers.podnapisi import PodnapisiProvider
 
     basename = __name__.split('.')[0]
 
@@ -148,9 +147,6 @@ def _configure_subliminal():
 
     refiner_manager.register('release = {basename}.refiners.release:refine'.format(basename=basename))
     refiner_manager.register('tvepisode = {basename}.refiners.tv_episode:refine'.format(basename=basename))
-
-    # Configure podnapisi https url
-    PodnapisiProvider.server_url = 'https://podnapisi.net/subtitles/'
 
 
 def _configure_knowit():
