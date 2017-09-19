@@ -1,22 +1,21 @@
-# -*- coding: utf-8 -*-
-
-import warnings
 import os
-
+import warnings
 from collections import namedtuple
+
 from . import djbec
 
 __all__ = ['crypto_sign', 'crypto_sign_open', 'crypto_sign_keypair', 'Keypair',
            'PUBLICKEYBYTES', 'SECRETKEYBYTES', 'SIGNATUREBYTES']
 
-PUBLICKEYBYTES=32
-SECRETKEYBYTES=64
-SIGNATUREBYTES=64
+PUBLICKEYBYTES = 32
+SECRETKEYBYTES = 64
+SIGNATUREBYTES = 64
 
-Keypair = namedtuple('Keypair', ('vk', 'sk')) # verifying key, secret key
+Keypair = namedtuple('Keypair', ('vk', 'sk'))  # verifying key, secret key
+
 
 def crypto_sign_keypair(seed=None):
-    """Return (verifying, secret) key from a given seed, or os.urandom(32)"""    
+    """Return (verifying, secret) key from a given seed, or os.urandom(32)"""
     if seed is None:
         seed = os.urandom(PUBLICKEYBYTES)
     else:
@@ -47,6 +46,5 @@ def crypto_sign_open(signed, vk):
         raise ValueError("Bad verifying key length %d" % len(vk))
     rc = djbec.checkvalid(signed[:SIGNATUREBYTES], signed[SIGNATUREBYTES:], vk)
     if not rc:
-        raise ValueError("rc != True", rc)    
+        raise ValueError("rc != True", rc)
     return signed[SIGNATUREBYTES:]
-

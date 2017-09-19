@@ -11,7 +11,7 @@ except NameError:
 
 if not _PY3:
     from email.generator import Generator
-    
+
     def read_pkg_info_bytes(bytestr):
         return Parser().parsestr(bytestr)
 
@@ -22,23 +22,22 @@ if not _PY3:
 
     def write_pkg_info(path, message):
         with open(path, 'w') as metadata:
-            Generator(metadata, maxheaderlen=0).flatten(message) 
-
+            Generator(metadata, mangle_from_=False, maxheaderlen=0).flatten(message)
 else:
     from email.generator import BytesGenerator
+
     def read_pkg_info_bytes(bytestr):
         headers = bytestr.decode(encoding="ascii", errors="surrogateescape")
         message = Parser().parsestr(headers)
         return message
 
     def read_pkg_info(path):
-        with open(path, "r", 
-                  encoding="ascii", 
+        with open(path, "r",
+                  encoding="ascii",
                   errors="surrogateescape") as headers:
             message = Parser().parse(headers)
         return message
 
     def write_pkg_info(path, message):
         with open(path, "wb") as out:
-            BytesGenerator(out, maxheaderlen=0).flatten(message)
-
+            BytesGenerator(out, mangle_from_=False, maxheaderlen=0).flatten(message)

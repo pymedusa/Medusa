@@ -4,22 +4,24 @@ Installation paths.
 Map the .data/ subdirectory names to install paths.
 """
 
+import distutils.command.install as install
+import distutils.dist as dist
 import os.path
 import sys
-import distutils.dist as dist
-import distutils.command.install as install
+
 
 def get_install_command(name):
     # late binding due to potential monkeypatching
-    d = dist.Distribution({'name':name})
+    d = dist.Distribution({'name': name})
     i = install.install(d)
     i.finalize_options()
     return i
 
+
 def get_install_paths(name):
     """
     Return the (distutils) install paths for the named dist.
-    
+
     A dict with ('purelib', 'platlib', 'headers', 'scripts', 'data') keys.
     """
     paths = {}

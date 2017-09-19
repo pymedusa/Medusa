@@ -40,7 +40,7 @@ import operator
 import itertools
 import collections
 
-__version__ = '4.0.11'
+__version__ = '4.1.2'
 
 if sys.version >= '3':
     from inspect import getfullargspec
@@ -58,6 +58,13 @@ else:
 
     def get_init(cls):
         return cls.__init__.__func__
+
+try:
+    iscoroutinefunction = inspect.iscoroutinefunction
+except AttributeError:
+    # let's assume there are no coroutine functions in old Python
+    def iscoroutinefunction(f):
+        return False
 
 # getargspec has been deprecated in Python 3.5
 ArgSpec = collections.namedtuple(
@@ -165,7 +172,7 @@ class FunctionMaker(object):
         "Make a new function from a given template and update the signature"
         src = src_templ % vars(self)  # expand name and signature
         evaldict = evaldict or {}
-        mo = DEF.match(src)
+        mo = DEF.search(src)
         if mo is None:
             raise SyntaxError('not a valid function template\n%s' % src)
         name = mo.group(1)  # extract the function name
@@ -214,8 +221,13 @@ class FunctionMaker(object):
             func = obj
         self = cls(func, name, signature, defaults, doc, module)
         ibody = '\n'.join('    ' + line for line in body.splitlines())
-        return self.make('def %(name)s(%(signature)s):\n' + ibody,
-                         evaldict, addsource, **attrs)
+        caller = evaldict.get('_call_')  # when called from `decorate`
+        if caller and iscoroutinefunction(caller):
+            body = ('async def %(name)s(%(signature)s):\n' + ibody).replace(
+                'return', 'return await')
+        else:
+            body = 'def %(name)s(%(signature)s):\n' + ibody
+        return self.make(body, evaldict, addsource, **attrs)
 
 
 def decorate(func, caller):
@@ -250,9 +262,9 @@ def decorator(caller, _func=None):
     else:  # assume caller is an object with a __call__ method
         name = caller.__class__.__name__.lower()
         doc = caller.__call__.__doc__
-    evaldict = dict(_call_=caller, _decorate_=decorate)
+    evaldict = dict(_call=caller, _decorate_=decorate)
     return FunctionMaker.create(
-        '%s(func)' % name, 'return _decorate_(func, _call_)',
+        '%s(func)' % name, 'return _decorate_(func, _call)',
         evaldict, doc=doc, module=caller.__module__,
         __wrapped__=caller)
 

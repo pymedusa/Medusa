@@ -11,40 +11,38 @@ import subprocess
 import warnings
 import shutil
 import json
-import wheel
-
-try:
-    import sysconfig
-except ImportError:  # pragma nocover
-    # Python < 2.7
-    import distutils.sysconfig as sysconfig
+import sys
+import re
+from email.generator import Generator
+from distutils.core import Command
+from distutils.sysconfig import get_python_version
+from distutils import log as logger
+from shutil import rmtree
 
 import pkg_resources
 
-safe_name = pkg_resources.safe_name
-safe_version = pkg_resources.safe_version
-
-from shutil import rmtree
-from email.generator import Generator
-
-from distutils.util import get_platform
-from distutils.core import Command
-from distutils.sysconfig import get_python_version
-
-from distutils import log as logger
-
-from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag
+from .pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag, get_platform
 from .util import native, open_for_csv
 from .archive import archive_wheelfile
 from .pkginfo import read_pkg_info, write_pkg_info
 from .metadata import pkginfo_to_dict
 from . import pep425tags, metadata
+from . import __version__ as wheel_version
+
+
+safe_name = pkg_resources.safe_name
+safe_version = pkg_resources.safe_version
+
+PY_LIMITED_API_PATTERN = r'cp3\d'
+
 
 def safer_name(name):
     return safe_name(name).replace('-', '_')
 
+
 def safer_version(version):
     return safe_version(version).replace('-', '_')
+
 
 class bdist_wheel(Command):
 
@@ -77,6 +75,13 @@ class bdist_wheel(Command):
                     ('python-tag=', None,
                      "Python implementation compatibility tag"
                      " (default: py%s)" % get_impl_ver()[0]),
+                    ('build-number=', None,
+                     "Build number for this particular version. "
+                     "As specified in PEP-0427, this must start with a digit. "
+                     "[default: None]"),
+                    ('py-limited-api=', None,
+                     "Python tag (cp32|cp33|cpNN) for abi3 wheel tag"
+                     " (default: false)"),
                     ]
 
     boolean_options = ['keep-temp', 'skip-build', 'relative', 'universal']
@@ -98,6 +103,8 @@ class bdist_wheel(Command):
         self.group = None
         self.universal = False
         self.python_tag = 'py' + get_impl_ver()[0]
+        self.build_number = None
+        self.py_limited_api = False
         self.plat_name_supplied = False
 
     def finalize_options(self):
@@ -116,6 +123,9 @@ class bdist_wheel(Command):
         self.root_is_pure = not (self.distribution.has_ext_modules()
                                  or self.distribution.has_c_libraries())
 
+        if self.py_limited_api and not re.match(PY_LIMITED_API_PATTERN, self.py_limited_api):
+            raise ValueError("py-limited-api must match '%s'" % PY_LIMITED_API_PATTERN)
+
         # Support legacy [wheel] section for setting universal
         wheel = self.distribution.get_option_dict('wheel')
         if 'universal' in wheel:
@@ -124,11 +134,17 @@ class bdist_wheel(Command):
             if val.lower() in ('1', 'true', 'yes'):
                 self.universal = True
 
+        if self.build_number is not None and not self.build_number[:1].isdigit():
+            raise ValueError("Build tag (build-number) must start with a digit.")
+
     @property
     def wheel_dist_name(self):
         """Return distribution full name with - replaced with _"""
-        return '-'.join((safer_name(self.distribution.get_name()),
-                         safer_version(self.distribution.get_version())))
+        components = (safer_name(self.distribution.get_name()),
+                      safer_version(self.distribution.get_version()))
+        if self.build_number:
+            components += (self.build_number,)
+        return '-'.join(components)
 
     def get_tag(self):
         # bdist sets self.plat_name if unset, we should only use it for purepy
@@ -139,6 +155,8 @@ class bdist_wheel(Command):
             plat_name = 'any'
         else:
             plat_name = self.plat_name or get_platform()
+            if plat_name in ('linux-x86_64', 'linux_x86_64') and sys.maxsize == 2147483647:
+                plat_name = 'linux_i686'
         plat_name = plat_name.replace('-', '_').replace('.', '_')
 
         if self.root_is_pure:
@@ -150,13 +168,20 @@ class bdist_wheel(Command):
         else:
             impl_name = get_abbr_impl()
             impl_ver = get_impl_ver()
-            # PEP 3149
-            abi_tag = str(get_abi_tag()).lower()
-            tag = (impl_name + impl_ver, abi_tag, plat_name)
+            impl = impl_name + impl_ver
+            # We don't work on CPython 3.1, 3.0.
+            if self.py_limited_api and (impl_name + impl_ver).startswith('cp3'):
+                impl = self.py_limited_api
+                abi_tag = 'abi3'
+            else:
+                abi_tag = str(get_abi_tag()).lower()
+            tag = (impl, abi_tag, plat_name)
             supported_tags = pep425tags.get_supported(
                 supplied_platform=plat_name if self.plat_name_supplied else None)
             # XXX switch to this alternate implementation for non-pure:
-            assert tag == supported_tags[0]
+            if not self.py_limited_api:
+                assert tag == supported_tags[0], "%s != %s" % (tag, supported_tags[0])
+            assert tag in supported_tags, "would build wheel with unsupported tag {}".format(tag)
         return tag
 
     def get_archive_basename(self):
@@ -254,12 +279,14 @@ class bdist_wheel(Command):
             else:
                 rmtree(self.bdist_dir)
 
-    def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel.__version__ + ')'):
+    def write_wheelfile(self, wheelfile_base, generator='bdist_wheel (' + wheel_version + ')'):
         from email.message import Message
         msg = Message()
         msg['Wheel-Version'] = '1.0'  # of the spec
         msg['Generator'] = generator
         msg['Root-Is-Purelib'] = str(self.root_is_pure).lower()
+        if self.build_number is not None:
+            msg['Build'] = self.build_number
 
         # Doesn't work for bdist_wininst
         impl_tag, abi_tag, plat_tag = self.get_tag()
@@ -286,7 +313,7 @@ class bdist_wheel(Command):
     def license_file(self):
         """Return license filename from a license-file key in setup.cfg, or None."""
         metadata = self.distribution.get_option_dict('metadata')
-        if not 'license_file' in metadata:
+        if 'license_file' not in metadata:
             return None
         return metadata['license_file'][1]
 
@@ -315,7 +342,7 @@ class bdist_wheel(Command):
         # our .ini parser folds - to _ in key names:
         for key, title in (('provides_extra', 'Provides-Extra'),
                            ('requires_dist', 'Requires-Dist')):
-            if not key in metadata:
+            if key not in metadata:
                 continue
             field = metadata[key]
             for line in field[1].splitlines():
@@ -327,7 +354,9 @@ class bdist_wheel(Command):
     def add_requirements(self, metadata_path):
         """Add additional requirements from setup.cfg to file metadata_path"""
         additional = list(self.setupcfg_requirements())
-        if not additional: return
+        if not additional:
+            return
+
         pkg_info = read_pkg_info(metadata_path)
         if 'Provides-Extra' in pkg_info or 'Requires-Dist' in pkg_info:
             warnings.warn('setup.cfg requirements overwrite values from setup.py')
@@ -375,10 +404,9 @@ class bdist_wheel(Command):
 
             # ignore common egg metadata that is useless to wheel
             shutil.copytree(egginfo_path, distinfo_path,
-                            ignore=lambda x, y: set(('PKG-INFO',
-                                                     'requires.txt',
-                                                     'SOURCES.txt',
-                                                     'not-zip-safe',)))
+                            ignore=lambda x, y: {'PKG-INFO', 'requires.txt', 'SOURCES.txt',
+                                                 'not-zip-safe'}
+                            )
 
             # delete dependency_links if it is only whitespace
             dependency_links_path = os.path.join(distinfo_path, 'dependency_links.txt')
@@ -405,7 +433,8 @@ class bdist_wheel(Command):
                                             description_filename)
             with open(description_path, "wb") as description_file:
                 description_file.write(description_text.encode('utf-8'))
-            pymeta['extensions']['python.details']['document_names']['description'] = description_filename
+            pymeta['extensions']['python.details']['document_names']['description'] = \
+                description_filename
 
         # XXX heuristically copy any LICENSE/LICENSE.txt?
         license = self.license_file()
@@ -420,7 +449,7 @@ class bdist_wheel(Command):
         adios(egginfo_path)
 
     def write_record(self, bdist_dir, distinfo_dir):
-        from wheel.util import urlsafe_b64encode
+        from .util import urlsafe_b64encode
 
         record_path = os.path.join(distinfo_dir, 'RECORD')
         record_relpath = os.path.relpath(record_path, bdist_dir)

@@ -3,18 +3,16 @@ Archive tools for wheel.
 """
 
 import os
-import time
-import logging
 import os.path
+import time
 import zipfile
-
-log = logging.getLogger("wheel")
+from distutils import log
 
 
 def archive_wheelfile(base_name, base_dir):
-    '''Archive all files under `base_dir` in a whl file and name it like
+    """Archive all files under `base_dir` in a whl file and name it like
     `base_name`.
-    '''
+    """
     olddir = os.path.abspath(os.curdir)
     base_name = os.path.abspath(base_name)
     try:
@@ -43,8 +41,7 @@ def make_wheelfile_inner(base_name, base_dir='.'):
         date_time = time.gmtime(int(timestamp))[0:6]
 
     # XXX support bz2, xz when available
-    zip = zipfile.ZipFile(open(zip_filename, "wb+"), "w",
-                          compression=zipfile.ZIP_DEFLATED)
+    zip = zipfile.ZipFile(zip_filename, "w", compression=zipfile.ZIP_DEFLATED)
 
     score = {'WHEEL': 1, 'METADATA': 2, 'RECORD': 3}
     deferred = []
@@ -62,7 +59,10 @@ def make_wheelfile_inner(base_name, base_dir='.'):
         log.info("adding '%s'" % path)
 
     for dirpath, dirnames, filenames in os.walk(base_dir):
-        for name in filenames:
+        # Sort the directory names so that `os.walk` will walk them in a
+        # defined order on the next iteration.
+        dirnames.sort()
+        for name in sorted(filenames):
             path = os.path.normpath(os.path.join(dirpath, name))
 
             if os.path.isfile(path):

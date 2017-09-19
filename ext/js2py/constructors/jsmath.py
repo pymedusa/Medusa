@@ -130,7 +130,7 @@ class MathFunctions:
 
     def min():
         if not len(arguments):
-            return -Infinity
+            return Infinity
         lis = tuple(e.to_number().value for e in arguments.to_list())
         if any(e!=e for e in lis): # we dont want NaNs
             return NaN

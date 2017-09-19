@@ -1,18 +1,21 @@
 #!/usr/bin/env python
+import distutils.dist
 import os.path
 import re
+import shutil
 import sys
 import tempfile
 import zipfile
-import wheel.bdist_wheel
-import shutil
-import distutils.dist
-from distutils.archive_util import make_archive
 from argparse import ArgumentParser
+from distutils.archive_util import make_archive
 from glob import iglob
+
+import wheel.bdist_wheel
+from wheel.wininst2wheel import _bdist_wheel_tag
 
 egg_info_re = re.compile(r'''(?P<name>.+?)-(?P<ver>.+?)
     (-(?P<pyver>.+?))?(-(?P<arch>.+?))?.egg''', re.VERBOSE)
+
 
 def egg2wheel(egg_path, dest_dir):
     egg_info = egg_info_re.match(os.path.basename(egg_path)).groupdict()
@@ -43,8 +46,20 @@ def egg2wheel(egg_path, dest_dir):
                           abi,
                           arch
                           ))
-    bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
-    bw.root_is_purelib = egg_info['arch'] is None
+    root_is_purelib = egg_info['arch'] is None
+    if root_is_purelib:
+        bw = wheel.bdist_wheel.bdist_wheel(distutils.dist.Distribution())
+    else:
+        bw = _bdist_wheel_tag(distutils.dist.Distribution())
+
+    bw.root_is_pure = root_is_purelib
+    bw.python_tag = pyver
+    bw.plat_name_supplied = True
+    bw.plat_name = egg_info['arch'] or 'any'
+    if not root_is_purelib:
+        bw.full_tag_supplied = True
+        bw.full_tag = (pyver, abi, arch)
+
     dist_info_dir = os.path.join(dir, '%s.dist-info' % dist_info)
     bw.egg2dist(os.path.join(dir, 'EGG-INFO'),
                 dist_info_dir)
@@ -54,11 +69,12 @@ def egg2wheel(egg_path, dest_dir):
     os.rename(filename, filename[:-3] + 'whl')
     shutil.rmtree(dir)
 
+
 def main():
     parser = ArgumentParser()
     parser.add_argument('eggs', nargs='*', help="Eggs to convert")
     parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
-            help="Directory to store wheels (default %(default)s)")
+                        help="Directory to store wheels (default %(default)s)")
     parser.add_argument('--verbose', '-v', action='store_true')
     args = parser.parse_args()
     for pat in args.eggs:
@@ -68,6 +84,7 @@ def main():
             egg2wheel(egg, args.dest_dir)
             if args.verbose:
                 sys.stdout.write("OK\n")
+
 
 if __name__ == "__main__":
     main()

@@ -270,7 +270,7 @@ class PyJsParser:
             type = Token.Keyword
         elif (d == 'null'):
             type = Token.NullLiteral
-        elif (i == 'true' or d == 'false'):
+        elif (d == 'true' or d == 'false'):
             type = Token.BooleanLiteral
         else:
             type = Token.Identifier;
@@ -962,20 +962,16 @@ class PyJsParser:
         self.scanning = False
 
     def createError(self, line, pos, description):
+        global ENABLE_PYIMPORT
+        msg = 'Line ' + unicode(line) + ': ' + unicode(description)
         if ENABLE_JS2PY_ERRORS:
-            self.log_err_case()
-            try:
-                from js2py.base import ERRORS, Js, JsToPyException
-            except:
-                raise Exception("ENABLE_JS2PY_ERRORS was set to True, but Js2Py was not found!")
-            error = ERRORS['SyntaxError']('Line ' + unicode(line) + ': ' + unicode(description))
-            error.put('index', Js(pos))
-            error.put('lineNumber', Js(line))
-            error.put('column', Js(pos - (self.lineStart if self.scanning else self.lastLineStart) + 1))
-            error.put('description', Js(description))
-            return JsToPyException(error)
+            if isinstance(ENABLE_JS2PY_ERRORS, bool):
+                import js2py.base
+                return js2py.base.MakeError('SyntaxError', msg)
+            else:
+                return ENABLE_JS2PY_ERRORS(msg)
         else:
-            return JsSyntaxError('Line ' + unicode(line) + ': ' + unicode(description))
+            return JsSyntaxError(msg)
 
 
     # Throw an exception
@@ -1262,16 +1258,16 @@ class PyJsParser:
 
         if (self.strict and paramInfo['firstRestricted']):
             self.tolerateUnexpectedToken(paramInfo['firstRestricted'], paramInfo.get('message'))
-        if (self.strict and paramInfo['stricted']):
-            self.tolerateUnexpectedToken(paramInfo['stricted'], paramInfo.get('message'));
+        if (self.strict and paramInfo.get('stricted')):
+            self.tolerateUnexpectedToken(paramInfo.get('stricted'), paramInfo.get('message'));
 
         self.strict = previousStrict;
-        return node.finishFunctionExpression(null, paramInfo['params'], paramInfo['defaults'], body)
+        return node.finishFunctionExpression(null, paramInfo.get('params'), paramInfo.get('defaults'), body)
 
     def parsePropertyMethodFunction(self):
         node = Node();
 
-        params = self.parseParams();
+        params = self.parseParams(null);
         method = self.parsePropertyFunction(node, params);
         return method;
 
@@ -1360,12 +1356,12 @@ class PyJsParser:
         return null;
 
     def checkProto(self, key, computed, hasProto):
-        if (computed == false and (key['type'] == Syntax.Identifier and key.name == '__proto__' or
-                                               key['type'] == Syntax.Literal and key.value == '__proto__')):
-            if (hasProto.value):
+        if (computed == false and (key['type'] == Syntax.Identifier and key['name'] == '__proto__' or
+                                               key['type'] == Syntax.Literal and key['value'] == '__proto__')):
+            if (hasProto['value']):
                 self.tolerateError(Messages.DuplicateProtoProperty);
             else:
-                hasProto.value = true;
+                hasProto['value'] = true;
 
     def parseObjectProperty(self, hasProto):
         token = self.lookahead
@@ -1376,7 +1372,7 @@ class PyJsParser:
         maybeMethod = self.tryParseMethodDefinition(token, key, computed, node)
 
         if (maybeMethod):
-            self.checkProto(maybeMethod.key, maybeMethod.computed, hasProto);
+            self.checkProto(maybeMethod['key'], maybeMethod['computed'], hasProto);
             return maybeMethod;
 
         # // init property or short hand property.
@@ -1861,13 +1857,12 @@ class PyJsParser:
         else:
             assert typ == Syntax.ObjectPattern, 'Invalid type'
             for i in xrange(len(param.properties)):
-                self.checkPatternParam(options, param.properties[i].value);
+                self.checkPatternParam(options, param.properties[i]['value']);
 
     def reinterpretAsCoverFormalsList(self, expr):
         defaults = [];
         defaultCount = 0;
         params = [expr];
-
         typ = expr.type
         if typ == Syntax.Identifier:
             pass
@@ -1890,7 +1885,7 @@ class PyJsParser:
                 params[i] = param;
                 defaults.append(null);
         if (options.get('message') == Messages.StrictParamDupe):
-            token = options['stricted'] if self.strict else options['firstRestricted']
+            token = options.get('stricted') if self.strict else options['firstRestricted']
             self.throwUnexpectedToken(token, options.get('message'));
         if (defaultCount == 0):
             defaults = []
@@ -1937,7 +1932,7 @@ class PyJsParser:
             return expr
 
         if (self.matchAssign()):
-            if (not self.isAssignmentTarget):
+            if (not self.isAssignmentTarget or expr.type==Syntax.Literal):
                 self.tolerateError(Messages.InvalidLHSInAssignment)
             # 11.13.1
 
@@ -1994,6 +1989,7 @@ class PyJsParser:
         return self.parseStatement();
 
     def parsePyimportStatement(self):
+        print(ENABLE_PYIMPORT)
         assert ENABLE_PYIMPORT
         n = Node()
         self.lex()
@@ -2735,7 +2731,7 @@ class PyJsParser:
         tmp = self.parseParams(firstRestricted);
         params = tmp['params']
         defaults = tmp['defaults']
-        stricted = tmp['stricted']
+        stricted = tmp.get('stricted')
         firstRestricted = tmp['firstRestricted']
         if (tmp.get('message')):
             message = tmp['message'];
@@ -2777,7 +2773,7 @@ class PyJsParser:
         tmp = self.parseParams(firstRestricted);
         params = tmp['params']
         defaults = tmp['defaults']
-        stricted = tmp['stricted']
+        stricted = tmp.get('stricted')
         firstRestricted = tmp['firstRestricted']
         if (tmp.get('message')):
             message = tmp['message']

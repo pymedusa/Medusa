@@ -1,14 +1,10 @@
 """Generate and work with PEP 425 Compatibility Tags."""
 
-import sys
-import warnings
-
-try:
-    import sysconfig
-except ImportError:  # pragma nocover
-    # Python < 2.7
-    import distutils.sysconfig as sysconfig
 import distutils.util
+import platform
+import sys
+import sysconfig
+import warnings
 
 
 def get_config_var(var):
@@ -21,15 +17,17 @@ def get_config_var(var):
 
 def get_abbr_impl():
     """Return abbreviated implementation name."""
-    if hasattr(sys, 'pypy_version_info'):
-        pyimpl = 'pp'
-    elif sys.platform.startswith('java'):
-        pyimpl = 'jy'
-    elif sys.platform == 'cli':
-        pyimpl = 'ip'
-    else:
-        pyimpl = 'cp'
-    return pyimpl
+    impl = platform.python_implementation()
+    if impl == 'PyPy':
+        return 'pp'
+    elif impl == 'Jython':
+        return 'jy'
+    elif impl == 'IronPython':
+        return 'ip'
+    elif impl == 'CPython':
+        return 'cp'
+
+    raise LookupError('Unknown Python implementation: ' + impl)
 
 
 def get_impl_ver():
@@ -100,18 +98,22 @@ def get_abi_tag():
 def get_platform():
     """Return our platform name 'win32', 'linux_x86_64'"""
     # XXX remove distutils dependency
-    return distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    result = distutils.util.get_platform().replace('.', '_').replace('-', '_')
+    if result == "linux_x86_64" and sys.maxsize == 2147483647:
+        # pip pull request #3497
+        result = "linux_i686"
+    return result
 
 
 def get_supported(versions=None, supplied_platform=None):
     """Return a list of supported tags for each version specified in
     `versions`.
 
-    :param versions: a list of string versions, of the form ["33", "32"], 
+    :param versions: a list of string versions, of the form ["33", "32"],
         or None. The first version will be assumed to support our ABI.
     """
     supported = []
-    
+
     # Versions must be given with respect to the preference
     if versions is None:
         versions = []
@@ -120,15 +122,15 @@ def get_supported(versions=None, supplied_platform=None):
         # Support all previous minor Python versions.
         for minor in range(version_info[-1], -1, -1):
             versions.append(''.join(map(str, major + (minor,))))
-            
+
     impl = get_abbr_impl()
-    
+
     abis = []
 
     abi = get_abi_tag()
     if abi:
         abis[0:0] = [abi]
- 
+
     abi3s = set()
     import imp
     for suffix in imp.get_suffixes():
@@ -143,20 +145,29 @@ def get_supported(versions=None, supplied_platform=None):
     if supplied_platform:
         platforms.append(supplied_platform)
     platforms.append(get_platform())
-    
+
     # Current version, current API (built specifically for our Python):
     for abi in abis:
         for arch in platforms:
             supported.append(('%s%s' % (impl, versions[0]), abi, arch))
-            
+
+    # abi3 modules compatible with older version of Python
+    for version in versions[1:]:
+        # abi3 was introduced in Python 3.2
+        if version in ('31', '30'):
+            break
+        for abi in abi3s:   # empty set if not Python 3
+            for arch in platforms:
+                supported.append(("%s%s" % (impl, version), abi, arch))
+
     # No abi / arch, but requires our implementation:
     for i, version in enumerate(versions):
         supported.append(('%s%s' % (impl, version), 'none', 'any'))
         if i == 0:
-            # Tagged specifically as being cross-version compatible 
+            # Tagged specifically as being cross-version compatible
             # (with just the major version specified)
-            supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any')) 
-    
+            supported.append(('%s%s' % (impl, versions[0][0]), 'none', 'any'))
+
     # Major Python version + platform; e.g. binaries not using the Python API
     supported.append(('py%s' % (versions[0][0]), 'none', arch))
 
@@ -165,5 +176,5 @@ def get_supported(versions=None, supplied_platform=None):
         supported.append(('py%s' % (version,), 'none', 'any'))
         if i == 0:
             supported.append(('py%s' % (version[0]), 'none', 'any'))
-        
+
     return supported

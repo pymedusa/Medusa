@@ -1,32 +1,30 @@
 """
-Operations on existing wheel files, including basic installation. 
+Operations on existing wheel files, including basic installation.
 """
 # XXX see patched pip to install
 
-import sys
-import warnings
+import csv
+import hashlib
 import os.path
 import re
-import zipfile
-import hashlib
-import csv
-
 import shutil
+import sys
+import warnings
+import zipfile
+
+from . import signatures
+from .decorator import reify
+from .paths import get_install_paths
+from .pep425tags import get_supported
+from .pkginfo import read_pkg_info_bytes
+from .util import (
+    urlsafe_b64encode, from_json, urlsafe_b64decode, native, binary, HashingFile,
+    open_for_csv)
 
 try:
     _big_number = sys.maxsize
 except NameError:
     _big_number = sys.maxint
-
-from wheel.decorator import reify
-from wheel.util import (urlsafe_b64encode, from_json, urlsafe_b64decode,
-                        native, binary, HashingFile)
-from wheel import signatures
-from wheel.pkginfo import read_pkg_info_bytes
-from wheel.util import open_for_csv
-
-from .pep425tags import get_supported
-from .paths import get_install_paths
 
 # The next major version after this version of the 'wheel' tool:
 VERSION_TOO_HIGH = (1, 0)
@@ -39,6 +37,7 @@ WHEEL_INFO_RE = re.compile(
     \.whl|\.dist-info)$""",
     re.VERBOSE).match
 
+
 def parse_version(version):
     """Use parse_version from pkg_resources or distutils as available."""
     global parse_version
@@ -48,6 +47,7 @@ def parse_version(version):
         from distutils.version import LooseVersion as parse_version
     return parse_version(version)
 
+
 class BadWheelFile(ValueError):
     pass
 
@@ -55,7 +55,7 @@ class BadWheelFile(ValueError):
 class WheelFile(object):
     """Parse wheel-specific attributes from a wheel (.whl) file and offer
     basic installation and verification support.
-    
+
     WheelFile can be used to simply parse a wheel filename by avoiding the
     methods that require the actual file contents."""
 
@@ -201,11 +201,11 @@ class WheelFile(object):
             raise TypeError("{0}.context != {1}.context".format(self, other))
         sc = self.rank
         oc = other.rank
-        if sc != None and oc != None and sc != oc:
+        if sc is not None and oc is not None and sc != oc:
             # Smaller compatibility ranks are "better" than larger ones,
             # so we have to reverse the sense of the comparison here!
             return sc > oc
-        elif sc == None and oc != None:
+        elif sc is None and oc is not None:
             return False
         return self.filename < other.filename
 
@@ -247,10 +247,10 @@ class WheelFile(object):
         """
         Consult distutils to get the install paths for our dist.  A dict with
         ('purelib', 'platlib', 'headers', 'scripts', 'data').
-        
+
         We use the name from our filename as the dist name, which means headers
         could be installed in the wrong place if the filesystem-escaped name
-        is different than the Name.  Who cares? 
+        is different than the Name.  Who cares?
         """
         name = self.parsed_filename.group('name')
         return get_install_paths(name)
@@ -323,7 +323,9 @@ class WheelFile(object):
                 k = info.filename
                 key, target, filename, dest = v
                 if os.path.exists(dest):
-                    raise ValueError("Wheel file {0} would overwrite {1}. Use force if this is intended".format(k, dest))
+                    raise ValueError(
+                        "Wheel file {0} would overwrite {1}. Use force if this is intended".format(
+                            k, dest))
 
         # Get the name of our executable, for use when replacing script
         # wrapper hashbang lines.
@@ -342,13 +344,24 @@ class WheelFile(object):
             ddir = os.path.dirname(dest)
             if not os.path.isdir(ddir):
                 os.makedirs(ddir)
-            destination = HashingFile(open(dest, 'wb'))
-            if key == 'scripts':
-                hashbang = source.readline()
-                if hashbang.startswith(b'#!python'):
-                    hashbang = b'#!' + exename + binary(os.linesep)
-                destination.write(hashbang)
-            shutil.copyfileobj(source, destination)
+
+            temp_filename = dest + '.part'
+            try:
+                with HashingFile(temp_filename, 'wb') as destination:
+                    if key == 'scripts':
+                        hashbang = source.readline()
+                        if hashbang.startswith(b'#!python'):
+                            hashbang = b'#!' + exename + binary(os.linesep)
+                        destination.write(hashbang)
+
+                    shutil.copyfileobj(source, destination)
+            except:
+                if os.path.exists(temp_filename):
+                    os.unlink(temp_filename)
+
+                raise
+
+            os.rename(temp_filename, dest)
             reldest = os.path.relpath(dest, root)
             reldest.replace(os.sep, '/')
             record_data.append((reldest, destination.digest(), destination.length))
@@ -360,15 +373,16 @@ class WheelFile(object):
                 os.chmod(dest, info.external_attr >> 16)
 
         record_name = os.path.join(root, self.record_name)
-        writer = csv.writer(open_for_csv(record_name, 'w+'))
-        for reldest, digest, length in sorted(record_data):
-            writer.writerow((reldest, digest, length))
-        writer.writerow((self.record_name, '', ''))
+        with open_for_csv(record_name, 'w+') as record_file:
+            writer = csv.writer(record_file)
+            for reldest, digest, length in sorted(record_data):
+                writer.writerow((reldest, digest, length))
+            writer.writerow((self.record_name, '', ''))
 
     def verify(self, zipfile=None):
-        """Configure the VerifyingZipFile `zipfile` by verifying its signature 
+        """Configure the VerifyingZipFile `zipfile` by verifying its signature
         and setting expected hashes for every hash in RECORD.
-        Caller must complete the verification process by completely reading 
+        Caller must complete the verification process by completely reading
         every file in the archive (e.g. with extractall)."""
         sig = None
         if zipfile is None:
@@ -412,7 +426,7 @@ class WheelFile(object):
 
 class VerifyingZipFile(zipfile.ZipFile):
     """ZipFile that can assert that each of its extracted contents matches
-    an expected sha256 hash. Note that each file must be completly read in 
+    an expected sha256 hash. Note that each file must be completly read in
     order for its hash to be checked."""
 
     def __init__(self, file, mode="r",
@@ -439,8 +453,8 @@ class VerifyingZipFile(zipfile.ZipFile):
             name = name_or_info.filename
         else:
             name = name_or_info
-        if (name in self._expected_hashes
-            and self._expected_hashes[name] != None):
+
+        if name in self._expected_hashes and self._expected_hashes[name] is not None:
             expected_hash = self._expected_hashes[name]
             try:
                 _update_crc_orig = ef._update_crc

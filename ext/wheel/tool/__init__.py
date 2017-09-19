@@ -2,27 +2,29 @@
 Wheel command-line utility.
 """
 
-import os
+import argparse
 import hashlib
-import sys
 import json
-import wheel.paths
-
+import os
+import sys
 from glob import iglob
+
 from .. import signatures
-from ..util import (urlsafe_b64decode, urlsafe_b64encode, native, binary,
-                    matches_requirement)
-from ..install import WheelFile
+from ..install import WheelFile, VerifyingZipFile
+from ..paths import get_install_command
+from ..util import urlsafe_b64decode, urlsafe_b64encode, native, binary, matches_requirement
+
 
 def require_pkgresources(name):
     try:
-        import pkg_resources
+        import pkg_resources  # noqa: F401
     except ImportError:
         raise RuntimeError("'{0}' needs pkg_resources (part of setuptools).".format(name))
 
-import argparse
 
-class WheelError(Exception): pass
+class WheelError(Exception):
+    pass
+
 
 # For testability
 def get_keyring():
@@ -31,8 +33,11 @@ def get_keyring():
         import keyring
         assert keyring.get_keyring().priority
     except (ImportError, AssertionError):
-        raise WheelError("Install wheel[signatures] (requires keyring, keyrings.alt, pyxdg) for signatures.")
+        raise WheelError(
+            "Install wheel[signatures] (requires keyring, keyrings.alt, pyxdg) for signatures.")
+
     return keys.WheelKeys, keyring
+
 
 def keygen(get_keyring=get_keyring):
     """Generate a public/private key pair."""
@@ -59,6 +64,7 @@ def keygen(get_keyring=get_keyring):
     wk.trust('+', vk)
     wk.save()
 
+
 def sign(wheelfile, replace=False, get_keyring=get_keyring):
     """Sign a wheel"""
     WheelKeys, keyring = get_keyring()
@@ -78,16 +84,16 @@ def sign(wheelfile, replace=False, get_keyring=get_keyring):
     keypair = ed25519ll.Keypair(urlsafe_b64decode(binary(vk)),
                                 urlsafe_b64decode(binary(sk)))
 
-
     record_name = wf.distinfo_name + '/RECORD'
     sig_name = wf.distinfo_name + '/RECORD.jws'
     if sig_name in wf.zipfile.namelist():
         raise WheelError("Wheel is already signed.")
     record_data = wf.zipfile.read(record_name)
-    payload = {"hash":"sha256=" + native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
+    payload = {"hash": "sha256=" + native(urlsafe_b64encode(hashlib.sha256(record_data).digest()))}
     sig = signatures.sign(payload, keypair)
     wf.zipfile.writestr(sig_name, json.dumps(sig, sort_keys=True))
     wf.zipfile.close()
+
 
 def unsign(wheelfile):
     """
@@ -97,13 +103,13 @@ def unsign(wheelfile):
     ordinary archive, with the compressed files and the directory in the same
     order, and without any non-zip content after the truncation point.
     """
-    import wheel.install
-    vzf = wheel.install.VerifyingZipFile(wheelfile, "a")
+    vzf = VerifyingZipFile(wheelfile, "a")
     info = vzf.infolist()
     if not (len(info) and info[-1].filename.endswith('/RECORD.jws')):
-        raise WheelError("RECORD.jws not found at end of archive.")
+        raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
     vzf.pop()
     vzf.close()
+
 
 def verify(wheelfile):
     """Verify a wheel.
@@ -114,11 +120,16 @@ def verify(wheelfile):
     """
     wf = WheelFile(wheelfile)
     sig_name = wf.distinfo_name + '/RECORD.jws'
-    sig = json.loads(native(wf.zipfile.open(sig_name).read()))
+    try:
+        sig = json.loads(native(wf.zipfile.open(sig_name).read()))
+    except KeyError:
+        raise WheelError('The wheel is not signed (RECORD.jws not found at end of the archive).')
+
     verified = signatures.verify(sig)
     sys.stderr.write("Signatures are internally consistent.\n")
     sys.stdout.write(json.dumps(verified, indent=2))
     sys.stdout.write('\n')
+
 
 def unpack(wheelfile, dest='.'):
     """Unpack a wheel.
@@ -135,6 +146,7 @@ def unpack(wheelfile, dest='.'):
     sys.stderr.write("Unpacking to: %s\n" % (destination))
     wf.zipfile.extractall(destination)
     wf.zipfile.close()
+
 
 def install(requirements, requirements_file=None,
             wheel_dirs=None, force=False, list_files=False,
@@ -156,7 +168,7 @@ def install(requirements, requirements_file=None,
         if wheelpath:
             wheel_dirs = wheelpath.split(os.pathsep)
         else:
-            wheel_dirs = [ os.path.curdir ]
+            wheel_dirs = [os.path.curdir]
 
     # Get a list of all valid wheels in wheel_dirs
     all_wheels = []
@@ -221,6 +233,7 @@ def install(requirements, requirements_file=None,
         wf.install(force=force)
         wf.zipfile.close()
 
+
 def install_scripts(distributions):
     """
     Regenerate the entry_points console_scripts for the named distribution.
@@ -233,11 +246,12 @@ def install_scripts(distributions):
 
     for dist in distributions:
         pkg_resources_dist = pkg_resources.get_distribution(dist)
-        install = wheel.paths.get_install_command(dist)
+        install = get_install_command(dist)
         command = easy_install.easy_install(install.distribution)
-        command.args = ['wheel'] # dummy argument
+        command.args = ['wheel']  # dummy argument
         command.finalize_options()
         command.install_egg_scripts(pkg_resources_dist)
+
 
 def convert(installers, dest_dir, verbose):
     require_pkgresources('wheel convert')
@@ -258,6 +272,7 @@ def convert(installers, dest_dir, verbose):
             conv(installer, dest_dir)
             if verbose:
                 sys.stdout.write("OK\n")
+
 
 def parser():
     p = argparse.ArgumentParser()
@@ -328,7 +343,7 @@ def parser():
     convert_parser = s.add_parser('convert', help='Convert egg or wininst to wheel')
     convert_parser.add_argument('installers', nargs='*', help='Installers to convert')
     convert_parser.add_argument('--dest-dir', '-d', default=os.path.curdir,
-            help="Directory to store wheels (default %(default)s)")
+                                help="Directory to store wheels (default %(default)s)")
     convert_parser.add_argument('--verbose', '-v', action='store_true')
     convert_parser.set_defaults(func=convert_f)
 
@@ -344,6 +359,7 @@ def parser():
     help_parser.set_defaults(func=help_f)
 
     return p
+
 
 def main():
     p = parser()
