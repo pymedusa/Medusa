@@ -13,15 +13,11 @@ import time
 import sys
 import os
 import bisect
-import copy
 
-from operator import itemgetter
-
-from contextlib import contextmanager
-
-from six import string_types, PY3
+from six import string_types
 from ._common import tzname_in_python2, _tzinfo, _total_seconds
 from ._common import tzrangebase, enfold
+from ._common import _validate_fromutc_inputs
 
 try:
     from .win import tzwin, tzwinlocal
@@ -31,6 +27,7 @@ except ImportError:
 ZERO = datetime.timedelta(0)
 EPOCH = datetime.datetime.utcfromtimestamp(0)
 EPOCHORDINAL = EPOCH.toordinal()
+
 
 class tzutc(datetime.tzinfo):
     """
@@ -61,6 +58,14 @@ class tzutc(datetime.tzinfo):
         .. versionadded:: 2.6.0
         """
         return False
+
+    @_validate_fromutc_inputs
+    def fromutc(self, dt):
+        """
+        Fast track version of fromutc() returns the original ``dt`` object for
+        any valid :py:class:`datetime.datetime` object.
+        """
+        return dt
 
     def __eq__(self, other):
         if not isinstance(other, (tzutc, tzoffset)):
@@ -93,7 +98,7 @@ class tzoffset(datetime.tzinfo):
     """
     def __init__(self, name, offset):
         self._name = name
-        
+
         try:
             # Allow a timedelta
             offset = _total_seconds(offset)
@@ -106,6 +111,14 @@ class tzoffset(datetime.tzinfo):
 
     def dst(self, dt):
         return ZERO
+
+    @tzname_in_python2
+    def tzname(self, dt):
+        return self._name
+
+    @_validate_fromutc_inputs
+    def fromutc(self, dt):
+        return dt + self._offset
 
     def is_ambiguous(self, dt):
         """
@@ -122,10 +135,6 @@ class tzoffset(datetime.tzinfo):
         .. versionadded:: 2.6.0
         """
         return False
-
-    @tzname_in_python2
-    def tzname(self, dt):
-        return self._name
 
     def __eq__(self, other):
         if not isinstance(other, tzoffset):
@@ -314,7 +323,7 @@ class _tzfile(object):
     Lightweight class for holding the relevant transition and time zone
     information read from binary tzfiles.
     """
-    attrs = ['trans_list', 'trans_idx', 'ttinfo_list',
+    attrs = ['trans_list', 'trans_list_utc', 'trans_idx', 'ttinfo_list',
              'ttinfo_std', 'ttinfo_dst', 'ttinfo_before', 'ttinfo_first']
 
     def __init__(self, **kwargs):
@@ -324,7 +333,7 @@ class _tzfile(object):
 
 class tzfile(_tzinfo):
     """
-    This is a ``tzinfo`` subclass that allows one to use the ``tzfile(5)``
+    This is a ``tzinfo`` subclass thant allows one to use the ``tzfile(5)``
     format timezone files to extract current and historical zone information.
 
     :param fileobj:
@@ -337,7 +346,7 @@ class tzfile(_tzinfo):
         and ``fileobj`` is a file stream, this parameter will be set either to
         ``fileobj``'s ``name`` attribute or to ``repr(fileobj)``.
 
-    See `Sources for Time Zone and Daylight Saving Time Data 
+    See `Sources for Time Zone and Daylight Saving Time Data
     <http://www.twinsun.com/tz/tz-link.htm>`_ for more information. Time zone
     files can be compiled from the `IANA Time Zone database files
     <https://www.iana.org/time-zones>`_ with the `zic time zone compiler
@@ -424,10 +433,10 @@ class tzfile(_tzinfo):
         # change.
 
         if timecnt:
-            out.trans_list = list(struct.unpack(">%dl" % timecnt,
-                                                  fileobj.read(timecnt*4)))
+            out.trans_list_utc = list(struct.unpack(">%dl" % timecnt,
+                                                    fileobj.read(timecnt*4)))
         else:
-            out.trans_list = []
+            out.trans_list_utc = []
 
         # Next come tzh_timecnt one-byte values of type unsigned
         # char; each one tells which of the different types of
@@ -469,10 +478,9 @@ class tzfile(_tzinfo):
         # The pairs of values are sorted in ascending order
         # by time.
 
-        # Not used, for now (but read anyway for correct file position)
+        # Not used, for now (but seek for correct file position)
         if leapcnt:
-            leap = struct.unpack(">%dl" % (leapcnt*2),
-                                 fileobj.read(leapcnt*8))
+            fileobj.seek(leapcnt * 8, os.SEEK_CUR)
 
         # Then there are tzh_ttisstdcnt standard/wall
         # indicators, each stored as a one-byte value;
@@ -527,7 +535,7 @@ class tzfile(_tzinfo):
         out.ttinfo_dst = None
         out.ttinfo_before = None
         if out.ttinfo_list:
-            if not out.trans_list:
+            if not out.trans_list_utc:
                 out.ttinfo_std = out.ttinfo_first = out.ttinfo_list[0]
             else:
                 for i in range(timecnt-1, -1, -1):
@@ -558,6 +566,7 @@ class tzfile(_tzinfo):
         # always in gmt time. Let me know if you have comments
         # about this.
         laststdoffset = None
+        out.trans_list = []
         for i, tti in enumerate(out.trans_idx):
             if not tti.isdst:
                 offset = tti.offset
@@ -570,7 +579,7 @@ class tzfile(_tzinfo):
 
                 offset = laststdoffset or 0
 
-            out.trans_list[i] += offset
+            out.trans_list.append(out.trans_list_utc[i] + offset)
 
         # In case we missed any DST offsets on the way in for some reason, make
         # a second pass over the list, looking for the /next/ DST offset.
@@ -585,15 +594,16 @@ class tzfile(_tzinfo):
 
             if not isinstance(tti.dstoffset, datetime.timedelta):
                 tti.dstoffset = datetime.timedelta(seconds=tti.dstoffset)
-            
+
             out.trans_idx[i] = tti
 
         out.trans_idx = tuple(out.trans_idx)
         out.trans_list = tuple(out.trans_list)
+        out.trans_list_utc = tuple(out.trans_list_utc)
 
         return out
 
-    def _find_last_transition(self, dt):
+    def _find_last_transition(self, dt, in_utc=False):
         # If there's no list, there are no transitions to find
         if not self._trans_list:
             return None
@@ -602,14 +612,15 @@ class tzfile(_tzinfo):
 
         # Find where the timestamp fits in the transition list - if the
         # timestamp is a transition time, it's part of the "after" period.
-        idx = bisect.bisect_right(self._trans_list, timestamp)
+        trans_list = self._trans_list_utc if in_utc else self._trans_list
+        idx = bisect.bisect_right(trans_list, timestamp)
 
         # We want to know when the previous transition was, so subtract off 1
-        return idx - 1
+        return idx - 1        
 
     def _get_ttinfo(self, idx):
         # For no list or after the last transition, default to _ttinfo_std
-        if idx is None or (idx + 1) == len(self._trans_list):
+        if idx is None or (idx + 1) >= len(self._trans_list):
             return self._ttinfo_std
 
         # If there is a list and the time is before it, return _ttinfo_before
@@ -622,6 +633,42 @@ class tzfile(_tzinfo):
         idx = self._resolve_ambiguous_time(dt)
 
         return self._get_ttinfo(idx)
+
+    def fromutc(self, dt):
+        """
+        The ``tzfile`` implementation of :py:func:`datetime.tzinfo.fromutc`.
+
+        :param dt:
+            A :py:class:`datetime.datetime` object.
+
+        :raises TypeError:
+            Raised if ``dt`` is not a :py:class:`datetime.datetime` object.
+
+        :raises ValueError:
+            Raised if this is called with a ``dt`` which does not have this
+            ``tzinfo`` attached.
+
+        :return:
+            Returns a :py:class:`datetime.datetime` object representing the
+            wall time in ``self``'s time zone.
+        """
+        # These isinstance checks are in datetime.tzinfo, so we'll preserve
+        # them, even if we don't care about duck typing.
+        if not isinstance(dt, datetime.datetime):
+            raise TypeError("fromutc() requires a datetime argument")
+
+        if dt.tzinfo is not self:
+            raise ValueError("dt.tzinfo is not self")
+
+        # First treat UTC as wall time and get the transition we're in.
+        idx = self._find_last_transition(dt, in_utc=True)
+        tti = self._get_ttinfo(idx)
+
+        dt_out = dt + datetime.timedelta(seconds=tti.offset)
+
+        fold = self.is_ambiguous(dt_out, idx=idx)
+
+        return enfold(dt_out, fold=int(fold))
 
     def is_ambiguous(self, dt, idx=None):
         """
@@ -660,7 +707,7 @@ class tzfile(_tzinfo):
         if idx is None or idx == 0:
             return idx
 
-        # Get the current datetime as a timestamp
+        # If it's ambiguous and we're in a fold, shift to a different index.
         idx_offset = int(not _fold and self.is_ambiguous(dt, idx))
 
         return idx - idx_offset
@@ -680,7 +727,7 @@ class tzfile(_tzinfo):
 
         if not self._ttinfo_dst:
             return ZERO
-        
+
         tti = self._find_ttinfo(dt)
 
         if not tti.isdst:
@@ -1016,7 +1063,6 @@ class _tzicalvtz(_tzinfo):
         except ValueError:
             pass
 
-
         lastcompdt = None
         lastcomp = None
 
@@ -1098,7 +1144,6 @@ class tzical(object):
             self._s = fileobj
             # ical should be encoded in UTF-8 with CRLF
             fileobj = open(fileobj, 'r')
-            file_opened_here = True
         else:
             self._s = getattr(fileobj, 'name', repr(fileobj))
             fileobj = _ContextWrapper(fileobj)
@@ -1278,6 +1323,7 @@ class tzical(object):
     def __repr__(self):
         return "%s(%s)" % (self.__class__.__name__, repr(self._s))
 
+
 if sys.platform != "win32":
     TZFILES = ["/etc/localtime", "localtime"]
     TZPATHS = ["/usr/share/zoneinfo",
@@ -1375,7 +1421,7 @@ def datetime_exists(dt, tz=None):
     :param tz:
         A :class:`datetime.tzinfo` with support for the ``fold`` attribute. If
         ``None`` or not provided, the datetime's own time zone will be used.
-    
+
     :return:
         Returns a boolean value whether or not the "wall time" exists in ``tz``.
     """
@@ -1407,7 +1453,7 @@ def datetime_ambiguous(dt, tz=None):
     :param tz:
         A :class:`datetime.tzinfo` with support for the ``fold`` attribute. If
         ``None`` or not provided, the datetime's own time zone will be used.
-    
+
     :return:
         Returns a boolean value whether or not the "wall time" is ambiguous in
         ``tz``.
@@ -1447,9 +1493,10 @@ def _datetime_to_timestamp(dt):
     """
     return _total_seconds((dt.replace(tzinfo=None) - EPOCH))
 
+
 class _ContextWrapper(object):
     """
-    Class for wrapping contexts so that they are passed through in a 
+    Class for wrapping contexts so that they are passed through in a
     with statement.
     """
     def __init__(self, context):

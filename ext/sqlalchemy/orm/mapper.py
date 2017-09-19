@@ -1975,7 +1975,7 @@ class Mapper(InspectionAttr):
             (
                 table,
                 frozenset(
-                    col.key for col in columns
+                    col for col in columns
                     if col.type.should_evaluate_none
                 )
             )
@@ -2901,6 +2901,12 @@ def reconstructor(fn):
     contain the first element.  ORM state changes made to objects at
     this stage will not be recorded for the next flush() operation, so
     the activity within a reconstructor should be conservative.
+
+    .. seealso::
+
+        :ref:`mapping_constructors`
+
+        :meth:`.InstanceEvents.load`
 
     """
     fn.__sa_reconstructor__ = True

@@ -1,4 +1,4 @@
-# -*- coding:iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 """
 This module offers a generic date/time string parser which is able to parse
 most known formats to represent a date and/or time.
@@ -35,7 +35,7 @@ import time
 import collections
 import re
 from io import StringIO
-from calendar import monthrange, isleap
+from calendar import monthrange
 
 from six import text_type, binary_type, integer_types
 
@@ -47,7 +47,7 @@ __all__ = ["parse", "parserinfo"]
 
 class _timelex(object):
     # Fractional seconds are sometimes split by a comma
-    _split_decimal = re.compile("([\.,])")
+    _split_decimal = re.compile("([.,])")
 
     def __init__(self, instream):
         if isinstance(instream, binary_type):
@@ -309,7 +309,7 @@ class parserinfo(object):
         return name.lower() in self._jump
 
     def weekday(self, name):
-        if len(name) >= 3:
+        if len(name) >= min(len(n) for n in self._weekdays.keys()):
             try:
                 return self._weekdays[name.lower()]
             except KeyError:
@@ -317,7 +317,7 @@ class parserinfo(object):
         return None
 
     def month(self, name):
-        if len(name) >= 3:
+        if len(name) >= min(len(n) for n in self._months.keys()):
             try:
                 return self._months[name.lower()] + 1
             except KeyError:
@@ -541,17 +541,17 @@ class parser(object):
             :class:`tzinfo` is not in a valid format, or if an invalid date
             would be created.
 
+        :raises TypeError:
+            Raised for non-string or character stream input.
+
         :raises OverflowError:
             Raised if the parsed date exceeds the largest valid C integer on
             your system.
         """
 
         if default is None:
-            effective_dt = datetime.datetime.now()
             default = datetime.datetime.now().replace(hour=0, minute=0,
                                                       second=0, microsecond=0)
-        else:
-            effective_dt = default
 
         res, skipped_tokens = self._parse(timestr, **kwargs)
 
@@ -793,17 +793,21 @@ class parser(object):
                     elif (i == len_l and l[i-2] == ' ' and
                           info.hms(l[i-3]) is not None):
                         # X h MM or X m SS
-                        idx = info.hms(l[i-3]) + 1
+                        idx = info.hms(l[i-3])
 
-                        if idx == 1:
+                        if idx == 0:               # h
                             res.minute = int(value)
 
-                            if value % 1:
-                                res.second = int(60*(value % 1))
-                            elif idx == 2:
-                                res.second, res.microsecond = \
-                                    _parsems(value_repr)
-                                i += 1
+                            sec_remainder = value % 1
+                            if sec_remainder:
+                                res.second = int(60 * sec_remainder)
+                        elif idx == 1:             # m
+                            res.second, res.microsecond = \
+                                _parsems(value_repr)
+
+                        # We don't need to advance the tokens here because the
+                        # i == len_l call indicates that we're looking at all
+                        # the tokens already.
 
                     elif i+1 < len_l and l[i] == ':':
                         # HH:MM[:SS[.ss]]
@@ -952,7 +956,7 @@ class parser(object):
                             raise ValueError('No hour specified with ' +
                                              'AM or PM flag.')
                     elif not 0 <= res.hour <= 12:
-                        # If AM/PM is found, it's a 12 hour clock, so raise 
+                        # If AM/PM is found, it's a 12 hour clock, so raise
                         # an error for invalid range
                         if fuzzy:
                             val_is_ampm = False
@@ -968,6 +972,9 @@ class parser(object):
 
                         res.ampm = value
 
+                    elif fuzzy:
+                        last_skipped_token_i = self._skip_token(skipped_tokens,
+                                                    last_skipped_token_i, i, l)
                     i += 1
                     continue
 
@@ -1032,13 +1039,8 @@ class parser(object):
                 if not (info.jump(l[i]) or fuzzy):
                     return None, None
 
-                if last_skipped_token_i == i - 1:
-                    # recombine the tokens
-                    skipped_tokens[-1] += l[i]
-                else:
-                    # just append
-                    skipped_tokens.append(l[i])
-                last_skipped_token_i = i
+                last_skipped_token_i = self._skip_token(skipped_tokens,
+                                                last_skipped_token_i, i, l)
                 i += 1
 
             # Process year/month/day
@@ -1063,6 +1065,18 @@ class parser(object):
             return res, tuple(skipped_tokens)
         else:
             return res, None
+
+    @staticmethod
+    def _skip_token(skipped_tokens, last_skipped_token_i, i, l):
+        if last_skipped_token_i == i - 1:
+            # recombine the tokens
+            skipped_tokens[-1] += l[i]
+        else:
+            # just append
+            skipped_tokens.append(l[i])
+        last_skipped_token_i = i
+        return last_skipped_token_i
+
 
 DEFAULTPARSER = parser()
 
@@ -1145,7 +1159,7 @@ def parse(timestr, parserinfo=None, **kwargs):
 
             >>> from dateutil.parser import parse
             >>> parse("Today is January 1, 2047 at 8:21:00AM", fuzzy_with_tokens=True)
-            (datetime.datetime(2011, 1, 1, 8, 21), (u'Today is ', u' ', u'at '))
+            (datetime.datetime(2047, 1, 1, 8, 21), (u'Today is ', u' ', u'at '))
 
     :return:
         Returns a :class:`datetime.datetime` object or, if the

@@ -30,6 +30,26 @@ def pytest_addoption(parser):
                     callback_(option_string, values, parser)
             kw["action"] = CallableAction
 
+        zeroarg_callback = kw.pop("zeroarg_callback", None)
+        if zeroarg_callback:
+            class CallableAction(argparse.Action):
+                def __init__(self, option_strings,
+                             dest, default=False,
+                             required=False, help=None):
+                        super(CallableAction, self).__init__(
+                            option_strings=option_strings,
+                            dest=dest,
+                            nargs=0,
+                            const=True,
+                            default=default,
+                            required=required,
+                            help=help)
+
+                def __call__(self, parser, namespace,
+                             values, option_string=None):
+                    zeroarg_callback(option_string, values, parser)
+            kw["action"] = CallableAction
+
         group.addoption(name, **kw)
 
     plugin_base.setup_options(make_option)
@@ -42,10 +62,6 @@ def pytest_configure(config):
         plugin_base.configure_follower(
             config.slaveinput["follower_ident"]
         )
-
-        if config.option.write_idents:
-            with open(config.option.write_idents, "a") as file_:
-                file_.write(config.slaveinput["follower_ident"] + "\n")
     else:
         if config.option.write_idents and \
                 os.path.exists(config.option.write_idents):

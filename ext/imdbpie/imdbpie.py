@@ -184,6 +184,11 @@ class Imdb(object):
         response = self._get(url)
         return response['data']['list']
 
+    def popular_movies(self):
+        url = self._build_url('/chart/moviemeter', {})
+        response = self._get(url)
+        return response['data']['list']
+
     def get_title_images(self, imdb_id):
         url = self._build_url('/title/photos', {'tconst': imdb_id})
         response = self._get(url)

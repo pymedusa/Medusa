@@ -54,7 +54,7 @@ def setup_options(make_option):
     make_option("--db", action="append", type="string", dest="db",
                 help="Use prefab database uri. Multiple OK, "
                 "first one is run by default.")
-    make_option('--dbs', action='callback', callback=_list_dbs,
+    make_option('--dbs', action='callback', zeroarg_callback=_list_dbs,
                 help="List available prefab dbs")
     make_option("--dburi", action="append", type="string", dest="dburi",
                 help="Database uri.  Multiple OK, "
@@ -63,6 +63,11 @@ def setup_options(make_option):
                 help="Drop all tables in the target database first")
     make_option("--backend-only", action="store_true", dest="backend_only",
                 help="Run only tests marked with __backend__")
+    make_option("--nomemory", action="store_true", dest="nomemory",
+                help="Don't run memory profiling tests")
+    make_option("--postgresql-templatedb", type="string",
+                help="name of template database to use for Postgresql "
+                     "CREATE DATABASE (defaults to current database)")
     make_option("--low-connections", action="store_true",
                 dest="low_connections",
                 help="Use a low number of distinct connections - "
@@ -229,6 +234,12 @@ def _setup_options(opt, file_config):
 
 
 @pre
+def _set_nomemory(opt, file_config):
+    if opt.nomemory:
+        exclude_tags.add("memory_intensive")
+
+
+@pre
 def _monkeypatch_cdecimal(options, file_config):
     if options.cdecimal:
         import cdecimal
@@ -269,6 +280,11 @@ def _engine_uri(options, file_config):
 
     config._current = None
     for db_url in db_urls:
+
+        if options.write_idents and provision.FOLLOWER_IDENT: # != 'master':
+            with open(options.write_idents, "a") as file_:
+                file_.write(provision.FOLLOWER_IDENT + " " + db_url + "\n")
+
         cfg = provision.setup_config(
             db_url, options, file_config, provision.FOLLOWER_IDENT)
 
@@ -409,12 +425,21 @@ def want_method(cls, fn):
 def generate_sub_tests(cls, module):
     if getattr(cls, '__backend__', False):
         for cfg in _possible_configs_for_cls(cls):
-            name = "%s_%s_%s" % (cls.__name__, cfg.db.name, cfg.db.driver)
+            orig_name = cls.__name__
+
+            # we can have special chars in these names except for the
+            # pytest junit plugin, which is tripped up by the brackets
+            # and periods, so sanitize
+
+            alpha_name = re.sub('[_\[\]\.]+', '_', cfg.name)
+            alpha_name = re.sub('_+$', '', alpha_name)
+            name = "%s_%s" % (cls.__name__, alpha_name)
             subcls = type(
                 name,
                 (cls, ),
                 {
-                    "__only_on__": ("%s+%s" % (cfg.db.name, cfg.db.driver)),
+                    "_sa_orig_cls_name": orig_name,
+                    "__only_on_config__": cfg
                 }
             )
             setattr(module, name, subcls)
@@ -459,11 +484,8 @@ def before_test(test, test_module_name, test_class, test_name):
 
     # like a nose id, e.g.:
     # "test.aaa_profiling.test_compiler.CompileTest.test_update_whereclause"
-    name = test_class.__name__
 
-    suffix = "_%s_%s" % (config.db.name, config.db.driver)
-    if name.endswith(suffix):
-        name = name[0:-(len(suffix))]
+    name = getattr(test_class, '_sa_orig_cls_name', test_class.__name__)
 
     id_ = "%s.%s.%s" % (test_module_name, name, test_name)
 
@@ -488,6 +510,9 @@ def _possible_configs_for_cls(cls, reasons=None):
         for config_obj in list(all_configs):
             if not spec(config_obj):
                 all_configs.remove(config_obj)
+
+    if getattr(cls, '__only_on_config__', None):
+        all_configs.intersection_update([cls.__only_on_config__])
 
     if hasattr(cls, '__requires__'):
         requirements = config.requirements

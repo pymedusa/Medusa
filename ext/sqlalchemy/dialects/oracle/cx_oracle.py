@@ -718,19 +718,28 @@ class OracleDialect_cx_oracle(OracleDialect):
             self._cx_oracle_string_types = set()
             self._cx_oracle_with_unicode = False
         elif util.py3k or (
-                self.cx_oracle_ver >= (5,) and not \
+                self.cx_oracle_ver >= (5,) and
+                self.cx_oracle_ver < (5, 1) and not
                 hasattr(self.dbapi, 'UNICODE')
         ):
             # cx_Oracle WITH_UNICODE mode.  *only* python
-            # unicode objects accepted for anything
+            # unicode objects accepted for anything.  This
+            # mode of operation is implicit for Python 3,
+            # however under Python 2 it existed as a never-used build-time
+            # option for cx_Oracle 5.0 only and was removed in 5.1.
             self.supports_unicode_statements = True
             self.supports_unicode_binds = True
             self._cx_oracle_with_unicode = True
 
             if util.py2k:
                 # There's really no reason to run with WITH_UNICODE under
-                # Python 2.x.  However as of cx_oracle 5.3 it seems to be
-                # set to ON for default builds
+                # Python 2.x.  Give the user a hint.
+                util.warn(
+                    "cx_Oracle is compiled under Python 2.xx using the "
+                    "WITH_UNICODE flag.  Consider recompiling cx_Oracle "
+                    "without this flag, which is in no way necessary for "
+                    "full support of Unicode and causes significant "
+                    "performance issues.")
                 self.execution_ctx_cls = \
                     OracleExecutionContext_cx_oracle_with_unicode
         else:
@@ -849,6 +858,7 @@ class OracleDialect_cx_oracle(OracleDialect):
                                 size, precision, scale):
             # convert all NUMBER with precision + positive scale to Decimal
             # this almost allows "native decimal" mode.
+
             if self.supports_native_decimal and \
                     defaultType == cx_Oracle.NUMBER and \
                     precision and scale > 0:
@@ -957,7 +967,8 @@ class OracleDialect_cx_oracle(OracleDialect):
 
     def is_disconnect(self, e, connection, cursor):
         error, = e.args
-        if isinstance(e, self.dbapi.InterfaceError):
+        if isinstance(e, (
+                self.dbapi.InterfaceError, self.dbapi.DatabaseError)):
             return "not connected" in str(e)
         elif hasattr(error, 'code'):
             # ORA-00028: your session has been killed

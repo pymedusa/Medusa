@@ -1,8 +1,9 @@
 from six import PY3
-from six.moves import _thread
+
+from functools import wraps
 
 from datetime import datetime, timedelta, tzinfo
-import copy
+
 
 ZERO = timedelta(0)
 
@@ -45,7 +46,7 @@ if hasattr(datetime, 'fold'):
             subclass of :py:class:`datetime.datetime` with the ``fold``
             attribute added, if ``fold`` is 1.
 
-        ..versionadded:: 2.6.0
+        .. versionadded:: 2.6.0
         """
         return dt.replace(fold=fold)
 
@@ -56,7 +57,7 @@ else:
         Python versions before 3.6. It is used only for dates in a fold, so
         the ``fold`` attribute is fixed at ``1``.
 
-        ..versionadded:: 2.6.0
+        .. versionadded:: 2.6.0
         """
         __slots__ = ()
 
@@ -80,7 +81,7 @@ else:
             subclass of :py:class:`datetime.datetime` with the ``fold``
             attribute added, if ``fold`` is 1.
 
-        ..versionadded:: 2.6.0
+        .. versionadded:: 2.6.0
         """
         if getattr(dt, 'fold', 0) == fold:
             return dt
@@ -92,6 +93,23 @@ else:
             return _DatetimeWithFold(*args)
         else:
             return datetime(*args)
+
+
+def _validate_fromutc_inputs(f):
+    """
+    The CPython version of ``fromutc`` checks that the input is a ``datetime``
+    object and that ``self`` is attached as its ``tzinfo``.
+    """
+    @wraps(f)
+    def fromutc(self, dt):
+        if not isinstance(dt, datetime):
+            raise TypeError("fromutc() requires a datetime argument")
+        if dt.tzinfo is not self:
+            raise ValueError("dt.tzinfo is not self")
+
+        return f(self, dt)
+
+    return fromutc
 
 
 class _tzinfo(tzinfo):
@@ -111,7 +129,7 @@ class _tzinfo(tzinfo):
         :return:
             Returns ``True`` if ambiguous, ``False`` otherwise.
 
-        ..versionadded:: 2.6.0
+        .. versionadded:: 2.6.0
         """
 
         dt = dt.replace(tzinfo=self)
@@ -121,7 +139,7 @@ class _tzinfo(tzinfo):
 
         same_offset = wall_0.utcoffset() == wall_1.utcoffset()
         same_dt = wall_0.replace(tzinfo=None) == wall_1.replace(tzinfo=None)
-        
+
         return same_dt and not same_offset
 
     def _fold_status(self, dt_utc, dt_wall):
@@ -163,15 +181,10 @@ class _tzinfo(tzinfo):
         occurence, chronologically, of the ambiguous datetime).
 
         :param dt:
-            A timezone-aware :class:`datetime.dateime` object.
+            A timezone-aware :class:`datetime.datetime` object.
         """
 
         # Re-implement the algorithm from Python's datetime.py
-        if not isinstance(dt, datetime):
-            raise TypeError("fromutc() requires a datetime argument")
-        if dt.tzinfo is not self:
-            raise ValueError("dt.tzinfo is not self")
-
         dtoff = dt.utcoffset()
         if dtoff is None:
             raise ValueError("fromutc() requires a non-None utcoffset() "
@@ -184,16 +197,17 @@ class _tzinfo(tzinfo):
         if dtdst is None:
             raise ValueError("fromutc() requires a non-None dst() result")
         delta = dtoff - dtdst
-        if delta:
-            dt += delta
-            # Set fold=1 so we can default to being in the fold for
-            # ambiguous dates.
-            dtdst = enfold(dt, fold=1).dst()
-            if dtdst is None:
-                raise ValueError("fromutc(): dt.dst gave inconsistent "
-                                 "results; cannot convert")
+
+        dt += delta
+        # Set fold=1 so we can default to being in the fold for
+        # ambiguous dates.
+        dtdst = enfold(dt, fold=1).dst()
+        if dtdst is None:
+            raise ValueError("fromutc(): dt.dst gave inconsistent "
+                             "results; cannot convert")
         return dt + dtdst
 
+    @_validate_fromutc_inputs
     def fromutc(self, dt):
         """
         Given a timezone-aware datetime in a given timezone, calculates a
@@ -205,7 +219,7 @@ class _tzinfo(tzinfo):
         occurance, chronologically, of the ambiguous datetime).
 
         :param dt:
-            A timezone-aware :class:`datetime.dateime` object.
+            A timezone-aware :class:`datetime.datetime` object.
         """
         dt_wall = self._fromutc(dt)
 
@@ -236,7 +250,7 @@ class tzrangebase(_tzinfo):
           abbreviations in DST and STD, respectively.
         * ``_hasdst``: Whether or not the zone has DST.
 
-    ..versionadded:: 2.6.0
+    .. versionadded:: 2.6.0
     """
     def __init__(self):
         raise NotImplementedError('tzrangebase is an abstract base class')
@@ -289,7 +303,6 @@ class tzrangebase(_tzinfo):
 
         utc_transitions = (dston, dstoff)
         dt_utc = dt.replace(tzinfo=None)
-
 
         isdst = self._naive_isdst(dt_utc, utc_transitions)
 
@@ -360,7 +373,7 @@ class tzrangebase(_tzinfo):
     @property
     def _dst_base_offset(self):
         return self._dst_offset - self._std_offset
-    
+
     __hash__ = None
 
     def __ne__(self, other):
@@ -376,5 +389,6 @@ def _total_seconds(td):
     # Python 2.6 doesn't have a total_seconds() method on timedelta objects
     return ((td.seconds + td.days * 86400) * 1000000 +
             td.microseconds) // 1000000
+
 
 _total_seconds = getattr(timedelta, 'total_seconds', _total_seconds)

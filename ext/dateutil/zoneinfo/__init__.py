@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
-import logging
-import os
 import warnings
-import tempfile
-import shutil
 import json
 
 from tarfile import TarFile
@@ -75,7 +71,7 @@ class ZoneInfoFile(object):
         """
         Wrapper for :func:`ZoneInfoFile.zones.get`. This is a convenience method
         for retrieving zones from the zone dictionary.
-        
+
         :param name:
             The name of the zone to retrieve. (Generally IANA zone names)
 
@@ -95,6 +91,7 @@ class ZoneInfoFile(object):
 #
 # TODO: Remove after deprecation period.
 _CLASS_ZONE_INSTANCE = list()
+
 
 def get_zonefile_instance(new_instance=False):
     """
@@ -123,6 +120,7 @@ def get_zonefile_instance(new_instance=False):
         get_zonefile_instance._cached_instance = zif
 
     return zif
+
 
 def gettz(name):
     """
@@ -183,5 +181,3 @@ def gettz_db_metadata():
     if len(_CLASS_ZONE_INSTANCE) == 0:
         _CLASS_ZONE_INSTANCE.append(ZoneInfoFile(getzoneinfofile_stream()))
     return _CLASS_ZONE_INSTANCE[0].metadata
-
-
