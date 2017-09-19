@@ -11,6 +11,7 @@ __title__ = __name__
 SRC_FOLDER = __name__
 LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
 LIB_FOLDER = 'lib'
+EXT_FOLDER = 'ext'
 STATIC_FOLDER = 'static'
 UNKNOWN_RELEASE_GROUP = 'Medusa'
 BACKUP_DIR = 'backup'
