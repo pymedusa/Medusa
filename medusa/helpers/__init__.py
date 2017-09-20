@@ -35,7 +35,7 @@ from cachecontrol.cache import DictCache
 
 import certifi
 
-from contextlib2 import closing, suppress
+from contextlib2 import suppress
 
 import guessit
 
@@ -43,7 +43,8 @@ from imdbpie import imdbpie
 
 from medusa import app, db
 from medusa.common import USER_AGENT
-from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
+from medusa.helper.common import (episode_num, http_code_description, media_extensions,
+                                  pretty_file_size, subtitle_extensions)
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -1274,7 +1275,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             return getattr(resp, response_type, None)
 
 
-def download_file(url, filename, session=None, headers=None, **kwargs):
+def download_file(url, filename, session, headers=None, **kwargs):
     """Download a file specified.
 
     :param url: Source URL
@@ -1286,9 +1287,17 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     try:
         hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
-        with closing(session.get(url, allow_redirects=True, stream=True,
-                                 verify=verify, headers=headers, cookies=cookies,
-                                 hooks=hooks, proxies=proxies)) as resp:
+        with session as s:
+            resp = s.get(url, allow_redirects=True, stream=True,
+                         verify=verify, headers=headers, cookies=cookies,
+                         hooks=hooks, proxies=proxies)
+
+            if not resp:
+                log.debug(
+                    u"Requested download URL {url} couldn't be reached.",
+                    {'url': url}
+                )
+                return False
 
             if not resp.ok:
                 log.debug(
@@ -1527,7 +1536,8 @@ def get_disk_space_usage(disk_path=None, pretty=True):
     if disk_path and os.path.exists(disk_path):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None, ctypes.pointer(free_bytes))
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None,
+                                                       ctypes.pointer(free_bytes))
             return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = os.statvfs(disk_path)
