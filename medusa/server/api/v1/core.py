@@ -551,10 +551,10 @@ def _get_root_dirs():
         return {}
 
     root_dir = {}
-    root_dirs = app.ROOT_DIRS.split('|')
-    default_index = int(app.ROOT_DIRS.split('|')[0])
+    root_dirs = app.ROOT_DIRS
+    default_index = int(app.ROOT_DIRS[0])
 
-    root_dir['default_index'] = int(app.ROOT_DIRS.split('|')[0])
+    root_dir['default_index'] = int(app.ROOT_DIRS[0])
     # remove default_index value from list (this fixes the offset)
     root_dirs.pop(0)
 
@@ -1347,8 +1347,8 @@ class CMD_AddRootDir(ApiCall):
         if app.ROOT_DIRS == '':
             self.default = 1
         else:
-            root_dirs = app.ROOT_DIRS.split('|')
-            index = int(app.ROOT_DIRS.split('|')[0])
+            root_dirs = app.ROOT_DIRS
+            index = int(app.ROOT_DIRS[0])
             root_dirs.pop(0)
             # clean up the list - replace %xx escapes by their single-character equivalent
             root_dirs = [unquote_plus(x) for x in root_dirs]
@@ -1450,7 +1450,7 @@ class CMD_DeleteRootDir(ApiCall):
 
         new_index = 0
         root_dirs_new = []
-        root_dirs = app.ROOT_DIRS.split('|')
+        root_dirs = app.ROOT_DIRS
         index = int(root_dirs[0])
         root_dirs.pop(0)
         # clean up the list - replace %xx escapes by their single-character equivalent
@@ -2053,9 +2053,9 @@ class CMD_ShowAddNew(ApiCall):
 
         if not self.location:
             if app.ROOT_DIRS != '':
-                root_dirs = app.ROOT_DIRS.split('|')
+                root_dirs = app.ROOT_DIRS
                 root_dirs.pop(0)
-                default_index = int(app.ROOT_DIRS.split('|')[0])
+                default_index = int(app.ROOT_DIRS[0])
                 self.location = root_dirs[default_index]
             else:
                 return _responds(RESULT_FAILURE, msg='Root directory is not set, please provide a location')

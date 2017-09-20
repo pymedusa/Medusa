@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import collections
 import datetime
 import io
 import logging
@@ -43,7 +44,7 @@ from medusa import app
 from medusa.init.logconfig import standard_logger
 
 from requests.compat import quote
-from six import itervalues, text_type
+from six import itervalues, string_types, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
@@ -68,7 +69,15 @@ censored = []
 def rebuild_censored_list():
     """Rebuild the censored list."""
     # set of censored items
-    results = {value for value in itervalues(censored_items) if value}
+    results = set()
+    for value in itervalues(censored_items):
+        if not value:
+            continue
+        if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
+            results.update(value)
+        else:
+            results.add(value)
+
     # set of censored items and urlencoded counterparts
     results |= {quote(item) for item in results}
     # convert set items to unicode and typecast to list

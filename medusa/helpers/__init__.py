@@ -1776,7 +1776,7 @@ def get_broken_providers():
         return []
 
     log.info('Broken providers found: {0}', response)
-    return ','.join(response)
+    return response
 
 
 def is_already_processed_media(full_filename):
