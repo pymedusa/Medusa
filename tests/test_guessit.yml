@@ -473,7 +473,7 @@
   absolute_episode: 4
   episode: 4
   subtitle_language: fr
-  release_group: FHD
+  other: FullHD
   type: episode
 
 # anime_french_fansub
@@ -3261,7 +3261,7 @@
 ? Show Name (Season 02) [UNCENSORED] [1080p] [BD] [x265] [pseudo]
 : title: Show Name
   season: 2
-  other: Uncensored
+  edition: Uncensored
   release_group: 'pseudo'
   screen_size: 1080p
   format: BDRip
@@ -3625,7 +3625,7 @@
 : title: Show Name
   date: 2016-09-28
   episode_title: Nice Title
-  other: Extended
+  edition: Extended
   screen_size: 1080p
   streaming_service: Comedy Central
   format: WEBRip
