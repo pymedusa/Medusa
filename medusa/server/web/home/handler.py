@@ -1998,7 +1998,7 @@ class Home(WebRoot):
             msg += '<ul>'
 
             for season, segment in iteritems(segments):
-                cur_backlog_queue_item = BacklogQueueItem(show_obj, segment)
+                cur_backlog_queue_item = BacklogQueueItem(segment)
                 app.search_queue_scheduler.action.add_item(cur_backlog_queue_item)
 
                 msg += '<li>Season {season}</li>'.format(season=season)

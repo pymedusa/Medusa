@@ -81,7 +81,7 @@ from .providers.generic_provider import GenericProvider
 from .providers.nzb.newznab import NewznabProvider
 from .providers.torrent.rss.rsstorrent import TorrentRssProvider
 from .search.backlog import BacklogSearchScheduler, BacklogSearcher
-from .search.daily import DailySearcher
+from .search.daily import DailySearcher, CollectRss
 from .search.proper import ProperFinder
 from .search.queue import ForcedSearchQueue, SearchQueue, SnatchQueue
 from .server.core import AppWebServer
@@ -1096,7 +1096,18 @@ class Application(object):
                                                                     threadName="FORCEDSEARCHQUEUE")
 
             # TODO: update_interval should take last daily/backlog times into account!
+
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
+            delay_interval = datetime.timedelta(seconds=15)
+
+            # Collect RSS
+            app.collect_rss_update_scheduler = scheduler.Scheduler(CollectRss(),
+                                                                   cycleTime=update_interval,
+                                                                   threadName="COLLECTRSS",
+                                                                   silent=False,
+                                                                   run_delay=update_interval)
+
+            # Search cache / RSS
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
                                                              threadName="DAILYSEARCHER",
@@ -1200,6 +1211,10 @@ class Application(object):
 
             # start system events queue
             app.events.start()
+
+            # start the rss collector scheduler
+            app.collect_rss_update_scheduler.enable = True
+            app.collect_rss_update_scheduler.start()
 
             # start the daily search scheduler
             app.daily_search_scheduler.enable = True

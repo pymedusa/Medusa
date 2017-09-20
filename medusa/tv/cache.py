@@ -13,6 +13,7 @@ from medusa import (
     app,
     db,
 )
+from medusa.common import SINGLE_EP_RESULT, MULTI_EP_RESULT, SEASON_RESULT
 from medusa.helper.common import episode_num
 from medusa.helper.exceptions import AuthException
 from medusa.logger.adapters.style import BraceAdapter
@@ -425,6 +426,115 @@ class Cache(object):
         needed_eps = self.find_needed_episodes(episode, forced_search,
                                                down_cur_quality)
         return needed_eps[episode] if episode in needed_eps else []
+
+    def search_provider(self, search_episodes):
+        """Search provider cache tables for needed episodes."""
+        sql_queries = []
+        search_results = []
+
+        cache_db_con = self._get_db()
+        for episode in search_episodes:
+            sql_queries.append([
+                b'SELECT * FROM [{name}] '
+                b'WHERE indexerid = ? AND'
+                b'    season = ? AND'
+                b'    episodes LIKE ? AND '
+                b'    quality IN ({qualities})'.format(
+                    name=self.provider_id,
+                    qualities=','.join((str(x)
+                                        for x in episode.wanted_quality))
+                ),
+                [episode.series.indexerid, episode.season,
+                 b'%|{0}|%'.format(episode.episode)]]
+            )
+
+        if sql_queries:
+            # Only execute the query if we have results
+            sql_results = cache_db_con.mass_action(sql_queries, fetchall=True)
+            sql_results = list(itertools.chain(*sql_results))
+        else:
+            sql_results = []
+            log.debug(
+                '{id}: No cached results in {provider} for series {show_name!r} episode {ep}', {
+                    'id': episode[0].series.indexerid,
+                    'provider': self.provider.name,
+                    'show_name': episode[0].series.name,
+                    'ep': episode_num(episode[0].season, episode[0].episode),
+                }
+            )
+
+        for cur_result in sql_results:
+
+            # Initialize the SearchResult
+            search_result = self.provider.get_result()
+
+            # get the show, or ignore if it's not one of our shows
+            search_result.series = Show.find(app.showList, int(cur_result[b'indexerid']))
+            if not search_result.series:
+                continue
+
+            # skip if provider is anime only and show is not anime
+            if self.provider.anime_only and not search_result.series.is_anime:
+                log.debug('{0} is not an anime, skipping', search_result.series.name)
+                continue
+
+            search_result.actual_season = int(cur_result[b'season'])
+
+            search_result.actual_episodes = [int(episode) for episode in cur_result[b'episodes'].strip('|').split('|')]
+
+            episode_segment = search_result.create_episode_object()
+
+            # Try to match a searched episode object, with a result, and add the searched_episode as an attribute.
+            for searched_ep in search_episodes:
+                for ep in episode_segment:
+                    if all([ep.series.indexerid == searched_ep.series.indexerid,
+                            ep.episode == searched_ep.episode,
+                            ep.season == searched_ep.season]):
+                        search_result.searched_episode = searched_ep
+                        continue
+
+            if len(episode_segment) == 1:
+                # single ep
+                search_result.packaged = SINGLE_EP_RESULT
+
+            elif len(episode_segment) > 1:
+                # multip ep
+                search_result.packaged = MULTI_EP_RESULT
+
+            elif len(episode_segment) == 0:
+                # season pack
+                search_result.packaged = SEASON_RESULT
+
+            # build a result object
+            search_result.name = cur_result[b'name']
+            search_result.url = cur_result[b'url']
+            search_result.quality = int(cur_result[b'quality'])
+            search_result.release_group = cur_result[b'release_group']
+            search_result.version = cur_result[b'version']
+
+            search_result.show = search_result.series
+            search_result.seeders = cur_result[b'seeders']
+            search_result.leechers = cur_result[b'leechers']
+            search_result.size = cur_result[b'size']
+            search_result.pubdate = cur_result[b'pubdate']
+            search_result.proper_tags = cur_result[b'proper_tags'].split('|') if cur_result[b'proper_tags'] else ''
+            search_result.content = None
+
+            log.debug(
+                '{id}: Using cached results from {provider} for series {show_name!r} episode {ep}', {
+                    'id': search_result.episodes[0].series.indexerid,
+                    'provider': self.provider.name,
+                    'show_name': search_result.episodes[0].series.name,
+                    'ep': episode_num(search_result.episodes[0].season, search_result.episodes[0].episode),
+                }
+            )
+
+            search_results.append(search_result)
+
+        # datetime stamp this search so cache gets cleared
+        self.searched = time()
+
+        return search_results
 
     def find_needed_episodes(self, episode, forced_search=False,
                              down_cur_quality=False):

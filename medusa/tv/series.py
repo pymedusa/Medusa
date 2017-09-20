@@ -22,6 +22,7 @@ from imdbpie import imdbpie
 
 from medusa import (
     app,
+    common,
     db,
     helpers,
     image_cache,
@@ -2100,6 +2101,50 @@ class Series(TV):
     def __qualities_to_string(qualities=None):
         return ', '.join([Quality.qualityStrings[quality] for quality in qualities or []
                           if quality and quality in Quality.qualityStrings]) or 'None'
+
+    def wanted_episodes(self, from_date):
+        """
+        Get a list of episodes that we want to download for this show.
+
+        :param from_date: Search from a certain date
+        :return: list of wanted episodes
+        """
+        wanted = []
+        allowed_qualities, preferred_qualities = self.current_qualities
+        all_qualities = list(set(allowed_qualities + preferred_qualities))
+
+        log.debug(u'Seeing if we need anything from {0}', self.name)
+        con = db.DBConnection()
+
+        sql_results = con.select(
+            'SELECT status, season, episode, manually_searched '
+            'FROM tv_episodes '
+            'WHERE showid = ?'
+            ' AND season > 0'
+            ' and airdate > ?',
+            [self.indexerid, from_date.toordinal()]
+        )
+
+        # check through the list of statuses to see if we want any
+        for result in sql_results:
+            _, cur_quality = common.Quality.split_composite_status(int(result[b'status'] or UNKNOWN))
+            should_search, should_search_reason = Quality.should_search(result[b'status'], self,
+                                                                        result[b'manually_searched'])
+            if not should_search:
+                continue
+            else:
+                log.debug(
+                    u'Searching for {show} {ep}. Reason: {reason}', {
+                        u'show': self.name,
+                        u'ep': episode_num(result[b'season'], result[b'episode']),
+                        u'reason': should_search_reason,
+                    }
+                )
+            ep_obj = self.get_episode(result[b'season'], result[b'episode'])
+            ep_obj.wanted_quality = [i for i in all_qualities if i > cur_quality and i != common.Quality.UNKNOWN]
+            wanted.append(ep_obj)
+
+        return wanted
 
     def want_episode(self, season, episode, quality, forced_search=False,
                      download_current_quality=False, search_type=None):

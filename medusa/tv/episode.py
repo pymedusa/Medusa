@@ -1402,7 +1402,7 @@ class Episode(TV):
                 return ''
 
             try:
-                parse_result = NameParser(show=series, naming_pattern=True).parse(name)
+                parse_result = NameParser(series=series, naming_pattern=True).parse(name)
             except (InvalidNameException, InvalidShowException) as error:
                 log.debug('Unable to parse release_group: {error_msg}',
                           {'error_msg': ex(error)})

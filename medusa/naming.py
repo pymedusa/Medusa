@@ -200,7 +200,7 @@ def validate_name(pattern, multi=None, anime_type=None,  # pylint: disable=too-m
     logger.log(u"Trying to parse " + new_name, logger.DEBUG)
 
     try:
-        result = NameParser(show=ep.series, naming_pattern=True).parse(new_name)
+        result = NameParser(series=ep.series, naming_pattern=True).parse(new_name)
     except (InvalidNameException, InvalidShowException) as error:
         logger.log(u"{}".format(error), logger.DEBUG)
         return False

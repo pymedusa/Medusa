@@ -26,6 +26,37 @@ log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 
+class CollectRss(object):
+    """Collect new RSS data from Providers."""
+    def __init__(self):
+        """Initialize the class."""
+        self.lock = threading.Lock()
+        self.amActive = False
+
+    def run(self, force=False):  # pylint:disable=too-many-branches
+        """
+        Run the rss collector.
+
+        :param force: Force search
+        """
+        if self.amActive:
+            log.debug('RSS Collection is still running, not starting it again')
+            return
+
+        self.amActive = True
+
+        from medusa.searchv2.core import CollectRss
+        from medusa.searchv2.request import SearchRequest
+        from medusa.helper.common import enabled_providers
+
+        search_request = SearchRequest(providers=enabled_providers(u'daily'))
+        search = CollectRss(search_request)
+
+        search.start()
+
+        self.amActive = False
+
+
 class DailySearcher(object):  # pylint:disable=too-few-public-methods
     """Daily search class."""
 
@@ -34,20 +65,13 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         self.lock = threading.Lock()
         self.amActive = False
 
-    def run(self, force=False):  # pylint:disable=too-many-branches
+    @staticmethod
+    def update_default_status():
         """
-        Run the daily searcher, queuing selected episodes for search.
+        Get a list of recently aired episodes from the tv_episodes table, and change it's status.
 
-        :param force: Force search
+        The status is changed to the shows configured default status for future episodes.
         """
-        if self.amActive:
-            log.debug('Daily search is still running, not starting it again')
-            return
-        elif app.forced_search_queue_scheduler.action.is_forced_search_in_progress() and not force:
-            log.warning('Manual search is running. Unable to start Daily search')
-            return
-
-        self.amActive = True
 
         if not network_dict:
             update_network_dict()
@@ -107,6 +131,23 @@ class DailySearcher(object):  # pylint:disable=too-few-public-methods
         if new_releases:
             main_db_con = DBConnection()
             main_db_con.mass_action(new_releases)
+
+    def run(self, force=False):  # pylint:disable=too-many-branches
+        """
+        Run the daily searcher, queuing selected episodes for search.
+
+        :param force: Force search
+        """
+        if self.amActive:
+            log.debug('Daily search is still running, not starting it again')
+            return
+        elif app.forced_search_queue_scheduler.action.is_forced_search_in_progress() and not force:
+            log.warning('Manual search is running. Unable to start Daily search')
+            return
+
+        self.amActive = True
+
+        self.update_default_status()
 
         # queue episode for daily search
         app.search_queue_scheduler.action.add_item(

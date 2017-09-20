@@ -9,7 +9,7 @@ import threading
 import time
 import traceback
 
-from medusa import app, common, failed_history, generic_queue, history, providers, ui
+from medusa import app, common, failed_history, generic_queue, history, providers as content_providers, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
@@ -18,6 +18,8 @@ from medusa.search.core import (
     search_providers,
     snatch_episode,
 )
+from medusa.searchv2.request import SearchRequest
+from medusa.searchv2.core import BacklogSearch, DailySearch
 
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -91,7 +93,7 @@ class SearchQueue(generic_queue.GenericQueue):
             generic_queue.GenericQueue.add_item(self, item)
         elif isinstance(item, (BacklogQueueItem, FailedQueueItem,
                                ManualSnatchQueueItem, ForcedSearchQueueItem)) \
-                and not self.is_in_queue(item.show, item.segment):
+                and not self.is_in_queue(item.series, item.segment):
             generic_queue.GenericQueue.add_item(self, item)
         else:
             log.debug('Item already in the queue, skipping')
@@ -258,37 +260,42 @@ class DailySearchQueueItem(generic_queue.QueueItem):
         self.started = True
 
         try:
-            log.info('Beginning daily search for new episodes')
-            found_results = search_for_needed_episodes(force=self.force)
+            log.info('Beginning collection of RSS items for RSS enabled providers.')
+            # found_results = search_for_needed_episodes(force=self.force)
+            from medusa.helper.common import enabled_providers
 
-            if not found_results:
-                log.info('No needed episodes found')
-            else:
-                for result in found_results:
-                    # just use the first result for now
-                    if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                        log.info(
-                            'Downloading {name} with {seeders} seeders and {leechers} leechers'
-                            ' and size {size} from {provider}', {
-                                'name': result.name,
-                                'seeders': result.seeders,
-                                'leechers': result.leechers,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-                    else:
-                        log.info(
-                            'Downloading {name} with size: {size} from {provider}', {
-                                'name': result.name,
-                                'size': pretty_file_size(result.size),
-                                'provider': result.provider.name,
-                            }
-                        )
-                    self.success = snatch_episode(result)
+            search_request = SearchRequest(providers=enabled_providers('daily'))
+            search = DailySearch(search_request)
+            search.start()
 
-                    # give the CPU a break
-                    time.sleep(common.cpu_presets[app.CPU_PRESET])
+            # # if not search.search_results:
+            # #     log.info('No needed episodes found')
+            # # else:
+            # #     for result in found_results:
+            # #         # just use the first result for now
+            # #         if result.seeders not in (-1, None) and result.leechers not in (-1, None):
+            # #             log.info(
+            # #                 'Downloading {name} with {seeders} seeders and {leechers} leechers'
+            # #                 ' and size {size} from {provider}', {
+            # #                     'name': result.name,
+            # #                     'seeders': result.seeders,
+            # #                     'leechers': result.leechers,
+            # #                     'size': pretty_file_size(result.size),
+            # #                     'provider': result.provider.name,
+            # #                 }
+            # #             )
+            # #         else:
+            # #             log.info(
+            # #                 'Downloading {name} with size: {size} from {provider}', {
+            # #                     'name': result.name,
+            # #                     'size': pretty_file_size(result.size),
+            # #                     'provider': result.provider.name,
+            # #                 }
+            # #             )
+            # #         self.success = snatch_episode(result)
+            #
+            #         # give the CPU a break
+            #         time.sleep(common.cpu_presets[app.CPU_PRESET])
 
         except Exception as error:
             self.success = False
@@ -446,7 +453,7 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
         generic_queue.QueueItem.run(self)
         self.started = True
 
-        result = providers.get_provider_class(self.provider).get_result(self.segment)
+        result = content_providers.get_provider_class(self.provider).get_result(self.segment)
         result.show = self.show
         result.url = self.cached_result[b'url']
         result.quality = int(self.cached_result[b'quality'])
@@ -507,58 +514,32 @@ class ManualSnatchQueueItem(generic_queue.QueueItem):
 class BacklogQueueItem(generic_queue.QueueItem):
     """Backlog queue item class."""
 
-    def __init__(self, show, segment):
+    def __init__(self, segment):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Backlog', BACKLOG_SEARCH)
         self.priority = generic_queue.QueuePriorities.LOW
-        self.name = 'BACKLOG-' + str(show.indexerid)
+        self.segment = segment
+        self.series = self.segment[0].series
+        self.name = 'BACKLOG-{series}'.format(series=self.series.indexerid)
 
         self.success = None
         self.started = None
-
-        self.show = show
-        self.segment = segment
 
     def run(self):
         """Run backlog search thread."""
         generic_queue.QueueItem.run(self)
         self.started = True
 
-        if not self.show.paused:
+        if not self.series.paused:
             try:
                 log.info('Beginning backlog search for: {name}',
-                         {'name': self.show.name})
-                search_result = search_providers(self.show, self.segment)
+                         {'name': self.series.name})
 
-                if search_result:
-                    for result in search_result:
-                        # just use the first result for now
-                        if result.seeders not in (-1, None) and result.leechers not in (-1, None):
-                            log.info(
-                                'Downloading {name} with {seeders} seeders and {leechers} leechers '
-                                'and size {size} from {provider}', {
-                                    'name': result.name,
-                                    'seeders': result.seeders,
-                                    'leechers': result.leechers,
-                                    'size': pretty_file_size(result.size),
-                                    'provider': result.provider.name,
-                                }
-                            )
-                        else:
-                            log.info(
-                                'Downloading {name} with size: {size} from {provider}', {
-                                    'name': result.name,
-                                    'size': pretty_file_size(result.size),
-                                    'provider': result.provider.name,
-                                }
-                            )
-                        self.success = snatch_episode(result)
+                from medusa.helper.common import enabled_providers
 
-                        # give the CPU a break
-                        time.sleep(common.cpu_presets[app.CPU_PRESET])
-                else:
-                    log.info('No needed episodes found during backlog search for: {name}',
-                             {'name': self.show.name})
+                search_request = SearchRequest(segment=self.segment, providers=enabled_providers('backlog'))
+                search = BacklogSearch(search_request)
+                search.start()
 
             # TODO: Remove the catch all exception.
             except Exception:

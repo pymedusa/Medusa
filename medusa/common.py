@@ -74,6 +74,7 @@ privacy_levels = {
 }
 
 # Other constants
+SINGLE_EP_RESULT = 1
 MULTI_EP_RESULT = -1
 SEASON_RESULT = -2
 
