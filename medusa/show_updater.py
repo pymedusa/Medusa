@@ -17,11 +17,11 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from requests.exceptions import HTTPError
 import threading
 import time
 
 import app
+from requests.exceptions import HTTPError
 
 from . import db, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
