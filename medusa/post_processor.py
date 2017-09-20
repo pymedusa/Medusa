@@ -231,7 +231,7 @@ class PostProcessor(object):
         if app.MOVE_ASSOCIATED_FILES:
             # "Keep associated file extensions" input box
             if app.ALLOWED_EXTENSIONS:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                allowed_extensions = app.ALLOWED_EXTENSIONS
                 for associated_file in files:
                     found_extension = helpers.get_extension(associated_file)
                     if found_extension and found_extension.lower() not in allowed_extensions:

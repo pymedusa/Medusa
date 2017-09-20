@@ -87,8 +87,8 @@ class GenericMetadata(object):
         name_id = re.sub(r'[^\w\d_]', '_', name_id).lower()
         return name_id
 
-    def set_config(self, string):
-        config_list = [bool(int(x)) for x in string.split(u'|')]
+    def set_config(self, provider_options):
+        config_list = [bool(int(x)) for x in provider_options]
         self.show_metadata = config_list[0]
         self.episode_metadata = config_list[1]
         self.fanart = config_list[2]

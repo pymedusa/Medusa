@@ -71,8 +71,8 @@ from . import (
 )
 from .common import SD, SKIPPED, WANTED
 from .config import (
-    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float,
-    check_setting_int, check_setting_str, load_provider_setting, save_provider_setting
+    CheckSection, ConfigMigrator, check_setting_bool, check_setting_float, check_setting_int, check_setting_list,
+    check_setting_str, load_provider_setting, save_provider_setting
 )
 from .databases import cache_db, failed_db, main_db
 from .event_queue import Events
@@ -419,7 +419,7 @@ class Application(object):
 
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
-            app.GIT_RESET_BRANCHES = check_setting_str(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES).split(',')
+            app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES)
             if app.GIT_RESET_BRANCHES[0] == '':
                 app.GIT_RESET_BRANCHES = []
 
@@ -517,10 +517,7 @@ class Application(object):
             app.HTTPS_CERT = check_setting_str(app.CFG, 'General', 'https_cert', 'server.crt')
             app.HTTPS_KEY = check_setting_str(app.CFG, 'General', 'https_key', 'server.key')
             app.HANDLE_REVERSE_PROXY = bool(check_setting_int(app.CFG, 'General', 'handle_reverse_proxy', 0))
-            app.ROOT_DIRS = check_setting_str(app.CFG, 'General', 'root_dirs', '')
-            if not re.match(r'\d+\|[^|]+(?:\|[^|]+)*', app.ROOT_DIRS):
-                app.ROOT_DIRS = ''
-
+            app.ROOT_DIRS = check_setting_list(app.CFG, 'General', 'root_dirs')
             app.QUALITY_DEFAULT = check_setting_int(app.CFG, 'General', 'quality_default', SD)
             app.STATUS_DEFAULT = check_setting_int(app.CFG, 'General', 'status_default', SKIPPED)
             app.STATUS_DEFAULT_AFTER = check_setting_int(app.CFG, 'General', 'status_default_after', WANTED)
@@ -532,7 +529,7 @@ class Application(object):
             app.INDEXER_TIMEOUT = check_setting_int(app.CFG, 'General', 'indexer_timeout', 20)
             app.ANIME_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'anime_default', 0))
             app.SCENE_DEFAULT = bool(check_setting_int(app.CFG, 'General', 'scene_default', 0))
-            app.PROVIDER_ORDER = check_setting_str(app.CFG, 'General', 'provider_order', '').split()
+            app.PROVIDER_ORDER = check_setting_list(app.CFG, 'General', 'provider_order')
             app.NAMING_PATTERN = check_setting_str(app.CFG, 'General', 'naming_pattern', 'Season %0S/%SN - S%0SE%0E - %EN')
             app.NAMING_ABD_PATTERN = check_setting_str(app.CFG, 'General', 'naming_abd_pattern', '%SN - %A.D - %EN')
             app.NAMING_CUSTOM_ABD = bool(check_setting_int(app.CFG, 'General', 'naming_custom_abd', 0))
@@ -561,7 +558,7 @@ class Application(object):
             app.RANDOMIZE_PROVIDERS = bool(check_setting_int(app.CFG, 'General', 'randomize_providers', 0))
             app.ALLOW_HIGH_PRIORITY = bool(check_setting_int(app.CFG, 'General', 'allow_high_priority', 1))
             app.SKIP_REMOVED_FILES = bool(check_setting_int(app.CFG, 'General', 'skip_removed_files', 0))
-            app.ALLOWED_EXTENSIONS = check_setting_str(app.CFG, 'General', 'allowed_extensions', app.ALLOWED_EXTENSIONS)
+            app.ALLOWED_EXTENSIONS = check_setting_list(app.CFG, 'General', 'allowed_extensions', app.ALLOWED_EXTENSIONS)
             app.USENET_RETENTION = check_setting_int(app.CFG, 'General', 'usenet_retention', 500)
             app.CACHE_TRIMMING = bool(check_setting_int(app.CFG, 'General', 'cache_trimming', 0))
             app.MAX_CACHE_AGE = check_setting_int(app.CFG, 'General', 'max_cache_age', 30)
@@ -584,8 +581,8 @@ class Application(object):
             app.NEWS_LAST_READ = check_setting_str(app.CFG, 'General', 'news_last_read', '1970-01-01')
             app.NEWS_LATEST = app.NEWS_LAST_READ
 
-            app.BROKEN_PROVIDERS = check_setting_str(app.CFG, 'General', 'broken_providers',
-                                                     helpers.get_broken_providers() or app.BROKEN_PROVIDERS)
+            app.BROKEN_PROVIDERS = check_setting_list(app.CFG, 'General', 'broken_providers',
+                                                      helpers.get_broken_providers() or app.BROKEN_PROVIDERS)
 
             app.NZB_DIR = check_setting_str(app.CFG, 'Blackhole', 'nzb_dir', '')
             app.TORRENT_DIR = check_setting_str(app.CFG, 'Blackhole', 'torrent_dir', '')
@@ -603,7 +600,7 @@ class Application(object):
             app.MOVE_ASSOCIATED_FILES = bool(check_setting_int(app.CFG, 'General', 'move_associated_files', 0))
             app.POSTPONE_IF_SYNC_FILES = bool(check_setting_int(app.CFG, 'General', 'postpone_if_sync_files', 1))
             app.POSTPONE_IF_NO_SUBS = bool(check_setting_int(app.CFG, 'General', 'postpone_if_no_subs', 0))
-            app.SYNC_FILES = check_setting_str(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
+            app.SYNC_FILES = check_setting_list(app.CFG, 'General', 'sync_files', app.SYNC_FILES)
             app.NFO_RENAME = bool(check_setting_int(app.CFG, 'General', 'nfo_rename', 1))
             app.CREATE_MISSING_SHOW_DIRS = bool(check_setting_int(app.CFG, 'General', 'create_missing_show_dirs', 0))
             app.ADD_SHOWS_WO_DIR = bool(check_setting_int(app.CFG, 'General', 'add_shows_wo_dir', 0))
@@ -658,7 +655,7 @@ class Application(object):
             app.KODI_UPDATE_LIBRARY = bool(check_setting_int(app.CFG, 'KODI', 'kodi_update_library', 0))
             app.KODI_UPDATE_FULL = bool(check_setting_int(app.CFG, 'KODI', 'kodi_update_full', 0))
             app.KODI_UPDATE_ONLYFIRST = bool(check_setting_int(app.CFG, 'KODI', 'kodi_update_onlyfirst', 0))
-            app.KODI_HOST = check_setting_str(app.CFG, 'KODI', 'kodi_host', '', censor_log='high')
+            app.KODI_HOST = check_setting_list(app.CFG, 'KODI', 'kodi_host', '', censor_log='high')
             app.KODI_USERNAME = check_setting_str(app.CFG, 'KODI', 'kodi_username', '', censor_log='normal')
             app.KODI_PASSWORD = check_setting_str(app.CFG, 'KODI', 'kodi_password', '', censor_log='low')
             app.KODI_CLEAN_LIBRARY = bool(check_setting_int(app.CFG, 'KODI', 'kodi_clean_library', 0))
@@ -668,9 +665,9 @@ class Application(object):
             app.PLEX_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Plex', 'plex_notify_ondownload', 0))
             app.PLEX_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Plex', 'plex_notify_onsubtitledownload', 0))
             app.PLEX_UPDATE_LIBRARY = bool(check_setting_int(app.CFG, 'Plex', 'plex_update_library', 0))
-            app.PLEX_SERVER_HOST = check_setting_str(app.CFG, 'Plex', 'plex_server_host', '', censor_log='high')
+            app.PLEX_SERVER_HOST = check_setting_list(app.CFG, 'Plex', 'plex_server_host', '', censor_log='high')
             app.PLEX_SERVER_TOKEN = check_setting_str(app.CFG, 'Plex', 'plex_server_token', '', censor_log='high')
-            app.PLEX_CLIENT_HOST = check_setting_str(app.CFG, 'Plex', 'plex_client_host', '', censor_log='high')
+            app.PLEX_CLIENT_HOST = check_setting_list(app.CFG, 'Plex', 'plex_client_host', '', censor_log='high')
             app.PLEX_SERVER_USERNAME = check_setting_str(app.CFG, 'Plex', 'plex_server_username', '', censor_log='normal')
             app.PLEX_SERVER_PASSWORD = check_setting_str(app.CFG, 'Plex', 'plex_server_password', '', censor_log='low')
             app.USE_PLEX_CLIENT = bool(check_setting_int(app.CFG, 'Plex', 'use_plex_client', 0))
@@ -707,7 +704,7 @@ class Application(object):
             app.PROWL_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsnatch', 0))
             app.PROWL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_ondownload', 0))
             app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsubtitledownload', 0))
-            app.PROWL_API = check_setting_str(app.CFG, 'Prowl', 'prowl_api', '', censor_log='low')
+            app.PROWL_API = check_setting_list(app.CFG, 'Prowl', 'prowl_api', '', censor_log='low')
             app.PROWL_PRIORITY = check_setting_str(app.CFG, 'Prowl', 'prowl_priority', "0")
             app.PROWL_MESSAGE_TITLE = check_setting_str(app.CFG, 'Prowl', 'prowl_message_title', "Medusa")
 
@@ -733,7 +730,7 @@ class Application(object):
             app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Pushover', 'pushover_notify_onsubtitledownload', 0))
             app.PUSHOVER_USERKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_userkey', '', censor_log='normal')
             app.PUSHOVER_APIKEY = check_setting_str(app.CFG, 'Pushover', 'pushover_apikey', '', censor_log='low')
-            app.PUSHOVER_DEVICE = check_setting_str(app.CFG, 'Pushover', 'pushover_device', '')
+            app.PUSHOVER_DEVICE = check_setting_list(app.CFG, 'Pushover', 'pushover_device', '')
             app.PUSHOVER_SOUND = check_setting_str(app.CFG, 'Pushover', 'pushover_sound', 'pushover')
 
             app.USE_LIBNOTIFY = bool(check_setting_int(app.CFG, 'Libnotify', 'use_libnotify', 0))
@@ -804,7 +801,7 @@ class Application(object):
             app.NMA_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsnatch', 0))
             app.NMA_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_ondownload', 0))
             app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsubtitledownload', 0))
-            app.NMA_API = check_setting_str(app.CFG, 'NMA', 'nma_api', '', censor_log='low')
+            app.NMA_API = check_setting_list(app.CFG, 'NMA', 'nma_api', '', censor_log='low')
             app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', "0")
 
             app.USE_PUSHALOT = bool(check_setting_int(app.CFG, 'Pushalot', 'use_pushalot', 0))
@@ -830,17 +827,15 @@ class Application(object):
             app.EMAIL_USER = check_setting_str(app.CFG, 'Email', 'email_user', '', censor_log='normal')
             app.EMAIL_PASSWORD = check_setting_str(app.CFG, 'Email', 'email_password', '', censor_log='low')
             app.EMAIL_FROM = check_setting_str(app.CFG, 'Email', 'email_from', '')
-            app.EMAIL_LIST = check_setting_str(app.CFG, 'Email', 'email_list', '')
+            app.EMAIL_LIST = check_setting_list(app.CFG, 'Email', 'email_list', '')
             app.EMAIL_SUBJECT = check_setting_str(app.CFG, 'Email', 'email_subject', '')
 
             app.USE_SUBTITLES = bool(check_setting_int(app.CFG, 'Subtitles', 'use_subtitles', 0))
             app.SUBTITLES_ERASE_CACHE = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_erase_cache', 0))
-            app.SUBTITLES_LANGUAGES = check_setting_str(app.CFG, 'Subtitles', 'subtitles_languages', '').split(',')
-            if app.SUBTITLES_LANGUAGES[0] == '':
-                app.SUBTITLES_LANGUAGES = []
+            app.SUBTITLES_LANGUAGES = check_setting_list(app.CFG, 'Subtitles', 'subtitles_languages')
             app.SUBTITLES_DIR = check_setting_str(app.CFG, 'Subtitles', 'subtitles_dir', '')
-            app.SUBTITLES_SERVICES_LIST = check_setting_str(app.CFG, 'Subtitles', 'SUBTITLES_SERVICES_LIST', '').split(',')
-            app.SUBTITLES_SERVICES_ENABLED = [int(x) for x in check_setting_str(app.CFG, 'Subtitles', 'SUBTITLES_SERVICES_ENABLED', '').split('|') if x]
+            app.SUBTITLES_SERVICES_LIST = check_setting_list(app.CFG, 'Subtitles', 'SUBTITLES_SERVICES_LIST')
+            app.SUBTITLES_SERVICES_ENABLED = check_setting_list(app.CFG, 'Subtitles', 'SUBTITLES_SERVICES_ENABLED', transform=int)
             app.SUBTITLES_DEFAULT = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_default', 0))
             app.SUBTITLES_HISTORY = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_history', 0))
             app.SUBTITLES_PERFECT_MATCH = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_perfect_match', 1))
@@ -851,8 +846,8 @@ class Application(object):
             app.SUBTITLES_FINDER_FREQUENCY = check_setting_int(app.CFG, 'Subtitles', 'subtitles_finder_frequency', 1)
             app.SUBTITLES_MULTI = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_multi', 1))
             app.SUBTITLES_KEEP_ONLY_WANTED = bool(check_setting_int(app.CFG, 'Subtitles', 'subtitles_keep_only_wanted', 0))
-            app.SUBTITLES_EXTRA_SCRIPTS = [x.strip() for x in check_setting_str(app.CFG, 'Subtitles', 'subtitles_extra_scripts', '').split('|') if x.strip()]
-            app.SUBTITLES_PRE_SCRIPTS = [x.strip() for x in check_setting_str(app.CFG, 'Subtitles', 'subtitles_pre_scripts', '').split('|') if x.strip()]
+            app.SUBTITLES_EXTRA_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'Subtitles', 'subtitles_extra_scripts', '')]
+            app.SUBTITLES_PRE_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'Subtitles', 'subtitles_pre_scripts', '')]
 
             app.ADDIC7ED_USER = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_username', '', censor_log='normal')
             app.ADDIC7ED_PASS = check_setting_str(app.CFG, 'Subtitles', 'addic7ed_password', '', censor_log='low')
@@ -871,12 +866,12 @@ class Application(object):
 
             app.GIT_PATH = check_setting_str(app.CFG, 'General', 'git_path', '')
 
-            app.IGNORE_WORDS = check_setting_str(app.CFG, 'General', 'ignore_words', app.IGNORE_WORDS)
-            app.PREFERRED_WORDS = check_setting_str(app.CFG, 'General', 'preferred_words', app.PREFERRED_WORDS)
-            app.UNDESIRED_WORDS = check_setting_str(app.CFG, 'General', 'undesired_words', app.UNDESIRED_WORDS)
-            app.TRACKERS_LIST = check_setting_str(app.CFG, 'General', 'trackers_list', app.TRACKERS_LIST)
-            app.REQUIRE_WORDS = check_setting_str(app.CFG, 'General', 'require_words', app.REQUIRE_WORDS)
-            app.IGNORED_SUBS_LIST = check_setting_str(app.CFG, 'General', 'ignored_subs_list', app.IGNORED_SUBS_LIST)
+            app.IGNORE_WORDS = check_setting_list(app.CFG, 'General', 'ignore_words', app.IGNORE_WORDS)
+            app.PREFERRED_WORDS = check_setting_list(app.CFG, 'General', 'preferred_words', app.PREFERRED_WORDS)
+            app.UNDESIRED_WORDS = check_setting_list(app.CFG, 'General', 'undesired_words', app.UNDESIRED_WORDS)
+            app.TRACKERS_LIST = check_setting_list(app.CFG, 'General', 'trackers_list', app.TRACKERS_LIST)
+            app.REQUIRE_WORDS = check_setting_list(app.CFG, 'General', 'require_words', app.REQUIRE_WORDS)
+            app.IGNORED_SUBS_LIST = check_setting_list(app.CFG, 'General', 'ignored_subs_list', app.IGNORED_SUBS_LIST)
             app.IGNORE_UND_SUBS = bool(check_setting_int(app.CFG, 'General', 'ignore_und_subs', app.IGNORE_UND_SUBS))
 
             app.CALENDAR_UNPROTECTED = bool(check_setting_int(app.CFG, 'General', 'calendar_unprotected', 0))
@@ -884,8 +879,7 @@ class Application(object):
 
             app.NO_RESTART = bool(check_setting_int(app.CFG, 'General', 'no_restart', 0))
 
-            app.EXTRA_SCRIPTS = [x.strip() for x in check_setting_str(app.CFG, 'General', 'extra_scripts', '').split('|') if
-                                 x.strip()]
+            app.EXTRA_SCRIPTS = [x.strip() for x in check_setting_list(app.CFG, 'General', 'extra_scripts')]
 
             app.USE_LISTVIEW = bool(check_setting_int(app.CFG, 'General', 'use_listview', 0))
 
@@ -896,13 +890,13 @@ class Application(object):
             app.ANIDB_USE_MYLIST = bool(check_setting_int(app.CFG, 'ANIDB', 'anidb_use_mylist', 0))
             app.ANIME_SPLIT_HOME = bool(check_setting_int(app.CFG, 'ANIME', 'anime_split_home', 0))
 
-            app.METADATA_KODI = check_setting_str(app.CFG, 'General', 'metadata_kodi', '0|0|0|0|0|0|0|0|0|0')
-            app.METADATA_KODI_12PLUS = check_setting_str(app.CFG, 'General', 'metadata_kodi_12plus', '0|0|0|0|0|0|0|0|0|0')
-            app.METADATA_MEDIABROWSER = check_setting_str(app.CFG, 'General', 'metadata_mediabrowser', '0|0|0|0|0|0|0|0|0|0')
-            app.METADATA_PS3 = check_setting_str(app.CFG, 'General', 'metadata_ps3', '0|0|0|0|0|0|0|0|0|0')
-            app.METADATA_WDTV = check_setting_str(app.CFG, 'General', 'metadata_wdtv', '0|0|0|0|0|0|0|0|0|0')
-            app.METADATA_TIVO = check_setting_str(app.CFG, 'General', 'metadata_tivo', '0|0|0|0|0|0|0|0|0|0')
-            app.METADATA_MEDE8ER = check_setting_str(app.CFG, 'General', 'metadata_mede8er', '0|0|0|0|0|0|0|0|0|0')
+            app.METADATA_KODI = check_setting_list(app.CFG, 'General', 'metadata_kodi', ['0'] * 10, transform=int)
+            app.METADATA_KODI_12PLUS = check_setting_list(app.CFG, 'General', 'metadata_kodi_12plus', ['0'] * 10, transform=int)
+            app.METADATA_MEDIABROWSER = check_setting_list(app.CFG, 'General', 'metadata_mediabrowser', ['0'] * 10, transform=int)
+            app.METADATA_PS3 = check_setting_list(app.CFG, 'General', 'metadata_ps3', ['0'] * 10, transform=int)
+            app.METADATA_WDTV = check_setting_list(app.CFG, 'General', 'metadata_wdtv', ['0'] * 10, transform=int)
+            app.METADATA_TIVO = check_setting_list(app.CFG, 'General', 'metadata_tivo', ['0'] * 10, transform=int)
+            app.METADATA_MEDE8ER = check_setting_list(app.CFG, 'General', 'metadata_mede8er', ['0'] * 10, transform=int)
 
             app.HOME_LAYOUT = check_setting_str(app.CFG, 'GUI', 'home_layout', 'poster')
             app.HISTORY_LAYOUT = check_setting_str(app.CFG, 'GUI', 'history_layout', 'detailed')
@@ -965,14 +959,14 @@ class Application(object):
 
             app.MAJOR_DB_VERSION, app.MINOR_DB_VERSION = db.DBConnection().checkDBVersion()
 
-            # initialize NZB and TORRENT providers
+            # initialize the static NZB and TORRENT providers
             app.providerList = providers.make_provider_list()
 
-            app.NEWZNAB_DATA = check_setting_str(app.CFG, 'Newznab', 'newznab_data', '')
-            app.newznabProviderList = NewznabProvider.get_providers_list(app.NEWZNAB_DATA)
+            app.NEWZNAB_PROVIDERS = check_setting_list(app.CFG, 'Newznab', 'newznab_providers')
+            app.newznabProviderList = NewznabProvider.get_newznab_providers(app.NEWZNAB_PROVIDERS)
 
-            app.TORRENTRSS_DATA = check_setting_str(app.CFG, 'TorrentRss', 'torrentrss_data', '')
-            app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_DATA)
+            app.TORRENTRSS_PROVIDERS = check_setting_list(app.CFG, 'TorrentRss', 'torrentrss_providers')
+            app.torrentRssProviderList = TorrentRssProvider.get_providers_list(app.TORRENTRSS_PROVIDERS)
 
             all_providers = providers.sorted_provider_list()
 
@@ -1012,6 +1006,14 @@ class Application(object):
                     if provider.enable_cookies:
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
 
+                if isinstance(provider, NewznabProvider):
+                    # non configurable
+                    if not provider.default:
+                        load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+                        load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
+                    # configurable
+                    load_provider_setting(app.CFG, provider, 'string', 'cat_ids', '', censor_log='low')
+
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
                 self.save_config()
@@ -1027,6 +1029,9 @@ class Application(object):
                     logger.warning(u"Unable to remove subtitles cache files. Error: {error}", error=e)
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
+
+            # Rebuild the censored list
+            app_logger.rebuild_censored_list()
 
             # initialize the main SB database
             main_db_con = db.DBConnection()
@@ -1349,7 +1354,7 @@ class Application(object):
         new_config['General']['git_password'] = helpers.encrypt(app.GIT_PASSWORD, app.ENCRYPTION_VERSION)
         new_config['General']['git_token'] = helpers.encrypt(app.GIT_TOKEN, app.ENCRYPTION_VERSION)
         new_config['General']['git_reset'] = int(app.GIT_RESET)
-        new_config['General']['git_reset_branches'] = ','.join(app.GIT_RESET_BRANCHES)
+        new_config['General']['git_reset_branches'] = app.GIT_RESET_BRANCHES
         new_config['General']['branch'] = app.BRANCH
         new_config['General']['git_remote'] = app.GIT_REMOTE
         new_config['General']['git_remote_url'] = app.GIT_REMOTE_URL
@@ -1408,7 +1413,8 @@ class Application(object):
         new_config['General']['check_propers_interval'] = app.CHECK_PROPERS_INTERVAL
         new_config['General']['allow_high_priority'] = int(app.ALLOW_HIGH_PRIORITY)
         new_config['General']['skip_removed_files'] = int(app.SKIP_REMOVED_FILES)
-        new_config['General']['allowed_extensions'] = app.ALLOWED_EXTENSIONS
+        # Need to explicitly cast set to list, as configObj can't handle sets.
+        new_config['General']['allowed_extensions'] = list(app.ALLOWED_EXTENSIONS)
         new_config['General']['quality_default'] = int(app.QUALITY_DEFAULT)
         new_config['General']['status_default'] = int(app.STATUS_DEFAULT)
         new_config['General']['status_default_after'] = int(app.STATUS_DEFAULT_AFTER)
@@ -1417,7 +1423,7 @@ class Application(object):
         new_config['General']['indexer_timeout'] = int(app.INDEXER_TIMEOUT)
         new_config['General']['anime_default'] = int(app.ANIME_DEFAULT)
         new_config['General']['scene_default'] = int(app.SCENE_DEFAULT)
-        new_config['General']['provider_order'] = ' '.join(app.PROVIDER_ORDER)
+        new_config['General']['provider_order'] = app.PROVIDER_ORDER
         new_config['General']['version_notify'] = int(app.VERSION_NOTIFY)
         new_config['General']['auto_update'] = int(app.AUTO_UPDATE)
         new_config['General']['notify_on_update'] = int(app.NOTIFY_ON_UPDATE)
@@ -1453,7 +1459,7 @@ class Application(object):
         new_config['General']['backlog_days'] = int(app.BACKLOG_DAYS)
 
         new_config['General']['cache_dir'] = app.ACTUAL_CACHE_DIR if app.ACTUAL_CACHE_DIR else 'cache'
-        new_config['General']['root_dirs'] = app.ROOT_DIRS if app.ROOT_DIRS else ''
+        new_config['General']['root_dirs'] = app.ROOT_DIRS if app.ROOT_DIRS else []
         new_config['General']['tv_download_dir'] = app.TV_DOWNLOAD_DIR
         new_config['General']['keep_processed_dir'] = int(app.KEEP_PROCESSED_DIR)
         new_config['General']['process_method'] = app.PROCESS_METHOD
@@ -1472,7 +1478,7 @@ class Application(object):
         new_config['General']['create_missing_show_dirs'] = int(app.CREATE_MISSING_SHOW_DIRS)
         new_config['General']['add_shows_wo_dir'] = int(app.ADD_SHOWS_WO_DIR)
 
-        new_config['General']['extra_scripts'] = '|'.join(app.EXTRA_SCRIPTS)
+        new_config['General']['extra_scripts'] = app.EXTRA_SCRIPTS
         new_config['General']['git_path'] = app.GIT_PATH
         new_config['General']['ignore_words'] = app.IGNORE_WORDS
         new_config['General']['preferred_words'] = app.PREFERRED_WORDS
@@ -1511,7 +1517,7 @@ class Application(object):
 
             attributes = {
                 'all': [
-                    'api_key', 'username',
+                    'name', 'url', 'api_key', 'username',
                     'search_mode', 'search_fallback',
                     'enable_daily', 'enable_backlog', 'enable_manualsearch',
                 ],
@@ -1523,6 +1529,7 @@ class Application(object):
                     'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freelech', 'cat', 'subtitle', 'cookies',
                 ],
                 GenericProvider.NZB: [
+                    'cats_id'
                 ],
             }
 
@@ -1538,6 +1545,12 @@ class Application(object):
                 if provider_type == provider.provider_type:
                     for attr in attributes[provider_type]:
                         save_provider_setting(new_config, provider, attr)
+
+        # app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if
+        #                          isinstance(provider, NewznabProvider)]
+        #
+        # app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in all_providers if
+        #                             isinstance(provider, TorrentRssProvider)]
 
         new_config['NZBs'] = {}
         new_config['NZBs']['nzbs'] = int(app.NZBS)
@@ -1785,10 +1798,10 @@ class Application(object):
         new_config['Email']['email_subject'] = app.EMAIL_SUBJECT
 
         new_config['Newznab'] = {}
-        new_config['Newznab']['newznab_data'] = app.NEWZNAB_DATA
+        new_config['Newznab']['newznab_providers'] = app.NEWZNAB_PROVIDERS
 
         new_config['TorrentRss'] = {}
-        new_config['TorrentRss']['torrentrss_data'] = '!!!'.join([x.config_string() for x in app.torrentRssProviderList])
+        new_config['TorrentRss']['torrentrss_providers'] = app.TORRENTRSS_PROVIDERS
 
         new_config['GUI'] = {}
         new_config['GUI']['theme_name'] = app.THEME_NAME
@@ -1813,9 +1826,9 @@ class Application(object):
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)
         new_config['Subtitles']['subtitles_erase_cache'] = int(app.SUBTITLES_ERASE_CACHE)
-        new_config['Subtitles']['subtitles_languages'] = ','.join(app.SUBTITLES_LANGUAGES)
-        new_config['Subtitles']['SUBTITLES_SERVICES_LIST'] = ','.join(app.SUBTITLES_SERVICES_LIST)
-        new_config['Subtitles']['SUBTITLES_SERVICES_ENABLED'] = '|'.join([str(x) for x in app.SUBTITLES_SERVICES_ENABLED])
+        new_config['Subtitles']['subtitles_languages'] = app.SUBTITLES_LANGUAGES
+        new_config['Subtitles']['SUBTITLES_SERVICES_LIST'] = app.SUBTITLES_SERVICES_LIST
+        new_config['Subtitles']['SUBTITLES_SERVICES_ENABLED'] = [str(_) for _ in app.SUBTITLES_SERVICES_ENABLED]
         new_config['Subtitles']['subtitles_dir'] = app.SUBTITLES_DIR
         new_config['Subtitles']['subtitles_default'] = int(app.SUBTITLES_DEFAULT)
         new_config['Subtitles']['subtitles_history'] = int(app.SUBTITLES_HISTORY)
@@ -1826,8 +1839,8 @@ class Application(object):
         new_config['Subtitles']['subtitles_hearing_impaired'] = int(app.SUBTITLES_HEARING_IMPAIRED)
         new_config['Subtitles']['subtitles_finder_frequency'] = int(app.SUBTITLES_FINDER_FREQUENCY)
         new_config['Subtitles']['subtitles_multi'] = int(app.SUBTITLES_MULTI)
-        new_config['Subtitles']['subtitles_extra_scripts'] = '|'.join(app.SUBTITLES_EXTRA_SCRIPTS)
-        new_config['Subtitles']['subtitles_pre_scripts'] = '|'.join(app.SUBTITLES_PRE_SCRIPTS)
+        new_config['Subtitles']['subtitles_extra_scripts'] = app.SUBTITLES_EXTRA_SCRIPTS
+        new_config['Subtitles']['subtitles_pre_scripts'] = app.SUBTITLES_PRE_SCRIPTS
         new_config['Subtitles']['subtitles_keep_only_wanted'] = int(app.SUBTITLES_KEEP_ONLY_WANTED)
         new_config['Subtitles']['addic7ed_username'] = app.ADDIC7ED_USER
         new_config['Subtitles']['addic7ed_password'] = helpers.encrypt(app.ADDIC7ED_PASS, app.ENCRYPTION_VERSION)

@@ -2,10 +2,16 @@ import os
 import locale
 import json
 import sys
+from pkg_resources import get_distribution
 import xml.etree.ElementTree as ET
 from ctypes import *
 
-__version__ = '2.1.5'
+if sys.version_info < (3,):
+    import urlparse
+else:
+    import urllib.parse as urlparse
+
+__version__ = '2.1.9'
 
 class Track(object):
     def __getattribute__(self, name):
@@ -65,16 +71,32 @@ class MediaInfo(object):
         except:
             return None
     @staticmethod
-    def parse(filename):
+    def _get_library():
         if os.name in ("nt", "dos", "os2", "ce"):
-            lib = windll.MediaInfo
+            return windll.MediaInfo
         elif sys.platform == "darwin":
             try:
-                lib = CDLL("libmediainfo.0.dylib")
+                return CDLL("libmediainfo.0.dylib")
             except OSError:
-                lib = CDLL("libmediainfo.dylib")
+                return CDLL("libmediainfo.dylib")
         else:
-            lib = CDLL("libmediainfo.so.0")
+            return CDLL("libmediainfo.so.0")
+    @classmethod
+    def can_parse(cls):
+        try:
+            cls._get_library()
+            return True
+        except:
+            return False
+    @classmethod
+    def parse(cls, filename):
+        lib = cls._get_library()
+        url = urlparse.urlparse(filename)
+        # Test whether the filename is actually a URL
+        if url.scheme is None:
+            # Test file is readable
+            with open(filename, "rb"):
+                pass
         # Define arguments and return types
         lib.MediaInfo_Inform.restype = c_wchar_p
         lib.MediaInfo_New.argtypes = []
@@ -105,7 +127,7 @@ class MediaInfo(object):
         # Delete the handle
         lib.MediaInfo_Close(handle)
         lib.MediaInfo_Delete(handle)
-        return MediaInfo(xml)
+        return cls(xml)
     def _populate_tracks(self):
         if self.xml_dom is None:
             return

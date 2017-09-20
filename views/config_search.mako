@@ -128,9 +128,9 @@
                                 <label>
                                     <span class="component-title">Trackers list</span>
                                     <span class="component-desc">
-                                        <input type="text" name="trackers_list" value="${app.TRACKERS_LIST}" class="form-control input-sm input350"/>
+                                        <input type="text" name="trackers_list" value="${', '.join(app.TRACKERS_LIST)}" class="form-control input-sm input350"/>
                                         <div class="clear-left">Trackers that will be added to magnets without trackers<br>
-                                        separate trackers with a comma, e.g. "tracker1,tracker2,tracker3"
+                                        separate trackers with a comma, e.g. "tracker1, tracker2, tracker3"
                                         </div>
                                     </span>
                                 </label>
@@ -197,7 +197,7 @@
                                 <label>
                                     <span class="component-title">Ignore words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignore_words" value="${app.IGNORE_WORDS}" class="form-control input-sm input350"/>
+                                        <input type="text" name="ignore_words" value="${', '.join(app.IGNORE_WORDS)}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with any words from this list will be ignored<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -208,9 +208,9 @@
                                 <label>
                                     <span class="component-title">Undesired words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="undesired_words" value="${app.UNDESIRED_WORDS}" class="form-control input-sm input350"/>
+                                        <input type="text" name="undesired_words" value="${', '.join(app.UNDESIRED_WORDS)}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with words from this list will only be selected as a last resort<br>
-                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        separate words with a comma, e.g. "word1, word2, word3"
                                         </div>
                                     </span>
                                 </label>
@@ -219,9 +219,9 @@
                                 <label>
                                     <span class="component-title">Preferred words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="preferred_words" value="${app.PREFERRED_WORDS}" class="form-control input-sm input350"/>
+                                        <input type="text" name="preferred_words" value="${', '.join(app.PREFERRED_WORDS)}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results with one or more word from this list will be chosen over others<br>
-                                        separate words with a comma, e.g. "word1,word2,word3"
+                                        separate words with a comma, e.g. "word1, word2, word3"
                                         </div>
                                     </span>
                                 </label>
@@ -230,7 +230,7 @@
                                 <label>
                                     <span class="component-title">Require words</span>
                                     <span class="component-desc">
-                                        <input type="text" name="require_words" value="${app.REQUIRE_WORDS}" class="form-control input-sm input350"/>
+                                        <input type="text" name="require_words" value="${', '.join(app.REQUIRE_WORDS)}" class="form-control input-sm input350"/>
                                         <div class="clear-left">results must include at least one word from this list<br>
                                         separate words with a comma, e.g. "word1,word2,word3"
                                         </div>
@@ -241,7 +241,7 @@
                                 <label>
                                     <span class="component-title">Ignore language names in subbed results</span>
                                     <span class="component-desc">
-                                        <input type="text" name="ignored_subs_list" value="${app.IGNORED_SUBS_LIST}" class="form-control input-sm input350"/>
+                                        <input type="text" name="ignored_subs_list" value="${', '.join(app.IGNORED_SUBS_LIST)}" class="form-control input-sm input350"/>
                                         <div class="clear-left">Ignore subbed releases based on language names <br>
                                         Example: "dk" will ignore words: dksub, dksubs, dksubbed, dksubed <br>
                                         separate languages with a comma, e.g. "lang1,lang2,lang3

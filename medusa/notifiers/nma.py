@@ -52,6 +52,8 @@ class Notifier(object):
 
         if nma_api is None:
             nma_api = app.NMA_API
+        else:
+            nma_api = nma_api.split(',')
 
         if nma_priority is None:
             nma_priority = app.NMA_PRIORITY
@@ -59,7 +61,7 @@ class Notifier(object):
         batch = False
 
         p = pynma.PyNMA()
-        keys = nma_api.split(',')
+        keys = nma_api
         p.addkey(keys)
 
         if len(keys) > 1:

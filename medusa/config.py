@@ -21,12 +21,14 @@ import datetime
 import os.path
 import re
 
+from contextlib2 import suppress
 from requests.compat import urlsplit
-from six import iteritems
+from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
 from . import app, common, db, helpers, logger, naming, scheduler
 from .helper.common import try_int
 from .version_checker import CheckVersion
+
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
@@ -505,7 +507,7 @@ def clean_hosts(hosts, default_port=None):
         if cleaned_host:
             cleaned_hosts.append(cleaned_host)
 
-    cleaned_hosts = ",".join(cleaned_hosts) if cleaned_hosts else ''
+    cleaned_hosts = cleaned_hosts or []
 
     return cleaned_hosts
 
@@ -534,6 +536,27 @@ def clean_url(url):
         cleaned_url = ''
 
     return cleaned_url
+
+
+def convert_csv_string_to_list(value, delimiter=',', trim=False):
+    """
+    Convert comma or other character delimited strings to a list.
+
+    :param value: The value to convert.f
+    :param delimiter: Optionally Change the default delimiter ',' if required.
+    :param trim: Optionally trim the individual list items.
+    :return: The delimited value as a list.
+    """
+
+    if not isinstance(value, (string_types, text_type)):
+        return value
+
+    with suppress(AttributeError, ValueError):
+        value = value.split(delimiter) if value else []
+        if trim:
+            value = [_.strip() for _ in value]
+
+    return value
 
 
 ################################################################################
@@ -614,7 +637,8 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
 # Check_setting_str                                                            #
 ################################################################################
 def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_log=False, valid_values=None):
-    # For passwords you must include the word `password` in the item_name and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
+    # For passwords you must include the word `password` in the item_name
+    # and add `helpers.encrypt(ITEM_NAME, ENCRYPTION_VERSION)` in save_config()
     if not censor_log:
         censor_level = common.privacy_levels['stupid']
     else:
@@ -640,13 +664,50 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
         if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
-            logger.rebuild_censored_list()
 
     if not silent:
         logger.log(item_name + " -> " + my_val, logger.DEBUG)
 
     if valid_values and my_val not in valid_values:
         return def_val
+
+    return my_val
+
+
+################################################################################
+# Check_setting_list                                                           #
+################################################################################
+def check_setting_list(config, cfg_name, item_name, default=None, censor_log=False, transform=None, transform_default=0):
+    """Check a setting, using the settings section and item name. Expect to return a list."""
+    default = default or []
+
+    if not censor_log:
+        censor_level = common.privacy_levels['stupid']
+    else:
+        censor_level = common.privacy_levels[censor_log]
+    privacy_level = common.privacy_levels[app.PRIVACY_LEVEL]
+
+    try:
+        my_val = config[cfg_name][item_name]
+    except Exception:
+        my_val = default
+        try:
+            config[cfg_name][item_name] = my_val
+        except Exception:
+            config[cfg_name] = {}
+            config[cfg_name][item_name] = my_val
+
+    if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
+        if not item_name.endswith('custom_url'):
+            logger.censored_items[cfg_name, item_name] = my_val
+
+    # Make an attempt to cast the lists values.
+    if isinstance(my_val, list) and transform:
+        for index, value in enumerate(my_val):
+            try:
+                my_val[index] = transform(value)
+            except ValueError:
+                my_val[index] = transform_default
 
     return my_val
 
@@ -706,7 +767,7 @@ class ConfigMigrator(object):
     def __init__(self, config_obj):
         """
         Initializes a config migrator that can take the config from the version indicated in the config
-        file up to the version required by SB
+        file up to the version required by Medusa
         """
 
         self.config_obj = config_obj
@@ -722,7 +783,9 @@ class ConfigMigrator(object):
             5: 'Metadata update',
             6: 'Convert from XBMC to new KODI variables',
             7: 'Use version 2 for password encryption',
-            8: 'Convert Plex setting keys'
+            8: 'Convert Plex setting keys',
+            9: 'Added setting "enable_manualsearch" for providers (dynamic setting)',
+            10: 'Convert all csv config items to lists'
         }
 
     def migrate_config(self):
@@ -1022,3 +1085,78 @@ class ConfigMigrator(object):
         """
         # Added setting "enable_manualsearch" for providers (dynamic setting)
         pass
+
+    def _migrate_v10(self):
+        """
+        Convert all csv stored items as 'real' lists. ConfigObj provides a way for storing lists. These are saved
+        as comma separated values, using this the format documented here:
+        http://configobj.readthedocs.io/en/latest/configobj.html?highlight=lists#list-values
+        """
+
+        def get_providers_from_data(providers_string):
+            """Split the provider string into providers, and get the provider names."""
+            return [provider.split('|')[0].upper() for provider in providers_string.split('!!!') if provider]
+
+        def make_id(name):
+            """Make ID of the provider."""
+            if not name:
+                return ''
+
+            return re.sub(r'[^\w\d_]', '_', str(name).strip().upper())
+
+        # General
+        app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
+        app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
+        app.PROVIDER_ORDER = convert_csv_string_to_list(self.config_obj['General']['provider_order'], ' ')
+        app.ROOT_DIRS = convert_csv_string_to_list(self.config_obj['General']['root_dirs'], '|')
+        app.SYNC_FILES = convert_csv_string_to_list(self.config_obj['General']['sync_files'])
+        app.IGNORE_WORDS = convert_csv_string_to_list(self.config_obj['General']['ignore_words'])
+        app.PREFERRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['preferred_words'])
+        app.UNDESIRED_WORDS = convert_csv_string_to_list(self.config_obj['General']['undesired_words'])
+        app.TRACKERS_LIST = convert_csv_string_to_list(self.config_obj['General']['trackers_list'])
+        app.REQUIRE_WORDS = convert_csv_string_to_list(self.config_obj['General']['require_words'])
+        app.IGNORED_SUBS_LIST = convert_csv_string_to_list(self.config_obj['General']['ignored_subs_list'])
+        app.BROKEN_PROVIDERS = convert_csv_string_to_list(self.config_obj['General']['broken_providers'])
+        app.EXTRA_SCRIPTS = convert_csv_string_to_list(self.config_obj['General']['extra_scripts'])
+
+        # Metadata
+        app.METADATA_KODI = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi'], '|')
+        app.METADATA_KODI_12PLUS = convert_csv_string_to_list(self.config_obj['General']['metadata_kodi_12plus'], '|')
+        app.METADATA_MEDIABROWSER = convert_csv_string_to_list(self.config_obj['General']['metadata_mediabrowser'], '|')
+        app.METADATA_PS3 = convert_csv_string_to_list(self.config_obj['General']['metadata_ps3'], '|')
+        app.METADATA_WDTV = convert_csv_string_to_list(self.config_obj['General']['metadata_wdtv'], '|')
+        app.METADATA_TIVO = convert_csv_string_to_list(self.config_obj['General']['metadata_tivo'], '|')
+        app.METADATA_MEDE8ER = convert_csv_string_to_list(self.config_obj['General']['metadata_mede8er'], '|')
+
+        # Subtitles
+        app.SUBTITLES_LANGUAGES = convert_csv_string_to_list(self.config_obj['Subtitles']['subtitles_languages'])
+        app.SUBTITLES_SERVICES_LIST = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_LIST'])
+        app.SUBTITLES_SERVICES_ENABLED = convert_csv_string_to_list(self.config_obj['Subtitles']['SUBTITLES_SERVICES_ENABLED'], '|')
+
+        # Notifications
+        app.KODI_HOST = convert_csv_string_to_list(self.config_obj['KODI']['kodi_host'])
+        app.PLEX_SERVER_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_server_host'])
+        app.PLEX_CLIENT_HOST = convert_csv_string_to_list(self.config_obj['Plex']['plex_client_host'])
+        app.PROWL_API = convert_csv_string_to_list(self.config_obj['Prowl']['prowl_api'])
+        app.PUSHOVER_DEVICE = convert_csv_string_to_list(self.config_obj['Pushover']['pushover_device'])
+        app.NMA_API = convert_csv_string_to_list(self.config_obj['NMA']['nma_api'])
+        app.EMAIL_LIST = convert_csv_string_to_list(self.config_obj['Email']['email_list'])
+
+        try:
+            # migrate rsstorrent providers
+            app.TORRENTRSS_PROVIDERS = get_providers_from_data(self.config_obj['TorrentRss']['torrentrss_data'])
+        except KeyError:
+            app.TORRENTRSS_PROVIDERS = []
+
+        try:
+            # migrate newznab providers.
+            # Newznabprovider needs to be imported lazy, as the module will also import other providers to early.
+            from medusa.providers.nzb.newznab import NewznabProvider
+
+            app.newznabProviderList = NewznabProvider.get_providers_list(
+                self.config_obj['Newznab']['newznab_data']
+            )
+
+            app.NEWZNAB_PROVIDERS = [make_id(provider.name) for provider in app.newznabProviderList if not provider.default]
+        except KeyError:
+            app.NEWZNAB_PROVIDERS = []
