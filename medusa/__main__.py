@@ -420,7 +420,7 @@ class Application(object):
             # git reset on update
             app.GIT_RESET = bool(check_setting_int(app.CFG, 'General', 'git_reset', 1))
             app.GIT_RESET_BRANCHES = check_setting_list(app.CFG, 'General', 'git_reset_branches', app.GIT_RESET_BRANCHES)
-            if app.GIT_RESET_BRANCHES[0] == '':
+            if not app.GIT_RESET_BRANCHES:
                 app.GIT_RESET_BRANCHES = []
 
             # current git branch
