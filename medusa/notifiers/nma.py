@@ -4,9 +4,8 @@ import logging
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
-from six import text_type
-
 from pynma import pynma
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
