@@ -74,7 +74,9 @@ def rebuild_censored_list():
         if not value:
             continue
         if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
-            [results.add(_) for _ in value if len(_) > 3]
+            for item in value:
+                if len(item) > 3:
+                    results.add(item)
         else:
             results.add(value)
 
