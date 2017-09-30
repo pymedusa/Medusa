@@ -662,7 +662,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
             config[cfg_name][item_name] = helpers.encrypt(my_val, encryption_version)
 
     if privacy_level >= censor_level or (cfg_name, item_name) in iteritems(logger.censored_items):
-        if not item_name.endswith('custom_url') and len(my_val) > 3:
+        if not item_name.endswith('custom_url'):
             logger.censored_items[cfg_name, item_name] = my_val
 
     if not silent:
