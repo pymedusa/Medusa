@@ -1104,6 +1104,68 @@ class ConfigMigrator(object):
 
             return re.sub(r'[^\w\d_]', '_', str(name).strip().upper())
 
+        def get_rss_torrent_providers_list(data):
+            """
+            Get RSS torrent provider list.
+
+            This is only still used for migration old configs prior to v10.
+            """
+            providers_list = [_ for _ in (make_rss_torrent_provider(_) for _ in data.split('!!!')) if _]
+            seen_values = set()
+            providers_set = []
+
+            for provider in providers_list:
+                value = provider.name
+
+                if value not in seen_values:
+                    providers_set.append(provider)
+                    seen_values.add(value)
+
+            return [_ for _ in providers_set if _]
+
+        def make_rss_torrent_provider(config):
+            """
+            Create new RSS provider.
+
+            This is only still used for migration old configs prior to v10.
+            """
+            if not config:
+                return None
+
+            cookies = ''
+            enable_backlog = 0
+            enable_daily = 0
+            enable_manualsearch = 0
+            search_fallback = 0
+            search_mode = 'eponly'
+            title_tag = 'title'
+
+            try:
+                values = config.split('|')
+
+                if len(values) == 9:
+                    name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+                elif len(values) == 10:
+                    name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
+                elif len(values) == 8:
+                    name, url, cookies, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+                else:
+                    enabled = values[4]
+                    name = values[0]
+                    url = values[1]
+            except ValueError:
+                log.error('Skipping RSS Torrent provider string: {0}, incorrect format', config)
+                return None
+
+            new_provider = TorrentRssProvider(
+                name, url, cookies=cookies, title_tag=title_tag, search_mode=search_mode,
+                search_fallback=search_fallback,
+                enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
+            )
+            new_provider.enabled = enabled == '1'
+
+            return new_provider
+
         # General
         app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
         app.ALLOWED_EXTENSIONS = convert_csv_string_to_list(self.config_obj['General']['allowed_extensions'])
@@ -1144,7 +1206,13 @@ class ConfigMigrator(object):
 
         try:
             # migrate rsstorrent providers
+            from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+
+            # Create the new list of torrent rss providers, with only the id stored.
             app.TORRENTRSS_PROVIDERS = get_providers_from_data(self.config_obj['TorrentRss']['torrentrss_data'])
+
+            # Create the torrent providers from the old rsstorrent piped separated data.
+            app.torrentRssProviderList = get_rss_torrent_providers_list(self.config_obj['TorrentRss']['torrentrss_data'])
         except KeyError:
             app.TORRENTRSS_PROVIDERS = []
 
@@ -1153,6 +1221,7 @@ class ConfigMigrator(object):
             # Newznabprovider needs to be imported lazy, as the module will also import other providers to early.
             from medusa.providers.nzb.newznab import NewznabProvider
 
+            # Create the newznab providers from the old newznab piped separated data.
             app.newznabProviderList = NewznabProvider.get_providers_list(
                 self.config_obj['Newznab']['newznab_data']
             )
