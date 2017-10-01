@@ -1090,7 +1090,6 @@ class ScreenSizeStandardizer(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1101,21 +1100,11 @@ class ScreenSizeStandardizer(Rule):
         :type context: dict
         :return:
         """
-        to_remove = []
-        to_append = []
         for screen_size in matches.named('screen_size'):
             if screen_size.raw.lower().endswith('i'):
-                new_size = copy.copy(screen_size)
-                new_size.value = screen_size.value.replace('p', 'i')
-                to_remove.append(screen_size)
-                to_append.append(new_size)
+                screen_size.value = screen_size.value.replace('p', 'i')
             elif screen_size.value == '4K':
-                new_size = copy.copy(screen_size)
-                new_size.value = '2160p'
-                to_remove.append(screen_size)
-                to_append.append(new_size)
-
-        return to_remove, to_append
+                screen_size.value = '2160p'
 
 
 class AudioCodecStandardizer(Rule):
