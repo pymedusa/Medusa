@@ -23,13 +23,13 @@ import os.path
 import re
 
 from contextlib2 import suppress
-from requests.compat import urlsplit
-from six import iteritems, string_types, text_type
-from six.moves.urllib.parse import urlunsplit, uses_netloc
 from medusa import app, common, db, helpers, logger, naming, scheduler
 from medusa.helper.common import try_int
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.version_checker import CheckVersion
+from requests.compat import urlsplit
+from six import iteritems, string_types, text_type
+from six.moves.urllib.parse import urlunsplit, uses_netloc
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
