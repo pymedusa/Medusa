@@ -1119,11 +1119,7 @@ class ConfigMigrator(object):
             return re.sub(r'[^\w\d_]', '_', str(name).strip().upper())
 
         def get_rss_torrent_providers_list(data):
-            """
-            Get RSS torrent provider list.
-
-            This is only still used for migration old configs prior to v10.
-            """
+            """Get RSS torrent provider list."""
             providers_list = [_ for _ in (make_rss_torrent_provider(_) for _ in data.split('!!!')) if _]
             seen_values = set()
             providers_set = []
@@ -1138,11 +1134,7 @@ class ConfigMigrator(object):
             return [_ for _ in providers_set if _]
 
         def make_rss_torrent_provider(config):
-            """
-            Create new RSS provider.
-
-            This is only still used for migration old configs prior to v10.
-            """
+            """Create new RSS provider."""
             if not config:
                 return None
 
