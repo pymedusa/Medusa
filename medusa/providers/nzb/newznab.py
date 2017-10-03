@@ -141,7 +141,8 @@ class NewznabProvider(NZBProvider):
                     log.debug(
                         'Search show using {search}', {
                             'search': 'search string: {search_string}'.format(
-                                search_string=search_string if search_params['t'] != 'tvsearch' else 'indexer_id: {indexer_id}'.format(indexer_id=match_indexer)
+                                search_string=search_string if search_params['t'] != 'tvsearch' else
+                                'indexer_id: {indexer_id}'.format(indexer_id=match_indexer)
                             )
                         }
                     )
@@ -255,7 +256,7 @@ class NewznabProvider(NZBProvider):
                             log.debug('Found result: {0}', title)
                         else:
                             log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                title, seeders, leechers)
+                                      title, seeders, leechers)
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     log.error('Failed parsing provider. Traceback: {0!r}',
