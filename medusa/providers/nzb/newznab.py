@@ -179,9 +179,6 @@ class NewznabProvider(NZBProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
