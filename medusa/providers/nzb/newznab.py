@@ -77,9 +77,12 @@ class NewznabProvider(NZBProvider):
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
-        Search indexer using the params in search_strings, either for latest releases, or a string/id search.
+        Search a provider and parse the results.
 
-        :return: list of results in dict form
+        :param search_strings: A dict with mode (key) and the search value (value)
+        :param age: Not used
+        :param ep_obj: Not used
+        :returns: A list of search results (structure)
         """
         results = []
         if not self._check_auth():
@@ -91,24 +94,26 @@ class NewznabProvider(NZBProvider):
             if not self.caps:
                 return results
 
-        for mode in search_strings:
-            self.torznab = False
-            search_params = {
-                't': 'search',
-                'limit': 100,
-                'offset': 0,
-                'cat': self.cat_ids.strip(', ') or '5030,5040',
-                'maxage': app.USENET_RETENTION
-            }
+        # Search Params
+        search_params = {
+            't': 'search',
+            'limit': 100,
+            'offset': 0,
+            'cat': self.cat_ids.strip(', ') or '5030,5040',
+            'maxage': app.USENET_RETENTION
+        }
 
+        for mode in search_strings:
+            log.debug('Search mode: {0}', mode)
+
+            self.torznab = False
             if self.needs_auth and self.api_key:
                 search_params['apikey'] = self.api_key
 
             if mode != 'RSS':
                 match_indexer = self._match_indexer()
-                search_params['t'] = 'tvsearch' if match_indexer and not self.force_query else 'search'
-
-                if search_params['t'] == 'tvsearch':
+                if match_indexer and not self.force_query:
+                    search_params['t'] = 'tvsearch'
                     search_params.update(match_indexer)
 
                     if ep_obj.series.air_by_date or ep_obj.series.sports:
@@ -118,24 +123,26 @@ class NewznabProvider(NZBProvider):
                     else:
                         search_params['season'] = ep_obj.scene_season
                         search_params['ep'] = ep_obj.scene_episode
+                else:
+                    search_params['t'] = 'search'
 
-                if mode == 'Season':
-                    search_params.pop('ep', '')
-
-            items = []
-            log.debug('Search mode: {0}', mode)
+            if mode == 'Season':
+                search_params.pop('ep', '')
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    # If its a PROPER search, need to change param to 'search' so it searches using 'q' param
-                    if any(proper_string in search_string for proper_string in self.proper_strings):
+                    # If its a PROPER search, need to change param to 'search'
+                    # so it searches using 'q' param
+                    if any(proper_string in search_string
+                           for proper_string in self.proper_strings):
                         search_params['t'] = 'search'
 
                     log.debug(
                         'Search show using {search}', {
                             'search': 'search string: {search_string}'.format(
-                                search_string=search_string if search_params['t'] != 'tvsearch' else 'indexer_id: {indexer_id}'.format(indexer_id=match_indexer)
+                                search_string=search_string if search_params['t'] != 'tvsearch' else
+                                'indexer_id: {indexer_id}'.format(indexer_id=match_indexer)
                             )
                         }
                     )
@@ -150,96 +157,112 @@ class NewznabProvider(NZBProvider):
                     log.debug('No data returned from provider')
                     continue
 
-                with BS4Parser(response.text, 'html5lib') as html:
-                    if not self._check_auth_from_data(html):
-                        return items
+                results += self.parse(response.text, mode)
 
-                    try:
-                        self.torznab = 'xmlns:torznab' in html.rss.attrs
-                    except AttributeError:
-                        self.torznab = False
-
-                    if not html('item'):
-                        log.debug('No results returned from provider. Check chosen Newznab search categories'
-                                  ' in provider settings and/or usenet retention')
-                        continue
-
-                    for item in html('item'):
-                        try:
-                            title = item.title.get_text(strip=True)
-                            download_url = None
-                            if item.link:
-                                if validators.url(item.link.get_text(strip=True)):
-                                    download_url = item.link.get_text(strip=True)
-                                elif validators.url(item.link.next.strip()):
-                                    download_url = item.link.next.strip()
-
-                            if not download_url and item.enclosure:
-                                if validators.url(item.enclosure.get('url', '').strip()):
-                                    download_url = item.enclosure.get('url', '').strip()
-
-                            if not (title and download_url):
-                                continue
-
-                            seeders = leechers = -1
-                            if 'gingadaddy' in self.url:
-                                size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
-                                item_size = size_regex.group() if size_regex else -1
-                            else:
-                                item_size = item.size.get_text(strip=True) if item.size else -1
-                                # Use regex to find name-spaced tags
-                                # see BeautifulSoup4 bug 1720605
-                                # https://bugs.launchpad.net/beautifulsoup/+bug/1720605
-                                newznab_attrs = item(re.compile('newznab:attr'))
-                                torznab_attrs = item(re.compile('torznab:attr'))
-                                for attr in newznab_attrs + torznab_attrs:
-                                    item_size = attr['value'] if attr['name'] == 'size' else item_size
-                                    seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
-                                    peers = try_int(attr['value']) if attr['name'] == 'peers' else None
-                                    leechers = peers - seeders if peers else leechers
-
-                            if not item_size or (self.torznab and (seeders is -1 or leechers is -1)):
-                                continue
-
-                            size = convert_size(item_size) or -1
-
-                            pubdate_raw = item.pubdate.get_text(strip=True)
-                            pubdate = self.parse_pubdate(pubdate_raw)
-
-                            item = {
-                                'title': title,
-                                'link': download_url,
-                                'size': size,
-                                'seeders': seeders,
-                                'leechers': leechers,
-                                'pubdate': pubdate,
-                            }
-                            if mode != 'RSS':
-                                if seeders == -1:
-                                    log.debug('Found result: {0}', title)
-                                else:
-                                    log.debug('Found result: {0} with {1} seeders and {2} leechers',
-                                              title, seeders, leechers)
-
-                            items.append(item)
-                        except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                            log.error('Failed parsing provider. Traceback: {0!r}',
-                                      traceback.format_exc())
-                            continue
-
-                # Since we arent using the search string,
+                # Since we aren't using the search string,
                 # break out of the search string loop
                 if 'tvdbid' in search_params:
                     break
 
-            results += items
-
-        # Reproces but now use force_query = True
+        # Reprocess but now use force_query = True
         if not results and not self.force_query:
             self.force_query = True
             return self.search(search_strings, ep_obj=ep_obj)
 
         return results
+
+    def parse(self, data, mode):
+        """
+        Parse search results for items.
+
+        :param data: The raw response from a search
+        :param mode: The current mode used to search, e.g. RSS
+
+        :return: A list of items found
+        """
+        items = []
+
+        with BS4Parser(data, 'html5lib') as html:
+            if not self._check_auth_from_data(html):
+                return items
+
+            try:
+                self.torznab = 'xmlns:torznab' in html.rss.attrs
+            except AttributeError:
+                self.torznab = False
+
+            rows = html('item')
+
+            if not rows:
+                log.debug(
+                    'No results returned from provider. Check chosen Newznab search categories'
+                    ' in provider settings and/or usenet retention')
+                return items
+
+            for item in rows:
+                try:
+                    title = item.title.get_text(strip=True)
+                    download_url = None
+                    if item.link:
+                        if validators.url(item.link.get_text(strip=True)):
+                            download_url = item.link.get_text(strip=True)
+                        elif validators.url(item.link.next.strip()):
+                            download_url = item.link.next.strip()
+
+                    if not download_url and item.enclosure:
+                        url = item.enclosure.get('url', '').strip()
+                        if validators.url(url):
+                            download_url = url
+
+                    if not (title and download_url):
+                        continue
+
+                    seeders = leechers = -1
+                    if 'gingadaddy' in self.url:
+                        size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
+                        item_size = size_regex.group() if size_regex else -1
+                    else:
+                        item_size = item.size.get_text(
+                            strip=True) if item.size else -1
+                        # Use regex to find name-spaced tags
+                        # see BeautifulSoup4 bug 1720605
+                        # https://bugs.launchpad.net/beautifulsoup/+bug/1720605
+                        newznab_attrs = item(re.compile('newznab:attr'))
+                        torznab_attrs = item(re.compile('torznab:attr'))
+                        for attr in newznab_attrs + torznab_attrs:
+                            item_size = attr['value'] if attr['name'] == 'size' else item_size
+                            seeders = try_int(attr['value']) if attr['name'] == 'seeders' else seeders
+                            peers = try_int(attr['value']) if attr['name'] == 'peers' else None
+                            leechers = peers - seeders if peers else leechers
+
+                    if not item_size or (self.torznab and (seeders is -1 or leechers is -1)):
+                        continue
+
+                    size = convert_size(item_size) or -1
+
+                    pubdate_raw = item.pubdate.get_text(strip=True)
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
+                    item = {
+                        'title': title,
+                        'link': download_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                        'pubdate': pubdate,
+                    }
+                    if mode != 'RSS':
+                        if seeders == -1:
+                            log.debug('Found result: {0}', title)
+                        else:
+                            log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                      title, seeders, leechers)
+                    items.append(item)
+                except (AttributeError, TypeError, KeyError, ValueError, IndexError):
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
+
+        return items
 
     def _check_auth(self):
         """
