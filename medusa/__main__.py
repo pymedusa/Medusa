@@ -1006,6 +1006,10 @@ class Application(object):
                     if provider.enable_cookies:
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
 
+                if isinstance(provider, TorrentRssProvider):
+                    load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+
                 if isinstance(provider, NewznabProvider):
                     # non configurable
                     if not provider.default:
