@@ -74,8 +74,10 @@ def rebuild_censored_list():
         if not value:
             continue
         if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
-            results.update(value)
-        else:
+            for item in value:
+                if item and item != '0':
+                    results.add(item)
+        elif value and value != '0':
             results.add(value)
 
     # set of censored items and urlencoded counterparts

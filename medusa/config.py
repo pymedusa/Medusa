@@ -18,42 +18,46 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import logging
 import os.path
 import re
 
 from contextlib2 import suppress
+from medusa import app, common, db, helpers, logger, naming, scheduler
+from medusa.helper.common import try_int
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.version_checker import CheckVersion
 from requests.compat import urlsplit
 from six import iteritems, string_types, text_type
 from six.moves.urllib.parse import urlunsplit, uses_netloc
-from . import app, common, db, helpers, logger, naming, scheduler
-from .helper.common import try_int
-from .version_checker import CheckVersion
 
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 # Address poor support for scgi over unix domain sockets
 # this is not nicely handled by python currently
 # http://bugs.python.org/issue23636
 uses_netloc.append('scgi')
 
-naming_ep_type = ("%(seasonnumber)dx%(episodenumber)02d",
-                  "s%(seasonnumber)02de%(episodenumber)02d",
-                  "S%(seasonnumber)02dE%(episodenumber)02d",
-                  "%(seasonnumber)02dx%(episodenumber)02d")
+naming_ep_type = ('%(seasonnumber)dx%(episodenumber)02d',
+                  's%(seasonnumber)02de%(episodenumber)02d',
+                  'S%(seasonnumber)02dE%(episodenumber)02d',
+                  '%(seasonnumber)02dx%(episodenumber)02d')
 
-sports_ep_type = ("%(seasonnumber)dx%(episodenumber)02d",
-                  "s%(seasonnumber)02de%(episodenumber)02d",
-                  "S%(seasonnumber)02dE%(episodenumber)02d",
-                  "%(seasonnumber)02dx%(episodenumber)02d")
+sports_ep_type = ('%(seasonnumber)dx%(episodenumber)02d',
+                  's%(seasonnumber)02de%(episodenumber)02d',
+                  'S%(seasonnumber)02dE%(episodenumber)02d',
+                  '%(seasonnumber)02dx%(episodenumber)02d')
 
-naming_ep_type_text = ("1x02", "s01e02", "S01E02", "01x02")
+naming_ep_type_text = ('1x02', 's01e02', 'S01E02', '01x02')
 
-naming_multi_ep_type = {0: ["-%(episodenumber)02d"] * len(naming_ep_type),
-                        1: [" - " + x for x in naming_ep_type],
-                        2: [x + "%(episodenumber)02d" for x in ("x", "e", "E", "x")]}
-naming_multi_ep_type_text = ("extend", "duplicate", "repeat")
+naming_multi_ep_type = {0: ['-%(episodenumber)02d'] * len(naming_ep_type),
+                        1: [' - ' + x for x in naming_ep_type],
+                        2: [x + '%(episodenumber)02d' for x in ('x', 'e', 'E', 'x')]}
+naming_multi_ep_type_text = ('extend', 'duplicate', 'repeat')
 
-naming_sep_type = (" - ", " ")
-naming_sep_type_text = (" - ", "space")
+naming_sep_type = (' - ', ' ')
+naming_sep_type_text = (' - ', 'space')
 
 
 def change_HTTPS_CERT(https_cert):
@@ -70,7 +74,7 @@ def change_HTTPS_CERT(https_cert):
     if os.path.normpath(app.HTTPS_CERT) != os.path.normpath(https_cert):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_cert))):
             app.HTTPS_CERT = os.path.normpath(https_cert)
-            logger.log(u"Changed https cert path to " + https_cert)
+            log.info(u'Changed https cert path to {cert_path}', {u'cert_path': https_cert})
         else:
             return False
 
@@ -91,7 +95,7 @@ def change_HTTPS_KEY(https_key):
     if os.path.normpath(app.HTTPS_KEY) != os.path.normpath(https_key):
         if helpers.make_dir(os.path.dirname(os.path.abspath(https_key))):
             app.HTTPS_KEY = os.path.normpath(https_key)
-            logger.log(u"Changed https key path to " + https_key)
+            log.info(u'Changed https key path to {key_path}', {u'key_path': https_key})
         else:
             return False
 
@@ -131,7 +135,7 @@ def change_NZB_DIR(nzb_dir):
     if os.path.normpath(app.NZB_DIR) != os.path.normpath(nzb_dir):
         if helpers.make_dir(nzb_dir):
             app.NZB_DIR = os.path.normpath(nzb_dir)
-            logger.log(u"Changed NZB folder to " + nzb_dir)
+            log.info(u'Changed NZB folder to {nzb_dir}', {'nzb_dir': nzb_dir})
         else:
             return False
 
@@ -152,7 +156,7 @@ def change_TORRENT_DIR(torrent_dir):
     if os.path.normpath(app.TORRENT_DIR) != os.path.normpath(torrent_dir):
         if helpers.make_dir(torrent_dir):
             app.TORRENT_DIR = os.path.normpath(torrent_dir)
-            logger.log(u"Changed torrent folder to " + torrent_dir)
+            log.info(u'Changed torrent folder to {torrent_dir}', {u'torrent_dir': torrent_dir})
         else:
             return False
 
@@ -173,7 +177,7 @@ def change_TV_DOWNLOAD_DIR(tv_download_dir):
     if os.path.normpath(app.TV_DOWNLOAD_DIR) != os.path.normpath(tv_download_dir):
         if helpers.make_dir(tv_download_dir):
             app.TV_DOWNLOAD_DIR = os.path.normpath(tv_download_dir)
-            logger.log(u"Changed TV download folder to " + tv_download_dir)
+            log.info(u'Changed TV download folder to {tv_download_dir}', {u'tv_download_dir': tv_download_dir})
         else:
             return False
 
@@ -346,15 +350,15 @@ def change_DOWNLOAD_PROPERS(download_propers):
     app.DOWNLOAD_PROPERS = download_propers
     if app.DOWNLOAD_PROPERS:
         if not app.proper_finder_scheduler.enable:
-            logger.log(u"Starting PROPERFINDER thread", logger.INFO)
+            log.info(u'Starting PROPERFINDER thread')
             app.proper_finder_scheduler.silent = False
             app.proper_finder_scheduler.enable = True
         else:
-            logger.log(u"Unable to start PROPERFINDER thread. Already running", logger.INFO)
+            log.info(u'Unable to start PROPERFINDER thread. Already running')
     else:
         app.proper_finder_scheduler.enable = False
         app.trakt_checker_scheduler.silent = True
-        logger.log(u"Stopping PROPERFINDER thread", logger.INFO)
+        log.info(u'Stopping PROPERFINDER thread')
 
 
 def change_USE_TRAKT(use_trakt):
@@ -372,15 +376,15 @@ def change_USE_TRAKT(use_trakt):
     app.USE_TRAKT = use_trakt
     if app.USE_TRAKT:
         if not app.trakt_checker_scheduler.enable:
-            logger.log(u"Starting TRAKTCHECKER thread", logger.INFO)
+            log.info(u'Starting TRAKTCHECKER thread')
             app.trakt_checker_scheduler.silent = False
             app.trakt_checker_scheduler.enable = True
         else:
-            logger.log(u"Unable to start TRAKTCHECKER thread. Already running", logger.INFO)
+            log.info(u'Unable to start TRAKTCHECKER thread. Already running')
     else:
         app.trakt_checker_scheduler.enable = False
         app.trakt_checker_scheduler.silent = True
-        logger.log(u"Stopping TRAKTCHECKER thread", logger.INFO)
+        log.info(u'Stopping TRAKTCHECKER thread')
 
 
 def change_USE_SUBTITLES(use_subtitles):
@@ -398,15 +402,15 @@ def change_USE_SUBTITLES(use_subtitles):
     app.USE_SUBTITLES = use_subtitles
     if app.USE_SUBTITLES:
         if not app.subtitles_finder_scheduler.enable:
-            logger.log(u"Starting SUBTITLESFINDER thread", logger.INFO)
+            log.info(u'Starting SUBTITLESFINDER thread')
             app.subtitles_finder_scheduler.silent = False
             app.subtitles_finder_scheduler.enable = True
         else:
-            logger.log(u"Unable to start SUBTITLESFINDER thread. Already running", logger.INFO)
+            log.info(u'Unable to start SUBTITLESFINDER thread. Already running')
     else:
         app.subtitles_finder_scheduler.enable = False
         app.subtitles_finder_scheduler.silent = True
-        logger.log(u"Stopping SUBTITLESFINDER thread", logger.INFO)
+        log.info(u'Stopping SUBTITLESFINDER thread')
 
 
 def change_PROCESS_AUTOMATICALLY(process_automatically):
@@ -424,13 +428,13 @@ def change_PROCESS_AUTOMATICALLY(process_automatically):
     app.PROCESS_AUTOMATICALLY = process_automatically
     if app.PROCESS_AUTOMATICALLY:
         if not app.auto_post_processor_scheduler.enable:
-            logger.log(u"Starting POSTPROCESSOR thread", logger.INFO)
+            log.info(u'Starting POSTPROCESSOR thread')
             app.auto_post_processor_scheduler.silent = False
             app.auto_post_processor_scheduler.enable = True
         else:
-            logger.log(u"Unable to start POSTPROCESSOR thread. Already running", logger.INFO)
+            log.info(u'Unable to start POSTPROCESSOR thread. Already running')
     else:
-        logger.log(u"Stopping POSTPROCESSOR thread", logger.INFO)
+        log.info(u'Stopping POSTPROCESSOR thread')
         app.auto_post_processor_scheduler.enable = False
         app.auto_post_processor_scheduler.silent = True
 
@@ -502,7 +506,7 @@ def clean_hosts(hosts, default_port=None):
     """
     cleaned_hosts = []
 
-    for cur_host in [host.strip() for host in hosts.split(",") if host.strip()]:
+    for cur_host in [host.strip() for host in hosts.split(',') if host.strip()]:
         cleaned_host = clean_host(cur_host, default_port)
         if cleaned_host:
             cleaned_hosts.append(cleaned_host)
@@ -581,9 +585,9 @@ def minimax(val, default, low, high):
 def check_setting_int(config, cfg_name, item_name, def_val, silent=True):
     try:
         my_val = config[cfg_name][item_name]
-        if str(my_val).lower() == "true":
+        if str(my_val).lower() == 'true':
             my_val = 1
-        elif str(my_val).lower() == "false":
+        elif str(my_val).lower() == 'false':
             my_val = 0
 
         my_val = int(my_val)
@@ -599,7 +603,7 @@ def check_setting_int(config, cfg_name, item_name, def_val, silent=True):
             config[cfg_name][item_name] = my_val
 
     if not silent:
-        logger.log(item_name + " -> " + str(my_val), logger.DEBUG)
+        log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
     return my_val
 
@@ -628,7 +632,7 @@ def check_setting_float(config, cfg_name, item_name, def_val, silent=True):
             config[cfg_name][item_name] = my_val
 
     if not silent:
-        logger.log(item_name + " -> " + str(my_val), logger.DEBUG)
+        log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
     return my_val
 
@@ -666,7 +670,7 @@ def check_setting_str(config, cfg_name, item_name, def_val, silent=True, censor_
             logger.censored_items[cfg_name, item_name] = my_val
 
     if not silent:
-        logger.log(item_name + " -> " + my_val, logger.DEBUG)
+        log.debug(u'{item} -> {value}', {u'item': item_name, u'value': my_val})
 
     if valid_values and my_val not in valid_values:
         return def_val
@@ -810,20 +814,21 @@ class ConfigMigrator(object):
             else:
                 migration_name = ''
 
-            logger.log(u"Backing up config before upgrade")
+            log.info(u'Backing up config before upgrade')
             if not helpers.backup_versioned_file(app.CONFIG_FILE, self.config_version):
-                logger.log_error_and_exit(u"Config backup failed, abort upgrading config")
+                logger.log_error_and_exit(u'Config backup failed, abort upgrading config')
             else:
-                logger.log(u"Proceeding with upgrade")
+                log.info(u'Proceeding with upgrade')
 
             # do the migration, expect a method named _migrate_v<num>
-            logger.log(u"Migrating config up to version " + str(next_version) + migration_name)
+                log.info(u'Migrating config up to version {version} {migration_name}',
+                         {'version': next_version, 'migration_name': migration_name})
             getattr(self, '_migrate_v' + str(next_version))()
             self.config_version = next_version
 
             # save new config after migration
             app.CONFIG_VERSION = self.config_version
-            logger.log(u"Saving config file to disk")
+            log.info(u'Saving config file to disk')
             app.instance.save_config()
 
     # Migration v1: Custom naming
@@ -833,13 +838,15 @@ class ConfigMigrator(object):
         """
 
         app.NAMING_PATTERN = self._name_to_pattern()
-        logger.log(u"Based on your old settings I'm setting your new naming pattern to: " + app.NAMING_PATTERN)
+        log.info(u"Based on your old settings I'm setting your new naming pattern to: {pattern}",
+                 {'pattern': app.NAMING_PATTERN})
 
         app.NAMING_CUSTOM_ABD = bool(check_setting_int(self.config_obj, 'General', 'naming_dates', 0))
 
         if app.NAMING_CUSTOM_ABD:
             app.NAMING_ABD_PATTERN = self._name_to_pattern(True)
-            logger.log(u"Adding a custom air-by-date naming pattern to your config: " + app.NAMING_ABD_PATTERN)
+            log.info(u'Adding a custom air-by-date naming pattern to your config: {pattern}',
+                     {'pattern': app.NAMING_ABD_PATTERN})
         else:
             app.NAMING_ABD_PATTERN = naming.name_abd_presets[0]
 
@@ -847,7 +854,7 @@ class ConfigMigrator(object):
 
         # see if any of their shows used season folders
         main_db_con = db.DBConnection()
-        season_folder_shows = main_db_con.select("SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1")
+        season_folder_shows = main_db_con.select(b'SELECT indexer_id FROM tv_shows WHERE flatten_folders = 0 LIMIT 1')
 
         # if any shows had season folders on then prepend season folder to the pattern
         if season_folder_shows:
@@ -860,20 +867,23 @@ class ConfigMigrator(object):
                     new_season_format = str(new_season_format).replace('09', '%0S')
                     new_season_format = new_season_format.replace('9', '%S')
 
-                    logger.log(
-                        u"Changed season folder format from " + old_season_format + " to " + new_season_format + ", prepending it to your naming config")
+                    log.info(
+                        u'Changed season folder format from {old_season_format} to {new_season_format}, '
+                        u'prepending it to your naming config',
+                        {'old_season_format': old_season_format, 'new_season_format': new_season_format}
+                    )
                     app.NAMING_PATTERN = new_season_format + os.sep + app.NAMING_PATTERN
 
                 except (TypeError, ValueError):
-                    logger.log(u"Can't change " + old_season_format + " to new season format", logger.ERROR)
+                    log.error(u"Can't change {old_season_format} to new season format",
+                              {'old_season_format': old_season_format})
 
         # if no shows had it on then don't flatten any shows and don't put season folders in the config
         else:
-
-            logger.log(u"No shows were using season folders before so I'm disabling flattening on all shows")
+            log.info(u"No shows were using season folders before so I'm disabling flattening on all shows")
 
             # don't flatten any shows at all
-            main_db_con.action("UPDATE tv_shows SET flatten_folders = 0")
+            main_db_con.action(b'UPDATE tv_shows SET flatten_folders = 0')
 
         app.NAMING_FORCE_FOLDERS = naming.check_force_season_folders()
 
@@ -889,10 +899,10 @@ class ConfigMigrator(object):
         use_ep_name = bool(check_setting_int(self.config_obj, 'General', 'naming_ep_name', 1))
 
         # make the presets into templates
-        naming_ep_type = ("%Sx%0E",
-                          "s%0Se%0E",
-                          "S%0SE%0E",
-                          "%0Sx%0E")
+        naming_ep_type = ('%Sx%0E',
+                          's%0Se%0E',
+                          'S%0SE%0E',
+                          '%0Sx%0E')
 
         # set up our data to use
         if use_periods:
@@ -911,7 +921,7 @@ class ConfigMigrator(object):
         else:
             ep_string = naming_ep_type[ep_type]
 
-        finalName = ""
+        finalName = ''
 
         # start with the show name
         if use_show_name and show_name:
@@ -929,7 +939,7 @@ class ConfigMigrator(object):
             finalName += naming_sep_type[sep_type] + ep_quality
 
         if use_periods:
-            finalName = re.sub(r"\s+", ".", finalName)
+            finalName = re.sub(r'\s+', '.', finalName)
 
         return finalName
 
@@ -954,14 +964,14 @@ class ConfigMigrator(object):
         old_newznab_data = check_setting_str(self.config_obj, 'Newznab', 'newznab_data', '')
 
         if old_newznab_data:
-            old_newznab_data_list = old_newznab_data.split("!!!")
+            old_newznab_data_list = old_newznab_data.split('!!!')
 
             for cur_provider_data in old_newznab_data_list:
                 try:
-                    name, url, key, enabled = cur_provider_data.split("|")
+                    name, url, key, enabled = cur_provider_data.split('|')
                 except ValueError:
-                    logger.log(u"Skipping Newznab provider string: '" + cur_provider_data + "', incorrect format",
-                               logger.ERROR)
+                    log.error(u'Skipping Newznab provider string: {cur_provider_data!r}, incorrect format',
+                              {'cur_provider_data': cur_provider_data})
                     continue
 
                 if name == 'Sick Beard Index':
@@ -973,9 +983,9 @@ class ConfigMigrator(object):
                     cat_ids = '5030,5040,5060'
 
                 cur_provider_data_list = [name, url, key, cat_ids, enabled]
-                new_newznab_data.append("|".join(cur_provider_data_list))
+                new_newznab_data.append('|'.join(cur_provider_data_list))
 
-            app.NEWZNAB_DATA = "!!!".join(new_newznab_data)
+            app.NEWZNAB_DATA = '!!!'.join(new_newznab_data)
 
     # Migration v5: Metadata upgrade
     def _migrate_v5(self):
@@ -1018,7 +1028,8 @@ class ConfigMigrator(object):
             cur_metadata = metadata.split('|')
             # if target has the old number of values, do upgrade
             if len(cur_metadata) == 6:
-                logger.log(u"Upgrading " + metadata_name + " metadata, old value: " + metadata)
+                log.info(u'Upgrading {metadata_name} metadata, old value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
                 cur_metadata.insert(4, '0')
                 cur_metadata.append('0')
                 cur_metadata.append('0')
@@ -1030,18 +1041,21 @@ class ConfigMigrator(object):
                     cur_metadata[4], cur_metadata[3] = cur_metadata[3], '0'
                 # write new format
                 metadata = '|'.join(cur_metadata)
-                logger.log(u"Upgrading " + metadata_name + " metadata, new value: " + metadata)
+                log.info(u'Upgrading {metadata_name} metadata, new value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
 
             elif len(cur_metadata) == 10:
 
                 metadata = '|'.join(cur_metadata)
-                logger.log(u"Keeping " + metadata_name + " metadata, value: " + metadata)
+                log.info(u'Keeping {metadata_name} metadata, value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
 
             else:
-                logger.log(u"Skipping " + metadata_name + " metadata: '" + metadata + "', incorrect format",
-                           logger.ERROR)
+                log.error(u'Skipping {metadata_name} metadata {metadata!r}, incorrect format',
+                          {'metadata_name': metadata_name, 'metadata': metadata})
                 metadata = '0|0|0|0|0|0|0|0|0|0'
-                logger.log(u"Setting " + metadata_name + " metadata, new value: " + metadata)
+                log.info(u'Setting {metadata_name} metadata, new value: {value}',
+                         {'metadata_name': metadata_name, 'value': metadata})
 
             return metadata
 
@@ -1083,7 +1097,7 @@ class ConfigMigrator(object):
         """
         Migrate to config version 9
         """
-        # Added setting "enable_manualsearch" for providers (dynamic setting)
+        # Added setting 'enable_manualsearch' for providers (dynamic setting)
         pass
 
     def _migrate_v10(self):
@@ -1103,6 +1117,60 @@ class ConfigMigrator(object):
                 return ''
 
             return re.sub(r'[^\w\d_]', '_', str(name).strip().upper())
+
+        def get_rss_torrent_providers_list(data):
+            """Get RSS torrent provider list."""
+            providers_list = [_ for _ in (make_rss_torrent_provider(_) for _ in data.split('!!!')) if _]
+            seen_values = set()
+            providers_set = []
+
+            for provider in providers_list:
+                value = provider.name
+
+                if value not in seen_values:
+                    providers_set.append(provider)
+                    seen_values.add(value)
+
+            return [_ for _ in providers_set if _]
+
+        def make_rss_torrent_provider(config):
+            """Create new RSS provider."""
+            if not config:
+                return None
+
+            cookies = ''
+            enable_backlog = 0
+            enable_daily = 0
+            enable_manualsearch = 0
+            search_fallback = 0
+            search_mode = 'eponly'
+            title_tag = 'title'
+
+            try:
+                values = config.split('|')
+
+                if len(values) == 9:
+                    name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+                elif len(values) == 10:
+                    name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
+                elif len(values) == 8:
+                    name, url, cookies, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
+                else:
+                    enabled = values[4]
+                    name = values[0]
+                    url = values[1]
+            except ValueError:
+                log.error('Skipping RSS Torrent provider string: {config}, incorrect format', {'config': config})
+                return None
+
+            new_provider = TorrentRssProvider(
+                name, url, cookies=cookies, title_tag=title_tag, search_mode=search_mode,
+                search_fallback=search_fallback,
+                enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
+            )
+            new_provider.enabled = enabled == '1'
+
+            return new_provider
 
         # General
         app.GIT_RESET_BRANCHES = convert_csv_string_to_list(self.config_obj['General']['git_reset_branches'])
@@ -1144,7 +1212,13 @@ class ConfigMigrator(object):
 
         try:
             # migrate rsstorrent providers
+            from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+
+            # Create the new list of torrent rss providers, with only the id stored.
             app.TORRENTRSS_PROVIDERS = get_providers_from_data(self.config_obj['TorrentRss']['torrentrss_data'])
+
+            # Create the torrent providers from the old rsstorrent piped separated data.
+            app.torrentRssProviderList = get_rss_torrent_providers_list(self.config_obj['TorrentRss']['torrentrss_data'])
         except KeyError:
             app.TORRENTRSS_PROVIDERS = []
 
@@ -1153,6 +1227,7 @@ class ConfigMigrator(object):
             # Newznabprovider needs to be imported lazy, as the module will also import other providers to early.
             from medusa.providers.nzb.newznab import NewznabProvider
 
+            # Create the newznab providers from the old newznab piped separated data.
             app.newznabProviderList = NewznabProvider.get_providers_list(
                 self.config_obj['Newznab']['newznab_data']
             )
