@@ -1550,12 +1550,6 @@ class Application(object):
                     for attr in attributes[provider_type]:
                         save_provider_setting(new_config, provider, attr)
 
-        # app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if
-        #                          isinstance(provider, NewznabProvider)]
-        #
-        # app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in all_providers if
-        #                             isinstance(provider, TorrentRssProvider)]
-
         new_config['NZBs'] = {}
         new_config['NZBs']['nzbs'] = int(app.NZBS)
         new_config['NZBs']['nzbs_uid'] = app.NZBS_UID
