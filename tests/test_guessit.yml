@@ -4187,3 +4187,14 @@
   subtitle_language: [es, en]
   release_group: NEWPCT
   type: episode
+
+? Saint.Seiya.E76.1080p.BluRay-Yomi.mkv
+: options: {show_type: anime}
+  title: Saint Seiya
+  episode: 76
+  absolute_episode: 76
+  screen_size: 1080p
+  format: BluRay
+  release_group: Yomi
+  container: mkv
+  type: episode
