@@ -46,7 +46,7 @@ class TorrentRssProvider(TorrentProvider):
         self.enable_daily = enable_daily
         self.enable_manualsearch = enable_manualsearch
         self.enable_backlog = enable_backlog
-        self.enable_cookies = bool(cookies)
+        self.enable_cookies = True
         self.cookies = cookies
         self.required_cookies = ('uid', 'pass')
         self.title_tag = title_tag

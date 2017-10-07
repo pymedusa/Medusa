@@ -313,7 +313,7 @@ class ConfigProviders(Config):
         app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in app.torrentRssProviderList]
 
         disabled_list = []
-        # do the enable/disable
+        # do the enable/disablef
         for cur_providerStr in provider_str_list:
             cur_provider, cur_enabled = cur_providerStr.split(':')
             cur_enabled = try_int(cur_enabled)
