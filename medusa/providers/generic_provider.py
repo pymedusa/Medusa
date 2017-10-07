@@ -29,7 +29,7 @@ from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
     SEASON_RESULT,
-    UA_POOL,
+    USER_AGENT,
 )
 from medusa.db import DBConnection
 from medusa.helper.common import (
@@ -92,7 +92,7 @@ class GenericProvider(object):
         self.enable_manualsearch = False
         self.enable_daily = False
         self.enabled = False
-        self.headers = {'User-Agent': UA_POOL.random}
+        self.headers = {'User-Agent': USER_AGENT}
         self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
         self.provider_type = None
         self.public = False
@@ -451,10 +451,36 @@ class GenericProvider(object):
     @staticmethod
     def get_url_hook(response, **kwargs):
         """Get URL hook."""
-        log.debug('{0} URL: {1} [Status: {2}]', response.request.method, response.request.url, response.status_code)
+        request = response.request
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
-        if response.request.method == 'POST':
-            log.debug('With post data: {0}', response.request.body)
+        if request.method.upper() == 'POST':
+            body = request.body
+            # try to log post data using various codecs to decode
+            if isinstance(body, unicode):
+                log.debug('With post data: {0}', body)
+                return
+
+            codecs = ('utf-8', 'latin1', 'cp1252')
+            for codec in codecs:
+                try:
+                    data = body.decode(codec)
+                except UnicodeError as error:
+                    log.debug('Failed to decode post data as {codec}: {msg}',
+                              {'codec': codec, 'msg': error})
+                else:
+                    log.debug('With post data: {0}', data)
+                    break
+            else:
+                log.warning('Failed to decode post data with {codecs}',
+                            {'codecs': codecs})
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""

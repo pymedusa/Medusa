@@ -114,7 +114,7 @@ class HomeAddShows(Home):
         root_dirs = [unquote_plus(x) for x in root_dirs]
 
         if app.ROOT_DIRS:
-            default_index = int(app.ROOT_DIRS.split('|')[0])
+            default_index = int(app.ROOT_DIRS[0])
         else:
             default_index = 0
 
@@ -444,7 +444,7 @@ class HomeAddShows(Home):
             default_status_after = app.STATUS_DEFAULT_AFTER
 
             if app.ROOT_DIRS:
-                root_dirs = app.ROOT_DIRS.split('|')
+                root_dirs = app.ROOT_DIRS
                 location = root_dirs[int(root_dirs[0]) + 1]
             else:
                 location = None

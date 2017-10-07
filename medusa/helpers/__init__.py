@@ -35,7 +35,7 @@ from cachecontrol.cache import DictCache
 
 import certifi
 
-from contextlib2 import closing, suppress
+from contextlib2 import suppress
 
 import guessit
 
@@ -43,7 +43,8 @@ from imdbpie import imdbpie
 
 from medusa import app, db
 from medusa.common import USER_AGENT
-from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
+from medusa.helper.common import (episode_num, http_code_description, media_extensions,
+                                  pretty_file_size, subtitle_extensions)
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -702,7 +703,6 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
-    from medusa import db
     absolute_number = None
 
     if season and episode:
@@ -783,11 +783,14 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA, serial
+        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
     except Exception:
         log.warning(u'pyopenssl module missing, please install for'
                     u' https access')
         return False
+
+    # Serial number for the certificate
+    serial = int(time.time())
 
     # Create the CA Certificate
     cakey = createKeyPair(TYPE_RSA, 1024)
@@ -1004,30 +1007,33 @@ def get_show(name, try_indexers=False):
     if not name:
         return show
 
-    try:
-        # check cache for show
-        cache = name_cache.retrieveNameFromCache(name)
-        if cache:
-            from_cache = True
-            show = Show.find(app.showList, int(cache))
+    # check cache for show
+    cache = name_cache.retrieveNameFromCache(name)
+    if cache:
+        from_cache = True
+        show = Show.find(app.showList, int(cache))
 
-        # try indexers
-        if not show and try_indexers:
-            show = Show.find(
-                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
+    # try indexers
+    if not show and try_indexers:
+        show = Show.find(
+            app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
 
-        # try scene exceptions
-        if not show:
-            show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
-            if show_id:
-                show = Show.find(app.showList, int(show_id))
+    # try scene exceptions
+    if not show:
+        show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
+        if show_id:
+            show = Show.find(app.showList, int(show_id))
 
-        # add show to cache
-        if show and not from_cache:
-            name_cache.addNameToCache(name, show.indexerid)
-    except Exception as msg:
-        log.debug(u'Error when attempting to find show: {name}.'
-                  u' Error: {msg!r}', {'name': name, 'msg': msg})
+    if not show:
+        match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
+                           name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
+        for found_show in match_name_only:
+            log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
+                        (name=name, show=found_show))
+
+    # add show to cache
+    if show and not from_cache:
+        name_cache.addNameToCache(name, show.indexerid)
 
     return show
 
@@ -1268,7 +1274,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             return getattr(resp, response_type, None)
 
 
-def download_file(url, filename, session=None, headers=None, **kwargs):
+def download_file(url, filename, session, headers=None, **kwargs):
     """Download a file specified.
 
     :param url: Source URL
@@ -1280,9 +1286,17 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     try:
         hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
-        with closing(session.get(url, allow_redirects=True, stream=True,
-                                 verify=verify, headers=headers, cookies=cookies,
-                                 hooks=hooks, proxies=proxies)) as resp:
+        with session as s:
+            resp = s.get(url, allow_redirects=True, stream=True,
+                         verify=verify, headers=headers, cookies=cookies,
+                         hooks=hooks, proxies=proxies)
+
+            if not resp:
+                log.debug(
+                    u"Requested download URL {url} couldn't be reached.",
+                    {'url': url}
+                )
+                return False
 
             if not resp.ok:
                 log.debug(
@@ -1521,7 +1535,8 @@ def get_disk_space_usage(disk_path=None, pretty=True):
     if disk_path and os.path.exists(disk_path):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None, ctypes.pointer(free_bytes))
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None,
+                                                       ctypes.pointer(free_bytes))
             return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = os.statvfs(disk_path)
@@ -1761,7 +1776,7 @@ def get_broken_providers():
         return []
 
     log.info('Broken providers found: {0}', response)
-    return ','.join(response)
+    return response
 
 
 def is_already_processed_media(full_filename):

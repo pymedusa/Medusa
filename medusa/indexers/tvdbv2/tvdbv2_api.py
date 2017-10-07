@@ -39,11 +39,10 @@ class TVDBv2(BaseIndexer):
 
         self.indexer = 1
 
-        self.config['base_url'] = 'http://thetvdb.com'
         self.config['api_base_url'] = API_BASE_TVDB
 
         # Configure artwork prefix url
-        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url=self.config['base_url'])
+        self.config['artwork_prefix'] = '{base_url}/banners/%s'.format(base_url='http://thetvdb.com')
         # Old: self.config['url_artworkPrefix'] = self.config['artwork_prefix']
 
         # client_id = ''  # (optional! Only required for the /user routes)
@@ -586,7 +585,7 @@ class TVDBv2(BaseIndexer):
                 )
             raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.reason))
         except RequestException as e:
-            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.message))
+            raise IndexerUnavailable('Error connecting to Tvdb api. Caused by: {0}'.format(e.reason))
 
         if total_updates and filter_show_list:
             new_list = []
