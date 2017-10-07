@@ -782,19 +782,6 @@
   release_group: ABC
   type: episode
 
-# anime_absolute_E76
-# Both parsers work only with show_type = 'anime'
-? Saint.Seiya.E76.1080p.BluRay-Yomi.mkv
-: options: {show_type: anime}
-  screen_size: 1080p
-  format: BluRay
-  release_group: Yomi
-  container: mkv
-  title: Saint Seiya
-  absolute_episode: 76
-  episode: 76
-  type: episode
-
 # https://github.com/guessit-io/guessit/issues/308 (conflict with screen size)
 ? "[SuperGroup].Show.Name.-.06.[720.Hi10p][1F5578AC]"
 : title: Show Name
