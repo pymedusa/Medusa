@@ -171,11 +171,6 @@ class NameParser(object):
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
 
-                if result.show.is_scene:
-                    a = scene_numbering.get_indexer_absolute_numbering(result.show.indexerid,
-                                                                       result.show.indexer, absolute_episode,
-                                                                       True, scene_season)
-
                 # Apparently we got a scene_season using the season scene exceptions. If we also do not have a season
                 # parsed, guessit made a 'mistake' and it should have set the season with the value.
                 # This is required for titles like: '[HorribleSubs].Kekkai.Sensen.&.Beyond.-.01.[1080p].mkv'
@@ -189,6 +184,11 @@ class NameParser(object):
                         {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a}
                     )
                 else:
+                    if result.show.is_scene:
+                        a = scene_numbering.get_indexer_absolute_numbering(result.show.indexerid,
+                                                                           result.show.indexer, absolute_episode,
+                                                                           True, scene_season)
+
                     # Translate the absolute episode number, back to the indexers season and episode.
                     (season, episode) = helpers.get_all_episodes_from_absolute_number(result.show, [a])
                     log.debug(
