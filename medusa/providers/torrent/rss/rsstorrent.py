@@ -107,10 +107,9 @@ class TorrentRssProvider(TorrentProvider):
     def validate_rss(self):
         """Validate if RSS."""
         try:
-            if self.enable_cookies:
-                add_cookie = self.add_cookies_from_ui()
-                if not add_cookie.get('result'):
-                    return add_cookie
+            add_cookie = self.add_cookies_from_ui()
+            if not add_cookie.get('result'):
+                return add_cookie
 
             data = self.cache._get_rss_data()['entries']
             if not data:
