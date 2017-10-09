@@ -751,6 +751,13 @@ class GenericProvider(object):
 
         :return: A dict with the the keys result as bool and message as string
         """
+        # Added exception for rss torrent providers, as for them adding cookies initial should be optional.
+        from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+        if isinstance(self, TorrentRssProvider) and not self.cookies:
+            return {'result': True,
+                    'message': 'This is a TorrentRss provider without any cookies provided. '
+                               'Cookies for this provider are considered optional.'}
+
         # This is the generic attribute used to manually add cookies for provider authentication
         if not self.enable_cookies:
             return {'result': False,
