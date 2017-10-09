@@ -166,7 +166,7 @@ class NameParser(object):
         elif result.show.is_anime and result.is_anime:
             log.debug('Scene numbering enabled series {name} is anime',
                       {'name': result.show.name})
-            scene_season = scene_exceptions.get_scene_exception_by_name(result.series_name)[1]
+            scene_season = scene_exceptions.get_scene_exceptions_by_name(result.series_name)[0][1]
 
             for absolute_episode in result.ab_episode_numbers:
                 a = absolute_episode
@@ -176,16 +176,17 @@ class NameParser(object):
                                                                        result.show.indexer, absolute_episode,
                                                                        True, scene_season)
 
-                # Apparentle we got a scene_season using the season scene exceptions. If we also do not have a season
+                # Apparently we got a scene_season using the season scene exceptions. If we also do not have a season
                 # parsed, guessit made a 'mistake' and it should have set the season with the value.
-                if result.season_number is None and scene_season:
+                # This is required for titles like: '[HorribleSubs].Kekkai.Sensen.&.Beyond.-.01.[1080p].mkv'
+                if result.season_number is None and scene_season > 0:
                     season = scene_season
                     episode = [a]
                     log.debug(
-                        'Detected a scene_season without a season number, asuming the episode is the scene_absolute.'
-                        'For series {name} using scene season {scene_season} and scene_absolute {scene_absolute}: {ep}',
-                        {'name': result.show.name, 'scene_season': scene_season,
-                         'scene_absolute': a, 'ep': episode_num(season, episode, 'absolute')}
+                        'Detected a season scene exception [{series_name} -> {scene_season}] without a '
+                        'season number in the title, '
+                        'assuming the episode # [{scene_absolute}] is the scene_absolute #.',
+                        {'series_name': result.series_name, 'scene_season': scene_season, 'scene_absolute': a}
                     )
                 else:
                     # Translate the absolute episode number, back to the indexers season and episode.
