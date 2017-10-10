@@ -1006,6 +1006,10 @@ class Application(object):
                     if provider.enable_cookies:
                         load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
 
+                if isinstance(provider, TorrentRssProvider):
+                    load_provider_setting(app.CFG, provider, 'string', 'cookies', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
+
                 if isinstance(provider, NewznabProvider):
                     # non configurable
                     if not provider.default:
@@ -1545,12 +1549,6 @@ class Application(object):
                 if provider_type == provider.provider_type:
                     for attr in attributes[provider_type]:
                         save_provider_setting(new_config, provider, attr)
-
-        # app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in all_providers if
-        #                          isinstance(provider, NewznabProvider)]
-        #
-        # app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in all_providers if
-        #                             isinstance(provider, TorrentRssProvider)]
 
         new_config['NZBs'] = {}
         new_config['NZBs']['nzbs'] = int(app.NZBS)
