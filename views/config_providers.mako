@@ -376,7 +376,7 @@ $('#config-components').tabs();
                         </div>
                         % endif
 
-                        % if cur_torrent_provider.enable_cookies:
+                        % if cur_torrent_provider.enable_cookies or cur_torrent_provider in app.torrentRssProviderList:
                         <div class="field-pair">
                             <label for="${cur_torrent_provider.get_id()}_cookies">
                                 <span class="component-title">Cookies:</span>
