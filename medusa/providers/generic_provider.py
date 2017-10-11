@@ -33,7 +33,6 @@ from medusa.common import (
 )
 from medusa.db import DBConnection
 from medusa.helper.common import (
-    replace_extension,
     sanitize_filename,
 )
 from medusa.helpers import (
@@ -138,9 +137,6 @@ class GenericProvider(object):
 
             log.info('Downloading {result} from {provider} at {url}',
                      {'result': result.name, 'provider': self.name, 'url': url})
-
-            if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
-                filename = replace_extension(filename, GenericProvider.TORRENT)
 
             verify = False if self.public else None
 
@@ -720,7 +716,13 @@ class GenericProvider(object):
         else:
             urls = [result.url]
 
-        filename = join(self._get_storage_dir(), sanitize_filename(result.name) + '.' + self.provider_type)
+        result_name = sanitize_filename(result.name)
+
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if result.url.endswith(GenericProvider.TORRENT) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
 
@@ -775,7 +777,8 @@ class GenericProvider(object):
             return {'result': False,
                     'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')] for req_cookie in self.required_cookies):
+        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
+                   for req_cookie in self.required_cookies):
             return {
                 'result': False,
                 'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
