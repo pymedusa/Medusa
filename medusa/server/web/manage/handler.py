@@ -11,7 +11,7 @@ from tornroutes import route
 
 from ..core import PageTemplate, WebRoot
 from ..home import Home
-from .... import app, db, helpers, logger, network_timezones, post_processor, sbdatetime, subtitles, ui
+from .... import app, db, helpers, logger, network_timezones, sbdatetime, subtitles, ui
 from ....common import (
     Overview, Quality, SNATCHED,
 )
@@ -24,6 +24,7 @@ from ....helper.exceptions import (
 )
 from ....helpers import is_media_file
 from ....network_timezones import app_timezone
+from ....post_processor import PostProcessor
 from ....show.show import Show
 from ....tv import Episode
 
@@ -277,6 +278,9 @@ class Manage(Home, WebRoot):
         t = PageTemplate(rh=self, filename='manage_subtitleMissedPP.mako')
         app.RELEASES_IN_PP = []
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
+            # Skip folders that are being used for unpacking
+            if u'_UNPACK' in root.upper():
+                continue
             for filename in sorted(files):
                 if not is_media_file(filename):
                     continue
@@ -299,10 +303,10 @@ class Manage(Home, WebRoot):
                 else:
                     continue
 
-                if not tv_episode.show.subtitles:
+                if not tv_episode.series.subtitles:
                     continue
 
-                related_files = post_processor.PostProcessor(video_path).list_associated_files(video_path, base_name_only=True, subfolders=False)
+                related_files = PostProcessor(video_path).list_associated_files(video_path, subtitles_only=True)
                 if related_files:
                     continue
 
@@ -318,10 +322,9 @@ class Manage(Home, WebRoot):
                     age_unit = 'm'
                     age_value = age_minutes
 
-                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.show.indexerid, 'show_name': tv_episode.show.name,
+                app.RELEASES_IN_PP.append({'release': video_path, 'show': tv_episode.series.indexerid, 'show_name': tv_episode.series.name,
                                            'season': tv_episode.season, 'episode': tv_episode.episode, 'status': status,
-                                           'age': age_value, 'age_unit': age_unit, 'age_raw': video_age})
-        app.RELEASES_IN_PP = sorted(app.RELEASES_IN_PP, key=lambda k: k['age_raw'], reverse=True)
+                                           'age': age_value, 'age_unit': age_unit, 'date': video_date})
 
         return t.render(releases_in_pp=app.RELEASES_IN_PP, title='Missing Subtitles in Post-Process folder',
                         header='Missing Subtitles in Post Process folder', topmenu='manage',
@@ -728,9 +731,6 @@ class Manage(Home, WebRoot):
         return self.redirect('/manage/')
 
     def manageTorrents(self):
-        t = PageTemplate(rh=self, filename='manage_torrents.mako')
-        info_download_station = ''
-
         if re.search('localhost', app.TORRENT_HOST):
 
             if app.LOCALHOST_IP == '':
@@ -746,26 +746,9 @@ class Manage(Home, WebRoot):
             if helpers.check_url('{url}download/'.format(url=webui_url)):
                 webui_url += 'download/'
             else:
-                info_download_station = """
-                <p>
-                    To have a better experience please set the Download Station alias as <code>download</code>, you can check
-                    this setting in the Synology DSM <b>Control Panel</b> > <b>Application Portal</b>.  Make sure you allow
-                    DSM to be embedded with iFrames too in <b>Control Panel</b> > <b>DSM Settings</b> > <b>Security</b>.
-                </p>
-                <br />
-                <p>
-                    There is more information about this available <a href="https://github.com/midgetspy/Sick-Beard/pull/338">here</a>.
-                </p>
-                <br />
-                """
+                webui_url = 'https://github.com/pymedusa/Medusa/wiki/Download-Station'
 
-        if not app.TORRENT_PASSWORD == '' and not app.TORRENT_USERNAME == '':
-            webui_url = re.sub('://', '://{username}:{password}@'.format(username=app.TORRENT_USERNAME,
-                                                                         password=app.TORRENT_PASSWORD), webui_url)
-
-        return t.render(
-            webui_url=webui_url, info_download_station=info_download_station,
-            title='Manage Torrents', header='Manage Torrents', topmenu='manage')
+        return self.redirect(webui_url)
 
     def failedDownloads(self, limit=100, toRemove=None):
         failed_db_con = db.DBConnection('failed.db')

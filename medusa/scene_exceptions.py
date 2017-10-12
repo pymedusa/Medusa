@@ -27,16 +27,19 @@ from collections import defaultdict
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
+from requests.exceptions import RequestException
 from six import iteritems
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
+from .session.core import MedusaSession
 
 logger = logging.getLogger(__name__)
 
 exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
-xem_session = helpers.make_session()
+VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
+xem_session = MedusaSession()
 
 # TODO: Fix multiple indexer support
 
@@ -300,15 +303,9 @@ def _get_custom_exceptions(force):
                     location=location
                 )
 
-                response = helpers.get_url(
-                    location,
-                    session=indexerApi(indexer).session,
-                    timeout=60,
-                    returns='response'
-                )
                 try:
-                    jdata = response.json()
-                except (ValueError, AttributeError) as error:
+                    jdata = indexerApi(indexer).session.get(location, timeout=60).json()
+                except (ValueError, AttributeError, RequestException) as error:
                     logger.debug(
                         'Check scene exceptions update failed. Unable to '
                         'update from {location}. Error: {error}'.format(
@@ -340,15 +337,35 @@ def _get_custom_exceptions(force):
 
 def _get_xem_exceptions(force):
     xem_exceptions = defaultdict(dict)
-    xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'
+    url = 'http://thexem.de/map/allNames'
+    params = {
+        'origin': None,
+        'seasonNumbers': 1,
+    }
 
     if force or should_refresh('xem'):
         for indexer in indexerApi().indexers:
             indexer_api = indexerApi(indexer)
 
-            # Not query XEM for unsupported indexers
-            if not indexer_api.config.get('xem_origin'):
+            try:
+                # Get XEM origin for indexer
+                origin = indexer_api.config['xem_origin']
+                if origin not in VALID_XEM_ORIGINS:
+                    msg = 'invalid origin for XEM: {0}'.format(origin)
+                    raise ValueError(msg)
+            except KeyError:
+                # Indexer has no XEM origin
                 continue
+            except ValueError as error:
+                # XEM origin for indexer is invalid
+                logger.error(
+                    'Error getting XEM scene exceptions for {indexer}:'
+                    ' {error}'.format(indexer=indexer_api.name, error=error)
+                )
+                continue
+            else:
+                # XEM origin for indexer is valid
+                params['origin'] = origin
 
             logger.info(
                 'Checking for XEM scene exceptions updates for'
@@ -357,9 +374,7 @@ def _get_xem_exceptions(force):
                 )
             )
 
-            url = xem_url.format(indexer_api.config['xem_origin'])
-            response = helpers.get_url(url, session=xem_session,
-                                       timeout=60, returns='response')
+            response = xem_session.get(url, params=params, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

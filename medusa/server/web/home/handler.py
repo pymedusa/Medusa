@@ -16,6 +16,7 @@ from medusa import (
     db,
     helpers,
     logger,
+    name_cache,
     notifiers,
     providers,
     subtitles,
@@ -135,9 +136,14 @@ class Home(WebRoot):
         selected_root = int(app.SELECTED_ROOT)
         shows_dir = None
         if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
-            shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+            try:
+                shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
+            except IndexError:
+                # If user have a root selected in /home and remove the root folder a IndexError is raised
+                shows_dir = None
+                app.SELECTED_ROOT = -1
 
         shows = []
         if app.ANIME_SPLIT_HOME:
@@ -323,6 +329,14 @@ class Home(WebRoot):
             return 'Error sending Telegram notification: {msg}'.format(msg=message)
 
     @staticmethod
+    def testslack(slack_webhook=None):
+        result = notifiers.slack_notifier.test_notify(slack_webhook)
+        if result:
+            return 'Slack notification succeeded. Check your Slack channel to make sure it worked'
+        else:
+            return 'Error sending Slack notification'
+
+    @staticmethod
     def testGrowl(host=None, password=None):
         success = 'Registered and Tested growl successfully'
         failure = 'Registration and Testing of growl failed'
@@ -380,7 +394,7 @@ class Home(WebRoot):
     def testKODI(host=None, username=None, password=None):
         host = config.clean_hosts(host)
         final_result = ''
-        for curHost in [x.strip() for x in host.split(',')]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             cur_result = notifiers.kodi_notifier.test_notify(unquote_plus(curHost), username, password)
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Test KODI notice sent successfully to {host}<br>\n'.format(host=unquote_plus(curHost))
@@ -653,7 +667,7 @@ class Home(WebRoot):
         tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
         root_dir = {}
         if app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
         else:
             backend_dirs = []
@@ -1264,13 +1278,15 @@ class Home(WebRoot):
                 i['resource_file'] = os.path.basename(i['resource'])
                 i['pretty_size'] = pretty_file_size(i['size']) if i['size'] > -1 else 'N/A'
                 i['status_name'] = statusStrings[i['status']]
+                provider = None
                 if i['status'] == DOWNLOADED:
                     i['status_color_style'] = 'downloaded'
                 elif i['status'] in (SNATCHED, SNATCHED_PROPER, SNATCHED_BEST):
                     i['status_color_style'] = 'snatched'
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 elif i['status'] == FAILED:
                     i['status_color_style'] = 'failed'
-                provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
+                    provider = providers.get_provider_class(GenericProvider.make_id(i['provider']))
                 if provider is not None:
                     i['provider_name'] = provider.name
                     i['provider_img_link'] = 'images/providers/' + provider.image_name()
@@ -1571,6 +1587,15 @@ class Home(WebRoot):
                     logger.log("Unable to refresh show '{show}': {error}".format
                                (show=show_obj.name, error=e.message), logger.WARNING)
 
+            # Check if we should erase parsed cached results for that show
+            do_erase_parsed_cache = False
+            for item in [('scene', scene), ('anime', anime), ('sports', sports),
+                         ('air_by_date', air_by_date), ('dvd_order', dvd_order)]:
+                if getattr(show_obj, item[0]) != item[1]:
+                    do_erase_parsed_cache = True
+                    # Break if at least one setting was changed
+                    break
+
             show_obj.paused = paused
             show_obj.scene = scene
             show_obj.anime = anime
@@ -1618,7 +1643,7 @@ class Home(WebRoot):
                         app.show_queue_scheduler.action.refreshShow(show_obj)
                     except CantRefreshShowException as e:
                         errors += 1
-                        logger.log("Unable to refresh show '{show}': {error}".format
+                        logger.log("Unable to refresh show '{show}'. Error: {error}".format
                                    (show=show_obj.name, error=e.message), logger.WARNING)
 
             # Save all settings changed while in show_obj.lock
@@ -1638,12 +1663,13 @@ class Home(WebRoot):
             try:
                 update_scene_exceptions(show_obj.indexerid, show_obj.indexer, exceptions)
                 time.sleep(cpu_presets[app.CPU_PRESET])
+                name_cache.build_name_cache(show_obj)
             except CantUpdateShowException:
                 errors += 1
                 logger.log("Unable to force an update on scene exceptions for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-        if do_update_scene_numbering:
+        if do_update_scene_numbering or do_erase_parsed_cache:
             try:
                 xem_refresh(show_obj.indexerid, show_obj.indexer)
                 time.sleep(cpu_presets[app.CPU_PRESET])
@@ -1652,8 +1678,20 @@ class Home(WebRoot):
                 logger.log("Unable to force an update on scene numbering for show '{show}': {error}".format
                            (show=show_obj.name, error=e.message), logger.WARNING)
 
-            # Must erase cached results when toggling scene numbering
+            # Must erase cached DB results when toggling scene numbering
             self.erase_cache(show_obj)
+
+            # Erase parsed cached names as we are changing scene numbering
+            show_obj.flush_episodes()
+            show_obj.erase_cached_parse()
+
+            # Need to refresh show as we updated scene numbering or changed show format
+            try:
+                app.show_queue_scheduler.action.refreshShow(show_obj)
+            except CantRefreshShowException as e:
+                errors += 1
+                logger.log("Unable to refresh show '{show}'. Please manually trigger a full show refresh. "
+                           "Error: {error}".format(show=show_obj.name, error=e.message), logger.WARNING)
 
         if directCall:
             return errors
@@ -1789,11 +1827,11 @@ class Home(WebRoot):
                 show_name = quote_plus(show_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
-            host = app.KODI_HOST.split(',')[0].strip()
+            host = app.KODI_HOST[0].strip()
         else:
-            host = app.KODI_HOST
+            host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(showName=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=show_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
@@ -1806,9 +1844,9 @@ class Home(WebRoot):
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
     def updateEMBY(self, show=None):
@@ -2108,7 +2146,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = ForcedSearchQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
+        ep_queue_item = ForcedSearchQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)), bool(manual_search))
 
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
@@ -2149,7 +2187,7 @@ class Home(WebRoot):
         try:
             if lang:
                 logger.log("Manual re-downloading subtitles for {show} with language {lang}".format
-                           (show=ep_obj.show.name, lang=lang))
+                           (show=ep_obj.series.name, lang=lang))
             new_subtitles = ep_obj.download_subtitles(lang=lang)
         except Exception:
             return json.dumps({
@@ -2165,7 +2203,7 @@ class Home(WebRoot):
             status = 'No subtitles downloaded'
             result = 'failure'
 
-        ui.notifications.message(ep_obj.show.name, status)
+        ui.notifications.message(ep_obj.series.name, status)
         return json.dumps({
             'result': result,
             'subtitles': ','.join(ep_obj.subtitles),
@@ -2201,42 +2239,36 @@ class Home(WebRoot):
             return json.dumps({'result': 'failure'})
 
         if not os.path.isfile(video_path):
-            ui.notifications.message(ep_obj.show.name, "Video file no longer exists. Can't search for subtitles")
+            ui.notifications.message(ep_obj.series.name, "Video file no longer exists. Can't search for subtitles")
             logger.log('Video file no longer exists: {video_file}'.format(video_file=video_path), logger.DEBUG)
             return json.dumps({'result': 'failure'})
 
-        try:
-            if mode == 'searching':
-                logger.log("Manual searching subtitles for: {0}".format(release_name))
-                found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
-                if found_subtitles:
-                    ui.notifications.message(ep_obj.show.name, 'Found {} subtitles'.format(len(found_subtitles)))
-                else:
-                    ui.notifications.message(ep_obj.show.name, 'No subtitle found')
-                result = 'success' if found_subtitles else 'failure'
-                subtitles_result = found_subtitles
-            elif mode == 'downloading':
-                logger.log("Manual downloading subtitles for: {0}".format(release_name))
-                new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id, video_path=video_path)
-                if new_manual_subtitle:
-                    ui.notifications.message(ep_obj.show.name, 'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
-                else:
-                    ui.notifications.message(ep_obj.show.name, 'Failed to download subtitle for {0}'.format(release_name))
-                result = 'success' if new_manual_subtitle else 'failure'
-                subtitles_result = new_manual_subtitle
+        if mode == 'searching':
+            logger.log("Manual searching subtitles for: {0}".format(release_name))
+            found_subtitles = subtitles.list_subtitles(tv_episode=ep_obj, video_path=video_path)
+            if found_subtitles:
+                ui.notifications.message(ep_obj.series.name, 'Found {} subtitles'.format(len(found_subtitles)))
             else:
-                raise ValueError
+                ui.notifications.message(ep_obj.series.name, 'No subtitle found')
+            result = 'success' if found_subtitles else 'failure'
+            subtitles_result = found_subtitles
+        else:
+            logger.log("Manual downloading subtitles for: {0}".format(release_name))
+            new_manual_subtitle = subtitles.save_subtitle(tv_episode=ep_obj, subtitle_id=picked_id,
+                                                          video_path=video_path)
+            if new_manual_subtitle:
+                ui.notifications.message(ep_obj.series.name,
+                                         'Subtitle downloaded: {0}'.format(','.join(new_manual_subtitle)))
+            else:
+                ui.notifications.message(ep_obj.series.name, 'Failed to download subtitle for {0}'.format(release_name))
+            result = 'success' if new_manual_subtitle else 'failure'
+            subtitles_result = new_manual_subtitle
 
-            return json.dumps({
-                'result': result,
-                'release': release_name,
-                'subtitles': subtitles_result
-            })
-        except Exception as e:
-            ui.notifications.message(ep_obj.show.name, 'Failed to manual {0} subtitles'.format(mode))
-            logger.log('Error while manual {mode} subtitles. Error: {error_msg}'.format
-                       (mode=mode, error_msg=e), logger.ERROR)
-            return json.dumps({'result': 'failure'})
+        return json.dumps({
+            'result': result,
+            'release': release_name,
+            'subtitles': subtitles_result
+        })
 
     def setSceneNumbering(self, show, indexer, forSeason=None, forEpisode=None, forAbsolute=None, sceneSeason=None,
                           sceneEpisode=None, sceneAbsolute=None):
@@ -2335,7 +2367,7 @@ class Home(WebRoot):
             })
 
         # make a queue item for it and put it on the queue
-        ep_queue_item = FailedQueueItem(ep_obj.show, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
+        ep_queue_item = FailedQueueItem(ep_obj.series, [ep_obj], bool(int(down_cur_quality)))  # pylint: disable=no-member
         app.forced_search_queue_scheduler.action.add_item(ep_queue_item)
 
         if not ep_queue_item.started and ep_queue_item.success is None:

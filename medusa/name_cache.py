@@ -1,32 +1,24 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
 
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+"""Name cache module."""
+
+import logging
 
 import threading
 
-from six import iteritems
-from . import app, db, logger
-from .helpers import full_sanitize_scene_name
-from .scene_exceptions import (
+from medusa import app, db
+from medusa.helpers import full_sanitize_scene_name
+from medusa.logger.adapters.style import BraceAdapter
+from medusa.scene_exceptions import (
     exceptions_cache,
     refresh_exceptions_cache,
     retrieve_exceptions,
 )
+
+from six import iteritems
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 name_cache = {}
 nameCacheLock = threading.Lock()
@@ -34,7 +26,7 @@ nameCacheLock = threading.Lock()
 
 def addNameToCache(name, indexer_id=0):
     """
-    Adds the show & tvdb id to the scene_names table in cache.db.
+    Add the show & tvdb id to the scene_names table in cache.db.
 
     :param name: The show name to cache
     :param indexer_id: the TVDB id that this show should be cached with (can be None/0 for unknown)
@@ -50,7 +42,7 @@ def addNameToCache(name, indexer_id=0):
 
 def retrieveNameFromCache(name):
     """
-    Looks up the given name in the scene_names table in cache.db.
+    Look up the given name in the scene_names table in cache.db.
 
     :param name: The show name to look up.
     :return: the TVDB id that resulted from the cache lookup or None if the show wasn't found in the cache
@@ -61,9 +53,7 @@ def retrieveNameFromCache(name):
 
 
 def clear_cache(indexerid=0):
-    """
-    Deletes all "unknown" entries from the cache (names with indexer_id of 0).
-    """
+    """Delete all "unknown" entries from the cache (names with indexer_id of 0)."""
     indexer_ids = (0, indexerid)
     cache_db_con = db.DBConnection('cache.db')
     cache_db_con.action(
@@ -90,13 +80,13 @@ def saveNameCacheToDb():
 
 
 def build_name_cache(show=None):
-    """Build internal name cache
+    """Build internal name cache.
 
     :param show: Specify show to build name cache for, if None, just do all shows
     :param force: Force the build name cache. Do not depend on the scene_exception_refresh table.
     """
     def _cache_name(show):
-        """Builds the name cache for a single show."""
+        """Build the name cache for a single show."""
         indexer_id = show.indexerid
         clear_cache(indexer_id)
 
@@ -113,10 +103,10 @@ def build_name_cache(show=None):
         # Add scene exceptions to name cache
         name_cache.update(names)
 
-        logger.log(u'Internal name cache for {show} set to: {names}'.format(
-            show=show.name,
-            names=names.keys()
-        ), logger.DEBUG)
+        log.debug(u'Internal name cache for {show} set to: {names}', {
+            'show': show.name,
+            'names': ', '.join(names.keys())
+        })
 
     with nameCacheLock:
         retrieve_exceptions()
@@ -125,9 +115,9 @@ def build_name_cache(show=None):
     refresh_exceptions_cache()
 
     if not show:
-        logger.log(u'Building internal name cache for all shows', logger.INFO)
+        log.info(u'Building internal name cache for all shows')
         for show in app.showList:
             _cache_name(show)
     else:
-        logger.log(u'Building internal name cache for {show}'.format(show=show.name), logger.DEBUG)
+        log.info(u'Building internal name cache for {show}', {'show': show.name})
         _cache_name(show)

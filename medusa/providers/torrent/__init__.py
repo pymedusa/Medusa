@@ -1,67 +1,72 @@
 # coding=utf-8
+
 """Initialize all torrent providers."""
-from .html import (
+
+from medusa.providers.torrent.html import (
     abnormal,
     alpharatio,
+    anidex,
     animebytes,
     animetorrents,
     bithdtv,
-    cpasbien,
-    danishbits,
     elitetorrent,
-    freshontv,
     gftracker,
     hdspace,
     hdtorrents,
+    hebits,
+    horriblesubs,
     hounddawgs,
     iptorrents,
     limetorrents,
     morethantv,
+    nebulance,
     newpct,
     pretome,
     scc,
     scenetime,
     sdbits,
+    shanaproject,
     speedcd,
     thepiratebay,
     tntvillage,
     tokyotoshokan,
+    torrent9,
     torrentbytes,
+    torrenting,
     torrentleech,
     torrentproject,
-    transmitthenet,
     tvchaosuk,
-    xthor,
+    yggtorrent,
     zooqle,
 )
 
-from .json import (
+from medusa.providers.torrent.json import (
     bitcannon,
     btn,
+    danishbits,
     hd4free,
     hdbits,
     norbits,
     rarbg,
-    t411,
     torrentday,
+    xthor,
 )
 
-from .rss import (
-    extratorrent,
-    nyaatorrents,
+from medusa.providers.torrent.rss import (
+    nyaa,
     rsstorrent,
     shazbat,
 )
 
-from .xml import (
+from medusa.providers.torrent.xml import (
     torrentz2,
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'cpasbien', 'danishbits', 'elitetorrent', 'extratorrent',
-    'freshontv', 'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
+    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
+    'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scc', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
-    'torrentbytes', 'torrentleech', 'transmitthenet', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
-    'hdbits', 'norbits', 'rarbg', 't411', 'torrentday', 'torrentproject', 'nyaatorrents', 'rsstorrent', 'shazbat',
-    'torrentz2', 'animetorrents'
+    'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
+    'hdbits', 'norbits', 'rarbg', 'torrentday', 'torrentproject', 'nyaa', 'rsstorrent', 'shazbat', 'hebits',
+    'torrentz2', 'animetorrents', 'horriblesubs', 'anidex', 'shanaproject', 'torrenting', 'yggtorrent'
 ]

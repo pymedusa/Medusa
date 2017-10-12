@@ -182,7 +182,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -203,7 +203,7 @@ class Mede8erMetadata(media_browser.MediaBrowserMetadata):
                     'Unable to find episode {ep_num} on {indexer}...'
                     ' has it been removed? Should I delete from db?', {
                         'ep_num': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.show.indexer).name,
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
                     }
                 )
                 return None

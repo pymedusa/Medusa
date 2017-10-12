@@ -35,7 +35,8 @@ var UTIL = {
         var body = document.body;
         $('[asset]').each(function() {
             let asset = $(this).attr('asset');
-            let path = apiRoot + 'asset/' + asset + '&api_key=' + apiKey;
+            let series = $(this).attr('series');
+            let path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
@@ -81,8 +82,16 @@ $.fn.extend({
     }
 });
 
+var triggerConfigLoaded = function() {
+    // Create the event.
+    var event = new CustomEvent('build', {detail: 'medusa config loaded'});
+    event.initEvent('build', true, true);
+    // Trigger the event.
+    document.dispatchEvent(event);
+};
+
 if (!document.location.pathname.endsWith('/login/')) {
-    api.get('config').then(function(response) {
+    api.get('config/main').then(function(response) {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
@@ -91,6 +100,7 @@ if (!document.location.pathname.endsWith('/login/')) {
         if (navigator.userAgent.indexOf('PhantomJS') === -1) {
             $(document).ready(UTIL.init);
         }
+        triggerConfigLoaded();
     }).catch(function(err) {
         log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert

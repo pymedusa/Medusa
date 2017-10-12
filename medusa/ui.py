@@ -17,8 +17,10 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import json
 
 from . import app
+from .ws.MedusaWebSocketHandler import push_to_web_socket
 
 MESSAGE = 'notice'
 ERROR = 'error'
@@ -39,7 +41,14 @@ class Notifications(object):
         title: The title of the notification
         message: The message portion of the notification
         """
-        self._messages.append(Notification(title, message, MESSAGE))
+        # self._messages.append(Notification(title, message, MESSAGE))
+        new_notification = Notification(title, message, MESSAGE)
+
+        push_to_web_socket(json.dumps({'event': 'notification',
+                                       'data': {'title': new_notification.title,
+                                                'body': new_notification.message,
+                                                'type': new_notification.notification_type,
+                                                'hash': hash(new_notification)}}))
 
     def error(self, title, message=''):
         """
@@ -48,16 +57,20 @@ class Notifications(object):
         title: The title of the notification
         message: The message portion of the notification
         """
-        self._errors.append(Notification(title, message, ERROR))
+        new_notification = Notification(title, message, ERROR)
+        push_to_web_socket(json.dumps({'event': 'notification',
+                                       'data': {'title': new_notification.title,
+                                                'body': new_notification.message,
+                                                'type': new_notification.notification_type,
+                                                'hash': hash(new_notification)}}))
 
     def get_notifications(self, remote_ip='127.0.0.1'):
         """
         Return all the available notifications in a list. Marks them all as seen
         as it returns them. Also removes timed out Notifications from the queue.
 
-        Returns: A list of Notification objects
+        :return: A list of Notification objects
         """
-
         # filter out expired notifications
         self._errors = [x for x in self._errors if not x.is_expired()]
         self._messages = [x for x in self._messages if not x.is_expired()]

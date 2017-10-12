@@ -1,40 +1,27 @@
 # coding=utf-8
-# Author: Idan Gutman
-# Modified by jkaberg, https://github.com/jkaberg for SceneAccess
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for SCC."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
 from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class SCCProvider(TorrentProvider):
@@ -42,7 +29,7 @@ class SCCProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('SceneAccess')
+        super(SCCProvider, self).__init__('SceneAccess')
 
         # Credentials
         self.username = None
@@ -56,7 +43,7 @@ class SCCProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.categories = {
@@ -74,7 +61,7 @@ class SCCProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=20)
+        self.cache = tv.Cache(self)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -90,19 +77,19 @@ class SCCProvider(TorrentProvider):
             return results
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
 
                 search_url = self.urls['search'].format(string=self._strip_year(search_string),
                                                         cats=self.categories[mode])
-                response = self.get_url(search_url, returns='response')
+                response = self.session.get(search_url)
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode)
@@ -126,7 +113,7 @@ class SCCProvider(TorrentProvider):
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             for row in torrent_rows[1:]:
@@ -143,13 +130,16 @@ class SCCProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
                     torrent_size = row.find('td', class_='ttr_size').contents[0]
                     size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = row.find('td', class_='ttr_added').get_text(separator=' ')
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -157,16 +147,16 @@ class SCCProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
@@ -181,14 +171,13 @@ class SCCProvider(TorrentProvider):
             'submit': 'come on in',
         }
 
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
+            log.warning('Unable to connect to provider')
             return False
-
         if any([re.search(r'Username or password incorrect', response.text),
                 re.search(r'<title>SceneAccess \| Login</title>', response.text), ]):
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
+            log.warning('Invalid username or password. Check your settings')
             return False
 
         return True

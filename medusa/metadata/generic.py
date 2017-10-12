@@ -87,8 +87,8 @@ class GenericMetadata(object):
         name_id = re.sub(r'[^\w\d_]', '_', name_id).lower()
         return name_id
 
-    def set_config(self, string):
-        config_list = [bool(int(x)) for x in string.split(u'|')]
+    def set_config(self, provider_options):
+        config_list = [bool(int(x)) for x in provider_options]
         self.show_metadata = config_list[0]
         self.episode_metadata = config_list[1]
         self.fanart = config_list[2]
@@ -378,12 +378,12 @@ class GenericMetadata(object):
         all_eps = [ep_obj] + ep_obj.related_episodes
 
         # validate show
-        if not helpers.validate_show(ep_obj.show):
+        if not helpers.validate_show(ep_obj.series):
             return None
 
         # try all included episodes in case some have thumbs and others don't
         for cur_ep in all_eps:
-            myEp = helpers.validate_show(cur_ep.show, cur_ep.season, cur_ep.episode)
+            myEp = helpers.validate_show(cur_ep.series, cur_ep.season, cur_ep.episode)
             if not myEp:
                 continue
 
@@ -733,13 +733,12 @@ class GenericMetadata(object):
 
     def _retrieve_show_image(self, image_type, show_obj, which=None):
         """
-        Gets an image URL from theTVDB.com and TMDB.com, downloads it and returns the data.
+        Get an image URL from theTVDB.com and TMDB.com, download it and returns the data.
 
-        image_type: type of image to retrieve (currently supported: fanart, poster, banner)
-        show_obj: a Series object to use when searching for the image
-        which: optional, a specific numbered poster to look for
-
-        Returns: the binary image data if available, or else None
+        :param image_type: type of image to retrieve (currently supported: fanart, poster, banner)
+        :param show_obj: a Series object to use when searching for the image
+        :param which: optional, a specific numbered poster to look for
+        :return: the binary image data if available, or else None
         """
         image_url = None
 
@@ -829,7 +828,7 @@ class GenericMetadata(object):
             return result
 
         if (u'seasonwide' not in indexer_show_obj[u'_banners'] or
-                u'original' not in indexer_show_obj[u'_banners'][u'season'] or
+                u'original' not in indexer_show_obj[u'_banners'][u'seasonwide'] or
                 season not in indexer_show_obj[u'_banners'][u'seasonwide'][u'original']):
             return result
 

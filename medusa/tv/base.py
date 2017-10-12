@@ -1,25 +1,30 @@
 # coding=utf-8
+"""TV base class."""
 
-"""TVShow and TVEpisode classes."""
-
-import datetime
-import shutil
 import threading
 
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
 
-import shutil_custom
 
-shutil.copyfile = shutil_custom.copyfile_custom
+class Identifier(object):
+    """Base identifier class."""
 
-MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
+    def __nonzero__(self):
+        """Magic method."""
+        raise NotImplementedError
+
+    __bool__ = __nonzero__
+
+    def __ne__(self, other):
+        """Magic method."""
+        return not self == other
 
 
 class TV(object):
     """Base class for Series and Episode."""
 
     def __init__(self, indexer, indexerid, ignored_properties):
-        """Constructor with ignore_properties.
+        """Initialize class.
 
         :param indexer:
         :type indexer: int
@@ -61,7 +66,7 @@ class TV(object):
 
     @property
     def tvdb_id(self):
-        """The item's tvdb_id."""
+        """Get the item's tvdb_id."""
         if self.indexerid and self.indexer == INDEXER_TVDBV2:
             return self.indexerid
 

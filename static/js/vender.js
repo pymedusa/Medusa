@@ -10683,7 +10683,7 @@ this.activeTarget=b,this.clear();var c=this.selector+'[data-target="'+b+'"],'+th
 }));
 
 /**
- * Fizzy UI utils v2.0.3
+ * Fizzy UI utils v2.0.5
  * MIT license
  */
 
@@ -10744,7 +10744,8 @@ utils.makeArray = function( obj ) {
   if ( Array.isArray( obj ) ) {
     // use object if already an array
     ary = obj;
-  } else if ( obj && typeof obj.length == 'number' ) {
+  } else if ( obj && typeof obj == 'object' &&
+    typeof obj.length == 'number' ) {
     // convert nodeList to array
     for ( var i=0; i < obj.length; i++ ) {
       ary.push( obj[i] );
@@ -10768,7 +10769,7 @@ utils.removeFrom = function( ary, obj ) {
 // ----- getParent ----- //
 
 utils.getParent = function( elem, selector ) {
-  while ( elem != document.body ) {
+  while ( elem.parentNode && elem != document.body ) {
     elem = elem.parentNode;
     if ( matchesSelector( elem, selector ) ) {
       return elem;
@@ -11131,7 +11132,7 @@ return getSize;
 });
 
 /**
- * EvEmitter v1.0.3
+ * EvEmitter v1.1.0
  * Lil' event emitter
  * MIT License
  */
@@ -11234,6 +11235,12 @@ proto.emitEvent = function( eventName, args ) {
   }
 
   return this;
+};
+
+proto.allOff =
+proto.removeAllListeners = function() {
+  delete this._events;
+  delete this._onceEvents;
 };
 
 return EvEmitter;
@@ -11375,13 +11382,16 @@ proto.getPosition = function() {
   var isOriginTop = this.layout._getOption('originTop');
   var xValue = style[ isOriginLeft ? 'left' : 'right' ];
   var yValue = style[ isOriginTop ? 'top' : 'bottom' ];
+  var x = parseFloat( xValue );
+  var y = parseFloat( yValue );
   // convert percent to pixels
   var layoutSize = this.layout.size;
-  var x = xValue.indexOf('%') != -1 ?
-    ( parseFloat( xValue ) / 100 ) * layoutSize.width : parseInt( xValue, 10 );
-  var y = yValue.indexOf('%') != -1 ?
-    ( parseFloat( yValue ) / 100 ) * layoutSize.height : parseInt( yValue, 10 );
-
+  if ( xValue.indexOf('%') != -1 ) {
+    x = ( x / 100 ) * layoutSize.width;
+  }
+  if ( yValue.indexOf('%') != -1 ) {
+    y = ( y / 100 ) * layoutSize.height;
+  }
   // clean up 'auto' or other non-integer values
   x = isNaN( x ) ? 0 : x;
   y = isNaN( y ) ? 0 : y;
@@ -11444,9 +11454,7 @@ proto._transitionTo = function( x, y ) {
   var curX = this.position.x;
   var curY = this.position.y;
 
-  var compareX = parseInt( x, 10 );
-  var compareY = parseInt( y, 10 );
-  var didNotMove = compareX === this.position.x && compareY === this.position.y;
+  var didNotMove = x == this.position.x && y == this.position.y;
 
   // save end position
   this.setPosition( x, y );
@@ -11489,8 +11497,8 @@ proto.goTo = function( x, y ) {
 proto.moveTo = proto._transitionTo;
 
 proto.setPosition = function( x, y ) {
-  this.position.x = parseInt( x, 10 );
-  this.position.y = parseInt( y, 10 );
+  this.position.x = parseFloat( x );
+  this.position.y = parseFloat( y );
 };
 
 // ----- transition ----- //
@@ -11795,7 +11803,7 @@ return Item;
 }));
 
 /*!
- * Outlayer v2.1.0
+ * Outlayer v2.1.1
  * the brains and guts of a layout library
  * MIT license
  */
@@ -12735,7 +12743,7 @@ return Outlayer;
 }));
 
 /*!
- * Masonry v4.1.1
+ * Masonry v4.2.0
  * Cascading grid layout library
  * http://masonry.desandro.com
  * MIT License
@@ -12777,7 +12785,9 @@ return Outlayer;
   // isFitWidth -> fitWidth
   Masonry.compatOptions.fitWidth = 'isFitWidth';
 
-  Masonry.prototype._resetLayout = function() {
+  var proto = Masonry.prototype;
+
+  proto._resetLayout = function() {
     this.getSize();
     this._getMeasurement( 'columnWidth', 'outerWidth' );
     this._getMeasurement( 'gutter', 'outerWidth' );
@@ -12790,9 +12800,10 @@ return Outlayer;
     }
 
     this.maxY = 0;
+    this.horizontalColIndex = 0;
   };
 
-  Masonry.prototype.measureColumns = function() {
+  proto.measureColumns = function() {
     this.getContainerWidth();
     // if columnWidth is 0, default to outerWidth of first item
     if ( !this.columnWidth ) {
@@ -12817,7 +12828,7 @@ return Outlayer;
     this.cols = Math.max( cols, 1 );
   };
 
-  Masonry.prototype.getContainerWidth = function() {
+  proto.getContainerWidth = function() {
     // container is parent if fit width
     var isFitWidth = this._getOption('fitWidth');
     var container = isFitWidth ? this.element.parentNode : this.element;
@@ -12827,7 +12838,7 @@ return Outlayer;
     this.containerWidth = size && size.innerWidth;
   };
 
-  Masonry.prototype._getItemLayoutPosition = function( item ) {
+  proto._getItemLayoutPosition = function( item ) {
     item.getSize();
     // how many columns does this brick span
     var remainder = item.size.outerWidth % this.columnWidth;
@@ -12835,33 +12846,41 @@ return Outlayer;
     // round if off by 1 pixel, otherwise use ceil
     var colSpan = Math[ mathMethod ]( item.size.outerWidth / this.columnWidth );
     colSpan = Math.min( colSpan, this.cols );
-
-    var colGroup = this._getColGroup( colSpan );
-    // get the minimum Y value from the columns
-    var minimumY = Math.min.apply( Math, colGroup );
-    var shortColIndex = colGroup.indexOf( minimumY );
-
+    // use horizontal or top column position
+    var colPosMethod = this.options.horizontalOrder ?
+      '_getHorizontalColPosition' : '_getTopColPosition';
+    var colPosition = this[ colPosMethod ]( colSpan, item );
     // position the brick
     var position = {
-      x: this.columnWidth * shortColIndex,
-      y: minimumY
+      x: this.columnWidth * colPosition.col,
+      y: colPosition.y
     };
-
     // apply setHeight to necessary columns
-    var setHeight = minimumY + item.size.outerHeight;
-    var setSpan = this.cols + 1 - colGroup.length;
-    for ( var i = 0; i < setSpan; i++ ) {
-      this.colYs[ shortColIndex + i ] = setHeight;
+    var setHeight = colPosition.y + item.size.outerHeight;
+    var setMax = colSpan + colPosition.col;
+    for ( var i = colPosition.col; i < setMax; i++ ) {
+      this.colYs[i] = setHeight;
     }
 
     return position;
+  };
+
+  proto._getTopColPosition = function( colSpan ) {
+    var colGroup = this._getTopColGroup( colSpan );
+    // get the minimum Y value from the columns
+    var minimumY = Math.min.apply( Math, colGroup );
+
+    return {
+      col: colGroup.indexOf( minimumY ),
+      y: minimumY,
+    };
   };
 
   /**
    * @param {Number} colSpan - number of columns the element spans
    * @returns {Array} colGroup
    */
-  Masonry.prototype._getColGroup = function( colSpan ) {
+  proto._getTopColGroup = function( colSpan ) {
     if ( colSpan < 2 ) {
       // if brick spans only one column, use all the column Ys
       return this.colYs;
@@ -12872,15 +12891,38 @@ return Outlayer;
     var groupCount = this.cols + 1 - colSpan;
     // for each group potential horizontal position
     for ( var i = 0; i < groupCount; i++ ) {
-      // make an array of colY values for that one group
-      var groupColYs = this.colYs.slice( i, i + colSpan );
-      // and get the max value of the array
-      colGroup[i] = Math.max.apply( Math, groupColYs );
+      colGroup[i] = this._getColGroupY( i, colSpan );
     }
     return colGroup;
   };
 
-  Masonry.prototype._manageStamp = function( stamp ) {
+  proto._getColGroupY = function( col, colSpan ) {
+    if ( colSpan < 2 ) {
+      return this.colYs[ col ];
+    }
+    // make an array of colY values for that one group
+    var groupColYs = this.colYs.slice( col, col + colSpan );
+    // and get the max value of the array
+    return Math.max.apply( Math, groupColYs );
+  };
+
+  // get column position based on horizontal index. #873
+  proto._getHorizontalColPosition = function( colSpan, item ) {
+    var col = this.horizontalColIndex % this.cols;
+    var isOver = colSpan > 1 && col + colSpan > this.cols;
+    // shift to next row if item can't fit on current row
+    col = isOver ? 0 : col;
+    // don't let zero-size items take up space
+    var hasSize = item.size.outerWidth && item.size.outerHeight;
+    this.horizontalColIndex = hasSize ? col + colSpan : this.horizontalColIndex;
+
+    return {
+      col: col,
+      y: this._getColGroupY( col, colSpan ),
+    };
+  };
+
+  proto._manageStamp = function( stamp ) {
     var stampSize = getSize( stamp );
     var offset = this._getElementOffset( stamp );
     // get the columns that this stamp affects
@@ -12903,7 +12945,7 @@ return Outlayer;
     }
   };
 
-  Masonry.prototype._getContainerSize = function() {
+  proto._getContainerSize = function() {
     this.maxY = Math.max.apply( Math, this.colYs );
     var size = {
       height: this.maxY
@@ -12916,7 +12958,7 @@ return Outlayer;
     return size;
   };
 
-  Masonry.prototype._getContainerFitWidth = function() {
+  proto._getContainerFitWidth = function() {
     var unusedCols = 0;
     // count unused columns
     var i = this.cols;
@@ -12930,7 +12972,7 @@ return Outlayer;
     return ( this.cols - unusedCols ) * this.columnWidth - this.gutter;
   };
 
-  Masonry.prototype.needsResizeLayout = function() {
+  proto.needsResizeLayout = function() {
     var previousWidth = this.containerWidth;
     this.getContainerWidth();
     return previousWidth != this.containerWidth;
@@ -13428,6 +13470,10 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
       options.transition = 'fade';
     }
 
+    if (options.scale) {
+      options.scale = validScale(options.scale);
+    }
+    
     return processAlignOptions(options);
   };
 
@@ -13472,6 +13518,20 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
     return options;
   };
 
+  var SUPPORTED_SCALE_OPTIONS = {
+      'cover': 'cover',
+      'fit': 'fit',
+      'fit-smaller': 'fit-smaller',
+      'fill': 'fill'
+  };
+  
+  function validScale(scale) {
+    if (!SUPPORTED_SCALE_OPTIONS.hasOwnProperty(scale)) {
+      return 'cover';
+    }
+    return scale;
+  }
+  
   /* CLASS DEFINITION
    * ========================= */
   var Backstretch = function (container, images, options) {
@@ -13735,41 +13795,71 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
           }
 
           var bgCSS = {left: 0, top: 0, right: 'auto', bottom: 'auto'}
-            , rootWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
-            , rootHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
-            , bgWidth = rootWidth
-            , bgHeight = bgWidth / this.$itemWrapper.data('ratio')
-            , evt = $.Event('backstretch.resize', {
-              relatedTarget: this.$container[0]
-            })
-            , bgOffset
+          
+            , boxWidth = this.isBody ? this.$root.width() : this.$root.innerWidth()
+            , boxHeight = this.isBody ? ( window.innerHeight ? window.innerHeight : this.$root.height() ) : this.$root.innerHeight()
+            
+            , naturalWidth = this.$itemWrapper.data('width')
+            , naturalHeight = this.$itemWrapper.data('height')
+            
+            , ratio = (naturalWidth / naturalHeight) || 1
+                    
             , alignX = this._currentImage.alignX === undefined ? this.options.alignX : this._currentImage.alignX
-            , alignY = this._currentImage.alignY === undefined ? this.options.alignY : this._currentImage.alignY;
-
-            // Make adjustments based on image ratio
-            if (bgHeight >= rootHeight) {
-                bgCSS.top = -(bgHeight - rootHeight) * alignY;
-            } else {
-                bgHeight = rootHeight;
-                bgWidth = bgHeight * this.$itemWrapper.data('ratio');
-                bgOffset = (bgWidth - rootWidth) / 2;
-                bgCSS.left = -(bgWidth - rootWidth) * alignX;
+            , alignY = this._currentImage.alignY === undefined ? this.options.alignY : this._currentImage.alignY
+            , scale = validScale(this._currentImage.scale || this.options.scale);
+          
+          var width, height;
+                
+          if (scale === 'fit' || scale === 'fit-smaller') {
+            width = naturalWidth;
+            height = naturalHeight;
+            
+            if (width > boxWidth || 
+                height > boxHeight || 
+                scale === 'fit-smaller') {
+              var boxRatio = boxWidth / boxHeight;
+              if (boxRatio > ratio) {
+                width = Math.floor(boxHeight * ratio);
+                height = boxHeight;
+              } else if (boxRatio < ratio) {
+                width = boxWidth;
+                height = Math.floor(boxWidth / ratio);
+              } else {
+                width = boxWidth;
+                height = boxHeight;
+              }
             }
+          } else if (scale === 'fill') {
+            width = boxWidth;
+            height = boxHeight;
+          } else { // 'cover'
+            width = Math.max(boxHeight * ratio, boxWidth);
+            height = Math.max(width / ratio, boxHeight);
+          }
+          
+          // Make adjustments based on image ratio
+          bgCSS.top = -(height - boxHeight) * alignY;
+          bgCSS.left = -(width - boxWidth) * alignX;
+          bgCSS.width = width;
+          bgCSS.height = height;
+          
+          if (!this.options.bypassCss) {
 
-            if (!this.options.bypassCss) {
+            this.$wrap
+                .css({width: boxWidth, height: boxHeight})
+                .find('>.backstretch-item').not('.deleteable')
+                .each(function () {
+                  var $wrapper = $(this);
+                  $wrapper.find('img,video,iframe')
+                          .css(bgCSS);
+                });
+          }
 
-                this.$wrap
-                    .css({width: rootWidth, height: rootHeight})
-                    .find('>.backstretch-item').not('.deleteable')
-                    .each(function () {
-                        var $wrapper = $(this);
-                        $wrapper.find('img,video,iframe')
-                                .css({width: bgWidth, height: bgHeight})
-                                .css(bgCSS);
+          var evt = $.Event('backstretch.resize', {
+                      relatedTarget: this.$container[0]
                     });
-            }
-
-            this.$container.trigger(evt, this);
+          this.$container.trigger(evt, this);
+          
         } catch(err) {
             // IE7 seems to trigger resize before the image is loaded.
             // This try/catch block is a hack to let it fail gracefully.
@@ -13838,8 +13928,10 @@ return t=a?function(t){return t&&a(r(t))}:function(t){return t&&r(t)}}function e
             var imgWidth = this.naturalWidth || this.videoWidth || this.width
               , imgHeight = this.naturalHeight || this.videoHeight || this.height;
 
-            // Save the ratio
-            $wrapper.data('ratio', imgWidth / imgHeight);
+            // Save the natural dimensions
+            $wrapper
+                .data('width', imgWidth)
+                .data('height', imgHeight);
 
             var getOption = function (opt) {
               return options[opt] !== undefined ?
@@ -54730,7 +54822,7 @@ a.stopPropagation()},mouseout:function(a){c.myOptions.nonblock&&a.stopPropagatio
 (a.stopPropagation(),d(b,a,"ondblclick"))}})},update:function(b,a){this.myOptions=a}}});
 
 /*!
- * imagesLoaded v4.1.1
+ * imagesLoaded v4.1.3
  * JavaScript is all like "You images are done yet or what?"
  * MIT License
  */
@@ -54761,7 +54853,7 @@ a.stopPropagation()},mouseout:function(a){c.myOptions.nonblock&&a.stopPropagatio
     );
   }
 
-})( window,
+})( typeof window !== 'undefined' ? window : this,
 
 // --------------------------  factory -------------------------- //
 
@@ -60554,7 +60646,7 @@ QTIP.defaults = {
 ;}));
 }( window, document ));
 
-/*! tablesorter (FORK) - updated 11-10-2015 (v2.24.5)*/
+/*! tablesorter (FORK) - updated 12-08-2016 (v2.28.1)*/
 /* Includes widgets ( storage,uitheme,columns,filter,stickyHeaders,resizable,saveSort ) */
 (function(factory) {
 	if (typeof define === 'function' && define.amd) {
@@ -60564,16 +60656,16 @@ QTIP.defaults = {
 	} else {
 		factory(jQuery);
 	}
-}(function($) {
+}(function(jQuery) {
 
-/*! TableSorter (FORK) v2.24.5 *//*
+/*! TableSorter (FORK) v2.28.1 *//*
 * Client-side table sorting with ease!
 * @requires jQuery v1.2.6+
 *
 * Copyright (c) 2007 Christian Bach
 * fork maintained by Rob Garrison
 *
-* Examples and docs at: http://tablesorter.com
+* Examples and original docs at: http://tablesorter.com
 * Dual licensed under the MIT and GPL licenses:
 * http://www.opensource.org/licenses/mit-license.php
 * http://www.gnu.org/licenses/gpl.html
@@ -60583,13 +60675,14 @@ QTIP.defaults = {
 * @cat Plugins/Tablesorter
 * @author Christian Bach - christian.bach@polyester.se
 * @contributor Rob Garrison - https://github.com/Mottie/tablesorter
+* @docs (fork) - https://mottie.github.io/tablesorter/docs/
 */
 /*jshint browser:true, jquery:true, unused:false, expr: true */
 ;( function( $ ) {
 	'use strict';
 	var ts = $.tablesorter = {
 
-		version : '2.24.5',
+		version : '2.28.1',
 
 		parsers : [],
 		widgets : [],
@@ -60630,18 +60723,19 @@ QTIP.defaults = {
 
 			emptyTo          : 'bottom',   // sort empty cell to bottom, top, none, zero, emptyMax, emptyMin
 			stringTo         : 'max',      // sort strings in numerical column as max, min, top, bottom, zero
+			duplicateSpan    : true,       // colspan cells in the tbody will have duplicated content in the cache for each spanned column
 			textExtraction   : 'basic',    // text extraction method/function - function( node, table, cellIndex ){}
 			textAttribute    : 'data-text',// data-attribute that contains alternate cell text (used in default textExtraction function)
 			textSorter       : null,       // choose overall or specific column sorter function( a, b, direction, table, columnIndex ) [alt: ts.sortText]
 			numberSorter     : null,       // choose overall numeric sorter function( a, b, direction, maxColumnValue )
 
 			// *** widget options
-			widgets: [],                   // method to add widgets, e.g. widgets: ['zebra']
-			widgetOptions    : {
-				zebra : [ 'even', 'odd' ]    // zebra widget alternating row class names
-			},
 			initWidgets      : true,       // apply widgets on tablesorter initialization
 			widgetClass      : 'widget-{name}', // table class name template to match to include a widget
+			widgets          : [],         // method to add widgets, e.g. widgets: ['zebra']
+			widgetOptions    : {
+				zebra : [ 'even', 'odd' ]  // zebra widget alternating row class names
+			},
 
 			// *** callbacks
 			initialized      : null,       // function( table ){},
@@ -60655,10 +60749,10 @@ QTIP.defaults = {
 			cssHeaderRow     : '',
 			cssProcessing    : '', // processing icon applied to header during sort/filter
 
-			cssChildRow      : 'tablesorter-childRow', // class name indiciating that a row is to be attached to the its parent
+			cssChildRow      : 'tablesorter-childRow', // class name indiciating that a row is to be attached to its parent
 			cssInfoBlock     : 'tablesorter-infoOnly', // don't sort tbody with this class name (only one class name allowed here!)
-			cssNoSort        : 'tablesorter-noSort',      // class name added to element inside header; clicking on it won't cause a sort
-			cssIgnoreRow     : 'tablesorter-ignoreRow',   // header row to ignore; cells within this row will not be added to c.$headers
+			cssNoSort        : 'tablesorter-noSort',   // class name added to element inside header; clicking on it won't cause a sort
+			cssIgnoreRow     : 'tablesorter-ignoreRow',// header row to ignore; cells within this row will not be added to c.$headers
 
 			cssIcon          : 'tablesorter-icon', // if this class does not exist, the {icon} will not be added from the headerTemplate
 			cssIconNone      : '', // class name added to the icon when there is no column sort
@@ -60672,7 +60766,7 @@ QTIP.defaults = {
 
 			// *** selectors
 			selectorHeaders  : '> thead th, > thead td',
-			selectorSort     : 'th, td',   // jQuery selector of content within selectorHeaders that is clickable to trigger a sort
+			selectorSort     : 'th, td', // jQuery selector of content within selectorHeaders that is clickable to trigger a sort
 			selectorRemove   : '.remove-me',
 
 			// *** advanced
@@ -60682,7 +60776,11 @@ QTIP.defaults = {
 			headerList: [],
 			empties: {},
 			strings: {},
-			parsers: []
+			parsers: [],
+
+			// *** parser options for validator; values must be falsy!
+			globalize: 0,
+			imgAttr: 0
 
 			// removed: widgetZebra: { css: ['even', 'odd'] }
 
@@ -60744,7 +60842,7 @@ QTIP.defaults = {
 
 		},
 
-		// digit sort text location; keeping max+/- for backwards compatibility
+		// digit sort, text location
 		string : {
 			max      : 1,
 			min      : -1,
@@ -60756,6 +60854,13 @@ QTIP.defaults = {
 			top      : true,
 			bottom   : false
 		},
+
+		keyCodes : {
+			enter : 13
+		},
+
+		// placeholder date parser data (globalize)
+		dates : {},
 
 		// These methods can be applied on table.config instance
 		instanceMethods : {},
@@ -60774,7 +60879,7 @@ QTIP.defaults = {
 					if ( table.hasInitialized ) {
 						console.warn( 'Stopping initialization. Tablesorter has already been initialized' );
 					} else {
-						console.error( 'Stopping initialization! No table, thead or tbody' );
+						console.error( 'Stopping initialization! No table, thead or tbody', table );
 					}
 				}
 				return;
@@ -60792,7 +60897,7 @@ QTIP.defaults = {
 			// save the settings where they read
 			$.data( table, 'tablesorter', c );
 			if ( c.debug ) {
-				console[ console.group ? 'group' : 'log' ]( 'Initializing tablesorter' );
+				console[ console.group ? 'group' : 'log' ]( 'Initializing tablesorter v' + ts.version );
 				$.data( table, 'startoveralltimer', new Date() );
 			}
 
@@ -60849,6 +60954,7 @@ QTIP.defaults = {
 			ts.setupParsers( c );
 			// start total row count at zero
 			c.totalRows = 0;
+			ts.validateOptions( c );
 			// build the cache for the tbody cells
 			// delayInit will delay building the cache until the user starts a sort
 			if ( !c.delayInit ) { ts.buildCache( c ); }
@@ -60880,10 +60986,10 @@ QTIP.defaults = {
 				$table
 				.unbind( 'sortBegin' + c.namespace + ' sortEnd' + c.namespace )
 				.bind( 'sortBegin' + c.namespace + ' sortEnd' + c.namespace, function( e ) {
-					clearTimeout( c.processTimer );
+					clearTimeout( c.timerProcessing );
 					ts.isProcessing( table );
 					if ( e.type === 'sortBegin' ) {
-						c.processTimer = setTimeout( function() {
+						c.timerProcessing = setTimeout( function() {
 							ts.isProcessing( table, true );
 						}, 500 );
 					}
@@ -60894,10 +61000,10 @@ QTIP.defaults = {
 			table.hasInitialized = true;
 			table.isProcessing = false;
 			if ( c.debug ) {
-				console.log( 'Overall initialization time: ' + ts.benchmark( $.data( table, 'startoveralltimer' ) ) );
+				console.log( 'Overall initialization time:' + ts.benchmark( $.data( table, 'startoveralltimer' ) ) );
 				if ( c.debug && console.groupEnd ) { console.groupEnd(); }
 			}
-			$table.trigger( 'tablesorter-initialized', table );
+			$table.triggerHandler( 'tablesorter-initialized', table );
 			if ( typeof c.initialized === 'function' ) {
 				c.initialized( table );
 			}
@@ -60959,7 +61065,7 @@ QTIP.defaults = {
 			})
 			.bind( 'applyWidgetId' + namespace, function( e, id ) {
 				e.stopPropagation();
-				ts.getWidgetById( id ).format( this, this.config, this.config.widgetOptions );
+				ts.applyWidgetId( this, id );
 			})
 			.bind( 'applyWidgets' + namespace, function( e, init ) {
 				e.stopPropagation();
@@ -60970,6 +61076,10 @@ QTIP.defaults = {
 				e.stopPropagation();
 				ts.refreshWidgets( this, all, dontapply );
 			})
+			.bind( 'removeWidget' + namespace, function( e, name, refreshing ) {
+				e.stopPropagation();
+				ts.removeWidget( this, name, refreshing );
+			})
 			.bind( 'destroy' + namespace, function( e, removeClasses, callback ) {
 				e.stopPropagation();
 				ts.destroy( this, removeClasses, callback );
@@ -60978,9 +61088,11 @@ QTIP.defaults = {
 				e.stopPropagation();
 				// remove all widgets
 				ts.removeWidget( this, true, false );
+				var tmp = $.extend( true, {}, c.originalSettings );
 				// restore original settings; this clears out current settings, but does not clear
 				// values saved to storage.
-				c = $.extend( true, ts.defaults, c.originalSettings );
+				c = $.extend( true, ts.defaults, tmp );
+				c.originalSettings = tmp;
 				this.hasInitialized = false;
 				// setup the entire table again
 				ts.setup( this, c );
@@ -61018,7 +61130,7 @@ QTIP.defaults = {
 				// only recognize left clicks
 				if ( ( ( e.which || e.button ) !== 1 && !type.match( ' ' + c.pointerClick + ' | sort | keyup ' ) ) ||
 					// allow pressing enter
-					( type === ' keyup ' && e.which !== 13 ) ||
+					( type === ' keyup ' && e.which !== ts.keyCodes.enter ) ||
 					// allow triggering a click event (e.which is undefined) & ignore physical clicks
 					( type.match( ' ' + c.pointerClick + ' ' ) && typeof e.which !== 'undefined' ) ) {
 					return;
@@ -61082,6 +61194,7 @@ QTIP.defaults = {
 				timer = new Date();
 			}
 			// children tr in tfoot - see issue #196 & #547
+			// don't pass table.config to computeColumnIndex here - widgets (math) pass it to "quickly" index tbody cells
 			c.columns = ts.computeColumnIndex( c.$table.children( 'thead, tfoot' ).children( 'tr' ) );
 			// add icon if cssIcon option exists
 			icon = c.cssIcon ?
@@ -61117,19 +61230,19 @@ QTIP.defaults = {
 				}
 				column = parseInt( $elem.attr( 'data-column' ), 10 );
 				elem.column = column;
-				tmp = ts.getData( $elem, configHeaders, 'sortInitialOrder' ) || c.sortInitialOrder;
+				tmp = ts.getOrder( ts.getData( $elem, configHeaders, 'sortInitialOrder' ) || c.sortInitialOrder );
 				// this may get updated numerous times if there are multiple rows
 				c.sortVars[ column ] = {
 					count : -1, // set to -1 because clicking on the header automatically adds one
-					order: ts.formatSortingOrder( tmp ) ?
-						[ 1, 0, 2 ] : // desc, asc, unsorted
-						[ 0, 1, 2 ],  // asc, desc, unsorted
+					order:  tmp ?
+						( c.sortReset ? [ 1, 0, 2 ] : [ 1, 0 ] ) : // desc, asc, unsorted
+						( c.sortReset ? [ 0, 1, 2 ] : [ 0, 1 ] ),  // asc, desc, unsorted
 					lockedOrder : false
 				};
 				tmp = ts.getData( $elem, configHeaders, 'lockedOrder' ) || false;
 				if ( typeof tmp !== 'undefined' && tmp !== false ) {
 					c.sortVars[ column ].lockedOrder = true;
-					c.sortVars[ column ].order = ts.formatSortingOrder( tmp ) ? [ 1, 1, 1 ] : [ 0, 0, 0 ];
+					c.sortVars[ column ].order = ts.getOrder( tmp ) ? [ 1, 1 ] : [ 0, 0 ];
 				}
 				// add cell to headerList
 				c.headerList[ index ] = elem;
@@ -61252,6 +61365,12 @@ QTIP.defaults = {
 							if ( span > 0 ) {
 								colIndex += span;
 								max += span;
+								while ( span + 1 > 0 ) {
+									// set colspan columns to use the same parsers & extractors
+									list.parsers[ colIndex - span ] = parser;
+									list.extractors[ colIndex - span ] = extractor;
+									span--;
+								}
 							}
 						}
 						colIndex++;
@@ -61282,7 +61401,7 @@ QTIP.defaults = {
 				}
 			}
 			if ( add ) {
-				ts.parsers.push( parser );
+				ts.parsers[ ts.parsers.length ] = parser;
 			}
 		},
 
@@ -61300,20 +61419,24 @@ QTIP.defaults = {
 		},
 
 		detectParserForColumn : function( c, rows, rowIndex, cellIndex ) {
-			var cur, $node,
+			var cur, $node, row,
 				indx = ts.parsers.length,
 				node = false,
 				nodeValue = '',
 				keepLooking = true;
 			while ( nodeValue === '' && keepLooking ) {
 				rowIndex++;
-				if ( rows[ rowIndex ] ) {
-					node = rows[ rowIndex ].cells[ cellIndex ];
-					nodeValue = ts.getElementText( c, node, cellIndex );
-					$node = $( node );
-					if ( c.debug ) {
-						console.log( 'Checking if value was empty on row ' + rowIndex + ', column: ' +
-							cellIndex + ': "' + nodeValue + '"' );
+				row = rows[ rowIndex ];
+				// stop looking after 50 empty rows
+				if ( row && rowIndex < 50 ) {
+					if ( row.className.indexOf( ts.cssIgnoreRow ) < 0 ) {
+						node = rows[ rowIndex ].cells[ cellIndex ];
+						nodeValue = ts.getElementText( c, node, cellIndex );
+						$node = $( node );
+						if ( c.debug ) {
+							console.log( 'Checking if value was empty on row ' + rowIndex + ', column: ' +
+								cellIndex + ': "' + nodeValue + '"' );
+						}
 					}
 				} else {
 					keepLooking = false;
@@ -61390,7 +61513,7 @@ QTIP.defaults = {
 		buildCache : function( c, callback, $tbodies ) {
 			var cache, val, txt, rowIndex, colIndex, tbodyIndex, $tbody, $row,
 				cols, $cells, cell, cacheTime, totalRows, rowData, prevRowData,
-				colMax, span, cacheIndex, max, len,
+				colMax, span, cacheIndex, hasParser, max, len, index,
 				table = c.table,
 				parsers = c.parsers;
 			// update tbody variable
@@ -61427,6 +61550,10 @@ QTIP.defaults = {
 					/** Add the table data to main data array */
 					$row = $( $tbody[ tbodyIndex ].rows[ rowIndex ] );
 					cols = [];
+					// ignore "remove-me" rows
+					if ( $row.hasClass( c.selectorRemove.slice(1) ) ) {
+						continue;
+					}
 					// if this is a child row, add it to the last row's children and continue to the next row
 					// ignore child row class, if it is the first row
 					if ( $row.hasClass( c.cssChildRow ) && rowIndex !== 0 ) {
@@ -61465,22 +61592,38 @@ QTIP.defaults = {
 					max = c.columns;
 					for ( colIndex = 0; colIndex < max; ++colIndex ) {
 						cell = $row[ 0 ].cells[ colIndex ];
-						if ( typeof parsers[ cacheIndex ] === 'undefined' ) {
-							if ( c.debug ) {
-								console.warn( 'No parser found for column ' + colIndex + '; cell:', cell, 'does it have a header?' );
+						if ( cell && cacheIndex < c.columns ) {
+							hasParser = typeof parsers[ cacheIndex ] !== 'undefined';
+							if ( !hasParser && c.debug ) {
+								console.warn( 'No parser found for row: ' + rowIndex + ', column: ' + colIndex +
+									'; cell containing: "' + $(cell).text() + '"; does it have a header?' );
 							}
-						} else if ( cell ) {
 							val = ts.getElementText( c, cell, cacheIndex );
 							rowData.raw[ cacheIndex ] = val; // save original row text
+							// save raw column text even if there is no parser set
 							txt = ts.getParsedText( c, cell, cacheIndex, val );
 							cols[ cacheIndex ] = txt;
-							if ( ( parsers[ cacheIndex ].type || '' ).toLowerCase() === 'numeric' ) {
+							if ( hasParser && ( parsers[ cacheIndex ].type || '' ).toLowerCase() === 'numeric' ) {
 								// determine column max value (ignore sign)
 								colMax[ cacheIndex ] = Math.max( Math.abs( txt ) || 0, colMax[ cacheIndex ] || 0 );
 							}
 							// allow colSpan in tbody
 							span = cell.colSpan - 1;
 							if ( span > 0 ) {
+								index = 0;
+								while ( index <= span ) {
+									// duplicate text (or not) to spanned columns
+									// instead of setting duplicate span to empty string, use textExtraction to try to get a value
+									// see http://stackoverflow.com/q/36449711/145346
+									txt = c.duplicateSpan || index === 0 ?
+										val :
+										typeof c.textExtraction !== 'string' ?
+											ts.getElementText( c, cell, cacheIndex + index ) || '' :
+											'';
+									rowData.raw[ cacheIndex + index ] = txt;
+									cols[ cacheIndex + index ] = txt;
+									index++;
+								}
 								cacheIndex += span;
 								max += span;
 							}
@@ -61489,7 +61632,7 @@ QTIP.defaults = {
 					}
 					// ensure rowData is always in the same location (after the last column)
 					cols[ c.columns ] = rowData;
-					cache.normalized.push( cols );
+					cache.normalized[ cache.normalized.length ] = cols;
 				}
 				cache.colMax = colMax;
 				// total up rows, not including child rows
@@ -61500,7 +61643,22 @@ QTIP.defaults = {
 				ts.isProcessing( table ); // remove processing icon
 			}
 			if ( c.debug ) {
-				console.log( 'Building cache for ' + totalRows + ' rows' + ts.benchmark( cacheTime ) );
+				len = Math.min( 5, c.cache[ 0 ].normalized.length );
+				console[ console.group ? 'group' : 'log' ]( 'Building cache for ' + c.totalRows +
+					' rows (showing ' + len + ' rows in log) and ' + c.columns + ' columns' +
+					ts.benchmark( cacheTime ) );
+				val = {};
+				for ( colIndex = 0; colIndex < c.columns; colIndex++ ) {
+					for ( cacheIndex = 0; cacheIndex < len; cacheIndex++ ) {
+						if ( !val[ 'row: ' + cacheIndex ] ) {
+							val[ 'row: ' + cacheIndex ] = {};
+						}
+						val[ 'row: ' + cacheIndex ][ c.$headerIndexed[ colIndex ].text() ] =
+							c.cache[ 0 ].normalized[ cacheIndex ][ colIndex ];
+					}
+				}
+				console[ console.table ? 'table' : 'log' ]( val );
+				if ( console.groupEnd ) { console.groupEnd(); }
 			}
 			if ( $.isFunction( callback ) ) {
 				callback( table );
@@ -61544,9 +61702,9 @@ QTIP.defaults = {
 							});
 						}
 						if ( result !== false ) {
-							data.parsed.push( parsed );
-							data.raw.push( raw );
-							data.$cell.push( $cell );
+							data.parsed[ data.parsed.length ] = parsed;
+							data.raw[ data.raw.length ] = raw;
+							data.$cell[ data.$cell.length ] = $cell;
 						}
 					}
 				}
@@ -61572,11 +61730,12 @@ QTIP.defaults = {
 				// find the footer
 				$headers = c.$table
 					.find( 'tfoot tr' )
-					.children()
+					.children( 'td, th' )
 					.add( $( c.namespace + '_extra_headers' ) )
 					.removeClass( css.join( ' ' ) );
 			// remove all header information
 			c.$headers
+				.add( $( 'thead ' + c.namespace + '_extra_headers' ) )
 				.removeClass( css.join( ' ' ) )
 				.addClass( none )
 				.attr( 'aria-sort', 'none' )
@@ -61596,7 +61755,7 @@ QTIP.defaults = {
 							col = parseInt( $el.attr( 'data-column' ), 10 ),
 							end = col + c.$headers[ i ].colSpan;
 						for ( ; col < end; col++ ) {
-							include = include ? ts.isValueInArray( col, c.sortList ) > -1 : false;
+							include = include ? include || ts.isValueInArray( col, c.sortList ) > -1 : false;
 						}
 						return include;
 					});
@@ -61639,6 +61798,7 @@ QTIP.defaults = {
 		setColumnAriaLabel : function( c, $header, nextSort ) {
 			if ( $header.length ) {
 				var column = parseInt( $header.attr( 'data-column' ), 10 ),
+					vars = c.sortVars[ column ],
 					tmp = $header.hasClass( ts.css.sortAsc ) ?
 						'sortAsc' :
 						$header.hasClass( ts.css.sortDesc ) ? 'sortDesc' : 'sortNone',
@@ -61646,7 +61806,8 @@ QTIP.defaults = {
 				if ( $header.hasClass( 'sorter-false' ) || nextSort === false ) {
 					txt += ts.language.sortDisabled;
 				} else {
-					nextSort = c.sortVars[ column ].order[ ( c.sortVars[ column ].count + 1 ) % ( c.sortReset ? 3 : 2 ) ];
+					tmp = ( vars.count + 1 ) % vars.order.length;
+					nextSort = vars.order[ tmp ];
 					// if nextSort
 					txt += ts.language[ nextSort === 0 ? 'nextAsc' : nextSort === 1 ? 'nextDesc' : 'nextNone' ];
 				}
@@ -61701,6 +61862,19 @@ QTIP.defaults = {
 				col = parseInt( val[ 0 ], 10 );
 				// prevents error if sorton array is wrong
 				if ( col < c.columns ) {
+
+					// set order if not already defined - due to colspan header without associated header cell
+					// adding this check prevents a javascript error
+					if ( !c.sortVars[ col ].order ) {
+						if ( ts.getOrder( c.sortInitialOrder ) ) {
+							order = c.sortReset ? [ 1, 0, 2 ] : [ 1, 0 ];
+						} else {
+							order = c.sortReset ? [ 0, 1, 2 ] : [ 0, 1 ];
+						}
+						c.sortVars[ col ].order = order;
+						c.sortVars[ col ].count = 0;
+					}
+
 					order = c.sortVars[ col ].order;
 					dir = ( '' + val[ 1 ] ).match( /^(1|d|s|o|n)/ );
 					dir = dir ? dir[ 0 ] : '';
@@ -61714,12 +61888,12 @@ QTIP.defaults = {
 							dir = primary || 0;
 							break;
 						case 'o' :
-							temp = order[ ( primary || 0 ) % ( c.sortReset ? 3 : 2 ) ];
+							temp = order[ ( primary || 0 ) % order.length ];
 							// opposite of primary column; but resets if primary resets
 							dir = temp === 0 ? 1 : temp === 1 ? 0 : 2;
 							break;
 						case 'n' :
-							dir = order[ ( ++c.sortVars[ col ].count ) % ( c.sortReset ? 3 : 2 ) ];
+							dir = order[ ( ++c.sortVars[ col ].count ) % order.length ];
 							break;
 						default : // ascending
 							dir = 0;
@@ -61727,9 +61901,9 @@ QTIP.defaults = {
 					}
 					primary = indx === 0 ? dir : primary;
 					group = [ col, parseInt( dir, 10 ) || 0 ];
-					c.sortList.push( group );
+					c.sortList[ c.sortList.length ] = group;
 					dir = $.inArray( group[ 1 ], order ); // fixes issue #167
-					c.sortVars[ col ].count = dir >= 0 ? dir : group[ 1 ] % ( c.sortReset ? 3 : 2 );
+					c.sortVars[ col ].count = dir >= 0 ? dir : group[ 1 ] % order.length;
 				}
 			}
 		},
@@ -61761,6 +61935,12 @@ QTIP.defaults = {
 		},
 
 		updateCell : function( c, cell, resort, callback ) {
+			if ( ts.isEmptyObject( c.cache ) ) {
+				// empty table, do an update instead - fixes #1099
+				ts.updateHeader( c );
+				ts.commonUpdate( c, resort, callback );
+				return;
+			}
 			c.table.isUpdating = true;
 			c.$table.find( c.selectorRemove ).remove();
 			// get position from the dom
@@ -61811,11 +61991,16 @@ QTIP.defaults = {
 					// problems with element focus
 					ts.resortComplete( c, callback );
 				}
+			} else {
+				if ( c.debug ) {
+					console.error( 'updateCell aborted, tbody missing or not within the indicated table' );
+				}
+				c.table.isUpdating = false;
 			}
 		},
 
 		addRows : function( c, $row, resort, callback ) {
-			var txt, val, tbodyIndex, rowIndex, rows, cellIndex, len,
+			var txt, val, tbodyIndex, rowIndex, rows, cellIndex, len, order,
 				cacheIndex, rowData, cells, cell, span,
 				// allow passing a row string if only one non-info tbody exists in the table
 				valid = typeof $row === 'string' && c.$tbodies.length === 1 && /<tr/.test( $row || '' ),
@@ -61850,12 +62035,13 @@ QTIP.defaults = {
 				for ( rowIndex = 0; rowIndex < rows; rowIndex++ ) {
 					cacheIndex = 0;
 					len = $row[ rowIndex ].cells.length;
+					order = c.cache[ tbodyIndex ].normalized.length;
 					cells = [];
 					rowData = {
 						child : [],
 						raw : [],
 						$row : $row.eq( rowIndex ),
-						order : c.cache[ tbodyIndex ].normalized.length
+						order : order
 					};
 					// add each cell
 					for ( cellIndex = 0; cellIndex < len; cellIndex++ ) {
@@ -61878,7 +62064,7 @@ QTIP.defaults = {
 					// add the row data to the end
 					cells[ c.columns ] = rowData;
 					// update cache
-					c.cache[ tbodyIndex ].normalized.push( cells );
+					c.cache[ tbodyIndex ].normalized[ order ] = cells;
 				}
 				// resort using current settings
 				ts.checkResort( c, resort, callback );
@@ -61907,7 +62093,7 @@ QTIP.defaults = {
 			if ( ts.isEmptyObject( cache ) ) {
 				// run pager appender in case the table was just emptied
 				return c.appender ? c.appender( table, rows ) :
-					table.isUpdating ? c.$table.trigger( 'updateComplete', table ) : ''; // Fixes #532
+					table.isUpdating ? c.$table.triggerHandler( 'updateComplete', table ) : ''; // Fixes #532
 			}
 			if ( c.debug ) {
 				appendTime = new Date();
@@ -61920,7 +62106,7 @@ QTIP.defaults = {
 					parsed = cache[ tbodyIndex ].normalized;
 					totalRows = parsed.length;
 					for ( rowIndex = 0; rowIndex < totalRows; rowIndex++ ) {
-						rows.push( parsed[ rowIndex ][ c.columns ].$row );
+						rows[rows.length] = parsed[ rowIndex ][ c.columns ].$row;
 						// removeRows used by the pager plugin; don't render if using ajax - fixes #411
 						if ( !c.appender || ( c.pager && ( !c.pager.removeRows || !wo.pager_removeRows ) && !c.pager.ajax ) ) {
 							$curTbody.append( parsed[ rowIndex ][ c.columns ].$row );
@@ -61941,7 +62127,7 @@ QTIP.defaults = {
 				ts.applyWidget( table );
 			}
 			if ( table.isUpdating ) {
-				c.$table.trigger( 'updateComplete', table );
+				c.$table.triggerHandler( 'updateComplete', table );
 			}
 		},
 
@@ -61968,6 +62154,7 @@ QTIP.defaults = {
 					ts.initSort( c, cell, event );
 				}, 50 );
 			}
+
 			var arry, indx, headerIndx, dir, temp, tmp, $header,
 				notMultiSort = !event[ c.sortMultiSortKey ],
 				table = c.table,
@@ -61977,10 +62164,10 @@ QTIP.defaults = {
 				order = c.sortVars[ col ].order;
 
 			// Only call sortStart if sorting is enabled
-			c.$table.trigger( 'sortStart', table );
+			c.$table.triggerHandler( 'sortStart', table );
 			// get current column sort order
-			c.sortVars[ col ].count =
-				event[ c.sortResetKey ] ? 2 : ( c.sortVars[ col ].count + 1 ) % ( c.sortReset ? 3 : 2 );
+			tmp = ( c.sortVars[ col ].count + 1 ) % order.length;
+			c.sortVars[ col ].count = event[ c.sortResetKey ] ? 2 : tmp;
 			// reset all sorts on non-current column - issue #30
 			if ( c.sortRestart ) {
 				for ( headerIndx = 0; headerIndx < len; headerIndx++ ) {
@@ -62001,18 +62188,18 @@ QTIP.defaults = {
 					arry = c.sortForce;
 					for ( indx = 0; indx < arry.length; indx++ ) {
 						if ( arry[ indx ][ 0 ] !== col ) {
-							c.sortList.push( arry[ indx ] );
+							c.sortList[ c.sortList.length ] = arry[ indx ];
 						}
 					}
 				}
 				// add column to sort list
 				dir = order[ c.sortVars[ col ].count ];
 				if ( dir < 2 ) {
-					c.sortList.push( [ col, dir ] );
+					c.sortList[ c.sortList.length ] = [ col, dir ];
 					// add other columns if header spans across multiple
 					if ( cell.colSpan > 1 ) {
 						for ( indx = 1; indx < cell.colSpan; indx++ ) {
-							c.sortList.push( [ col + indx, dir ] );
+							c.sortList[ c.sortList.length ] = [ col + indx, dir ];
 							// update count on columns in colSpan
 							c.sortVars[ col + indx ].count = $.inArray( dir, order );
 						}
@@ -62041,11 +62228,11 @@ QTIP.defaults = {
 					// add column to sort list array
 					dir = order[ c.sortVars[ col ].count ];
 					if ( dir < 2 ) {
-						c.sortList.push( [ col, dir ] );
+						c.sortList[ c.sortList.length ] = [ col, dir ];
 						// add other columns if header spans across multiple
 						if ( cell.colSpan > 1 ) {
 							for ( indx = 1; indx < cell.colSpan; indx++ ) {
-								c.sortList.push( [ col + indx, dir ] );
+								c.sortList[ c.sortList.length ] = [ col + indx, dir ];
 								// update count on columns in colSpan
 								c.sortVars[ col + indx ].count = $.inArray( dir, order );
 							}
@@ -62075,34 +62262,36 @@ QTIP.defaults = {
 										dir = tmp === 0 ? 1 : 0;
 										break;
 									case 'n' :
-										dir = ( tmp + 1 ) % ( c.sortReset ? 3 : 2 );
+										dir = ( tmp + 1 ) % order.length;
 										break;
 									default:
 										dir = 0;
 										break;
 								}
 							}
-							c.sortList.push( [ arry[ indx ][ 0 ], dir ] );
+							c.sortList[ c.sortList.length ] = [ arry[ indx ][ 0 ], dir ];
 						}
 					}
 				}
 			}
 			// sortBegin event triggered immediately before the sort
-			c.$table.trigger( 'sortBegin', table );
+			c.$table.triggerHandler( 'sortBegin', table );
 			// setTimeout needed so the processing icon shows up
 			setTimeout( function() {
 				// set css for headers
 				ts.setHeadersCss( c );
 				ts.multisort( c );
 				ts.appendCache( c );
-				c.$table.trigger( 'sortEnd', table );
+				c.$table.triggerHandler( 'sortBeforeEnd', table );
+				c.$table.triggerHandler( 'sortEnd', table );
 			}, 1 );
 		},
 
 		// sort multiple columns
 		multisort : function( c ) { /*jshint loopfunc:true */
-			var tbodyIndex, sortTime, colMax, rows,
+			var tbodyIndex, sortTime, colMax, rows, tmp,
 				table = c.table,
+				sorter = [],
 				dir = 0,
 				textSorter = c.textSorter || '',
 				sortList = c.sortList,
@@ -62113,6 +62302,16 @@ QTIP.defaults = {
 				return;
 			}
 			if ( c.debug ) { sortTime = new Date(); }
+			// cache textSorter to optimize speed
+			if ( typeof textSorter === 'object' ) {
+				colMax = c.columns;
+				while ( colMax-- ) {
+					tmp = ts.getColumnData( table, textSorter, colMax );
+					if ( typeof tmp === 'function' ) {
+						sorter[ colMax ] = tmp;
+					}
+				}
+			}
 			for ( tbodyIndex = 0; tbodyIndex < len; tbodyIndex++ ) {
 				colMax = c.cache[ tbodyIndex ].colMax;
 				rows = c.cache[ tbodyIndex ].normalized;
@@ -62151,9 +62350,9 @@ QTIP.defaults = {
 							if ( typeof textSorter === 'function' ) {
 								// custom OVERALL text sorter
 								sort = textSorter( x[ col ], y[ col ], dir, col, table );
-							} else if ( typeof textSorter === 'object' && textSorter.hasOwnProperty( col ) ) {
+							} else if ( typeof sorter[ col ] === 'function' ) {
 								// custom text sorter for a SPECIFIC COLUMN
-								sort = textSorter[ col ]( x[ col ], y[ col ], dir, col, table );
+								sort = sorter[ col ]( x[ col ], y[ col ], dir, col, table );
 							} else {
 								// fall back to natural sort
 								sort = ts[ 'sortNatural' + ( dir ? 'Asc' : 'Desc' ) ]( a[ col ], b[ col ], col, c );
@@ -62171,7 +62370,7 @@ QTIP.defaults = {
 
 		resortComplete : function( c, callback ) {
 			if ( c.table.isUpdating ) {
-				c.$table.trigger( 'updateComplete', c.table );
+				c.$table.triggerHandler( 'updateComplete', c.table );
 			}
 			if ( $.isFunction( callback ) ) {
 				callback( c.table );
@@ -62203,7 +62402,7 @@ QTIP.defaults = {
 
 		sortOn : function( c, list, callback, init ) {
 			var table = c.table;
-			c.$table.trigger( 'sortStart', table );
+			c.$table.triggerHandler( 'sortStart', table );
 			// update header count index
 			ts.updateHeaderSortCount( c, list );
 			// set css for headers
@@ -62212,11 +62411,12 @@ QTIP.defaults = {
 			if ( c.delayInit && ts.isEmptyObject( c.cache ) ) {
 				ts.buildCache( c );
 			}
-			c.$table.trigger( 'sortBegin', table );
+			c.$table.triggerHandler( 'sortBegin', table );
 			// sort the table and append it to the dom
 			ts.multisort( c );
 			ts.appendCache( c, init );
-			c.$table.trigger( 'sortEnd', table );
+			c.$table.triggerHandler( 'sortBeforeEnd', table );
+			c.$table.triggerHandler( 'sortEnd', table );
 			ts.applyWidget( table );
 			if ( $.isFunction( callback ) ) {
 				callback( table );
@@ -62237,7 +62437,7 @@ QTIP.defaults = {
 			return ( parsers && parsers[ column ] ) ? parsers[ column ].type || '' : '';
 		},
 
-		formatSortingOrder : function( val ) {
+		getOrder : function( val ) {
 			// look for 'd' in 'desc' order; return true
 			return ( /^d/i.test( val ) || val === 1 );
 		},
@@ -62251,14 +62451,14 @@ QTIP.defaults = {
 				regex = ts.regex;
 			// first try and sort Hex codes
 			if ( regex.hex.test( b ) ) {
-				aNum = parseInt( a.match( regex.hex ), 16 );
-				bNum = parseInt( b.match( regex.hex ), 16 );
+				aNum = parseInt( ( a || '' ).match( regex.hex ), 16 );
+				bNum = parseInt( ( b || '' ).match( regex.hex ), 16 );
 				if ( aNum < bNum ) { return -1; }
 				if ( aNum > bNum ) { return 1; }
 			}
 			// chunk/tokenize
-			aNum = a.replace( regex.chunk, '\\0$1\\0' ).replace( regex.chunks, '' ).split( '\\0' );
-			bNum = b.replace( regex.chunk, '\\0$1\\0' ).replace( regex.chunks, '' ).split( '\\0' );
+			aNum = ( a || '' ).replace( regex.chunk, '\\0$1\\0' ).replace( regex.chunks, '' ).split( '\\0' );
+			bNum = ( b || '' ).replace( regex.chunk, '\\0$1\\0' ).replace( regex.chunks, '' ).split( '\\0' );
 			max = Math.max( aNum.length, bNum.length );
 			// natural sorting through split numeric strings and default strings
 			for ( indx = 0; indx < max; indx++ ) {
@@ -62347,7 +62547,10 @@ QTIP.defaults = {
 		███████▀ ██ █████▀ ▀████▀ ██████   ██   █████▀
 		*/
 		addWidget : function( widget ) {
-			ts.widgets.push( widget );
+			if ( widget.id && !ts.isEmptyObject( ts.getWidgetById( widget.id ) ) ) {
+				console.warn( '"' + widget.id + '" widget was loaded more than once!' );
+			}
+			ts.widgets[ ts.widgets.length ] = widget;
 		},
 
 		hasWidget : function( $table, name ) {
@@ -62375,6 +62578,8 @@ QTIP.defaults = {
 					widget = ts.getWidgetById( c.widgets[ indx ] );
 					if ( widget && widget.options ) {
 						c.widgetOptions = $.extend( true, {}, widget.options, c.widgetOptions );
+						// add widgetOptions to defaults for option validator
+						$.extend( true, ts.defaults.widgetOptions, widget.options );
 					}
 				}
 			}
@@ -62384,22 +62589,72 @@ QTIP.defaults = {
 			var len, indx,
 				c = table.config,
 				// look for widgets to apply from table class
-				// stop using \b otherwise this matches 'ui-widget-content' & adds 'content' widget
-				regex = '\\s' + c.widgetClass.replace( ts.regex.templateName, '([\\w-]+)' ) + '\\s',
+				// don't match from 'ui-widget-content'; use \S instead of \w to include widgets
+				// with dashes in the name, e.g. "widget-test-2" extracts out "test-2"
+				regex = '^' + c.widgetClass.replace( ts.regex.templateName, '(\\S+)+' ) + '$',
 				widgetClass = new RegExp( regex, 'g' ),
-				// extract out the widget id from the table class (widget id's can include dashes)
-				widget = ( ' ' + c.table.className + ' ' ).match( widgetClass );
-			if ( widget ) {
-				len = widget.length;
+				// split up table class (widget id's can include dashes) - stop using match
+				// otherwise only one widget gets extracted, see #1109
+				widgets = ( table.className || '' ).split( ts.regex.spaces );
+			if ( widgets.length ) {
+				len = widgets.length;
 				for ( indx = 0; indx < len; indx++ ) {
-					c.widgets.push( widget[ indx ].replace( widgetClass, '$1' ) );
+					if ( widgets[ indx ].match( widgetClass ) ) {
+						c.widgets[ c.widgets.length ] = widgets[ indx ].replace( widgetClass, '$1' );
+					}
+				}
+			}
+		},
+
+		applyWidgetId : function( table, id, init ) {
+			table = $(table)[0];
+			var applied, time, name,
+				c = table.config,
+				wo = c.widgetOptions,
+				widget = ts.getWidgetById( id );
+			if ( widget ) {
+				name = widget.id;
+				applied = false;
+				// add widget name to option list so it gets reapplied after sorting, filtering, etc
+				if ( $.inArray( name, c.widgets ) < 0 ) {
+					c.widgets[ c.widgets.length ] = name;
+				}
+				if ( c.debug ) { time = new Date(); }
+
+				if ( init || !( c.widgetInit[ name ] ) ) {
+					// set init flag first to prevent calling init more than once (e.g. pager)
+					c.widgetInit[ name ] = true;
+					if ( table.hasInitialized ) {
+						// don't reapply widget options on tablesorter init
+						ts.applyWidgetOptions( table );
+					}
+					if ( typeof widget.init === 'function' ) {
+						applied = true;
+						if ( c.debug ) {
+							console[ console.group ? 'group' : 'log' ]( 'Initializing ' + name + ' widget' );
+						}
+						widget.init( table, widget, c, wo );
+					}
+				}
+				if ( !init && typeof widget.format === 'function' ) {
+					applied = true;
+					if ( c.debug ) {
+						console[ console.group ? 'group' : 'log' ]( 'Updating ' + name + ' widget' );
+					}
+					widget.format( table, c, wo, false );
+				}
+				if ( c.debug ) {
+					if ( applied ) {
+						console.log( 'Completed ' + ( init ? 'initializing ' : 'applying ' ) + name + ' widget' + ts.benchmark( time ) );
+						if ( console.groupEnd ) { console.groupEnd(); }
+					}
 				}
 			}
 		},
 
 		applyWidget : function( table, init, callback ) {
 			table = $( table )[ 0 ]; // in case this is called externally
-			var indx, len, names, widget, name, applied, time, time2,
+			var indx, len, names, widget, time,
 				c = table.config,
 				widgets = [];
 			// prevent numerous consecutive widget applications
@@ -62408,6 +62663,8 @@ QTIP.defaults = {
 			}
 			if ( c.debug ) { time = new Date(); }
 			ts.addWidgetFromClass( table );
+			// prevent "tablesorter-ready" from firing multiple times in a row
+			clearTimeout( c.timerReady );
 			if ( c.widgets.length ) {
 				table.isApplyingWidgets = true;
 				// ensure unique widget ids
@@ -62423,6 +62680,8 @@ QTIP.defaults = {
 						// set priority to 10 if not defined
 						if ( !widget.priority ) { widget.priority = 10; }
 						widgets[ indx ] = widget;
+					} else if ( c.debug ) {
+						console.warn( '"' + names[ indx ] + '" widget code does not exist!' );
 					}
 				}
 				// sort widgets by priority
@@ -62436,39 +62695,8 @@ QTIP.defaults = {
 				}
 				for ( indx = 0; indx < len; indx++ ) {
 					widget = widgets[ indx ];
-					if ( widget ) {
-						name = widget.id;
-						applied = false;
-						if ( c.debug ) { time2 = new Date(); }
-
-						if ( init || !( c.widgetInit[ name ] ) ) {
-							// set init flag first to prevent calling init more than once (e.g. pager)
-							c.widgetInit[ name ] = true;
-							if ( table.hasInitialized ) {
-								// don't reapply widget options on tablesorter init
-								ts.applyWidgetOptions( table );
-							}
-							if ( typeof widget.init === 'function' ) {
-								applied = true;
-								if ( c.debug ) {
-									console[ console.group ? 'group' : 'log' ]( 'Initializing ' + name + ' widget' );
-								}
-								widget.init( table, widget, table.config, table.config.widgetOptions );
-							}
-						}
-						if ( !init && typeof widget.format === 'function' ) {
-							applied = true;
-							if ( c.debug ) {
-								console[ console.group ? 'group' : 'log' ]( 'Updating ' + name + ' widget' );
-							}
-							widget.format( table, table.config, table.config.widgetOptions, false );
-						}
-						if ( c.debug ) {
-							if ( applied ) {
-								console.log( 'Completed ' + ( init ? 'initializing ' : 'applying ' ) + name + ' widget' + ts.benchmark( time2 ) );
-								if ( console.groupEnd ) { console.groupEnd(); }
-							}
-						}
+					if ( widget && widget.id ) {
+						ts.applyWidgetId( table, widget.id, init );
 					}
 				}
 				if ( c.debug && console.groupEnd ) { console.groupEnd(); }
@@ -62477,11 +62705,11 @@ QTIP.defaults = {
 					callback( table );
 				}
 			}
-			setTimeout( function() {
+			c.timerReady = setTimeout( function() {
 				table.isApplyingWidgets = false;
 				$.data( table, 'lastWidgetApplication', new Date() );
-				c.$table.trigger('tablesorter-ready');
-			}, 0 );
+				c.$table.triggerHandler( 'tablesorter-ready' );
+			}, 10 );
 			if ( c.debug ) {
 				widget = c.widgets.length;
 				console.log( 'Completed ' +
@@ -62501,7 +62729,7 @@ QTIP.defaults = {
 				for ( indx = 0; indx < len; indx++ ) {
 					widget = ts.widgets[ indx ];
 					if ( widget && widget.id ) {
-						name.push( widget.id );
+						name[ name.length ] = widget.id;
 					}
 				}
 			} else {
@@ -62513,16 +62741,16 @@ QTIP.defaults = {
 			for ( index = 0; index < len; index++ ) {
 				widget = ts.getWidgetById( name[ index ] );
 				indx = $.inArray( name[ index ], c.widgets );
+				// don't remove the widget from config.widget if refreshing
+				if ( indx >= 0 && refreshing !== true ) {
+					c.widgets.splice( indx, 1 );
+				}
 				if ( widget && widget.remove ) {
 					if ( c.debug ) {
 						console.log( ( refreshing ? 'Refreshing' : 'Removing' ) + ' "' + name[ index ] + '" widget' );
 					}
 					widget.remove( table, c, c.widgetOptions, refreshing );
 					c.widgetInit[ name[ index ] ] = false;
-				}
-				// don't remove the widget from config.widget if refreshing
-				if ( indx >= 0 && refreshing !== true ) {
-					c.widgets.splice( indx, 1 );
 				}
 			}
 		},
@@ -62536,13 +62764,13 @@ QTIP.defaults = {
 				len = widgets.length,
 				list = [],
 				callback = function( table ) {
-					$( table ).trigger( 'refreshComplete' );
+					$( table ).triggerHandler( 'refreshComplete' );
 				};
 			// remove widgets not defined in config.widgets, unless doAll is true
 			for ( indx = 0; indx < len; indx++ ) {
 				widget = widgets[ indx ];
 				if ( widget && widget.id && ( doAll || $.inArray( widget.id, curWidgets ) < 0 ) ) {
-					list.push( widget.id );
+					list[ list.length ] = widget.id;
 				}
 			}
 			ts.removeWidget( table, list.join( ',' ), true );
@@ -62565,7 +62793,7 @@ QTIP.defaults = {
 		▀████▀   ██   ██ ██████ ██   ██   ██ ██████ █████▀
 		*/
 		benchmark : function( diff ) {
-			return ( ' ( ' + ( new Date().getTime() - diff.getTime() ) + 'ms )' );
+			return ( ' (' + ( new Date().getTime() - diff.getTime() ) + ' ms)' );
 		},
 		// deprecated ts.log
 		log : function() {
@@ -62625,17 +62853,17 @@ QTIP.defaults = {
 		// computeTableHeaderCellIndexes from:
 		// http://www.javascripttoolbox.com/lib/table/examples.php
 		// http://www.javascripttoolbox.com/temp/table_cellindex.html
-		computeColumnIndex : function( $rows ) {
-			var i, j, k, l, $cell, cell, cells, rowIndex, cellId, rowSpan, colSpan, firstAvailCol,
+		computeColumnIndex : function( $rows, c ) {
+			var i, j, k, l, cell, cells, rowIndex, rowSpan, colSpan, firstAvailCol,
+				// total columns has been calculated, use it to set the matrixrow
+				columns = c && c.columns || 0,
 				matrix = [],
-				matrixrow = [];
+				matrixrow = new Array( columns );
 			for ( i = 0; i < $rows.length; i++ ) {
 				cells = $rows[ i ].cells;
 				for ( j = 0; j < cells.length; j++ ) {
 					cell = cells[ j ];
-					$cell = $( cell );
 					rowIndex = cell.parentNode.rowIndex;
-					cellId = rowIndex + '-' + $cell.index();
 					rowSpan = cell.rowSpan || 1;
 					colSpan = cell.colSpan || 1;
 					if ( typeof matrix[ rowIndex ] === 'undefined' ) {
@@ -62648,11 +62876,16 @@ QTIP.defaults = {
 							break;
 						}
 					}
-					// add data-column (setAttribute = IE8+)
-					if ( cell.setAttribute ) {
+					// jscs:disable disallowEmptyBlocks
+					if ( columns && cell.cellIndex === firstAvailCol ) {
+						// don't to anything
+					} else if ( cell.setAttribute ) {
+						// jscs:enable disallowEmptyBlocks
+						// add data-column (setAttribute = IE8+)
 						cell.setAttribute( 'data-column', firstAvailCol );
 					} else {
-						$cell.attr( 'data-column', firstAvailCol );
+						// remove once we drop support for IE7 - 1/12/2016
+						$( cell ).attr( 'data-column', firstAvailCol );
 					}
 					for ( k = rowIndex; k < rowIndex + rowSpan; k++ ) {
 						if ( typeof matrix[ k ] === 'undefined' ) {
@@ -62719,7 +62952,9 @@ QTIP.defaults = {
 		},
 
 		getColumnData : function( table, obj, indx, getCell, $headers ) {
-			if ( typeof obj === 'undefined' || obj === null ) { return; }
+			if ( typeof obj !== 'object' || obj === null ) {
+				return obj;
+			}
 			table = $( table )[ 0 ];
 			var $header, key,
 				c = table.config,
@@ -62727,7 +62962,7 @@ QTIP.defaults = {
 				// c.$headerIndexed is not defined initially
 				$cell = c.$headerIndexed && c.$headerIndexed[ indx ] ||
 					$cells.filter( '[data-column="' + indx + '"]:last' );
-			if ( obj[ indx ] ) {
+			if ( typeof obj[ indx ] !== 'undefined' ) {
 				return getCell ? obj[ indx ] : obj[ $cells.index( $cell ) ];
 			}
 			for ( key in obj ) {
@@ -62830,6 +63065,34 @@ QTIP.defaults = {
 			return str;
 		},
 
+		validateOptions : function( c ) {
+			var setting, setting2, typ, timer,
+				// ignore options containing an array
+				ignore = 'headers sortForce sortList sortAppend widgets'.split( ' ' ),
+				orig = c.originalSettings;
+			if ( orig ) {
+				if ( c.debug ) {
+					timer = new Date();
+				}
+				for ( setting in orig ) {
+					typ = typeof ts.defaults[setting];
+					if ( typ === 'undefined' ) {
+						console.warn( 'Tablesorter Warning! "table.config.' + setting + '" option not recognized' );
+					} else if ( typ === 'object' ) {
+						for ( setting2 in orig[setting] ) {
+							typ = ts.defaults[setting] && typeof ts.defaults[setting][setting2];
+							if ( $.inArray( setting, ignore ) < 0 && typ === 'undefined' ) {
+								console.warn( 'Tablesorter Warning! "table.config.' + setting + '.' + setting2 + '" option not recognized' );
+							}
+						}
+					}
+				}
+				if ( c.debug ) {
+					console.log( 'validate options time:' + ts.benchmark( timer ) );
+				}
+			}
+		},
+
 		// restore headers
 		restoreHeaders : function( table ) {
 			var index, $cell,
@@ -62861,15 +63124,16 @@ QTIP.defaults = {
 				$f = $t.find( 'tfoot:first > tr' ).children( 'th, td' );
 			if ( removeClasses === false && $.inArray( 'uitheme', c.widgets ) >= 0 ) {
 				// reapply uitheme classes, in case we want to maintain appearance
-				$t.trigger( 'applyWidgetId', [ 'uitheme' ] );
-				$t.trigger( 'applyWidgetId', [ 'zebra' ] );
+				$t.triggerHandler( 'applyWidgetId', [ 'uitheme' ] );
+				$t.triggerHandler( 'applyWidgetId', [ 'zebra' ] );
 			}
 			// remove widget added rows, just in case
 			$h.find( 'tr' ).not( $r ).remove();
-			// disable tablesorter
+			// disable tablesorter - not using .unbind( namespace ) because namespacing was
+			// added in jQuery v1.4.3 - see http://api.jquery.com/event.namespace/
 			events = 'sortReset update updateRows updateAll updateHeaders updateCell addRows updateComplete sorton ' +
-				'appendCache updateCache applyWidgetId applyWidgets refreshWidgets destroy mouseup mouseleave keypress ' +
-				'sortBegin sortEnd resetToLoadState '.split( ' ' )
+				'appendCache updateCache applyWidgetId applyWidgets refreshWidgets removeWidget destroy mouseup mouseleave ' +
+				'keypress sortBegin sortEnd resetToLoadState '.split( ' ' )
 				.join( c.namespace + ' ' );
 			$t
 				.removeData( 'tablesorter' )
@@ -62923,7 +63187,7 @@ QTIP.defaults = {
 		console = {};
 		console.log = console.warn = console.error = console.table = function() {
 			var arg = arguments.length > 1 ? arguments : arguments[0];
-			ts.logs.push({ date: Date.now(), log: arg });
+			ts.logs[ ts.logs.length ] = { date: Date.now(), log: arg };
 		};
 	}
 
@@ -62988,8 +63252,8 @@ QTIP.defaults = {
 
 	// too many protocols to add them all https://en.wikipedia.org/wiki/URI_scheme
 	// now, this regex can be updated before initialization
-	ts.regex.urlProtocolTest =   /^(https?|ftp|file):\/\//;
-	ts.regex.urlProtocolReplace = /(https?|ftp|file):\/\//;
+	ts.regex.urlProtocolTest = /^(https?|ftp|file):\/\//;
+	ts.regex.urlProtocolReplace = /(https?|ftp|file):\/\/(www\.)?/;
 	ts.addParser({
 		id : 'url',
 		is : function( str ) {
@@ -62998,7 +63262,6 @@ QTIP.defaults = {
 		format : function( str ) {
 			return str ? $.trim( str.replace( ts.regex.urlProtocolReplace, '' ) ) : str;
 		},
-		parsed : true, // filter widget flag
 		type : 'text'
 	});
 
@@ -63106,8 +63369,8 @@ QTIP.defaults = {
 	});
 
 	// match 24 hour time & 12 hours time + am/pm - see http://regexr.com/3c3tk
-	ts.regex.timeTest = /^([1-9]|1[0-2]):([0-5]\d)(\s[AP]M)|((?:[01]\d|[2][0-4]):[0-5]\d)$/i;
-	ts.regex.timeMatch = /([1-9]|1[0-2]):([0-5]\d)(\s[AP]M)|((?:[01]\d|[2][0-4]):[0-5]\d)/i;
+	ts.regex.timeTest = /^(0?[1-9]|1[0-2]):([0-5]\d)(\s[AP]M)$|^((?:[01]\d|[2][0-4]):[0-5]\d)$/i;
+	ts.regex.timeMatch = /(0?[1-9]|1[0-2]):([0-5]\d)(\s[AP]M)|((?:[01]\d|[2][0-4]):[0-5]\d)/i;
 	ts.addParser({
 		id : 'time',
 		is : function( str ) {
@@ -63190,7 +63453,7 @@ QTIP.defaults = {
 
 })( jQuery );
 
-/*! Widget: storage - updated 3/26/2015 (v2.21.3) */
+/*! Widget: storage - updated 11/26/2016 (v2.28.0) */
 /*global JSON:false */
 ;(function ($, window, document) {
 	'use strict';
@@ -63235,6 +63498,17 @@ QTIP.defaults = {
 			url = options && options.url ||
 				$table.attr(options && options.page || wo && wo.storage_page || 'data-table-page') ||
 				wo && wo.storage_fixedUrl || c && c.fixedUrl || window.location.pathname;
+		// update defaults for validator; these values must be falsy!
+		$.extend(true, ts.defaults, {
+			fixedUrl: '',
+			widgetOptions: {
+				storage_fixedUrl: '',
+				storage_group: '',
+				storage_page: '',
+				storage_tableId: '',
+				storage_useSessionStorage: ''
+			}
+		});
 		// https://gist.github.com/paulirish/5558557
 		if (storageType in window) {
 			try {
@@ -63260,7 +63534,7 @@ QTIP.defaults = {
 			}
 		}
 		// allow value to be an empty string too
-		if ((value || value === '') && window.JSON && JSON.hasOwnProperty('stringify')) {
+		if (typeof value !== 'undefined' && window.JSON && JSON.hasOwnProperty('stringify')) {
 			// add unique identifiers = url pathname > table ID/index on page > data
 			if (!values[url]) {
 				values[url] = {};
@@ -63281,7 +63555,7 @@ QTIP.defaults = {
 
 })(jQuery, window, document);
 
-/*! Widget: uitheme - updated 3/26/2015 (v2.21.3) */
+/*! Widget: uitheme - updated 12/8/2016 (v2.28.1) */
 ;(function ($) {
 	'use strict';
 	var ts = $.tablesorter || {};
@@ -63320,9 +63594,9 @@ QTIP.defaults = {
 			hover        : 'ui-state-hover',  // hover class
 			// icon class names
 			icons        : 'ui-icon', // icon class added to the <i> in the header
-			iconSortNone : 'ui-icon-carat-2-n-s', // class name added to icon when column is not sorted
-			iconSortAsc  : 'ui-icon-carat-1-n', // class name added to icon when column has ascending sort
-			iconSortDesc : 'ui-icon-carat-1-s', // class name added to icon when column has descending sort
+			iconSortNone : 'ui-icon-carat-2-n-s ui-icon-caret-2-n-s', // class name added to icon when column is not sorted
+			iconSortAsc  : 'ui-icon-carat-1-n ui-icon-caret-1-n', // class name added to icon when column has ascending sort
+			iconSortDesc : 'ui-icon-carat-1-s ui-icon-caret-1-s', // class name added to icon when column has descending sort
 			filterRow    : '',
 			footerRow    : '',
 			footerCells  : '',
@@ -63339,7 +63613,7 @@ QTIP.defaults = {
 		id: 'uitheme',
 		priority: 10,
 		format: function(table, c, wo) {
-			var i, hdr, icon, time, $header, $icon, $tfoot, $h, oldtheme, oldremove, oldIconRmv, hasOldTheme,
+			var i, tmp, hdr, icon, time, $header, $icon, $tfoot, $h, oldtheme, oldremove, oldIconRmv, hasOldTheme,
 				themesAll = ts.themes,
 				$table = c.$table.add( $( c.namespace + '_extra_table' ) ),
 				$headers = c.$headers.add( $( c.namespace + '_extra_headers' ) ),
@@ -63406,10 +63680,20 @@ QTIP.defaults = {
 						.removeClass(hasOldTheme ? [ oldtheme.icons, oldIconRmv ].join(' ') : '')
 						.addClass(themes.icons || '');
 				}
-				if ($table.hasClass('hasFilters')) {
-					$table.children('thead').children('.' + ts.css.filterRow)
-						.removeClass(hasOldTheme ? oldtheme.filterRow || '' : '')
-						.addClass(themes.filterRow || '');
+				// filter widget initializes after uitheme
+				if (ts.hasWidget( c.table, 'filter' )) {
+					tmp = function() {
+						$table.children('thead').children('.' + ts.css.filterRow)
+							.removeClass(hasOldTheme ? oldtheme.filterRow || '' : '')
+							.addClass(themes.filterRow || '');
+					};
+					if (wo.filter_initialized) {
+						tmp();
+					} else {
+						$table.one('filterInit', function() {
+							tmp();
+						});
+					}
 				}
 			}
 			for (i = 0; i < c.columns; i++) {
@@ -63546,7 +63830,7 @@ QTIP.defaults = {
 
 })(jQuery);
 
-/*! Widget: filter - updated 11/10/2015 (v2.24.4) *//*
+/*! Widget: filter - updated 12/8/2016 (v2.28.1) *//*
  * Requires tablesorter v2.8+ and jQuery 1.7+
  * by Rob Garrison
  */
@@ -63554,7 +63838,8 @@ QTIP.defaults = {
 	'use strict';
 	var tsf, tsfRegex,
 		ts = $.tablesorter || {},
-		tscss = ts.css;
+		tscss = ts.css,
+		tskeyCodes = ts.keyCodes;
 
 	$.extend( tscss, {
 		filterRow      : 'tablesorter-filter-row',
@@ -63563,39 +63848,49 @@ QTIP.defaults = {
 		filterRowHide  : 'hideme'
 	});
 
+	$.extend( tskeyCodes, {
+		backSpace : 8,
+		escape : 27,
+		space : 32,
+		left : 37,
+		down : 40
+	});
+
 	ts.addWidget({
 		id: 'filter',
 		priority: 50,
 		options : {
+			filter_cellFilter    : '',    // css class name added to the filter cell ( string or array )
 			filter_childRows     : false, // if true, filter includes child row content in the search
 			filter_childByColumn : false, // ( filter_childRows must be true ) if true = search child rows by column; false = search all child row text grouped
 			filter_childWithSibs : true,  // if true, include matching child row siblings
-			filter_columnFilters : true,  // if true, a filter will be added to the top of each table column
 			filter_columnAnyMatch: true,  // if true, allows using '#:{query}' in AnyMatch searches ( column:query )
-			filter_cellFilter    : '',    // css class name added to the filter cell ( string or array )
+			filter_columnFilters : true,  // if true, a filter will be added to the top of each table column
 			filter_cssFilter     : '',    // css class name added to the filter row & each input in the row ( tablesorter-filter is ALWAYS added )
+			filter_defaultAttrib : 'data-value', // data attribute in the header cell that contains the default filter value
 			filter_defaultFilter : {},    // add a default column filter type '~{query}' to make fuzzy searches default; '{q1} AND {q2}' to make all searches use a logical AND.
 			filter_excludeFilter : {},    // filters to exclude, per column
 			filter_external      : '',    // jQuery selector string ( or jQuery object ) of external filters
-			filter_filteredRow   : 'filtered', // class added to filtered rows; needed by pager plugin
+			filter_filteredRow   : 'filtered', // class added to filtered rows; define in css with "display:none" to hide the filtered-out rows
 			filter_formatter     : null,  // add custom filter elements to the filter row
 			filter_functions     : null,  // add custom filter functions using this option
 			filter_hideEmpty     : true,  // hide filter row when table is empty
 			filter_hideFilters   : false, // collapse filter row when mouse leaves the area
 			filter_ignoreCase    : true,  // if true, make all searches case-insensitive
 			filter_liveSearch    : true,  // if true, search column content while the user types ( with a delay )
+			filter_matchType     : { 'input': 'exact', 'select': 'exact' }, // global query settings ('exact' or 'match'); overridden by "filter-match" or "filter-exact" class
 			filter_onlyAvail     : 'filter-onlyAvail', // a header with a select dropdown & this class name will only show available ( visible ) options within the drop down
 			filter_placeholder   : { search : '', select : '' }, // default placeholder text ( overridden by any header 'data-placeholder' setting )
 			filter_reset         : null,  // jQuery selector string of an element used to reset the filters
+			filter_resetOnEsc    : true,  // Reset filter input when the user presses escape - normalized across browsers
 			filter_saveFilters   : false, // Use the $.tablesorter.storage utility to save the most recent filters
 			filter_searchDelay   : 300,   // typing delay in milliseconds before starting a search
 			filter_searchFiltered: true,  // allow searching through already filtered rows in special circumstances; will speed up searching in large tables if true
 			filter_selectSource  : null,  // include a function to return an array of values to be added to the column filter select
-			filter_startsWith    : false, // if true, filter start from the beginning of the cell contents
-			filter_useParsedData : false, // filter all data using parsed content
+			filter_selectSourceSeparator : '|', // filter_selectSource array text left of the separator is added to the option value, right into the option text
 			filter_serversideFiltering : false, // if true, must perform server-side filtering b/c client-side filtering is disabled, but the ui and events will still be used.
-			filter_defaultAttrib : 'data-value', // data attribute in the header cell that contains the default filter value
-			filter_selectSourceSeparator : '|' // filter_selectSource array text left of the separator is added to the option value, right into the option text
+			filter_startsWith    : false, // if true, filter start from the beginning of the cell contents
+			filter_useParsedData : false  // filter all data using parsed content
 		},
 		format: function( table, c, wo ) {
 			if ( !c.$table.hasClass( 'hasFilters' ) ) {
@@ -63614,6 +63909,7 @@ QTIP.defaults = {
 				.unbind( events.replace( ts.regex.spaces, ' ' ) )
 				// remove the filter row even if refreshing, because the column might have been moved
 				.find( '.' + tscss.filterRow ).remove();
+			wo.filter_initialized = false;
 			if ( refreshing ) { return; }
 			for ( tbodyIndex = 0; tbodyIndex < $tbodies.length; tbodyIndex++ ) {
 				$tbody = ts.processTbody( table, $tbodies.eq( tbodyIndex ), true ); // remove tbody
@@ -63630,7 +63926,7 @@ QTIP.defaults = {
 
 		// regex used in filter 'check' functions - not for general use and not documented
 		regex: {
-			regex     : /^\/((?:\\\/|[^\/])+)\/([mig]{0,3})?$/, // regex to test for regex
+			regex     : /^\/((?:\\\/|[^\/])+)\/([migyu]{0,5})?$/, // regex to test for regex
 			child     : /tablesorter-childRow/, // child row class name; this gets updated in the script
 			filtered  : /filtered/, // filtered (hidden) row class name; updated in the script
 			type      : /undefined|number/, // check type
@@ -63756,7 +64052,7 @@ QTIP.defaults = {
 						table = c.table,
 						parsed = data.parsed[ data.index ],
 						query = ts.formatFloat( data.iFilter.replace( tsfRegex.operators, '' ), table ),
-						parser = c.parsers[ data.index ],
+						parser = c.parsers[ data.index ] || {},
 						savedSearch = query;
 					// parse filter value in case we're comparing numbers ( dates )
 					if ( parsed || parser.type === 'numeric' ) {
@@ -63798,7 +64094,11 @@ QTIP.defaults = {
 						return filter === '' ? true : $.trim( filter ) !== data.iExact;
 					} else {
 						indx = data.iExact.search( $.trim( filter ) );
-						return filter === '' ? true : !( c.widgetOptions.filter_startsWith ? indx === 0 : indx >= 0 );
+						return filter === '' ? true :
+							// return true if not found
+							data.anyMatch ? indx < 0 :
+							// return false if found
+							!( c.widgetOptions.filter_startsWith ? indx === 0 : indx >= 0 );
 					}
 				}
 				return null;
@@ -63886,7 +64186,7 @@ QTIP.defaults = {
 				return null;
 			}
 		},
-		init: function( table, c, wo ) {
+		init: function( table ) {
 			// filter language options
 			ts.language = $.extend( true, {}, {
 				to  : 'to',
@@ -63894,8 +64194,11 @@ QTIP.defaults = {
 				and : 'and'
 			}, ts.language );
 
-			var options, string, txt, $header, column, filters, val, fxn, noSelect;
+			var options, string, txt, $header, column, val, fxn, noSelect,
+				c = table.config,
+				wo = c.widgetOptions;
 			c.$table.addClass( 'hasFilters' );
+			c.lastSearch = [];
 
 			// define timers so using clearTimeout won't cause an undefined error
 			wo.filter_searchTimer = null;
@@ -63914,7 +64217,7 @@ QTIP.defaults = {
 				toSplit : new RegExp( '(?:\\s+(?:-|' + ts.language.to + ')\\s+)', 'gi' ),
 				andTest : new RegExp( '\\s+(' + ts.language.and + '|&&)\\s+', 'i' ),
 				andSplit : new RegExp( '(?:\\s+(?:' + ts.language.and + '|&&)\\s+)', 'gi' ),
-				orTest : /\|/,
+				orTest : new RegExp( '(\\||\\s+' + ts.language.or + '\\s+)', 'i' ),
 				orSplit : new RegExp( '(?:\\s+(?:' + ts.language.or + ')\\s+|\\|)', 'gi' ),
 				iQuery : new RegExp( val, 'i' ),
 				igQuery : new RegExp( val, 'ig' ),
@@ -63938,8 +64241,8 @@ QTIP.defaults = {
 				tsf.buildRow( table, c, wo );
 			}
 
-			txt = 'addRows updateCell update updateRows updateComplete appendCache filterReset filterEnd search '
-				.split( ' ' ).join( c.namespace + 'filter ' );
+			txt = 'addRows updateCell update updateRows updateComplete appendCache filterReset ' +
+				'filterResetSaved filterEnd search '.split( ' ' ).join( c.namespace + 'filter ' );
 			c.$table.bind( txt, function( event, filter ) {
 				val = wo.filter_hideEmpty &&
 					$.isEmptyObject( c.cache ) &&
@@ -63953,6 +64256,8 @@ QTIP.defaults = {
 				if ( event.type === 'filterReset' ) {
 					c.$table.find( '.' + tscss.filter ).add( wo.filter_$externalFilters ).val( '' );
 					tsf.searching( table, [] );
+				} else if ( event.type === 'filterResetSaved' ) {
+					ts.storage( table, 'tablesorter-filters', '' );
 				} else if ( event.type === 'filterEnd' ) {
 					tsf.buildDefault( table, true );
 				} else {
@@ -63964,6 +64269,10 @@ QTIP.defaults = {
 						// force a new search since content has changed
 						c.lastCombinedFilter = null;
 						c.lastSearch = [];
+						// update filterFormatters after update (& small delay) - Fixes #1237
+						setTimeout(function(){
+							c.$table.triggerHandler( 'filterFomatterUpdate' );
+						}, 100);
 					}
 					// pass true ( skipFirst ) to prevent the tablesorter.setFilters function from skipping the first
 					// input ensures all inputs are updated when a search is triggered on the table
@@ -63978,7 +64287,7 @@ QTIP.defaults = {
 				if ( wo.filter_reset instanceof $ ) {
 					// reset contains a jQuery object, bind to it
 					wo.filter_reset.click( function() {
-						c.$table.trigger( 'filterReset' );
+						c.$table.triggerHandler( 'filterReset' );
 					});
 				} else if ( $( wo.filter_reset ).length ) {
 					// reset is a jQuery selector, use event delegation
@@ -63986,7 +64295,7 @@ QTIP.defaults = {
 						.undelegate( wo.filter_reset, 'click' + c.namespace + 'filter' )
 						.delegate( wo.filter_reset, 'click' + c.namespace + 'filter', function() {
 							// trigger a reset event, so other functions ( filter_formatter ) know when to reset
-							c.$table.trigger( 'filterReset' );
+							c.$table.triggerHandler( 'filterReset' );
 						});
 				}
 			}
@@ -64079,31 +64388,38 @@ QTIP.defaults = {
 			c.$table
 			.unbind( txt.replace( ts.regex.spaces, ' ' ) )
 			.bind( txt, function() {
-				// redefine 'wo' as it does not update properly inside this callback
-				var wo = this.config.widgetOptions;
-				filters = tsf.setDefaults( table, c, wo ) || [];
-				if ( filters.length ) {
-					// prevent delayInit from triggering a cache build if filters are empty
-					if ( !( c.delayInit && filters.join( '' ) === '' ) ) {
-						ts.setFilters( table, filters, true );
-					}
-				}
-				c.$table.trigger( 'filterFomatterUpdate' );
-				// trigger init after setTimeout to prevent multiple filterStart/End/Init triggers
-				setTimeout( function() {
-					if ( !wo.filter_initialized ) {
-						tsf.filterInitComplete( c );
-					}
-				}, 100 );
+				tsf.completeInit( this );
 			});
 			// if filter widget is added after pager has initialized; then set filter init flag
 			if ( c.pager && c.pager.initialized && !wo.filter_initialized ) {
-				c.$table.trigger( 'filterFomatterUpdate' );
+				c.$table.triggerHandler( 'filterFomatterUpdate' );
 				setTimeout( function() {
 					tsf.filterInitComplete( c );
 				}, 100 );
+			} else if ( !wo.filter_initialized ) {
+				tsf.completeInit( table );
 			}
 		},
+		completeInit: function( table ) {
+			// redefine 'c' & 'wo' so they update properly inside this callback
+			var c = table.config,
+				wo = c.widgetOptions,
+				filters = tsf.setDefaults( table, c, wo ) || [];
+			if ( filters.length ) {
+				// prevent delayInit from triggering a cache build if filters are empty
+				if ( !( c.delayInit && filters.join( '' ) === '' ) ) {
+					ts.setFilters( table, filters, true );
+				}
+			}
+			c.$table.triggerHandler( 'filterFomatterUpdate' );
+			// trigger init after setTimeout to prevent multiple filterStart/End/Init triggers
+			setTimeout( function() {
+				if ( !wo.filter_initialized ) {
+					tsf.filterInitComplete( c );
+				}
+			}, 100 );
+		},
+
 		// $cell parameter, but not the config, is passed to the filter_formatters,
 		// so we have to work with it instead
 		formatterUpdated: function( $cell, column ) {
@@ -64121,8 +64437,10 @@ QTIP.defaults = {
 				count = 0,
 				completed = function() {
 					wo.filter_initialized = true;
-					c.$table.trigger( 'filterInit', c );
-					tsf.findRows( c.table, c.$table.data( 'lastSearch' ) || [] );
+					// update lastSearch - it gets cleared often
+					c.lastSearch = c.$table.data( 'lastSearch' );
+					c.$table.triggerHandler( 'filterInit', c );
+					tsf.findRows( c.table, c.lastSearch || [] );
 				};
 			if ( $.isEmptyObject( wo.filter_formatter ) ) {
 				completed();
@@ -64149,12 +64467,16 @@ QTIP.defaults = {
 		// encode or decode filters for storage; see #1026
 		processFilters: function( filters, encode ) {
 			var indx,
+				// fixes #1237; previously returning an encoded "filters" value
+				result = [],
 				mode = encode ? encodeURIComponent : decodeURIComponent,
 				len = filters.length;
 			for ( indx = 0; indx < len; indx++ ) {
-				filters[ indx ] = mode( filters[ indx ] );
+				if ( filters[ indx ] ) {
+					result[ indx ] = mode( filters[ indx ] );
+				}
 			}
-			return filters;
+			return result;
 		},
 		setDefaults: function( table, c, wo ) {
 			var isArray, saved, indx, col, $filters,
@@ -64176,7 +64498,7 @@ QTIP.defaults = {
 				for ( indx = 0; indx <= c.columns; indx++ ) {
 					// include data-column='all' external filters
 					col = indx === c.columns ? 'all' : indx;
-					filters[indx] = $filters
+					filters[ indx ] = $filters
 						.filter( '[data-column="' + col + '"]' )
 						.attr( wo.filter_defaultAttrib ) || filters[indx] || '';
 				}
@@ -64198,11 +64520,12 @@ QTIP.defaults = {
 				buildFilter = '<tr role="row" class="' + tscss.filterRow + ' ' + c.cssIgnoreRow + '">';
 			for ( column = 0; column < columns; column++ ) {
 				if ( c.$headerIndexed[ column ].length ) {
-					buildFilter += '<td data-column="' + column + '"';
 					// account for entire column set with colspan. See #1047
 					tmp = c.$headerIndexed[ column ] && c.$headerIndexed[ column ][0].colSpan || 0;
 					if ( tmp > 1 ) {
-						buildFilter += ' colspan="' + tmp + '"';
+						buildFilter += '<td data-column="' + column + '-' + ( column + tmp - 1 ) + '" colspan="' + tmp + '"';
+					} else {
+						buildFilter += '<td data-column="' + column + '"';
 					}
 					if ( arry ) {
 						buildFilter += ( cellFilter[ column ] ? ' class="' + cellFilter[ column ] + '"' : '' );
@@ -64221,7 +64544,8 @@ QTIP.defaults = {
 				// assuming last cell of a column is the main column
 				$header = c.$headerIndexed[ column ];
 				if ( $header && $header.length ) {
-					$filter = c.$filters.filter( '[data-column="' + column + '"]' );
+					// $filter = c.$filters.filter( '[data-column="' + column + '"]' );
+					$filter = tsf.getColumnElm( c, c.$filters, column );
 					ffxn = ts.getColumnData( table, wo.filter_functions, column );
 					makeSelect = ( wo.filter_functions && ffxn && typeof ffxn !== 'function' ) ||
 						$header.hasClass( 'filter-select' );
@@ -64261,7 +64585,8 @@ QTIP.defaults = {
 						name = ( $.isArray( wo.filter_cssFilter ) ?
 							( typeof wo.filter_cssFilter[column] !== 'undefined' ? wo.filter_cssFilter[column] || '' : '' ) :
 							wo.filter_cssFilter ) || '';
-						buildFilter.addClass( tscss.filter + ' ' + name ).attr( 'data-column', column );
+						// copy data-column from table cell (it will include colspan)
+						buildFilter.addClass( tscss.filter + ' ' + name ).attr( 'data-column', $filter.attr( 'data-column' ) );
 						if ( disabled ) {
 							buildFilter.attr( 'placeholder', '' ).addClass( tscss.filterDisabled )[0].disabled = true;
 						}
@@ -64291,54 +64616,95 @@ QTIP.defaults = {
 				ts.setFilters( table, c.$table.data( 'lastSearch' ) || [], internal === false );
 			}
 			// unbind events
-			tmp = ( 'keypress keyup search change '.split( ' ' ).join( namespace + ' ' ) );
+			tmp = ( 'keypress keyup keydown search change input '.split( ' ' ).join( namespace + ' ' ) );
 			$el
 			// use data attribute instead of jQuery data since the head is cloned without including
 			// the data/binding
 			.attr( 'data-lastSearchTime', new Date().getTime() )
 			.unbind( tmp.replace( ts.regex.spaces, ' ' ) )
-			// include change for select - fixes #473
+			.bind( 'keydown' + namespace, function( event ) {
+				if ( event.which === tskeyCodes.escape && !table.config.widgetOptions.filter_resetOnEsc ) {
+					// prevent keypress event
+					return false;
+				}
+			})
 			.bind( 'keyup' + namespace, function( event ) {
+				wo = table.config.widgetOptions; // make sure "wo" isn't cached
+				var column = parseInt( $( this ).attr( 'data-column' ), 10 ),
+					liveSearch = typeof wo.filter_liveSearch === 'boolean' ? wo.filter_liveSearch :
+						ts.getColumnData( table, wo.filter_liveSearch, column );
+				if ( typeof liveSearch === 'undefined' ) {
+					liveSearch = wo.filter_liveSearch.fallback || false;
+				}
 				$( this ).attr( 'data-lastSearchTime', new Date().getTime() );
 				// emulate what webkit does.... escape clears the filter
-				if ( event.which === 27 ) {
-					this.value = '';
+				if ( event.which === tskeyCodes.escape ) {
+					// make sure to restore the last value on escape
+					this.value = wo.filter_resetOnEsc ? '' : c.lastSearch[column];
 				// live search
-				} else if ( wo.filter_liveSearch === false ) {
+				} else if ( liveSearch === false ) {
 					return;
 					// don't return if the search value is empty ( all rows need to be revealed )
 				} else if ( this.value !== '' && (
 					// liveSearch can contain a min value length; ignore arrow and meta keys, but allow backspace
-					( typeof wo.filter_liveSearch === 'number' && this.value.length < wo.filter_liveSearch ) ||
+					( typeof liveSearch === 'number' && this.value.length < liveSearch ) ||
 					// let return & backspace continue on, but ignore arrows & non-valid characters
-					( event.which !== 13 && event.which !== 8 &&
-						( event.which < 32 || ( event.which >= 37 && event.which <= 40 ) ) ) ) ) {
+					( event.which !== tskeyCodes.enter && event.which !== tskeyCodes.backSpace &&
+						( event.which < tskeyCodes.space || ( event.which >= tskeyCodes.left && event.which <= tskeyCodes.down ) ) ) ) ) {
 					return;
 				}
 				// change event = no delay; last true flag tells getFilters to skip newest timed input
-				tsf.searching( table, true, true );
+				tsf.searching( table, true, true, column );
 			})
-			.bind( 'search change keypress '.split( ' ' ).join( namespace + ' ' ), function( event ) {
+			// include change for select - fixes #473
+			.bind( 'search change keypress input '.split( ' ' ).join( namespace + ' ' ), function( event ) {
 				// don't get cached data, in case data-column changes dynamically
-				var column = parseInt( $( this ).attr( 'data-column' ), 10 );
-				// don't allow 'change' event to process if the input value is the same - fixes #685
-				if ( wo.filter_initialized && ( event.which === 13 || event.type === 'search' ||
-					event.type === 'change' && this.value !== c.lastSearch[column] ) ) {
+				var column = parseInt( $( this ).attr( 'data-column' ), 10 ),
+					liveSearch = typeof wo.filter_liveSearch === 'boolean' ?
+						wo.filter_liveSearch :
+						ts.getColumnData( table, wo.filter_liveSearch, column );
+				if ( table.config.widgetOptions.filter_initialized &&
+					// immediate search if user presses enter
+					( event.which === tskeyCodes.enter ||
+						// immediate search if a "search" is triggered on the input
+						event.type === 'search' ||
+						// change & input events must be ignored if liveSearch !== true
+						( event.type === 'change' || event.type === 'input' ) &&
+						// prevent search if liveSearch is a number
+						liveSearch === true &&
+						// don't allow 'change' or 'input' event to process if the input value
+						// is the same - fixes #685
+						this.value !== c.lastSearch[column]
+					)
+				) {
 					event.preventDefault();
 					// init search with no delay
 					$( this ).attr( 'data-lastSearchTime', new Date().getTime() );
-					tsf.searching( table, false, true );
+					tsf.searching( table, event.type !== 'keypress', true, column );
 				}
 			});
 		},
-		searching: function( table, filter, skipFirst ) {
-			var wo = table.config.widgetOptions;
+		searching: function( table, filter, skipFirst, column ) {
+			var liveSearch,
+				wo = table.config.widgetOptions;
+			if (typeof column === 'undefined') {
+				// no delay
+				liveSearch = false;
+			} else {
+				liveSearch = typeof wo.filter_liveSearch === 'boolean' ?
+					wo.filter_liveSearch :
+					// get column setting, or set to fallback value, or default to false
+					ts.getColumnData( table, wo.filter_liveSearch, column );
+				if ( typeof liveSearch === 'undefined' ) {
+					liveSearch = wo.filter_liveSearch.fallback || false;
+				}
+			}
 			clearTimeout( wo.filter_searchTimer );
 			if ( typeof filter === 'undefined' || filter === true ) {
 				// delay filtering
 				wo.filter_searchTimer = setTimeout( function() {
 					tsf.checkFilters( table, filter, skipFirst );
-				}, wo.filter_liveSearch ? wo.filter_searchDelay : 10 );
+				}, liveSearch ? wo.filter_searchDelay : 10 );
 			} else {
 				// skip delay
 				tsf.checkFilters( table, filter, skipFirst );
@@ -64353,7 +64719,7 @@ QTIP.defaults = {
 			// prevent errors if delay init is set
 			if ( $.isEmptyObject( c.cache ) ) {
 				// update cache if delayInit set & pager has initialized ( after user initiates a search )
-				if ( c.delayInit && c.pager && c.pager.initialized ) {
+				if ( c.delayInit && ( !c.pager || c.pager && c.pager.initialized ) ) {
 					ts.updateCache( c, function() {
 						tsf.checkFilters( table, false, skipFirst );
 					});
@@ -64369,7 +64735,7 @@ QTIP.defaults = {
 				// show/hide filter row as needed
 				c.$table
 					.find( '.' + tscss.filterRow )
-					.trigger( combinedFilters === '' ? 'mouseleave' : 'mouseenter' );
+					.triggerHandler( tsf.hideFiltersCheck( c ) ? 'mouseleave' : 'mouseenter' );
 			}
 			// return if the last search is the same; but filter === false when updating the search
 			// see example-widget-filter.html filter toggle buttons
@@ -64380,14 +64746,16 @@ QTIP.defaults = {
 				c.lastCombinedFilter = null;
 				c.lastSearch = [];
 			}
+			// define filter inside it is false
+			filters = filters || [];
 			// convert filters to strings - see #1070
 			filters = Array.prototype.map ?
 				filters.map( String ) :
 				// for IE8 & older browsers - maybe not the best method
-				filters.join( '\u0000' ).split( '\u0000' );
+				filters.join( '\ufffd' ).split( '\ufffd' );
 
 			if ( wo.filter_initialized ) {
-				c.$table.trigger( 'filterStart', [ filters ] );
+				c.$table.triggerHandler( 'filterStart', [ filters ] );
 			}
 			if ( c.showProcessing ) {
 				// give it time for the processing icon to kick in
@@ -64400,26 +64768,34 @@ QTIP.defaults = {
 				return false;
 			}
 		},
+		hideFiltersCheck: function( c ) {
+			if (typeof c.widgetOptions.filter_hideFilters === 'function') {
+				var val = c.widgetOptions.filter_hideFilters( c );
+				if (typeof val === 'boolean') {
+					return val;
+				}
+			}
+			return ts.getFilters( c.$table ).join( '' ) === '';
+		},
 		hideFilters: function( c, $table ) {
-			var timer,
-				$row = ( $table || c.$table ).find( '.' + tscss.filterRow ).addClass( tscss.filterRowHide );
-			$row
+			var timer;
+			( $table || c.$table )
+				.find( '.' + tscss.filterRow )
+				.addClass( tscss.filterRowHide )
 				.bind( 'mouseenter mouseleave', function( e ) {
 					// save event object - http://bugs.jquery.com/ticket/12140
 					var event = e,
-						$filterRow = $( this );
+						$row = $( this );
 					clearTimeout( timer );
 					timer = setTimeout( function() {
 						if ( /enter|over/.test( event.type ) ) {
-							$filterRow.removeClass( tscss.filterRowHide );
+							$row.removeClass( tscss.filterRowHide );
 						} else {
 							// don't hide if input has focus
 							// $( ':focus' ) needs jQuery 1.6+
-							if ( $( document.activeElement ).closest( 'tr' )[0] !== $filterRow[0] ) {
+							if ( $( document.activeElement ).closest( 'tr' )[0] !== $row[0] ) {
 								// don't hide row if any filter has a value
-								if ( c.lastCombinedFilter === '' ) {
-									$filterRow.addClass( tscss.filterRowHide );
-								}
+								$row.toggleClass( tscss.filterRowHide, tsf.hideFiltersCheck( c ) );
 							}
 						}
 					}, 200 );
@@ -64431,9 +64807,7 @@ QTIP.defaults = {
 					timer = setTimeout( function() {
 						clearTimeout( timer );
 						// don't hide row if any filter has a value
-						if ( ts.getFilters( c.$table ).join( '' ) === '' ) {
-							$row.toggleClass( tscss.filterRowHide, event.type !== 'focus' );
-						}
+						$row.toggleClass( tscss.filterRowHide, tsf.hideFiltersCheck( c ) && event.type !== 'focus' );
 					}, 200 );
 				});
 		},
@@ -64468,22 +64842,18 @@ QTIP.defaults = {
 			}
 			return $input || $();
 		},
-		multipleColumns: function( c, $input ) {
+		findRange: function( c, val, ignoreRanges ) {
 			// look for multiple columns '1-3,4-6,8' in data-column
 			var temp, ranges, range, start, end, singles, i, indx, len,
-				wo = c.widgetOptions,
-				// only target 'all' column inputs on initialization
-				// & don't target 'all' column inputs if they don't exist
-				targets = wo.filter_initialized || !$input.filter( wo.filter_anyColumnSelector ).length,
-				columns = [],
-				val = $.trim( tsf.getLatestSearch( $input ).attr( 'data-column' ) || '' );
-			if ( /^[0-9]+$/.test(val)) {
-				return parseInt( val, 10 );
+				columns = [];
+			if ( /^[0-9]+$/.test( val ) ) {
+				// always return an array
+				return [ parseInt( val, 10 ) ];
 			}
 			// process column range
-			if ( targets && /-/.test( val ) ) {
+			if ( !ignoreRanges && /-/.test( val ) ) {
 				ranges = val.match( /(\d+)\s*-\s*(\d+)/g );
-				len = ranges.length;
+				len = ranges ? ranges.length : 0;
 				for ( indx = 0; indx < len; indx++ ) {
 					range = ranges[indx].split( /\s*-\s*/ );
 					start = parseInt( range[0], 10 ) || 0;
@@ -64495,21 +64865,21 @@ QTIP.defaults = {
 						end = c.columns - 1;
 					}
 					for ( ; start <= end; start++ ) {
-						columns.push( start );
+						columns[ columns.length ] = start;
 					}
 					// remove processed range from val
 					val = val.replace( ranges[ indx ], '' );
 				}
 			}
 			// process single columns
-			if ( targets && /,/.test( val ) ) {
+			if ( !ignoreRanges && /,/.test( val ) ) {
 				singles = val.split( /\s*,\s*/ );
 				len = singles.length;
 				for ( i = 0; i < len; i++ ) {
 					if ( singles[ i ] !== '' ) {
 						indx = parseInt( singles[ i ], 10 );
 						if ( indx < c.columns ) {
-							columns.push( indx );
+							columns[ columns.length ] = indx;
 						}
 					}
 				}
@@ -64517,10 +64887,27 @@ QTIP.defaults = {
 			// return all columns
 			if ( !columns.length ) {
 				for ( indx = 0; indx < c.columns; indx++ ) {
-					columns.push( indx );
+					columns[ columns.length ] = indx;
 				}
 			}
 			return columns;
+		},
+		getColumnElm: function( c, $elements, column ) {
+			// data-column may contain multiple columns '1-3,5-6,8'
+			// replaces: c.$filters.filter( '[data-column="' + column + '"]' );
+			return $elements.filter( function() {
+				var cols = tsf.findRange( c, $( this ).attr( 'data-column' ) );
+				return $.inArray( column, cols ) > -1;
+			});
+		},
+		multipleColumns: function( c, $input ) {
+			// look for multiple columns '1-3,4-6,8' in data-column
+			var wo = c.widgetOptions,
+				// only target 'all' column inputs on initialization
+				// & don't target 'all' column inputs if they don't exist
+				targets = wo.filter_initialized || !$input.filter( wo.filter_anyColumnSelector ).length,
+				val = $.trim( tsf.getLatestSearch( $input ).attr( 'data-column' ) || '' );
+			return tsf.findRange( c, val, !targets );
 		},
 		processTypes: function( c, data, vars ) {
 			var ffxn,
@@ -64536,11 +64923,38 @@ QTIP.defaults = {
 			}
 			return filterMatched;
 		},
+		matchType: function( c, columnIndex ) {
+			var isMatch,
+				wo = c.widgetOptions,
+				$el = c.$headerIndexed[ columnIndex ];
+			// filter-exact > filter-match > filter_matchType for type
+			if ( $el.hasClass( 'filter-exact' ) ) {
+				isMatch = false;
+			} else if ( $el.hasClass( 'filter-match' ) ) {
+				isMatch = true;
+			} else {
+				// filter-select is not applied when filter_functions are used, so look for a select
+				if ( wo.filter_columnFilters ) {
+					$el = c.$filters
+						.find( '.' + tscss.filter )
+						.add( wo.filter_$externalFilters )
+						.filter( '[data-column="' + columnIndex + '"]' );
+				} else if ( wo.filter_$externalFilters ) {
+					$el = wo.filter_$externalFilters.filter( '[data-column="' + columnIndex + '"]' );
+				}
+				isMatch = $el.length ?
+					c.widgetOptions.filter_matchType[ ( $el[ 0 ].nodeName || '' ).toLowerCase() ] === 'match' :
+					// default to exact, if no inputs found
+					false;
+			}
+			return isMatch;
+		},
 		processRow: function( c, data, vars ) {
 			var result, filterMatched,
 				fxn, ffxn, txt,
 				wo = c.widgetOptions,
 				showRow = true,
+				hasAnyMatchInput = wo.filter_$anyMatch && wo.filter_$anyMatch.length,
 
 				// if wo.filter_$anyMatch data-column attribute is changed dynamically
 				// we don't want to do an "anyMatch" search on one column using data
@@ -64549,14 +64963,12 @@ QTIP.defaults = {
 					// look for multiple columns '1-3,4-6,8'
 					tsf.multipleColumns( c, wo.filter_$anyMatch ) :
 					[];
-
 			data.$cells = data.$row.children();
-
-			if ( data.anyMatchFlag && columnIndex.length > 1 ) {
+			if ( data.anyMatchFlag && columnIndex.length > 1 || ( data.anyMatchFilter && !hasAnyMatchInput ) ) {
 				data.anyMatch = true;
 				data.isMatch = true;
 				data.rowArray = data.$cells.map( function( i ) {
-					if ( $.inArray( i, columnIndex ) > -1 ) {
+					if ( $.inArray( i, columnIndex ) > -1 || ( data.anyMatchFilter && !hasAnyMatchInput ) ) {
 						if ( data.parsed[ i ] ) {
 							txt = data.cacheArray[ i ];
 						} else {
@@ -64574,10 +64986,8 @@ QTIP.defaults = {
 				data.exact = data.rowArray.join( ' ' );
 				data.iExact = wo.filter_ignoreCase ? data.exact.toLowerCase() : data.exact;
 				data.cache = data.cacheArray.slice( 0, -1 ).join( ' ' );
-
 				vars.excludeMatch = vars.noAnyMatch;
 				filterMatched = tsf.processTypes( c, data, vars );
-
 				if ( filterMatched !== null ) {
 					showRow = filterMatched;
 				} else {
@@ -64610,29 +65020,28 @@ QTIP.defaults = {
 				// ignore if filter is empty or disabled
 				if ( data.filter ) {
 					data.cache = data.cacheArray[ columnIndex ];
-					// check if column data should be from the cell or from parsed data
-					if ( wo.filter_useParsedData || data.parsed[ columnIndex ] ) {
-						data.exact = data.cache;
-					} else {
-						result = data.rawArray[ columnIndex ] || '';
-						data.exact = c.sortLocaleCompare ? ts.replaceAccents( result ) : result; // issue #405
-					}
+					result = data.parsed[ columnIndex ] ? data.cache : data.rawArray[ columnIndex ] || '';
+					data.exact = c.sortLocaleCompare ? ts.replaceAccents( result ) : result; // issue #405
 					data.iExact = !tsfRegex.type.test( typeof data.exact ) && wo.filter_ignoreCase ?
 						data.exact.toLowerCase() : data.exact;
-
-					data.isMatch = c.$headerIndexed[ data.index ].hasClass( 'filter-match' );
+					data.isMatch = tsf.matchType( c, columnIndex );
 
 					result = showRow; // if showRow is true, show that row
 
 					// in case select filter option has a different value vs text 'a - z|A through Z'
 					ffxn = wo.filter_columnFilters ?
-						c.$filters.add( c.$externalFilters )
+						c.$filters.add( wo.filter_$externalFilters )
 							.filter( '[data-column="' + columnIndex + '"]' )
 							.find( 'select option:selected' )
 							.attr( 'data-function-name' ) || '' : '';
 					// replace accents - see #357
 					if ( c.sortLocaleCompare ) {
 						data.filter = ts.replaceAccents( data.filter );
+					}
+
+					// replace column specific default filters - see #1088
+					if ( wo.filter_defaultFilter && tsfRegex.iQuery.test( vars.defaultColFilter[ columnIndex ] ) ) {
+						data.filter = tsf.defaultFilter( data.filter, vars.defaultColFilter[ columnIndex ] );
 					}
 
 					// data.iFilter = case insensitive ( if wo.filter_ignoreCase is true ),
@@ -64666,8 +65075,7 @@ QTIP.defaults = {
 							result = filterMatched;
 						// Look for match, and add child row data for matching
 						} else {
-							txt = ( data.iExact + data.childRowText )
-								.indexOf( tsf.parseFilter( c, data.iFilter, data ) );
+							txt = ( data.iExact + data.childRowText ).indexOf( tsf.parseFilter( c, data.iFilter, data ) );
 							result = ( ( !wo.filter_startsWith && txt >= 0 ) || ( wo.filter_startsWith && txt === 0 ) );
 						}
 					} else {
@@ -64698,7 +65106,7 @@ QTIP.defaults = {
 				},
 				vars = {
 					// anyMatch really screws up with these types of filters
-					noAnyMatch: [ 'range', 'notMatch',  'operators' ],
+					noAnyMatch: [ 'range',  'operators' ],
 					// cache filter variables that use ts.getColumnData in the main loop
 					functions : [],
 					excludeFilter : [],
@@ -64707,20 +65115,20 @@ QTIP.defaults = {
 				};
 
 			// parse columns after formatter, in case the class is added at that point
-			data.parsed = c.$headers.map( function( columnIndex ) {
-				return c.parsers && c.parsers[ columnIndex ] &&
-					// force parsing if parser type is numeric
-					c.parsers[ columnIndex ].parsed ||
-					// getData won't return 'parsed' if other 'filter-' class names exist
+			data.parsed = [];
+			for ( columnIndex = 0; columnIndex < c.columns; columnIndex++ ) {
+				data.parsed[ columnIndex ] = wo.filter_useParsedData ||
+					// parser has a "parsed" parameter
+					( c.parsers && c.parsers[ columnIndex ] && c.parsers[ columnIndex ].parsed ||
+					// getData may not return 'parsed' if other 'filter-' class names exist
 					// ( e.g. <th class="filter-select filter-parsed"> )
 					ts.getData && ts.getData( c.$headerIndexed[ columnIndex ],
 						ts.getColumnData( table, c.headers, columnIndex ), 'filter' ) === 'parsed' ||
-					$( this ).hasClass( 'filter-parsed' );
-			}).get();
+					c.$headerIndexed[ columnIndex ].hasClass( 'filter-parsed' ) );
 
-			for ( columnIndex = 0; columnIndex < c.columns; columnIndex++ ) {
 				vars.functions[ columnIndex ] =
-					ts.getColumnData( table, wo.filter_functions, columnIndex );
+					ts.getColumnData( table, wo.filter_functions, columnIndex ) ||
+					c.$headerIndexed[ columnIndex ].hasClass( 'filter-select' );
 				vars.defaultColFilter[ columnIndex ] =
 					ts.getColumnData( table, wo.filter_defaultFilter, columnIndex ) || '';
 				vars.excludeFilter[ columnIndex ] =
@@ -64774,7 +65182,17 @@ QTIP.defaults = {
 								res = query[ indx ].split( ':' );
 								if ( res.length > 1 ) {
 									// make the column a one-based index ( non-developers start counting from one :P )
-									id = parseInt( res[0], 10 ) - 1;
+									if ( isNaN( res[0] ) ) {
+										$.each( c.headerContent, function( i, txt ) {
+											// multiple matches are possible
+											if ( txt.toLowerCase().indexOf( res[0] ) > -1 ) {
+												id = i;
+												filters[ id ] = res[1];
+											}
+										});
+									} else {
+										id = parseInt( res[0], 10 ) - 1;
+									}
 									if ( id >= 0 && id < c.columns ) { // if id is an integer
 										filters[ id ] = res[1];
 										query.splice( indx, 1 );
@@ -64811,7 +65229,7 @@ QTIP.defaults = {
 								!( tsfRegex.isNeg1.test( val ) || tsfRegex.isNeg2.test( val ) ) &&
 								// if filtering using a select without a 'filter-match' class ( exact match ) - fixes #593
 								!( val !== '' && c.$filters && c.$filters.filter( '[data-column="' + indx + '"]' ).find( 'select' ).length &&
-									!c.$headerIndexed[indx].hasClass( 'filter-match' ) );
+									!tsf.matchType( c, indx ) );
 						}
 					}
 					notFiltered = $rows.not( '.' + wo.filter_filteredRow ).length;
@@ -64850,6 +65268,7 @@ QTIP.defaults = {
 						}
 
 						data.$row = $rows.eq( rowIndex );
+						data.rowIndex = rowIndex;
 						data.cacheArray = norm_rows[ rowIndex ];
 						rowData = data.cacheArray[ c.columns ];
 						data.rawArray = rowData.raw;
@@ -64876,7 +65295,7 @@ QTIP.defaults = {
 
 						// don't pass reference to val
 						val = showParent ? true : false;
-						childRow = rowData.$row.filter( ':gt( 0 )' );
+						childRow = rowData.$row.filter( ':gt(0)' );
 						if ( wo.filter_childRows && childRow.length ) {
 							if ( wo.filter_childByColumn ) {
 								if ( !wo.filter_childWithSibs ) {
@@ -64923,7 +65342,8 @@ QTIP.defaults = {
 				console.log( 'Completed filter widget search' + ts.benchmark(time) );
 			}
 			if ( wo.filter_initialized ) {
-				c.$table.trigger( 'filterEnd', c );
+				c.$table.triggerHandler( 'filterBeforeEnd', c );
+				c.$table.triggerHandler( 'filterEnd', c );
 			}
 			setTimeout( function() {
 				ts.applyWidget( c.table ); // make sure zebra widget is applied
@@ -64971,6 +65391,7 @@ QTIP.defaults = {
 			var cts, txt, indx, len, parsedTxt, str,
 				c = table.config,
 				validColumn = typeof column !== 'undefined' && column !== null && column >= 0 && column < c.columns,
+				direction = validColumn ? c.$headerIndexed[ column ].hasClass( 'filter-select-sort-desc' ) : false,
 				parsed = [];
 			// get unique elements and sort the list
 			// if $.tablesorter.sortText exists ( not in the original tablesorter ),
@@ -64999,20 +65420,20 @@ QTIP.defaults = {
 					// table cell to the parser format function
 					if ( txt.text ) {
 						txt.parsed = parsedTxt;
-						parsed.push( txt );
+						parsed[ parsed.length ] = txt;
 					} else {
-						parsed.push({
+						parsed[ parsed.length ] = {
 							text : txt,
 							// check parser length - fixes #934
 							parsed : parsedTxt
-						});
+						};
 					}
 				}
 				// sort parsed select options
 				cts = c.textSorter || '';
 				parsed.sort( function( a, b ) {
-					var x = a.parsed,
-						y = b.parsed;
+					var x = direction ? b.parsed : a.parsed,
+						y = direction ? a.parsed : b.parsed;
 					if ( validColumn && typeof cts === 'function' ) {
 						// custom OVERALL text sorter
 						return cts( x, y, true, column, table );
@@ -65030,7 +65451,7 @@ QTIP.defaults = {
 				arry = [];
 				len = parsed.length;
 				for ( indx = 0; indx < len; indx++ ) {
-					arry.push( parsed[indx] );
+					arry[ arry.length ] = parsed[indx];
 				}
 				return arry;
 			}
@@ -65059,23 +65480,23 @@ QTIP.defaults = {
 					if ( wo.filter_useParsedData ||
 						c.parsers[column].parsed ||
 						c.$headerIndexed[column].hasClass( 'filter-parsed' ) ) {
-						arry.push( '' + cache.normalized[ rowIndex ][ column ] );
+						arry[ arry.length ] = '' + cache.normalized[ rowIndex ][ column ];
 						// child row parsed data
 						if ( wo.filter_childRows && wo.filter_childByColumn ) {
 							childLen = cache.normalized[ rowIndex ][ c.columns ].$row.length - 1;
 							for ( indx = 0; indx < childLen; indx++ ) {
-								arry.push( '' + cache.normalized[ rowIndex ][ c.columns ].child[ indx ][ column ] );
+								arry[ arry.length ] = '' + cache.normalized[ rowIndex ][ c.columns ].child[ indx ][ column ];
 							}
 						}
 					} else {
 						// get raw cached data instead of content directly from the cells
-						arry.push( cache.normalized[ rowIndex ][ c.columns ].raw[ column ] );
+						arry[ arry.length ] = cache.normalized[ rowIndex ][ c.columns ].raw[ column ];
 						// child row unparsed data
 						if ( wo.filter_childRows && wo.filter_childByColumn ) {
 							childLen = cache.normalized[ rowIndex ][ c.columns ].$row.length;
 							for ( indx = 1; indx < childLen; indx++ ) {
 								child =  cache.normalized[ rowIndex ][ c.columns ].$row.eq( indx ).children().eq( column );
-								arry.push( '' + ts.getElementText( c, child, column ) );
+								arry[ arry.length ] = '' + ts.getElementText( c, child, column );
 							}
 						}
 					}
@@ -65204,7 +65625,7 @@ QTIP.defaults = {
 
 	ts.getFilters = function( table, getRaw, setFilters, skipFirst ) {
 		var i, $filters, $column, cols,
-			filters = false,
+			filters = [],
 			c = table ? $( table )[0].config : '',
 			wo = c ? c.widgetOptions : '';
 		if ( ( getRaw !== true && wo && !wo.filter_columnFilters ) ||
@@ -65270,9 +65691,6 @@ QTIP.defaults = {
 				}
 			}
 		}
-		if ( filters.length === 0 ) {
-			filters = false;
-		}
 		return filters;
 	};
 
@@ -65288,14 +65706,14 @@ QTIP.defaults = {
 			c.lastCombinedFilter = null;
 			c.lastSearch = [];
 			tsf.searching( c.table, filter, skipFirst );
-			c.$table.trigger( 'filterFomatterUpdate' );
+			c.$table.triggerHandler( 'filterFomatterUpdate' );
 		}
-		return !!valid;
+		return valid.length !== 0;
 	};
 
 })( jQuery );
 
-/*! Widget: stickyHeaders - updated 10/31/2015 (v2.24.0) *//*
+/*! Widget: stickyHeaders - updated 7/31/2016 (v2.27.0) *//*
  * Requires tablesorter v2.8+ and jQuery 1.4.3+
  * by Rob Garrison
  */
@@ -65336,16 +65754,16 @@ QTIP.defaults = {
 					}
 				}
 				if ( headers.length && triggerEvent !== false ) {
-					c.$table.trigger( 'resize', [ headers ] );
+					c.$table.triggerHandler( 'resize', [ headers ] );
 				}
 				wo.resize_flag = false;
 			};
-		checkSizes( false );
 		clearInterval(wo.resize_timer);
 		if (disable) {
 			wo.resize_flag = false;
 			return false;
 		}
+		checkSizes( false );
 		wo.resize_timer = setInterval(function() {
 			if (wo.resize_flag) { return; }
 			checkSizes();
@@ -65358,10 +65776,11 @@ QTIP.defaults = {
 	// **************************
 	ts.addWidget({
 		id: 'stickyHeaders',
-		priority: 60, // sticky widget must be initialized after the filter widget!
+		priority: 55, // sticky widget must be initialized after the filter widget!
 		options: {
 			stickyHeaders : '',       // extra class name added to the sticky header row
-			stickyHeaders_attachTo : null, // jQuery selector or object to attach sticky header to
+			stickyHeaders_appendTo : null, // jQuery selector or object to phycially attach the sticky headers
+			stickyHeaders_attachTo : null, // jQuery selector or object to attach scroll listener to (overridden by xScroll & yScroll settings)
 			stickyHeaders_xScroll : null, // jQuery selector or object to monitor horizontal scroll position (defaults: xScroll > attachTo > window)
 			stickyHeaders_yScroll : null, // jQuery selector or object to monitor vertical scroll position (defaults: yScroll > attachTo > window)
 			stickyHeaders_offset : 0, // number or jquery selector targeting the position:fixed element
@@ -65459,12 +65878,14 @@ QTIP.defaults = {
 					var offset = $table.offset(),
 						yWindow = $.isWindow( $yScroll[0] ), // $.isWindow needs jQuery 1.4.3
 						xWindow = $.isWindow( $xScroll[0] ),
-						// scrollTop = ( $attach.length ? $attach.offset().top : $yScroll.scrollTop() ) + stickyOffset + nestedStickyTop,
-						scrollTop = ( $attach.length ? ( yWindow ? $yScroll.scrollTop() : $yScroll.offset().top ) : $yScroll.scrollTop() ) + stickyOffset + nestedStickyTop,
-						tableHeight = $table.height() - ($stickyWrap.height() + ($tfoot.height() || 0)),
+						attachTop = $attach.length ?
+							( yWindow ? $yScroll.scrollTop() : $yScroll.offset().top ) :
+							$yScroll.scrollTop(),
+						captionHeight = wo.stickyHeaders_includeCaption ? 0 : $table.children( 'caption' ).height() || 0,
+						scrollTop = attachTop + stickyOffset + nestedStickyTop - captionHeight,
+						tableHeight = $table.height() - ($stickyWrap.height() + ($tfoot.height() || 0)) - captionHeight,
 						isVisible = ( scrollTop > offset.top ) && ( scrollTop < offset.top + tableHeight ) ? 'visible' : 'hidden',
 						cssSettings = { visibility : isVisible };
-
 					if ($attach.length) {
 						cssSettings.top = yWindow ? scrollTop - $attach.offset().top : $attach.scrollTop();
 					}
@@ -65510,8 +65931,12 @@ QTIP.defaults = {
 
 			ts.bindEvents(table, $stickyThead.children().children('.' + ts.css.header));
 
-			// add stickyheaders AFTER the table. If the table is selected by ID, the original one (first) will be returned.
-			$table.after( $stickyWrap );
+			if (wo.stickyHeaders_appendTo) {
+				$(wo.stickyHeaders_appendTo).append( $stickyWrap );
+			} else {
+				// add stickyheaders AFTER the table. If the table is selected by ID, the original one (first) will be returned.
+				$table.after( $stickyWrap );
+			}
 
 			// onRenderHeader is defined, we need to do something about it (fixes #641)
 			if (c.onRenderHeader) {
@@ -65563,14 +65988,21 @@ QTIP.defaults = {
 				}
 			}
 
-			$table.trigger('stickyHeadersInit');
+			// resize table (Firefox)
+			if (wo.stickyHeaders_addResizeEvent) {
+				$table.bind('resize' + c.namespace + 'stickyheaders', function() {
+					resizeHeader();
+				});
+			}
+
+			$table.triggerHandler('stickyHeadersInit');
 
 		},
 		remove: function(table, c, wo) {
 			var namespace = c.namespace + 'stickyheaders ';
 			c.$table
 				.removeClass('hasStickyHeaders')
-				.unbind( ('pagerComplete filterEnd stickyHeadersUpdate '.split(' ').join(namespace)).replace(/\s+/g, ' ') )
+				.unbind( ('pagerComplete resize filterEnd stickyHeadersUpdate '.split(' ').join(namespace)).replace(/\s+/g, ' ') )
 				.next('.' + ts.css.stickyWrap).remove();
 			if (wo.$sticky && wo.$sticky.length) { wo.$sticky.remove(); } // remove cloned table
 			$(window)
@@ -65578,13 +66010,13 @@ QTIP.defaults = {
 				.add(wo.stickyHeaders_yScroll)
 				.add(wo.stickyHeaders_attachTo)
 				.unbind( ('scroll resize '.split(' ').join(namespace)).replace(/\s+/g, ' ') );
-			ts.addHeaderResizeEvent(table, false);
+			ts.addHeaderResizeEvent(table, true);
 		}
 	});
 
 })(jQuery, window);
 
-/*! Widget: resizable - updated 11/4/2015 (v2.24.3) */
+/*! Widget: resizable - updated 6/28/2016 (v2.26.5) */
 /*jshint browser:true, jquery:true, unused:false */
 ;(function ($, window) {
 	'use strict';
@@ -65688,7 +66120,6 @@ QTIP.defaults = {
 						.bind( 'selectstart', false );
 				}
 			}
-			ts.resizable.setHandlePosition( c, wo );
 			ts.resizable.bindings( c, wo );
 		},
 
@@ -65738,12 +66169,11 @@ QTIP.defaults = {
 
 		setHandlePosition : function( c, wo ) {
 			var startPosition,
-				hasScroller = ts.hasWidget( c.table, 'scroller' ),
 				tableHeight = c.$table.height(),
 				$handles = wo.$resizable_container.children(),
 				handleCenter = Math.floor( $handles.width() / 2 );
 
-			if ( hasScroller ) {
+			if ( ts.hasWidget( c.table, 'scroller' ) ) {
 				tableHeight = 0;
 				c.$table.closest( '.' + ts.css.scrollerWrap ).children().each(function(){
 					var $this = $(this);
@@ -65842,7 +66272,7 @@ QTIP.defaults = {
 
 			// right click to reset columns to default widths
 			c.$table
-				.bind( 'columnUpdate' + namespace, function() {
+				.bind( 'columnUpdate' + namespace + ' pagerComplete' + namespace, function() {
 					ts.resizable.setHandlePosition( c, wo );
 				})
 				.find( 'thead:first' )
@@ -65891,7 +66321,7 @@ QTIP.defaults = {
 			}
 			vars.mouseXPosition = event.pageX;
 			// dynamically update sticky header widths
-			c.$table.trigger('stickyHeadersUpdate');
+			c.$table.triggerHandler('stickyHeadersUpdate');
 		},
 
 		stopResize : function( c, wo ) {
@@ -65905,7 +66335,7 @@ QTIP.defaults = {
 			vars.mouseXPosition = 0;
 			vars.$target = vars.$next = null;
 			// will update stickyHeaders, just in case, see #912
-			c.$table.trigger('stickyHeadersUpdate');
+			c.$table.triggerHandler('stickyHeadersUpdate');
 		}
 	};
 
@@ -65925,6 +66355,9 @@ QTIP.defaults = {
 		},
 		init: function(table, thisWidget, c, wo) {
 			ts.resizable.init( c, wo );
+		},
+		format: function( table, c, wo ) {
+			ts.resizable.setHandlePosition( c, wo );
 		},
 		remove: function( table, c, wo, refreshing ) {
 			if (wo.$resizable_container) {
@@ -65967,7 +66400,7 @@ QTIP.defaults = {
 				}
 
 				// reset stickyHeader widths
-				c.$table.trigger( 'stickyHeadersUpdate' );
+				c.$table.triggerHandler( 'stickyHeadersUpdate' );
 				if ( ts.storage && !refreshing ) {
 					ts.storage( this, ts.css.resizableStorage, {} );
 				}
@@ -66049,12 +66482,10 @@ QTIP.defaults = {
 
 })(jQuery);
 
-return $.tablesorter;
+return jQuery.tablesorter;
 }));
 
-!function(a){"use strict";var b=a.tablesorter,c=".tscolsel",d=b.columnSelector={queryAll:"@media only all { [columns] { display: none; } } ",queryBreak:"@media all and (min-width: [size]) { [columns] { display: table-cell; } } ",init:function(b,e,f){var g,h;return g=a(f.columnSelector_layout),g.find("input").add(g.filter("input")).length?(e.$table.addClass(e.namespace.slice(1)+"columnselector"),h=e.selector={$container:a(f.columnSelector_container||"<div>")},h.$style=a("<style></style>").prop("disabled",!0).appendTo("head"),h.$breakpoints=a("<style></style>").prop("disabled",!0).appendTo("head"),h.isInitializing=!0,d.setUpColspan(e,f),d.setupSelector(e,f),f.columnSelector_mediaquery&&d.setupBreakpoints(e,f),h.isInitializing=!1,h.$container.length?d.updateCols(e,f):e.debug&&console.warn("ColumnSelector: >> container not found"),void e.$table.off("refreshColumnSelector"+c).on("refreshColumnSelector"+c,function(a,b,c){d.refreshColumns(this.config,b,c)})):void(e.debug&&console.error("ColumnSelector: >> ERROR: Column Selector aborting, no input found in the layout! ***"))},refreshColumns:function(b,c,e){var f,g,h=a.isArray(e||c),i=b.widgetOptions;if("undefined"!=typeof c&&b.selector.$container.length){if("selectors"===c&&(b.selector.$container.empty(),d.setupSelector(b,i),d.setupBreakpoints(b,i),"undefined"==typeof e&&(e=b.selector.auto)),h)for(g=e||c,a.each(g,function(a,b){g[a]=parseInt(b,10)}),f=0;f<b.columns;f++)b.selector.$container.find("input[data-column="+f+"]").prop("checked",a.inArray(f,g)>=0);d.updateAuto(b,i,b.selector.$container.find('input[data-column="auto"]').prop("checked",e===!0||c===!0||"auto"===c&&e!==!1))}else d.updateBreakpoints(b,i),d.updateCols(b,i);d.adjustColspans(b,i)},setupSelector:function(c,e){var f,g,h,i,j,k,l=c.selector,m=l.$container,n=e.columnSelector_saveColumns&&b.storage,o=n?b.storage(c.table,"tablesorter-columnSelector"):[],p=n?b.storage(c.table,"tablesorter-columnSelector-auto"):{};for(l.auto=a.isEmptyObject(p)||"boolean"!==a.type(p.auto)?e.columnSelector_mediaqueryState:p.auto,l.states=[],l.$column=[],l.$wrapper=[],l.$checkbox=[],f=0;f<c.columns;f++)h=c.$headerIndexed[f],i=h.attr(e.columnSelector_priority)||1,k=h.attr("data-column"),j=b.getColumnData(c.table,c.headers,k),p=b.getData(h,j,"columnSelector"),isNaN(i)&&i.length>0||"disable"===p||e.columnSelector_columns[k]&&"disable"===e.columnSelector_columns[k]||(l.states[k]=o&&"undefined"!=typeof o[k]?o[k]:"undefined"!=typeof e.columnSelector_columns[k]?e.columnSelector_columns[k]:"true"===p||"false"!==p,l.$column[k]=a(this),g=h.attr(e.columnSelector_name)||h.text(),m.length&&(l.$wrapper[k]=a(e.columnSelector_layout.replace(/\{name\}/g,g)).appendTo(m),l.$checkbox[k]=l.$wrapper[k].find("input").add(l.$wrapper[k].filter("input")).attr("data-column",k).toggleClass(e.columnSelector_cssChecked,l.states[k]).prop("checked",l.states[k]).on("change",function(){var b=a(this).attr("data-column");c.selector.states[b]=this.checked,d.updateCols(c,e)}).change()))},setupBreakpoints:function(b,e){var f=b.selector;e.columnSelector_mediaquery&&(f.lastIndex=-1,d.updateBreakpoints(b,e),b.$table.off("updateAll"+c).on("updateAll"+c,function(){d.updateBreakpoints(b,e),d.updateCols(b,e)})),f.$container.length&&(e.columnSelector_mediaquery&&(f.$auto=a(e.columnSelector_layout.replace(/\{name\}/g,e.columnSelector_mediaqueryName)).prependTo(f.$container),f.$auto.find("input").add(f.$auto.filter("input")).attr("data-column","auto").prop("checked",f.auto).toggleClass(e.columnSelector_cssChecked,f.auto).on("change",function(){d.updateAuto(b,e,a(this))}).change()),b.$table.off("update"+c).on("update"+c,function(){d.updateCols(b,e)}))},updateAuto:function(c,e,f){var g=c.selector;g.auto=f.prop("checked")||!1,a.each(g.$checkbox,function(a,b){b&&(b[0].disabled=g.auto,g.$wrapper[a].toggleClass("disabled",g.auto))}),e.columnSelector_mediaquery&&d.updateBreakpoints(c,e),d.updateCols(c,e),c.selector.$popup&&c.selector.$popup.find(".tablesorter-column-selector").html(g.$container.html()).find("input").each(function(){var b=a(this).attr("data-column");a(this).prop("checked","auto"===b?g.auto:g.states[b])}),e.columnSelector_saveColumns&&b.storage&&b.storage(c.$table[0],"tablesorter-columnSelector-auto",{auto:g.auto}),d.adjustColspans(c,e),g.auto&&c.$table.trigger(e.columnSelector_updated)},addSelectors:function(a,b){var c=[],d=" col:nth-child("+b+")";return c.push(a+d+","+a+"_extra_table"+d),d=" tr th:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),d=" tr td:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),c},updateBreakpoints:function(c,e){var f,g,h,i,j=[],k=c.selector,l=c.namespace+"columnselector",m=[],n="";if(e.columnSelector_mediaquery&&!k.auto)return k.$breakpoints.prop("disabled",!0),void k.$style.prop("disabled",!1);if(e.columnSelector_mediaqueryHidden)for(h=0;h<c.columns;h++)g=b.getColumnData(c.table,c.headers,h),j[h+1]="false"===b.getData(c.$headerIndexed[h],g,"columnSelector"),j[h+1]&&(m=m.concat(d.addSelectors(l,h+1)));for(f=0;6>f;f++)i=[],c.$headers.filter("["+e.columnSelector_priority+"="+(f+1)+"]").each(function(){h=parseInt(a(this).attr("data-column"),10)+1,j[h]||(i=i.concat(d.addSelectors(l,h)))}),i.length&&(m=m.concat(i),n+=d.queryBreak.replace(/\[size\]/g,e.columnSelector_breakpoints[f]).replace(/\[columns\]/g,i.join(",")));k.$style&&k.$style.prop("disabled",!0),m.length&&k.$breakpoints.prop("disabled",!1).html(d.queryAll.replace(/\[columns\]/g,m.join(","))+n)},updateCols:function(c,e){if(!(e.columnSelector_mediaquery&&c.selector.auto||c.selector.isInitializing)){var f,g=c.selector,h=[],i=c.namespace+"columnselector";g.$container.find("input[data-column]").filter('[data-column!="auto"]').each(function(){this.checked||(f=parseInt(a(this).attr("data-column"),10)+1,h=h.concat(d.addSelectors(i,f))),a(this).toggleClass(e.columnSelector_cssChecked,this.checked)}),e.columnSelector_mediaquery&&g.$breakpoints.prop("disabled",!0),g.$style&&g.$style.prop("disabled",!1).html(h.length?h.join(",")+" { display: none; }":""),e.columnSelector_saveColumns&&b.storage&&b.storage(c.$table[0],"tablesorter-columnSelector",g.states),d.adjustColspans(c,e),c.$table.trigger(e.columnSelector_updated)}},setUpColspan:function(c,e){var f,g,h,i=a(window),j=!1,k=c.$table.add(a(c.namespace+"_extra_table")).children("thead, tfoot").children("tr").children("th, td"),l=k.length;for(f=0;l>f;f++)g=k[f].colSpan,g>1&&(j=!0,k.eq(f).addClass(c.namespace.slice(1)+"columnselectorHasSpan").attr("data-col-span",g));j&&e.columnSelector_mediaquery&&(h=c.namespace.slice(1)+"columnselector",i.off(h).on("resize"+h,b.window_resize).on("resizeEnd"+h,function(){i.off("resize"+h,b.window_resize),d.adjustColspans(c,e),i.on("resize"+h,b.window_resize)}))},adjustColspans:function(b,c){var d,e,f,g,h,i=b.selector,j=i.auto,k=a(b.namespace+"columnselectorHasSpan"),l=k.length;if(l)for(d=0;l>d;d++){for(f=parseInt(k.eq(d).attr("data-column"),10),g=parseInt(k.eq(d).attr("data-col-span"),10),h=f+g,e=f;h>e;e++)(!j&&i.states[e]===!1||j&&b.$headerIndexed[e]&&!b.$headerIndexed[e].is(":visible"))&&g--;g?k.eq(d).show()[0].colSpan=g:k.eq(d).hide()}},attachTo:function(b,c){b=a(b)[0];var d,e,f,g=b.config,h=a(c);h.length&&g&&(h.find(".tablesorter-column-selector").length||h.append('<span class="tablesorter-column-selector"></span>'),d=g.selector,e=g.widgetOptions,h.find(".tablesorter-column-selector").html(d.$container.html()).find("input").each(function(){var b=a(this).attr("data-column"),c="auto"===b?d.auto:d.states[b];a(this).toggleClass(e.columnSelector_cssChecked,c).prop("checked",c)}),d.$popup=h.on("change","input",function(){f=a(this).toggleClass(e.columnSelector_cssChecked,this.checked).attr("data-column"),d.$container.find('input[data-column="'+f+'"]').prop("checked",this.checked).trigger("change")}))}};b.window_resize=function(){b.timer_resize&&clearTimeout(b.timer_resize),b.timer_resize=setTimeout(function(){a(window).trigger("resizeEnd")},250)},b.addWidget({id:"columnSelector",priority:10,options:{columnSelector_container:null,columnSelector_columns:{},columnSelector_saveColumns:!0,columnSelector_layout:'<label><input type="checkbox">{name}</label>',columnSelector_name:"data-selector-name",columnSelector_mediaquery:!0,columnSelector_mediaqueryName:"Auto: ",columnSelector_mediaqueryState:!0,columnSelector_mediaqueryHidden:!1,columnSelector_breakpoints:["20em","30em","40em","50em","60em","70em"],columnSelector_priority:"data-priority",columnSelector_cssChecked:"checked",columnSelector_updated:"columnUpdate"},init:function(a,b,c,e){d.init(a,c,e)},remove:function(a,b,d,e){if(!e){var f=b.selector;f.$container.empty(),f.$popup&&f.$popup.empty(),f.$style.remove(),f.$breakpoints.remove(),b.$table.off("updateAll"+c+" update"+c)}}})}(jQuery);
-/*! Widget: stickyHeaders - updated 10/31/2015 (v2.24.0) */
-!function(a,b){"use strict";var c=a.tablesorter||{};a.extend(c.css,{sticky:"tablesorter-stickyHeader",stickyVis:"tablesorter-sticky-visible",stickyHide:"tablesorter-sticky-hidden",stickyWrap:"tablesorter-sticky-wrapper"}),c.addHeaderResizeEvent=function(b,c,d){if(b=a(b)[0],b.config){var e={timer:250},f=a.extend({},e,d),g=b.config,h=g.widgetOptions,i=function(a){var b,c,d,e,f,i,j=g.$headers.length;for(h.resize_flag=!0,c=[],b=0;j>b;b++)d=g.$headers.eq(b),e=d.data("savedSizes")||[0,0],f=d[0].offsetWidth,i=d[0].offsetHeight,(f!==e[0]||i!==e[1])&&(d.data("savedSizes",[f,i]),c.push(d[0]));c.length&&a!==!1&&g.$table.trigger("resize",[c]),h.resize_flag=!1};return i(!1),clearInterval(h.resize_timer),c?(h.resize_flag=!1,!1):void(h.resize_timer=setInterval(function(){h.resize_flag||i()},f.timer))}},c.addWidget({id:"stickyHeaders",priority:60,options:{stickyHeaders:"",stickyHeaders_attachTo:null,stickyHeaders_xScroll:null,stickyHeaders_yScroll:null,stickyHeaders_offset:0,stickyHeaders_filteredToTop:!0,stickyHeaders_cloneId:"-sticky",stickyHeaders_addResizeEvent:!0,stickyHeaders_includeCaption:!0,stickyHeaders_zIndex:2},format:function(d,e,f){if(!(e.$table.hasClass("hasStickyHeaders")||a.inArray("filter",e.widgets)>=0&&!e.$table.hasClass("hasFilters"))){var g,h,i,j,k=e.$table,l=a(f.stickyHeaders_attachTo),m=e.namespace+"stickyheaders ",n=a(f.stickyHeaders_yScroll||f.stickyHeaders_attachTo||b),o=a(f.stickyHeaders_xScroll||f.stickyHeaders_attachTo||b),p=k.children("thead:first"),q=p.children("tr").not(".sticky-false").children(),r=k.children("tfoot"),s=isNaN(f.stickyHeaders_offset)?a(f.stickyHeaders_offset):"",t=s.length?s.height()||0:parseInt(f.stickyHeaders_offset,10)||0,u=k.parent().closest("."+c.css.table).hasClass("hasStickyHeaders")?k.parent().closest("table.tablesorter")[0].config.widgetOptions.$sticky.parent():[],v=u.length?u.height():0,w=f.$sticky=k.clone().addClass("containsStickyHeaders "+c.css.sticky+" "+f.stickyHeaders+" "+e.namespace.slice(1)+"_extra_table").wrap('<div class="'+c.css.stickyWrap+'">'),x=w.parent().addClass(c.css.stickyHide).css({position:l.length?"absolute":"fixed",padding:parseInt(w.parent().parent().css("padding-left"),10),top:t+v,left:0,visibility:"hidden",zIndex:f.stickyHeaders_zIndex||2}),y=w.children("thead:first"),z="",A=0,B=function(a,c){var d,e,f,g,h,i=a.filter(":visible"),j=i.length;for(d=0;j>d;d++)g=c.filter(":visible").eq(d),h=i.eq(d),"border-box"===h.css("box-sizing")?e=h.outerWidth():"collapse"===g.css("border-collapse")?b.getComputedStyle?e=parseFloat(b.getComputedStyle(h[0],null).width):(f=parseFloat(h.css("border-width")),e=h.outerWidth()-parseFloat(h.css("padding-left"))-parseFloat(h.css("padding-right"))-f):e=h.width(),g.css({width:e,"min-width":e,"max-width":e})},C=function(){t=s.length?s.height()||0:parseInt(f.stickyHeaders_offset,10)||0,A=0,x.css({left:l.length?parseInt(l.css("padding-left"),10)||0:k.offset().left-parseInt(k.css("margin-left"),10)-o.scrollLeft()-A,width:k.outerWidth()}),B(k,w),B(q,j)},D=function(b){if(k.is(":visible")){v=u.length?u.offset().top-n.scrollTop()+u.height():0;var d=k.offset(),e=a.isWindow(n[0]),f=a.isWindow(o[0]),g=(l.length?e?n.scrollTop():n.offset().top:n.scrollTop())+t+v,h=k.height()-(x.height()+(r.height()||0)),i=g>d.top&&g<d.top+h?"visible":"hidden",j={visibility:i};l.length&&(j.top=e?g-l.offset().top:l.scrollTop()),f&&(j.left=k.offset().left-parseInt(k.css("margin-left"),10)-o.scrollLeft()-A),u.length&&(j.top=(j.top||0)+t+v),x.removeClass(c.css.stickyVis+" "+c.css.stickyHide).addClass("visible"===i?c.css.stickyVis:c.css.stickyHide).css(j),(i!==z||b)&&(C(),z=i)}};if(l.length&&!l.css("position")&&l.css("position","relative"),w.attr("id")&&(w[0].id+=f.stickyHeaders_cloneId),w.find("thead:gt(0), tr.sticky-false").hide(),w.find("tbody, tfoot").remove(),w.find("caption").toggle(f.stickyHeaders_includeCaption),j=y.children().children(),w.css({height:0,width:0,margin:0}),j.find("."+c.css.resizer).remove(),k.addClass("hasStickyHeaders").bind("pagerComplete"+m,function(){C()}),c.bindEvents(d,y.children().children("."+c.css.header)),k.after(x),e.onRenderHeader)for(i=y.children("tr").children(),h=i.length,g=0;h>g;g++)e.onRenderHeader.apply(i.eq(g),[g,e,w]);o.add(n).unbind("scroll resize ".split(" ").join(m).replace(/\s+/g," ")).bind("scroll resize ".split(" ").join(m),function(a){D("resize"===a.type)}),e.$table.unbind("stickyHeadersUpdate"+m).bind("stickyHeadersUpdate"+m,function(){D(!0)}),f.stickyHeaders_addResizeEvent&&c.addHeaderResizeEvent(d),k.hasClass("hasFilters")&&f.filter_columnFilters&&(k.bind("filterEnd"+m,function(){var d=a(document.activeElement).closest("td"),g=d.parent().children().index(d);x.hasClass(c.css.stickyVis)&&f.stickyHeaders_filteredToTop&&(b.scrollTo(0,k.position().top),g>=0&&e.$filters&&e.$filters.eq(g).find("a, select, input").filter(":visible").focus())}),c.filter.bindSearch(k,j.find("."+c.css.filter)),f.filter_hideFilters&&c.filter.hideFilters(e,w)),k.trigger("stickyHeadersInit")}},remove:function(d,e,f){var g=e.namespace+"stickyheaders ";e.$table.removeClass("hasStickyHeaders").unbind("pagerComplete filterEnd stickyHeadersUpdate ".split(" ").join(g).replace(/\s+/g," ")).next("."+c.css.stickyWrap).remove(),f.$sticky&&f.$sticky.length&&f.$sticky.remove(),a(b).add(f.stickyHeaders_xScroll).add(f.stickyHeaders_yScroll).add(f.stickyHeaders_attachTo).unbind("scroll resize ".split(" ").join(g).replace(/\s+/g," ")),c.addHeaderResizeEvent(d,!1)}})}(jQuery,window);
+!function(a){"use strict";var b=a.tablesorter,c=".tscolsel",d=b.columnSelector={queryAll:"@media only all { [columns] { display: none; } } ",queryBreak:"@media all and (min-width: [size]) { [columns] { display: table-cell; } } ",init:function(b,e,f){var g,h;return g=a(f.columnSelector_layout),g.find("input").add(g.filter("input")).length?(e.$table.addClass(e.namespace.slice(1)+"columnselector"),h=e.selector={$container:a(f.columnSelector_container||"<div>")},h.$style=a("<style></style>").prop("disabled",!0).appendTo("head"),h.$breakpoints=a("<style></style>").prop("disabled",!0).appendTo("head"),h.isInitializing=!0,d.setUpColspan(e,f),d.setupSelector(e,f),f.columnSelector_mediaquery&&d.setupBreakpoints(e,f),h.isInitializing=!1,h.$container.length?d.updateCols(e,f):e.debug&&console.warn("ColumnSelector: >> container not found"),void e.$table.off("refreshColumnSelector"+c).on("refreshColumnSelector"+c,function(a,b,c){d.refreshColumns(this.config,b,c)})):void(e.debug&&console.error("ColumnSelector: >> ERROR: Column Selector aborting, no input found in the layout! ***"))},refreshColumns:function(b,c,e){var f,g,h,i,j=b.selector,k=a.isArray(e||c),l=b.widgetOptions;if("undefined"!=typeof c&&null!==c&&j.$container.length){if("selectors"===c&&(j.$container.empty(),d.setupSelector(b,l),d.setupBreakpoints(b,l),"undefined"==typeof e&&null!==e&&(e=j.auto)),k)for(g=e||c,a.each(g,function(a,b){g[a]=parseInt(b,10)}),f=0;f<b.columns;f++)i=a.inArray(f,g)>=0,h=j.$container.find("input[data-column="+f+"]"),h.length&&(h.prop("checked",i),j.states[f]=i);i=e===!0||c===!0||"auto"===c&&e!==!1,h=j.$container.find('input[data-column="auto"]').prop("checked",i),d.updateAuto(b,l,h)}else d.updateBreakpoints(b,l),d.updateCols(b,l);d.saveValues(b,l),d.adjustColspans(b,l)},setupSelector:function(c,e){var f,g,h,i,j,k,l=c.selector,m=l.$container,n=e.columnSelector_saveColumns&&b.storage,o=n?b.storage(c.table,"tablesorter-columnSelector"):[],p=n?b.storage(c.table,"tablesorter-columnSelector-auto"):{};for(l.auto=a.isEmptyObject(p)||"boolean"!==a.type(p.auto)?e.columnSelector_mediaqueryState:p.auto,l.states=[],l.$column=[],l.$wrapper=[],l.$checkbox=[],f=0;f<c.columns;f++)h=c.$headerIndexed[f],i=h.attr(e.columnSelector_priority)||1,k=h.attr("data-column"),j=b.getColumnData(c.table,c.headers,k),p=b.getData(h,j,"columnSelector"),isNaN(i)&&i.length>0||"disable"===p||e.columnSelector_columns[k]&&"disable"===e.columnSelector_columns[k]?l.states[k]=null:(l.states[k]=o&&"undefined"!=typeof o[k]&&null!==o[k]?o[k]:"undefined"!=typeof e.columnSelector_columns[k]&&null!==e.columnSelector_columns[k]?e.columnSelector_columns[k]:"true"===p||"false"!==p,l.$column[k]=a(this),g=h.attr(e.columnSelector_name)||h.text(),m.length&&(l.$wrapper[k]=a(e.columnSelector_layout.replace(/\{name\}/g,g)).appendTo(m),l.$checkbox[k]=l.$wrapper[k].find("input").add(l.$wrapper[k].filter("input")).attr("data-column",k).toggleClass(e.columnSelector_cssChecked,l.states[k]).prop("checked",l.states[k]).on("change",function(){if(!l.isInitializing){var b=a(this).attr("data-column");if(!d.checkChange(c,this.checked))return this.checked=!this.checked,!1;c.selector.states[b]=this.checked,d.updateCols(c,e)}}).change()))},checkChange:function(a,b){for(var c=a.widgetOptions,d=c.columnSelector_maxVisible,e=c.columnSelector_minVisible,f=a.selector.states,g=f.length,h=0;g-- >=0;)f[g]&&h++;return!(b&null!==d&&h>=d||!b&&null!==e&&h<=e)},setupBreakpoints:function(b,e){var f=b.selector;e.columnSelector_mediaquery&&(f.lastIndex=-1,d.updateBreakpoints(b,e),b.$table.off("updateAll"+c).on("updateAll"+c,function(){d.setupSelector(b,e),d.setupBreakpoints(b,e),d.updateBreakpoints(b,e),d.updateCols(b,e)})),f.$container.length&&(e.columnSelector_mediaquery&&(f.$auto=a(e.columnSelector_layout.replace(/\{name\}/g,e.columnSelector_mediaqueryName)).prependTo(f.$container),f.$auto.find("input").add(f.$auto.filter("input")).attr("data-column","auto").prop("checked",f.auto).toggleClass(e.columnSelector_cssChecked,f.auto).on("change",function(){d.updateAuto(b,e,a(this))}).change()),b.$table.off("update"+c).on("update"+c,function(){d.updateCols(b,e)}))},updateAuto:function(b,c,e){var f=b.selector;f.auto=e.prop("checked")||!1,a.each(f.$checkbox,function(a,b){b&&(b[0].disabled=f.auto,f.$wrapper[a].toggleClass("disabled",f.auto))}),c.columnSelector_mediaquery&&d.updateBreakpoints(b,c),d.updateCols(b,c),b.selector.$popup&&b.selector.$popup.find(".tablesorter-column-selector").html(f.$container.html()).find("input").each(function(){var b=a(this).attr("data-column");a(this).prop("checked","auto"===b?f.auto:f.states[b])}),d.saveValues(b,c),d.adjustColspans(b,c),f.auto&&b.$table.triggerHandler(c.columnSelector_updated)},addSelectors:function(a,b){var c=[],d=" col:nth-child("+b+")";return c.push(a+d+","+a+"_extra_table"+d),d=" tr:not(.hasSpan) th:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),d=" tr:not(.hasSpan) td:nth-child("+b+")",c.push(a+d+","+a+"_extra_table"+d),d=" tr td:not("+a+'HasSpan)[data-column="'+(b-1)+'"]',c.push(a+d+","+a+"_extra_table"+d),c},updateBreakpoints:function(c,e){var f,g,h,i,j=[],k=c.selector,l=c.namespace+"columnselector",m=[],n="";if(e.columnSelector_mediaquery&&!k.auto)return k.$breakpoints.prop("disabled",!0),void k.$style.prop("disabled",!1);if(e.columnSelector_mediaqueryHidden)for(h=0;h<c.columns;h++)g=b.getColumnData(c.table,c.headers,h),j[h+1]="false"===b.getData(c.$headerIndexed[h],g,"columnSelector"),j[h+1]&&(m=m.concat(d.addSelectors(l,h+1)));for(f=0;f<e.columnSelector_maxPriorities;f++)i=[],c.$headers.filter("["+e.columnSelector_priority+"="+(f+1)+"]").each(function(){h=parseInt(a(this).attr("data-column"),10)+1,j[h]||(i=i.concat(d.addSelectors(l,h)))}),i.length&&(m=m.concat(i),n+=d.queryBreak.replace(/\[size\]/g,e.columnSelector_breakpoints[f]).replace(/\[columns\]/g,i.join(",")));k.$style&&k.$style.prop("disabled",!0),m.length&&k.$breakpoints.prop("disabled",!1).text(d.queryAll.replace(/\[columns\]/g,m.join(","))+n)},updateCols:function(b,c){if(!(c.columnSelector_mediaquery&&b.selector.auto||b.selector.isInitializing)){var e,f=b.selector,g=[],h=b.namespace+"columnselector";f.$container.find("input[data-column]").filter('[data-column!="auto"]').each(function(){this.checked||(e=parseInt(a(this).attr("data-column"),10)+1,g=g.concat(d.addSelectors(h,e))),a(this).toggleClass(c.columnSelector_cssChecked,this.checked)}),c.columnSelector_mediaquery&&f.$breakpoints.prop("disabled",!0),f.$style&&f.$style.prop("disabled",!1).text(g.length?g.join(",")+" { display: none; }":""),d.saveValues(b,c),d.adjustColspans(b,c),b.$table.triggerHandler(c.columnSelector_updated)}},setUpColspan:function(c,e){var f,g,h,i=a(window),j=!1,k=c.$table.add(a(c.namespace+"_extra_table")).children().children("tr").children("th, td"),l=k.length;for(f=0;f<l;f++)g=k[f].colSpan,g>1&&(j=!0,k.eq(f).addClass(c.namespace.slice(1)+"columnselectorHasSpan").attr("data-col-span",g),b.computeColumnIndex(k.eq(f).parent().addClass("hasSpan")));j&&e.columnSelector_mediaquery&&(h=c.namespace+"columnselector",i.off(h).on("resize"+h,b.window_resize).on("resizeEnd"+h,function(){i.off("resize"+h,b.window_resize),d.adjustColspans(c,e),i.on("resize"+h,b.window_resize)}))},adjustColspans:function(b,c){var d,e,f,g,h,i,j=b.selector,k=c.filter_filteredRow||"filtered",l=c.columnSelector_mediaquery&&j.auto,m=b.$table.children("thead, tfoot").children().children().add(a(b.namespace+"_extra_table").children("thead, tfoot").children().children()),n=m.length;for(d=0;d<n;d++)if(i=m.eq(d),f=parseInt(i.attr("data-column"),10)||i[0].cellIndex,g=parseInt(i.attr("data-col-span"),10)||1,h=f+g,g>1){for(e=f;e<h;e++)(!l&&j.states[e]===!1||l&&b.$headerIndexed[e]&&!b.$headerIndexed[e].is(":visible"))&&g--;g?i.removeClass(k)[0].colSpan=g:i.addClass(k)}else"undefined"!=typeof j.states[f]&&null!==j.states[f]&&i.toggleClass(k,!j.states[f])},saveValues:function(a,c){if(c.columnSelector_saveColumns&&b.storage){var d=a.selector;b.storage(a.$table[0],"tablesorter-columnSelector-auto",{auto:d.auto}),b.storage(a.$table[0],"tablesorter-columnSelector",d.states)}},attachTo:function(b,c){b=a(b)[0];var e,f,g,h=b.config,i=a(c);i.length&&h&&(i.find(".tablesorter-column-selector").length||i.append('<span class="tablesorter-column-selector"></span>'),e=h.selector,f=h.widgetOptions,i.find(".tablesorter-column-selector").html(e.$container.html()).find("input").each(function(){var b=a(this).attr("data-column"),c="auto"===b?e.auto:e.states[b];a(this).toggleClass(f.columnSelector_cssChecked,c).prop("checked",c)}),e.$popup=i.on("change","input",function(){if(!e.isInitializing){if(!d.checkChange(h,this.checked))return this.checked=!this.checked,!1;g=a(this).toggleClass(f.columnSelector_cssChecked,this.checked).attr("data-column"),e.$container.find('input[data-column="'+g+'"]').prop("checked",this.checked).trigger("change")}}))}};b.window_resize=function(){b.timer_resize&&clearTimeout(b.timer_resize),b.timer_resize=setTimeout(function(){a(window).trigger("resizeEnd")},250)},b.addWidget({id:"columnSelector",priority:10,options:{columnSelector_container:null,columnSelector_columns:{},columnSelector_saveColumns:!0,columnSelector_layout:'<label><input type="checkbox">{name}</label>',columnSelector_name:"data-selector-name",columnSelector_mediaquery:!0,columnSelector_mediaqueryName:"Auto: ",columnSelector_mediaqueryState:!0,columnSelector_mediaqueryHidden:!1,columnSelector_maxVisible:null,columnSelector_minVisible:null,columnSelector_breakpoints:["20em","30em","40em","50em","60em","70em"],columnSelector_maxPriorities:6,columnSelector_priority:"data-priority",columnSelector_cssChecked:"checked",columnSelector_updated:"columnUpdate"},init:function(a,b,c,e){d.init(a,c,e)},remove:function(b,d,e,f){var g=d.selector;g&&g.$container.empty(),!f&&g&&(g.$popup&&g.$popup.empty(),g.$style.remove(),g.$breakpoints.remove(),a(d.namespace+"columnselectorHasSpan").removeClass(e.filter_filteredRow||"filtered"),d.$table.off("updateAll"+c+" update"+c))}})}(jQuery);
 /**
  * Timeago is a jQuery plugin that makes it easy to support automatically
  * updating fuzzy timestamps (e.g. "4 minutes ago" or "about 1 day ago").

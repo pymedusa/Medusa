@@ -19,13 +19,16 @@
 import logging
 import threading
 import time
-import app
 
-from . import db, helpers, network_timezones, ui
+import app
+from requests.exceptions import HTTPError
+
+from . import db, network_timezones, ui
 from .helper.exceptions import CantRefreshShowException, CantUpdateShowException
 from .indexers.indexer_api import indexerApi
 from .indexers.indexer_exceptions import IndexerException, IndexerUnavailable
 from .scene_exceptions import refresh_exceptions_cache
+from .session.core import MedusaSession
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +37,7 @@ class ShowUpdater(object):
     def __init__(self):
         self.lock = threading.Lock()
         self.amActive = False
-        self.session = helpers.make_session()
+        self.session = MedusaSession()
         self.update_cache = UpdateCache()
 
     def run(self, force=False):
@@ -64,7 +67,7 @@ class ShowUpdater(object):
 
             indexer_api_params = indexerApi(show.indexer).api_params.copy()
             try:
-                t = indexerApi(show.indexer).indexer(**indexer_api_params)
+                indexer_api = indexerApi(show.indexer).indexer(**indexer_api_params)
             except IndexerUnavailable:
                 logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                u'connectivity issues. While trying to look for show updates on show: {show}',
@@ -82,8 +85,9 @@ class ShowUpdater(object):
             if last_update and last_update > time.time() - (604800 * update_max_weeks):
                 if show.indexer not in indexer_updated_shows:
                     try:
-                        indexer_updated_shows[show.indexer] = t.get_last_updated_series(last_update,
-                                                                                        update_max_weeks)
+                        indexer_updated_shows[show.indexer] = indexer_api.get_last_updated_series(
+                            last_update, update_max_weeks
+                        )
                     except IndexerUnavailable:
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'connectivity issues while trying to look for show updates on show: {show}',
@@ -93,6 +97,19 @@ class ShowUpdater(object):
                         logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                        u'issues while trying to get updates for show {show}. Cause: {cause}',
                                        indexer_name=indexerApi(show.indexer).name, show=show.name, cause=e.message)
+                        continue
+                    except HTTPError as error:
+                        if error.response.status_code == 503:
+                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                           u'issues while trying to get updates for show {show}. '
+                                           u'Cause: TMDB api Service offline: '
+                                           u'This service is temporarily offline, try again later.',
+                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
+                        if error.response.status_code == 429:
+                            logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
+                                           u'issues while trying to get updates for show {show}. '
+                                           u'Cause: Your request count (#) is over the allowed limit of (40)..',
+                                           indexer_name=indexerApi(show.indexer).name, show=show.name)
                         continue
                     except Exception as e:
                         logger.exception(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
@@ -111,7 +128,7 @@ class ShowUpdater(object):
                     continue
 
             # These are the criteria for performing a full show refresh.
-            if any([not hasattr(t, 'get_last_updated_seasons'),
+            if any([not hasattr(indexer_api, 'get_last_updated_seasons'),
                     not last_update,
                     last_update < time.time() - 604800 * update_max_weeks]):
                 # no entry in lastUpdate, or last update was too long ago,
@@ -123,10 +140,10 @@ class ShowUpdater(object):
                 refresh_shows.append(show)
 
             # Else fall back to per season updates.
-            elif hasattr(t, 'get_last_updated_seasons'):
+            elif hasattr(indexer_api, 'get_last_updated_seasons'):
                 # Get updated seasons and add them to the season update list.
                 try:
-                    updated_seasons = t.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
+                    updated_seasons = indexer_api.get_last_updated_seasons([show.indexerid], last_update, update_max_weeks)
                 except IndexerUnavailable:
                     logger.warning(u'Problem running show_updater, Indexer {indexer_name} seems to be having '
                                    u'connectivity issues while trying to look for showupdates on show: {show}',

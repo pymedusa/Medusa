@@ -1,38 +1,25 @@
 # coding=utf-8
-# Author: p0psicles
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Bithdtv."""
+
 from __future__ import unicode_literals
 
+import logging
 import traceback
 
-from medusa import (
-    logger,
-    tv,
-)
+from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
     convert_size,
     try_int,
 )
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class BithdtvProvider(TorrentProvider):
@@ -40,11 +27,7 @@ class BithdtvProvider(TorrentProvider):
 
     def __init__(self):
         """Initialize the class."""
-        super(self.__class__, self).__init__('BITHDTV')
-
-        # Credentials
-        self.username = None
-        self.password = None
+        super(BithdtvProvider, self).__init__('BITHDTV')
 
         # Torrent Stats
         self.minseed = 0
@@ -54,7 +37,6 @@ class BithdtvProvider(TorrentProvider):
         # URLs
         self.url = 'https://www.bit-hdtv.com/'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
             'search': urljoin(self.url, 'torrents.php'),
         }
 
@@ -62,6 +44,9 @@ class BithdtvProvider(TorrentProvider):
         self.proper_strings = ['PROPER', 'REPACK', 'REAL']
 
         # Miscellaneous Options
+        self.enable_cookies = True
+        self.cookies = ''
+        self.required_cookies = ('h_sl', 'h_sp', 'h_su')
 
         # Torrent Stats
 
@@ -83,24 +68,24 @@ class BithdtvProvider(TorrentProvider):
 
         # Search Params
         search_params = {
-            'cat': 10,
+            'cat': '10',
         }
 
         for mode in search_strings:
-            logger.log('Search mode: {0}'.format(mode), logger.DEBUG)
+            log.debug('Search mode: {0}', mode)
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    logger.log('Search string: {search}'.format
-                               (search=search_string), logger.DEBUG)
+                    log.debug('Search string: {search}',
+                              {'search': search_string})
                 search_params['search'] = search_string
 
                 if mode == 'Season':
                     search_params['cat'] = 12
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
-                    logger.log('No data returned from provider', logger.DEBUG)
+                    log.debug('No data returned from provider')
                     continue
 
                 results += self.parse(response.text, mode)
@@ -119,20 +104,20 @@ class BithdtvProvider(TorrentProvider):
         items = []
 
         with BS4Parser(data, 'html.parser') as html:  # Use html.parser, since html5parser has issues with this site.
-            tables = html('table', width='750')  # Get the last table with a width of 750px.
+            tables = html('table', width='800')  # Get the last table with a width of 800px.
             torrent_table = tables[-1] if tables else []
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
             if len(torrent_rows) < 2:
-                logger.log('Data returned from provider does not contain any torrents', logger.DEBUG)
+                log.debug('Data returned from provider does not contain any torrents')
                 return items
 
             # Skip column headers
             for row in torrent_rows[1:]:
                 cells = row('td')
                 if len(cells) < 3:
-                    # We must have cells[2] because it containts the title
+                    # We must have cells[2] because it contains the title
                     continue
 
                 if self.freeleech and not row.get('bgcolor'):
@@ -150,13 +135,16 @@ class BithdtvProvider(TorrentProvider):
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
                         if mode != 'RSS':
-                            logger.log("Discarding torrent because it doesn't meet the "
-                                       "minimum seeders: {0}. Seeders: {1}".format
-                                       (title, seeders), logger.DEBUG)
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
                         continue
 
                     torrent_size = cells[6].get_text(' ') if len(cells) > 6 else None
                     size = convert_size(torrent_size) or -1
+
+                    pubdate_raw = cells[5].get_text(' ')
+                    pubdate = self.parse_pubdate(pubdate_raw)
 
                     item = {
                         'title': title,
@@ -164,41 +152,22 @@ class BithdtvProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': None,
+                        'pubdate': pubdate,
                     }
                     if mode != 'RSS':
-                        logger.log('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers), logger.DEBUG)
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    logger.log('Failed parsing provider. Traceback: {0!r}'.format
-                               (traceback.format_exc()), logger.ERROR)
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
     def login(self):
-        """Login method used for logging in before doing search and torrent downloads."""
-        if any(dict_from_cookiejar(self.session.cookies).values()):
-            return True
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-        }
-
-        response = self.get_url(self.urls['login'], post_data=login_params, returns='response')
-        if not response or not response.text:
-            logger.log('Unable to connect to provider', logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        if '<h2>Login failed!</h2>' in response.text:
-            logger.log('Invalid username or password. Check your settings', logger.WARNING)
-            self.session.cookies.clear()
-            return False
-
-        return True
+        """Login method used for logging in before doing a search and torrent downloads."""
+        return self.cookie_login('login failed', check_url=self.urls['search'])
 
 
 provider = BithdtvProvider()

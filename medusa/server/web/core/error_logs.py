@@ -72,7 +72,7 @@ class ErrorLogs(WebRoot):
     issue_submitter = IssueSubmitter()
 
     def __init__(self, *args, **kwargs):
-        """Default constructor."""
+        """Initialize class with default constructor."""
         super(ErrorLogs, self).__init__(*args, **kwargs)
 
     def _create_menu(self, level):
@@ -100,7 +100,7 @@ class ErrorLogs(WebRoot):
         ]
 
     def index(self, level=logging.ERROR, **kwargs):
-        """Default index page."""
+        """Render default index page."""
         try:
             level = int(level)
         except (TypeError, ValueError):

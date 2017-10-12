@@ -323,7 +323,7 @@ MEDUSA.home.index = function() {
     });
 
     $('.show-option .show-layout').on('change', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             layout: {
                 home: $(this).val()
             }
@@ -336,8 +336,8 @@ MEDUSA.home.index = function() {
     });
 
     $('#showRootDir').on('change', function() {
-        api.patch('config', {
-            selectedRootIndex: $(this).val()
+        api.patch('config/main', {
+            selectedRootIndex: parseInt($(this).val(), 10)
         }).then(function(response) {
             log.info(response);
             window.location.reload();
@@ -349,8 +349,7 @@ MEDUSA.home.index = function() {
     var rootDir = MEDUSA.config.rootDirs;
     var rootDirIndex = MEDUSA.config.selectedRootIndex;
     if (rootDir) {
-        var backendPieces = rootDir.split('|');
-        var backendDirs = backendPieces.slice(1);
+        var backendDirs = rootDir.slice(1);
         if (backendDirs.length >= 2) {
             $('#showRoot').show();
             var item = ['All Folders'];

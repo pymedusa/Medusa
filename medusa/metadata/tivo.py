@@ -160,7 +160,7 @@ class TIVOMetadata(generic.GenericMetadata):
 
         eps_to_write = [ep_obj] + ep_obj.related_episodes
 
-        my_show = self._get_show_data(ep_obj.show)
+        my_show = self._get_show_data(ep_obj.series)
         if not my_show:
             return None
 
@@ -172,7 +172,7 @@ class TIVOMetadata(generic.GenericMetadata):
                 log.debug(
                     u'Unable to find episode {number} on {indexer}... has it been removed? Should I delete from db?', {
                         'number': episode_num(ep_to_write.season, ep_to_write.episode),
-                        'indexer': indexerApi(ep_obj.show.indexer).name,
+                        'indexer': indexerApi(ep_obj.series.indexer).name,
                     }
                 )
                 return None
@@ -254,8 +254,8 @@ class TIVOMetadata(generic.GenericMetadata):
                 data += ('tvRating : {rating}\n'.format(rating=my_show['contentrating']))
 
             # This field can be repeated as many times as necessary or omitted completely.
-            if ep_obj.show.genre:
-                for genre in ep_obj.show.genre.split('|'):
+            if ep_obj.series.genre:
+                for genre in ep_obj.series.genre.split('|'):
                     if genre:
                         data += ('vProgramGenre : {genre}\n'.format(genre=genre))
 

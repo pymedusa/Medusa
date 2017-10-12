@@ -78,7 +78,7 @@ class HomeAddShows(Home):
             l_indexer_api_parms['language'] = lang
             l_indexer_api_parms['custom_ui'] = classes.AllShowsListUI
             try:
-                t = indexerApi(indexer).indexer(**l_indexer_api_parms)
+                indexer_api = indexerApi(indexer).indexer(**l_indexer_api_parms)
             except IndexerUnavailable as msg:
                 logger.log(u'Could not initialize Indexer {indexer}: {error}'.
                            format(indexer=indexerApi(indexer).name, error=msg))
@@ -88,7 +88,7 @@ class HomeAddShows(Home):
                 search_terms, indexerApi(indexer).name), logger.DEBUG)
             for searchTerm in search_terms:
                 try:
-                    indexer_results = t[searchTerm]
+                    indexer_results = indexer_api[searchTerm]
                     # add search results
                     results.setdefault(indexer, []).extend(indexer_results)
                 except IndexerException as e:
@@ -114,7 +114,7 @@ class HomeAddShows(Home):
         root_dirs = [unquote_plus(x) for x in root_dirs]
 
         if app.ROOT_DIRS:
-            default_index = int(app.ROOT_DIRS.split('|')[0])
+            default_index = int(app.ROOT_DIRS[0])
         else:
             default_index = 0
 
@@ -444,7 +444,7 @@ class HomeAddShows(Home):
             default_status_after = app.STATUS_DEFAULT_AFTER
 
             if app.ROOT_DIRS:
-                root_dirs = app.ROOT_DIRS.split('|')
+                root_dirs = app.ROOT_DIRS
                 location = root_dirs[int(root_dirs[0]) + 1]
             else:
                 location = None

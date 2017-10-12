@@ -64,6 +64,7 @@ def create_test_cache_folder():
     if not os.path.isdir(app.CACHE_DIR):
         os.mkdir(app.CACHE_DIR)
 
+
 # call env functions at appropriate time during application var setup
 
 # =================
@@ -82,9 +83,11 @@ app.NAMING_MULTI_EP = 1
 
 
 app.PROVIDER_ORDER = ["app_index"]
-app.newznabProviderList = NewznabProvider.get_providers_list("'Application Index|http://lolo.medusa.com/|0|5030,5040|0|eponly|0|0|0!!!NZBs.org|"
-                                                             "https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0!!!Usenet-Crawler|"
-                                                             "https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0'")
+app.newznabProviderList = NewznabProvider.get_providers_list(
+    'Application Index|http://lolo.medusa.com/|0|5030,5040|0|eponly|0|0|0|0!!!'
+    'NZBs.org|https://nzbs.org/||5030,5040,5060,5070,5090|0|eponly|0|0|0|0!!!'
+    'Usenet-Crawler|https://www.usenet-crawler.com/||5030,5040,5060|0|eponly|0|0|0|0'
+)
 app.providerList = providers.make_provider_list()
 
 app.PROG_DIR = os.path.abspath(os.path.join(TEST_DIR, '..'))
@@ -116,6 +119,7 @@ def _fake_specify_ep(self, season, episode):
     :param episode: Episode to search for  ...not used
     """
     pass
+
 
 # the real one tries to contact TVDB just stop it from getting more info on the ep
 Episode._specify_episode = _fake_specify_ep
@@ -182,6 +186,7 @@ class TestCacheDBConnection(TestDBConnection, object):
         except Exception as error:
             if str(error) != "table lastUpdate already exists":
                 raise
+
 
 # this will override the normal db connection
 db.DBConnection = TestDBConnection

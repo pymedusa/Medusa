@@ -25,6 +25,7 @@ import uuid
 import warnings
 import xml.etree.ElementTree as ET
 import zipfile
+
 from itertools import cycle, izip
 
 import adba
@@ -34,9 +35,7 @@ from cachecontrol.cache import DictCache
 
 import certifi
 
-import cfscrape
-
-from contextlib2 import closing, suppress
+from contextlib2 import suppress
 
 import guessit
 
@@ -44,10 +43,11 @@ from imdbpie import imdbpie
 
 from medusa import app, db
 from medusa.common import USER_AGENT
-from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
-from medusa.helper.exceptions import ex
+from medusa.helper.common import (episode_num, http_code_description, media_extensions,
+                                  pretty_file_size, subtitle_extensions)
 from medusa.indexers.indexer_exceptions import IndexerException
-from medusa.logger.adapters.style import BraceAdapter
+from medusa.logger.adapters.style import BraceAdapter, BraceMessage
+from medusa.session.core import MedusaSafeSession
 from medusa.show.show import Show
 
 import requests
@@ -284,12 +284,15 @@ def copy_file(src_file, dest_file):
     try:
         shutil.copyfile(src_file, dest_file)
     except (SpecialFileError, Error) as error:
-        log.warning(error)
+        log.warning('Error copying file: {error}', {'error': error})
     except OSError as error:
-        if 'No space left on device' in error:
-            log.warning(error)
+        msg = BraceMessage('OSError: {0}', error.message)
+        if error.errno == errno.ENOSPC:
+            # Only warn if device is out of space
+            log.warning(msg)
         else:
-            log.error(error)
+            # Error for any other OSError
+            log.error(msg)
     else:
         try:
             shutil.copymode(src_file, dest_file)
@@ -357,7 +360,7 @@ def hardlink_file(src_file, dest_file):
                 u'Failed to create hardlink of {source} at {destination}.'
                 u' Error: {error!r}. Copying instead', {
                     'source': src_file,
-                    'dest': dest_file,
+                    'destination': dest_file,
                     'error': msg,
                 }
             )
@@ -700,7 +703,6 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
-    from medusa import db
     absolute_number = None
 
     if season and episode:
@@ -781,11 +783,14 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA, serial
+        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
     except Exception:
         log.warning(u'pyopenssl module missing, please install for'
                     u' https access')
         return False
+
+    # Serial number for the certificate
+    serial = int(time.time())
 
     # Create the CA Certificate
     cakey = createKeyPair(TYPE_RSA, 1024)
@@ -834,10 +839,10 @@ def backup_versioned_file(old_file, version):
             shutil.copy(old_file, new_file)
             log.debug(u"Backup done")
             break
-        except Exception as msg:
+        except OSError as error:
             log.warning(u'Error while trying to back up {old} to {new}:'
                         u' {error!r}',
-                        {'old': old_file, 'new': new_file, 'error': msg})
+                        {'old': old_file, 'new': new_file, 'error': error})
             num_tries += 1
             time.sleep(1)
             log.debug(u'Trying again.')
@@ -877,10 +882,10 @@ def restore_versioned_file(backup_file, version):
                   u'restoring backup', {'file': new_file, 'version': version})
 
         shutil.move(new_file, new_file + '.' + 'r' + str(version))
-    except Exception as e:
+    except OSError as error:
         log.warning(u'Error while trying to backup DB file {name} before'
                     u' proceeding with restore: {error!r}',
-                    {'name': restore_file, 'error': ex(e)})
+                    {'name': restore_file, 'error': error})
         return False
 
     while not os.path.isfile(new_file):
@@ -895,10 +900,10 @@ def restore_versioned_file(backup_file, version):
             shutil.copy(restore_file, new_file)
             log.debug(u"Restore done")
             break
-        except Exception as e:
+        except OSError as error:
             log.warning(u'Error while trying to restore file {name}.'
                         u' Error: {msg!r}',
-                        {'name': restore_file, 'msg': ex(e)})
+                        {'name': restore_file, 'msg': error})
             num_tries += 1
             time.sleep(1)
             log.debug(u'Trying again. Attempt #: {0}', num_tries)
@@ -1002,30 +1007,33 @@ def get_show(name, try_indexers=False):
     if not name:
         return show
 
-    try:
-        # check cache for show
-        cache = name_cache.retrieveNameFromCache(name)
-        if cache:
-            from_cache = True
-            show = Show.find(app.showList, int(cache))
+    # check cache for show
+    cache = name_cache.retrieveNameFromCache(name)
+    if cache:
+        from_cache = True
+        show = Show.find(app.showList, int(cache))
 
-        # try indexers
-        if not show and try_indexers:
-            show = Show.find(
-                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
+    # try indexers
+    if not show and try_indexers:
+        show = Show.find(
+            app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
 
-        # try scene exceptions
-        if not show:
-            show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
-            if show_id:
-                show = Show.find(app.showList, int(show_id))
+    # try scene exceptions
+    if not show:
+        show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
+        if show_id:
+            show = Show.find(app.showList, int(show_id))
 
-        # add show to cache
-        if show and not from_cache:
-            name_cache.addNameToCache(name, show.indexerid)
-    except Exception as msg:
-        log.debug(u'Error when attempting to find show: {name}.'
-                  u' Error: {msg!r}', {'name': name, 'msg': msg})
+    if not show:
+        match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
+                           name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
+        for found_show in match_name_only:
+            log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
+                        (name=name, show=found_show))
+
+    # add show to cache
+    if show and not from_cache:
+        name_cache.addNameToCache(name, show.indexerid)
 
     return show
 
@@ -1067,7 +1075,7 @@ def real_path(path):
 def validate_show(show, season=None, episode=None):
     """Reindex show from originating indexer, and return indexer information for the passed episode."""
     from medusa.indexers.indexer_api import indexerApi
-    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound
+    from medusa.indexers.indexer_exceptions import IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound
     indexer_lang = show.lang
 
     try:
@@ -1083,7 +1091,8 @@ def validate_show(show, season=None, episode=None):
             return show.indexer_api
 
         return show.indexer_api[show.indexerid][season][episode]
-    except (IndexerEpisodeNotFound, IndexerSeasonNotFound):
+    except (IndexerEpisodeNotFound, IndexerSeasonNotFound, IndexerShowNotFound) as error:
+        log.debug(u'Unable to validate show. Reason: {0!r}', error.message)
         pass
 
 
@@ -1134,8 +1143,8 @@ def backup_config_zip(file_list, archive, arcname=None):
             a.write(f, os.path.relpath(f, arcname))
         a.close()
         return True
-    except Exception as error:
-        log.error(u'Zip creation error: {0!r} ', error)
+    except OSError as error:
+        log.warning(u'Zip creation error: {0!r} ', error)
         return False
 
 
@@ -1161,8 +1170,8 @@ def restore_config_zip(archive, target_dir):
             zip_file.extract(member, target_dir)
         zip_file.close()
         return True
-    except Exception as error:
-        log.error(u'Zip extraction error: {0!r}', error)
+    except OSError as error:
+        log.warning(u'Zip extraction error: {0!r}', error)
         shutil.rmtree(target_dir)
         return False
 
@@ -1201,7 +1210,7 @@ def make_session(cache_etags=True, serializer=None, heuristic=None):
     return session
 
 
-def request_defaults(kwargs):
+def request_defaults(**kwargs):
     hooks = kwargs.pop(u'hooks', None)
     cookies = kwargs.pop(u'cookies', None)
     verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop(u'verify', True)]) else False
@@ -1221,31 +1230,13 @@ def request_defaults(kwargs):
     return hooks, cookies, verify, proxies
 
 
-def prepare_cf_req(session, request):
-    log.debug(u'CloudFlare protection detected, trying to bypass it.')
-
-    try:
-        tokens, user_agent = cfscrape.get_tokens(request.url)
-        if request.cookies:
-            request.cookies.update(tokens)
-        else:
-            request.cookies = tokens
-        if request.headers:
-            request.headers.update({u'User-Agent': user_agent})
-        else:
-            request.headers = {u'User-Agent': user_agent}
-        log.debug(u'CloudFlare protection successfully bypassed.')
-        return session.prepare_request(request)
-    except (ValueError, AttributeError) as error:
-        log.warning(u'Could not bypass CloudFlare anti-bot protection.'
-                    u' Error: {0}', error)
-
-
 def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=None, **kwargs):
     """Return data retrieved from the url provider."""
+    log.warning('Deprecation warning! Usage of helpers.get_url and request_defaults is deprecated, '
+                'please make use of the PolicedRequest session for all of your requests.')
     response_type = kwargs.pop(u'returns', u'response')
     stream = kwargs.pop(u'stream', False)
-    hooks, cookies, verify, proxies = request_defaults(kwargs)
+    hooks, cookies, verify, proxies = request_defaults(**kwargs)
     method = u'POST' if post_data else u'GET'
 
     try:
@@ -1255,31 +1246,8 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
         resp = session.send(prepped, stream=stream, verify=verify, proxies=proxies, timeout=timeout,
                             allow_redirects=True)
 
-        if not resp.ok:
-            # Try to bypass CloudFlare's anti-bot protection
-            if resp.status_code == 503 and resp.headers.get('server') == u'cloudflare-nginx':
-                cf_prepped = prepare_cf_req(session, req)
-                if cf_prepped:
-                    cf_resp = session.send(cf_prepped, stream=stream, verify=verify, proxies=proxies,
-                                           timeout=timeout, allow_redirects=True)
-                    if cf_resp.ok:
-                        return cf_resp
-
-            log.debug(
-                u'Requested url {url} returned status code {status}:'
-                u' {description}', {
-                    'url': resp.url,
-                    'status': resp.status_code,
-                    'description': http_code_description(resp.status_code),
-                }
-            )
-
-            if response_type and response_type != u'response':
-                return None
-
-    except (requests.exceptions.RequestException, socket.gaierror) as error:
-        log.debug(u'Error requesting url {url}. Error: {msg}',
-                  {'url': url, 'msg': error})
+    except requests.exceptions.RequestException as e:
+        log.debug(u'Error requesting url {url}. Error: {err_msg}', url=url, err_msg=e)
         return None
     except Exception as error:
         if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
@@ -1306,7 +1274,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             return getattr(resp, response_type, None)
 
 
-def download_file(url, filename, session=None, headers=None, **kwargs):
+def download_file(url, filename, session, headers=None, **kwargs):
     """Download a file specified.
 
     :param url: Source URL
@@ -1316,11 +1284,19 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     :return: True on success, False on failure
     """
     try:
-        hooks, cookies, verify, proxies = request_defaults(kwargs)
+        hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
-        with closing(session.get(url, allow_redirects=True, stream=True,
-                                 verify=verify, headers=headers, cookies=cookies,
-                                 hooks=hooks, proxies=proxies)) as resp:
+        with session as s:
+            resp = s.get(url, allow_redirects=True, stream=True,
+                         verify=verify, headers=headers, cookies=cookies,
+                         hooks=hooks, proxies=proxies)
+
+            if not resp:
+                log.debug(
+                    u"Requested download URL {url} couldn't be reached.",
+                    {'url': url}
+                )
+                return False
 
             if not resp.ok:
                 log.debug(
@@ -1415,9 +1391,8 @@ def get_size(start_path='.'):
             try:
                 total_size += os.path.getsize(fp)
             except OSError as error:
-                log.error(u'Unable to get size for file {name} Error: {msg!r}',
-                          {'name': fp, 'msg': ex(error)})
-                log.debug(traceback.format_exc())
+                log.warning(u'Unable to get size for file {name} Error: {msg!r}',
+                            {'name': fp, 'msg': error})
     return total_size
 
 
@@ -1560,7 +1535,8 @@ def get_disk_space_usage(disk_path=None, pretty=True):
     if disk_path and os.path.exists(disk_path):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None, ctypes.pointer(free_bytes))
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None,
+                                                       ctypes.pointer(free_bytes))
             return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = os.statvfs(disk_path)
@@ -1572,11 +1548,12 @@ def get_disk_space_usage(disk_path=None, pretty=True):
 
 def get_tvdb_from_id(indexer_id, indexer):
 
-    session = make_session()
+    session = MedusaSafeSession()
     tvdb_id = ''
+
     if indexer == 'IMDB':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid=%s" % indexer_id
-        data = get_url(url, session=session, returns='content')
+        data = session.get_content(url)
         if data is None:
             return tvdb_id
 
@@ -1590,7 +1567,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'ZAP2IT':
         url = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?zap2it=%s" % indexer_id
-        data = get_url(url, session=session, returns='content')
+        data = session.get_content(url)
         if data is None:
             return tvdb_id
 
@@ -1603,7 +1580,7 @@ def get_tvdb_from_id(indexer_id, indexer):
 
     elif indexer == 'TVMAZE':
         url = "http://api.tvmaze.com/shows/%s" % indexer_id
-        data = get_url(url, session=session, returns='json')
+        data = session.get_json(url)
         if data is None:
             return tvdb_id
         tvdb_id = data['externals']['thetvdb']
@@ -1613,7 +1590,7 @@ def get_tvdb_from_id(indexer_id, indexer):
     # let's try to use tvmaze's api, to get the tvdbid
     if indexer == 'IMDB':
         url = 'http://api.tvmaze.com/lookup/shows?imdb={indexer_id}'.format(indexer_id=indexer_id)
-        data = get_url(url, session=session, returns='json')
+        data = session.get_json(url)
         if not data:
             return tvdb_id
         tvdb_id = data['externals'].get('thetvdb', '')
@@ -1632,8 +1609,8 @@ def get_showname_from_indexer(indexer, indexer_id, lang='en'):
 
     s = None
     try:
-        t = indexerApi(indexer).indexer(**indexer_api_params)
-        s = t[int(indexer_id)]
+        indexer_api = indexerApi(indexer).indexer(**indexer_api_params)
+        s = indexer_api[int(indexer_id)]
     except IndexerException as msg:
         log.warning(
             'Show name unavailable for {name} id {id} in {language}:'
@@ -1789,7 +1766,8 @@ def get_broken_providers():
     app.BROKEN_PROVIDERS_UPDATE = datetime.datetime.now()
 
     url = '{base_url}/providers/broken_providers.json'.format(base_url=app.BASE_PYMEDUSA_URL)
-    response = get_url(url, session=make_session(), returns='json')
+
+    response = MedusaSafeSession().get_json(url)
     if response is None:
         log.warning('Unable to update the list with broken providers.'
                     ' This list is used to disable broken providers.'
@@ -1798,7 +1776,7 @@ def get_broken_providers():
         return []
 
     log.info('Broken providers found: {0}', response)
-    return ','.join(response)
+    return response
 
 
 def is_already_processed_media(full_filename):

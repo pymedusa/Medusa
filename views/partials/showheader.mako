@@ -91,8 +91,8 @@
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
-                    <a asset="show/${show.indexerid}?type=poster">
-                        <img alt="" class="show-image shadow" asset="show/${show.indexerid}?type=posterThumb" />
+                    <a series="${show.slug}" asset="poster">
+                        <img alt="" class="show-image shadow" series="${show.slug}" asset="posterThumb" />
                     </a>
                 </div>
             </div>
@@ -103,7 +103,7 @@
         <div class="show-info-container">
             <div class="row">
                 <div class="pull-right col-lg-3 col-md-3 hidden-sm hidden-xs">
-                    <img id="showBanner" class="pull-right shadow" asset="show/${show.indexerid}?type=banner">
+                    <img id="showBanner" class="pull-right shadow" series="${show.slug}" asset="banner">
                 </div>
                 <div id="show-rating" class="pull-left col-lg-9 col-md-9 col-sm-12 col-xs-12">
                  % if 'rating' in show.imdb_info:
@@ -205,16 +205,16 @@
                                 <tr><td class="showLegend" style="vertical-align: top;">Scene Name:</td><td>${all_scene_exceptions}</td></tr>
                             % endif
                             % if show.show_words().required_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'required'}">${show.show_words().required_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Required Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'required'}">${', '.join(show.show_words().required_words)}</span></td></tr>
                             % endif
                             % if show.show_words().ignored_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'ignored'}">${show.show_words().ignored_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Ignored Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'ignored'}">${', '.join(show.show_words().ignored_words)}</span></td></tr>
                             % endif
                             % if show.show_words().preferred_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'preferred'}">${show.show_words().preferred_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Preferred Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'preferred'}">${', '.join(show.show_words().preferred_words)}</span></td></tr>
                             % endif
                             % if show.show_words().undesired_words:
-                                <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'undesired'}">${show.show_words().undesired_words}</span></td></tr>
+                                <tr><td class="showLegend" style="vertical-align: top;">Undesired Words: </td><td><span class="break-word ${'' if (action == "displayShow") else 'undesired'}">${', '.join(show.show_words().undesired_words)}</span></td></tr>
                             % endif
                             % if bwl and bwl.whitelist:
                                 <tr>
@@ -283,7 +283,8 @@
                                 % endif
                             % endfor
                             </select>
-                            <input type="hidden" id="showID" value="${show.indexerid}" />
+                            <input type="hidden" id="series-slug" value="${show.slug}" />
+                            <input type="hidden" id="series-id" value="${show.indexerid}" />
                             <input type="hidden" id="indexer" value="${show.indexer}" />
                             <input class="btn" type="button" id="changeStatus" value="Go" />
                         </div>

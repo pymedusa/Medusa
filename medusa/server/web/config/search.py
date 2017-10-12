@@ -74,12 +74,12 @@ class ConfigSearch(Config):
         app.TORRENT_METHOD = torrent_method
         app.USENET_RETENTION = try_int(usenet_retention, 500)
 
-        app.IGNORE_WORDS = ignore_words if ignore_words else ''
-        app.PREFERRED_WORDS = preferred_words if preferred_words else ''
-        app.UNDESIRED_WORDS = undesired_words if undesired_words else ''
-        app.TRACKERS_LIST = trackers_list if trackers_list else ''
-        app.REQUIRE_WORDS = require_words if require_words else ''
-        app.IGNORED_SUBS_LIST = ignored_subs_list if ignored_subs_list else ''
+        app.IGNORE_WORDS = [_.strip() for _ in ignore_words.split(',')] if ignore_words else []
+        app.PREFERRED_WORDS = [_.strip() for _ in preferred_words.split(',')] if preferred_words else []
+        app.UNDESIRED_WORDS = [_.strip() for _ in undesired_words.split(',')] if undesired_words else []
+        app.TRACKERS_LIST = [_.strip() for _ in trackers_list.split(',')] if trackers_list else []
+        app.REQUIRE_WORDS = [_.strip() for _ in require_words.split(',')] if require_words else []
+        app.IGNORED_SUBS_LIST = [_.strip() for _ in ignored_subs_list.split(',')] if ignored_subs_list else []
         app.IGNORE_UND_SUBS = config.checkbox_to_value(ignore_und_subs)
 
         app.RANDOMIZE_PROVIDERS = config.checkbox_to_value(randomize_providers)

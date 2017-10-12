@@ -5,54 +5,67 @@ from __future__ import unicode_literals
 import os
 import threading
 
+from medusa.server.api.v2.alias import AliasHandler
+from medusa.server.api.v2.alias_source import (
+    AliasSourceHandler,
+    AliasSourceOperationHandler,
+)
+from medusa.server.api.v2.auth import AuthHandler
+from medusa.server.api.v2.base import NotFoundHandler
+from medusa.server.api.v2.config import ConfigHandler
+from medusa.server.api.v2.episode import EpisodeHandler
+from medusa.server.api.v2.log import LogHandler
+from medusa.server.api.v2.series import SeriesHandler
+from medusa.server.api.v2.series_asset import SeriesAssetHandler
+from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
+from medusa.server.api.v2.series_operation import SeriesOperationHandler
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
-from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler
+from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
+from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
+from ..ws import MedusaWebSocketHandler
 
 
 def get_apiv2_handlers(base):
     """Return api v2 handlers."""
-    from .api.v2.config import ConfigHandler
-    from .api.v2.log import LogHandler
-    from .api.v2.show import ShowHandler
-    from .api.v2.auth import AuthHandler
-    from .api.v2.asset import AssetHandler
-    from .api.v2.base import NotFoundHandler
-    from .api.v2.scene_exception import (SceneExceptionHandler, SceneExceptionTypeHandler,
-                                         SceneExceptionAllTypeOperationHandler, SceneExceptionTypeOperationHandler)
-
-    show_id = r'(?P<show_indexer>[a-z]+)(?P<show_id>\d+)'
-    # This has to accept season of 1-4 as some seasons are years. For example Formula 1
-    ep_id = r'(?:(?:s(?P<season>\d{1,4})(?:e(?P<episode>\d{1,2}))?)|(?:e(?P<absolute_episode>\d{1,3}))' \
-            r'|(?P<air_date>\d{4}\-\d{2}\-\d{2}))'
-    query = r'(?P<query>[\w]+)'
-    query_extended = r'(?P<query>[\w \(\)%]+)'  # This also accepts the space char, () and %
-    log_level = r'(?P<log_level>[a-zA-Z]+)'
-    asset_group = r'(?P<asset_group>[a-zA-Z0-9]+)'
-
     return [
-        # All operations endpoints should be defined first.
-        (r'{base}/exceptiontype/(?P<exception_type>[a-z]+)/operation?/?'.format(base=base), SceneExceptionTypeOperationHandler),
-        (r'{base}/exceptiontype/operation?/?'.format(base=base), SceneExceptionAllTypeOperationHandler),
+        # Order: Most specific to most generic
+        # /api/v2/series/tvdb1234/episode
+        EpisodeHandler.create_app_handler(base),
 
-        # Regular REST routes
-        (r'{base}/show(?:/{show_id}(?:/{ep_id})?(?:/{query})?)?/?'.format(base=base, show_id=show_id, ep_id=ep_id,
-                                                                          query=query), ShowHandler),
-        (r'{base}/config(?:/{query})?/?'.format(base=base, query=query), ConfigHandler),
-        (r'{base}/log(?:/{log_level})?/?'.format(base=base, log_level=log_level), LogHandler),
-        (r'{base}/authenticate(/?)'.format(base=base), AuthHandler),
-        (r'{base}/asset(?:/{asset_group})(?:/{query})?/?'.format(base=base, asset_group=asset_group,
-                                                                 query=query_extended), AssetHandler),
-        (r'{base}/sceneexception(?:/(?P<exception_id>\d+)?)?/?'.format(base=base), SceneExceptionHandler),
-        (r'{base}/exceptiontype(?:/(?P<exception_type>[a-z]+)?)?/?'.format(base=base), SceneExceptionTypeHandler),
+        # /api/v2/series/tvdb1234/operation
+        SeriesOperationHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234/asset
+        SeriesAssetHandler.create_app_handler(base),
+        # /api/v2/series/tvdb1234/legacy
+        SeriesLegacyHandler.create_app_handler(base),  # To be removed
+        # /api/v2/series/tvdb1234
+        SeriesHandler.create_app_handler(base),
+
+        # /api/v2/config
+        ConfigHandler.create_app_handler(base),
+
+        # /api/v2/log
+        LogHandler.create_app_handler(base),
+
+        # /api/v2/alias-source/xem/operation
+        AliasSourceOperationHandler.create_app_handler(base),
+        # /api/v2/alias-source
+        AliasSourceHandler.create_app_handler(base),
+
+        # /api/v2/alias
+        AliasHandler.create_app_handler(base),
+
+        # /api/v2/authenticate
+        AuthHandler.create_app_handler(base),
 
         # Always keep this last!
-        (r'{base}(/?.*)'.format(base=base), NotFoundHandler),
+        NotFoundHandler.create_app_handler(base)
     ]
 
 
@@ -78,7 +91,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # video root
         if app.ROOT_DIRS:
-            root_dirs = app.ROOT_DIRS.split('|')
+            root_dirs = app.ROOT_DIRS
             self.video_root = root_dirs[int(root_dirs[0]) + 1]
         else:
             self.video_root = None
@@ -92,6 +105,9 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             app.API_KEY = generate_api_key()
         self.options['api_root'] = r'{root}/api/(?:v1/)?{key}'.format(root=app.WEB_ROOT, key=app.API_KEY)
         self.options['api_v2_root'] = r'{root}/api/v2'.format(root=app.WEB_ROOT)
+
+        # websocket root
+        self.options['web_socket'] = r'{root}/ws'.format(root=app.WEB_ROOT)
 
         # tornado setup
         self.enable_https = self.options['enable_https']
@@ -123,29 +139,12 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             login_url=r'{root}/login/'.format(root=self.options['web_root']),
         )
 
-        # API v1 handlers
-        self.app.add_handlers('.*$', [
-            # Main handler
-            (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
-
-            # Key retrieval
-            (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
-
-            # Builder redirect
-            (r'{base}/api/builder'.format(base=self.options['web_root']),
-             RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
-
-            # Webui login/logout handlers
-            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
-            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
-
-            # Web calendar handler (Needed because option Unprotected calendar)
-            (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
-
-            # webui handlers
-        ] + self._get_webui_routes())
-
         self.app.add_handlers('.*$', get_apiv2_handlers(self.options['api_v2_root']))
+
+        # Websocket handler
+        self.app.add_handlers(".*$", [
+            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), MedusaWebSocketHandler.WebSocketUIHandler)
+        ])
 
         # Static File Handlers
         self.app.add_handlers('.*$', [
@@ -175,8 +174,40 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
             # videos
             (r'{base}/videos/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
-             {'path': self.video_root})
+             {'path': self.video_root}),
+
+            # vue dist
+            (r'{base}/vue/dist/(.*)'.format(base=self.options['web_root']), StaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'dist')}),
+
+            # vue index.html
+            (r'{base}/vue/?.*()'.format(base=self.options['web_root']), AuthenticatedStaticFileHandler,
+             {'path': os.path.join(self.options['vue_root'], 'index.html'), 'default_filename': 'index.html'}),
         ])
+
+        # API v1 handlers
+        self.app.add_handlers('.*$', [
+            # Main handler
+            (r'{base}(/?.*)'.format(base=self.options['api_root']), ApiHandler),
+
+            # Key retrieval
+            (r'{base}/getkey(/?.*)'.format(base=self.options['web_root']), KeyHandler),
+
+            # Builder redirect
+            (r'{base}/api/builder'.format(base=self.options['web_root']),
+             RedirectHandler, {'url': '{base}/apibuilder/'.format(base=self.options['web_root'])}),
+
+            # Webui login/logout handlers
+            (r'{base}/login(/?)'.format(base=self.options['web_root']), LoginHandler),
+            (r'{base}/logout(/?)'.format(base=self.options['web_root']), LogoutHandler),
+
+            (r'{base}/token(/?)'.format(base=self.options['web_root']), TokenHandler),
+
+            # Web calendar handler (Needed because option Unprotected calendar)
+            (r'{base}/calendar'.format(base=self.options['web_root']), CalendarHandler),
+
+            # webui handlers
+        ] + self._get_webui_routes())
 
     def _get_webui_routes(self):
         webroot = self.options['web_root']
@@ -191,8 +222,11 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
             protocol = 'http'
             self.server = HTTPServer(self.app)
 
-        logger.log('Starting Medusa on {scheme}://{host}:{port}/'.format
-                   (scheme=protocol, host=self.options['host'], port=self.options['port']))
+        logger.log('Starting Medusa on {scheme}://{host}:{port}{web_root}/'.format
+                   (scheme=protocol,
+                    host=self.options['host'],
+                    port=self.options['port'],
+                    web_root=self.options['web_root']))
 
         try:
             self.server.listen(self.options['port'], self.options['host'])

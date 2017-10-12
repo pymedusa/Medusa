@@ -1,24 +1,11 @@
 # coding=utf-8
-# # Author: Mr_Orange
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for RSS Torrents."""
+
 from __future__ import unicode_literals
 
 import io
+import logging
 import os
 import re
 
@@ -27,21 +14,23 @@ from bencode import bdecode
 from medusa import (
     app,
     helpers,
-    logger,
     tv,
 )
 from medusa.helper.exceptions import ex
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
+log = logging.getLogger(__name__)
+log.logger.addHandler(logging.NullHandler())
+
 
 class TorrentRssProvider(TorrentProvider):
     """Torrent RSS provider."""
 
-    def __init__(self, name, url, cookies='',
+    def __init__(self, name, url='', cookies='',
                  title_tag='title', search_mode='eponly', search_fallback=False,
                  enable_daily=False, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
-        super(self.__class__, self).__init__(name)
+        super(TorrentRssProvider, self).__init__(name)
 
         # Credentials
 
@@ -59,6 +48,7 @@ class TorrentRssProvider(TorrentProvider):
         self.enable_backlog = enable_backlog
         self.enable_cookies = True
         self.cookies = cookies
+        self.required_cookies = ('uid', 'pass')
         self.title_tag = title_tag
 
         # Torrent Stats
@@ -104,65 +94,15 @@ class TorrentRssProvider(TorrentProvider):
         )
 
     @staticmethod
-    def get_providers_list(data):
-        """Get RSS torrent provider list."""
-        providers_list = [x for x in (TorrentRssProvider._make_provider(x) for x in data.split('!!!')) if x]
-        seen_values = set()
-        providers_set = []
-
-        for provider in providers_list:
-            value = provider.name
-
-            if value not in seen_values:
-                providers_set.append(provider)
-                seen_values.add(value)
-
-        return [x for x in providers_set if x]
+    def get_providers_list(providers):
+        """Return custom rss torrent providers."""
+        return [TorrentRssProvider(custom_provider) for custom_provider in providers]
 
     def image_name(self):
         """Return RSS torrent image."""
         if os.path.isfile(os.path.join(app.PROG_DIR, 'static/images/providers/', self.get_id() + '.png')):
             return self.get_id() + '.png'
         return 'torrentrss.png'
-
-    @staticmethod
-    def _make_provider(config):
-        """Create new RSS provider."""
-        if not config:
-            return None
-
-        cookies = ''
-        enable_backlog = 0
-        enable_daily = 0
-        enable_manualsearch = 0
-        search_fallback = 0
-        search_mode = 'eponly'
-        title_tag = 'title'
-
-        try:
-            values = config.split('|')
-
-            if len(values) == 9:
-                name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
-            elif len(values) == 10:
-                name, url, cookies, title_tag, enabled, search_mode, search_fallback, enable_daily, enable_backlog, enable_manualsearch = values
-            elif len(values) == 8:
-                name, url, cookies, enabled, search_mode, search_fallback, enable_daily, enable_backlog = values
-            else:
-                enabled = values[4]
-                name = values[0]
-                url = values[1]
-        except ValueError:
-            logger.log('Skipping RSS Torrent provider string: {}, incorrect format'.format(config), logger.ERROR)
-            return None
-
-        new_provider = TorrentRssProvider(
-            name, url, cookies=cookies, title_tag=title_tag, search_mode=search_mode, search_fallback=search_fallback,
-            enable_daily=enable_daily, enable_backlog=enable_backlog, enable_manualsearch=enable_manualsearch
-        )
-        new_provider.enabled = enabled == '1'
-
-        return new_provider
 
     def validate_rss(self):
         """Validate if RSS."""
@@ -190,7 +130,7 @@ class TorrentRssProvider(TorrentProvider):
                 return {'result': True,
                         'message': 'RSS feed Parsed correctly'}
             else:
-                torrent_file = self.get_url(url, returns='content')
+                torrent_file = self.session.get_content(url)
                 try:
                     bdecode(torrent_file)
                 except Exception as error:
@@ -214,10 +154,10 @@ class TorrentRssProvider(TorrentProvider):
             file_out.close()
             helpers.chmod_as_parent(dump_name)
         except IOError as error:
-            logger.log('Unable to save the file: {0}'.format(ex(error)), logger.ERROR)
+            log.error('Unable to save the file: {0}', error)
             return False
 
-        logger.log('Saved custom_torrent html dump {0} '.format(dump_name), logger.INFO)
+        log.info('Saved custom_torrent html dump {0} ', dump_name)
         return True
 
 

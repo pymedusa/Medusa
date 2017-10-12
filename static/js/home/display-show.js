@@ -77,7 +77,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
             return false;
         }
 
-        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#showID').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
+        window.location.href = $('base').attr('href') + 'home/setStatus?show=' + $('#series-id').attr('value') + '&eps=' + epArr.join('|') + '&status=' + $('#statusSelect').val();
     });
 
     $('.seasonCheck').on('click', function() {
@@ -193,7 +193,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     };
 
     function setEpisodeSceneNumbering(forSeason, forEpisode, sceneSeason, sceneEpisode) {
-        var showId = $('#showID').val();
+        var showId = $('#series-id').val();
         var indexer = $('#indexer').val();
 
         if (sceneSeason === '') {
@@ -228,7 +228,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     }
 
     function setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute) {
-        var showId = $('#showID').val();
+        var showId = $('#series-id').val();
         var indexer = $('#indexer').val();
 
         if (sceneAbsolute === '') {
@@ -408,14 +408,14 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     // Get the season exceptions and the xem season mappings.
     $.getJSON('home/getSeasonSceneExceptions', {
         indexer: $('input#indexer').val(),
-        indexer_id: $('input#showID').val() // eslint-disable-line camelcase
+        indexer_id: $('input#series-id').val() // eslint-disable-line camelcase
     }, function(data) {
         setSeasonSceneException(data);
     });
 
     // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
     $('.display-specials a').on('click', function() {
-        api.patch('config', {
+        api.patch('config/main', {
             layout: {
                 show: {
                     specials: $(this).text() !== 'Hide'

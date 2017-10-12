@@ -7,8 +7,8 @@ from __future__ import unicode_literals
 import logging
 
 from medusa import app, common
-from medusa.helpers import get_url, make_session
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -19,7 +19,7 @@ class Notifier(object):
 
     def __init__(self):
         """Initialize the class."""
-        self.session = make_session()
+        self.session = MedusaSession()
         self.url = 'https://new.boxcar.io/api/notifications'
 
     def test_notify(self, accesstoken, title='Medusa: Test'):
@@ -34,10 +34,9 @@ class Notifier(object):
         title: The title of the message
         accesstoken: to send to this device
 
-        returns: True if the message succeeded, False otherwise
+        return: True if the message succeeded, False otherwise
         """
         # http://blog.boxcar.io/post/93211745502/boxcar-api-update-boxcar-api-update-icon-and
-
         post_data = {
             'user_credentials': accesstoken,
             'notification[title]': 'Medusa: {}: {}'.format(title, msg),
@@ -47,7 +46,8 @@ class Notifier(object):
             'notification[icon_url]': app.LOGO_URL
         }
 
-        response = get_url(self.url, post_data=post_data, session=self.session, timeout=60, returns='json')
+        # TODO: SESSION: Check if this needs exception handling.
+        response = self.session.post(self.url, data=post_data, timeout=60).json()
         if not response:
             log.error('Boxcar2 notification failed.')
             return False

@@ -1,67 +1,62 @@
 # coding=utf-8
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
 """Provider code for Generic Provider."""
+
 from __future__ import unicode_literals
 
+import logging
 import re
+
 from base64 import b16encode, b32decode
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from itertools import chain
 from os.path import join
 from random import shuffle
 
+from dateutil import parser, tz
+
 from medusa import (
     app,
     config,
-    logger,
     tv,
     ui,
 )
 from medusa.classes import (
-    Proper,
     SearchResult,
 )
 from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
     SEASON_RESULT,
-    UA_POOL,
+    USER_AGENT,
 )
 from medusa.db import DBConnection
 from medusa.helper.common import (
-    replace_extension,
     sanitize_filename,
 )
-from medusa.helper.exceptions import ex
 from medusa.helpers import (
     download_file,
-    get_url,
-    make_session,
 )
 from medusa.indexers.indexer_config import INDEXER_TVDBV2
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
     NameParser,
 )
 from medusa.scene_exceptions import get_scene_exceptions
+from medusa.search import PROPER_SEARCH
+from medusa.session.core import MedusaSafeSession
+from medusa.session.hooks import cloudflare
 from medusa.show.show import Show
 
-from requests.utils import add_dict_to_cookiejar
+from pytimeparse import parse
+
+from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 # Keep a list of per provider of recent provider search results
 recent_results = {}
@@ -79,26 +74,31 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'http://itorrents.org/torrent/{info_hash}.torrent',
             'https://torrentproject.se/torrent/{info_hash}.torrent',
-            'http://torrasave.top/torrent/{info_hash}.torrent',
-            'http://torra.pro/torrent/{info_hash}.torrent',
-            'http://torra.click/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'http://torrasave.site/torrent/{info_hash}.torrent',
+            'http://thetorrent.org/torrent/{info_hash}.torrent',
+            'http://piratepublic.com/download.php?id={info_hash}',
+            'http://www.legittorrents.info/download.php?id={info_hash}',
+            'https://torrent.cd/torrents/download/{info_hash}/.torrent',
+            'https://asnet.pw/download/{info_hash}/',
+            'https://skytorrents.in/file/{info_hash}/.torrent',
+            'http://p2pdl.com/download/{info_hash}',
+            'http://itorrents.org/torrent/{info_hash}.torrent',
+            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
         self.enable_daily = False
         self.enabled = False
-        self.headers = {'User-Agent': UA_POOL.random}
+        self.headers = {'User-Agent': USER_AGENT}
         self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
         self.provider_type = None
         self.public = False
         self.search_fallback = False
         self.search_mode = None
-        self.session = make_session()
+        self.session = MedusaSafeSession(hooks=[cloudflare])
+        self.session.headers.update(self.headers)
         self.show = None
         self.supports_absolute_numbering = False
         self.supports_backlog = True
@@ -114,6 +114,10 @@ class GenericProvider(object):
         # Paramaters for reducting the daily search results parsing
         self.max_recent_items = 5
         self.stop_at = 3
+
+        # Police attributes
+        self.enable_api_hit_cooldown = False
+        self.enable_daily_request_reserve = False
 
     def download_result(self, result):
         """Download result from provider."""
@@ -131,11 +135,8 @@ class GenericProvider(object):
                     'Referer': '/'.join(url.split('/')[:3]) + '/'
                 })
 
-            logger.log('Downloading {result} from {provider} at {url}'.format
-                       (result=result.name, provider=self.name, url=url))
-
-            if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
-                filename = replace_extension(filename, GenericProvider.TORRENT)
+            log.info('Downloading {result} from {provider} at {url}',
+                     {'result': result.name, 'provider': self.name, 'url': url})
 
             verify = False if self.public else None
 
@@ -143,13 +144,19 @@ class GenericProvider(object):
                              hooks={'response': self.get_url_hook}, verify=verify):
 
                 if self._verify_download(filename):
-                    logger.log('Saved {result} to {location}'.format(result=result.name, location=filename))
+                    log.info('Saved {result} to {location}',
+                             {'result': result.name, 'location': filename})
                     return True
 
         if urls:
-            logger.log('Failed to download any results for {result}'.format(result=result.name), logger.WARNING)
+            log.warning('Failed to download any results for {result}',
+                        {'result': result.name})
 
         return False
+
+    def get_content(self, url, params=None, timeout=30, **kwargs):
+        """Retrieve the torrent/nzb content."""
+        return self.session.get_content(url, params=params, timeout=timeout, **kwargs)
 
     def find_propers(self, proper_candidates):
         """Find propers in providers."""
@@ -166,16 +173,20 @@ class GenericProvider(object):
                     search_strings = self._get_episode_search_strings(episode_obj, add_string=term)
 
                     for item in self.search(search_strings[0], ep_obj=episode_obj):
-                        title, url = self._get_title_and_url(item)
-                        seeders, leechers = self._get_result_info(item)
-                        size = self._get_size(item)
-                        pubdate = self._get_pubdate(item)
+                        search_result = self.get_result()
+                        results.append(search_result)
 
-                        # This will be retrived from the parser
-                        proper_tags = ''
+                        search_result.name, search_result.url = self._get_title_and_url(item)
+                        search_result.seeders, search_result.leechers = self._get_result_info(item)
+                        search_result.size = self._get_size(item)
+                        search_result.pubdate = self._get_pubdate(item)
 
-                        results.append(Proper(title, url, datetime.today(), show_obj, seeders, leechers, size, pubdate,
-                                              proper_tags))
+                        # This will be retrieved from the parser
+                        search_result.proper_tags = ''
+
+                        search_result.search_type = PROPER_SEARCH
+                        search_result.date = datetime.today()
+                        search_result.show = show_obj
 
         return results
 
@@ -210,6 +221,10 @@ class GenericProvider(object):
                 # Find results from the provider
                 items_list += self.search(search_string, ep_obj=episode)
 
+            # In season search, we can't loop in episodes lists as we only need one episode to get the season string
+            if search_mode == 'sponly':
+                break
+
         if len(results) == len(episodes):
             return results
 
@@ -242,6 +257,8 @@ class GenericProvider(object):
             search_results.append(search_result)
             search_result.item = item
             search_result.download_current_quality = download_current_quality
+            # FIXME: Should be changed to search_result.search_type
+            search_result.forced_search = forced_search
 
             (search_result.name, search_result.url) = self._get_title_and_url(item)
             (search_result.seeders, search_result.leechers) = self._get_result_info(item)
@@ -255,7 +272,8 @@ class GenericProvider(object):
                 search_result.parsed_result = NameParser(parse_method=('normal', 'anime')[show.is_anime]
                                                          ).parse(search_result.name)
             except (InvalidNameException, InvalidShowException) as error:
-                logger.log(u"{error}".format(error=error), logger.DEBUG)
+                log.debug('Error during parsing of release name: {release_name}, with error: {error}',
+                          {'release_name': search_result.name, 'error': error})
                 search_result.add_cache_entry = False
                 search_result.result_wanted = False
                 continue
@@ -273,19 +291,18 @@ class GenericProvider(object):
                 if not (search_result.show.air_by_date or search_result.show.sports):
                     if search_mode == 'sponly':
                         if search_result.parsed_result.episode_numbers:
-                            logger.log(
-                                'This is supposed to be a season pack search but the result %s is not a valid '
-                                'season pack, skipping it' % search_result.name, logger.DEBUG
+                            log.debug(
+                                'This is supposed to be a season pack search but the result {0} is not a valid '
+                                'season pack, skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
                         elif not [ep for ep in episodes if
                                   search_result.parsed_result.season_number == (ep.season, ep.scene_season)
-                                  [ep.show.is_scene]]:
-                            logger.log(
-                                'This season result %s is for a season we are not searching for, '
-                                'skipping it' % search_result.name,
-                                logger.DEBUG
+                                  [ep.series.is_scene]]:
+                            log.debug(
+                                'This season result {0} is for a season we are not searching for, '
+                                'skipping it', search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -293,18 +310,18 @@ class GenericProvider(object):
                         # I'm going to split these up for better readability
                         # Check if at least got a season parsed.
                         if search_result.parsed_result.season_number is None:
-                            logger.log(
-                                "The result %s doesn't seem to have a valid season that we are currently trying to "
-                                "snatch, skipping it" % search_result.name, logger.DEBUG
+                            log.debug(
+                                "The result {0} doesn't seem to have a valid season that we are currently trying to "
+                                "snatch, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
 
                         # Check if we at least got some episode numbers parsed.
                         if not search_result.parsed_result.episode_numbers:
-                            logger.log(
-                                "The result %s doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it" % search_result.name, logger.DEBUG
+                            log.debug(
+                                "The result {0} doesn't seem to match an episode that we are currently trying to "
+                                "snatch, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -313,11 +330,11 @@ class GenericProvider(object):
                         if not [searched_episode for searched_episode in episodes
                                 if searched_episode.season == search_result.parsed_result.season_number and
                                 (searched_episode.episode, searched_episode.scene_episode)
-                                [searched_episode.show.is_scene] in
+                                [searched_episode.series.is_scene] in
                                 search_result.parsed_result.episode_numbers]:
-                            logger.log(
-                                "The result %s doesn't seem to match an episode that we are currently trying to "
-                                "snatch, skipping it" % search_result.name, logger.DEBUG
+                            log.debug(
+                                "The result {0} doesn't seem to match an episode that we are currently trying to "
+                                "snatch, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -332,9 +349,9 @@ class GenericProvider(object):
                     search_result.same_day_special = False
 
                     if not search_result.parsed_result.is_air_by_date:
-                        logger.log(
-                            "This is supposed to be a date search but the result %s didn't parse as one, "
-                            "skipping it" % search_result.name, logger.DEBUG
+                        log.debug(
+                            "This is supposed to be a date search but the result {0} didn't parse as one, "
+                            "skipping it", search_result.name
                         )
                         search_result.result_wanted = False
                         continue
@@ -357,9 +374,9 @@ class GenericProvider(object):
                                 search_result.actual_episodes = [int(sql_results[0][b'episode'])]
                                 search_result.same_day_special = True
                         elif len(sql_results) != 1:
-                            logger.log(
-                                "Tried to look up the date for the episode %s but the database didn't return proper "
-                                "results, skipping it" % search_result.name, logger.WARNING
+                            log.warning(
+                                "Tried to look up the date for the episode {0} but the database didn't return proper "
+                                "results, skipping it", search_result.name
                             )
                             search_result.result_wanted = False
                             continue
@@ -378,17 +395,11 @@ class GenericProvider(object):
                 cl.append(cache_result)
 
             if not search_result.result_wanted:
-                logger.log("We aren't interested in this result: %s with url: %s"
-                           % (search_result.name, search_result.url), logger.DEBUG)
+                log.debug("We aren't interested in this result: {0} with url: {1}",
+                          search_result.name, search_result.url)
                 continue
 
-            if not manual_search:
-                # The second check, will loop through actual_episodes and check if there's anything useful in it.
-                if not search_result.check_episodes_for_quality(forced_search, download_current_quality):
-                    logger.log('Ignoring result %s.' % search_result.name, logger.DEBUG)
-                    continue
-
-            logger.log('Found result %s at %s' % (search_result.name, search_result.url), logger.DEBUG)
+            log.debug('Found result {0} at {1}', search_result.name, search_result.url)
 
             episode_object = search_result.create_episode_object()
             # result = self.get_result(episode_object, search_result)
@@ -396,15 +407,16 @@ class GenericProvider(object):
 
             if not episode_object:
                 episode_number = SEASON_RESULT
-                logger.log('Separating full season result to check for later', logger.DEBUG)
+                log.debug('Found season pack result {0} at {1}', search_result.name, search_result.url)
             elif len(episode_object) == 1:
                 episode_number = episode_object[0].episode
-                logger.log('Single episode result.', logger.DEBUG)
+                log.debug('Found single episode result {0} at {1}', search_result.name, search_result.url)
             else:
                 episode_number = MULTI_EP_RESULT
-                logger.log('Separating multi-episode result to check for later - result contains episodes: {0}'.format
-                           (search_result.parsed_result.episode_numbers), logger.DEBUG)
-
+                log.debug('Found multi-episode ({0}) result {1} at {2}',
+                          ', '.join(map(str, search_result.parsed_result.episode_numbers)),
+                          search_result.name,
+                          search_result.url)
             if episode_number not in results:
                 results[episode_number] = [search_result]
             else:
@@ -435,16 +447,48 @@ class GenericProvider(object):
     @staticmethod
     def get_url_hook(response, **kwargs):
         """Get URL hook."""
-        logger.log('{} URL: {} [Status: {}]'.format
-                   (response.request.method, response.request.url, response.status_code), logger.DEBUG)
+        request = response.request
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
-        if response.request.method == 'POST':
-            logger.log('With post data: {}'.format(response.request.body), logger.DEBUG)
+        if request.method.upper() == 'POST':
+            body = request.body
+            # try to log post data using various codecs to decode
+            if isinstance(body, unicode):
+                log.debug('With post data: {0}', body)
+                return
+
+            codecs = ('utf-8', 'latin1', 'cp1252')
+            for codec in codecs:
+                try:
+                    data = body.decode(codec)
+                except UnicodeError as error:
+                    log.debug('Failed to decode post data as {codec}: {msg}',
+                              {'codec': codec, 'msg': error})
+                else:
+                    log.debug('With post data: {0}', data)
+                    break
+            else:
+                log.warning('Failed to decode post data with {codecs}',
+                            {'codecs': codecs})
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
+        log.info('providers.generic_provider.get_url() is deprecated, '
+                 'please rewrite your provider to make use of the MedusaSession session class.')
         kwargs['hooks'] = {'response': self.get_url_hook}
-        return get_url(url, post_data, params, self.headers, timeout, self.session, **kwargs)
+
+        if not post_data:
+            return self.session.get(url, params=params, headers=self.headers, timeout=timeout, **kwargs)
+        else:
+            return self.session.post(url, post_data=post_data, params=params, headers=self.headers,
+                                     timeout=timeout, **kwargs)
 
     def image_name(self):
         """Return provider image name."""
@@ -482,9 +526,47 @@ class GenericProvider(object):
         """Login to provider."""
         return True
 
-    def search(self, search_params, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None):
         """Search the provider."""
         return []
+
+    @staticmethod
+    def parse_pubdate(pubdate, human_time=False, timezone=None):
+        """
+        Parse publishing date into a datetime object.
+
+        :param pubdate: date and time string
+        :param human_time: string uses human slang ("4 hours ago")
+        :param timezone: use a different timezone ("US/Eastern")
+
+        :returns: a datetime object or None
+        """
+        now_alias = ('right now', 'just now', 'now')
+
+        # This can happen from time to time
+        if pubdate is None:
+            log.debug('Skipping invalid publishing date.')
+            return
+
+        try:
+            if human_time:
+                if pubdate.lower() in now_alias:
+                    seconds = 0
+                else:
+                    match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
+                    seconds = parse(match.group('time'))
+                return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
+
+            dt = parser.parse(pubdate, fuzzy=True)
+            # Always make UTC aware if naive
+            if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
+                dt = dt.replace(tzinfo=tz.gettz('UTC'))
+            if timezone:
+                dt = dt.astimezone(tz.gettz(timezone))
+            return dt
+
+        except (AttributeError, ValueError):
+            log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
         """Get result."""
@@ -499,21 +581,21 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.scene_season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
-            if episode.show.air_by_date:
+            if episode.series.air_by_date:
                 episode_string += str(episode.airdate).replace('-', ' ')
-            elif episode.show.sports:
+            elif episode.series.sports:
                 episode_string += str(episode.airdate).replace('-', ' ')
                 episode_string += ('|', ' ')[len(self.proper_strings) > 1]
                 episode_string += episode.airdate.strftime('%b')
-            elif episode.show.anime:
+            elif episode.series.anime:
                 # If the showname is a season scene exception, we want to use the indexer episode number.
                 if (episode.scene_season > 1 and
-                        show_name in get_scene_exceptions(episode.show.indexerid,
-                                                          episode.show.indexer,
+                        show_name in get_scene_exceptions(episode.series.indexerid,
+                                                          episode.series.indexer,
                                                           episode.scene_season)):
                     # This is apparently a season exception, let's use the scene_episode instead of absolute
                     ep = episode.scene_episode
@@ -540,6 +622,8 @@ class GenericProvider(object):
 
     def _get_tvdb_id(self):
         """Return the tvdb id if the shows indexer is tvdb. If not, try to use the externals to get it."""
+        if not self.show:
+            return None
         return self.show.indexerid if self.show.indexer == INDEXER_TVDBV2 else self.show.externals.get('tvdb_id')
 
     def _get_season_search_strings(self, episode):
@@ -547,15 +631,15 @@ class GenericProvider(object):
             'Season': []
         }
 
-        for show_name in episode.show.get_all_possible_names(season=episode.season):
+        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
             episode_string = show_name + ' '
 
-            if episode.show.air_by_date or episode.show.sports:
+            if episode.series.air_by_date or episode.series.sports:
                 episode_string += str(episode.airdate).split('-')[0]
-            elif episode.show.anime:
+            elif episode.series.anime:
                 episode_string += 'Season'
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.season)
+                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
 
             search_string['Season'].append(episode_string.strip())
 
@@ -621,18 +705,24 @@ class GenericProvider(object):
                     info_hash = b16encode(b32decode(info_hash)).upper()
 
                 if not info_hash:
-                    logger.log('Unable to extract torrent hash from magnet: %s' % ex(result.url), logger.ERROR)
+                    log.error('Unable to extract torrent hash from magnet: {0}', result.url)
                     return urls, filename
 
                 urls = [x.format(info_hash=info_hash, torrent_name=torrent_name) for x in self.bt_cache_urls]
                 shuffle(urls)
             except Exception:
-                logger.log('Unable to extract torrent hash or name from magnet: %s' % ex(result.url), logger.ERROR)
+                log.error('Unable to extract torrent hash or name from magnet: {0}', result.url)
                 return urls, filename
         else:
             urls = [result.url]
 
-        filename = join(self._get_storage_dir(), sanitize_filename(result.name) + '.' + self.provider_type)
+        result_name = sanitize_filename(result.name)
+
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if result.url.endswith(GenericProvider.TORRENT) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
 
@@ -663,25 +753,104 @@ class GenericProvider(object):
 
         :return: A dict with the the keys result as bool and message as string
         """
+        # Added exception for rss torrent providers, as for them adding cookies initial should be optional.
+        from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+        if isinstance(self, TorrentRssProvider) and not self.cookies:
+            return {'result': True,
+                    'message': 'This is a TorrentRss provider without any cookies provided. '
+                               'Cookies for this provider are considered optional.'}
+
         # This is the generic attribute used to manually add cookies for provider authentication
-        if self.enable_cookies:
-            if self.cookies:
-                cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
-                if not cookie_validator.match(self.cookies):
-                    ui.notifications.message(
-                        'Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                        'Cookie is not correctly formatted: {0}'.format(self.cookies))
-                    return {'result': False,
-                            'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
+        if not self.enable_cookies:
+            return {'result': False,
+                    'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
 
-                # cookie_validator got at least one cookie key/value pair, let's return success
-                add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
-                return {'result': True,
-                        'message': ''}
+        if not self.cookies:
+            return {'result': False,
+                    'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
-            else:  # Cookies not set. Don't need to check cookies
-                return {'result': True,
-                        'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
+        cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
+        if not cookie_validator.match(self.cookies):
+            ui.notifications.message(
+                'Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                'Cookie is not correctly formatted: {0}'.format(self.cookies))
+            return {'result': False,
+                    'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        return {'result': False,
-                'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
+                   for req_cookie in self.required_cookies):
+            return {
+                'result': False,
+                'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
+                           "and make sure you have copied the following cookies: {required_cookies!r}"
+                           .format(provider_url=self.name, required_cookies=self.required_cookies)
+            }
+
+        # cookie_validator got at least one cookie key/value pair, let's return success
+        add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
+        return {'result': True,
+                'message': ''}
+
+    def check_required_cookies(self):
+        """
+        Check if we have the required cookies in the requests sessions object.
+
+        Meaning that we've already successfully authenticated once, and we don't need to go through this again.
+        Note! This doesn't mean the cookies are correct!
+        """
+        if not hasattr(self, 'required_cookies'):
+            # A reminder for the developer, implementing cookie based authentication.
+            log.error(
+                'You need to configure the required_cookies attribute, for the provider: {provider}',
+                {'provider': self.name}
+            )
+            return False
+        return all(dict_from_cookiejar(self.session.cookies).get(cookie) for cookie in self.required_cookies)
+
+    def cookie_login(self, check_login_text, check_url=None):
+        """
+        Check the response for text that indicates a login prompt.
+
+        In that case, the cookie authentication was not successful.
+        :param check_login_text: A string that's visible when the authentication failed.
+        :param check_url: The url to use to test the login with cookies. By default the providers home page is used.
+
+        :return: False when authentication was not successful. True if successful.
+        """
+        check_url = check_url or self.url
+
+        if self.check_required_cookies():
+            # All required cookies have been found within the current session, we don't need to go through this again.
+            return True
+
+        if self.cookies:
+            result = self.add_cookies_from_ui()
+            if not result['result']:
+                ui.notifications.message(result['message'])
+                log.warning(result['message'])
+                return False
+        else:
+            log.warning('Failed to login, you will need to add your cookies in the provider settings')
+            ui.notifications.error('Failed to auth with {provider}'.format(provider=self.name),
+                                   'You will need to add your cookies in the provider settings')
+            return False
+
+        response = self.session.get(check_url)
+        if any([not response,
+                not (response.text and response.status_code == 200),
+                check_login_text.lower() in response.text.lower()]):
+            log.warning('Please configure the required cookies for this provider. Check your provider settings')
+            ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
+                                   'Check your provider settings')
+            self.session.cookies.clear()
+            return False
+        else:
+            return True
+
+    def __str__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)
+
+    def __unicode__(self):
+        """Return provider name and provider type."""
+        return '{provider_name} ({provider_type})'.format(provider_name=self.name, provider_type=self.provider_type)

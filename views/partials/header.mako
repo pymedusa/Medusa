@@ -54,17 +54,18 @@
                         <li><a href="manage/backlogOverview/"><i class="menu-icon-backlog-view"></i>&nbsp;Backlog Overview</a></li>
                         <li><a href="manage/manageSearches/"><i class="menu-icon-manage-searches"></i>&nbsp;Manage Searches</a></li>
                         <li><a href="manage/episodeStatuses/"><i class="menu-icon-manage2"></i>&nbsp;Episode Status Management</a></li>
-                    % if app.USE_PLEX_SERVER and app.PLEX_SERVER_HOST != "":
+                    % if app.USE_PLEX_SERVER and app.PLEX_SERVER_HOST != []:
                         <li><a href="home/updatePLEX/"><i class="menu-icon-plex"></i>&nbsp;Update PLEX</a></li>
                     % endif
-                    % if app.USE_KODI and app.KODI_HOST != "":
+                    % if app.USE_KODI and app.KODI_HOST != []:
                         <li><a href="home/updateKODI/"><i class="menu-icon-kodi"></i>&nbsp;Update KODI</a></li>
                     % endif
                     % if app.USE_EMBY and app.EMBY_HOST != "" and app.EMBY_APIKEY != "":
                         <li><a href="home/updateEMBY/"><i class="menu-icon-emby"></i>&nbsp;Update Emby</a></li>
                     % endif
-                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole' and app.TORRENT_HOST[:4] == 'http':
-                        <li><a href="manage/manageTorrents/"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
+                    ## Avoid mixed content blocking by open manage torrent in new tab
+                    % if app.USE_TORRENTS and app.TORRENT_METHOD != 'blackhole':
+                        <li><a href="manage/manageTorrents/" target="_blank"><i class="menu-icon-bittorrent"></i>&nbsp;Manage Torrents</a></li>
                     % endif
                     % if app.USE_FAILED_DOWNLOADS:
                         <li><a href="manage/failedDownloads/"><i class="menu-icon-failed-download"></i>&nbsp;Failed Downloads</a></li>

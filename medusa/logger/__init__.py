@@ -1,6 +1,5 @@
 # coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
-
 #
 # This file is part of Medusa.
 #
@@ -20,6 +19,7 @@
 
 from __future__ import unicode_literals
 
+import collections
 import datetime
 import io
 import logging
@@ -44,7 +44,7 @@ from medusa import app
 from medusa.init.logconfig import standard_logger
 
 from requests.compat import quote
-from six import itervalues, text_type
+from six import itervalues, string_types, text_type
 import subliminal
 from tornado.log import access_log, app_log, gen_log
 import traktor
@@ -69,7 +69,17 @@ censored = []
 def rebuild_censored_list():
     """Rebuild the censored list."""
     # set of censored items
-    results = {value for value in itervalues(censored_items) if value}
+    results = set()
+    for value in itervalues(censored_items):
+        if not value:
+            continue
+        if isinstance(value, collections.Iterable) and not isinstance(value, string_types):
+            for item in value:
+                if item and item != '0':
+                    results.add(item)
+        elif value and value != '0':
+            results.add(value)
+
     # set of censored items and urlencoded counterparts
     results |= {quote(item) for item in results}
     # convert set items to unicode and typecast to list
@@ -106,7 +116,7 @@ def get_loggers(package):
     return [standard_logger(modname) for modname in list_modules(package)]
 
 
-def read_loglines(log_file=None, modification_time=None, max_lines=None, max_traceback_depth=100,
+def read_loglines(log_file=None, modification_time=None, start_index=0, max_lines=None, max_traceback_depth=100,
                   predicate=lambda logline: True, formatter=lambda logline: logline):
     """A generator that returns the lines of all consolidated log files in descending order.
 
@@ -114,6 +124,7 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
     :type log_file: str or unicode
     :param modification_time:
     :type modification_time: datetime.datetime
+    :param start_index:
     :param max_lines:
     :type max_lines: int
     :param max_traceback_depth:
@@ -132,6 +143,7 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
     for f in log_files:
         if not f or not os.path.isfile(f):
             continue
+
         if modification_time:
             log_mtime = os.path.getmtime(f)
             if log_mtime and datetime.datetime.fromtimestamp(log_mtime) < modification_time:
@@ -150,7 +162,8 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
                     del traceback_lines[:]
                 if predicate(logline):
                     counter += 1
-                    yield formatter(logline)
+                    if counter >= start_index:
+                        yield formatter(logline)
                     if max_lines is not None and counter >= max_lines:
                         return
 
@@ -160,7 +173,8 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
                 del traceback_lines[:]
                 if predicate(logline):
                     counter += 1
-                    yield formatter(logline)
+                    if counter >= start_index:
+                        yield formatter(logline)
                     if max_lines is not None and counter >= max_lines:
                         return
             else:
@@ -170,7 +184,9 @@ def read_loglines(log_file=None, modification_time=None, max_lines=None, max_tra
         message = traceback_lines[-1]
         logline = LogLine(message, message=message, traceback_lines=list(reversed(traceback_lines[:-1])))
         if predicate(logline):
-            yield formatter(logline)
+            counter += 1
+            if counter >= start_index:
+                yield formatter(logline)
 
 
 def reverse_readlines(filename, buf_size=2097152, encoding=default_encoding):
@@ -457,7 +473,6 @@ class ContextFilter(logging.Filter):
     level_mapping = {
         'subliminal': level_step,
         'subliminal.providers.addic7ed': 2 * level_step,
-        'subliminal.providers.itasa': 2 * level_step,
         'subliminal.providers.tvsubtitles': 2 * level_step,
         'subliminal.refiners.omdb': 2 * level_step,
         'subliminal.refiners.metadata': 2 * level_step,

@@ -1,1 +1,1 @@
-"""Providers tests."""
+"""Provider tests."""

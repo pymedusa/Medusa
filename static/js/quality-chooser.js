@@ -37,8 +37,8 @@ $(document).ready(function() {
         $('#allowed_qualities :selected').each(function(i, selected) {
             selectedAllowed[i] = $(selected).val();
         });
-        var url = 'show/' + $('#showIndexerSlug').attr('value') +
-                  '/backlogged' +
+        var url = 'series/' + $('#series-slug').attr('value') +
+                  '/legacy/backlogged' +
                   '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered;
         api.get(url).then(function(response) {
@@ -69,17 +69,15 @@ $(document).ready(function() {
     }
 
     function archiveEpisodes() {
-        var url = 'show/' + $('#showIndexerName').attr('value') + $('#showID').attr('value') +
-                  '/archiveEpisodes';
-        api.get(url).then(function(response) {
-            var archivedStatus = response.data.archived;
+        var url = 'series/' + $('#series-slug').attr('value') + '/operation';
+        api.post(url, {type: 'ARCHIVE_EPISODES'}).then(function(response) {
             var html = '';
-            if (archivedStatus) {
-                html = 'Successfuly archived episodes';
+            if (response.status === 201) {
+                html = 'Successfully archived episodes';
                 // Recalculate backlogged episodes after we archive it
                 backloggedEpisodes();
-            } else {
-                html = 'Not episodes needed to be archived';
+            } else if (response.status === 204) {
+                html = 'No episodes to be archived';
             }
             $('#archivedStatus').html(html);
             // Restore button text

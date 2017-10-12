@@ -30,12 +30,12 @@ from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
+from medusa.numdict import NumDict
+from medusa.recompiled import tags
+from medusa.search import PROPER_SEARCH
+
 from six import PY3
 from six.moves import reduce
-
-from .numdict import NumDict
-from .recompiled import tags
-
 
 if PY3:
     long = int
@@ -48,7 +48,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-USER_AGENT = u'Medusa/{version}({system}; {release}; {instance})'.format(
+USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=u'0.0.1', system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
@@ -433,6 +433,8 @@ class Quality(object):
         if not height:
             return Quality.UNKNOWN
 
+        height = int(height.magnitude)
+
         # TODO: Use knowledge information like 'resolution'
         base_filename = path.basename(file_path)
         bluray = re.search(r"blue?-?ray|hddvd|b[rd](rip|mux)", base_filename, re.I) is not None
@@ -634,7 +636,7 @@ class Quality(object):
 
     @staticmethod
     def should_replace(ep_status, old_quality, new_quality, allowed_qualities, preferred_qualities,
-                       download_current_quality=False, force=False, manually_searched=False):
+                       download_current_quality=False, force=False, manually_searched=False, search_type=None):
         """Return true if the old quality should be replaced with new quality.
 
         If not preferred qualities, then any downloaded quality is final
@@ -651,6 +653,7 @@ class Quality(object):
         :param download_current_quality: True if user wants the same existing quality to be snatched
         :param force: True if user did a forced search for that episode
         :param manually_searched: True if episode was manually searched by user
+        :param search_type: The search type, that started this method
         :return: True if the old quality should be replaced with new quality.
         """
         if ep_status and ep_status not in Quality.DOWNLOADED + Quality.SNATCHED + Quality.SNATCHED_PROPER:
@@ -669,6 +672,12 @@ class Quality(object):
 
         if not Quality.wanted_quality(new_quality, allowed_qualities, preferred_qualities):
             return False, 'New quality is not in any wanted quality lists. Ignoring new quality'
+
+        if search_type == PROPER_SEARCH:
+            if new_quality == old_quality:
+                return True, 'New quality is the same as the existing quality. Accepting PROPER'
+            return False, 'New quality is different from the existing quality.' \
+                          'Ignoring PROPER, as we only PROPER the same release.'
 
         if old_quality not in allowed_qualities + preferred_qualities:
             # If old quality is no longer wanted quality and new quality is wanted, we should replace.

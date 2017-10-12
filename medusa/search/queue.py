@@ -12,22 +12,18 @@ import traceback
 from medusa import app, common, failed_history, generic_queue, history, providers, ui
 from medusa.helpers import pretty_file_size
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.search import BACKLOG_SEARCH, DAILY_SEARCH, FAILED_SEARCH, FORCED_SEARCH, MANUAL_SEARCH
 from medusa.search.core import (
     search_for_needed_episodes,
     search_providers,
     snatch_episode,
 )
 
+
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
 search_queue_lock = threading.Lock()
-
-BACKLOG_SEARCH = 10
-DAILY_SEARCH = 20
-FAILED_SEARCH = 30
-FORCED_SEARCH = 40
-MANUAL_SEARCH = 50
 
 FORCED_SEARCH_HISTORY = []
 FORCED_SEARCH_HISTORY_SIZE = 100
@@ -248,12 +244,13 @@ class SnatchQueue(generic_queue.GenericQueue):
 class DailySearchQueueItem(generic_queue.QueueItem):
     """Daily searche queue item class."""
 
-    def __init__(self):
+    def __init__(self, force):
         """Initialize the class."""
         generic_queue.QueueItem.__init__(self, u'Daily Search', DAILY_SEARCH)
 
         self.success = None
         self.started = None
+        self.force = force
 
     def run(self):
         """Run daily search thread."""
@@ -262,7 +259,7 @@ class DailySearchQueueItem(generic_queue.QueueItem):
 
         try:
             log.info('Beginning daily search for new episodes')
-            found_results = search_for_needed_episodes()
+            found_results = search_for_needed_episodes(force=self.force)
 
             if not found_results:
                 log.info('No needed episodes found')
@@ -293,9 +290,9 @@ class DailySearchQueueItem(generic_queue.QueueItem):
                     # give the CPU a break
                     time.sleep(common.cpu_presets[app.CPU_PRESET])
 
-        except Exception:
+        except Exception as error:
             self.success = False
-            log.debug(traceback.format_exc())
+            log.exception('DailySearchQueueItem Exception, error: {error}', {'error': error})
 
         if self.success is None:
             self.success = False
@@ -308,16 +305,14 @@ class ForcedSearchQueueItem(generic_queue.QueueItem):
 
     def __init__(self, show, segment, down_cur_quality=False, manual_search=False, manual_search_type='episode'):
         """
-        A Queueitem used to queue Forced Searches and Manual Searches.
+        Initialize class of a QueueItem used to queue forced and manual searches.
 
-        @param show: A show object
-        @param segment: A list of episode objects. Needs to be passed as list!
-        @param down_cur_quality: Not sure what it's used for. Maybe legacy.
-        @param manual_search: Passed as True (bool) when the search should be performed without automatially snatching a result
-        @param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
-
-        @return: The run() methods searches and snatches the episode(s) if possible.
-        Or only searches and saves results to cache tables.
+        :param show: A show object
+        :param segment: A list of episode objects.
+        :param down_cur_quality: Not sure what it's used for. Maybe legacy.
+        :param manual_search: Passed as True (bool) when the search should be performed without snatching a result
+        :param manual_search_type: Used to switch between episode and season search. Options are 'episode' or 'season'.
+        :return: The run() method searches and snatches the episode(s) if possible or it only searches and saves results to cache tables.
         """
         generic_queue.QueueItem.__init__(self, u'Forced Search', FORCED_SEARCH)
         self.priority = generic_queue.QueuePriorities.HIGH
