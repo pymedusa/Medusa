@@ -46,6 +46,7 @@ from medusa.helper.exceptions import (
     EpisodePostProcessingFailedException,
     ShowDirectoryNotFoundException,
 )
+from medusa.helpers.utils import generate
 from medusa.helpers import is_subtitle, verify_freespace
 from medusa.name_parser.parser import (
     InvalidNameException,
@@ -316,20 +317,14 @@ class PostProcessor(object):
         :param files: path(s) to file(s) that should be deleted
         :param associated_files: True to delete all files which differ only by extension, False to leave them
         """
-        if not files:
-            return
-
-        # Check if files is a list, if not, make it one
-        if not isinstance(files, list):
-            file_list = [files]
-        else:
-            file_list = files
+        gen_files = generate(files or [])
+        files = list(gen_files)
 
         # also delete associated files, works only for 1 file
-        if associated_files and len(file_list) == 1:
-            file_list += self.list_associated_files(file_list[0], subfolders=True)
+        if associated_files and len(files) == 1:
+            files += self.list_associated_files(files[0], subfolders=True)
 
-        for cur_file in file_list:
+        for cur_file in files:
             if os.path.isfile(cur_file):
                 self.log(u'Deleting file: {0}'.format(cur_file), logger.DEBUG)
                 # check first the read-only attribute
