@@ -902,53 +902,50 @@ class PostProcessor(object):
         if not app.EXTRA_SCRIPTS:
             return
 
-        file_path = self.file_path
-        if isinstance(file_path, text_type):
-            try:
-                file_path = file_path.encode(app.SYS_ENCODING)
-            except UnicodeEncodeError:
-                # ignore it
-                pass
+        def _attempt_to_encode(item, _encoding):
+            if isinstance(item, text_type):
+                try:
+                    item = item.encode(_encoding)
+                except UnicodeEncodeError:
+                    pass  # ignore it
+                finally:
+                    return item
 
-        ep_location = ep_obj.location
-        if isinstance(ep_location, text_type):
-            try:
-                ep_location = ep_location.encode(app.SYS_ENCODING)
-            except UnicodeEncodeError:
-                # ignore it
-                pass
+        encoding = app.SYS_ENCODING
+
+        file_path = _attempt_to_encode(self.file_path, encoding)
+        ep_location = _attempt_to_encode(ep_obj.location, encoding)
+        indexer_id = str(ep_obj.series.indexerid)
+        season = str(ep_obj.season)
+        episode = str(ep_obj.episode)
+        airdate = str(ep_obj.airdate)
 
         for cur_script_name in app.EXTRA_SCRIPTS:
-            if isinstance(cur_script_name, text_type):
-                try:
-                    cur_script_name = cur_script_name.encode(app.SYS_ENCODING)
-                except UnicodeEncodeError:
-                    # ignore it
-                    pass
+            cur_script_name = _attempt_to_encode(cur_script_name, encoding)
 
             # generate a safe command line string to execute the script and provide all the parameters
             script_cmd = [piece for piece in re.split(r'(\'.*?\'|".*?"| )', cur_script_name) if piece.strip()]
             script_cmd[0] = os.path.abspath(script_cmd[0])
             self.log(u'Absolute path to script: {0}'.format(script_cmd[0]), logger.DEBUG)
 
-            script_cmd += [
-                ep_location, file_path, str(ep_obj.series.indexerid),
-                str(ep_obj.season), str(ep_obj.episode), str(ep_obj.airdate)
-            ]
+            script_cmd += [ep_location, file_path, indexer_id, season, episode, airdate]
 
             # use subprocess to run the command and capture output
             self.log(u'Executing command: {0}'.format(script_cmd))
             try:
-                p = subprocess.Popen(
-                    script_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, cwd=app.PROG_DIR
+                process = subprocess.Popen(
+                    script_cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    cwd=app.PROG_DIR
                 )
-                out, _ = p.communicate()
+                out, _ = process.communicate()
 
                 self.log(u'Script result: {0}'.format(out), logger.DEBUG)
 
-            except Exception as e:
-                self.log(u'Unable to run extra_script: {0!r}'.format(e))
+            except Exception as error:
+                self.log(u'Unable to run extra_script: {0!r}'.format(error))
 
     def flag_kodi_clean_library(self):
         """Set flag to clean Kodi's library if Kodi is enabled."""
