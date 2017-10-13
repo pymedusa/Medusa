@@ -326,13 +326,8 @@ class PostProcessor(object):
             file_list = files
 
         # also delete associated files, works only for 1 file
-        if associated_files and len(files) == 1:
-            file_list += self.list_associated_files(files[0], subfolders=True)
-
-        if not file_list:
-            self.log(u'There were no files associated with {0}, not deleting anything'.format
-                     (files), logger.DEBUG)
-            return
+        if associated_files and len(file_list) == 1:
+            file_list += self.list_associated_files(file_list[0], subfolders=True)
 
         for cur_file in file_list:
             if os.path.isfile(cur_file):
