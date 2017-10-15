@@ -10,7 +10,8 @@ from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowNotFound
+from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
+                                                IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import helpers as metadata_helpers
 
@@ -369,22 +370,26 @@ class GenericMetadata(object):
             return self.save_season_all_banner(show_obj)
         return False
 
-    def _get_episode_thumb_url(self, series, episode):
+    def _get_episode_thumb_url(self, indexer_series, episode):
         """
         Returns the URL to use for downloading an episode's thumbnail.
-        Uses theTVDB.com data.
 
-        :param series: Series object of the episode
-        :param episode: an Episode object for which to grab the thumbnail URL
+        :param indexer_series: Indexer series object of the episode
+        :param episode: Episode object for which to grab the thumbnail URL
         """
-        thumbnail_url = 'https://www.thetvdb.com/banners/episodes/{0}/{1}.jpg'
         episodes = [episode] + episode.related_episodes
-        series_id = series.id
 
         for ep in episodes:
-            ep_id = series[ep.season][ep.episode].id
-            if ep_id:
-                return thumbnail_url.format(series_id, ep_id)
+
+            try:
+                indexer_episode = indexer_series[ep.season][ep.episode]
+            except (IndexerEpisodeNotFound, IndexerSeasonNotFound) as error:
+                log.debug(u'Unable to find season or episode. Reason: {0!r}', error.message)
+                continue
+
+            thumb_url = getattr(indexer_episode, 'filename', None)
+            if thumb_url:
+                return thumb_url
 
     def write_show_file(self, show_obj):
         """
@@ -477,7 +482,7 @@ class GenericMetadata(object):
         be overridden by implementing classes, changing get_episode_thumb_path and
         _get_episode_thumb_url should suffice.
 
-        ep_obj: a Episode object for which to generate a thumbnail
+        ep_obj: Episode object for which to generate a thumbnail
         """
         thumb_path = self.get_episode_thumb_path(ep_obj)
         if not thumb_path:
@@ -715,7 +720,7 @@ class GenericMetadata(object):
 
         :param image_type: type of image to retrieve (currently supported: fanart, poster, banner)
         :param show_obj: a Series object to use when searching for the image
-        :param episode: Episode object (only needed for thumbnails)
+        :param episode: Episode object (only needed for episode thumbnails)
         :param which: optional, a specific numbered poster to look for
         :return: the binary image data if available, or else None
         """
