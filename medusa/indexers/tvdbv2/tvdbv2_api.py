@@ -7,8 +7,9 @@ from collections import OrderedDict
 
 from medusa.app import TVDB_API_KEY
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
-from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException, IndexerShowIncomplete,
-                                                IndexerShowNotFound, IndexerShowNotFoundInLanguage, IndexerUnavailable)
+from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
+                                                IndexerShowIncomplete, IndexerShowNotFound,
+                                                IndexerShowNotFoundInLanguage, IndexerUnavailable)
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
@@ -16,7 +17,7 @@ from medusa.logger.adapters.style import BraceAdapter
 from requests.compat import urljoin
 from requests.exceptions import RequestException
 
-from tvdbapiv2 import ApiClient, SearchApi, SeriesApi, UpdatesApi
+from tvdbapiv2 import ApiClient, EpisodesApi, SearchApi, SeriesApi, UpdatesApi
 from tvdbapiv2.exceptions import ApiException
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -53,6 +54,7 @@ class TVDBv2(BaseIndexer):
             self.config['session'].api_client = tvdb_client
             self.config['session'].search_api = SearchApi(tvdb_client)
             self.config['session'].series_api = SeriesApi(tvdb_client)
+            self.config['session'].episodes_api = EpisodesApi(tvdb_client)
             self.config['session'].updates_api = UpdatesApi(tvdb_client)
 
         # An api to indexer series/episode object mapping
@@ -245,6 +247,11 @@ class TVDBv2(BaseIndexer):
                         paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                             tvdb_id, page=page, aired_season=season, accept_language=self.config['language']
                         )
+                        for i, ep in enumerate(paged_episodes.data):
+                            episode = self.config['session'].episodes_api.episodes_id_get(
+                                ep.id, accept_language=self.config['language']
+                            )
+                            paged_episodes.data[i] = episode.data
                         results += paged_episodes.data
                         last = paged_episodes.links.last
                         page += 1
@@ -253,6 +260,11 @@ class TVDBv2(BaseIndexer):
                     paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                         tvdb_id, page=page, accept_language=self.config['language']
                     )
+                    for i, ep in enumerate(paged_episodes.data):
+                        episode = self.config['session'].episodes_api.episodes_id_get(
+                            ep.id, accept_language=self.config['language']
+                        )
+                        paged_episodes.data[i] = episode.data
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
