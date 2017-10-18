@@ -164,12 +164,21 @@ class EliteTrackerProvider(TorrentProvider):
 
                     size = convert_size(torrent_size, units=units) or -1
 
+                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all("div")[-1].get_text().strip()
+                    pubdate = self.parse_pubdate(pubdate_raw)
+
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers'.format
                                    (title, seeders, leechers))
 
-                    item = {'title': title, 'link': download_url, 'size': size, 'seeders': seeders,
-                            'leechers': leechers}
+                    item = {
+                            'title': title,
+                            'link': download_url,
+                            'size': size,
+                            'seeders': seeders,
+                            'leechers': leechers,
+                            'pubdate': pubdate
+                           }
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     log.exception('Failed parsing provider.')
