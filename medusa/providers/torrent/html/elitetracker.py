@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
-from datetime import datetime
+import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -37,8 +37,8 @@ class EliteTrackerProvider(TorrentProvider):
         # URLs
         self.url = 'https://elite-tracker.net'
         self.urls = {
-            'login': urljoin(self.url, 'takelogin.php'),
-            'search': urljoin(self.url, 'browse.php')
+            'login': urljoin(self.url, '/takelogin.php'),
+            'search': urljoin(self.url, '/browse.php')
         }
 
         # Proper Strings
@@ -118,14 +118,11 @@ class EliteTrackerProvider(TorrentProvider):
 
         keywords = kwargs.pop('keywords', None)
 
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find(id='sortabletable')
-            torrent_rows = torrent_table("tr") if torrent_table else []
+            torrent_rows = torrent_table('tr') if torrent_table else []
 
-            # Continue only if at least one Release is found
+            # Continue only if at least one release is found
             if len(torrent_rows) < 2:
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
@@ -139,20 +136,8 @@ class EliteTrackerProvider(TorrentProvider):
                         continue
 
                     title = torrent.find(class_='tooltip-content').div.get_text(strip=True)
-
                     download_url = torrent.find(title='Télécharger le torrent!').parent['href']
                     if not all([title, download_url]):
-                        continue
-
-                    seeders = try_int(torrent.find(title='Seeders').get_text(strip=True))
-                    leechers = try_int(torrent.find(title='Leechers').get_text(strip=True))
-
-                    # Filter unseeded torrent
-                    if seeders < self.minseed or leechers < self.minleech:
-                        if mode != 'RSS':
-                            log.debug('Discarding torrent because it doesn\'t meet the'
-                                      ' minimum seeders or leechers: {0} (S:{1} L:{2})'
-                                      .format(title, seeders, leechers))
                         continue
 
                     # Chop off tracker/channel prefix or we cannot parse the result!
@@ -161,16 +146,22 @@ class EliteTrackerProvider(TorrentProvider):
                         if not title.startswith(show_name_first_word):
                             title = re.sub(r'.*(' + show_name_first_word + '.*)', r'\1', title)
 
-                    torrent_size = torrent('td')[labels.index('Taille')].get_text(strip=True)
+                    seeders = try_int(torrent.find(title='Seeders').get_text(strip=True))
+                    leechers = try_int(torrent.find(title='Leechers').get_text(strip=True))
 
-                    size = convert_size(torrent_size, units=units) or -1
+                    # Filter unseeded torrent
+                    if seeders < min(self.minseed, 1):
+                        if mode != 'RSS':
+                            log.debug("Discarding torrent because it doesn't meet the"
+                                      " minimum seeders: {0}. Seeders: {1}",
+                                      title, seeders)
+                        continue
+
+                    torrent_size = torrent('td')[labels.index('Taille')].get_text(strip=True)
+                    size = convert_size(torrent_size) or -1
 
                     pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text().strip()
                     pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
-
-                    if mode != 'RSS':
-                        log.debug('Found result: {0} with {1} seeders and {2} leechers'
-                                  .format(title, seeders, leechers))
 
                     item = {
                         'title': title,
@@ -180,15 +171,20 @@ class EliteTrackerProvider(TorrentProvider):
                         'leechers': leechers,
                         'pubdate': pubdate,
                     }
+                    if mode != 'RSS':
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers',
+                                  title, seeders, leechers)
+
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.exception('Failed parsing provider.')
+                    log.error('Failed parsing provider. Traceback: {0!r}',
+                              traceback.format_exc())
 
         return items
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if len(self.session.cookies) >= 4:
+        if len(self.session.cookies) > 3:
             return True
 
         login_params = {
