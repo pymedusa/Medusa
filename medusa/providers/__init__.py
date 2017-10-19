@@ -21,6 +21,7 @@ from medusa.providers.torrent import (
     btn,
     danishbits,
     elitetorrent,
+    elitetracker,
     gftracker,
     hd4free,
     hdbits,
