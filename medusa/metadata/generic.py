@@ -976,7 +976,7 @@ class GenericMetadata(object):
             search = tmdb.Search()
             for show_name in show.get_all_possible_names():
                 for result in search.collection(query=show_name)[u'results'] + search.tv(query=show_name)[u'results']:
-                    if types[img_type] and getattr(result, types[img_type]):
+                    if types[img_type] and result.get(types[img_type]):
                         return u'{0}{1}{2}'.format(base_url, max_size, result[types[img_type]])
 
         except Exception:
