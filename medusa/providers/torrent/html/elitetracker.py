@@ -35,7 +35,7 @@ class EliteTrackerProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://elite-tracker.net/'
+        self.url = 'https://elite-tracker.net'
         self.urls = {
             'login': urljoin(self.url, 'takelogin.php'),
             'search': urljoin(self.url, 'browse.php')
@@ -165,8 +165,8 @@ class EliteTrackerProvider(TorrentProvider):
 
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all("div")[-1].get_text().strip()
-                    pubdate = datetime.strptime(pubdate_raw, '%d.%m.%Y %H:%M')
+                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text().strip()
+                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
 
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers'
