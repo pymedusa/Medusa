@@ -160,7 +160,7 @@ class EliteTrackerProvider(TorrentProvider):
                     torrent_size = torrent('td')[labels.index('Taille')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text().strip()
+                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text(strip=True)
                     pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
 
                     item = {
@@ -200,7 +200,7 @@ class EliteTrackerProvider(TorrentProvider):
             log.warning('Unable to connect to provider')
             return False
 
-        if 'erreur' in response:
+        if 'Une erreur s\'est produite!' in response.text:
             log.warning('Invalid username or password. Check your settings')
             return False
 
