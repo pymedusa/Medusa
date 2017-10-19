@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 
 import logging
 import re
+from datetime import datetime
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -133,8 +134,8 @@ class EliteTrackerProvider(TorrentProvider):
                       torrent_rows[0]('td')]
             for torrent in torrent_rows[1:]:
                 try:
-                    if self.freeleech and not torrent.find('img', alt=re.compile(
-                        'TORRENT GRATUIT : Seulement l\'upload sera compter.')):
+                    if self.freeleech and not torrent.find('img', alt=re.compile('TORRENT GRATUIT : Seulement '
+                                                                                 'l\'upload sera compter.')):
                         continue
 
                     title = torrent.find(class_='tooltip-content').div.get_text(strip=True)
@@ -150,8 +151,8 @@ class EliteTrackerProvider(TorrentProvider):
                     if seeders < self.minseed or leechers < self.minleech:
                         if mode != 'RSS':
                             log.debug('Discarding torrent because it doesn\'t meet the'
-                                       ' minimum seeders or leechers: {0} (S:{1} L:{2})'.format
-                                       (title, seeders, leechers))
+                                      ' minimum seeders or leechers: {0} (S:{1} L:{2})'
+                                      .format(title, seeders, leechers))
                         continue
 
                     # Chop off tracker/channel prefix or we cannot parse the result!
@@ -165,20 +166,20 @@ class EliteTrackerProvider(TorrentProvider):
                     size = convert_size(torrent_size, units=units) or -1
 
                     pubdate_raw = torrent('td')[labels.index('Nom')].find_all("div")[-1].get_text().strip()
-                    pubdate = self.parse_pubdate(pubdate_raw)
+                    pubdate = datetime.strptime(pubdate_raw, '%d.%m.%Y %H:%M')
 
                     if mode != 'RSS':
-                        log.debug('Found result: {0} with {1} seeders and {2} leechers'.format
-                                   (title, seeders, leechers))
+                        log.debug('Found result: {0} with {1} seeders and {2} leechers'
+                                  .format(title, seeders, leechers))
 
                     item = {
-                            'title': title,
-                            'link': download_url,
-                            'size': size,
-                            'seeders': seeders,
-                            'leechers': leechers,
-                            'pubdate': pubdate
-                           }
+                        'title': title,
+                        'link': download_url,
+                        'size': size,
+                        'seeders': seeders,
+                        'leechers': leechers,
+                        'pubdate': pubdate,
+                    }
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
                     log.exception('Failed parsing provider.')
@@ -186,6 +187,7 @@ class EliteTrackerProvider(TorrentProvider):
         return items
 
     def login(self):
+        """Login method used for logging in before doing search and torrent downloads."""
         if len(self.session.cookies) >= 4:
             return True
 
