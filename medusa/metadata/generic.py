@@ -10,12 +10,15 @@ from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
-from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowNotFound
+from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
+                                                IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.metadata import helpers as metadata_helpers
 
 from requests.exceptions import RequestException
+
 from six import iterkeys
+
 import tmdbsimple as tmdb
 
 try:
@@ -87,8 +90,8 @@ class GenericMetadata(object):
         name_id = re.sub(r'[^\w\d_]', '_', name_id).lower()
         return name_id
 
-    def set_config(self, string):
-        config_list = [bool(int(x)) for x in string.split(u'|')]
+    def set_config(self, provider_options):
+        config_list = [bool(int(x)) for x in provider_options]
         self.show_metadata = config_list[0]
         self.episode_metadata = config_list[1]
         self.fanart = config_list[2]
@@ -158,6 +161,7 @@ class GenericMetadata(object):
     def get_episode_thumb_path(ep_obj):
         """
         Returns the path where the episode thumbnail should be stored.
+
         ep_obj: a Episode instance for which to create the thumbnail
         """
         if os.path.isfile(ep_obj.location):
@@ -182,7 +186,6 @@ class GenericMetadata(object):
         season: a season number to be used for the path. Note that season 0
                 means specials.
         """
-
         # Our specials thumbnail is, well, special
         if season == 0:
             season_poster_filename = u'season-specials'
@@ -200,7 +203,6 @@ class GenericMetadata(object):
         season: a season number to be used for the path. Note that season 0
                 means specials.
         """
-
         # Our specials thumbnail is, well, special
         if season == 0:
             season_banner_filename = u'season-specials'
@@ -368,30 +370,26 @@ class GenericMetadata(object):
             return self.save_season_all_banner(show_obj)
         return False
 
-    def _get_episode_thumb_url(self, ep_obj):
+    def _get_episode_thumb_url(self, indexer_series, episode):
         """
-        Returns the URL to use for downloading an episode's thumbnail. Uses
-        theTVDB.com data.
+        Returns the URL to use for downloading an episode's thumbnail.
 
-        ep_obj: a Episode object for which to grab the thumb URL
+        :param indexer_series: Indexer series object of the episode
+        :param episode: Episode object for which to grab the thumbnail URL
         """
-        all_eps = [ep_obj] + ep_obj.related_episodes
+        episodes = [episode] + episode.related_episodes
 
-        # validate show
-        if not helpers.validate_show(ep_obj.series):
-            return None
+        for ep in episodes:
 
-        # try all included episodes in case some have thumbs and others don't
-        for cur_ep in all_eps:
-            myEp = helpers.validate_show(cur_ep.series, cur_ep.season, cur_ep.episode)
-            if not myEp:
+            try:
+                indexer_episode = indexer_series[ep.season][ep.episode]
+            except (IndexerEpisodeNotFound, IndexerSeasonNotFound) as error:
+                log.debug(u'Unable to find season or episode. Reason: {0!r}', error.message)
                 continue
 
-            thumb_url = getattr(myEp, 'filename', None)
+            thumb_url = getattr(indexer_episode, 'filename', None)
             if thumb_url:
                 return thumb_url
-
-        return None
 
     def write_show_file(self, show_obj):
         """
@@ -407,7 +405,6 @@ class GenericMetadata(object):
         object. If your _show_data returns data in another format you'll need to
         override this method.
         """
-
         data = self._show_data(show_obj)
 
         if not data:
@@ -452,7 +449,6 @@ class GenericMetadata(object):
         object. If your _ep_data returns data in another format you'll need to
         override this method.
         """
-
         data = self._ep_data(ep_obj)
 
         if not data:
@@ -486,26 +482,19 @@ class GenericMetadata(object):
         be overridden by implementing classes, changing get_episode_thumb_path and
         _get_episode_thumb_url should suffice.
 
-        ep_obj: a Episode object for which to generate a thumbnail
+        ep_obj: Episode object for which to generate a thumbnail
         """
-
-        file_path = self.get_episode_thumb_path(ep_obj)
-
-        if not file_path:
+        thumb_path = self.get_episode_thumb_path(ep_obj)
+        if not thumb_path:
             log.debug(u'Unable to find a file path to use for this thumbnail, not generating it')
             return False
 
-        thumb_url = self._get_episode_thumb_url(ep_obj)
-
-        # if we can't find one then give up
-        if not thumb_url:
-            log.debug(u'No thumb is available for this episode, not creating a thumb')
+        thumb_data = self._retrieve_show_image(u'thumbnail', ep_obj.series, ep_obj)
+        if not thumb_data:
+            log.debug(u'No thumb is available for this episode, not creating a thumbnail')
             return False
 
-        thumb_data = metadata_helpers.getShowImage(thumb_url)
-
-        result = self._write_image(thumb_data, file_path)
-
+        result = self._write_image(thumb_data, thumb_path)
         if not result:
             return False
 
@@ -521,11 +510,10 @@ class GenericMetadata(object):
 
         show_obj: a Series object for which to download fanart
         """
-
         # use the default fanart name
         fanart_path = self.get_fanart_path(show_obj)
 
-        fanart_data = self._retrieve_show_image(u'fanart', show_obj, which)
+        fanart_data = self._retrieve_show_image(u'fanart', show_obj, which=which)
 
         if not fanart_data:
             log.debug(u'No fanart image was retrieved, unable to write fanart')
@@ -540,11 +528,10 @@ class GenericMetadata(object):
 
         show_obj: a Series object for which to download a poster
         """
-
         # use the default poster name
         poster_path = self.get_poster_path(show_obj)
 
-        poster_data = self._retrieve_show_image(u'poster', show_obj, which)
+        poster_data = self._retrieve_show_image(u'poster', show_obj, which=which)
 
         if not poster_data:
             log.debug(u'No show poster image was retrieved, unable to write poster')
@@ -559,11 +546,10 @@ class GenericMetadata(object):
 
         show_obj: a Series object for which to download a banner
         """
-
         # use the default banner name
         banner_path = self.get_banner_path(show_obj)
 
-        banner_data = self._retrieve_show_image(u'banner', show_obj, which)
+        banner_data = self._retrieve_show_image(u'banner', show_obj, which=which)
 
         if not banner_data:
             log.debug(u'No show banner image was retrieved, unable to write banner')
@@ -581,7 +567,6 @@ class GenericMetadata(object):
         method should not need to be overridden by implementing classes, changing
         _season_posters_dict and get_season_poster_path should be good enough.
         """
-
         season_dict = self._season_posters_dict(show_obj, season)
         result = []
 
@@ -630,7 +615,6 @@ class GenericMetadata(object):
         method should not need to be overridden by implementing classes, changing
         _season_banners_dict and get_season_banner_path should be good enough.
         """
-
         season_dict = self._season_banners_dict(show_obj, season)
         result = []
 
@@ -673,7 +657,7 @@ class GenericMetadata(object):
         # use the default season all poster name
         poster_path = self.get_season_all_poster_path(show_obj)
 
-        poster_data = self._retrieve_show_image(u'poster', show_obj, which)
+        poster_data = self._retrieve_show_image(u'poster', show_obj, which=which)
 
         if not poster_data:
             log.debug(u'No show poster image was retrieved, unable to write season all poster')
@@ -685,7 +669,7 @@ class GenericMetadata(object):
         # use the default season all banner name
         banner_path = self.get_season_all_banner_path(show_obj)
 
-        banner_data = self._retrieve_show_image(u'banner', show_obj, which)
+        banner_data = self._retrieve_show_image(u'banner', show_obj, which=which)
 
         if not banner_data:
             log.debug(u'No show banner image was retrieved, unable to write season all banner')
@@ -701,7 +685,6 @@ class GenericMetadata(object):
         image_data: binary image data to write to file
         image_path: file location to save the image to
         """
-
         # don't bother overwriting it
         if os.path.isfile(image_path):
             log.debug(u'Image already exists, not downloading')
@@ -731,12 +714,13 @@ class GenericMetadata(object):
 
         return True
 
-    def _retrieve_show_image(self, image_type, show_obj, which=None):
+    def _retrieve_show_image(self, image_type, show_obj, episode=None, which=None):
         """
         Get an image URL from theTVDB.com and TMDB.com, download it and returns the data.
 
         :param image_type: type of image to retrieve (currently supported: fanart, poster, banner)
         :param show_obj: a Series object to use when searching for the image
+        :param episode: Episode object (only needed for episode thumbnails)
         :param which: optional, a specific numbered poster to look for
         :return: the binary image data if available, or else None
         """
@@ -744,14 +728,16 @@ class GenericMetadata(object):
 
         indexer_show_obj = self._get_show_data(show_obj)
 
-        if image_type not in (u'fanart', u'poster', u'banner', u'poster_thumb', u'banner_thumb'):
+        if image_type not in (u'fanart', u'poster', u'banner', u'thumbnail', u'poster_thumb', u'banner_thumb'):
             log.error(
-                u'Invalid {image_type}, unable to find it in the {indexer}',
+                u'Invalid {image}, unable to find it in the {indexer}',
                 {u'image': image_type, u'indexer': indexerApi(show_obj.indexer).name}
             )
             return None
 
-        if image_type == u'poster_thumb':
+        if image_type == u'thumbnail' and episode:
+            image_url = self._get_episode_thumb_url(indexer_show_obj, episode)
+        elif image_type == u'poster_thumb':
             if getattr(indexer_show_obj, u'poster', None):
                 image_url = re.sub(u'posters', u'_cache/posters', indexer_show_obj[u'poster'])
             if not image_url:
@@ -780,7 +766,6 @@ class GenericMetadata(object):
         result = {<season number>:
                     {1: '<url 1>', 2: <url 2>, ...},}
         """
-
         # This holds our resulting dictionary of season art
         result = {}
 
@@ -817,7 +802,6 @@ class GenericMetadata(object):
         result = {<season number>:
                     {1: '<url 1>', 2: <url 2>, ...},}
         """
-
         # This holds our resulting dictionary of season art
         result = {}
 
@@ -857,7 +841,6 @@ class GenericMetadata(object):
         :param show_obj: A TVshow object.
         :return: A re-indexed show object.
         """
-
         show_id = show_obj.indexerid
 
         try:
@@ -893,9 +876,9 @@ class GenericMetadata(object):
 
     def retrieveShowMetadata(self, folder):
         """
-        Used only when mass adding Existing Shows, using previously generated Show metadata to reduce the need to query TVDB.
+        Used only when mass adding Existing Shows, using previously generated
+        Show metadata to reduce the need to query TVDB.
         """
-
         empty_return = (None, None, None)
 
         metadata_path = os.path.join(folder, self._show_metadata_filename)
@@ -993,7 +976,7 @@ class GenericMetadata(object):
             search = tmdb.Search()
             for show_name in show.get_all_possible_names():
                 for result in search.collection(query=show_name)[u'results'] + search.tv(query=show_name)[u'results']:
-                    if types[img_type] and getattr(result, types[img_type]):
+                    if types[img_type] and result.get(types[img_type]):
                         return u'{0}{1}{2}'.format(base_url, max_size, result[types[img_type]])
 
         except Exception:

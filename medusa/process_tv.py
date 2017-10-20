@@ -54,7 +54,7 @@ class ProcessResult(object):
         self.result = True
         self.succeeded = True
         self.missedfiles = []
-        self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+        self.allowed_extensions = app.ALLOWED_EXTENSIONS
 
     @property
     def directory(self):
