@@ -2,6 +2,7 @@
 
 import logging
 
+from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSafeSession
 
@@ -31,3 +32,20 @@ def getShowImage(url, imgNum=None):
         return
 
     return image_data.content
+
+
+def needs_metadata(episode):
+    """Check if an episode needs metadata.
+
+    :param episode: Episode object.
+    :return: True if needed, None otherwise
+    """
+    if not episode.is_location_valid():
+        return
+
+    for provider in app.metadata_provider_dict.values():
+        if provider.episode_metadata and not provider.has_episode_metadata(episode):
+            return True
+
+        if provider.episode_thumbnails and not provider.has_episode_thumb(episode):
+            return True
