@@ -13,20 +13,20 @@ log.logger.addHandler(logging.NullHandler())
 meta_session = MedusaSafeSession()
 
 
-def getShowImage(url, imgNum=None):
+def get_image(url, img_no=None):
     if url is None:
         return None
 
     # if they provided a fanart number try to use it instead
-    if imgNum is not None:
-        tempURL = url.split('-')[0] + '-' + str(imgNum) + '.jpg'
+    if img_no is not None:
+        temp_url = url.split('-')[0] + '-' + str(img_no) + '.jpg'
     else:
-        tempURL = url
+        temp_url = url
 
-    log.debug(u'Fetching image from {url}', {'url': tempURL})
+    log.debug(u'Fetching image from {url}', {'url': temp_url})
 
     # TODO: SESSION: Check if this needs exception handling.
-    image_data = meta_session.get(tempURL)
+    image_data = meta_session.get(temp_url)
     if not image_data:
         log.warning(u'There was an error trying to retrieve the image, aborting')
         return
