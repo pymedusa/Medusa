@@ -8,12 +8,12 @@ import re
 from medusa import app, exception_handler, helpers
 from medusa.helper.common import replace_extension
 from medusa.helper.exceptions import ex
+from medusa.helper.metadata import get_image
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import INDEXER_TMDB, INDEXER_TVDBV2, INDEXER_TVMAZE
 from medusa.indexers.indexer_exceptions import (IndexerEpisodeNotFound, IndexerException,
                                                 IndexerSeasonNotFound, IndexerShowNotFound)
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.metadata import helpers as metadata_helpers
 
 from requests.exceptions import RequestException
 
@@ -592,7 +592,7 @@ class GenericMetadata(object):
                 )
                 continue
 
-            seasonData = metadata_helpers.getShowImage(season_url)
+            seasonData = get_image(season_url)
 
             if not seasonData:
                 log.debug(u'No season poster data available, skipping this season')
@@ -640,7 +640,7 @@ class GenericMetadata(object):
                 )
                 continue
 
-            seasonData = metadata_helpers.getShowImage(season_url)
+            seasonData = get_image(season_url)
 
             if not seasonData:
                 log.debug(u'No season banner data available, skipping this season')
@@ -754,7 +754,7 @@ class GenericMetadata(object):
                 image_url = self._retrieve_show_images_from_tmdb(show_obj, image_type)
 
         if image_url:
-            image_data = metadata_helpers.getShowImage(image_url, which)
+            image_data = get_image(image_url, which)
             return image_data
 
         return None

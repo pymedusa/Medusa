@@ -204,6 +204,6 @@ class BacklogSearcher(object):
             if force:
                 self.forced = True
             self.search_backlog()
-        except:
+        except Exception:
             self.amActive = False
             raise
