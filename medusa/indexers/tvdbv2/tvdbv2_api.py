@@ -230,6 +230,8 @@ class TVDBv2(BaseIndexer):
             return episodes
 
         existing_episodes = series.get_all_episodes(season=season, has_location=True)
+        if not existing_episodes:
+            return episodes
 
         for i, ep in enumerate(episodes):
             # Try to be as conservative as possible. Only query if the episode
@@ -284,7 +286,7 @@ class TVDBv2(BaseIndexer):
                     last = paged_episodes.links.last
                     page += 1
 
-            if full_info:
+            if results and full_info:
                 results = self._get_episodes_info(tvdb_id, results, season=aired_season)
 
         except ApiException as e:
