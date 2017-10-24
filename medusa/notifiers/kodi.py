@@ -81,7 +81,6 @@ class Notifier(object):
             The result will either be 'OK' or False, this is used to be parsed by the calling function.
 
         """
-
         # fill in omitted parameters
         if not host:
             host = app.KODI_HOST
