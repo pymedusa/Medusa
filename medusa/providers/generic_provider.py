@@ -842,9 +842,8 @@ class GenericProvider(object):
             return False
 
         response = self.session.get(check_url)
-        if any([not response,
-                not (response.text and response.status_code == 200),
-                check_login_text.lower() in response.text.lower()]):
+        if not response or any([not (response.text and response.status_code == 200),
+                                check_login_text.lower() in response.text.lower()]):
             log.warning('Please configure the required cookies for this provider. Check your provider settings')
             ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
                                    'Check your provider settings')
