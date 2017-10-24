@@ -5,7 +5,9 @@
 import logging
 from collections import OrderedDict
 
+from medusa import app
 from medusa.app import TVDB_API_KEY
+from medusa.helper.metadata import needs_metadata
 from medusa.indexers.indexer_base import (Actor, Actors, BaseIndexer)
 from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError, IndexerException,
                                                 IndexerShowIncomplete, IndexerShowNotFound,
@@ -13,6 +15,7 @@ from medusa.indexers.indexer_exceptions import (IndexerAuthFailed, IndexerError,
 from medusa.indexers.indexer_ui import BaseUI, ConsoleUI
 from medusa.indexers.tvdbv2.fallback import PlexFallback
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.show.show import Show
 
 from requests.compat import urljoin
 from requests.exceptions import RequestException
@@ -210,22 +213,46 @@ class TVDBv2(BaseIndexer):
 
         return OrderedDict({'series': mapped_results})
 
-    def _get_episodes(self, tvdb_id, specials=False, aired_season=None):  # pylint: disable=unused-argument
-        """Get all the episodes for a show by tvdbv2 id.
+    def _get_episodes(self, tvdb_id, specials=False, aired_season=None, full_info=False):
+        """Get all the episodes for a show by tvdbv id.
 
-        :param tvdb_id: Series tvdbv2 id.
+        :param tvdb_id: tvdb series id.
         :return: An ordered dict with the show searched for. In the format of OrderedDict{"episode": [list of episodes]}
         """
-        episodes = self._download_episodes(tvdb_id, specials=False, aired_season=None)
+        episodes = self._query_series(tvdb_id, specials=specials, aired_season=aired_season, full_info=full_info)
+
         return self._parse_episodes(tvdb_id, episodes)
 
-    @PlexFallback
-    def _download_episodes(self, tvdb_id, specials=False, aired_season=None):
-        """Download episodes for a given tvdb_id.
+    def _get_episodes_info(self, tvdb_id, episodes, season=None):
+        """Add full episode information for existing episodes."""
+        series = Show.find_by_id(app.showList, self.indexer, tvdb_id)
+        if not series:
+            return episodes
 
-        :param tvdb_id: tvdb id.
+        existing_episodes = series.get_all_episodes(season=season, has_location=True)
+        if not existing_episodes:
+            return episodes
+
+        for i, ep in enumerate(episodes):
+            # Try to be as conservative as possible. Only query if the episode
+            # exists on disk and it needs episode metadata.
+            if any(eep.indexerid == ep.id and needs_metadata(eep)
+                   for eep in existing_episodes):
+                episode = self.config['session'].episodes_api.episodes_id_get(
+                    ep.id, accept_language=self.config['language']
+                )
+                episodes[i] = episode.data
+
+        return episodes
+
+    @PlexFallback
+    def _query_series(self, tvdb_id, specials=False, aired_season=None, full_info=False):
+        """Query against episodes for the given series.
+
+        :param tvdb_id: tvdb series id.
         :param specials: enable/disable download of specials. Currently not used.
-        :param limit the episodes returned for a specific season.
+        :param aired_season: the episodes returned for a specific aired season.
+        :param full_info: add full information to the episodes
         :return: An ordered dict of {'episode': [list of episode dicts]}
         """
         results = []
@@ -247,11 +274,6 @@ class TVDBv2(BaseIndexer):
                         paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                             tvdb_id, page=page, aired_season=season, accept_language=self.config['language']
                         )
-                        for i, ep in enumerate(paged_episodes.data):
-                            episode = self.config['session'].episodes_api.episodes_id_get(
-                                ep.id, accept_language=self.config['language']
-                            )
-                            paged_episodes.data[i] = episode.data
                         results += paged_episodes.data
                         last = paged_episodes.links.last
                         page += 1
@@ -260,14 +282,13 @@ class TVDBv2(BaseIndexer):
                     paged_episodes = self.config['session'].series_api.series_id_episodes_query_get(
                         tvdb_id, page=page, accept_language=self.config['language']
                     )
-                    for i, ep in enumerate(paged_episodes.data):
-                        episode = self.config['session'].episodes_api.episodes_id_get(
-                            ep.id, accept_language=self.config['language']
-                        )
-                        paged_episodes.data[i] = episode.data
                     results += paged_episodes.data
                     last = paged_episodes.links.last
                     page += 1
+
+            if results and full_info:
+                results = self._get_episodes_info(tvdb_id, results, season=aired_season)
+
         except ApiException as e:
             log.debug('Error trying to index the episodes')
             if e.status == 401:
@@ -555,7 +576,7 @@ class TVDBv2(BaseIndexer):
 
         # get episode data
         if self.config['episodes_enabled']:
-            self._get_episodes(sid, specials=False, aired_season=None)
+            self._get_episodes(sid, specials=False, aired_season=None, full_info=True)
 
         # Parse banners
         if self.config['banners_enabled']:
@@ -623,7 +644,7 @@ class TVDBv2(BaseIndexer):
             # Get the shows episodes using the GET /series/{id}/episodes route, and use the lastUpdated attribute
             # to check if the episodes season should be updated.
             log.debug('Getting episodes for {0}', show_id)
-            episodes = self._download_episodes(show_id)
+            episodes = self._query_series(show_id)
 
             for episode in episodes['episode']:
                 seasnum = episode.get('seasonnumber')

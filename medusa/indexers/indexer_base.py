@@ -255,7 +255,7 @@ class BaseIndexer(object):
         return selected_series
 
     def get_last_updated_series(self, from_time, weeks=1, filter_show_list=None):
-        """Retrieve a list with updated shows
+        """Retrieve a list with updated shows.
 
         :param from_time: epoch timestamp, with the start date/time
         :param weeks: number of weeks to get updates for.
