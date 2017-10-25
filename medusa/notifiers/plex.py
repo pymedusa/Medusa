@@ -5,6 +5,7 @@ import re
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
+from medusa.helper.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -121,7 +122,8 @@ class Notifier(object):
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
-        hosts = {x.strip() for x in hosts if x.strip()}
+        gen_hosts = generate(hosts)
+        hosts = {x.strip() for x in gen_hosts if x.strip()}
         hosts_all = hosts_match = {}
         hosts_failed = set()
 
