@@ -121,11 +121,11 @@ class Notifier(object):
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
-        host_list = {x.strip() for x in host if x.strip()}
+        hosts = {x.strip() for x in host if x.strip()}
         hosts_all = hosts_match = {}
         hosts_failed = set()
 
-        for cur_host in host_list:
+        for cur_host in hosts:
 
             url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
