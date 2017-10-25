@@ -48,7 +48,7 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.helper.collections import NonEmptyDict
+from medusa.helper.mappings import NonEmptyDict
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,

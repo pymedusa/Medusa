@@ -37,7 +37,7 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
-from medusa.helper.collections import NonEmptyDict
+from medusa.helper.mappings import NonEmptyDict
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
