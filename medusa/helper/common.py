@@ -133,9 +133,9 @@ def is_sync_file(filename):
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
-        return (extension in app.SYNC_FILES.split(',') or
+        return (extension in app.SYNC_FILES or
                 filename.startswith('.syncthing') or
-                any(fnmatch(filename, match) for match in app.SYNC_FILES.split(',')))
+                any(fnmatch(filename, match) for match in app.SYNC_FILES))
 
     return False
 

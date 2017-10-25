@@ -87,7 +87,7 @@ class Notifier(object):
                 }
 
             if app.PUSHOVER_DEVICE:
-                args['device'] = app.PUSHOVER_DEVICE
+                args['device'] = ','.join(app.PUSHOVER_DEVICE)
 
             conn = HTTPSConnection('api.pushover.net:443')
             conn.request('POST', '/1/messages.json',

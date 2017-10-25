@@ -105,7 +105,7 @@ def build_name_cache(show=None):
 
         log.debug(u'Internal name cache for {show} set to: {names}', {
             'show': show.name,
-            'names': names.keys()
+            'names': ', '.join(names.keys())
         })
 
     with nameCacheLock:

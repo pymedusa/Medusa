@@ -35,7 +35,7 @@ from cachecontrol.cache import DictCache
 
 import certifi
 
-from contextlib2 import closing, suppress
+from contextlib2 import suppress
 
 import guessit
 
@@ -43,7 +43,8 @@ from imdbpie import imdbpie
 
 from medusa import app, db
 from medusa.common import USER_AGENT
-from medusa.helper.common import episode_num, http_code_description, media_extensions, pretty_file_size, subtitle_extensions
+from medusa.helper.common import (episode_num, http_code_description, media_extensions,
+                                  pretty_file_size, subtitle_extensions)
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -702,7 +703,6 @@ def get_absolute_number_from_season_and_episode(show, season, episode):
     :param episode: Episode number
     :return: The absolute number
     """
-    from medusa import db
     absolute_number = None
 
     if season and episode:
@@ -783,11 +783,14 @@ def create_https_certificates(ssl_cert, ssl_key):
     """
     try:
         from OpenSSL import crypto
-        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA, serial
+        from certgen import createKeyPair, createCertRequest, createCertificate, TYPE_RSA
     except Exception:
         log.warning(u'pyopenssl module missing, please install for'
                     u' https access')
         return False
+
+    # Serial number for the certificate
+    serial = int(time.time())
 
     # Create the CA Certificate
     cakey = createKeyPair(TYPE_RSA, 1024)
@@ -1271,7 +1274,7 @@ def get_url(url, post_data=None, params=None, headers=None, timeout=30, session=
             return getattr(resp, response_type, None)
 
 
-def download_file(url, filename, session=None, headers=None, **kwargs):
+def download_file(url, filename, session, headers=None, **kwargs):
     """Download a file specified.
 
     :param url: Source URL
@@ -1283,9 +1286,17 @@ def download_file(url, filename, session=None, headers=None, **kwargs):
     try:
         hooks, cookies, verify, proxies = request_defaults(**kwargs)
 
-        with closing(session.get(url, allow_redirects=True, stream=True,
-                                 verify=verify, headers=headers, cookies=cookies,
-                                 hooks=hooks, proxies=proxies)) as resp:
+        with session as s:
+            resp = s.get(url, allow_redirects=True, stream=True,
+                         verify=verify, headers=headers, cookies=cookies,
+                         hooks=hooks, proxies=proxies)
+
+            if not resp:
+                log.debug(
+                    u"Requested download URL {url} couldn't be reached.",
+                    {'url': url}
+                )
+                return False
 
             if not resp.ok:
                 log.debug(
@@ -1524,7 +1535,8 @@ def get_disk_space_usage(disk_path=None, pretty=True):
     if disk_path and os.path.exists(disk_path):
         if platform.system() == 'Windows':
             free_bytes = ctypes.c_ulonglong(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None, ctypes.pointer(free_bytes))
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(disk_path), None, None,
+                                                       ctypes.pointer(free_bytes))
             return pretty_file_size(free_bytes.value) if pretty else free_bytes.value
         else:
             st = os.statvfs(disk_path)
@@ -1764,7 +1776,7 @@ def get_broken_providers():
         return []
 
     log.info('Broken providers found: {0}', response)
-    return ','.join(response)
+    return response
 
 
 def is_already_processed_media(full_filename):
