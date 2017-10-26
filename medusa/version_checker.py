@@ -712,8 +712,9 @@ class GitUpdateManager(UpdateManager):
         :rtype: int
         """
         # Fixes: goo.gl/tr8Awf - to be removed in the next release
-        helper_folder = os.path.join(app.SRC_FOLDER, 'helper')
-        helpers_folder = os.path.join(app.SRC_FOLDER, 'helpers')
+        root_dir = os.path.basename(app.PROG_DIR)
+        helper_folder = os.path.join(root_dir, 'helper')
+        helpers_folder = os.path.join(root_dir, 'helpers')
 
         folders = (app.LIB_FOLDER, app.EXT_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER,
                    helper_folder, helpers_folder) + app.LEGACY_SRC_FOLDERS
