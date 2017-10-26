@@ -3,7 +3,8 @@
 """General utility functions."""
 
 from collections import Iterable
-from six import text_type
+
+from six import string_types
 
 
 def generate(it):
@@ -15,7 +16,7 @@ def generate(it):
         If the iterable is a string yield the entire string
         If the item is not iterable, yield the item
     """
-    if isinstance(it, Iterable) and not isinstance(it, text_type):
+    if isinstance(it, Iterable) and not isinstance(it, string_types):
         for item in it:
             yield item
     else:

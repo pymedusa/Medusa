@@ -5,7 +5,7 @@ import re
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
-from medusa.helper.utils import generate
+from medusa.helpers.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
