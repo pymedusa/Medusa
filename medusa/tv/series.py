@@ -1557,6 +1557,15 @@ class Series(TV):
 
         imdb_obj = imdb_api.get_title_by_id(self.imdb_id)
 
+        tmdb_id = self.externals.get('tmdb_id')
+        if tmdb_id:
+            # Country codes and countries obtained from TMDB's API. Not IMDb info.
+            country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            if country_codes:
+                countries = (from_country_code_to_name(country) for country in country_codes)
+                self.imdb_info['countries'] = '|'.join(filter(None, countries))
+                self.imdb_info['country_codes'] = '|'.join(country_codes).lower()
+
         # If the show has no year, IMDb returned something we don't want
         if not imdb_obj or not imdb_obj.year:
             log.debug(u'{id}: IMDb returned none or invalid info for {imdb_id}, skipping update.',
@@ -1581,15 +1590,6 @@ class Series(TV):
             'plot': imdb_obj.plots[0] if imdb_obj.plots else imdb_obj.plot_outline or '',
             'last_update': datetime.date.today().toordinal(),
         }
-
-        tmdb_id = self.externals.get('tmdb_id')
-        if tmdb_id:
-            # Country codes and countries obtained from TMDB's API. Not IMDb info.
-            country_codes = Tmdb().get_show_country_codes(tmdb_id)
-            if country_codes:
-                countries = (from_country_code_to_name(country) for country in country_codes)
-                self.imdb_info['countries'] = '|'.join(filter(None, countries))
-                self.imdb_info['country_codes'] = '|'.join(country_codes).lower()
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.indexerid, 'imdb_info': self.imdb_info})
