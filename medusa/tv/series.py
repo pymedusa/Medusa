@@ -48,7 +48,6 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.helper.mappings import NonEmptyDict
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
@@ -64,6 +63,7 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
+from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi

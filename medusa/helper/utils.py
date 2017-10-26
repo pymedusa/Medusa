@@ -1,3 +1,9 @@
+# coding=utf-8
+
+"""
+General utility functions.
+"""
+
 from collections import Iterable
 from six import text_type
 
