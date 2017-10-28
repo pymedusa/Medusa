@@ -1575,21 +1575,19 @@ class Series(TV):
         # Set retrieved IMDb ID as imdb_id for externals
         self.externals['imdb_id'] = self.imdb_id
 
-        self.imdb_info = {
+        self.imdb_info.update({
             'imdb_id': imdb_obj.imdb_id,
             'title': imdb_obj.title,
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': '',
-            'country_codes': '',
             'rating': str(imdb_obj.rating) if imdb_obj.rating else '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
             'certificates': imdb_obj.certification or '',
             'plot': imdb_obj.plots[0] if imdb_obj.plots else imdb_obj.plot_outline or '',
             'last_update': datetime.date.today().toordinal(),
-        }
+        })
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.indexerid, 'imdb_info': self.imdb_info})
