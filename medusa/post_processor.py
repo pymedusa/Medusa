@@ -231,7 +231,7 @@ class PostProcessor(object):
         if app.MOVE_ASSOCIATED_FILES:
             # "Keep associated file extensions" input box
             if app.ALLOWED_EXTENSIONS:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                allowed_extensions = app.ALLOWED_EXTENSIONS
                 for associated_file in files:
                     found_extension = helpers.get_extension(associated_file)
                     if found_extension and found_extension.lower() not in allowed_extensions:
@@ -326,13 +326,8 @@ class PostProcessor(object):
             file_list = files
 
         # also delete associated files, works only for 1 file
-        if associated_files and len(files) == 1:
-            file_list += self.list_associated_files(files[0], subfolders=True)
-
-        if not file_list:
-            self.log(u'There were no files associated with {0}, not deleting anything'.format
-                     (files), logger.DEBUG)
-            return
+        if associated_files and len(file_list) == 1:
+            file_list += self.list_associated_files(file_list[0], subfolders=True)
 
         for cur_file in file_list:
             if os.path.isfile(cur_file):

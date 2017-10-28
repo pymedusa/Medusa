@@ -13,7 +13,7 @@ $(document).ready(function(){
     % if app.USE_NZBS:
         var show_nzb_providers = ${("false", "true")[bool(app.USE_NZBS)]};
         % for cur_newznab_provider in app.newznabProviderList:
-        $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.key}', '${cur_newznab_provider.cat_ids}', ${int(cur_newznab_provider.default)}, show_nzb_providers);
+        $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${cur_newznab_provider.cat_ids}', ${int(cur_newznab_provider.default)}, show_nzb_providers);
         % endfor
     % endif
     % if app.USE_TORRENTS:
@@ -77,11 +77,11 @@ $('#config-components').tabs();
                                     curURL = cur_provider.url
                             %>
                             <li class="ui-state-default ${('nzb-provider', 'torrent-provider')[bool(cur_provider.provider_type == GenericProvider.TORRENT)]}" id="${curName}">
-                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if cur_provider.is_enabled() is True and cur_provider.get_id() not in app.BROKEN_PROVIDERS.split(',') else ''}/>
+                                <input type="checkbox" id="enable_${curName}" class="provider_enabler" ${'checked="checked"' if cur_provider.is_enabled() is True and cur_provider.get_id() not in app.BROKEN_PROVIDERS else ''}/>
                                 <a href="${anon_url(curURL)}" class="imgLink" rel="noreferrer" onclick="window.open(this.href, '_blank'); return false;"><img src="images/providers/${cur_provider.image_name()}" alt="${cur_provider.name}" title="${cur_provider.name}" width="16" height="16" style="vertical-align:middle;"/></a>
                                 <span style="vertical-align:middle;">${cur_provider.name}</span>
                                 ${('<span class="red-text">*</span>', '')[bool(cur_provider.supports_backlog)]}
-                                ${('<span class="red-text">!</span>', '')[bool(cur_provider.get_id() not in app.BROKEN_PROVIDERS.split(','))]}
+                                ${('<span class="red-text">!</span>', '')[bool(cur_provider.get_id() not in app.BROKEN_PROVIDERS)]}
                                 <span class="ui-icon ui-icon-arrowthick-2-n-s pull-right" style="vertical-align:middle;" title="Re-order provider"></span>
                                 <span class="ui-icon ${('ui-icon-locked','ui-icon-unlocked')[bool(cur_provider.public)]} pull-right" style="vertical-align:middle;" title="Public or Private"></span>
                                 <span class="${('','ui-icon enable-manual-search-icon pull-right')[bool(cur_provider.enable_manualsearch)]}" style="vertical-align:middle;" title="Enabled for 'Manual Search' feature"></span>
@@ -142,7 +142,7 @@ $('#config-components').tabs();
                             <label for="${cur_newznab_provider.get_id()}_hash">
                                 <span class="component-title">API key:</span>
                                 <span class="component-desc">
-                                    <input type="password" id="${cur_newznab_provider.get_id()}_hash" value="${cur_newznab_provider.key}" newznab_name="${cur_newznab_provider.get_id()}_hash" class="newznab_key form-control input-sm input350"/>
+                                    <input type="password" id="${cur_newznab_provider.get_id()}_hash" value="${cur_newznab_provider.api_key}" newznab_name="${cur_newznab_provider.get_id()}_hash" class="newznab_api_key form-control input-sm input350"/>
                                 </span>
                             </label>
                         </div>
@@ -376,7 +376,7 @@ $('#config-components').tabs();
                         </div>
                         % endif
 
-                        % if cur_torrent_provider.enable_cookies:
+                        % if cur_torrent_provider.enable_cookies or cur_torrent_provider in app.torrentRssProviderList:
                         <div class="field-pair">
                             <label for="${cur_torrent_provider.get_id()}_cookies">
                                 <span class="component-title">Cookies:</span>
@@ -651,7 +651,7 @@ $('#config-components').tabs();
                         <div class="field-pair">
                             <label for="newznab_key">
                                 <span class="component-title">API key:</span>
-                                <input type="password" id="newznab_key" class="form-control input-sm input350"/>
+                                <input type="password" id="newznab_api_key" class="form-control input-sm input350"/>
                             </label>
                             <label>
                                 <span class="component-title">&nbsp;</span>
@@ -718,7 +718,7 @@ $('#config-components').tabs();
                         </div>
                         <div class="field-pair">
                             <label for="torrentrss_cookies">
-                                <span class="component-title">Cookies:</span>
+                                <span class="component-title">Cookies (optional):</span>
                                 <input type="text" id="torrentrss_cookies" class="form-control input-sm input350" />
                             </label>
                             <label>

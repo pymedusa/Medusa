@@ -72,6 +72,22 @@ sut = GenericProvider('FakeProvider')
         'expected': 60,  # difference in seconds
         'human_time': True
     },
+    {  # p12: dayfirst
+        'pubdate': '2017-04-10 01:36:00+00:00',
+        'expected': datetime(2017, 10, 4, 1, 36, tzinfo=tz.gettz('UTC')),
+        'dayfirst': True
+    },
+    {  # p13: yearfirst
+        'pubdate': '07-04-10 12:54:00+00:00',
+        'expected': datetime(2007, 4, 10, 12, 54, tzinfo=tz.gettz('UTC')),
+        'yearfirst': True
+    },
+    {  # p14: dayfirst and yearfirst
+        'pubdate': '07-04-10 17:22:00+00:00',
+        'expected': datetime(2007, 10, 4, 17, 22, tzinfo=tz.gettz('UTC')),
+        'dayfirst': True,
+        'yearfirst': True
+    },
 ])
 def test_parse_pubdate(p):
     # Given
@@ -79,9 +95,12 @@ def test_parse_pubdate(p):
     expected = p['expected']
     ht = p.get('human_time', False)
     tzone = p.get('timezone')
+    df = p.get('dayfirst', False)
+    yf = p.get('yearfirst', False)
 
     # When
-    actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone)
+    actual = sut.parse_pubdate(parsed_date, human_time=ht, timezone=tzone,
+                               dayfirst=df, yearfirst=yf)
 
     # Calculate the difference for human date comparison
     if ht and actual:

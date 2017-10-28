@@ -317,12 +317,12 @@ def pick_best_result(results):  # pylint: disable=too-many-branches
                 log.info(u'{0} has previously failed, rejecting it', cur_result.name)
                 continue
 
-        preferred_words = ''
+        preferred_words = []
         if app.PREFERRED_WORDS:
-            preferred_words = app.PREFERRED_WORDS.lower().split(u',')
-        undesired_words = ''
+            preferred_words = [_.lower() for _ in app.PREFERRED_WORDS]
+        undesired_words = []
         if app.UNDESIRED_WORDS:
-            undesired_words = app.UNDESIRED_WORDS.lower().split(u',')
+            undesired_words = [_.lower() for _ in app.UNDESIRED_WORDS]
 
         if not best_result:
             best_result = cur_result

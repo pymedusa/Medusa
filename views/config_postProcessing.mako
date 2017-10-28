@@ -99,7 +99,7 @@
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">Sync File Extensions</span>
-                                    <input type="text" name="sync_files" id="sync_files" value="${app.SYNC_FILES}" class="form-control input-sm input350"/>
+                                    <input type="text" name="sync_files" id="sync_files" value="${', '.join(app.SYNC_FILES)}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
@@ -148,7 +148,7 @@
                             <div class="field-pair">
                                 <label class="nocheck">
                                     <span class="component-title">Keep associated file extensions</span>
-                                    <input type="text" name="allowed_extensions" id="allowed_extensions" value="${app.ALLOWED_EXTENSIONS}" class="form-control input-sm input350"/>
+                                    <input type="text" name="allowed_extensions" id="allowed_extensions" value="${', '.join(app.ALLOWED_EXTENSIONS)}" class="form-control input-sm input350"/>
                                 </label>
                                 <label class="nocheck">
                                     <span class="component-title">&nbsp;</span>
