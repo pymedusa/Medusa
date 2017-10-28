@@ -96,6 +96,7 @@ class EliteTrackerProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['keywords'] = search_string
+                search_params['category'] = 30
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -160,17 +161,19 @@ class EliteTrackerProvider(TorrentProvider):
                     torrent_size = torrent('td')[labels.index('Taille')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
-                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text(strip=True)
-                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
-
                     item = {
                         'title': title,
                         'link': download_url,
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': pubdate,
                     }
+
+                    # Get Pubdate if it is available. Sometimes only PRE is displayed.
+                    pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text(strip=True)
+                    if 'PRE' not in pubdate_raw:
+                        item['pubdate'] = self.parse_pubdate(pubdate_raw, dayfirst=True)
+
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
                                   title, seeders, leechers)
