@@ -45,6 +45,7 @@ from medusa import app, db
 from medusa.common import USER_AGENT
 from medusa.helper.common import (episode_num, http_code_description, media_extensions,
                                   pretty_file_size, subtitle_extensions)
+from medusa.helpers.utils import generate
 from medusa.indexers.indexer_exceptions import IndexerException
 from medusa.logger.adapters.style import BraceAdapter, BraceMessage
 from medusa.session.core import MedusaSafeSession
@@ -997,6 +998,14 @@ def full_sanitize_scene_name(name):
 
 
 def get_show(name, try_indexers=False):
+    """
+    Retrieve a series object using the series name.
+
+    :param name: A series name or a list of series names, when the parsed series result, returned multiple.
+    :param try_indexers: Toggle the lookup of the series using the series name and one or more indexers.
+
+    :return: The found series object or None.
+    """
     from medusa import classes, name_cache, scene_exceptions
     if not app.showList:
         return
@@ -1007,35 +1016,36 @@ def get_show(name, try_indexers=False):
     if not name:
         return show
 
-    # check cache for show
-    cache = name_cache.retrieveNameFromCache(name)
-    if cache:
-        from_cache = True
-        show = Show.find(app.showList, int(cache))
+    for series_name in generate(name):
+        # check cache for show
+        cache = name_cache.retrieveNameFromCache(series_name)
+        if cache:
+            from_cache = True
+            show = Show.find(app.showList, int(cache))
 
-    # try indexers
-    if not show and try_indexers:
-        show = Show.find(
-            app.showList, search_indexer_for_show_id(full_sanitize_scene_name(name), ui=classes.ShowListUI)[2])
+        # try indexers
+        if not show and try_indexers:
+            show = Show.find(
+                app.showList, search_indexer_for_show_id(full_sanitize_scene_name(series_name), ui=classes.ShowListUI)[2])
 
-    # try scene exceptions
-    if not show:
-        show_id = scene_exceptions.get_scene_exception_by_name(name)[0]
-        if show_id:
-            show = Show.find(app.showList, int(show_id))
+        # try scene exceptions
+        if not show:
+            show_id = scene_exceptions.get_scene_exception_by_name(series_name)[0]
+            if show_id:
+                show = Show.find(app.showList, int(show_id))
 
-    if not show:
-        match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
-                           name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
-        for found_show in match_name_only:
-            log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
-                        (name=name, show=found_show))
+        if not show:
+            match_name_only = (s.name for s in app.showList if text_type(s.imdb_year) in s.name and
+                               series_name.lower() == s.name.lower().replace(u' ({year})'.format(year=s.imdb_year), u''))
+            for found_show in match_name_only:
+                log.warning("Consider adding '{name}' in scene exceptions for show '{show}'".format
+                            (name=series_name, show=found_show))
 
-    # add show to cache
-    if show and not from_cache:
-        name_cache.addNameToCache(name, show.indexerid)
+        # add show to cache
+        if show and not from_cache:
+            name_cache.addNameToCache(series_name, show.indexerid)
 
-    return show
+        return show
 
 
 def is_hidden_folder(folder):
