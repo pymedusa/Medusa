@@ -63,7 +63,6 @@ class MedusaSession(BaseSession):
 
     def __init__(self, proxies=None, **kwargs):
         """Create base Medusa session instance."""
-
         # Add response hooks
         self.my_hooks = kwargs.pop('hooks', [])
 
