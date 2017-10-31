@@ -37,7 +37,7 @@ class YggtorrentProvider(TorrentProvider):
         self.url = 'https://yggtorrent.com/'
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
-            'search': urljoin(self.url, 'engine/search?category=2145'),
+            'search': urljoin(self.url, 'engine/search'),
         }
 
         # Proper Strings
@@ -74,7 +74,9 @@ class YggtorrentProvider(TorrentProvider):
             return results
 
         # Search Params
-        search_params = {}
+        search_params = {
+            'category': 2145
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
