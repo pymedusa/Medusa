@@ -37,7 +37,7 @@ class YggtorrentProvider(TorrentProvider):
         self.url = 'https://yggtorrent.com/'
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
-            'search': urljoin(self.url, 'engine/search'),
+            'search': urljoin(self.url, 'engine/search?category=2145'),
         }
 
         # Proper Strings
@@ -86,7 +86,6 @@ class YggtorrentProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['q'] = re.sub(r'[()]', '', search_string)
-                search_params['category'] = 2145
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
