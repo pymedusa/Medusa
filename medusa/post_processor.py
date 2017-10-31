@@ -1202,7 +1202,9 @@ class PostProcessor(object):
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
-        except (OSError, IOError):
+        except (OSError, IOError) as error:
+            self.log(u'Unable to move file {0} to {1}: {2!r}'.format
+                     (self.file_path, dest_path, error), logger.ERROR)
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         # download subtitles
