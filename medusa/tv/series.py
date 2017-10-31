@@ -1566,6 +1566,10 @@ class Series(TV):
                 self.imdb_info['countries'] = '|'.join(filter(None, countries))
                 self.imdb_info['country_codes'] = '|'.join(country_codes).lower()
 
+        # Make sure these always have a value
+        self.imdb_info['countries'] = self.imdb_info.get('countries', '')
+        self.imdb_info['country_codes'] = self.imdb_info.get('country_codes', '')
+
         # If the show has no year, IMDb returned something we don't want
         if not imdb_obj or not imdb_obj.year:
             log.debug(u'{id}: IMDb returned none or invalid info for {imdb_id}, skipping update.',
