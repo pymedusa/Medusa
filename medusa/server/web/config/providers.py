@@ -274,8 +274,8 @@ class ConfigProviders(Config):
             if cur_provider.get_id() not in finished_names:
                 app.newznabProviderList.remove(cur_provider)
 
-        # Update the newznab provider list
-        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in app.newznabProviderList]
+        # Update the custom newznab provider list
+        NewznabProvider.save_newnab_providers()
 
         torrent_rss_provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
@@ -310,7 +310,8 @@ class ConfigProviders(Config):
             if cur_provider.get_id() not in finished_names:
                 app.torrentRssProviderList.remove(cur_provider)
 
-        app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in app.torrentRssProviderList]
+        # Update the torrentrss provider list
+        app.TORRENTRSS_PROVIDERS = [provider.name for provider in app.torrentRssProviderList]
 
         disabled_list = []
         # do the enable/disable
