@@ -327,7 +327,7 @@ class NewznabProvider(NZBProvider):
     @staticmethod
     def save_newnab_providers():
         """Update the app.NEWZNAB_PROVIDERS list with provider names."""
-        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in app.newznabProviderList if not provider.default]
+        app.NEWZNAB_PROVIDERS = [provider.name for provider in app.newznabProviderList if not provider.default]
 
     @staticmethod
     def get_providers_list(provider_data):
