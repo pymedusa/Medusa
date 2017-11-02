@@ -15,13 +15,13 @@ import logging
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
 
-from medusa.session.core import MedusaSession
+from medusa.session.core import MedusaSafeSession
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-session = MedusaSession()
+session = MedusaSafeSession()
 
 
 def send_nzb(nzb):
