@@ -74,17 +74,11 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'https://torrentproject.se/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'http://piratepublic.com/download.php?id={info_hash}',
-            'http://www.legittorrents.info/download.php?id={info_hash}',
             'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
-            'https://skytorrents.in/file/{info_hash}/.torrent',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
-            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -725,7 +719,8 @@ class GenericProvider(object):
         result_name = sanitize_filename(result.name)
 
         # Some NZB providers (e.g. Jackett) can also download torrents
-        if result.url.endswith(GenericProvider.TORRENT) and self.provider_type == GenericProvider.NZB:
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')
         else:
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
