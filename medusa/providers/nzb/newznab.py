@@ -203,15 +203,20 @@ class NewznabProvider(NZBProvider):
                 try:
                     title = item.title.get_text(strip=True)
                     download_url = None
+
                     if item.link:
-                        if validators.url(item.link.get_text(strip=True)):
-                            download_url = item.link.get_text(strip=True)
-                        elif validators.url(item.link.next.strip()):
-                            download_url = item.link.next.strip()
+                        url = item.link.get_text(strip=True)
+                        if validators.url(url) or url.startswith('magnet'):
+                            download_url = url
+
+                        if not download_url:
+                            url = item.link.next.strip()
+                            if validators.url(url) or url.startswith('magnet'):
+                                download_url = url
 
                     if not download_url and item.enclosure:
                         url = item.enclosure.get('url', '').strip()
-                        if validators.url(url):
+                        if validators.url(url) or url.startswith('magnet'):
                             download_url = url
 
                     if not (title and download_url):
@@ -222,8 +227,7 @@ class NewznabProvider(NZBProvider):
                         size_regex = re.search(r'\d*.?\d* [KMGT]B', str(item.description))
                         item_size = size_regex.group() if size_regex else -1
                     else:
-                        item_size = item.size.get_text(
-                            strip=True) if item.size else -1
+                        item_size = item.size.get_text(strip=True) if item.size else -1
                         # Use regex to find name-spaced tags
                         # see BeautifulSoup4 bug 1720605
                         # https://bugs.launchpad.net/beautifulsoup/+bug/1720605
