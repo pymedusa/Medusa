@@ -1533,7 +1533,7 @@ class Application(object):
                     'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freelech', 'cat', 'subtitle', 'cookies',
                 ],
                 GenericProvider.NZB: [
-                    'cats_id'
+                    'cat_ids'
                 ],
             }
 
