@@ -238,4 +238,15 @@ MEDUSA.home.snatchSelection = function() {
             $('#wrapper').prop('data-history-toggle', 'show');
         });
     });
+
+    $('.release-name-ellipses, .release-name-ellipses-toggled').on('click', function(el) {
+        let target = $(el.currentTarget);
+        if (target.hasClass('release-name-ellipses')) {
+            target.removeClass('release-name-ellipses');
+            target.addClass('release-name-ellipses-toggled');
+        } else {
+            target.removeClass('release-name-ellipses-toggled');
+            target.addClass('release-name-ellipses');
+        }
+    });
 };
