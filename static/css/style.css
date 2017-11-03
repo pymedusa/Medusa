@@ -4141,6 +4141,10 @@ div#searchNotification {
     max-width: 250px;
 }
 
+.release-name-ellipses:hover {
+    text-decoration: underline;
+}
+
 .release-name-ellipses-toggled span {
     background-color: rgb(190, 222, 237);
     border-width: 1px;
