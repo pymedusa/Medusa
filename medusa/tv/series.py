@@ -220,7 +220,7 @@ class Series(TV):
         self.episodes = {}
         self.next_aired = ''
         self.release_groups = None
-        self.exceptions = set()
+        self.exceptions = get_scene_exceptions(self.indexerid, self.indexer)
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None

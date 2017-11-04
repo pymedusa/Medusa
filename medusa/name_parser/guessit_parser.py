@@ -66,7 +66,7 @@ def guessit(name, options=None):
     final_options = dict(options) if options else dict()
     final_options.update(dict(type='episode', implicit=True,
                               episode_prefer_number=final_options.get('show_type') == 'anime',
-                              expected_title=get_expected_titles(app.showList),
+                              expected_title=gen_expected_titles(app.showList),
                               expected_group=expected_groups,
                               allowed_languages=allowed_languages,
                               allowed_countries=allowed_countries))
@@ -75,8 +75,8 @@ def guessit(name, options=None):
     return result
 
 
-def get_expected_titles(show_list):
-    """Return expected titles to be used by guessit.
+def gen_expected_titles(show_list):
+    """Yield expected titles to be used by guessit.
 
     It iterates over user's show list and only returns a regex for titles that contains numbers
     (since they can confuse guessit).
@@ -86,7 +86,6 @@ def get_expected_titles(show_list):
     :return:
     :rtype: list of str
     """
-    expected_titles = []
     for show in show_list:
         names = {show.name}.union(show.exceptions)
         for name in names:
@@ -94,6 +93,7 @@ def get_expected_titles(show_list):
                 # do not add numbers to expected titles.
                 continue
 
+            # This is all focused on adding shows with a number in it and matching the regex.
             match = series_re.match(name)
             if not match:
                 continue
@@ -102,9 +102,7 @@ def get_expected_titles(show_list):
             if year and not valid_year(int(year)):
                 series = name
 
-            if not any([char.isdigit() for char in series]):
+            if not any([char.isdigit() or char == '-' for char in series]):
                 continue
 
-            expected_titles.append(series)
-
-    return expected_titles
+            yield series
