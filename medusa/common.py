@@ -41,6 +41,10 @@ from six.moves import reduce
 if PY3:
     long = int
 
+USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
+    version=u'0.0.1', system=platform.system(), release=platform.release(),
+    instance=INSTANCE_ID)
+
 updater = CheckVersion().updater
 if updater:
     app_version = updater.get_cur_version()
