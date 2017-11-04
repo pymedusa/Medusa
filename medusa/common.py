@@ -30,16 +30,20 @@ from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
-from medusa import app
 from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
+from medusa.version_checker import CheckVersion
 
 from six import PY3
 from six.moves import reduce
 
 if PY3:
     long = int
+
+updater = CheckVersion().updater
+if updater:
+    app_version = updater.get_cur_version()
 
 # If some provider has an issue with functionality of SR, other than user
 # agents, it's best to come talk to us rather than block.  It is no different
@@ -50,7 +54,7 @@ if PY3:
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
-    version=app.APP_VERSION, system=platform.system(), release=platform.release(),
+    version=app_version, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
