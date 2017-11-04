@@ -30,6 +30,7 @@ from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
 
+from medusa import app
 from medusa.numdict import NumDict
 from medusa.recompiled import tags
 from medusa.search import PROPER_SEARCH
@@ -49,7 +50,7 @@ if PY3:
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
-    version=u'0.0.1', system=platform.system(), release=platform.release(),
+    version=app.APP_VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
