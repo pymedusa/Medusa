@@ -279,7 +279,7 @@
                     </td>
                         <% cur_status, cur_quality = Quality.split_composite_status(int(epResult["status"])) %>
                         % if cur_quality != Quality.NONE:
-                            <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality)}</td>
+                            <td class="col-status triggerhighlight">${statusStrings[cur_status]} ${renderQualityPill(cur_quality, snatchedExisting=bool(epResult["location"] and statusStrings[cur_status] == 'Snatched'))}</td>
                         % else:
                             <td class="col-status triggerhighlight">${statusStrings[cur_status]}</td>
                         % endif

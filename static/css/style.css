@@ -2600,6 +2600,12 @@ span.quality {
     white-space: nowrap;
 }
 
+span.snatchedExisting {
+    border-style: solid;
+    border-width: 2px;
+    border-color: #00f9fd;
+}
+
 span.any-hd {
     background-color: rgb(38, 114, 182);
     /* stylelint-disable declaration-block-no-shorthand-property-overrides */

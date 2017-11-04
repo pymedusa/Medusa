@@ -2,7 +2,7 @@
     import cgi
     from medusa.common import Quality, qualityPresets, qualityPresetStrings
 %>
-<%def name="renderQualityPill(quality, showTitle=False, overrideClass=None)"><%
+<%def name="renderQualityPill(quality, showTitle=False, overrideClass=None, snatchedExisting=None)"><%
     # Build a string of quality names to use as title attribute
     if showTitle:
         allowed_qualities, preferred_qualities = Quality.split_quality(quality)
@@ -77,4 +77,6 @@
         cssClass = "quality " + cssClass
     else:
         cssClass = overrideClass
+    if snatchedExisting:
+        cssClass = cssClass + "  snatchedExisting"
 %><span${title} class="${cssClass}">${qualityString}</span></%def>
