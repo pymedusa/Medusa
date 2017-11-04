@@ -231,7 +231,7 @@ class PostProcessor(object):
         if app.MOVE_ASSOCIATED_FILES:
             # "Keep associated file extensions" input box
             if app.ALLOWED_EXTENSIONS:
-                allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+                allowed_extensions = app.ALLOWED_EXTENSIONS
                 for associated_file in files:
                     found_extension = helpers.get_extension(associated_file)
                     if found_extension and found_extension.lower() not in allowed_extensions:
@@ -326,13 +326,8 @@ class PostProcessor(object):
             file_list = files
 
         # also delete associated files, works only for 1 file
-        if associated_files and len(files) == 1:
-            file_list += self.list_associated_files(files[0], subfolders=True)
-
-        if not file_list:
-            self.log(u'There were no files associated with {0}, not deleting anything'.format
-                     (files), logger.DEBUG)
-            return
+        if associated_files and len(file_list) == 1:
+            file_list += self.list_associated_files(file_list[0], subfolders=True)
 
         for cur_file in file_list:
             if os.path.isfile(cur_file):
@@ -1207,7 +1202,9 @@ class PostProcessor(object):
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
-        except (OSError, IOError):
+        except (OSError, IOError) as error:
+            self.log(u'Unable to move file {0} to {1}: {2!r}'.format
+                     (self.file_path, dest_path, error), logger.ERROR)
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         # download subtitles
@@ -1266,13 +1263,14 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
-        if self.info_hash:
-            existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
-            existing_release_names.append(self.release_name or 'N/A')
-            app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
-        else:
-            logger.log(u'Unable to get info to move torrent later as no info hash available for: {0}'.format
-                       (self.file_path), logger.WARNING)
+        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+            # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
+            if self.info_hash:
+                existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])
+                existing_release_names.append(self.release_name or 'N/A')
+                app.RECENTLY_POSTPROCESSED[self.info_hash] = existing_release_names
+            else:
+                logger.log(u'Unable to get info to move torrent later as no info hash available for: {0}'.format
+                           (self.file_path), logger.WARNING)
 
         return True

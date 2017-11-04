@@ -178,10 +178,10 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
 
     down_cur_quality = 0
     show_obj = Show.find(app.showList, int(show))
-    preferred_words = show_obj.show_words().preferred_words.lower().split(',')
-    undesired_words = show_obj.show_words().undesired_words.lower().split(',')
-    ignored_words = show_obj.show_words().ignored_words.lower().split(',')
-    required_words = show_obj.show_words().required_words.lower().split(',')
+    preferred_words = show_obj.show_words().preferred_words
+    undesired_words = show_obj.show_words().undesired_words
+    ignored_words = show_obj.show_words().ignored_words
+    required_words = show_obj.show_words().required_words
 
     main_db_con = db.DBConnection('cache.db')
 

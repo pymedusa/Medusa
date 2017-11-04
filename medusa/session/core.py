@@ -51,11 +51,18 @@ class MedusaSession(BaseSession):
     :return: The response as text or False.
     """
 
+    @staticmethod
+    def _get_ssl_cert(verify):
+        """
+        Configure the ssl verification.
+
+        We need to overwrite this in the request method. As it's not available in the session init.
+        :param verify: SSL verification on or off.
+        """
+        return certifi.old_where() if all([app.SSL_VERIFY, verify]) else False
+
     def __init__(self, proxies=None, **kwargs):
         """Create base Medusa session instance."""
-        # Set default ssl verify
-        self.verify = certifi.old_where() if all([app.SSL_VERIFY, kwargs.pop('verify', False)]) else False
-
         # Add response hooks
         self.my_hooks = kwargs.pop('hooks', [])
 
@@ -80,6 +87,11 @@ class MedusaSession(BaseSession):
 
         # Set default headers.
         self.headers.update(self.default_headers)
+
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, verify=True, **kwargs):
+        return super(MedusaSession, self).request(method, url, data=data, params=params, headers=headers,
+                                                  timeout=timeout, verify=self._get_ssl_cert(verify),
+                                                  **kwargs)
 
     def get_json(self, url, method='GET', *args, **kwargs):
         """Overwrite request, to be able to return the json value if possible. Else it will fail silently."""
@@ -118,16 +130,16 @@ class MedusaSafeSession(MedusaSession):
     :return: The response as text or False.
     """
 
-    def __init__(self, verify=True, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         # Initialize request.session
         super(MedusaSafeSession, self).__init__(**kwargs)
 
-    def request(self, method, url, data=None, params=None, headers=None, timeout=30, **kwargs):
+    def request(self, method, url, data=None, params=None, headers=None, timeout=30, verify=True, **kwargs):
         """Overwrite request, for adding basic exception handling."""
         resp = None
         try:
             resp = super(MedusaSafeSession, self).request(method, url, data=data, params=params, headers=headers,
-                                                          timeout=timeout, **kwargs)
+                                                          timeout=timeout, verify=verify, **kwargs)
             resp.raise_for_status()
         except requests.exceptions.HTTPError as error:
             log.debug(u'The response returned a non-200 response while requestion url {url}. Error: {err_msg!r}',
