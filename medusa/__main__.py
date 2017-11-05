@@ -1016,7 +1016,7 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
-                    load_provider_setting(app.CFG, provider, 'string', 'cat_ids', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', censor_log='low', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)

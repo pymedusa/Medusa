@@ -21,6 +21,7 @@ from medusa.helper.common import (
     try_int,
 )
 from medusa.helper.encoding import ss
+from medusa.helpers.utils import split_and_strip
 from medusa.indexers.indexer_config import (
     INDEXER_TMDB,
     INDEXER_TVDBV2,
@@ -44,7 +45,7 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb, torznab
     """
 
-    def __init__(self, name, url='', api_key='0', cat_ids='5030,5040', default=False, search_mode='eponly',
+    def __init__(self, name, url='', api_key='0', cat_ids=('5030', '5040'), default=False, search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
@@ -64,7 +65,7 @@ class NewznabProvider(NZBProvider):
         self.needs_auth = self.api_key != '0'
         self.public = not self.needs_auth
 
-        self.cat_ids = cat_ids if cat_ids else '5030,5040'
+        self.cat_ids = list(cat_ids) if cat_ids else ['5030', '5040']
 
         self.torznab = False
 
@@ -99,7 +100,7 @@ class NewznabProvider(NZBProvider):
             't': 'search',
             'limit': 100,
             'offset': 0,
-            'cat': self.cat_ids.strip(', ') or '5030,5040',
+            'cat': self.cat_ids or ['5030', '5040'],
             'maxage': app.USENET_RETENTION
         }
 
@@ -443,7 +444,7 @@ class NewznabProvider(NZBProvider):
         try:
             values = provider_config.split('|')
             # Pad values with None for each missing value
-            values.extend([None for x in range(len(values), 10)])
+            values.extend([None for _ in range(len(values), 10)])
 
             (name, url, api_key, category_ids, enabled,
              search_mode, search_fallback,
@@ -456,7 +457,7 @@ class NewznabProvider(NZBProvider):
             return None
 
         new_provider = NewznabProvider(
-            name, url, api_key=api_key, cat_ids=category_ids,
+            name, url, api_key=api_key, cat_ids=split_and_strip(category_ids),
             search_mode=search_mode or 'eponly',
             search_fallback=bool(int(search_fallback)),
             enable_daily=bool(int(enable_daily)),
@@ -543,7 +544,7 @@ class NewznabProvider(NZBProvider):
                 'name': 'NZB.Cat',
                 'url': 'https://nzb.cat/',
                 'api_key': '',
-                'category_ids': '5030,5040,5010',
+                'category_ids': ['5030', '5040', '5010'],
                 'enabled': False,
                 'default': True,
                 'search_mode': 'eponly',
@@ -556,7 +557,7 @@ class NewznabProvider(NZBProvider):
                 'name': 'NZBGeek',
                 'url': 'https://api.nzbgeek.info/',
                 'api_key': '',
-                'category_ids': '5030,5040',
+                'category_ids': ['5030', '5040'],
                 'enabled': False,
                 'default': True,
                 'search_mode': 'eponly',
@@ -569,7 +570,7 @@ class NewznabProvider(NZBProvider):
                 'name': 'NZBs.org',
                 'url': 'https://nzbs.org/',
                 'api_key': '',
-                'category_ids': '5030,5040',
+                'category_ids': ['5030', '5040'],
                 'enabled': False,
                 'default': True,
                 'search_mode': 'eponly',
@@ -582,7 +583,7 @@ class NewznabProvider(NZBProvider):
                 'name': 'Usenet-Crawler',
                 'url': 'https://www.usenet-crawler.com/',
                 'api_key': '',
-                'category_ids': '5030,5040',
+                'category_ids': ['5030', '5040'],
                 'enabled': False,
                 'default': True,
                 'search_mode': 'eponly',
@@ -595,7 +596,7 @@ class NewznabProvider(NZBProvider):
                 'name': 'DOGnzb',
                 'url': 'https://api.dognzb.cr/',
                 'api_key': '',
-                'category_ids': '5030,5040,5060,5070',
+                'category_ids': ['5030', '5040', '5060', '5070'],
                 'enabled': False,
                 'default': True,
                 'search_mode': 'eponly',
@@ -608,7 +609,7 @@ class NewznabProvider(NZBProvider):
                 'name': 'Omgwtfnzbs',
                 'url': 'https://api.omgwtfnzbs.me/',
                 'api_key': '',
-                'category_ids': '5030,5040,5060,5070',
+                'category_ids': ['5030', '5040', '5060', '5070'],
                 'enabled': False,
                 'default': True,
                 'search_mode': 'eponly',

@@ -31,9 +31,10 @@ from logging import DEBUG, WARNING
 
 from medusa.logger.adapters.style import BraceAdapter
 
-from . import app, db, helpers, notifiers, ui
-from .github_client import get_github_repo
-from .session.core import MedusaSession
+from medusa import app, db, notifiers, ui
+from medusa.helpers import backup_config_zip, download_file
+from medusa.github_client import get_github_repo
+from medusa.session.core import MedusaSession
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
                  'OR shutdown application and delete your .git folder and run from source to enable updates.')
@@ -153,7 +154,7 @@ class CheckVersion(object):
             for filename in files:
                 source.append(os.path.join(path, filename))
 
-        return helpers.backup_config_zip(source, target, app.DATA_DIR)
+        return backup_config_zip(source, target, app.DATA_DIR)
 
     def safe_to_update(self):
 
@@ -919,7 +920,7 @@ class SourceUpdateManager(UpdateManager):
             # retrieve file
             log.info(u'Downloading update from {0!r}', tar_download_url)
             tar_download_path = os.path.join(app_update_dir, u'sr-update.tar')
-            helpers.download_file(tar_download_url, tar_download_path, session=self.session)
+            download_file(tar_download_url, tar_download_path, session=self.session)
 
             if not os.path.isfile(tar_download_path):
                 log.warning(u"Unable to retrieve new version from {0!r}, can't update", tar_download_url)
