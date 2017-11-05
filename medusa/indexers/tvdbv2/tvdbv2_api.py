@@ -355,7 +355,7 @@ class TVDBv2(BaseIndexer):
                 k = k.lower()
 
                 if v is not None:
-                    if k == 'filename':
+                    if v and k == 'filename':
                         v = urljoin(self.config['artwork_prefix'], v)
                     else:
                         v = self._clean_data(v)
@@ -567,7 +567,7 @@ class TVDBv2(BaseIndexer):
         # get series data / add the base_url to the image urls
         for k, v in series_info['series'].items():
             if v is not None:
-                if k in ['banner', 'fanart', 'poster']:
+                if v and k in ['banner', 'fanart', 'poster']:
                     v = self.config['artwork_prefix'] % v
             self._set_show_data(sid, k, v)
 
