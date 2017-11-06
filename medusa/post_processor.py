@@ -1264,7 +1264,7 @@ class PostProcessor(object):
         self._run_extra_scripts(ep_obj)
 
         if not self.nzb_name and all([app.USE_TORRENTS,
-                                     app.PROCESS_METHOD in ('hardlink', 'symlink'), 
+                                     app.PROCESS_METHOD in ('hardlink', 'symlink'),
                                      app.TORRENT_SEED_LOCATION]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
