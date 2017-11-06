@@ -247,6 +247,14 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     if best_result.name not in processed_propers_names:
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
+                streaming_service = NameParser()._parse_string(release_name).guess.get(u'streaming_service')
+                # Ignore proper if streaming service differs from downloaded release streaming service
+                if best_result.parse_result.guess.get(u'streaming_service') != streaming_service:
+                    log.info('Ignoring proper because streaming service is different: {name}',
+                             {'name': best_result.name})
+                    if best_result.name not in processed_propers_names:
+                        self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
+                    continue
             else:
                 log.debug("Coudn't find a release name in database. Skipping codec comparison for: {name}", {
                     'name': best_result.name
