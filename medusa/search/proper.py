@@ -239,7 +239,8 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
             # only keep the proper if we have already downloaded an episode with the same codec
             release_name = sql_results[0][b'release_name']
             if release_name:
-                current_codec = NameParser()._parse_string(release_name).video_codec
+                release_name_guess = NameParser()._parse_string(release_name)
+                current_codec = release_name_guess.video_codec
                 # Ignore proper if codec differs from downloaded release codec
                 if all([current_codec, best_result.parse_result.video_codec,
                         best_result.parse_result.video_codec != current_codec]):
@@ -247,7 +248,7 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                     if best_result.name not in processed_propers_names:
                         self.processed_propers.append({'name': best_result.name, 'date': best_result.date})
                     continue
-                streaming_service = NameParser()._parse_string(release_name).guess.get(u'streaming_service')
+                streaming_service = release_name_guess.guess.get(u'streaming_service')
                 # Ignore proper if streaming service differs from downloaded release streaming service
                 if best_result.parse_result.guess.get(u'streaming_service') != streaming_service:
                     log.info('Ignoring proper because streaming service is different: {name}',
