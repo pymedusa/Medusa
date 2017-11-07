@@ -218,7 +218,7 @@ class RTorrent:
             elif verbose:
                 func_name = "load.verbose"
             else:
-                func_name = "load"
+                func_name = "load.normal"
         elif file_type in ["file", "raw"]:
             if start and verbose:
                 func_name = "load.raw_start_verbose"
