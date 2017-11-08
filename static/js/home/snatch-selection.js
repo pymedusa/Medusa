@@ -239,7 +239,7 @@ MEDUSA.home.snatchSelection = function() {
         });
     });
 
-    $('.release-name-ellipses, .release-name-ellipses-toggled').on('click', function(el) {
+    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', function(el) {
         const target = $(el.currentTarget);
 
         if (target.hasClass('release-name-ellipses')) {
