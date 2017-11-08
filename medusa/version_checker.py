@@ -28,12 +28,11 @@ import tarfile
 import time
 
 from logging import DEBUG, WARNING
-
+from medusa import app, db, helpers, notifiers, ui
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.github_client import get_github_repo
+from medusa.session.core import MedusaSession
 
-from . import app, db, helpers, notifiers, ui
-from .github_client import get_github_repo
-from .session.core import MedusaSession
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
                  'OR shutdown application and delete your .git folder and run from source to enable updates.')

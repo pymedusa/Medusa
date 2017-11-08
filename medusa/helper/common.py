@@ -8,9 +8,7 @@ import re
 import traceback
 
 from fnmatch import fnmatch
-
 from medusa import app
-
 from six import PY3, text_type
 
 

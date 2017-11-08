@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from base64 import b16encode, b32decode
 from collections import defaultdict
 from datetime import datetime, timedelta
