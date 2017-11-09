@@ -1,5 +1,7 @@
 # coding=utf-8
 
+"""Indexer config module."""
+
 import re
 
 from medusa.app import BASE_PYMEDUSA_URL

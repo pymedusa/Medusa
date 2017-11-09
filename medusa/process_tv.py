@@ -1,25 +1,11 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+"""Process TV module."""
 
 from __future__ import unicode_literals
 
 import os
 import shutil
-import socket
 import stat
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
@@ -28,8 +14,6 @@ from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
-
-import requests
 
 import shutil_custom
 
@@ -661,14 +645,9 @@ class ProcessResult(object):
 
         logger.log('Trying to move torrent after post-processing', logger.DEBUG)
         client = torrent.get_client_class(app.TORRENT_METHOD)()
-
+        torrent_moved = False
         try:
             torrent_moved = client.move_torrent(info_hash)
-        except (requests.exceptions.RequestException, socket.gaierror) as error:
-            logger.log("Couldn't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
-                       "to: '{path}'. Error: {error}".format(release=release_names, hash=info_hash, error=error.message,
-                                                             path=app.TORRENT_SEED_LOCATION, s=s), logger.WARNING)
-            return False
         except AttributeError:
             logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
             return False
