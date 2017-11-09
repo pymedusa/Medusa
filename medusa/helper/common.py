@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Module with common helper utils."""
 
 from __future__ import unicode_literals
 
@@ -6,11 +7,8 @@ import datetime
 import logging
 import re
 import traceback
-
 from fnmatch import fnmatch
-
 from medusa import app
-
 from six import PY3, text_type
 
 
@@ -133,9 +131,9 @@ def is_sync_file(filename):
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
-        return (extension in app.SYNC_FILES.split(',') or
+        return (extension in app.SYNC_FILES or
                 filename.startswith('.syncthing') or
-                any(fnmatch(filename, match) for match in app.SYNC_FILES.split(',')))
+                any(fnmatch(filename, match) for match in app.SYNC_FILES))
 
     return False
 
@@ -205,9 +203,9 @@ def convert_size(size, default=None, use_decimal=False, **kwargs):
             scalar, units = size_tuple[0], size_tuple[1:]
             units = units[0].upper() if units else default_units
         else:
-            regex_units = re.search(r'(\w+)', size, re.IGNORECASE)
-            units = regex_units.group() if regex_units else default_units
-            scalar = size.strip(units)
+            regex_units = re.search(r'([0-9.]+)(\s?({scale}))'.format(scale='|'.join(scale)), size, re.IGNORECASE)
+            units = regex_units.group(2).strip() if regex_units else default_units
+            scalar = regex_units.group(1)
 
         scalar = float(scalar)
         scalar *= (1024 if not use_decimal else 1000) ** scale.index(units)

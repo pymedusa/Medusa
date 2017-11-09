@@ -19,8 +19,8 @@
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="showID" value="${show.indexerid}" />
-<input type="hidden" id="series_slug" value="${show.slug}" />
+<input type="hidden" id="series-id" value="${show.indexerid}" />
+<input type="hidden" id="series-slug" value="${show.slug}" />
 <div class="clearfix"></div><!-- div.clearfix //-->
 </div>
 <div class="clearfix"></div>
@@ -29,7 +29,7 @@
 <%include file="/partials/showheader.mako"/>
 
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12 horizontal-scroll">
         <table id="${'animeTable' if show.is_anime else 'showTable'}" class="${'displayShowTableFanArt tablesorterFanArt' if app.FANART_BACKGROUND else 'displayShowTable'} display_show" cellspacing="0" border="0" cellpadding="0">
             <% cur_season = -1 %>
             <% odd = 0 %>
@@ -256,7 +256,7 @@
                         % if app.DOWNLOAD_URL and epResult['location'] and Quality.split_composite_status(int(epResult['status'])).status in [DOWNLOADED, ARCHIVED]:
                             <%
                                 filename = epResult['location']
-                                for rootDir in app.ROOT_DIRS.split('|'):
+                                for rootDir in app.ROOT_DIRS:
                                     if rootDir.startswith('/'):
                                         filename = filename.replace(rootDir, "")
                                 filename = app.DOWNLOAD_URL + urllib.quote(filename.encode('utf8'))
@@ -311,81 +311,80 @@
     </div> <!-- end of col -->
 </div> <!-- row -->
 
+<!--Begin - Bootstrap Modals-->
+<div id="forcedSearchModalFailed" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Forced Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to mark this episode as failed?</p>
+                <p class="text-warning"><small>The episode release name will be added to the failed history, preventing it to be downloaded again.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="forcedSearchModalQuality" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Forced Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to include the current episode quality in the search?</p>
+                <p class="text-warning"><small>Choosing No will ignore any releases with the same episode quality as the one currently downloaded/snatched.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="confirmSubtitleReDownloadModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Re-download subtitle</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to re-download the subtitle for this language?</p>
+                <p class="text-warning"><small>It will overwrite your current subtitle</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="askmanualSubtitleSearchModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Subtitle search</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to manually pick subtitles or let us choose it for you?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" data-dismiss="modal">Auto</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Manual</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-
-
-        <!--Begin - Bootstrap Modals-->
-        <div id="forcedSearchModalFailed" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Forced Search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to mark this episode as failed?</p>
-                        <p class="text-warning"><small>The episode release name will be added to the failed history, preventing it to be downloaded again.</small></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                        <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="forcedSearchModalQuality" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Forced Search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to include the current episode quality in the search?</p>
-                        <p class="text-warning"><small>Choosing No will ignore any releases with the same episode quality as the one currently downloaded/snatched.</small></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                        <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="confirmSubtitleReDownloadModal" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Re-download subtitle</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to re-download the subtitle for this language?</p>
-                        <p class="text-warning"><small>It will overwrite your current subtitle</small></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                        <button type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="askmanualSubtitleSearchModal" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                        <h4 class="modal-title">Subtitle search</h4>
-                    </div>
-                    <div class="modal-body">
-                        <p>Do you want to manually pick subtitles or let us choose it for you?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-info" data-dismiss="modal">Auto</button>
-                        <button type="button" class="btn btn-success" data-dismiss="modal">Manual</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 <%include file="subtitle_modal.mako"/>
 <!--End - Bootstrap Modal-->
 </%block>
+

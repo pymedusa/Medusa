@@ -121,7 +121,7 @@ class LimeTorrentsProvider(TorrentProvider):
                 return items
 
             torrent_rows = torrent_table.find_all('tr')
-            labels = [process_column_header(label) for label in torrent_rows[0]]
+            labels = [process_column_header(label) for label in torrent_rows[0].find_all('th')]
 
             # Skip the first row, since it isn't a valid result
             for row in torrent_rows[1:]:

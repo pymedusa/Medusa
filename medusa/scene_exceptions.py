@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
+VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
 safe_session = MedusaSafeSession()
 
 # TODO: Fix multiple indexer support
@@ -312,15 +313,35 @@ def _get_custom_exceptions(force):
 
 def _get_xem_exceptions(force):
     xem_exceptions = defaultdict(dict)
-    xem_url = 'http://thexem.de/map/allNames?origin={0}&seasonNumbers=1'
+    url = 'http://thexem.de/map/allNames'
+    params = {
+        'origin': None,
+        'seasonNumbers': 1,
+    }
 
     if force or should_refresh('xem'):
         for indexer in indexerApi().indexers:
             indexer_api = indexerApi(indexer)
 
-            # Not query XEM for unsupported indexers
-            if not indexer_api.config.get('xem_origin'):
+            try:
+                # Get XEM origin for indexer
+                origin = indexer_api.config['xem_origin']
+                if origin not in VALID_XEM_ORIGINS:
+                    msg = 'invalid origin for XEM: {0}'.format(origin)
+                    raise ValueError(msg)
+            except KeyError:
+                # Indexer has no XEM origin
                 continue
+            except ValueError as error:
+                # XEM origin for indexer is invalid
+                logger.error(
+                    'Error getting XEM scene exceptions for {indexer}:'
+                    ' {error}'.format(indexer=indexer_api.name, error=error)
+                )
+                continue
+            else:
+                # XEM origin for indexer is valid
+                params['origin'] = origin
 
             logger.info(
                 'Checking for XEM scene exceptions updates for'
@@ -329,8 +350,7 @@ def _get_xem_exceptions(force):
                 )
             )
 
-            url = xem_url.format(indexer_api.config['xem_origin'])
-            response = safe_session.get(xem_url, timeout=60)
+            response = safe_session.get(url, params=params, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

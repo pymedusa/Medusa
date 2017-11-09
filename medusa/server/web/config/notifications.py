@@ -148,7 +148,7 @@ class ConfigNotifications(Config):
         app.PROWL_NOTIFY_ONSNATCH = config.checkbox_to_value(prowl_notify_onsnatch)
         app.PROWL_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(prowl_notify_ondownload)
         app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(prowl_notify_onsubtitledownload)
-        app.PROWL_API = prowl_api
+        app.PROWL_API = [_.strip() for _ in prowl_api.split(',')]
         app.PROWL_PRIORITY = prowl_priority
         app.PROWL_MESSAGE_TITLE = prowl_message_title
 
@@ -171,7 +171,7 @@ class ConfigNotifications(Config):
         app.PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(pushover_notify_onsubtitledownload)
         app.PUSHOVER_USERKEY = pushover_userkey
         app.PUSHOVER_APIKEY = pushover_apikey
-        app.PUSHOVER_DEVICE = pushover_device
+        app.PUSHOVER_DEVICE = [_.strip() for _ in pushover_device.split(',')]
         app.PUSHOVER_SOUND = pushover_sound
 
         app.USE_LIBNOTIFY = config.checkbox_to_value(use_libnotify)
@@ -228,7 +228,7 @@ class ConfigNotifications(Config):
         app.EMAIL_TLS = config.checkbox_to_value(email_tls)
         app.EMAIL_USER = email_user
         app.EMAIL_PASSWORD = email_password
-        app.EMAIL_LIST = email_list
+        app.EMAIL_LIST = [_.strip() for _ in email_list.split(',')]
         app.EMAIL_SUBJECT = email_subject
 
         app.USE_PYTIVO = config.checkbox_to_value(use_pytivo)
@@ -244,7 +244,7 @@ class ConfigNotifications(Config):
         app.NMA_NOTIFY_ONSNATCH = config.checkbox_to_value(nma_notify_onsnatch)
         app.NMA_NOTIFY_ONDOWNLOAD = config.checkbox_to_value(nma_notify_ondownload)
         app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = config.checkbox_to_value(nma_notify_onsubtitledownload)
-        app.NMA_API = nma_api
+        app.NMA_API = [_.strip() for _ in nma_api.split(',')]
         app.NMA_PRIORITY = nma_priority
 
         app.USE_PUSHALOT = config.checkbox_to_value(use_pushalot)
