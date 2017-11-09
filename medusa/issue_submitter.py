@@ -7,7 +7,6 @@ import locale
 import logging
 import platform
 import sys
-
 from datetime import datetime, timedelta
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException

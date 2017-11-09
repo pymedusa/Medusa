@@ -5,14 +5,13 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import requests
 import time
+import requests
 import traceback
-
 from base64 import b16encode, b32decode
+from hashlib import sha1
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-from hashlib import sha1
 from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter

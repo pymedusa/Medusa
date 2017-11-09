@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Module with common helper utils."""
 
 from __future__ import unicode_literals
 
@@ -6,7 +7,6 @@ import datetime
 import logging
 import re
 import traceback
-
 from fnmatch import fnmatch
 from medusa import app
 from six import PY3, text_type
