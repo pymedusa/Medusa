@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 import logging
 import re
 import time
-import requests
 import traceback
+import requests
 from base64 import b16encode, b32decode
 from hashlib import sha1
 from bencode import bdecode, bencode
