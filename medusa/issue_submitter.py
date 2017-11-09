@@ -3,20 +3,13 @@
 from __future__ import unicode_literals
 
 import difflib
-
 import locale
-
 import logging
-
 import platform
-
 import sys
-
 from datetime import datetime, timedelta
-
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
-
 from medusa import app, db
 from medusa.classes import ErrorViewer
 from medusa.github_client import authenticate, get_github_repo, token_authenticate

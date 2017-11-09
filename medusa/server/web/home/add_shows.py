@@ -8,7 +8,6 @@ import os
 import re
 
 from requests import RequestException
-
 from requests.compat import unquote_plus
 from simpleanidb import REQUEST_HOT
 from six import iteritems

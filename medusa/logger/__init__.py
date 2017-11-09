@@ -27,7 +27,6 @@ import os
 import pkgutil
 import re
 import sys
-
 from collections import OrderedDict
 from logging import (
     CRITICAL,

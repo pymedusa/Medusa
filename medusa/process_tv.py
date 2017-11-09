@@ -177,7 +177,7 @@ class ProcessResult(object):
 
                 else:
                     self.log('Found temporary sync files in folder: {0}'.format(dir_path))
-                    self.log('Skipping post processing for folder: {0}'.format(dir_path))
+                    self.log('Skipping post-processing for folder: {0}'.format(dir_path))
                     self.missedfiles.append('{0}: Sync files found'.format(dir_path))
 
         if self.succeeded:
@@ -213,6 +213,25 @@ class ProcessResult(object):
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
+        if not self._is_valid_folder(path, failed):
+            return False
+
+        for root, dirs, files in os.walk(path):
+            for folder in dirs:
+                if not self._is_valid_folder(os.path.join(root, folder), failed):
+                    return False
+            for each_file in files:
+                if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
+                    return True
+            # Stop at first subdirectories if post-processing path
+            if self.directory == path:
+                break
+
+        self.log('No processable items found in folder: {0}'.format(path), logger.DEBUG)
+        return False
+
+    def _is_valid_folder(self, path, failed):
+        """Verify folder validity based on the checks below."""
         folder = os.path.basename(path)
         if folder in self.IGNORED_FOLDERS:
             return False
@@ -224,31 +243,24 @@ class ProcessResult(object):
             self.log('The directory name indicates that it was previously rejected for being undersized.',
                      logger.DEBUG)
             failed = True
-        elif folder.upper().startswith('_UNPACK'):
-            self.log('The directory name indicates that this release is in the process of being unpacked.',
-                     logger.DEBUG)
-            self.missedfiles.append('{0}: Being unpacked'.format(folder))
-            return False
 
         if failed:
             self.process_failed(path)
-            self.missedfiles.append('{0}: Failed download'.format(folder))
+            self.missedfiles.append('{0}: Failed download'.format(path))
+            return False
+
+        if folder.startswith('_unpack'):
+            self.log('The directory name indicates that this release is in the process of being unpacked.',
+                     logger.DEBUG)
+            self.missedfiles.append('{0}: Being unpacked'.format(path))
             return False
 
         if helpers.is_hidden_folder(path):
             self.log('Ignoring hidden folder: {0}'.format(folder), logger.DEBUG)
-            self.missedfiles.append('{0}: Hidden folder'.format(folder))
+            self.missedfiles.append('{0}: Hidden folder'.format(path))
             return False
 
-        for root, dirs, files in os.walk(path):
-            for each_file in files:
-                if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
-                    return True
-            del root  # unused variable
-            del dirs  # unused variable
-
-        self.log('No processable items found in folder: {0}'.format(path), logger.DEBUG)
-        return False
+        return True
 
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""

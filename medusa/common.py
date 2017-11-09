@@ -22,10 +22,8 @@ import os
 import platform
 import re
 import uuid
-
 from collections import namedtuple
 from os import path
-
 from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
