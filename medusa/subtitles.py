@@ -440,7 +440,9 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         logger.info(u'No subtitles found for %s with a minimum score of %d',
                     os.path.basename(video_path), min_score)
         if warn_user:
-            logger.warning(u'Consider doing a manual subtitle search for: %s', os.path.basename(video_path))
+            for index, release in enumerate(app.RELEASES_IN_PP):
+                if release.get('release') == video_path:
+                    app.RELEASES_IN_PP[index]['warn_user'] = True
         return []
 
     return save_subs(tv_episode, video, found_subtitles, video_path=video_path)
