@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
-xem_session = MedusaSafeSession()
+safe_session = MedusaSafeSession()
 
 # TODO: Fix multiple indexer support
 
@@ -286,8 +286,7 @@ def _get_custom_exceptions(force):
             )
             try:
                 # When any Medusa Safe session exception, session returns None and then AttributeError when json()
-                # Reusing xem_session even this is not xem related
-                jdata = xem_session.get(location, timeout=60).json()
+                jdata = safe_session.get(location, timeout=60).json()
             except (ValueError, AttributeError) as error:
                 logger.debug(
                     'Check scene exceptions update failed. Unable to '
@@ -331,7 +330,7 @@ def _get_xem_exceptions(force):
             )
 
             url = xem_url.format(indexer_api.config['xem_origin'])
-            response = xem_session.get(xem_url, timeout=60)
+            response = safe_session.get(xem_url, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:
