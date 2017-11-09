@@ -45,7 +45,7 @@ class NewznabProvider(NZBProvider):
     Tested with: newznab, nzedb, spotweb, torznab
     """
 
-    def __init__(self, name, url='', api_key='0', cat_ids=('5030', '5040'), default=False, search_mode='eponly',
+    def __init__(self, name, url='', api_key='0', cat_ids=None, default=False, search_mode='eponly',
                  search_fallback=False, enable_daily=True, enable_backlog=False, enable_manualsearch=False):
         """Initialize the class."""
         super(NewznabProvider, self).__init__(name)
@@ -65,7 +65,7 @@ class NewznabProvider(NZBProvider):
         self.needs_auth = self.api_key != '0'
         self.public = not self.needs_auth
 
-        self.cat_ids = list(cat_ids) if cat_ids else ['5030', '5040']
+        self.cat_ids = cat_ids or ['5030', '5040']
 
         self.torznab = False
 
@@ -100,7 +100,7 @@ class NewznabProvider(NZBProvider):
             't': 'search',
             'limit': 100,
             'offset': 0,
-            'cat': self.cat_ids or ['5030', '5040'],
+            'cat': self.cat_ids,
             'maxage': app.USENET_RETENTION
         }
 
