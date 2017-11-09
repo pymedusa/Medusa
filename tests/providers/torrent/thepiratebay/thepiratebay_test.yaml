@@ -4,22 +4,22 @@ daily:
   results:
     - seeders: 0
       pubdate:
-      title: NCIS.Los.Angeles.S08E04.1080p.AMZN.WEBRip.DD5.1.x264-ViSUM
+      title: Ink.Master.Angels.S01E06.WEB.x264-TBS[ettv]
       leechers: 0
-      link: magnet:?xt=urn:btih:e228cf237128f18cec761f89342f88a1da9e8226
-      size: 3983582167
-    - seeders: 1
+      link: magnet:?xt=urn:btih:2c0822768c241e36d770f1e60dc54fd093c68549
+      size: 549055365
+    - seeders: 124
       pubdate:
-      title: Billions.S02E08.1080p.HDTV.x264-aAF
-      leechers: 0
-      link: magnet:?xt=urn:btih:eb565a8f872cf9471d1929d7e1e5c8796291bb7c
-      size: 4606352424
-    - seeders: 1
+      title: The.Voice.S13E14.WEB.x264-TBS[ettv]
+      leechers: 78
+      link: magnet:?xt=urn:btih:f16cbe510298eee0c1477b5477dd408568489bec
+      size: 620169789
+    - seeders: 44
       pubdate:
-      title: Wolfblood.S05E07.XviD-AFG
-      leechers: 0
-      link: magnet:?xt=urn:btih:d2d1c9f6d713636be18ee3d7f8e59cdcf9a559e1
-      size: 343261839
+      title: The.Mayor.2017.S01E06.WEB.x264-TBS[ettv]
+      leechers: 21
+      link: magnet:?xt=urn:btih:94411f7130f1d170b5ee13532ade9171d6dde7d4
+      size: 183207198
 
 backlog:
   search_strings:

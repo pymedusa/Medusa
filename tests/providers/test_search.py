@@ -27,6 +27,10 @@ def test_search_daily(providers, limit=3):
             if provider.data['daily']['results'][i]['link'].startswith('magnet'):
                 result['link'] = result['link'][:60]
 
+            if provider.data['daily']['results'][i]['pubdate']:
+                    result['pubdate'] = result['pubdate'].replace(hour=0, minute=0, second=0,
+                                                                  microsecond=0, tzinfo=None)
+
             assert result == provider.data['daily']['results'][i]
 
             if i + 1 == limit:
@@ -49,6 +53,10 @@ def test_search_backlog(providers, limit=2):
                 # Only compare up to the info hash if we have magnets
                 if provider.data['backlog']['results'][i]['link'].startswith('magnet'):
                     result['link'] = result['link'][:60]
+
+                if provider.data['backlog']['results'][i]['pubdate']:
+                    result['pubdate'] = result['pubdate'].replace(hour=0, minute=0, second=0,
+                                                                  microsecond=0, tzinfo=None)
 
                 assert result == provider.data['backlog']['results'][i]
 
