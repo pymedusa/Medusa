@@ -151,7 +151,7 @@ class CheckVersion(object):
             for filename in files:
                 source.append(os.path.join(path, filename))
 
-        return backup_config_zip(source, target, app.DATA_DIR)
+        return helpers.backup_config_zip(source, target, app.DATA_DIR)
 
     def safe_to_update(self):
 
@@ -917,7 +917,7 @@ class SourceUpdateManager(UpdateManager):
             # retrieve file
             log.info(u'Downloading update from {0!r}', tar_download_url)
             tar_download_path = os.path.join(app_update_dir, u'sr-update.tar')
-            download_file(tar_download_url, tar_download_path, session=self.session)
+            helpers.download_file(tar_download_url, tar_download_path, session=self.session)
 
             if not os.path.isfile(tar_download_path):
                 log.warning(u"Unable to retrieve new version from {0!r}, can't update", tar_download_url)
