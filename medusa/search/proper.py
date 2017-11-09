@@ -159,6 +159,12 @@ class ProperFinder(object):  # pylint: disable=too-few-public-methods
                 log.info('Skipping non-proper: {name}', {'name': cur_proper.name})
                 continue
 
+            if not cur_proper.show.episodes.get(cur_proper.parse_result.season_number) or \
+                    any([ep for ep in cur_proper.parse_result.episode_numbers
+                         if not cur_proper.show.episodes[cur_proper.parse_result.season_number].get(ep)]):
+                log.info('Skipping proper for wrong season/episode: {name}', {'name': cur_proper.name})
+                continue
+
             log.debug('Proper tags for {proper}: {tags}', {
                 'proper': cur_proper.name,
                 'tags': cur_proper.parse_result.proper_tags
