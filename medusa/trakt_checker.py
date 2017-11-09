@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import datetime
 import logging
+import time
 
 from medusa import app, db, ui
 from medusa.common import Quality, SKIPPED, WANTED
@@ -29,6 +30,8 @@ def set_episode_to_wanted(show, season, episode):
 
         with ep_obj.lock:
             if ep_obj.status != SKIPPED or ep_obj.airdate == datetime.date.fromordinal(1):
+                log.info("Not setting episode '{show}' {ep} to WANTED because current status is not SKIPPED "
+                         "or it doesn't have a valid airdate", {'show': show.name, 'ep': episode_num(season, episode)})
                 return
 
             log.info("Setting episode '{show}' {ep} to wanted", {
@@ -507,11 +510,13 @@ class TraktChecker(object):
                     self.add_show(trakt_default_indexer, indexer_id, show_name, WANTED)
 
                 if int(app.TRAKT_METHOD_ADD) == 1:
-                    new_show = Show.find(app.showList, indexer_id)
+                    new_show = Show.find(app.showList, indexer_id, indexer)
 
                     if new_show:
                         set_episode_to_wanted(new_show, 1, 1)
                     else:
+                        log.warning('Unable to find the new added show.'
+                                    'Pilot will be set to wanted in the next Trakt run')
                         self.todoWanted.append(indexer_id)
             log.debug('Synced shows with Trakt watchlist')
 
@@ -565,7 +570,7 @@ class TraktChecker(object):
     @staticmethod
     def add_show(indexer, indexer_id, show_name, status):
         """Add a new show with default settings."""
-        if not Show.find(app.showList, int(indexer_id)):
+        if not Show.find(app.showList, int(indexer_id), indexer):
             root_dirs = app.ROOT_DIRS
 
             location = root_dirs[int(root_dirs[0]) + 1] if root_dirs else None
@@ -583,6 +588,17 @@ class TraktChecker(object):
                                                         flatten_folders=int(app.FLATTEN_FOLDERS_DEFAULT),
                                                         paused=app.TRAKT_START_PAUSED,
                                                         default_status_after=status, root_dir=location)
+                tries = 0
+                while tries < 3:
+                    if Show.find(app.showList, indexer_id, indexer):
+                        return
+                    # Wait before show get's added and refreshed
+                    time.sleep(60)
+                    tries += 1
+                log.warning("Error creating show '{show}. Please check logs' ", {
+                    'show': show_name
+                })
+                return
             else:
                 log.warning("Error creating show '{show}' folder. No default root directory", {
                     'show': show_name
