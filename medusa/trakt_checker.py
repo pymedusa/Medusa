@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 
 import datetime
-
 import logging
 
 import time
@@ -78,7 +77,7 @@ class TraktChecker(object):
         # add shows from Trakt watchlist
         if app.TRAKT_SYNC_WATCHLIST:
             self.todoWanted = []  # its about to all get re-added
-            if len(app.ROOT_DIRS.split('|')) < 2:
+            if len(app.ROOT_DIRS) < 2:
                 log.warning('No default root directory')
                 ui.notifications.error('Unable to add show',
                                        'You do not have any default root directory. '
@@ -573,7 +572,7 @@ class TraktChecker(object):
     def add_show(indexer, indexer_id, show_name, status):
         """Add a new show with default settings."""
         if not Show.find(app.showList, int(indexer_id), indexer):
-            root_dirs = app.ROOT_DIRS.split('|')
+            root_dirs = app.ROOT_DIRS
 
             location = root_dirs[int(root_dirs[0]) + 1] if root_dirs else None
 

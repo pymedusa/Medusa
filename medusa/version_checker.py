@@ -26,14 +26,12 @@ import stat
 import subprocess
 import tarfile
 import time
-
 from logging import DEBUG, WARNING
-
+from medusa import app, db, helpers, notifiers, ui
+from medusa.github_client import get_github_repo
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
-from . import app, db, helpers, notifiers, ui
-from .github_client import get_github_repo
-from .session.core import MedusaSession
 
 ERROR_MESSAGE = ('Unable to find your git executable. Set git executable path in Advanced Settings '
                  'OR shutdown application and delete your .git folder and run from source to enable updates.')
@@ -711,7 +709,13 @@ class GitUpdateManager(UpdateManager):
         :return:
         :rtype: int
         """
-        folders = (app.LIB_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER) + app.LEGACY_SRC_FOLDERS
+        # Fixes: goo.gl/tr8Awf - to be removed in the next release
+        root_dir = os.path.basename(app.PROG_DIR)
+        helper_folder = os.path.join(root_dir, 'helper')
+        helpers_folder = os.path.join(root_dir, 'helpers')
+
+        folders = (app.LIB_FOLDER, app.EXT_FOLDER, app.SRC_FOLDER, app.STATIC_FOLDER,
+                   helper_folder, helpers_folder) + app.LEGACY_SRC_FOLDERS
         _, _, exit_status = self._run_git(self._git_path, 'clean -d -f -x {0}'.format(' '.join(folders)))
 
         return exit_status

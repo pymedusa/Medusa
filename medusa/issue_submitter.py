@@ -8,15 +8,15 @@ import logging
 import platform
 import sys
 from datetime import datetime, timedelta
-
 from github import InputFileContent
 from github.GithubException import GithubException, RateLimitExceededException
+from medusa import app, db
+from medusa.classes import ErrorViewer
+from medusa.github_client import authenticate, get_github_repo, token_authenticate
+from medusa.logger.adapters.style import BraceAdapter
 
-from . import app, db
-from .classes import ErrorViewer
-from .github_client import authenticate, get_github_repo, token_authenticate
-
-logger = logging.getLogger(__name__)
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class IssueSubmitter(object):
@@ -151,22 +151,22 @@ class IssueSubmitter(object):
         """
         if app.GIT_AUTH_TYPE == 0:
             if not app.DEBUG or not app.GIT_USERNAME or not app.GIT_PASSWORD:
-                logger.warning(IssueSubmitter.INVALID_CONFIG)
+                log.warning(IssueSubmitter.INVALID_CONFIG)
                 return [(IssueSubmitter.INVALID_CONFIG, None)]
         else:
             if not app.DEBUG or not app.GIT_TOKEN:
-                logger.warning(IssueSubmitter.INVALID_CONFIG)
+                log.warning(IssueSubmitter.INVALID_CONFIG)
                 return [(IssueSubmitter.INVALID_CONFIG, None)]
         if not ErrorViewer.errors:
-            logger.info(IssueSubmitter.NO_ISSUES)
+            log.info(IssueSubmitter.NO_ISSUES)
             return [(IssueSubmitter.NO_ISSUES, None)]
 
         if not app.DEVELOPER and version_checker.need_update():
-            logger.warning(IssueSubmitter.UNSUPPORTED_VERSION)
+            log.warning(IssueSubmitter.UNSUPPORTED_VERSION)
             return [(IssueSubmitter.UNSUPPORTED_VERSION, None)]
 
         if self.running:
-            logger.warning(IssueSubmitter.ALREADY_RUNNING)
+            log.warning(IssueSubmitter.ALREADY_RUNNING)
             return [(IssueSubmitter.ALREADY_RUNNING, None)]
 
         self.running = True
@@ -184,10 +184,10 @@ class IssueSubmitter(object):
 
             return IssueSubmitter.submit_issues(github, github_repo, loglines, similar_issues)
         except RateLimitExceededException:
-            logger.warning(IssueSubmitter.RATE_LIMIT)
+            log.warning(IssueSubmitter.RATE_LIMIT)
             return [(IssueSubmitter.RATE_LIMIT, None)]
         except (GithubException, IOError):
-            logger.warning(IssueSubmitter.GITHUB_EXCEPTION)
+            log.warning(IssueSubmitter.GITHUB_EXCEPTION)
             return [(IssueSubmitter.GITHUB_EXCEPTION, None)]
         finally:
             self.running = False
@@ -216,18 +216,18 @@ class IssueSubmitter(object):
             if similar_issue:
                 if similar_issue.raw_data['locked']:
                     submitter_result = IssueSubmitter.EXISTING_ISSUE_LOCKED.format(number=similar_issue.number)
-                    logger.warning(submitter_result)
+                    log.warning(submitter_result)
                 else:
                     similar_issue.create_comment(message)
                     issue_id = similar_issue.number
                     submitter_result = IssueSubmitter.COMMENTED_EXISTING_ISSUE.format(number=issue_id)
-                    logger.info(submitter_result)
+                    log.info(submitter_result)
                     ErrorViewer.remove(logline)
             else:
                 issue = github_repo.create_issue('{prefix}{title}'.format(prefix=IssueSubmitter.TITLE_PREFIX, title=logline.issue_title), message)
                 issue_id = issue.number
                 submitter_result = IssueSubmitter.ISSUE_CREATED.format(number=issue_id)
-                logger.info(submitter_result)
+                log.info(submitter_result)
                 ErrorViewer.remove(logline)
             results.append((submitter_result, issue_id))
 

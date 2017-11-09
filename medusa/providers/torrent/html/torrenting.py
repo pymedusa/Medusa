@@ -16,7 +16,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.utils import dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -28,10 +27,6 @@ class TorrentingProvider(TorrentProvider):
     def __init__(self):
         """Initialize the class."""
         super(TorrentingProvider, self).__init__('Torrenting')
-
-        # Credentials
-        self.username = None
-        self.password = None
 
         # URLs
         self.url = 'https://www.torrenting.com/'
@@ -46,6 +41,7 @@ class TorrentingProvider(TorrentProvider):
         # Miscellaneous Options
         self.enable_cookies = True
         self.cookies = ''
+        self.required_cookies = ('uid', 'pass')
 
         # Torrent Stats
         self.minseed = None
@@ -163,39 +159,7 @@ class TorrentingProvider(TorrentProvider):
 
     def login(self):
         """Login method used for logging in before doing search and torrent downloads."""
-        if dict_from_cookiejar(self.session.cookies).get('uid') and \
-                dict_from_cookiejar(self.session.cookies).get('pass'):
-            return True
-
-        if self.cookies:
-            self.add_cookies_from_ui()
-        else:
-            log.warning('Failed to login, you must add your cookies in the provider settings')
-            return False
-
-        login_params = {
-            'username': self.username,
-            'password': self.password,
-            'submit.x': 0,
-            'submit.y': 0,
-        }
-
-        response = self.session.post(self.urls['login'], data=login_params)
-        if not response or not response.text:
-            log.warning('Unable to connect to provider')
-            return False
-
-        elif 'Invalid username or password' in response.text:
-            log.warning('Invalid username or password. Check your settings')
-            return False
-
-        elif (dict_from_cookiejar(self.session.cookies).get('uid') and
-                dict_from_cookiejar(self.session.cookies).get('uid') in response.text):
-            return True
-
-        log.warning('Failed to login, check your cookies')
-        self.session.cookies.clear()
-        return False
+        return self.cookie_login('sign in')
 
 
 provider = TorrentingProvider()
