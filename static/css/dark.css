@@ -82,7 +82,6 @@ inc_top.mako
 .ui-tabs .ui-tabs-panel {
     background-color: rgb(61, 61, 61) !important;
     border: 1px solid rgb(17, 17, 17) !important;
-
 }
 
 .ui-tabs-nav > :not(.ui-tabs-active) {
