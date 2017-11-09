@@ -14,7 +14,6 @@ import logging
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
-
 from medusa.session.core import MedusaSafeSession
 from requests.compat import urljoin
 

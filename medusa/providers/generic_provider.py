@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from base64 import b16encode, b32decode
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -581,7 +580,11 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        all_possible_show_names = episode.series.get_all_possible_names()
+        if episode.scene_season:
+            all_possible_show_names = all_possible_show_names.union(episode.series.get_all_possible_names(season=episode.scene_season))
+
+        for show_name in all_possible_show_names:
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
