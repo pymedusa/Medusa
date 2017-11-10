@@ -27,7 +27,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('.AppleDouble', '.@__thumb', '@eaDir')
+    IGNORED_FOLDERS = ('@eaDir',)
 
     def __init__(self, path, process_method=None):
 
@@ -149,7 +149,9 @@ class ProcessResult(object):
                     if not self.process_method == 'move' or (proc_type == 'manual' and not delete_on):
                         continue
 
-                    self.delete_folder(os.path.join(dir_path, '@eaDir'))
+                    for folder in self.IGNORED_FOLDERS:
+                        self.delete_folder(os.path.join(dir_path, folder))
+
                     if self.unwanted_files:
                         self.delete_files(dir_path, self.unwanted_files)
 
@@ -200,9 +202,15 @@ class ProcessResult(object):
         if not self._is_valid_folder(path, failed):
             return False
 
+        folder = os.path.basename(path)
+        if helpers.is_hidden_folder(path) or any(f == folder for f in self.IGNORED_FOLDERS):
+            self.log('Ignoring folder: {0}'.format(folder), logger.DEBUG)
+            self.missedfiles.append('{0}: Hidden or ignored folder'.format(path))
+            return False
+
         for root, dirs, files in os.walk(path):
-            for folder in dirs:
-                if not self._is_valid_folder(os.path.join(root, folder), failed):
+            for subfolder in dirs:
+                if not self._is_valid_folder(os.path.join(root, subfolder), failed):
                     return False
             for each_file in files:
                 if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
@@ -217,8 +225,6 @@ class ProcessResult(object):
     def _is_valid_folder(self, path, failed):
         """Verify folder validity based on the checks below."""
         folder = os.path.basename(path)
-        if folder in self.IGNORED_FOLDERS:
-            return False
 
         if folder.startswith('_FAILED_'):
             self.log('The directory name indicates it failed to extract.', logger.DEBUG)
@@ -237,11 +243,6 @@ class ProcessResult(object):
             self.log('The directory name indicates that this release is in the process of being unpacked.',
                      logger.DEBUG)
             self.missedfiles.append('{0}: Being unpacked'.format(path))
-            return False
-
-        if helpers.is_hidden_folder(path):
-            self.log('Ignoring hidden folder: {0}'.format(folder), logger.DEBUG)
-            self.missedfiles.append('{0}: Hidden folder'.format(path))
             return False
 
         return True
