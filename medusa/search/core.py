@@ -214,11 +214,11 @@ def snatch_episode(result):
                 seed_leech = u''
 
             notify_text = u'{ep} {seed_leech}from {provider}. Release: {release}{manual}'.format(
-                 ep=curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN'),
-                 seed_leech=seed_leech,
-                 provider=result.provider.name,
-                 release=result.name,
-                 manual=' (manually snatched)' if result.manually_searched else '')
+                ep=curEpObj.formatted_filename(u'%SN - %Sx%0E - %EN - %QN'),
+                seed_leech=seed_leech,
+                provider=result.provider.name,
+                release=result.name,
+                manual=' (manually snatched)' if result.manually_searched else '')
             notifiers.notify_snatch({'message': notify_text, 'is_proper': is_proper})
 
             if app.USE_TRAKT and app.TRAKT_SYNC_WATCHLIST:
