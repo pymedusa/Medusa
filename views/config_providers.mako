@@ -13,7 +13,7 @@ $(document).ready(function(){
     % if app.USE_NZBS:
         var show_nzb_providers = ${("false", "true")[bool(app.USE_NZBS)]};
         % for cur_newznab_provider in app.newznabProviderList:
-        $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${cur_newznab_provider.cat_ids}', ${int(cur_newznab_provider.default)}, show_nzb_providers);
+        $(this).addProvider('${cur_newznab_provider.get_id()}', '${cur_newznab_provider.name}', '${cur_newznab_provider.url}', '${cur_newznab_provider.api_key}', '${",".join(cur_newznab_provider.cat_ids)}', ${int(cur_newznab_provider.default)}, show_nzb_providers);
         % endfor
     % endif
     % if app.USE_TORRENTS:
