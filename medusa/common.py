@@ -22,10 +22,8 @@ import os
 import platform
 import re
 import uuid
-
 from collections import namedtuple
 from os import path
-
 from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
@@ -48,7 +46,7 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
-USER_AGENT = u'Medusa/{version}({system}; {release}; {instance})'.format(
+USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
     version=u'0.0.1', system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))

@@ -52,6 +52,11 @@ title_re = re.compile(r'^(?P<series>.*?)(?: \((?:(?P<year>\d{4})|(?P<country>[A-
 releases_key = __name__ + ':releases|{archive_id}|{archive_name}'
 
 
+class ServiceUnavailable(ProviderError):
+    """Exception raised when status is '503 Service Unavailable'."""
+    pass
+
+
 class LegendasTVArchive(object):
     """LegendasTV Archive.
 
@@ -183,7 +188,7 @@ class LegendasTVProvider(Provider):
             logger.info('Logging in')
             data = {'_method': 'POST', 'data[User][username]': self.username, 'data[User][password]': self.password}
             r = self.session.post(self.server_url + 'login', data, allow_redirects=False, timeout=10)
-            r.raise_for_status()
+            raise_for_status(r)
 
             soup = ParserBeautifulSoup(r.content, ['html.parser'])
             if soup.find('div', {'class': 'alert-error'}, string=re.compile(u'Usuário ou senha inválidos')):
@@ -197,7 +202,7 @@ class LegendasTVProvider(Provider):
         if self.logged_in:
             logger.info('Logging out')
             r = self.session.get(self.server_url + 'users/logout', allow_redirects=False, timeout=10)
-            r.raise_for_status()
+            raise_for_status(r)
             logger.debug('Logged out')
             self.logged_in = False
 
@@ -264,7 +269,7 @@ class LegendasTVProvider(Provider):
                 logger.info('Searching movie title %r', sanitized_title)
 
             r = self.session.get(self.server_url + 'legenda/sugestao/{}'.format(sanitized_title), timeout=10)
-            r.raise_for_status()
+            raise_for_status(r)
             results = json.loads(r.text)
 
             # loop over results
@@ -333,7 +338,7 @@ class LegendasTVProvider(Provider):
             url = self.server_url + 'legenda/busca/-/{language}/-/{page}/{title}'.format(
                 language=language_code, page=page, title=title_id)
             r = self.session.get(url)
-            r.raise_for_status()
+            raise_for_status(r)
 
             # parse the results
             soup = ParserBeautifulSoup(r.content, ['lxml', 'html.parser'])
@@ -387,7 +392,7 @@ class LegendasTVProvider(Provider):
         """
         logger.info('Downloading archive %s', archive.id)
         r = self.session.get(self.server_url + 'downloadarquivo/{}'.format(archive.id))
-        r.raise_for_status()
+        raise_for_status(r)
 
         # open the archive
         archive_stream = io.BytesIO(r.content)
@@ -496,3 +501,11 @@ class LegendasTVProvider(Provider):
             subtitle.content = fix_line_ending(subtitle.archive.content.read(subtitle.name))
         except (BadRarFile, BadZipfile):
             logger.error('Bad archive for %s', subtitle.name)
+
+
+def raise_for_status(r):
+    # When site is under maintaince and http status code 200.
+    if 'Em breve estaremos de volta' in r.text or r.status_code == 503:
+        raise ServiceUnavailable
+    else:
+        r.raise_for_status()

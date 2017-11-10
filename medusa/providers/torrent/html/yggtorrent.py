@@ -74,7 +74,9 @@ class YggtorrentProvider(TorrentProvider):
             return results
 
         # Search Params
-        search_params = {}
+        search_params = {
+            'category': 2145
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)

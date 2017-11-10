@@ -4,8 +4,8 @@ import logging
 
 from medusa import app, common
 from medusa.logger.adapters.style import BraceAdapter
-
 from pynma import pynma
+from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -55,6 +55,8 @@ class Notifier(object):
 
         if nma_api is None:
             nma_api = app.NMA_API
+        elif isinstance(nma_api, text_type):
+            nma_api = [nma_api]
 
         if nma_priority is None:
             nma_priority = app.NMA_PRIORITY
@@ -62,7 +64,7 @@ class Notifier(object):
         batch = False
 
         p = pynma.PyNMA()
-        keys = nma_api.split(',')
+        keys = nma_api
         p.addkey(keys)
 
         if len(keys) > 1:
@@ -72,7 +74,7 @@ class Notifier(object):
                   event, message, nma_priority, batch)
         response = p.push(application=title, event=event, description=message, priority=nma_priority, batch_mode=batch)
 
-        if not response[nma_api][u'code'] == u'200':
+        if not response[','.join(nma_api)][u'code'] == u'200':
             log.error(u'Could not send notification to NotifyMyAndroid')
             return False
         else:

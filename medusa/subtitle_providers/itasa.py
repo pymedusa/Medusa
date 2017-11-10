@@ -297,7 +297,7 @@ class ItaSAProvider(Provider):
 
                 with ZipFile(io.BytesIO(content)) as zf:
                     episode_re = re.compile('s(\d{1,2})e(\d{1,2})')
-                    for index, name in enumerate(zf.namelist()):
+                    for name in zf.namelist():
                         match = episode_re.search(name)
                         if not match:  # pragma: no cover
                             logger.debug('Cannot decode subtitle %r', name)
@@ -310,7 +310,8 @@ class ItaSAProvider(Provider):
                                 None,
                                 None,
                                 None,
-                                name)
+                                name,
+                            )
                             sub.content = fix_line_ending(zf.read(name))
                             subs.append(sub)
 

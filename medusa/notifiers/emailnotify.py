@@ -255,7 +255,7 @@ class Notifier(object):
 
         # Grab the global recipients
         if app.EMAIL_LIST:
-            for addr in app.EMAIL_LIST.split(','):
+            for addr in app.EMAIL_LIST:
                 if addr.strip():
                     addrs.append(addr)
 
