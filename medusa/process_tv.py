@@ -209,8 +209,8 @@ class ProcessResult(object):
             return False
 
         for root, dirs, files in os.walk(path):
-            for folder in dirs:
-                if not self._is_valid_folder(os.path.join(root, folder), failed):
+            for subfolder in dirs:
+                if not self._is_valid_folder(os.path.join(root, subfolder), failed):
                     return False
             for each_file in files:
                 if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
