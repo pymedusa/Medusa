@@ -276,7 +276,7 @@ class Manage(Home, WebRoot):
 
     def subtitleMissedPP(self):
         t = PageTemplate(rh=self, filename='manage_subtitleMissedPP.mako')
-        to_warn_releases = [r.get('release') for r in app.RELEASES_IN_PP if r.get('warn_user') == True]
+        to_warn_releases = [r.get('release') for r in app.RELEASES_IN_PP if r.get('warn_user')]
         app.RELEASES_IN_PP = []
         for root, _, files in os.walk(app.TV_DOWNLOAD_DIR, topdown=False):
             # Skip folders that are being used for unpacking
