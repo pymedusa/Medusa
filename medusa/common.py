@@ -46,8 +46,9 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
+VERSION = '0.1.17'
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
-    version=u'0.1.17', system=platform.system(), release=platform.release(),
+    version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()
