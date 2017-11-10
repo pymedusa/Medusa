@@ -473,7 +473,7 @@
   absolute_episode: 4
   episode: 4
   subtitle_language: fr
-  release_group: FHD
+  other: FullHD
   type: episode
 
 # anime_french_fansub
@@ -3261,7 +3261,7 @@
 ? Show Name (Season 02) [UNCENSORED] [1080p] [BD] [x265] [pseudo]
 : title: Show Name
   season: 2
-  other: Uncensored
+  edition: Uncensored
   release_group: 'pseudo'
   screen_size: 1080p
   format: BDRip
@@ -3625,7 +3625,7 @@
 : title: Show Name
   date: 2016-09-28
   episode_title: Nice Title
-  other: Extended
+  edition: Extended
   screen_size: 1080p
   streaming_service: Comedy Central
   format: WEBRip
@@ -4145,4 +4145,56 @@
   format: TV
   language: und
   crc32: EDA6E7F1
+  type: episode
+
+? "The.Walking.Dead.S07E13.720p.HDTV.x264-AVS-Scrambled/1e5e2f3464df439b92afea14932a87a4"
+: title: The Walking Dead
+  season: 7
+  episode: 13
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  video_encoder: x264
+  release_group: AVS
+  uuid: 1e5e2f3464df439b92afea14932a87a4
+  type: episode
+
+? "The.Walking.Dead.S07E13.720p.HDTV.x264-AVS-Obfuscated/1e5e2f3464df439b92afea14932a87a4"
+: title: The Walking Dead
+  season: 7
+  episode: 13
+  screen_size: 720p
+  format: HDTV
+  video_codec: h264
+  video_encoder: x264
+  release_group: AVS
+  uuid: 1e5e2f3464df439b92afea14932a87a4
+  type: episode
+
+# TODO: Guessit 3 to handle HDR, BT2020 and more
+? Doctor.Estraño.HDR.VISIONPLUS.1000.[4K.UHD.2160p.HEVC.X265][BT2020][DTS-5.1.Castellano.DTS-HD.7.1-Ingles+Subs][ES-EN].x264-NEWPCT
+: title: Doctor Estraño HDR VISIONPLUS
+  absolute_episode: 1000
+  episode: 1000
+  screen_size: 2160p
+  other: [UltraHD, HD]
+  video_codec: [h265, h264]
+  video_encoder: [x265, x264]
+  audio_codec: DTS
+  audio_channels: ['5.1', '7.1']
+  language: ca
+  audio_profile: HD
+  subtitle_language: [es, en]
+  release_group: NEWPCT
+  type: episode
+
+? Saint.Seiya.E76.1080p.BluRay-Yomi.mkv
+: options: {show_type: anime}
+  title: Saint Seiya
+  episode: 76
+  absolute_episode: 76
+  screen_size: 1080p
+  format: BluRay
+  release_group: Yomi
+  container: mkv
   type: episode

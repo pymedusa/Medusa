@@ -136,7 +136,7 @@ class Home(WebRoot):
         selected_root = int(app.SELECTED_ROOT)
         shows_dir = None
         if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
             try:
                 shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
@@ -329,6 +329,14 @@ class Home(WebRoot):
             return 'Error sending Telegram notification: {msg}'.format(msg=message)
 
     @staticmethod
+    def testslack(slack_webhook=None):
+        result = notifiers.slack_notifier.test_notify(slack_webhook)
+        if result:
+            return 'Slack notification succeeded. Check your Slack channel to make sure it worked'
+        else:
+            return 'Error sending Slack notification'
+
+    @staticmethod
     def testGrowl(host=None, password=None):
         success = 'Registered and Tested growl successfully'
         failure = 'Registration and Testing of growl failed'
@@ -386,7 +394,7 @@ class Home(WebRoot):
     def testKODI(host=None, username=None, password=None):
         host = config.clean_hosts(host)
         final_result = ''
-        for curHost in [x.strip() for x in host.split(',')]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             cur_result = notifiers.kodi_notifier.test_notify(unquote_plus(curHost), username, password)
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Test KODI notice sent successfully to {host}<br>\n'.format(host=unquote_plus(curHost))
@@ -659,7 +667,7 @@ class Home(WebRoot):
         tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
         root_dir = {}
         if app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
         else:
             backend_dirs = []
@@ -1819,11 +1827,11 @@ class Home(WebRoot):
                 show_name = quote_plus(show_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
-            host = app.KODI_HOST.split(',')[0].strip()
+            host = app.KODI_HOST[0].strip()
         else:
-            host = app.KODI_HOST
+            host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(showName=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=show_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
@@ -1836,9 +1844,9 @@ class Home(WebRoot):
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
     def updateEMBY(self, show=None):

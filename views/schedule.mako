@@ -17,8 +17,8 @@
 
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
-<input type="hidden" id="showID" value="${choice(results)['showid'] if results else ''}" />
-<input type="hidden" id="series_slug" value="${choice(results)['series_slug'] if results else ''}" />
+<input type="hidden" id="series-id" value="${choice(results)['showid'] if results else ''}" />
+<input type="hidden" id="series-slug" value="${choice(results)['series_slug'] if results else ''}" />
 <div class="row">
     <div class="col-md-12">
         <h1 class="header">${header}</h1>

@@ -835,7 +835,8 @@ class AbsoluteEpisodeNumbers(Rule):
                     if previous.name != 'episode':
                         if hole and self.non_words_re.sub('', hole.value).lower() in self.episode_words:
                             # if version is present, then it's an anime
-                            if not matches.named('version') and not matches.tagged('anime'):
+                            if (context.get('show_type') != 'anime' and
+                                    not matches.named('version') and not matches.tagged('anime')):
                                 # Some.Show.E07.1080p.HDTV.x265-GROUP
                                 # Some.Show.Episode.10.Some.Title.720p
                                 # not absolute episode
@@ -1090,7 +1091,6 @@ class ScreenSizeStandardizer(Rule):
     """
 
     priority = POST_PROCESS
-    consequence = [RemoveMatch, AppendMatch]
 
     def when(self, matches, context):
         """Evaluate the rule.
@@ -1101,21 +1101,11 @@ class ScreenSizeStandardizer(Rule):
         :type context: dict
         :return:
         """
-        to_remove = []
-        to_append = []
         for screen_size in matches.named('screen_size'):
             if screen_size.raw.lower().endswith('i'):
-                new_size = copy.copy(screen_size)
-                new_size.value = screen_size.value.replace('p', 'i')
-                to_remove.append(screen_size)
-                to_append.append(new_size)
+                screen_size.value = screen_size.value.replace('p', 'i')
             elif screen_size.value == '4K':
-                new_size = copy.copy(screen_size)
-                new_size.value = '2160p'
-                to_remove.append(screen_size)
-                to_append.append(new_size)
-
-        return to_remove, to_append
+                screen_size.value = '2160p'
 
 
 class AudioCodecStandardizer(Rule):
@@ -1274,6 +1264,7 @@ class ReleaseGroupPostProcessor(Rule):
 
         # https://github.com/guessit-io/guessit/issues/302
         re.compile(r'\W*\b(obfuscated)\b\W*', flags=re.IGNORECASE),
+        re.compile(r'\W*\b(scrambled)\b\W*', flags=re.IGNORECASE),
         re.compile(r'\W*\b(vtv|sd|rp|norar|re-?up(loads?)?)\b\W*', flags=re.IGNORECASE),
         re.compile(r'\W*\b(hebits)\b\W*', flags=re.IGNORECASE),
 

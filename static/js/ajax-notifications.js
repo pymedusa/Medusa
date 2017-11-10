@@ -30,8 +30,9 @@ function displayPNotify(type, title, message, id) {
 }
 
 function wsCheckNotifications() {
-    var proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    var ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + '/ws' + WSMessageUrl);
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const webRoot = MEDUSA.config.webRoot || '';
+    const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
     ws.onmessage = function(evt) {
         var msg;
         try {
@@ -56,9 +57,12 @@ function wsCheckNotifications() {
     };
 }
 
-$(document).ready(function() {
-    wsCheckNotifications();
-    if (test) {
-        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
+// Listen for the config loaded event.
+window.addEventListener('build', function(e) {
+    if (e.detail === 'medusa config loaded') {
+        wsCheckNotifications();
+        if (test) {
+            displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
+        }
     }
-});
+}, false);

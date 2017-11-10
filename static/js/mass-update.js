@@ -12,7 +12,14 @@ $(document).ready(function() {
             return;
         }
 
-        window.location.href = $('base').attr('href') + 'manage/massEdit?toEdit=' + editArr.join('|');
+        const submitForm = $(
+            '<form method=\'post\' action=\'' + $('base').attr('href') + 'manage/massEdit\'>' +
+            '<input type=\'hidden\' name=\'toEdit\' value=\'' + editArr.join('|') + '\'/>' +
+            '</form>'
+        );
+        submitForm.appendTo('body');
+
+        submitForm.submit();
     });
 
     $('.submitMassUpdate').on('click', function() {
@@ -95,19 +102,18 @@ $(document).ready(function() {
                 }
             });
         }
+
         if (totalCount === 0) {
             return false;
         }
-        var params = $.param({
-            toUpdate: updateArr.join('|'),
-            toRefresh: refreshArr.join('|'),
-            toRename: renameArr.join('|'),
-            toSubtitle: subtitleArr.join('|'),
-            toDelete: deleteArr.join('|'),
-            toRemove: removeArr.join('|'),
-            toMetadata: metadataArr.join('|')
+        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+            return false;
+        }
+        const url = $('base').attr('href') + 'manage/massUpdate';
+        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|');
+        $.post(url, params, function() {
+            location.reload(true);
         });
-        window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
     });
 
     ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(function(name) {

@@ -32,7 +32,7 @@ class AniDexProvider(TorrentProvider):
         # URLs
         self.url = 'https://anidex.info'
         self.urls = {
-            'search': urljoin(self.url, '/ajax/page.ajax.php'),
+            'search': self.url,
         }
 
         # Miscellaneous Options
@@ -61,11 +61,7 @@ class AniDexProvider(TorrentProvider):
         results = []
 
         search_params = {
-            'page': 'torrents',
-            'category': 0,
-            'filename': '',
-            'limit': 50,
-            'offset': 0,
+            'id': '1,2,3'
         }
 
         for mode in search_strings:
@@ -77,9 +73,9 @@ class AniDexProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                    search_params.update({'filename': '{0}'.format(search_string)})
+                    search_params.update({'q': search_string})
 
-                response = self.get_url(self.urls['search'], params=search_params, returns='response')
+                response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

@@ -189,7 +189,6 @@ inc_top.mako
 
 #sub-menu {
     font-size: 12px;
-    float: right;
     padding-top: 2px;
 }
 
@@ -413,7 +412,8 @@ inc_rootDirs.mako
 .rootdir-selectbox,
 .rootdir-selectbox #rootDirs,
 .rootdir-controls {
-    width: 430px;
+    width: 100%;
+    max-width: 430px;
 }
 
 .rootdir-selectbox {
@@ -890,7 +890,7 @@ home_newShow.mako
 
 #addShowForm,
 #recommendedShowsForm {
-    width: 800px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     padding: 10px 0;
@@ -898,7 +898,7 @@ home_newShow.mako
 }
 
 #newShowPortal {
-    width: 960px;
+    max-width: 960px;
     padding: 10px 0;
     margin-right: auto;
     margin-left: auto;
@@ -928,6 +928,7 @@ ul#rootDirStaticList {
     margin-right: auto;
     margin-left: auto;
     text-align: left;
+    padding-left: 0px;
 }
 
 ul#rootDirStaticList li {
@@ -1103,17 +1104,12 @@ div#container-display-show {
     height: 31px;
     display: table-cell;
     left: 20px;
-    margin-top: 5px;
     margin-bottom: 5px;
 }
 
 .show-info-container {
     overflow: hidden;
     display: table-cell;
-}
-
-.select-show-group {
-    width: 300px;
 }
 
 .container-navShow {
@@ -1148,7 +1144,10 @@ div#container-display-show {
 @media (max-width: 767px) and (min-width: 341px) {
     .select-show-group {
         width: 100%;
-        margin: 1em;
+    }
+
+    .show-selector {
+        width: 100%;
     }
 
     .container-navShow {
@@ -1170,8 +1169,7 @@ div#container-display-show {
 
 @media (max-width: 340px) {
     .select-show-group {
-        width: 260px;
-        margin: 1em;
+        width: 100%;
     }
 
     .container-navShow {
@@ -1181,8 +1179,12 @@ div#container-display-show {
 
 @media (max-width: 767px) {
     #showSelector {
-        left: 5px;
-        margin-bottom: 5px;
+        float: left;
+        width: 100%;
+    }
+
+    .select-show {
+        width: 100%;
     }
 
     .pull-xs-left {
@@ -1771,9 +1773,9 @@ div.season-scene-exception {
 }
 
 select#select-show {
-    padding-top: 5px;
     display: inline-block;
-    width: 100%;
+    height: 25px;
+    padding: 1px;
 }
 
 /* =======================================================================
@@ -1788,7 +1790,6 @@ schedule.mako
     padding: 2px 5px;
     font-size: 13px;
     font-weight: bold;
-    border-radius: 5px;
 }
 
 .listing-default {
@@ -1994,6 +1995,7 @@ config*.mako
 }
 
 .component-group-desc {
+    margin-top: 5px;
     float: left;
     width: 250px;
 }
@@ -2470,13 +2472,12 @@ div.metadataDiv .disabled {
 .icon-notifiers-telegram {
     background-position: -587px 0;
 }
-
 .icon-notifiers-twitter {
     background-position: -624px 0;
 }
 
 .icon-notifiers-trakt {
-    background-position: -659px 0;
+    background-position: -660px 0;
 }
 
 .icon-notifiers-email {
@@ -2489,6 +2490,14 @@ div.metadataDiv .disabled {
 
 .icon-notifiers-look {
     background-position: -769px 0;
+}
+
+.icon-notifiers-slack {
+    background-position: -804px 0;
+}
+
+div#config-components h3 > a {
+    padding-left: 5px;
 }
 
 /* =======================================================================
@@ -2545,6 +2554,12 @@ td.tableright {
 
 a.whitelink {
     color: rgb(255, 255, 255);
+}
+
+/* BacklogOverview */
+#status-summary {
+    padding-top: 10px;
+    padding-bottom: 2px;
 }
 
 /* =======================================================================
@@ -4121,6 +4136,26 @@ div#searchNotification {
     max-width: 250px;
 }
 
+.release-name-ellipses-toggled {
+    overflow: visible;
+    white-space: nowrap;
+    position: relative;
+    max-width: 250px;
+}
+
+.release-name-ellipses:hover {
+    text-decoration: underline;
+}
+
+.release-name-ellipses-toggled span {
+    background-color: rgb(190, 222, 237);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(136, 136, 136);
+    padding: 5px;
+    box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
+}
+
 /* =======================================================================
 viewLog.mako
 ========================================================================== */
@@ -4281,7 +4316,7 @@ CSS helper classes
 /* =======================================================================
  Scroll to top
 ========================================================================== */
-.scroll-top-wrapper {
+.scroll-wrapper {
     position: fixed;
     opacity: 0;
     visibility: hidden;
@@ -4324,3 +4359,24 @@ CSS helper classes
     display: block;
 }
 */
+
+/* =======================================================================
+ overflow buttons for scrolling left and right.
+ For horizontal scrolling, without breaking the ui.
+========================================================================== */
+
+.scroll-wrapper.show {
+    visibility: visible;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.scroll-wrapper.left {
+    position: fixed;
+    right: 150px;
+}
+
+.scroll-wrapper.right {
+    position: fixed;
+    right: 90px;
+}

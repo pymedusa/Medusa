@@ -5,8 +5,9 @@ import re
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
-from medusa.helpers import get_url, make_session
+from medusa.helpers.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.session.core import MedusaSession
 
 from six import iteritems
 
@@ -27,7 +28,7 @@ class Notifier(object):
             'X-Plex-Client-Identifier': common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
         }
-        self.session = make_session()
+        self.session = MedusaSession()
 
     @staticmethod
     def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
@@ -92,10 +93,10 @@ class Notifier(object):
                                 'Test Notification', host, username, password, force=True)
 
     def test_notify_pms(self, host, username, password, plex_server_token):
-        return self.update_library(host=host, username=username, password=password,
+        return self.update_library(hosts=host, username=username, password=password,
                                    plex_server_token=plex_server_token, force=True)
 
-    def update_library(self, ep_obj=None, host=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
+    def update_library(self, ep_obj=None, hosts=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
                        username=None, password=None,
                        plex_server_token=None, force=False):
 
@@ -111,8 +112,8 @@ class Notifier(object):
         if not (app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY) and not force:
             return None
 
-        host = host or app.PLEX_SERVER_HOST
-        if not host:
+        hosts = hosts or app.PLEX_SERVER_HOST
+        if not hosts:
             log.debug(u'PLEX: No Plex Media Server host specified, check your settings')
             return False
 
@@ -121,15 +122,17 @@ class Notifier(object):
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
-        host_list = {x.strip() for x in host.split(',') if x.strip()}
+        gen_hosts = generate(hosts)
+        hosts = {x.strip() for x in gen_hosts if x.strip()}
         hosts_all = hosts_match = {}
         hosts_failed = set()
 
-        for cur_host in host_list:
+        for cur_host in hosts:
 
             url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
-                xml_response = get_url(url, headers=self.headers, session=self.session, returns='text')
+                # TODO: SESSION: Check if this needs exception handling.
+                xml_response = self.session.get(url, headers=self.headers).text
                 if not xml_response:
                     log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
                     hosts_failed.add(cur_host)
@@ -184,7 +187,8 @@ class Notifier(object):
 
             url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
             try:
-                get_url(url, headers=self.headers, session=self.session, returns='text')
+                # TODO: Check if this needs exception handling
+                self.session.get(url, headers=self.headers).text
             except Exception as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
                 hosts_failed.add(cur_host)
@@ -213,11 +217,9 @@ class Notifier(object):
         }
 
         try:
-            response = get_url('https://plex.tv/users/sign_in.json',
-                               post_data=params,
-                               headers=self.headers,
-                               session=self.session,
-                               returns='json')
+            response = self.session.post('https://plex.tv/users/sign_in.json',
+                                         data=params,
+                                         headers=self.headers).json()
 
             self.headers['X-Plex-Token'] = response['user']['authentication_token']
 

@@ -26,8 +26,7 @@ import re
 import subprocess
 import time
 
-from babelfish import Language, language_converters
-
+from babelfish import Country, Language, language_converters
 from dogpile.cache.api import NO_VALUE
 
 import knowit
@@ -68,7 +67,6 @@ PROVIDER_URLS = {
     'opensubtitles': 'http://www.opensubtitles.org',
     'podnapisi': 'https://www.podnapisi.net',
     'shooter': 'http://www.shooter.cn',
-    'subscenter': 'http://www.subscenter.org',
     'thesubdb': 'http://www.thesubdb.com',
     'tvsubtitles': 'http://www.tvsubtitles.net',
     'wizdom': 'http://wizdom.xyz'
@@ -213,6 +211,20 @@ def from_ietf_code(code, unknown='und'):
         return Language.fromietf(code)
     except ValueError:
         return Language(unknown) if unknown else None
+
+
+def from_country_code_to_name(code):
+    """Convert a 2 letter country code to a country name.
+
+    :param code: the 2 letter country code
+    :type code: str
+    :return: the country name
+    :rtype: str
+    """
+    try:
+        return Country(code.upper()).name
+    except ValueError:
+        return
 
 
 def name_from_code(code):
