@@ -52,8 +52,8 @@
         <div v-cloak id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
-            <div id="summaryBackground" class="shadow"></div>
-            <div id="checkboxControlsBackground" class="shadow"></div>
+            <div id="summaryBackground" class="shadow" style="display: none"></div>
+            <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
 
             <%include file="/partials/header.mako"/>
             % if submenu:
