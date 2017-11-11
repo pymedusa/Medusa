@@ -9,17 +9,13 @@ import logging
 from base64 import b64encode
 
 from medusa import app
-
 from medusa.clients.torrent.generic import GenericClient
-
 from medusa.helpers import (
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
 )
-
 from medusa.logger.adapters.style import BraceAdapter
-
 from requests.exceptions import RequestException
 
 log = BraceAdapter(logging.getLogger(__name__))

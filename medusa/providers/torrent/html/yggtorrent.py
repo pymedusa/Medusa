@@ -45,8 +45,9 @@ class YggtorrentProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.translation = {
-            'jour': 'hour',
-            'jours': 'hours',
+            'heures': 'hours',
+            'jour': 'day',
+            'jours': 'days',
             'mois': 'month',
             'an': 'year',
             'années': 'years'
@@ -73,7 +74,9 @@ class YggtorrentProvider(TorrentProvider):
             return results
 
         # Search Params
-        search_params = {}
+        search_params = {
+            'category': 2145
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)

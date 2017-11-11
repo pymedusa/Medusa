@@ -255,6 +255,8 @@ ul#rootDirStaticList li {
     list-style: none outside none;
     cursor: pointer;
     background: rgb(61, 61, 61);
+    border-color: rgb(239, 239, 239);
+    color: rgb(255, 255, 255);
 }
 
 /* =======================================================================

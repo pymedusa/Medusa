@@ -11,6 +11,7 @@ __title__ = __name__
 SRC_FOLDER = __name__
 LEGACY_SRC_FOLDERS = ('sickbeard', 'sickrage', 'gui')
 LIB_FOLDER = 'lib'
+EXT_FOLDER = 'ext'
 STATIC_FOLDER = 'static'
 UNKNOWN_RELEASE_GROUP = 'Medusa'
 BACKUP_DIR = 'backup'
@@ -48,7 +49,7 @@ CFG = None
 CONFIG_FILE = None
 
 # This is the version of the config we EXPECT to find
-CONFIG_VERSION = 9
+CONFIG_VERSION = 10
 
 # Default encryption version (0 for None)
 ENCRYPTION_VERSION = 0
@@ -100,8 +101,8 @@ CUR_COMMIT_HASH = None
 BRANCH = ''
 
 GIT_RESET = True
-GIT_RESET_BRANCHES = 'develop,master'
-GIT_REMOTE_BRANCHES = ''
+GIT_RESET_BRANCHES = ['develop', 'master']
+GIT_REMOTE_BRANCHES = []
 GIT_REMOTE = ''
 GIT_REMOTE_URL = ''
 CUR_COMMIT_BRANCH = ''
@@ -119,7 +120,7 @@ NEWS_LAST_READ = None
 NEWS_LATEST = None
 NEWS_UNREAD = 0
 
-BROKEN_PROVIDERS = ''
+BROKEN_PROVIDERS = []
 BROKEN_PROVIDERS_UPDATE = None
 
 INIT_LOCK = Lock()
@@ -170,7 +171,7 @@ EP_DEFAULT_DELETED_STATUS = None
 LAUNCH_BROWSER = False
 CACHE_DIR = None
 ACTUAL_CACHE_DIR = None
-ROOT_DIRS = None
+ROOT_DIRS = []
 
 TRASH_REMOVE_SHOW = False
 TRASH_ROTATE_LOGS = False
@@ -183,13 +184,13 @@ SEEDERS_LEECHERS_IN_NOTIFY = True
 
 
 USE_LISTVIEW = False
-METADATA_KODI = None
-METADATA_KODI_12PLUS = None
-METADATA_MEDIABROWSER = None
-METADATA_PS3 = None
-METADATA_WDTV = None
-METADATA_TIVO = None
-METADATA_MEDE8ER = None
+METADATA_KODI = []
+METADATA_KODI_12PLUS = []
+METADATA_MEDIABROWSER = []
+METADATA_PS3 = []
+METADATA_WDTV = []
+METADATA_TIVO = []
+METADATA_MEDE8ER = []
 
 QUALITY_DEFAULT = None
 STATUS_DEFAULT = None
@@ -271,7 +272,7 @@ NFO_RENAME = True
 TV_DOWNLOAD_DIR = None
 UNPACK = False
 SKIP_REMOVED_FILES = False
-ALLOWED_EXTENSIONS = "srt,nfo,sub,idx"
+ALLOWED_EXTENSIONS = {'srt', 'nfo', 'sub', 'idx'}
 
 NZBS = False
 NZBS_UID = None
@@ -327,7 +328,7 @@ KODI_NOTIFY_ONSUBTITLEDOWNLOAD = False
 KODI_UPDATE_LIBRARY = False
 KODI_UPDATE_FULL = False
 KODI_UPDATE_ONLYFIRST = False
-KODI_HOST = ''
+KODI_HOST = []
 KODI_USERNAME = None
 KODI_PASSWORD = None
 KODI_LIBRARY_CLEAN_PENDING = False
@@ -338,9 +339,9 @@ PLEX_NOTIFY_ONSNATCH = False
 PLEX_NOTIFY_ONDOWNLOAD = False
 PLEX_NOTIFY_ONSUBTITLEDOWNLOAD = False
 PLEX_UPDATE_LIBRARY = False
-PLEX_SERVER_HOST = None
+PLEX_SERVER_HOST = []
 PLEX_SERVER_TOKEN = None
-PLEX_CLIENT_HOST = None
+PLEX_CLIENT_HOST = []
 PLEX_SERVER_USERNAME = None
 PLEX_SERVER_PASSWORD = None
 
@@ -378,7 +379,7 @@ USE_PROWL = False
 PROWL_NOTIFY_ONSNATCH = False
 PROWL_NOTIFY_ONDOWNLOAD = False
 PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = False
-PROWL_API = None
+PROWL_API = []
 PROWL_PRIORITY = 0
 PROWL_MESSAGE_TITLE = 'Medusa'
 
@@ -404,7 +405,7 @@ PUSHOVER_NOTIFY_ONDOWNLOAD = False
 PUSHOVER_NOTIFY_ONSUBTITLEDOWNLOAD = False
 PUSHOVER_USERKEY = None
 PUSHOVER_APIKEY = None
-PUSHOVER_DEVICE = None
+PUSHOVER_DEVICE = []
 PUSHOVER_SOUND = None
 
 USE_LIBNOTIFY = False
@@ -473,7 +474,7 @@ USE_NMA = False
 NMA_NOTIFY_ONSNATCH = False
 NMA_NOTIFY_ONDOWNLOAD = False
 NMA_NOTIFY_ONSUBTITLEDOWNLOAD = False
-NMA_API = None
+NMA_API = []
 NMA_PRIORITY = 0
 
 USE_PUSHALOT = False
@@ -499,7 +500,7 @@ EMAIL_TLS = False
 EMAIL_USER = None
 EMAIL_PASSWORD = None
 EMAIL_FROM = None
-EMAIL_LIST = None
+EMAIL_LIST = []
 EMAIL_SUBJECT = None
 
 HOME_LAYOUT = None
@@ -561,27 +562,28 @@ DELETE_FAILED = False
 
 EXTRA_SCRIPTS = []
 
-IGNORE_WORDS = "german,french,core2hd,dutch,swedish,reenc,MrLss,dubbed"
+IGNORE_WORDS = ['german', 'french', 'core2hd', 'dutch', 'swedish', 'reenc', 'MrLss', 'dubbed']
 
-PREFERRED_WORDS = ""
+PREFERRED_WORDS = []
 
-UNDESIRED_WORDS = "internal,xvid"
+UNDESIRED_WORDS = ['internal', 'xvid']
 
-TRACKERS_LIST = "udp://tracker.coppersurfer.tk:6969/announce,udp://tracker.leechers-paradise.org:6969/announce,\
-    udp://tracker.zer0day.to:1337/announce,udp://tracker.opentrackr.org:1337/announce,\
-    http://tracker.opentrackr.org:1337/announce,udp://p4p.arenabg.com:1337/announce,\
-    http://p4p.arenabg.com:1337/announce,udp://explodie.org:6969/announce,\
-    udp://9.rarbg.com:2710/announce,http://explodie.org:6969/announce,\
-    http://tracker.dler.org:6969/announce,udp://public.popcorn-tracker.org:6969/announce,\
-    udp://tracker.internetwarriors.net:1337/announce,udp://ipv4.tracker.harry.lu:80/announce,\
-    http://ipv4.tracker.harry.lu:80/announce,udp://mgtracker.org:2710/announce,\
-    http://mgtracker.org:6969/announce,udp://tracker.mg64.net:6969/announce,\
-    http://tracker.mg64.net:6881/announce,http://torrentsmd.com:8080/announce"
+TRACKERS_LIST = ['udp://tracker.coppersurfer.tk:6969/announce',
+                 'udp://tracker.leechers-paradise.org:6969/announce',
+                 'udp://tracker.zer0day.to:1337/announce', 'udp://tracker.opentrackr.org:1337/announce',
+                 'http://tracker.opentrackr.org:1337/announce', 'udp://p4p.arenabg.com:1337/announce',
+                 'http://p4p.arenabg.com:1337/announce', 'udp://explodie.org:6969/announce',
+                 'udp://9.rarbg.com:2710/announce', 'http://explodie.org:6969/announce',
+                 'http://tracker.dler.org:6969/announce', 'udp://public.popcorn-tracker.org:6969/announce',
+                 'udp://tracker.internetwarriors.net:1337/announce', 'udp://ipv4.tracker.harry.lu:80/announce',
+                 'http://ipv4.tracker.harry.lu:80/announce', 'udp://mgtracker.org:2710/announce',
+                 'http://mgtracker.org:6969/announce', 'udp://tracker.mg64.net:6969/announce',
+                 'http://tracker.mg64.net:6881/announce', 'http://torrentsmd.com:8080/announce']
 
-REQUIRE_WORDS = ""
-IGNORED_SUBS_LIST = "dk,fin,heb,kor,nor,nordic,pl,swe"
+REQUIRE_WORDS = []
+IGNORED_SUBS_LIST = ['dk', 'fin', 'heb', 'kor', 'nor', 'nordic', 'pl', 'swe']
 IGNORE_UND_SUBS = False
-SYNC_FILES = "!sync,lftp-pget-status,part,bts,!qb,!qB"
+SYNC_FILES = ['!sync', 'lftp-pget-status', 'part', 'bts', '!qb', '!qB']
 
 CALENDAR_UNPROTECTED = False
 CALENDAR_ICONS = False
@@ -602,8 +604,9 @@ SHOWS_RECENT = []
 
 __INITIALIZED__ = False
 
-NEWZNAB_DATA = None
-TORRENTRSS_DATA = None
+NEWZNAB_PROVIDERS = []
+
+TORRENTRSS_PROVIDERS = []
 
 RECENTLY_DELETED = set()
 

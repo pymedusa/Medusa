@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from base64 import b16encode, b32decode
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -29,11 +28,10 @@ from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
     SEASON_RESULT,
-    UA_POOL,
+    USER_AGENT,
 )
 from medusa.db import DBConnection
 from medusa.helper.common import (
-    replace_extension,
     sanitize_filename,
 )
 from medusa.helpers import (
@@ -75,24 +73,18 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'https://torrentproject.se/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'http://piratepublic.com/download.php?id={info_hash}',
-            'http://www.legittorrents.info/download.php?id={info_hash}',
             'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
-            'https://skytorrents.in/file/{info_hash}/.torrent',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
-            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
         self.enable_daily = False
         self.enabled = False
-        self.headers = {'User-Agent': UA_POOL.random}
+        self.headers = {'User-Agent': USER_AGENT}
         self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
         self.provider_type = None
         self.public = False
@@ -138,9 +130,6 @@ class GenericProvider(object):
 
             log.info('Downloading {result} from {provider} at {url}',
                      {'result': result.name, 'provider': self.name, 'url': url})
-
-            if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
-                filename = replace_extension(filename, GenericProvider.TORRENT)
 
             verify = False if self.public else None
 
@@ -451,10 +440,36 @@ class GenericProvider(object):
     @staticmethod
     def get_url_hook(response, **kwargs):
         """Get URL hook."""
-        log.debug('{0} URL: {1} [Status: {2}]', response.request.method, response.request.url, response.status_code)
+        request = response.request
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
-        if response.request.method == 'POST':
-            log.debug('With post data: {0}', response.request.body)
+        if request.method.upper() == 'POST':
+            body = request.body
+            # try to log post data using various codecs to decode
+            if isinstance(body, unicode):
+                log.debug('With post data: {0}', body)
+                return
+
+            codecs = ('utf-8', 'latin1', 'cp1252')
+            for codec in codecs:
+                try:
+                    data = body.decode(codec)
+                except UnicodeError as error:
+                    log.debug('Failed to decode post data as {codec}: {msg}',
+                              {'codec': codec, 'msg': error})
+                else:
+                    log.debug('With post data: {0}', data)
+                    break
+            else:
+                log.warning('Failed to decode post data with {codecs}',
+                            {'codecs': codecs})
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
@@ -509,7 +524,7 @@ class GenericProvider(object):
         return []
 
     @staticmethod
-    def parse_pubdate(pubdate, human_time=False, timezone=None):
+    def parse_pubdate(pubdate, human_time=False, timezone=None, **kwargs):
         """
         Parse publishing date into a datetime object.
 
@@ -517,9 +532,15 @@ class GenericProvider(object):
         :param human_time: string uses human slang ("4 hours ago")
         :param timezone: use a different timezone ("US/Eastern")
 
+        :keyword dayfirst: Interpret the first value as the day
+        :keyword yearfirst: Interpret the first value as the year
+
         :returns: a datetime object or None
         """
         now_alias = ('right now', 'just now', 'now')
+
+        df = kwargs.pop('dayfirst', False)
+        yf = kwargs.pop('yearfirst', False)
 
         # This can happen from time to time
         if pubdate is None:
@@ -535,7 +556,7 @@ class GenericProvider(object):
                     seconds = parse(match.group('time'))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
-            dt = parser.parse(pubdate, fuzzy=True)
+            dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
                 dt = dt.replace(tzinfo=tz.gettz('UTC'))
@@ -559,7 +580,11 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        all_possible_show_names = episode.series.get_all_possible_names()
+        if episode.scene_season:
+            all_possible_show_names = all_possible_show_names.union(episode.series.get_all_possible_names(season=episode.scene_season))
+
+        for show_name in all_possible_show_names:
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
@@ -694,7 +719,14 @@ class GenericProvider(object):
         else:
             urls = [result.url]
 
-        filename = join(self._get_storage_dir(), sanitize_filename(result.name) + '.' + self.provider_type)
+        result_name = sanitize_filename(result.name)
+
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet')) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
 
@@ -725,6 +757,13 @@ class GenericProvider(object):
 
         :return: A dict with the the keys result as bool and message as string
         """
+        # Added exception for rss torrent providers, as for them adding cookies initial should be optional.
+        from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+        if isinstance(self, TorrentRssProvider) and not self.cookies:
+            return {'result': True,
+                    'message': 'This is a TorrentRss provider without any cookies provided. '
+                               'Cookies for this provider are considered optional.'}
+
         # This is the generic attribute used to manually add cookies for provider authentication
         if not self.enable_cookies:
             return {'result': False,
@@ -742,7 +781,8 @@ class GenericProvider(object):
             return {'result': False,
                     'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')] for req_cookie in self.required_cookies):
+        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
+                   for req_cookie in self.required_cookies):
             return {
                 'result': False,
                 'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
@@ -800,9 +840,8 @@ class GenericProvider(object):
             return False
 
         response = self.session.get(check_url)
-        if any([not response,
-                not (response.text and response.status_code == 200),
-                check_login_text.lower() in response.text.lower()]):
+        if not response or any([not (response.text and response.status_code == 200),
+                                check_login_text.lower() in response.text.lower()]):
             log.warning('Please configure the required cookies for this provider. Check your provider settings')
             ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
                                    'Check your provider settings')

@@ -85,7 +85,7 @@ class Notifier(object):
 
         # Grab the global recipient(s)
         if app.PROWL_API:
-            for api in app.PROWL_API.split(','):
+            for api in app.PROWL_API:
                 if api.strip():
                     apis.append(api)
 
@@ -110,7 +110,7 @@ class Notifier(object):
             return False
 
         if prowl_api is None:
-            prowl_api = app.PROWL_API
+            prowl_api = ','.join(app.PROWL_API)
             if not prowl_api:
                 return False
 

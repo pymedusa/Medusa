@@ -1,12 +1,14 @@
 # coding=utf-8
 
+"""Indexer config module."""
+
 import re
 
-from .tmdb.tmdb import Tmdb
-from .tvdbv2.tvdbv2_api import TVDBv2
-from .tvmaze.tvmaze_api import TVmaze
-from ..app import BASE_PYMEDUSA_URL
-from ..session.core import MedusaSession
+from medusa.app import BASE_PYMEDUSA_URL
+from medusa.indexers.tmdb.tmdb import Tmdb
+from medusa.indexers.tvdbv2.tvdbv2_api import TVDBv2
+from medusa.indexers.tvmaze.tvmaze_api import TVmaze
+from medusa.session.core import MedusaSession
 
 
 initConfig = {
@@ -72,7 +74,7 @@ indexerConfig = {
         'xem_origin': 'tvdb',
         'icon': 'thetvdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tvdb.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'base_url': 'https://api.thetvdb.com',
+        'base_url': 'https://api.thetvdb.com/',
         'show_url': 'http://thetvdb.com/?tab=series&id=',
         'mapped_to': 'tvdb_id',  # The attribute to which other indexers can map there thetvdb id to
         'identifier': 'tvdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())
@@ -107,7 +109,7 @@ indexerConfig = {
         },
         'icon': 'tmdb16.png',
         'scene_loc': '{base_url}/scene_exceptions/scene_exceptions_tmdb.json'.format(base_url=BASE_PYMEDUSA_URL),
-        'base_url': 'https://www.themoviedb.org',
+        'base_url': 'https://www.themoviedb.org/',
         'show_url': 'https://www.themoviedb.org/tv/',
         'mapped_to': 'tmdb_id',  # The attribute to which other indexers can map there tmdb id to
         'identifier': 'tmdb',  # Also used as key for the custom scenename exceptions. (_get_custom_exceptions())

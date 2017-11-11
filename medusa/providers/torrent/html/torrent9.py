@@ -33,7 +33,7 @@ class Torrent9Provider(TorrentProvider):
         self.public = True
 
         # URLs
-        self.url = 'http://www.torrent9.cc'
+        self.url = 'http://www.torrents9.pe'
         self.urls = {
             'search': urljoin(self.url, '/search_torrent/{query}.html,trie-seeds-d'),
             'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
@@ -76,7 +76,7 @@ class Torrent9Provider(TorrentProvider):
                 else:
                     search_url = self.urls['daily']
 
-                response = self.session.get(search_url, allow_redirects=False)
+                response = self.session.get(search_url)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
                     continue

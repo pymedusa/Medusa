@@ -1,4 +1,5 @@
 # coding=utf-8
+"""Module with common helper utils."""
 
 from __future__ import unicode_literals
 
@@ -6,11 +7,8 @@ import datetime
 import logging
 import re
 import traceback
-
 from fnmatch import fnmatch
-
 from medusa import app
-
 from six import PY3, text_type
 
 
@@ -133,9 +131,9 @@ def is_sync_file(filename):
     if isinstance(filename, (str, text_type)):
         extension = filename.rpartition('.')[2].lower()
 
-        return (extension in app.SYNC_FILES.split(',') or
+        return (extension in app.SYNC_FILES or
                 filename.startswith('.syncthing') or
-                any(fnmatch(filename, match) for match in app.SYNC_FILES.split(',')))
+                any(fnmatch(filename, match) for match in app.SYNC_FILES))
 
     return False
 
