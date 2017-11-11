@@ -12,11 +12,11 @@
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
-    % if cur_list_type == "Anime":
-        <h1 class="header">Anime List</h1>
+    <div class="showListTitle ${cur_list_type.lower()}">
+        <h2 class="header">${cur_list_type}</h1>
         <div class="loading-spinner"></div>
-    % endif
-<div id="${('container', 'container-anime')[cur_list_type == 'Anime']}" class="show-grid clearfix">
+    </div>
+<div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix">
     <div class="posterview">
     % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
         % if cur_loading_show.show is None:

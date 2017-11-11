@@ -145,7 +145,7 @@ class Home(WebRoot):
                 shows_dir = None
                 app.SELECTED_ROOT = -1
 
-        shows = []
+        series = []
         if app.ANIME_SPLIT_HOME:
             anime = []
             for show in app.showList:
@@ -154,14 +154,15 @@ class Home(WebRoot):
                 if show.is_anime:
                     anime.append(show)
                 else:
-                    shows.append(show)
-            show_lists = [['Shows', shows], ['Anime', anime]]
+                    series.append(show)
+
+            show_lists = [[order, {'Series': series, 'Anime': anime}[order]] for order in app.SHOW_LIST_ORDER]
         else:
             for show in app.showList:
                 if shows_dir and not show._location.startswith(shows_dir):
                     continue
-                shows.append(show)
-            show_lists = [['Shows', shows]]
+                series.append(show)
+            show_lists = [['Series', series]]
 
         stats = self.show_statistics()
         return t.render(title='Home', header='Show List', topmenu='home', show_lists=show_lists, show_stat=stats[0], max_download_count=stats[1], controller='home', action='index')
