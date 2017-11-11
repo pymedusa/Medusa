@@ -81,11 +81,6 @@
 </div>
 % endif
 
-
-
-<div id="summaryBackground" class="shadow"></div>
-<div id="checkboxControlsBackground" class="shadow"></div>
-
 <div id="row-show-summary" class="row">
     <div id="col-show-summary" class="col-md-12">
         <div class="show-poster-container">
