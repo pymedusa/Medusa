@@ -15,6 +15,7 @@ MEDUSA.home.snatchSelection = function() {
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
         $('#summaryBackground').offset({top: top, left: 0});
+        $('#summaryBackground').show();
     }
 
     $(window).resize(function() {

@@ -11,7 +11,7 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
 <form name="massUpdateForm" method="post" action="manage/massUpdate">
-    <div class="row wide">
+    <div class="row">
         <div class="col-md-12">
             <table style="width: 100%;" class="home-header">
                 <tr>
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="row wide">
+    <div class="row">
         <div class="col-md-12 horizontal-scroll">
             <table id="massUpdateTable" class="tablesorter" cellspacing="1" border="0" cellpadding="0">
                 <thead>

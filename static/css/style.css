@@ -608,7 +608,7 @@ div.xem {
 }
 
 /* Used by the displayShow and snatchSelection show header posters */
-#container-display-show img.show-image {
+#col-show-summary img.show-image {
     max-width: 180px;
 }
 
@@ -1082,7 +1082,7 @@ displayShow.mako
     overflow-y: auto;
 }
 
-div#container-display-show {
+div#col-show-summary, container-display-show{
     display: table;
 }
 
@@ -1252,13 +1252,6 @@ div#container-display-show {
     }
 }
 
-@media (min-width: 992px) {
-    .row.wide {
-        margin-left: -11%;
-        margin-right: -11%;
-    }
-}
-
 @media (max-width: 991px) and (min-width: 768px) {
     .show-poster-container {
         float: left;
@@ -1272,7 +1265,7 @@ div#container-display-show {
         width: 100%;
     }
 
-    #container-display-show img.show-image {
+    #col-show-summary img.show-image {
         max-width: 280px;
     }
 }
@@ -1776,6 +1769,10 @@ select#select-show {
     display: inline-block;
     height: 25px;
     padding: 1px;
+}
+
+button.selectColumns {
+    margin-right: 2px;
 }
 
 /* =======================================================================
@@ -4296,10 +4293,6 @@ CSS helper classes
 .backlog-quality {
     color: rgb(255, 255, 255);
     background-color: rgb(55, 55, 55);
-}
-
-#key-padding {
-    margin-left: 215px;
 }
 
 @media (max-width: 1700px) {
