@@ -13,7 +13,7 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 
 <div class="row">
-    <div id="showtitle" class="col-lg-12 col-md-12 col-sm-12 col-xs-12" data-showname="${show.name}">
+    <div id="showtitle" class="col-lg-12" data-showname="${show.name}">
         <div>
             <h1 class="title" id="scene_exception_${show.indexerid}"><a href="home/displayShow?show=${show.indexerid}" class="snatchTitle">${show.name}</a></h1>
         </div>
@@ -71,7 +71,7 @@
             % endif
         % endif
     </div> <!-- end show title -->
-</div> <!-- end row -->
+</div> <!-- end row showtitle-->
 
 % if show_message:
 <div class="row">
@@ -80,14 +80,14 @@
     </div>
 </div>
 % endif
-</div>
+
 
 
 <div id="summaryBackground" class="shadow"></div>
 <div id="checkboxControlsBackground" class="shadow"></div>
 
-<div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
-    <div id="container-display-show" class="col-md-12">
+<div id="row-show-summary" class="row">
+    <div id="col-show-summary" class="col-md-12">
         <div class="show-poster-container">
             <div class="row">
                 <div class="image-flex-container col-md-12">
@@ -253,7 +253,10 @@
             </div> <!-- end of row -->
         </div> <!-- show-info-container -->
     </div> <!-- end of col -->
-    <div id="container-display-show" class="col-md-12">
+</div> <!-- end of row row-show-summary-->
+
+<div id="row-show-episodes-controls" class="row">
+    <div id="col-show-episodes-controls" class="col-md-12">
     % if (action == "displayShow"):
         <div class="row"> <!-- Checkbox filter controls -->
             <div class="col-lg-12" id="checkboxControls">
@@ -293,7 +296,7 @@
             </div> <!-- checkboxControls -->
         </div> <!-- end of row -->
     % else:
-        &nbsp;
+        <div></div>
     % endif
     </div> <!-- end of col -->
-<div>&nbsp;</div>
+</div> <!-- end of row -->

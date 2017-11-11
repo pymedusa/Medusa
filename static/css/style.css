@@ -608,7 +608,7 @@ div.xem {
 }
 
 /* Used by the displayShow and snatchSelection show header posters */
-#container-display-show img.show-image {
+#col-show-summary img.show-image {
     max-width: 180px;
 }
 
@@ -1082,7 +1082,7 @@ displayShow.mako
     overflow-y: auto;
 }
 
-div#container-display-show {
+div#col-show-summary, container-display-show{
     display: table;
 }
 
@@ -1265,7 +1265,7 @@ div#container-display-show {
         width: 100%;
     }
 
-    #container-display-show img.show-image {
+    #col-show-summary img.show-image {
         max-width: 280px;
     }
 }
