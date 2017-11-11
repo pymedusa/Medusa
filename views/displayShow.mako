@@ -101,7 +101,7 @@
                             % if not app.DISPLAY_ALL_SEASONS:
                                 <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
                             % endif
-                            <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
+                            <button id="popover" type="button" class="btn pull-right selectColumns">Select Columns <b class="caret"></b></button>
                         </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>

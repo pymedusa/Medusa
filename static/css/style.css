@@ -1771,6 +1771,10 @@ select#select-show {
     padding: 1px;
 }
 
+button.selectColumns {
+    margin-right: 2px;
+}
+
 /* =======================================================================
 schedule.mako
 ========================================================================== */
@@ -4289,10 +4293,6 @@ CSS helper classes
 .backlog-quality {
     color: rgb(255, 255, 255);
     background-color: rgb(55, 55, 55);
-}
-
-#key-padding {
-    margin-left: 215px;
 }
 
 @media (max-width: 1700px) {
