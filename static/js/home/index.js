@@ -365,55 +365,6 @@ MEDUSA.home.index = function() {
             $('#showRoot').hide();
         }
     }
-    //
-    // $('.move-show-list').on('touchmove mousemove mouseup', function(evt) {
-    //    let target = $(evt.currentTarget);
-    //    let moveTarget = $('#' + target.data('move-target'));
-    //
-    //    console.log(`Event type: ${evt.type}`);
-    //
-    //    let y = undefined;
-    //
-    //    if (evt.type === 'mouseup') {
-    //        $(moveTarget).css({
-    //            'position': 'relative',
-    //            'top': 0,
-    //            'left': target.position().x
-    //        });
-    //        return;
-    //    }
-    //
-    //    if (evt.type === 'mousemove') {
-    //        if (evt.which == 1) {
-    //            console.log(evt.pageX + " / " + evt.pageY);
-    //            y = evt.pageY;
-    //        } else {
-    //            return;
-    //        }
-    //    } else {
-    //        let touch = evt.originalEvent.touches[0];
-    //        y = touch.clientY;
-    //    }
-    //
-    //    $(moveTarget).css({
-    //        'position': 'absolute',
-    //        'top': y,
-    //        'left': target.position().x
-    //    });
-    //
-    //    console.log(`Position element y: ${y}`);
-    // });
-    //
-    // $(document).on('mouseup', function(evt) {
-    //     if (evt.type === 'mouseup') {
-    //        $('#container-series, #container-anime').css({
-    //            'position': 'relative',
-    //            'top': 0,
-    //            'left': 0
-    //        });
-    //        return;
-    //    }
-    // });
 
     $('#poster-container').sortable({
         appendTo: document.body,
