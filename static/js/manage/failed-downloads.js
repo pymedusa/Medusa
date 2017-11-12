@@ -3,7 +3,7 @@ MEDUSA.manage.failedDownloads = function() {
     $('#failedTable:has(tbody tr)').tablesorter({
         widgets: ['zebra'],
         sortList: [],
-        headers: {3: {sorter: false}}
+        headers: { 3: { sorter: false } }
     });
     $('#limit').on('change', function() {
         window.location.href = $('base').attr('href') + 'manage/failedDownloads/?limit=' + $(this).val();

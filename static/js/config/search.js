@@ -1,10 +1,10 @@
 const MEDUSA = require('../core');
 MEDUSA.config.search = function() {
     $('#config-components').tabs();
-    $('#nzb_dir').fileBrowser({title: 'Select .nzb black hole/watch location'});
-    $('#torrent_dir').fileBrowser({title: 'Select .torrent black hole/watch location'});
-    $('#torrent_path').fileBrowser({title: 'Select .torrent download location'});
-    $('#torrent_seed_location').fileBrowser({title: 'Select Post-Processed seeding torrents location'});
+    $('#nzb_dir').fileBrowser({ title: 'Select .nzb black hole/watch location' });
+    $('#torrent_dir').fileBrowser({ title: 'Select .torrent black hole/watch location' });
+    $('#torrent_path').fileBrowser({ title: 'Select .torrent download location' });
+    $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
 
     $.fn.nzbMethodHandler = function() {
         var selectedProvider = $('#nzb_method :selected').val();

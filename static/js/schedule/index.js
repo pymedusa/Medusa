@@ -1,6 +1,6 @@
 const MEDUSA = require('../core');
 MEDUSA.schedule.index = function() {
-    if ($.isMeta({layout: 'schedule'}, ['list'])) {
+    if ($.isMeta({ layout: 'schedule' }, ['list'])) {
         var sortCodes = {
             date: 0,
             show: 2,
@@ -19,13 +19,13 @@ MEDUSA.schedule.index = function() {
                 8: function(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); } // eslint-disable-line brace-style
             },
             headers: {
-                0: {sorter: 'realISODate'},
-                1: {sorter: 'realISODate'},
-                2: {sorter: 'loadingNames'},
-                4: {sorter: 'loadingNames'},
-                7: {sorter: 'quality'},
-                8: {sorter: 'text'},
-                9: {sorter: false}
+                0: { sorter: 'realISODate' },
+                1: { sorter: 'realISODate' },
+                2: { sorter: 'loadingNames' },
+                4: { sorter: 'loadingNames' },
+                7: { sorter: 'quality' },
+                8: { sorter: 'text' },
+                9: { sorter: false }
             },
             widgetOptions: {
                 filter_columnFilters: true, // eslint-disable-line camelcase
@@ -38,7 +38,7 @@ MEDUSA.schedule.index = function() {
         $.ajaxEpSearch();
     }
 
-    if ($.isMeta({layout: 'schedule'}, ['banner', 'poster'])) {
+    if ($.isMeta({ layout: 'schedule' }, ['banner', 'poster'])) {
         $.ajaxEpSearch({
             size: 16,
             loadingImage: 'loading16' + MEDUSA.config.themeSpinner + '.gif'

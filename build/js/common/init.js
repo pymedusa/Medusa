@@ -1,23 +1,30 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+const baseUrl = $('body').attr('api-root');
+const idToken = $('body').attr('api-key');
+
+const api = axios.create({
+    baseURL: baseUrl,
+    timeout: 10000,
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Api-Key': idToken
+    }
+});
+
+module.exports = api;
+
+},{}],2:[function(require,module,exports){
 const MEDUSA = require('../core');
+
+const apiKey = $('body').attr('api-key');
+
 MEDUSA.common.init = function () {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
 
-    // Background Fanart Functions
-    if (MEDUSA.config.fanartBackground) {
-        var seriesId = $('#series-id').attr('value');
-        if (seriesId) {
-            const apiRoot = $('body').attr('api-root');
-            let path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
-            $.backstretch(path);
-            $('.backstretch').css('top', backstretchOffset());
-            $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
-        }
-    }
-
-    function backstretchOffset() {
-        var offset = '90px';
+    const backstretchOffset = () => {
+        let offset = '90px';
         if ($('#sub-menu-container').length === 0) {
             offset = '50px';
         }
@@ -25,6 +32,18 @@ MEDUSA.common.init = function () {
             offset = '50px';
         }
         return offset;
+    };
+
+    // Background Fanart Functions
+    if (MEDUSA.config.fanartBackground) {
+        const seriesId = $('#series-id').attr('value');
+        if (seriesId) {
+            const apiRoot = $('body').attr('api-root');
+            const path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
+            $.backstretch(path);
+            $('.backstretch').css('top', backstretchOffset());
+            $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
+        }
     }
 
     /**
@@ -38,7 +57,7 @@ MEDUSA.common.init = function () {
             return;
         }
 
-        let scrollbarVisible = scrollDiv.map(function (el) {
+        const scrollbarVisible = scrollDiv.map(el => {
             return el.scrollWidth > el.clientWidth;
         }).indexOf(true);
 
@@ -53,7 +72,7 @@ MEDUSA.common.init = function () {
 
     initHorizontalScroll();
 
-    $(window).on('resize', function () {
+    $(window).on('resize', () => {
         $('.backstretch').css('top', backstretchOffset());
         initHorizontalScroll();
     });
@@ -63,21 +82,21 @@ MEDUSA.common.init = function () {
         $('html, body').animate({ scrollTop: $(dest).offset().top }, 500, 'linear');
     }
 
-    $('#scroll-left').on('click', function (e) {
+    $('#scroll-left').on('click', e => {
         e.preventDefault();
         $('div.horizontal-scroll').animate({
             scrollLeft: '-=153'
         }, 1000, 'easeOutQuad');
     });
 
-    $('#scroll-right').on('click', function (e) {
+    $('#scroll-right').on('click', e => {
         e.preventDefault();
         $('div.horizontal-scroll').animate({
             scrollLeft: '+=153'
         }, 1000, 'easeOutQuad');
     });
 
-    $(document).on('scroll', function () {
+    $(document).on('scroll', () => {
         if ($(window).scrollTop() > 100) {
             $('.scroll-wrapper.top').addClass('show');
         } else {
@@ -85,12 +104,12 @@ MEDUSA.common.init = function () {
         }
     });
 
-    $('.scroll-wrapper.top').on('click', function () {
+    $('.scroll-wrapper.top').on('click', () => {
         scrollTo($('body'));
     });
 
     // Scroll to Anchor
-    $('a[href^="#season"]').on('click', function (e) {
+    $('a[href^="#season"]').on('click', e => {
         e.preventDefault();
         scrollTo($('a[name="' + $(this).attr('href').replace('#', '') + '"]'));
     });
@@ -102,39 +121,42 @@ MEDUSA.common.init = function () {
         $(this).find('.dropdown-menu').stop(true, true).delay(200).fadeOut(500);
     });
 
-    // function to change luminance of #000000 color - used in triggerhighlighting
-    function colorLuminance(hex, lum) {
+    // Function to change luminance of #000000 color - used in triggerhighlighting
+    const colorLuminance = (hex, lum) => {
         hex = String(hex).replace(/[^0-9a-f]/gi, '');
         if (hex.length < 6) {
             hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
         }
         lum = lum || 0;
-        var rgb = '#';
-        var c;
-        var i;
+        let rgb = '#';
+        let c;
+        let i;
         for (i = 0; i < 3; i++) {
             c = parseInt(hex.substr(i * 2, 2), 16);
             c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
             rgb += ('00' + c).substr(c.length);
         }
         return rgb;
-    }
+    };
 
-    // function to convert rgb(0,0,0) into #000000
-    function rgb2hex(rgb) {
+    // Function to convert rgb(0,0,0) into #000000
+    const rgb2hex = rgb => {
         rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
         function hex(x) {
             return ('0' + parseInt(x, 10).toString(16)).slice(-2);
         }
         return '#' + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
-    }
+    };
 
-    var revertBackgroundColor; // used to revert back to original background-color after highlight
-    $('.triggerhighlight').on('mouseover', function () {
-        revertBackgroundColor = rgb2hex($(this).parent().css('background-color')); // fetch the original background-color to revert back to
-        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15)); // setting highlight background-color
-    }).on('mouseout', function () {
-        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor); // reverting back to original background-color
+    let revertBackgroundColor; // Used to revert back to original background-color after highlight
+    $('.triggerhighlight').on('mouseover', event => {
+        // Fetch the original background-color to revert back to
+        revertBackgroundColor = rgb2hex($(event.currentTarget).parent().css('background-color'));
+        // Setting highlight background-color
+        $(this).parent().find('.triggerhighlight').css('background-color', colorLuminance(revertBackgroundColor, -0.15));
+    }).on('mouseout', () => {
+        // Reverting back to original background-color
+        $(this).parent().find('.triggerhighlight').css('background-color', revertBackgroundColor);
     });
 
     $.rootDirCheck = function () {
@@ -160,7 +182,7 @@ MEDUSA.common.init = function () {
         cancelButton: 'Cancel',
         dialogClass: 'modal-dialog',
         post: false,
-        confirm: function (e) {
+        confirm(e) {
             location.href = e[0].href;
         }
     };
@@ -178,7 +200,7 @@ MEDUSA.common.init = function () {
     $('a.removeshow').confirm({
         title: 'Remove Show',
         text: 'Are you sure you want to remove <span class="footerhighlight">' + $('#showtitle').data('showname') + '</span> from the database?<br><br><input type="checkbox" id="deleteFiles"> <span class="red-text">Check to delete files as well. IRREVERSIBLE</span></input>',
-        confirm: function (e) {
+        confirm(e) {
             location.href = e[0].href + (document.getElementById('deleteFiles').checked ? '&full=1' : '');
         }
     });
@@ -199,8 +221,8 @@ MEDUSA.common.init = function () {
     });
 
     $('#config-components').tabs({
-        activate: function (event, ui) {
-            var lastOpenedPanel = $(this).data('lastOpenedPanel');
+        activate: (event, ui) => {
+            let lastOpenedPanel = $(this).data('lastOpenedPanel');
 
             if (!lastOpenedPanel) {
                 lastOpenedPanel = $(ui.oldPanel);
@@ -233,7 +255,7 @@ MEDUSA.common.init = function () {
     // hack alert: if we don't have a touchscreen, and we are already hovering the mouse, then click should link instead of toggle
     if ((navigator.maxTouchPoints || 0) < 2) {
         $('.dropdown-toggle').on('click', function () {
-            var $this = $(this);
+            const $this = $(this);
             if ($this.attr('aria-expanded') === 'true') {
                 window.location.href = $('base').attr('href') + $this.attr('href');
             }
@@ -271,8 +293,8 @@ MEDUSA.common.init = function () {
     });
 
     $(document.body).on('click', '.bulkCheck', function () {
-        var bulkCheck = this;
-        var whichBulkCheck = $(bulkCheck).attr('id');
+        const bulkCheck = this;
+        const whichBulkCheck = $(bulkCheck).attr('id');
 
         $('.' + whichBulkCheck + ':visible').each(function () {
             $(this).prop('checked', $(bulkCheck).prop('checked'));
@@ -299,16 +321,16 @@ MEDUSA.common.init = function () {
             'text-shadow': '0px 0px 0.5px #666'
         });
 
-        var my = $(this).data('qtip-my') || 'left center';
-        var at = $(this).data('qtip-at') || 'middle right';
+        const my = $(this).data('qtip-my') || 'left center';
+        const at = $(this).data('qtip-at') || 'middle right';
 
         $(this).qtip({
             show: {
                 solo: true
             },
             position: {
-                my: my,
-                at: at
+                my,
+                at
             },
             style: {
                 tip: {
@@ -321,15 +343,17 @@ MEDUSA.common.init = function () {
     });
 };
 
-},{"../core":2}],2:[function(require,module,exports){
+},{"../core":3}],3:[function(require,module,exports){
+const api = require('./api');
+
 // eslint-disable-line max-lines
 // @TODO Move these into common.ini when possible,
 //       currently we can't do that as browser.js and a few others need it before this is loaded
-var topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
-var apiRoot = $('body').attr('api-root');
-var apiKey = $('body').attr('api-key');
+const topImageHtml = '<img src="images/top.gif" width="31" height="11" alt="Jump to top" />'; // eslint-disable-line no-unused-vars
+const apiRoot = $('body').attr('api-root');
+const apiKey = $('body').attr('api-key');
 
-var MEDUSA = {
+const MEDUSA = {
     common: {},
     config: {},
     home: {},
@@ -340,16 +364,16 @@ var MEDUSA = {
     addShows: {}
 };
 
-var UTIL = {
-    exec: function (controller, action) {
-        var ns = MEDUSA;
+const UTIL = {
+    exec(controller, action) {
+        const ns = MEDUSA;
         action = action === undefined ? 'init' : action;
 
         if (controller !== '' && ns[controller] && typeof ns[controller][action] === 'function') {
             ns[controller][action]();
         }
     },
-    init: function () {
+    init() {
         if (typeof startVue === 'function') {
             // eslint-disable-line no-undef
             startVue(); // eslint-disable-line no-undef
@@ -357,11 +381,11 @@ var UTIL = {
             $('[v-cloak]').removeAttr('v-cloak');
         }
 
-        var body = document.body;
+        const body = document.body;
         $('[asset]').each(function () {
-            let asset = $(this).attr('asset');
-            let series = $(this).attr('series');
-            let path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
+            const asset = $(this).attr('asset');
+            const series = $(this).attr('series');
+            const path = apiRoot + 'series/' + series + '/asset/' + asset + '?api_key=' + apiKey;
             if (this.tagName.toLowerCase() === 'img') {
                 if ($(this).attr('lazy') === 'on') {
                     $(this).attr('data-original', path);
@@ -373,8 +397,8 @@ var UTIL = {
                 $(this).attr('href', path);
             }
         });
-        var controller = body.getAttribute('data-controller');
-        var action = body.getAttribute('data-action');
+        const controller = body.getAttribute('data-controller');
+        const action = body.getAttribute('data-action');
 
         UTIL.exec('common');
         UTIL.exec(controller);
@@ -383,24 +407,21 @@ var UTIL = {
 };
 
 $.extend({
-    isMeta: function (pyVar, result) {
-        // eslint-disable-line no-unused-vars
-        var reg = new RegExp(result.length > 1 ? result.join('|') : result);
+    isMeta(pyVar, result) {
+        const reg = new RegExp(result.length > 1 ? result.join('|') : result);
 
         if (typeof pyVar === 'object' && Object.keys(pyVar).length === 1) {
             return reg.test(MEDUSA.config[Object.keys(pyVar)[0]][pyVar[Object.keys(pyVar)[0]]]);
         }
         if (pyVar.match('medusa')) {
-            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, function (m) {
-                return m[1].toUpperCase();
-            });
+            pyVar.split('.')[1].toLowerCase().replace(/(_\w)/g, m => m[1].toUpperCase());
         }
         return reg.test(MEDUSA.config[pyVar]);
     }
 });
 
 $.fn.extend({
-    addRemoveWarningClass: function (_) {
+    addRemoveWarningClass(_) {
         if (_) {
             return $(this).removeClass('warning');
         }
@@ -408,16 +429,16 @@ $.fn.extend({
     }
 });
 
-var triggerConfigLoaded = function () {
+const triggerConfigLoaded = function () {
     // Create the event.
-    var event = new CustomEvent('build', { detail: 'medusa config loaded' });
+    const event = new CustomEvent('build', { detail: 'medusa config loaded' });
     event.initEvent('build', true, true);
     // Trigger the event.
     document.dispatchEvent(event);
 };
 
 if (!document.location.pathname.endsWith('/login/')) {
-    api.get('config/main').then(function (response) {
+    api.get('config/main').then(response => {
         log.setDefaultLevel('trace');
         $.extend(MEDUSA.config, response.data);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
@@ -427,7 +448,7 @@ if (!document.location.pathname.endsWith('/login/')) {
             $(document).ready(UTIL.init);
         }
         triggerConfigLoaded();
-    }).catch(function (err) {
+    }).catch(err => {
         log.error(err);
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
@@ -435,6 +456,6 @@ if (!document.location.pathname.endsWith('/login/')) {
 
 module.exports = MEDUSA;
 
-},{}]},{},[1]);
+},{"./api":1}]},{},[2]);
 
 //# sourceMappingURL=init.js.map

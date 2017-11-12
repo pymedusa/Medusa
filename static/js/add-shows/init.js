@@ -27,7 +27,7 @@ MEDUSA.addShows.init = function() {
                     /* randomise, else the rating_votes can already
                      * have sorted leaving this with nothing to do.
                      */
-                    $('#container').isotope({sortBy: 'random'});
+                    $('#container').isotope({ sortBy: 'random' });
                     sortCriteria = 'rating';
                     break;
                 case 'rating_votes':

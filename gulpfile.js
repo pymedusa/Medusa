@@ -41,7 +41,6 @@ const staticAssets = [
     'static/fonts/**/*',
     'static/js/lib/**/*',
     'static/js/vender.min.js',
-    'static/js/api.js',
     'static/css/lib/**/*',
     'static/css/*.ttf'
 ];
@@ -68,8 +67,7 @@ gulp.task('watch', ['build'], () => {
         'static/js/**/*.js',
         '!static/js/lib/**',
         '!static/js/*.min.js',
-        '!static/js/vender.js',
-        '!static/js/api.js'
+        '!static/js/vender.js'
     ], ['js']);
 });
 
@@ -128,8 +126,7 @@ gulp.task('lint', () => {
         'static/js/**/*.js',
         '!static/js/lib/**',
         '!static/js/*.min.js',
-        '!static/js/vender.js',
-        '!static/js/api.js'
+        '!static/js/vender.js'
     ])
     .pipe(xo())
     .pipe(xo.format())
@@ -144,8 +141,7 @@ gulp.task('js', done => {
         ignore: [
             'js/lib/**',
             'js/*.min.js',
-            'js/vender.js',
-            'js/api.js'
+            'js/vender.js'
         ]
     }, (err, files) => {
         if (err) {

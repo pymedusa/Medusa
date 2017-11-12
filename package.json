@@ -68,6 +68,7 @@
     },
     "envs": [
       "browser",
+      "node",
       "jquery"
     ],
     "globals": [
@@ -75,17 +76,12 @@
       "LazyLoad",
       "_",
       "log",
-      "MEDUSA",
-      "api",
-      "apiKey",
-      "apiRoot",
       "s"
     ],
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
-      "static/js/vender.js",
-      "static/js/api.js"
+      "static/js/vender.js"
     ]
   }
 }

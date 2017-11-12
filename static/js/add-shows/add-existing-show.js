@@ -49,7 +49,7 @@ MEDUSA.addShows.addExistingShow = function() {
                 // sortList: [[1,0]],
                 widgets: ['zebra'],
                 headers: {
-                    0: {sorter: false}
+                    0: { sorter: false }
                 }
             });
         });
@@ -79,6 +79,6 @@ MEDUSA.addShows.addExistingShow = function() {
     $('#tableDiv').on('click', '.showManage', function(event) {
         event.preventDefault();
         $('#tabs').tabs('option', 'active', 0);
-        $('html,body').animate({scrollTop: 0}, 1000);
+        $('html,body').animate({ scrollTop: 0 }, 1000);
     });
 };

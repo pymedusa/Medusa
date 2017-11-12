@@ -1,16 +1,17 @@
 const MEDUSA = require('../core');
+
 MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
-        var indexerId = $(this).attr('id').split('-')[1];
+        const indexerId = $(this).attr('id').split('-')[1];
         $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
-        var curIndexerId = $(this).attr('id');
-        var checked = $('#allCheck-' + curIndexerId).prop('checked');
-        var lastRow = $('tr#' + curIndexerId);
-        var clicked = $(this).data('clicked');
-        var action = $(this).attr('value');
+        const curIndexerId = $(this).attr('id');
+        const checked = $('#allCheck-' + curIndexerId).prop('checked');
+        const lastRow = $('tr#' + curIndexerId);
+        const clicked = $(this).data('clicked');
+        const action = $(this).attr('value');
 
         if (clicked) {
             if (action.toLowerCase() === 'collapse') {
@@ -24,9 +25,9 @@ MEDUSA.manage.episodeStatuses = function() {
             $.getJSON('manage/showEpisodeStatuses', {
                 indexer_id: curIndexerId, // eslint-disable-line camelcase
                 whichStatus: $('#oldStatus').val()
-            }, function(data) {
-                $.each(data, function(season, eps) {
-                    $.each(eps, function(episode, name) {
+            }, data => {
+                $.each(data, (season, eps) => {
+                    $.each(eps, (episode, name) => {
                         lastRow.after($.makeEpisodeRow(curIndexerId, season, episode, name, checked));
                     });
                 });
@@ -36,8 +37,8 @@ MEDUSA.manage.episodeStatuses = function() {
         }
     });
 
-    // selects all visible episode checkboxes.
-    $('.selectAllShows').on('click', function() {
+    // Selects all visible episode checkboxes.
+    $('.selectAllShows').on('click', () => {
         $('.allCheck').each(function() {
             this.checked = true;
         });
@@ -46,8 +47,8 @@ MEDUSA.manage.episodeStatuses = function() {
         });
     });
 
-    // clears all visible episode checkboxes and the season selectors
-    $('.unselectAllShows').on('click', function() {
+    // Clears all visible episode checkboxes and the season selectors
+    $('.unselectAllShows').on('click', () => {
         $('.allCheck').each(function() {
             this.checked = false;
         });

@@ -1,5 +1,5 @@
-let baseUrl = $('body').attr('api-root');
-let idToken = $('body').attr('api-key');
+const baseUrl = $('body').attr('api-root');
+const idToken = $('body').attr('api-key');
 
 const api = axios.create({
     baseURL: baseUrl,
@@ -10,3 +10,5 @@ const api = axios.create({
         'X-Api-Key': idToken
     }
 });
+
+module.exports = api;

@@ -1,24 +1,21 @@
 const MEDUSA = require('./core');
+
 $.tablesorter.addParser({
     id: 'loadingNames',
-    is: function() {
-        return false;
-    },
-    format: function(s) {
+    is: false,
+    format: s => {
         if (s.indexOf('Loading...') === 0) {
             return s.replace('Loading...', '000');
         }
-        return (MEDUSA.config.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, '')); // eslint-disable-line no-undef
+        return (MEDUSA.config.sortArticle ? (s || '') : (s || '').replace(/^(The|A|An)\s/i, ''));
     },
     type: 'text'
 });
 $.tablesorter.addParser({
     id: 'quality',
-    is: function() {
-        return false;
-    },
-    format: function(s) {
-        var replacements = {
+    is: false,
+    format: s => {
+        const replacements = {
             custom: 11,
             bluray: 10, // Custom: Only bluray
             hd1080p: 9,
@@ -38,40 +35,30 @@ $.tablesorter.addParser({
 });
 $.tablesorter.addParser({
     id: 'realISODate',
-    is: function() {
-        return false;
-    },
-    format: function(s) {
-        return new Date(s).getTime();
-    },
+    is: false,
+    format: s => new Date(s).getTime(),
     type: 'numeric'
 });
 
 $.tablesorter.addParser({
     id: 'cDate',
-    is: function() {
-        return false;
-    },
-    format: function(s) {
-        return s;
-    },
+    is: false,
+    format: s => s,
     type: 'numeric'
 });
 $.tablesorter.addParser({
     id: 'eps',
-    is: function() {
-        return false;
-    },
-    format: function(s) {
-        var match = s.match(/^(.*)/);
+    is: false,
+    format: s => {
+        const match = s.match(/^(.*)/);
 
         if (match === null || match[1] === '?') {
             return -10;
         }
 
-        var nums = match[1].split(' / ');
+        const nums = match[1].split(' / ');
         if (nums[0].indexOf('+') !== -1) {
-            var numParts = nums[0].split('+');
+            const numParts = nums[0].split('+');
             nums[0] = numParts[0];
         }
 
@@ -81,8 +68,9 @@ $.tablesorter.addParser({
         if (nums[0] === 0) {
             return nums[1];
         }
-        var finalNum = parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1], 10);
-        var pct = Math.round((nums[0] / nums[1]) * 100) / 1000;
+
+        const pct = Math.round((nums[0] / nums[1]) * 100) / 1000;
+        let finalNum = parseInt(($('meta[data-var="max_download_count"]').data('content')) * nums[0] / nums[1], 10);
         if (finalNum > 0) {
             finalNum += nums[0];
         }
