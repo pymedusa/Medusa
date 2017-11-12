@@ -1,13 +1,13 @@
 $(document).ready(() => {
-    function findDirIndex(which) {
+    const findDirIndex = which => {
         const dirParts = which.split('_');
         return dirParts[dirParts.length - 1];
-    }
+    };
 
-    function editRootDir(path, options) {
+    const editRootDir = (path, options) => {
         $('#new_root_dir_' + options.whichId).val(path);
         $('#new_root_dir_' + options.whichId).change();
-    }
+    };
 
     $('.new_root_dir').on('change', function() {
         const curIndex = findDirIndex($(this).attr('id'));

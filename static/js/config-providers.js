@@ -132,10 +132,10 @@ $(document).ready(function() { // eslint-disable-line max-lines
     };
 
     $.fn.populateNewznabSection = function() {
-        var selectedProvider = $('#editANewznabProvider :selected').val();
-        var data = '';
-        var isDefault = '';
-        var rrcat = '';
+        const selectedProvider = $('#editANewznabProvider :selected').val();
+        let data = '';
+        let isDefault = '';
+        let rrcat = '';
 
         if (selectedProvider === 'addNewznab') {
             data = ['', '', ''];

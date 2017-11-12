@@ -1,4 +1,5 @@
 const MEDUSA = require('../core');
+const api = require('../api');
 const startAjaxEpisodeSubtitles = require('../ajax-episode-subtitles');
 
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines

@@ -1,15 +1,10 @@
-$(document).ready(function() {
+$(document).ready(() => {
     $('#saveDefaultsButton').on('click', function() {
-        var anyQualArray = [];
-        var bestQualArray = [];
-        $('#allowed_qualities option:selected').each(function(i, d) {
-            anyQualArray.push($(d).val());
-        });
-        $('#preferred_qualities option:selected').each(function(i, d) {
-            bestQualArray.push($(d).val());
-        });
+        const anyQualArray = [];
+        const bestQualArray = [];
+        $('#allowed_qualities option:selected').each((i, d) => anyQualArray.push($(d).val()));
+        $('#preferred_qualities option:selected').each((i, d) => bestQualArray.push($(d).val()));
 
-        // @TODO: Move this to API
         $.get('config/general/saveAddShowDefaults', {
             defaultStatus: $('#statusSelect').val(),
             allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
@@ -29,12 +24,12 @@ $(document).ready(function() {
         });
     });
 
-    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function() {
+    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', () => {
         $('#saveDefaultsButton').prop('disabled', false);
     });
 
-    $('#qualityPreset').on('change', function() {
-        // fix issue #181 - force re-render to correct the height of the outer div
+    $('#qualityPreset').on('change', () => {
+        // @TODO: fix issue #181 - force re-render to correct the height of the outer div
         $('span.prev').click();
         $('span.next').click();
     });

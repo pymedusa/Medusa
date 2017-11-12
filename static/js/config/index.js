@@ -1,4 +1,6 @@
 const MEDUSA = require('../core');
+const api = require('../api');
+
 MEDUSA.config.index = function() {
     if ($('input[name="proxy_setting"]').val().length === 0) {
         $('input[id="proxy_indexers"]').prop('checked', false);
@@ -10,10 +12,10 @@ MEDUSA.config.index = function() {
             theme: {
                 name: $(this).val()
             }
-        }).then(function(response) {
+        }).then(response => {
             log.info(response);
             window.location.reload();
-        }).catch(function(err) {
+        }).catch(err => {
             log.error(err);
         });
     });

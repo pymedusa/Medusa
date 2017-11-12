@@ -1,6 +1,6 @@
-$(document).ready(function() {
+$(document).ready(() => {
     $('.seriesCheck').on('click', function() {
-        var serCheck = this;
+        const serCheck = this;
 
         $('.seasonCheck:visible').each(function() {
             this.checked = serCheck.checked;
@@ -12,11 +12,11 @@ $(document).ready(function() {
     });
 
     $('.seasonCheck').on('click', function() {
-        var seasCheck = this;
-        var seasNo = $(seasCheck).attr('id');
+        const seasCheck = this;
+        const seasNo = $(seasCheck).attr('id');
 
         $('.epCheck:visible').each(function() {
-            var epParts = $(this).attr('id').split('x');
+            const epParts = $(this).attr('id').split('x');
 
             if (epParts[0] === seasNo) {
                 this.checked = seasCheck.checked;
@@ -24,8 +24,8 @@ $(document).ready(function() {
         });
     });
 
-    $('input[type=submit]').on('click', function() {
-        var epArr = [];
+    $('input[type=submit]').on('click', () => {
+        const epArr = [];
 
         $('.epCheck').each(function() {
             if (this.checked === true) {

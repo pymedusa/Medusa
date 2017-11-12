@@ -17,7 +17,7 @@ PNotify.prototype.options.styling = 'jqueryui';
 PNotify.prototype.options.width = '340px';
 PNotify.desktop.permission();
 
-function displayPNotify(type, title, message, id) {
+const displayPNotify = (type, title, message, id) => {
     new PNotify({ // eslint-disable-line no-new
         type,
         title,
@@ -29,7 +29,7 @@ function displayPNotify(type, title, message, id) {
             .replace(/<i(?:\s[^>]*)?>/ig, '[').replace(/<[/]i>/ig, ']')
             .replace(/<(?:[/]?ul|\/li)(?:\s[^>]*)?>/ig, '').replace(/<li(?:\s[^>]*)?>/ig, '\n* ')
     });
-}
+};
 
 const wsCheckNotifications = () => {
     const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';

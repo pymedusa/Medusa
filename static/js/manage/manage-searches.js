@@ -1,4 +1,5 @@
 const MEDUSA = require('../core');
+const api = require('../api');
 
 MEDUSA.manage.manageSearches = function() {
     /**

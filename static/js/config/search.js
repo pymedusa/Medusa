@@ -1,4 +1,5 @@
 const MEDUSA = require('../core');
+
 MEDUSA.config.search = function() {
     $('#config-components').tabs();
     $('#nzb_dir').fileBrowser({ title: 'Select .nzb black hole/watch location' });
@@ -7,16 +8,16 @@ MEDUSA.config.search = function() {
     $('#torrent_seed_location').fileBrowser({ title: 'Select Post-Processed seeding torrents location' });
 
     $.fn.nzbMethodHandler = function() {
-        var selectedProvider = $('#nzb_method :selected').val();
-        var blackholeSettings = '#blackhole_settings';
-        var sabnzbdSettings = '#sabnzbd_settings';
-        var testSABnzbd = '#testSABnzbd';
-        var testSABnzbdResult = '#testSABnzbd_result';
-        var testNZBget = '#testNZBget';
-        var testNZBgetResult = '#testNZBgetResult';
-        var nzbgetSettings = '#nzbget_settings';
+        const selectedProvider = $('#nzb_method :selected').val();
+        const blackholeSettings = '#blackhole_settings';
+        const sabnzbdSettings = '#sabnzbd_settings';
+        const testSABnzbd = '#testSABnzbd';
+        const testSABnzbdResult = '#testSABnzbd_result';
+        const testNZBget = '#testNZBget';
+        const testNZBgetResult = '#testNZBgetResult';
+        const nzbgetSettings = '#nzbget_settings';
 
-        $('#nzb_method_icon').removeClass(function(index, css) {
+        $('#nzb_method_icon').removeClass((index, css) => {
             return (css.match(/(^|\s)add-client-icon-\S+/g) || []).join(' ');
         });
         $('#nzb_method_icon').addClass('add-client-icon-' + selectedProvider.replace('_', '-'));
@@ -46,15 +47,15 @@ MEDUSA.config.search = function() {
         $('#options_torrent_clients').hide();
         $('#options_torrent_blackhole').hide();
 
-        var selectedProvider = $('#torrent_method :selected').val();
-        var host = ' host:port';
-        var username = ' username';
-        var password = ' password';
-        var client = '';
-        var optionPanel = '#options_torrent_blackhole';
-        var rpcurl = ' RPC URL';
+        const selectedProvider = $('#torrent_method :selected').val();
+        const host = ' host:port';
+        const username = ' username';
+        const password = ' password';
+        const rpcurl = ' RPC URL';
+        let client = '';
+        let optionPanel = '#options_torrent_blackhole';
 
-        $('#torrent_method_icon').removeClass(function(index, css) {
+        $('#torrent_method_icon').removeClass((index, css) => {
             return (css.match(/(^|\s)add-client-icon-\S+/g) || []).join(' ');
         });
         $('#torrent_method_icon').addClass('add-client-icon-' + selectedProvider.replace('_', '-'));
@@ -163,10 +164,10 @@ MEDUSA.config.search = function() {
         $(optionPanel).show();
     };
 
-    $('#torrent_host').on('input', function() {
+    $('#torrent_host').on('input', () => {
         if ($('#torrent_method :selected').val().toLowerCase() === 'rtorrent') {
-            var hostname = $('#torrent_host').val();
-            var isMatch = hostname.substr(0, 7) === 'scgi://';
+            const hostname = $('#torrent_host').val();
+            const isMatch = hostname.substr(0, 7) === 'scgi://';
 
             if (isMatch) {
                 $('#torrent_username_option').hide();
@@ -187,8 +188,8 @@ MEDUSA.config.search = function() {
 
     $(this).nzbMethodHandler();
 
-    $('#testSABnzbd').on('click', function() {
-        var sab = {};
+    $('#testSABnzbd').on('click', () => {
+        const sab = {};
         $('#testSABnzbd_result').html(MEDUSA.config.loading);
         sab.host = $('#sab_host').val();
         sab.username = $('#sab_username').val();
@@ -200,13 +201,13 @@ MEDUSA.config.search = function() {
             username: sab.username,
             password: sab.password,
             apikey: sab.apiKey
-        }, function(data) {
+        }, data => {
             $('#testSABnzbd_result').html(data);
         });
     });
 
-    $('#testNZBget').on('click', function() {
-        var nzbget = {};
+    $('#testNZBget').on('click', () => {
+        const nzbget = {};
         $('#testNZBget_result').html(MEDUSA.config.loading);
         nzbget.host = $('#nzbget_host').val();
         nzbget.username = $('#nzbget_username').val();
@@ -218,7 +219,7 @@ MEDUSA.config.search = function() {
             username: nzbget.username,
             password: nzbget.password,
             use_https: nzbget.useHttps // eslint-disable-line camelcase
-        }, function(data) {
+        }, data => {
             $('#testNZBget_result').html(data);
         });
     });
@@ -227,8 +228,8 @@ MEDUSA.config.search = function() {
 
     $.torrentMethodHandler();
 
-    $('#test_torrent').on('click', function() {
-        var torrent = {};
+    $('#test_torrent').on('click', () => {
+        const torrent = {};
         $('#test_torrent_result').html(MEDUSA.config.loading);
         torrent.method = $('#torrent_method :selected').val();
         torrent.host = $('#torrent_host').val();
@@ -240,7 +241,7 @@ MEDUSA.config.search = function() {
             host: torrent.host,
             username: torrent.username,
             password: torrent.password
-        }, function(data) {
+        }, data => {
             $('#test_torrent_result').html(data);
         });
     });

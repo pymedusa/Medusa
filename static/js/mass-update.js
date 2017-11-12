@@ -12,11 +12,11 @@ $(document).ready(() => {
             return;
         }
 
-        const submitForm = $(
-            '<form method=\'post\' action=\'' + $('base').attr('href') + 'manage/massEdit\'>' +
-            '<input type=\'hidden\' name=\'toEdit\' value=\'' + editArr.join('|') + '\'/>' +
-            '</form>'
-        );
+        const submitForm = $(`
+            <form method="post" action="${$('base').attr('href')}manage/massEdit">
+                <input type="hidden" name="toEdit" value="${editArr.join('|')}"/>
+            </form>
+        `);
         submitForm.appendTo('body');
 
         submitForm.submit();
