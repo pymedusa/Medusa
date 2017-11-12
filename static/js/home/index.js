@@ -365,4 +365,87 @@ MEDUSA.home.index = function() {
             $('#showRoot').hide();
         }
     }
+    //
+    // $('.move-show-list').on('touchmove mousemove mouseup', function(evt) {
+    //    let target = $(evt.currentTarget);
+    //    let moveTarget = $('#' + target.data('move-target'));
+    //
+    //    console.log(`Event type: ${evt.type}`);
+    //
+    //    let y = undefined;
+    //
+    //    if (evt.type === 'mouseup') {
+    //        $(moveTarget).css({
+    //            'position': 'relative',
+    //            'top': 0,
+    //            'left': target.position().x
+    //        });
+    //        return;
+    //    }
+    //
+    //    if (evt.type === 'mousemove') {
+    //        if (evt.which == 1) {
+    //            console.log(evt.pageX + " / " + evt.pageY);
+    //            y = evt.pageY;
+    //        } else {
+    //            return;
+    //        }
+    //    } else {
+    //        let touch = evt.originalEvent.touches[0];
+    //        y = touch.clientY;
+    //    }
+    //
+    //    $(moveTarget).css({
+    //        'position': 'absolute',
+    //        'top': y,
+    //        'left': target.position().x
+    //    });
+    //
+    //    console.log(`Position element y: ${y}`);
+    // });
+    //
+    // $(document).on('mouseup', function(evt) {
+    //     if (evt.type === 'mouseup') {
+    //        $('#container-series, #container-anime').css({
+    //            'position': 'relative',
+    //            'top': 0,
+    //            'left': 0
+    //        });
+    //        return;
+    //    }
+    // });
+
+    $('#poster-container').sortable({
+        appendTo: document.body,
+        axis: 'y',
+        items: "> .show-grid",
+        scroll: false,
+        tolerance: "pointer",
+        helper: 'clone',
+        handle: 'button.move-show-list',
+        cancel: '',
+        sort: function (event, ui) {
+            var that = $(this);
+            var h = ui.helper.outerHeight();
+            var centreOfDraggedItem = ui.position.top + h/2;
+
+            that.children().each(function () {
+                if ($(this).hasClass('ui-sortable-helper') || $(this).hasClass('ui-sortable-placeholder'))
+                    return true;
+                var centreOfThisItem =  $(this).position().top + h/2;
+                var dist = centreOfDraggedItem - centreOfThisItem;
+                var before = centreOfDraggedItem > centreOfThisItem;
+                if (Math.abs(dist) < h/2) {
+                    if (before && dist > h/8) { // moving down
+                        $('.ui-sortable-placeholder').insertAfter($(this));
+                        return false;
+                    }
+                    if (!before && dist < -(h/8)) { // moving up
+                        $('.ui-sortable-placeholder').insertBefore($(this));
+                        return false;
+                    }
+                }
+            });
+        }
+    })
 };
