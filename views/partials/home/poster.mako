@@ -9,14 +9,21 @@
 %>
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <div class="loading-spinner"></div>
+
 % for cur_show_list in show_lists:
     <% cur_list_type = cur_show_list[0] %>
     <% my_show_list = list(cur_show_list[1]) %>
+
+<div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix">
     <div class="showListTitle ${cur_list_type.lower()}">
-        <h2 class="header">${cur_list_type}</h1>
+        <button type="button" class="nav-show-list">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <h2 class="header">${cur_list_type}</h2>
         <div class="loading-spinner"></div>
     </div>
-<div id="${'container-' + cur_list_type.lower()}" class="show-grid clearfix">
     <div class="posterview">
     % for cur_loading_show in app.show_queue_scheduler.action.loadingShowList:
         % if cur_loading_show.show is None:

@@ -57,17 +57,6 @@ MEDUSA.home.index = function() {
         });
     }
 
-    this.offsetTitle = function() {
-        const showLists = $('.show-grid');
-        $.each(showLists, function(i, value) {
-            console.log(value);
-            let sourceWidth = $(value).width();
-            let targetTitle = value.id.split('-')[1];
-            $('div.showListTitle .' + targetTitle).css('margin-left', ($(window).width() - sourceWidth) / 2 + 'px');
-        });
-    };
-    this.offsetTitle();
-
     var posterSize;
     if (typeof (Storage) !== 'undefined') {
         posterSize = parseInt(localStorage.getItem('posterSize'), 10);
@@ -240,7 +229,6 @@ MEDUSA.home.index = function() {
         }).on('layoutComplete arrangeComplete removeComplete', function() {
             imgLazyLoad.update();
             imgLazyLoad.handleScroll();
-            offsetTitle();
         });
 
         // When posters are small enough to not display the .show-details
