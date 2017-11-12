@@ -10,12 +10,11 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
+    "test": "xo && nyc ava",
     "test-js": "xo",
-    "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
-    "build": "node_modules/grunt-cli/bin/grunt",
-    "install": "yarn run test-js"
+    "build": "grunt"
   },
   "devDependencies": {
     "dredd": "^3.3.0",
@@ -29,7 +28,6 @@
     "grunt-contrib-uglify": "^0.11.1",
     "load-grunt-tasks": "^3.3.0",
     "snyk": "^1.9.1",
-    "stylelint-config-standard": "^16.0.0",
     "xo": "^0.17.1"
   },
   "xo": {
@@ -61,27 +59,5 @@
       "static/js/vender.js",
       "static/js/api.js"
     ]
-  },
-  "stylelint": {
-    "extends": "stylelint-config-standard",
-    "rules": {
-      "indentation": [
-        4,
-        {
-          "ignore": [
-            "inside-parens"
-          ],
-          "message": "Please use 4 spaces for indentation. Tabs make OmgImAlexis sad.",
-          "severity": "error"
-        }
-      ]
-    },
-    "ignoreFiles": [
-      "static/css/lib/**",
-      "static/css/*.min.css"
-    ]
-  },
-  "dependencies": {
-    "stylelint": "^7.9.0"
   }
 }
