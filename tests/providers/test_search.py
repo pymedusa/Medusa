@@ -2,8 +2,8 @@
 """Provider parser tests."""
 from __future__ import unicode_literals
 
+import datetime
 import os
-
 import vcr
 
 
@@ -26,10 +26,10 @@ def test_search_daily(providers, limit=3):
             # Only compare up to the info hash if we have magnets
             if provider.data['daily']['results'][i]['link'].startswith('magnet'):
                 result['link'] = result['link'][:60]
-
-            if provider.data['daily']['results'][i]['pubdate']:
-                    result['pubdate'] = result['pubdate'].replace(hour=0, minute=0, second=0,
-                                                                  microsecond=0, tzinfo=None)
+            # Only verify that we got a datetime object for now
+            pubdate = provider.data['daily']['results'][i]['pubdate']
+            if pubdate and isinstance(pubdate, datetime.datetime):
+                result['pubdate'] = pubdate
 
             assert result == provider.data['daily']['results'][i]
 
@@ -53,10 +53,10 @@ def test_search_backlog(providers, limit=2):
                 # Only compare up to the info hash if we have magnets
                 if provider.data['backlog']['results'][i]['link'].startswith('magnet'):
                     result['link'] = result['link'][:60]
-
-                if provider.data['backlog']['results'][i]['pubdate']:
-                    result['pubdate'] = result['pubdate'].replace(hour=0, minute=0, second=0,
-                                                                  microsecond=0, tzinfo=None)
+                # Only verify that we got a datetime object for now
+                pubdate = provider.data['backlog']['results'][i]['pubdate']
+                if pubdate and isinstance(pubdate, datetime.datetime):
+                    result['pubdate'] = pubdate
 
                 assert result == provider.data['backlog']['results'][i]
 
