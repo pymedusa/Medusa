@@ -412,7 +412,8 @@ inc_rootDirs.mako
 .rootdir-selectbox,
 .rootdir-selectbox #rootDirs,
 .rootdir-controls {
-    width: 430px;
+    width: 100%;
+    max-width: 430px;
 }
 
 .rootdir-selectbox {
@@ -889,7 +890,7 @@ home_newShow.mako
 
 #addShowForm,
 #recommendedShowsForm {
-    width: 800px;
+    max-width: 800px;
     margin-left: auto;
     margin-right: auto;
     padding: 10px 0;
@@ -897,7 +898,7 @@ home_newShow.mako
 }
 
 #newShowPortal {
-    width: 960px;
+    max-width: 960px;
     padding: 10px 0;
     margin-right: auto;
     margin-left: auto;
@@ -927,6 +928,7 @@ ul#rootDirStaticList {
     margin-right: auto;
     margin-left: auto;
     text-align: left;
+    padding-left: 0px;
 }
 
 ul#rootDirStaticList li {
@@ -4132,6 +4134,26 @@ div#searchNotification {
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 250px;
+}
+
+.release-name-ellipses-toggled {
+    overflow: visible;
+    white-space: nowrap;
+    position: relative;
+    max-width: 250px;
+}
+
+.release-name-ellipses:hover {
+    text-decoration: underline;
+}
+
+.release-name-ellipses-toggled span {
+    background-color: rgb(190, 222, 237);
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(136, 136, 136);
+    padding: 5px;
+    box-shadow: 3px 3px 3px rgba(17, 17, 17, 0.5);
 }
 
 /* =======================================================================

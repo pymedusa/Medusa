@@ -6,7 +6,6 @@ import collections
 import json
 import operator
 import traceback
-
 from datetime import date, datetime
 from babelfish.language import Language
 import jwt

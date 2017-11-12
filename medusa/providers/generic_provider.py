@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from base64 import b16encode, b32decode
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -74,17 +73,11 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'https://torrentproject.se/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'http://piratepublic.com/download.php?id={info_hash}',
-            'http://www.legittorrents.info/download.php?id={info_hash}',
             'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
-            'https://skytorrents.in/file/{info_hash}/.torrent',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
-            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
@@ -531,7 +524,7 @@ class GenericProvider(object):
         return []
 
     @staticmethod
-    def parse_pubdate(pubdate, human_time=False, timezone=None):
+    def parse_pubdate(pubdate, human_time=False, timezone=None, **kwargs):
         """
         Parse publishing date into a datetime object.
 
@@ -539,9 +532,15 @@ class GenericProvider(object):
         :param human_time: string uses human slang ("4 hours ago")
         :param timezone: use a different timezone ("US/Eastern")
 
+        :keyword dayfirst: Interpret the first value as the day
+        :keyword yearfirst: Interpret the first value as the year
+
         :returns: a datetime object or None
         """
         now_alias = ('right now', 'just now', 'now')
+
+        df = kwargs.pop('dayfirst', False)
+        yf = kwargs.pop('yearfirst', False)
 
         # This can happen from time to time
         if pubdate is None:
@@ -557,7 +556,7 @@ class GenericProvider(object):
                     seconds = parse(match.group('time'))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
-            dt = parser.parse(pubdate, fuzzy=True)
+            dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
                 dt = dt.replace(tzinfo=tz.gettz('UTC'))
@@ -581,7 +580,11 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        all_possible_show_names = episode.series.get_all_possible_names()
+        if episode.scene_season:
+            all_possible_show_names = all_possible_show_names.union(episode.series.get_all_possible_names(season=episode.scene_season))
+
+        for show_name in all_possible_show_names:
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
@@ -719,7 +722,8 @@ class GenericProvider(object):
         result_name = sanitize_filename(result.name)
 
         # Some NZB providers (e.g. Jackett) can also download torrents
-        if result.url.endswith(GenericProvider.TORRENT) and self.provider_type == GenericProvider.NZB:
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')
         else:
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
@@ -836,9 +840,8 @@ class GenericProvider(object):
             return False
 
         response = self.session.get(check_url)
-        if any([not response,
-                not (response.text and response.status_code == 200),
-                check_login_text.lower() in response.text.lower()]):
+        if not response or any([not (response.text and response.status_code == 200),
+                                check_login_text.lower() in response.text.lower()]):
             log.warning('Please configure the required cookies for this provider. Check your provider settings')
             ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
                                    'Check your provider settings')

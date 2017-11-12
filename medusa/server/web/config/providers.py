@@ -7,14 +7,15 @@ from __future__ import unicode_literals
 import json
 import os
 
+from medusa import app, config, logger, providers, ui
+from medusa.helper.common import try_int
+from medusa.helpers.utils import split_and_strip
+from medusa.providers.generic_provider import GenericProvider
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, providers, ui
-from ....helper.common import try_int
-from ....providers.generic_provider import GenericProvider
-from ....providers.nzb.newznab import NewznabProvider
-from ....providers.torrent.rss.rsstorrent import TorrentRssProvider
 
 
 @route('/config/providers(/?.*)')
@@ -228,7 +229,7 @@ class ConfigProviders(Config):
                     newznab_provider_dict[cur_id].name = cur_name
                     newznab_provider_dict[cur_id].url = cur_url
                     newznab_provider_dict[cur_id].api_key = cur_key
-                    newznab_provider_dict[cur_id].cat_ids = cur_cat
+                    newznab_provider_dict[cur_id].cat_ids = split_and_strip(cur_cat)
                     # a 0 in the key spot indicates that no key is needed
                     if cur_key == '0':
                         newznab_provider_dict[cur_id].needs_auth = False
@@ -274,8 +275,8 @@ class ConfigProviders(Config):
             if cur_provider.get_id() not in finished_names:
                 app.newznabProviderList.remove(cur_provider)
 
-        # Update the newznab provider list
-        app.NEWZNAB_PROVIDERS = [provider.name.upper() for provider in app.newznabProviderList]
+        # Update the custom newznab provider list
+        NewznabProvider.save_newnab_providers()
 
         torrent_rss_provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
@@ -310,7 +311,8 @@ class ConfigProviders(Config):
             if cur_provider.get_id() not in finished_names:
                 app.torrentRssProviderList.remove(cur_provider)
 
-        app.TORRENTRSS_PROVIDERS = [provider.name.upper() for provider in app.torrentRssProviderList]
+        # Update the torrentrss provider list
+        app.TORRENTRSS_PROVIDERS = [provider.name for provider in app.torrentRssProviderList]
 
         disabled_list = []
         # do the enable/disable

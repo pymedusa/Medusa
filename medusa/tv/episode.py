@@ -10,11 +10,8 @@ import re
 import time
 import traceback
 import warnings
-
 from datetime import date, datetime
-
 import knowit
-
 from medusa import (
     app,
     db,
@@ -37,7 +34,6 @@ from medusa.common import (
     WANTED,
     statusStrings,
 )
-from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     dateFormat,
     dateTimeFormat,
@@ -54,6 +50,7 @@ from medusa.helper.exceptions import (
     NoNFOException,
     ex,
 )
+from medusa.helper.mappings import NonEmptyDict
 from medusa.indexers.indexer_api import indexerApi
 from medusa.indexers.indexer_config import indexerConfig
 from medusa.indexers.indexer_exceptions import (

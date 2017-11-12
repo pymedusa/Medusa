@@ -3,7 +3,6 @@
 """Name cache module."""
 
 import logging
-
 import threading
 
 from medusa import app, db

@@ -11,6 +11,7 @@ from medusa.session.core import MedusaSession
 from requests.auth import HTTPBasicAuth
 from requests.compat import unquote_plus
 from requests.exceptions import HTTPError, RequestException
+from six import string_types, text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -87,6 +88,10 @@ class Notifier(object):
             username = app.KODI_USERNAME
         if not password:
             password = app.KODI_PASSWORD
+
+        # Sanitize host when not passed as a list
+        if isinstance(host, (string_types, text_type)):
+            host = host.split(',')
 
         # suppress notifications if the notifier is disabled but the notify options are checked
         if not app.USE_KODI and not force:

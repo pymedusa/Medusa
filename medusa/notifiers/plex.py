@@ -5,6 +5,7 @@ import re
 
 from medusa import app, common
 from medusa.helper.exceptions import ex
+from medusa.helpers.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
@@ -92,10 +93,10 @@ class Notifier(object):
                                 'Test Notification', host, username, password, force=True)
 
     def test_notify_pms(self, host, username, password, plex_server_token):
-        return self.update_library(host=host, username=username, password=password,
+        return self.update_library(hosts=host, username=username, password=password,
                                    plex_server_token=plex_server_token, force=True)
 
-    def update_library(self, ep_obj=None, host=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
+    def update_library(self, ep_obj=None, hosts=None,  # pylint: disable=too-many-arguments, too-many-locals, too-many-statements, too-many-branches
                        username=None, password=None,
                        plex_server_token=None, force=False):
 
@@ -111,8 +112,8 @@ class Notifier(object):
         if not (app.USE_PLEX_SERVER and app.PLEX_UPDATE_LIBRARY) and not force:
             return None
 
-        host = host or app.PLEX_SERVER_HOST
-        if not host:
+        hosts = hosts or app.PLEX_SERVER_HOST
+        if not hosts:
             log.debug(u'PLEX: No Plex Media Server host specified, check your settings')
             return False
 
@@ -121,11 +122,12 @@ class Notifier(object):
             return False
 
         file_location = '' if not ep_obj else ep_obj.location
-        host_list = {x.strip() for x in host if x.strip()}
+        gen_hosts = generate(hosts)
+        hosts = {x.strip() for x in gen_hosts if x.strip()}
         hosts_all = hosts_match = {}
         hosts_failed = set()
 
-        for cur_host in host_list:
+        for cur_host in hosts:
 
             url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
             try:
