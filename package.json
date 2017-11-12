@@ -12,12 +12,19 @@
   "scripts": {
     "test": "xo && nyc ava",
     "test-js": "xo",
-    "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
+    "test-api": "dredd --config dredd/dredd.yml",
     "security": "snyk test",
     "build": "grunt"
   },
   "devDependencies": {
+    "autoprefixer": "^7.1.6",
+    "babel-core": "^6.26.0",
+    "babelify": "^8.0.0",
+    "browserify": "^14.5.0",
+    "cssnano": "^3.10.0",
     "dredd": "^3.3.0",
+    "event-stream": "^3.3.4",
+    "glob": "^7.1.2",
     "grunt": "^0.4.5",
     "grunt-bower-concat": "^1.0.0",
     "grunt-bower-task": "^0.4.0",
@@ -26,13 +33,34 @@
     "grunt-contrib-copy": "^0.8.2",
     "grunt-contrib-cssmin": "^0.14.0",
     "grunt-contrib-uglify": "^0.11.1",
+    "gulp": "^3.9.1",
+    "gulp-if": "^2.0.2",
+    "gulp-imagemin": "^3.4.0",
+    "gulp-livereload": "^3.8.1",
+    "gulp-postcss": "^7.0.0",
+    "gulp-rev": "^8.1.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-swagger-js-codegen": "^1.0.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "gulp-xo": "^0.16.0",
+    "imagemin-pngquant": "^5.0.1",
     "load-grunt-tasks": "^3.3.0",
+    "postcss-reporter": "^5.0.0",
+    "run-sequence": "^2.2.0",
     "snyk": "^1.9.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
     "xo": "^0.17.1"
   },
   "xo": {
     "space": 4,
     "rules": {
+      "object-curly-spacing": [
+        "error",
+        "always"
+      ],
       "space-before-function-paren": [
         "error",
         "never"
