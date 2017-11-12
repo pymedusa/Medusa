@@ -1,17 +1,19 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-$(document).ready(function () {
-    // Perform an API call
-    $('[data-action=api-call]').on('click', function () {
-        var parameters = $('[data-command=' + $(this).data('command-name') + ']');
-        var profile = $('#option-profile').is(':checked');
-        var targetId = $(this).data('target');
-        var timeId = $(this).data('time');
-        var url = $('#' + $(this).data('base-url')).text();
-        var urlId = $(this).data('url');
+var _this = this;
 
-        $.each(parameters, function (index, item) {
-            var name = $(item).attr('name');
-            var value = $(item).val();
+$(document).ready(() => {
+    // Perform an API call
+    $('[data-action=api-call]').on('click', () => {
+        const parameters = $('[data-command=' + $(_this).data('command-name') + ']');
+        const profile = $('#option-profile').is(':checked');
+        const targetId = $(_this).data('target');
+        const timeId = $(_this).data('time');
+        const urlId = $(_this).data('url');
+        let url = $('#' + $(_this).data('base-url')).text();
+
+        $.each(parameters, (index, item) => {
+            const name = $(item).attr('name');
+            let value = $(item).val();
 
             if (name !== undefined && value !== undefined && name !== value && value) {
                 if ($.isArray(value)) {
@@ -26,12 +28,12 @@ $(document).ready(function () {
             url += '&profile=1';
         }
 
-        var requestTime = new Date().getTime();
-        $.get(url.replace('/api/', 'api/'), function (data, textStatus, jqXHR) {
-            var responseTime = new Date().getTime() - requestTime;
-            var jsonp = $('#option-jsonp').is(':checked');
-            var responseType = jqXHR.getResponseHeader('content-type') || '';
-            var target = $(targetId);
+        const requestTime = new Date().getTime();
+        $.get(url.replace('/api/', 'api/'), (data, textStatus, jqXHR) => {
+            const responseTime = new Date().getTime() - requestTime;
+            const jsonp = $('#option-jsonp').is(':checked');
+            const responseType = jqXHR.getResponseHeader('content-type') || '';
+            const target = $(targetId);
 
             $(timeId).text(responseTime + 'ms');
             $(urlId).text(url + (jsonp ? '&jsonp=foo' : ''));
@@ -39,7 +41,7 @@ $(document).ready(function () {
             if (responseType.slice(0, 6) === 'image/') {
                 target.html($('<img/>').prop('src', url));
             } else {
-                var json = JSON.stringify(data, null, 4);
+                const json = JSON.stringify(data, null, 4);
 
                 if (jsonp) {
                     target.text('foo(' + json + ');');
@@ -59,16 +61,16 @@ $(document).ready(function () {
 
     // Update the list of episodes
     $('[data-action=update-episodes').on('change', function () {
-        var command = $(this).data('command');
-        var select = $('[data-command=' + command + '][name=episode]');
-        var season = $(this).val();
-        var show = $('[data-command=' + command + '][name=indexerid]').val();
+        const command = $(this).data('command');
+        const select = $('[data-command=' + command + '][name=episode]');
+        const season = $(this).val();
+        const show = $('[data-command=' + command + '][name=indexerid]').val();
 
         if (select !== undefined) {
             select.removeClass('hidden');
             select.find('option:gt(0)').remove();
 
-            for (var episode in episodes[show][season]) {
+            for (const episode in episodes[show][season]) {
                 // eslint-disable-line no-undef
                 if ({}.hasOwnProperty.call(episodes[show][season], episode)) {
                     // eslint-disable-line no-undef
@@ -83,15 +85,15 @@ $(document).ready(function () {
 
     // Update the list of seasons
     $('[data-action=update-seasons').on('change', function () {
-        var command = $(this).data('command');
-        var select = $('[data-command=' + command + '][name=season]');
-        var show = $(this).val();
+        const command = $(this).data('command');
+        const select = $('[data-command=' + command + '][name=season]');
+        const show = $(this).val();
 
         if (select !== undefined) {
             select.removeClass('hidden');
             select.find('option:gt(0)').remove();
 
-            for (var season in episodes[show]) {
+            for (const season in episodes[show]) {
                 // eslint-disable-line no-undef
                 if ({}.hasOwnProperty.call(episodes[show], season)) {
                     // eslint-disable-line no-undef
@@ -109,10 +111,10 @@ $(document).ready(function () {
         source: commands // eslint-disable-line no-undef
     });
     $('#command-search').on('change', function () {
-        var command = $(this).typeahead('getActive');
+        const command = $(this).typeahead('getActive');
 
         if (command) {
-            var commandId = command.replace('.', '-');
+            const commandId = command.replace('.', '-');
             $('[href=#command-' + commandId + ']').click();
         }
     });

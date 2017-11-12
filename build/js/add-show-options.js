@@ -1,16 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-$(document).ready(function () {
+$(document).ready(() => {
     $('#saveDefaultsButton').on('click', function () {
-        var anyQualArray = [];
-        var bestQualArray = [];
-        $('#allowed_qualities option:selected').each(function (i, d) {
-            anyQualArray.push($(d).val());
-        });
-        $('#preferred_qualities option:selected').each(function (i, d) {
-            bestQualArray.push($(d).val());
-        });
+        const anyQualArray = [];
+        const bestQualArray = [];
+        $('#allowed_qualities option:selected').each((i, d) => anyQualArray.push($(d).val()));
+        $('#preferred_qualities option:selected').each((i, d) => bestQualArray.push($(d).val()));
 
-        // @TODO: Move this to API
         $.get('config/general/saveAddShowDefaults', {
             defaultStatus: $('#statusSelect').val(),
             allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
@@ -30,12 +25,12 @@ $(document).ready(function () {
         });
     });
 
-    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', function () {
+    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', () => {
         $('#saveDefaultsButton').prop('disabled', false);
     });
 
-    $('#qualityPreset').on('change', function () {
-        // fix issue #181 - force re-render to correct the height of the outer div
+    $('#qualityPreset').on('change', () => {
+        // @TODO: fix issue #181 - force re-render to correct the height of the outer div
         $('span.prev').click();
         $('span.next').click();
     });

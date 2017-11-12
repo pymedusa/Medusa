@@ -1,38 +1,39 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var searchStatusUrl = 'home/getManualSearchStatus';
-var failedDownload = false;
-var qualityDownload = false;
-var selectedEpisode = '';
+const searchStatusUrl = 'home/getManualSearchStatus';
+let failedDownload = false;
+let qualityDownload = false;
+let selectedEpisode = '';
 PNotify.prototype.options.maxonscreen = 5;
 
 $.fn.forcedSearches = [];
 
-function enableLink(el) {
+const enableLink = el => {
     el.on('click.disabled', false);
     el.prop('enableClick', '1');
     el.fadeTo('fast', 1);
-}
+};
 
-function disableLink(el) {
+const disableLink = el => {
     el.off('click.disabled');
     el.prop('enableClick', '0');
     el.fadeTo('fast', 0.5);
-}
+};
 
-function updateImages(data) {
-    $.each(data.episodes, function (name, ep) {
+const updateImages = data => {
+    $.each(data.episodes, (name, ep) => {
         // Get td element for current ep
-        var loadingImage = 'loading16.gif';
-        var queuedImage = 'queued.png';
-        var searchImage = 'search16.png';
-        var htmlContent = '';
+        const loadingImage = 'loading16.gif';
+        const queuedImage = 'queued.png';
+        const searchImage = 'search16.png';
+        let htmlContent = '';
         // Try to get the <a> Element
-        var el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
-        var img = el.children('img[data-ep-search]');
-        var parent = el.parent();
+        const el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        const img = el.children('img[data-ep-search]');
+        const parent = el.parent();
         if (el) {
-            var rSearchTerm = '';
+            let rSearchTerm = '';
             if (ep.searchstatus.toLowerCase() === 'searching') {
+                //
                 // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'Searching');
@@ -40,6 +41,7 @@ function updateImages(data) {
                 disableLink(el);
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'queued') {
+                //
                 // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Queued');
                 img.prop('alt', 'queued');
@@ -47,6 +49,7 @@ function updateImages(data) {
                 disableLink(el);
                 htmlContent = ep.searchstatus;
             } else if (ep.searchstatus.toLowerCase() === 'finished') {
+                //
                 // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
                 img.prop('title', 'Searching');
                 img.prop('alt', 'searching');
@@ -59,11 +62,11 @@ function updateImages(data) {
                 htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$4" + '</span>'); // eslint-disable-line quotes, no-useless-concat
                 parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
             }
-            // update the status column if it exists
+            // Update the status column if it exists
             parent.siblings('.col-status').html(htmlContent);
         }
-        var elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
-        var imageCompleteEpisodes = elementCompleteEpisodes.children('img');
+        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        const imageCompleteEpisodes = elementCompleteEpisodes.children('img');
         if (elementCompleteEpisodes) {
             if (ep.searchstatus.toLowerCase() === 'searching') {
                 imageCompleteEpisodes.prop('title', 'Searching');
@@ -86,37 +89,36 @@ function updateImages(data) {
             }
         }
     });
-}
+};
 
-function checkManualSearches() {
-    var pollInterval = 5000;
-    var showId = $('#series-id').val();
-    var url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+const checkManualSearches = () => {
+    const showId = $('#series-id').val();
+    const url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+    let pollInterval = 5000;
     $.ajax({
-        url: url,
-        error: function () {
+        url,
+        error() {
             pollInterval = 30000;
         },
         type: 'GET',
         dataType: 'JSON',
-        complete: function () {
+        complete() {
             setTimeout(checkManualSearches, pollInterval);
         },
-        timeout: 15000 // timeout every 15 secs
-    }).done(function (data) {
+        timeout: 15000 // Timeout every 15 secs
+    }).done(data => {
         if (data.episodes) {
             pollInterval = 5000;
         } else {
             pollInterval = 15000;
         }
         updateImages(data);
+        //
         // cleanupManualSearches(data);
     });
-}
+};
 
-$(document).ready(function () {
-    checkManualSearches();
-});
+$(document).ready(() => checkManualSearches());
 
 $.ajaxEpSearch = function (options) {
     options = $.extend({}, {
@@ -141,23 +143,22 @@ $.ajaxEpSearch = function (options) {
         $('#forcedSearchModalFailed').modal('show');
     });
 
-    function forcedSearch() {
-        var imageName;
-        var imageResult;
-        var htmlContent;
-
-        var parent = selectedEpisode.parent();
+    const forcedSearch = () => {
+        const parent = selectedEpisode.parent();
+        let imageName;
+        let imageResult;
+        let htmlContent;
 
         // Create var for anchor
-        var link = selectedEpisode;
+        const link = selectedEpisode;
 
         // Create var for img under anchor and set options for the loading gif
-        var img = selectedEpisode.children('img');
+        const img = selectedEpisode.children('img');
         img.prop('title', 'loading');
         img.prop('alt', '');
         img.prop('src', 'images/' + options.loadingImage);
 
-        var url = selectedEpisode.prop('href');
+        let url = selectedEpisode.prop('href');
 
         if (!failedDownload) {
             url = url.replace('retryEpisode', 'searchEpisode');
@@ -169,39 +170,37 @@ $.ajaxEpSearch = function (options) {
         }
 
         // @TODO: Move to the API
-        $.getJSON(url, function (data) {
-            // if they failed then just put the red X
+        $.getJSON(url, data => {
+            // If they failed then just put the red X
             if (data.result.toLowerCase() === 'failure') {
                 imageName = options.noImage;
                 imageResult = 'failed';
             } else {
-                // if the snatch was successful then apply the
+                // If the snatch was successful then apply the
                 // corresponding class and fill in the row appropriately
                 imageName = options.loadingImage;
                 imageResult = 'success';
-                // color the row
+                // Color the row
                 if (options.colorRow) {
                     parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
                 }
-                // applying the quality class
-                var rSearchTerm = /(\w+)\s\((.+?)\)/;
+                // Applying the quality class
+                const rSearchTerm = /(\w+)\s\((.+?)\)/;
                 htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
-                // update the status column if it exists
+                // Update the status column if it exists
                 parent.siblings('.col-status').html(htmlContent);
                 // Only if the queuing was successful, disable the onClick event of the loading image
                 disableLink(link);
             }
 
-            // put the corresponding image as the result of queuing of the manual search
+            // Put the corresponding image as the result of queuing of the manual search
             img.prop('title', imageResult);
             img.prop('alt', imageResult);
             img.prop('height', options.size);
             img.prop('src', 'images/' + imageName);
         });
-
-        // don't follow the link
         return false;
-    }
+    };
 
     $('.epSearch').on('click', function (event) {
         event.preventDefault();
@@ -232,7 +231,7 @@ $.ajaxEpSearch = function (options) {
         $('.epManualSearch').addClass('disabled');
         $('.epManualSearch').fadeTo(1, 0.1);
 
-        var url = this.href;
+        const url = this.href;
         if (event.shiftKey || event.ctrlKey || event.which === 2) {
             window.open(url, '_blank');
         } else {
