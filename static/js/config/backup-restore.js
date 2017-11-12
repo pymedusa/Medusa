@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.config.backupRestore = function() {
     $('#Backup').on('click', function() {
         $('#Backup').prop('disabled', true);

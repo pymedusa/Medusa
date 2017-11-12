@@ -106,3 +106,5 @@ if (!document.location.pathname.endsWith('/login/')) {
         alert('Unable to connect to Medusa!'); // eslint-disable-line no-alert
     });
 }
+
+module.exports = MEDUSA;

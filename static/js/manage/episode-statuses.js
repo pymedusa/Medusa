@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.manage.episodeStatuses = function() {
     $('.allCheck').on('click', function() {
         var indexerId = $(this).attr('id').split('-')[1];

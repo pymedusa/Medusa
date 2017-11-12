@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.addShows.addExistingShow = function() {
     $('#tableDiv').on('click', '#checkAll', function() {
         var seasonCheck = this;

@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.manage.backlogOverview = function() {
     checkForcedSearch();
 

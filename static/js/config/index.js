@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.config.index = function() {
     if ($('input[name="proxy_setting"]').val().length === 0) {
         $('input[id="proxy_indexers"]').prop('checked', false);

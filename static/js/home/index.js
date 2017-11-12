@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.home.index = function() {
     // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
     $('.resetsorting').on('click', function() {

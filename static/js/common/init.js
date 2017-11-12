@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.common.init = function() {
     // Import underscore.string using it's mixin export.
     _.mixin(s.exports());
@@ -6,6 +7,7 @@ MEDUSA.common.init = function() {
     if (MEDUSA.config.fanartBackground) {
         var seriesId = $('#series-id').attr('value');
         if (seriesId) {
+            const apiRoot = $('body').attr('api-root');
             let path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
             $.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());

@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.home.restart = function() {
     var currentPid = $('.messages').attr('current-pid');
     var defaultPage = $('.messages').attr('default-page');

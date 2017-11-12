@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.home.editShow = function() {
     if (MEDUSA.config.fanartBackground) {
         let path = apiRoot + 'series/' + $('#series-id').attr('value') + '/asset/fanart?api_key=' + apiKey;

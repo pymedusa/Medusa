@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.history.index = function() {
     $('#historyTable:has(tbody tr)').tablesorter({
         widgets: ['saveSort', 'zebra', 'filter'],

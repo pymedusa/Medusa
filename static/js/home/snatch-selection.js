@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.home.snatchSelection = function() {
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();

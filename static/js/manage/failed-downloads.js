@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.manage.failedDownloads = function() {
     $('#failedTable:has(tbody tr)').tablesorter({
         widgets: ['zebra'],

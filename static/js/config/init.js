@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.config.init = function() {
     $('#config-components').tabs();
 

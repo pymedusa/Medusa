@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.schedule.index = function() {
     if ($.isMeta({layout: 'schedule'}, ['list'])) {
         var sortCodes = {

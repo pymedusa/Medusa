@@ -1,3 +1,4 @@
+const MEDUSA = require('./core');
 var WSMessageUrl = '/ui'; // eslint-disable-line xo/filename-case
 var test = !1;
 

@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
     $('.imdbPlot').on('click', function() {
         $(this).prev('span').toggle();

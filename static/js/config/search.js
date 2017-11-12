@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.config.search = function() {
     $('#config-components').tabs();
     $('#nzb_dir').fileBrowser({title: 'Select .nzb black hole/watch location'});

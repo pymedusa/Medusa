@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.manage.subtitleMissedPP = function() {
     startAjaxEpisodeSubtitles(); // eslint-disable-line no-undef
     $.ajaxEpSubtitlesSearch();

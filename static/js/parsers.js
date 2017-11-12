@@ -1,3 +1,4 @@
+const MEDUSA = require('./core');
 $.tablesorter.addParser({
     id: 'loadingNames',
     is: function() {

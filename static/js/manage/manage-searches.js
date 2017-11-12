@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.manage.manageSearches = function() {
     /**
      * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.

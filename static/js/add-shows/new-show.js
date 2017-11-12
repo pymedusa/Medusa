@@ -1,3 +1,4 @@
+const MEDUSA = require('../core');
 MEDUSA.addShows.newShow = function() {
     function updateSampleText() {
         // if something's selected then we have some behavior to figure out
