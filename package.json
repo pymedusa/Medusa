@@ -81,7 +81,8 @@
     "ignores": [
       "static/js/lib/**",
       "static/js/*.min.js",
-      "static/js/vender.js"
+      "static/js/vender.js",
+      "build/**"
     ]
   }
 }
