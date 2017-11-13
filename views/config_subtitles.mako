@@ -47,7 +47,7 @@ $('#subtitles_dir').fileBrowser({ title: 'Select Subtitles Download Directory' }
                                 <span class="component-title">Search Subtitles</span>
                                 <span class="component-desc">
                                     <input type="checkbox" class="enabler" ${' checked="checked"' if app.USE_SUBTITLES else ''} id="use_subtitles" name="use_subtitles">
-                                            <p>Search subtitles for episodes with DOWNLOADED status</p>
+                                    <p>Search subtitles for episodes with DOWNLOADED status</p>
                                 </span>
                             </label>
                         </div>
