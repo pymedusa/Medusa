@@ -146,7 +146,7 @@ def snatch_episode(result):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
-                log.warning(u'Torrent file content is empty')
+                log.warning(u'Torrent file content is empty: {0}', result.name)
                 result_downloaded = False
     else:
         log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
