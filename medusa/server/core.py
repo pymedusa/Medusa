@@ -25,7 +25,6 @@ from tornado.web import Application, RedirectHandler, StaticFileHandler, url
 from tornroutes import route
 from .api.v1.core import ApiHandler
 from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
-from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
 from ..ws import MedusaWebSocketHandler
