@@ -163,7 +163,7 @@ class Manage(Home, WebRoot):
             b'FROM tv_episodes '
             b'WHERE showid = ? '
             b'AND season != 0 '
-            b'AND (status LIKE \'%4\' OR status LIKE \'%6\') '
+            b'AND status LIKE \'%4\' '
             b'AND location != \'\'',
             [int(indexer_id)]
         )
@@ -204,7 +204,7 @@ class Manage(Home, WebRoot):
             b'SELECT show_name, tv_shows.indexer_id as indexer_id, tv_episodes.subtitles subtitles '
             b'FROM tv_episodes, tv_shows '
             b'WHERE tv_shows.subtitles = 1 '
-            b'AND (tv_episodes.status LIKE \'%4\' OR tv_episodes.status LIKE \'%6\') '
+            b'AND tv_episodes.status LIKE \'%4\' '
             b'AND tv_episodes.season != 0 '
             b'AND tv_episodes.location != \'\' '
             b'AND tv_episodes.showid = tv_shows.indexer_id '
@@ -258,7 +258,7 @@ class Manage(Home, WebRoot):
                 all_eps_results = main_db_con.select(
                     b'SELECT season, episode '
                     b'FROM tv_episodes '
-                    b'WHERE (status LIKE \'%4\' OR status LIKE \'%6\') '
+                    b'WHERE status LIKE \'%4\' '
                     b'AND season != 0 '
                     b'AND showid = ? '
                     b'AND location != \'\'',
