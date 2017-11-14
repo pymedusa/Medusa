@@ -8,8 +8,6 @@ import logging
 import re
 import traceback
 
-from contextlib2 import suppress
-
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import (
@@ -20,7 +18,6 @@ from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.torrent.torrent_provider import TorrentProvider
 
 from requests.compat import urljoin
-from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -60,7 +57,7 @@ class LimeTorrentsProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -146,21 +143,15 @@ class LimeTorrentsProvider(TorrentProvider):
                     if len(title) < len(alt_title):
                         title = alt_title.replace('-', ' ')
 
-                    torrent_id = regex_result.group(2)
                     info_hash = hash_regex.search(title_url).group(2)
-                    if not all([title, torrent_id, info_hash]):
+                    if not all([title, info_hash]):
                         continue
-
-                    with suppress(RequestsConnectionError, Timeout):
-                        # Suppress the timeout since we are not interested in actually getting the results
-                        self.session.get(self.urls['update'], timeout=0.1, params={'torrent_id': torrent_id,
-                                                                                   'infohash': info_hash})
 
                     download_url = 'magnet:?xt=urn:btih:{hash}&dn={title}{trackers}'.format(
                         hash=info_hash, title=title, trackers=self._custom_trackers)
 
                     # Remove comma as thousands separator from larger number like 2,000 seeders = 2000
-                    seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''), 1)
+                    seeders = try_int(cells[labels.index('Seed')].get_text(strip=True).replace(',', ''))
                     leechers = try_int(cells[labels.index('Leech')].get_text(strip=True).replace(',', ''))
 
                     if seeders < min(self.minseed, 1):
