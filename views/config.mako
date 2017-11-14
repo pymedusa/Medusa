@@ -38,7 +38,6 @@
 <%block name="scripts">
 <script src="js/lib/vue.js"></script>
 <script src="js/lib/axios.min.js"></script>
-<script src="js/lib/lodash.min.js"></script>
 <script>
 var app;
 var startVue = function(){
