@@ -19,6 +19,8 @@ from requests.compat import urljoin
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
+id_regex = re.compile(r'/torrent/(\d+)')
+
 
 class EliteTorrentProvider(TorrentProvider):
     """EliteTorrent Torrent provider."""
@@ -28,12 +30,14 @@ class EliteTorrentProvider(TorrentProvider):
         super(EliteTorrentProvider, self).__init__('EliteTorrent')
 
         # Credentials
+        self.public = True
 
         # URLs
-        self.url = 'http://www.elitetorrent.net'
+        self.url = 'https://elitetorrent.eu'
         self.urls = {
             'base_url': self.url,
-            'search': urljoin(self.url, 'torrents.php')
+            'search': urljoin(self.url, 'torrents.php'),
+            'download': urljoin(self.url, 'get-torrent/{0}'),
         }
 
         # Proper Strings
@@ -46,7 +50,7 @@ class EliteTorrentProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self)  # Only poll EliteTorrent every 20 minutes max
+        self.cache = tv.Cache(self, min_time=20)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -76,17 +80,18 @@ class EliteTorrentProvider(TorrentProvider):
 
             # Only search if user conditions are true
             if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
-                log.debug('Show info is not spanish, skipping provider search')
+                log.debug('Show info is not Spanish, skipping provider search')
                 continue
 
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
+                    search_string = re.sub(r'S0*(\d*)E(\d*)', r'\1x\2', search_string)
+                    search_params['buscar'] = search_string
+
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                search_string = re.sub(r'S0*(\d*)E(\d*)', r'\1x\2', search_string)
-                search_params['buscar'] = search_string.strip() if mode != 'RSS' else ''
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -106,6 +111,7 @@ class EliteTorrentProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
+
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('table', class_='fichas-listado')
             torrent_rows = torrent_table('tr') if torrent_table else []
@@ -119,9 +125,11 @@ class EliteTorrentProvider(TorrentProvider):
             for row in torrent_rows[1:]:
                 try:
                     title = self._process_title(row.find('a', class_='nombre')['title'])
-                    download_url = self.urls['base_url'] + row.find('a')['href']
-                    if not all([title, download_url]):
+                    torrent_id = id_regex.match(row.find('a')['href'])
+                    if not all([title, torrent_id]):
                         continue
+
+                    download_url = self.urls['download'].format(torrent_id.group(1))
 
                     seeders = try_int(row.find('td', class_='semillas').get_text(strip=True))
                     leechers = try_int(row.find('td', class_='clientes').get_text(strip=True))
@@ -157,23 +165,22 @@ class EliteTorrentProvider(TorrentProvider):
 
     @staticmethod
     def _process_title(title):
+        if title:
+            # Quality, if no literal is defined it's HDTV
+            if 'calidad' not in title:
+                title += ' HDTV x264'
+            else:
+                title = title.replace('(calidad baja)', 'HDTV x264')
+                title = title.replace('(Buena calidad)', '720p HDTV x264')
+                title = title.replace('(Alta calidad)', '720p HDTV x264')
+                title = title.replace('(calidad regular)', 'DVDrip x264')
+                title = title.replace('(calidad media)', 'DVDrip x264')
 
-        # Quality, if no literal is defined it's HDTV
-        if 'calidad' not in title:
-            title += ' HDTV x264'
+            # Language, all results from this provider have spanish audio,
+            # We append it to title (to avoid downloading undesired torrents)
+            title += ' SPANISH AUDIO-ELITETORRENT'
 
-        title = title.replace('(calidad baja)', 'HDTV x264')
-        title = title.replace('(Buena calidad)', '720p HDTV x264')
-        title = title.replace('(Alta calidad)', '720p HDTV x264')
-        title = title.replace('(calidad regular)', 'DVDrip x264')
-        title = title.replace('(calidad media)', 'DVDrip x264')
-
-        # Language, all results from this provider have spanish audio,
-        # We append it to title (to avoid downloading undesired torrents)
-        title += ' SPANISH AUDIO'
-        title += '-ELITETORRENT'
-
-        return title.strip()
+        return title
 
 
 provider = EliteTorrentProvider()
