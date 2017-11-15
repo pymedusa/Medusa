@@ -140,9 +140,9 @@ class ArcheTorrentProvider(TorrentProvider):
                     continue
 
                 try:
-                    id = re.search('id=([0-9]+)', cells[labels.index('Nom')].find('a')['href']).group(1)
+                    torrent_id = re.search('id=([0-9]+)', cells[labels.index('Nom')].find('a')['href']).group(1)
                     title = cells[labels.index('Nom')].get_text(strip=True)
-                    download_url = urljoin(self.urls['download'], '?id={0}&name={1}'.format(id, title))
+                    download_url = urljoin(self.urls['download'], '?id={0}&name={1}'.format(torrent_id, title))
                     if not all([title, download_url]):
                         continue
 
