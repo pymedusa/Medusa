@@ -98,7 +98,7 @@ class MedusaSession(BaseSession):
         resp = self.request(method, url, *args, **kwargs)
         try:
             return resp.json() if resp else resp
-        except ValueError:
+        except (AttributeError, ValueError):
             return None
 
     def get_content(self, url, method='GET', *args, **kwargs):
