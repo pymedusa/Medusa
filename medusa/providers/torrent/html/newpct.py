@@ -31,6 +31,7 @@ class NewpctProvider(TorrentProvider):
         super(NewpctProvider, self).__init__('Newpct')
 
         # Credentials
+        self.public = True
 
         # URLs
         self.url = 'http://www.newpct.com'
