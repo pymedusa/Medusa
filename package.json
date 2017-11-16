@@ -16,7 +16,10 @@
     "security": "snyk test",
     "build": "gulp build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "medusa-lib": "^0.0.1",
+    "whatwg-url": "^6.3.0"
+  },
   "devDependencies": {
     "autoprefixer": "^7.1.6",
     "axios": "^0.17.1",

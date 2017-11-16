@@ -1,6 +1,9 @@
-const MEDUSA = require('./core');
+const { Url } = require('url');
+const Medusa = require('medusa-lib');
 
-const WSMessageUrl = '/ui'; // eslint-disable-line xo/filename-case
+const medusa = new Medusa({ url: $('base').atrr('href') });
+
+const wsMessageUrl = 'ws/ui';
 const test = !1;
 
 const iconUrl = 'images/ico/favicon-120.png';
@@ -31,11 +34,15 @@ const displayPNotify = (type, title, message, id) => {
     });
 };
 
-const wsCheckNotifications = () => {
-    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const webRoot = MEDUSA.config.webRoot || '';
-    const ws = new WebSocket(proto + '//' + window.location.hostname + ':' + window.location.port + webRoot + '/ws' + WSMessageUrl);
-    ws.onmessage = function(evt) {
+const wsCheckNotifications = async () => {
+    await medusa.auth({ apiKey: $('body').attr('api-key') });
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const { webRoot } = await medusa.config();
+    const url = new Url($('base').attr('href'));
+    url.protocol = protocol;
+    url.pathname = url.pathname + wsMessageUrl;
+    const ws = new WebSocket(url.href);
+    ws.onmessage = evt => {
         let msg;
         try {
             msg = JSON.parse(evt.data);
@@ -51,7 +58,7 @@ const wsCheckNotifications = () => {
         }
     };
 
-    ws.onerror = function() {
+    ws.onerror = () => {
         log.warn('Error connecting to websocket. Please check your network connection. ' +
             'If you are using a reverse proxy, please take a look at our wiki for config examples.');
         displayPNotify('notice', 'Error connecting to websocket.', 'Please check your network connection. ' +
