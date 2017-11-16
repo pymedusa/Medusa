@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -152,8 +151,8 @@ class ArcheTorrentProvider(TorrentProvider):
                         if not title.startswith(show_name_first_word):
                             title = re.sub(r'.*(' + show_name_first_word + '.*)', r'\1', title)
 
-                    seeders = try_int(cells[labels.index('S')].get_text(strip=True))
-                    leechers = try_int(cells[labels.index('L')].get_text(strip=True))
+                    seeders = int(cells[labels.index('S')].get_text(strip=True))
+                    leechers = int(cells[labels.index('L')].get_text(strip=True))
 
                     # Filter unseeded torrent
                     if seeders < min(self.minseed, 1):
@@ -186,8 +185,7 @@ class ArcheTorrentProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.error('Failed parsing provider.')
 
         return items
 
