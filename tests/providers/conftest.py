@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 from collections import namedtuple
 
-from medusa.providers.torrent import (anidex, elitetorrent, horriblesubs, limetorrents, thepiratebay, torrentz2,
+from medusa.providers.torrent import (anidex, elitetorrent, horriblesubs, limetorrents, newpct, thepiratebay, torrentz2,
                                       zooqle)
 
 import pytest
@@ -16,7 +16,7 @@ import yaml
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 
-PROVIDERS = (anidex, elitetorrent, horriblesubs, limetorrents, thepiratebay, torrentz2, zooqle)
+PROVIDERS = (anidex, elitetorrent, horriblesubs, limetorrents, newpct, thepiratebay, torrentz2, zooqle)
 
 
 @pytest.fixture(scope='session')

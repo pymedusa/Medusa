@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -19,11 +18,11 @@ from requests.compat import urljoin
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
 
-id_regex = re.compile(r'/torrent/(\d+)')
-
 
 class EliteTorrentProvider(TorrentProvider):
     """EliteTorrent Torrent provider."""
+
+    id_regex = re.compile(r'/torrent/(\d+)')
 
     def __init__(self):
         """Initialize the class."""
@@ -86,7 +85,7 @@ class EliteTorrentProvider(TorrentProvider):
             for search_string in search_strings[mode]:
 
                 if mode != 'RSS':
-                    search_string = re.sub(r'S0*(\d*)E(\d*)', r'\1x\2', search_string)
+                    search_string = re.sub(r'S0?(\d+)E(\d+)', r'\1x\2', search_string)
                     search_params['buscar'] = search_string
 
                     log.debug('Search string: {search}',
@@ -125,7 +124,7 @@ class EliteTorrentProvider(TorrentProvider):
             for row in torrent_rows[1:]:
                 try:
                     title = self._process_title(row.find('a', class_='nombre')['title'])
-                    torrent_id = id_regex.match(row.find('a')['href'])
+                    torrent_id = EliteTorrentProvider.id_regex.match(row.find('a')['href'])
                     if not all([title, torrent_id]):
                         continue
 
@@ -158,8 +157,7 @@ class EliteTorrentProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 
