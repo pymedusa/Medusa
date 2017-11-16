@@ -14,6 +14,7 @@ from tornado.escape import json_decode
 
 log = logging.getLogger(__name__)
 
+
 class SeriesHandler(BaseRequestHandler):
     """Series request handler."""
 
