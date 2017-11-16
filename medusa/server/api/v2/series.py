@@ -1,5 +1,6 @@
 # coding=utf-8
 """Request handler for series and episodes."""
+import logging
 
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
@@ -11,6 +12,7 @@ from medusa.server.api.v2.base import (
 from medusa.tv.series import Series, SeriesIdentifier
 from tornado.escape import json_decode
 
+log = logging.getLogger(__name__)
 
 class SeriesHandler(BaseRequestHandler):
     """Series request handler."""
