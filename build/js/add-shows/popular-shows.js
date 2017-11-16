@@ -1674,6 +1674,8 @@ const MEDUSA = {
     addShows: {}
 };
 
+window.MEDUSA = MEDUSA;
+
 const UTIL = {
     exec(controller, action) {
         const ns = MEDUSA;
