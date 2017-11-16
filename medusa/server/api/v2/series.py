@@ -1,7 +1,13 @@
 # coding=utf-8
 """Request handler for series and episodes."""
 
-from medusa.server.api.v2.base import BaseRequestHandler
+from medusa.server.api.v2.base import (
+    BaseRequestHandler,
+    BooleanField,
+    StringField,
+    iter_nested_items,
+    set_nested_value
+)
 from medusa.tv.series import Series, SeriesIdentifier
 from tornado.escape import json_decode
 
@@ -96,18 +102,28 @@ class SeriesHandler(BaseRequestHandler):
         if indexer_id is not None and indexer_id != identifier.id:
             return self._bad_request('Conflicting series identifier')
 
-        done = {}
-        for key, value in data.items():
-            if key == 'pause':
-                if value is True:
-                    series.pause()
-                elif value is False:
-                    series.unpause()
-                else:
-                    return self._bad_request('Invalid request body: pause')
-                done[key] = value
+        accepted = {}
+        ignored = {}
+        patches = {
+            'config.dvdOrder': BooleanField(series, 'dvd_order'),
+            'config.flattenFolders': BooleanField(series, 'flatten_folders'),
+            'config.scene': BooleanField(series, 'scene'),
+            'config.paused': BooleanField(series, 'paused'),
+            'config.location': StringField(series, '_location'),
+            'config.airByDate': BooleanField(series, 'air_by_date'),
+            'config.subtitlesEnabled': BooleanField(series, 'subtitles')
+        }
+        for key, value in iter_nested_items(data):
+            patch_field = patches.get(key)
+            if patch_field and patch_field.patch(series, value):
+                set_nested_value(accepted, key, value)
+            else:
+                set_nested_value(ignored, key, value)
 
-        return self._ok(done)
+        if ignored:
+            log.warning('Series patch ignored %r', ignored)
+
+        self._ok(data=accepted)
 
     def delete(self, series_slug, path_param=None):
         """Delete the series."""
