@@ -47,7 +47,7 @@ class NewpctProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.onlyspasearch = None
-        self.torrent_id_counter = 0
+        self.torrent_id_counter = None
 
         # Torrent Stats
 
@@ -108,6 +108,7 @@ class NewpctProvider(TorrentProvider):
         :return: A list of items found
         """
         items = []
+        self.torrent_id_counter = 0
 
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find('div', class_='content')
@@ -199,7 +200,7 @@ class NewpctProvider(TorrentProvider):
             return
 
         torrent_h1 = torrent_content.find('h1')
-        title = torrent_h1.get_text(strip=True).split('/')[-1]
+        title = torrent_h1.get_text(' ', strip=True).split('/')[-1].strip()
 
         torrent_info = torrent_content.find('div', class_='entry-left')
         spans = torrent_info('span', class_='imp')
