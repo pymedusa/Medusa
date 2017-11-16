@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from collections import OrderedDict
+
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, try_int
