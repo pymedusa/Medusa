@@ -125,8 +125,8 @@ class ShanaProjectProvider(TorrentProvider):
                     download_url = urljoin(self.url, download_url)
 
                     # Provider does not support seeders or leechers.
-                    seeders = -1
-                    leechers = -1
+                    seeders = 1
+                    leechers = 0
 
                     torrent_size = first_cell.find('div', class_='release_size').get_text()
                     match_size = ShanaProjectProvider.size_regex.match(torrent_size)
