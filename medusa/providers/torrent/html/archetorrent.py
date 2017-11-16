@@ -184,7 +184,7 @@ class ArcheTorrentProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider.')
+                    log.exception('Failed parsing provider.')
 
         return items
 
