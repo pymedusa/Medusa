@@ -21,6 +21,7 @@
     "whatwg-url": "^6.3.0"
   },
   "devDependencies": {
+    "ava": "^0.23.0",
     "autoprefixer": "^7.1.6",
     "axios": "^0.17.1",
     "babel-core": "^6.26.0",
@@ -43,6 +44,7 @@
     "gulp-util": "^3.0.8",
     "gulp-xo": "^0.16.0",
     "imagemin-pngquant": "^5.0.1",
+    "nyc": "^11.3.0",
     "postcss-reporter": "^5.0.0",
     "run-sequence": "^2.2.0",
     "snyk": "^1.9.1",

@@ -1,4 +1,4 @@
-const Url = require('url');
+const { Url } = require('whatwg-url');
 const medusa = require('.');
 
 const wsMessageUrl = 'ws/ui';
