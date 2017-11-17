@@ -69,7 +69,8 @@ class ArcheTorrentProvider(TorrentProvider):
         freeleech = '2' if self.freeleech else '0'
 
         # Search Params
-        # c59=1&c73=1&c5=1&c41=1&c60=1&c66=1&c65=1&c67=1&c62=1&c64=1&c61=1&search=Good+Behavior+S01E01&cat=0&incldead=0&freeleech=0&lang=0
+        # c59=1&c73=1&c5=1&c41=1&c60=1&c66=1&c65=1&c67=1&c62=1&c64=1&c61=1&search=Good+Behavior+S01E01
+        # &cat=0&incldead=0&freeleech=0&lang=0
         search_params = {
             'c5': '1',   # Category: Series - DVDRip
             'c41': '1',  # Category: Series - HD
@@ -113,9 +114,6 @@ class ArcheTorrentProvider(TorrentProvider):
 
         :return: A list of items found
         """
-        # Units
-        units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
@@ -154,7 +152,7 @@ class ArcheTorrentProvider(TorrentProvider):
                         continue
 
                     torrent_size = cells[labels.index('Taille')].get_text()
-                    size = convert_size(torrent_size, units=units) or -1
+                    size = convert_size(torrent_size) or -1
 
                     date_raw = torrent('a')[1]['onmouseover']
                     pubdate_raw = re.search(r'\d{2}-\d{2}-\d{4}', date_raw)
