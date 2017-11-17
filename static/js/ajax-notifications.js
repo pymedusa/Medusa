@@ -1,7 +1,5 @@
-const { Url } = require('url');
-const Medusa = require('medusa-lib');
-
-const medusa = new Medusa({ url: $('base').atrr('href') });
+const Url = require('url');
+const medusa = require('.');
 
 const wsMessageUrl = 'ws/ui';
 const test = !1;
@@ -37,10 +35,9 @@ const displayPNotify = (type, title, message, id) => {
 const wsCheckNotifications = async () => {
     await medusa.auth({ apiKey: $('body').attr('api-key') });
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const { webRoot } = await medusa.config();
     const url = new Url($('base').attr('href'));
     url.protocol = protocol;
-    url.pathname = url.pathname + wsMessageUrl;
+    url.pathname += wsMessageUrl;
     const ws = new WebSocket(url.href);
     ws.onmessage = evt => {
         let msg;

@@ -43,7 +43,7 @@
         <link rel="stylesheet" type="text/css" href="css/lib/jquery-ui-1.10.4.custom.min.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/lib/jquery.qtip-2.2.1.min.css?${sbPID}"/>
         <link rel="stylesheet" type="text/css" href="css/style.css?${sbPID}"/>
-        <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" />
+        <link rel="stylesheet" type="text/css" href="css/${app.THEME_NAME}.css?${sbPID}" id="theme-stylesheet" />
         <link rel="stylesheet" type="text/css" href="css/print.css?${sbPID}" />
         <link rel="stylesheet" type="text/css" href="css/country-flags.css?${sbPID}"/>
         <%block name="css" />
