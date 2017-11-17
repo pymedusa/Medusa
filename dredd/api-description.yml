@@ -157,7 +157,7 @@ paths:
       parameters:
         - $ref: '#/parameters/series-id'
           name: id
-        - name: remove-files
+        - name: 'remove-files'
           in: query
           required: false
           description: Whether files from the series should be removed
