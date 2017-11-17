@@ -6,7 +6,7 @@ import os
 from collections import namedtuple
 
 from medusa.providers.torrent import (anidex, elitetorrent, horriblesubs, limetorrents, newpct, shanaproject,
-                                      thepiratebay, tokyotoshokan, torrentz2, zooqle)
+                                      thepiratebay, tokyotoshokan, torrent9, torrentz2, zooqle)
 
 import pytest
 
@@ -17,7 +17,7 @@ __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file
 
 
 PROVIDERS = (anidex, elitetorrent, horriblesubs, limetorrents, newpct, shanaproject, thepiratebay, tokyotoshokan,
-             torrentz2, zooqle)
+             torrent9, torrentz2, zooqle)
 
 
 @pytest.fixture(scope='session')
