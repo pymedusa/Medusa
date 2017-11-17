@@ -37,7 +37,7 @@ class ArcheTorrentProvider(TorrentProvider):
         self.urls = {
             'login': urljoin(self.url, 'account-login.php'),
             'search': urljoin(self.url, 'torrents-search.php'),
-            'download': urljoin(self.url, 'download.php?id=%s'),
+            'download': urljoin(self.url, 'download.php?id={0}'),
         }
 
         # Proper Strings
@@ -138,7 +138,7 @@ class ArcheTorrentProvider(TorrentProvider):
                     if not torrent_id:
                         continue
 
-                    download_url = self.urls['download'] % torrent_id
+                    download_url = self.urls['download'].format(torrent_id)
                     title = cells[labels.index('Nom')].get_text(strip=True)
                     seeders = int(cells[labels.index('S')].get_text(strip=True))
                     leechers = int(cells[labels.index('L')].get_text(strip=True))
