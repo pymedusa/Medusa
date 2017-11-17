@@ -152,7 +152,7 @@ class ArcheTorrentProvider(TorrentProvider):
                         continue
 
                     torrent_size = cells[labels.index('Taille')].get_text()
-                    size = convert_size(torrent_size) or -1
+                    size = convert_size(torrent_size, default=-1)
 
                     date_raw = torrent('a')[1]['onmouseover']
                     pubdate_raw = re.search(r'\d{2}-\d{2}-\d{4}', date_raw)
