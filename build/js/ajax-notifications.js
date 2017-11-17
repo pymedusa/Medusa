@@ -13925,7 +13925,7 @@ module.exports = exports = {
 
 }).call(this,require("buffer").Buffer)
 },{"buffer":17}],149:[function(require,module,exports){
-const { Url } = require('whatwg-url');
+const Url = require('whatwg-url');
 const medusa = require('.');
 
 const wsMessageUrl = 'ws/ui';
