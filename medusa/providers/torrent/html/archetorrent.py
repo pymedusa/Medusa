@@ -37,7 +37,7 @@ class ArcheTorrentProvider(TorrentProvider):
         self.urls = {
             'login': urljoin(self.url, 'account-login.php'),
             'search': urljoin(self.url, 'torrents-search.php'),
-            'download': urljoin(self.url, 'download.php'),
+            'download': urljoin(self.url, 'download.php?id=%s'),
         }
 
         # Proper Strings
@@ -100,11 +100,11 @@ class ArcheTorrentProvider(TorrentProvider):
                     log.debug('No data returned from provider')
                     continue
 
-                results += self.parse(response.text, mode, keywords=search_string)
+                results += self.parse(response.text, mode)
 
         return results
 
-    def parse(self, data, mode, **kwargs):
+    def parse(self, data, mode):
         """
         Parse search results for items.
 
@@ -117,8 +117,6 @@ class ArcheTorrentProvider(TorrentProvider):
         units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
 
         items = []
-
-        keywords = kwargs.pop('keywords', None)
 
         with BS4Parser(data, 'html5lib') as html:
             torrent_table = html.find(class_='ttable_headinner')
@@ -139,17 +137,11 @@ class ArcheTorrentProvider(TorrentProvider):
 
                 try:
                     torrent_id = re.search('id=([0-9]+)', cells[labels.index('Nom')].find('a')['href']).group(1)
-                    title = cells[labels.index('Nom')].get_text(strip=True)
-                    download_url = urljoin(self.urls['download'], '?id={0}&name={1}'.format(torrent_id, title))
-                    if not all([title, download_url]):
+                    if not torrent_id:
                         continue
 
-                    # Chop off tracker/channel prefix or we cannot parse the result!
-                    if mode != 'RSS' and keywords:
-                        show_name_first_word = re.search(r'^[^ .]+', keywords).group()
-                        if not title.startswith(show_name_first_word):
-                            title = re.sub(r'.*(' + show_name_first_word + '.*)', r'\1', title)
-
+                    download_url = self.urls['download'] % torrent_id
+                    title = cells[labels.index('Nom')].get_text(strip=True)
                     seeders = int(cells[labels.index('S')].get_text(strip=True))
                     leechers = int(cells[labels.index('L')].get_text(strip=True))
 
@@ -161,13 +153,12 @@ class ArcheTorrentProvider(TorrentProvider):
                                       title, seeders)
                         continue
 
-                    size_index = labels.index('Size') if 'Size' in labels else labels.index('Taille')
-                    torrent_size = cells[size_index].get_text()
+                    torrent_size = cells[labels.index('Taille')].get_text()
                     size = convert_size(torrent_size, units=units) or -1
 
-                    pubdate_raw = BS4Parser(torrent('a')[1]['onmouseover'][16:-2],
-                                            'html5lib').soup('div')[0].contents[1]
-                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
+                    date_raw = torrent('a')[1]['onmouseover']
+                    pubdate_raw = re.search(r'\d{2}-\d{2}-\d{4}', date_raw)
+                    pubdate = self.parse_pubdate(pubdate_raw.group(), dayfirst=True)
 
                     item = {
                         'title': title,
