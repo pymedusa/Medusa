@@ -135,11 +135,12 @@ class ArcheTorrentProvider(TorrentProvider):
 
                 try:
                     torrent_id = re.search('id=([0-9]+)', cells[labels.index('Nom')].find('a')['href']).group(1)
-                    if not torrent_id:
+                    title = cells[labels.index('Nom')].get_text(strip=True)
+                    if not all([title, torrent_id]):
                         continue
 
                     download_url = self.urls['download'].format(torrent_id)
-                    title = cells[labels.index('Nom')].get_text(strip=True)
+
                     seeders = int(cells[labels.index('S')].get_text(strip=True))
                     leechers = int(cells[labels.index('L')].get_text(strip=True))
 
