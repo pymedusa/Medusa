@@ -17,12 +17,12 @@
     "build": "gulp build"
   },
   "dependencies": {
-    "medusa-lib": "latest",
+    "medusa-lib": "^0.0.13",
     "whatwg-url": "^6.3.0"
   },
   "devDependencies": {
-    "ava": "^0.23.0",
     "autoprefixer": "^7.1.6",
+    "ava": "^0.23.0",
     "axios": "^0.17.1",
     "babel-core": "^6.26.0",
     "babelify": "^8.0.0",
