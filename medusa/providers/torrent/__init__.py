@@ -8,6 +8,7 @@ from medusa.providers.torrent.html import (
     anidex,
     animebytes,
     animetorrents,
+    archetorrent,
     bithdtv,
     elitetorrent,
     elitetracker,
@@ -60,7 +61,7 @@ from medusa.providers.torrent.xml import (
 )
 
 __all__ = [
-    'abnormal', 'alpharatio', 'animebytes', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
+    'abnormal', 'alpharatio', 'animebytes', 'archetorrent', 'bithdtv', 'torrent9', 'danishbits', 'elitetorrent',
     'gftracker', 'hdspace', 'hdtorrents', 'hounddawgs', 'iptorrents', 'limetorrents', 'morethantv',
     'newpct', 'pretome', 'sdbits', 'scenetime', 'speedcd', 'thepiratebay', 'tntvillage', 'tokyotoshokan',
     'torrentbytes', 'torrentleech', 'nebulance', 'tvchaosuk', 'xthor', 'zooqle', 'bitcannon', 'btn', 'hd4free',
