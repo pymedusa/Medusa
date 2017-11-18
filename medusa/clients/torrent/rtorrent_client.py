@@ -75,8 +75,6 @@ class RTorrentAPI(GenericClient):
             if app.TORRENT_PATH:
                 torrent.set_directory(app.TORRENT_PATH)
 
-            # Start torrent
-            torrent.start()
         except Exception as msg:
             log.warning('Error while sending torrent: {error!r}',
                         {'error': msg})
@@ -107,8 +105,6 @@ class RTorrentAPI(GenericClient):
             if app.TORRENT_PATH:
                 torrent.set_directory(app.TORRENT_PATH)
 
-            # Start torrent
-            torrent.start()
         except Exception as msg:
             log.warning('Error while sending torrent: {error!r}',
                         {'error': msg})
