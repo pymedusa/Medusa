@@ -254,9 +254,6 @@ class RTorrent:
                     time.sleep(1)
                     i += 1
 
-            # Resolve magnet to torrent
-            torrent.start()
-
             assert info_hash in [t.info_hash for t in self.torrents],\
                 "Adding torrent was unsuccessful."
 

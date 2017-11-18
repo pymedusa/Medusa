@@ -51,7 +51,7 @@ class Torrent:
 
     def __repr__(self):
         return safe_repr("Torrent(info_hash=\"{0}\" name=\"{1}\")",
-                        self.info_hash, self.name)
+                         self.info_hash, self.name)
 
     def _call_custom_methods(self):
         """only calls methods that check instance variables."""
