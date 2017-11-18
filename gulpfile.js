@@ -39,6 +39,7 @@ const staticAssets = [
     'static/manifest.json',
     'static/fonts/**/*',
     'static/js/lib/**/*',
+    'static/js/vender.js',
     'static/js/vender.min.js',
     'static/css/lib/**/*',
     'static/css/*.ttf'
