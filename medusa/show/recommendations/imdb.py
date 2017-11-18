@@ -6,7 +6,6 @@ import logging
 import os
 import posixpath
 import re
-
 from datetime import date
 
 from imdbpie import imdbpie

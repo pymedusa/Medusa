@@ -6,7 +6,6 @@ import datetime
 import logging
 import re
 import traceback
-
 from fnmatch import fnmatch
 
 from medusa import app

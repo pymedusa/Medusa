@@ -27,7 +27,6 @@ import os
 import pkgutil
 import re
 import sys
-
 from collections import OrderedDict
 from logging import (
     CRITICAL,
@@ -38,15 +37,20 @@ from logging import (
     WARNING,
 )
 from logging.handlers import RotatingFileHandler
+
 import knowit
 
 from medusa import app
 from medusa.init.logconfig import standard_logger
 
 from requests.compat import quote
+
 from six import itervalues, string_types, text_type
+
 import subliminal
+
 from tornado.log import access_log, app_log, gen_log
+
 import traktor
 
 # log levels

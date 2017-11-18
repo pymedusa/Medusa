@@ -3,15 +3,10 @@
 from __future__ import unicode_literals
 
 import difflib
-
 import locale
-
 import logging
-
 import platform
-
 import sys
-
 from datetime import datetime, timedelta
 
 from github import InputFileContent

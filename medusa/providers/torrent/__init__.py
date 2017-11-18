@@ -39,7 +39,6 @@ from medusa.providers.torrent.html import (
     yggtorrent,
     zooqle,
 )
-
 from medusa.providers.torrent.json import (
     bitcannon,
     btn,
@@ -51,13 +50,11 @@ from medusa.providers.torrent.json import (
     torrentday,
     xthor,
 )
-
 from medusa.providers.torrent.rss import (
     nyaa,
     rsstorrent,
     shazbat,
 )
-
 from medusa.providers.torrent.xml import (
     torrentz2,
 )

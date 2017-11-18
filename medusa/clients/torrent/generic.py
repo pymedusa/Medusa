@@ -8,7 +8,6 @@ import re
 import time
 import traceback
 from base64 import b16encode, b32decode
-
 from hashlib import sha1
 
 from bencode import bdecode, bencode

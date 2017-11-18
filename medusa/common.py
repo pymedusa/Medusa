@@ -22,7 +22,6 @@ import os
 import platform
 import re
 import uuid
-
 from collections import namedtuple
 from os import path
 

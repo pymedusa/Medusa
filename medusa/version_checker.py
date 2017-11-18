@@ -26,7 +26,6 @@ import stat
 import subprocess
 import tarfile
 import time
-
 from logging import DEBUG, WARNING
 
 from medusa.logger.adapters.style import BraceAdapter
