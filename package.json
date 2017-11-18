@@ -17,8 +17,8 @@
     "build": "gulp build"
   },
   "dependencies": {
-    "medusa-lib": "^0.0.13",
-    "whatwg-url": "^6.3.0"
+    "medusa-lib": "0.0.15",
+    "url-parse": "^1.2.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.6",

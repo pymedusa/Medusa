@@ -5,7 +5,10 @@ const medusa = new Medusa({
 });
 
 (async function() {
-    await medusa.auth({ apiKey: document.getElementsByTagName('body')[0].getAttribute('api-key') });
+    const apiKey = document.getElementsByTagName('body')[0].getAttribute('api-key');
+    if (apiKey) {
+        await medusa.auth({ apiKey });
+    }
 })();
 
 module.exports = medusa;

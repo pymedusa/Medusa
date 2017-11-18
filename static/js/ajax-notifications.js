@@ -1,4 +1,4 @@
-const Url = require('whatwg-url');
+const URL = require('url-parse');
 const medusa = require('.');
 
 const wsMessageUrl = 'ws/ui';
@@ -33,12 +33,9 @@ const displayPNotify = (type, title, message, id) => {
 };
 
 const wsCheckNotifications = async () => {
-    await medusa.auth({ apiKey: $('body').attr('api-key') });
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const url = new Url($('base').attr('href'));
-    url.protocol = protocol;
-    url.pathname += wsMessageUrl;
-    const ws = new WebSocket(url.href);
+    const wsUrl = new URL(wsMessageUrl, $('base').attr('href').replace(window.location.protocol, protocol));
+    const ws = new WebSocket(wsUrl.toString());
     ws.onmessage = evt => {
         let msg;
         try {
