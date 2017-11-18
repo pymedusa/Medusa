@@ -1,5 +1,4 @@
 const URL = require('url-parse');
-const medusa = require('.');
 
 const wsMessageUrl = 'ws/ui';
 const test = !1;

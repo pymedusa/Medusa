@@ -7,10 +7,9 @@ const gulpif = require('gulp-if');
 const xo = require('gulp-xo');
 const gulp = require('gulp');
 const source = require('vinyl-source-stream');
-const uglify = require('gulp-uglify');
+const uglify = require('gulp-uglify-es').default;
 const browserify = require('browserify');
 const buffer = require('vinyl-buffer');
-const rev = require('gulp-rev');
 const glob = require('glob');
 const es = require('event-stream');
 const imagemin = require('gulp-imagemin');
@@ -21,7 +20,7 @@ const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
 
-const PROD = process.env === 'production';
+const PROD = process.env.NODE_ENV === 'production';
 
 const processors = [
     reporter({
@@ -48,12 +47,8 @@ const staticAssets = [
 gulp.task('default', ['build']);
 
 gulp.task('build', done => {
-    // @TODO: add `rimraf dist`
-    // @TODO: add remark-cli with -qfo options
-    // @TODO: ensure depcheck, xo, pug-lint, remark lint called in lint task
-    // runSequence('lint', 'css', ['img', 'js', 'static'], async () => {
-    runSequence('css', ['img', 'js', 'static'], async () => {
-        if (process.env === 'development') {
+    runSequence('lint', ['css', 'img', 'js', 'static'], async () => {
+        if (!PROD) {
             done();
         }
     });
@@ -85,14 +80,6 @@ gulp.task('img', () => {
     )
     .pipe(gulp.dest('build'))
     .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-    .pipe(
-      gulpif(
-        PROD,
-        rev.manifest('build/rev-manifest.json', {
-            base: 'build'
-        })
-      )
-    )
     .pipe(gulpif(PROD, gulp.dest('build')));
 });
 
@@ -104,19 +91,9 @@ gulp.task('css', () => {
     .pipe(sourcemaps.init())
     .pipe(sass().on('error', sass.logError))
     .pipe(postcss(processors))
-    .pipe(gulpif(PROD, rev()))
     .pipe(sourcemaps.write('./'))
     .pipe(gulp.dest('build'))
     .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-    .pipe(
-      gulpif(
-        PROD,
-        rev.manifest('build/rev-manifest.json', {
-            merge: true,
-            base: 'build'
-        })
-      )
-    )
     .pipe(gulpif(PROD, gulp.dest('build')));
 });
 
@@ -169,22 +146,13 @@ gulp.task('js', done => {
             })
           )
           .pipe(gulpif(PROD, uglify()))
-          .pipe(gulpif(PROD, rev()))
+          .on('error', err => gutil.log(gutil.colors.red('[Error]'), err.toString()))
           .pipe(sourcemaps.write('./'))
           .pipe(gulp.dest('build'))
           .pipe(gulpif(!PROD, livereload({ port: 35729 })));
         });
 
         const taskStream = es.merge(tasks);
-
-        if (PROD) {
-            taskStream.pipe(
-                rev.manifest('build/rev-manifest.json', {
-                    merge: true,
-                    base: 'build'
-                })
-            ).pipe(gulp.dest('build'));
-        }
 
         taskStream.on('end', done);
     });

@@ -1,5 +1,5 @@
 const MEDUSA = require('../core');
-const api = require('../api');
+const medusa = require('..');
 const startAjaxEpisodeSubtitles = require('../ajax-episode-subtitles');
 
 MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
@@ -421,18 +421,14 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
 
     //
     // href="home/toggleDisplayShowSpecials/?show=${show.indexerid}"
-    $('.display-specials a').on('click', function() {
-        api.patch('config/main', {
+    $('.display-specials a').on('click', async event => {
+        await medusa.config({
             layout: {
                 show: {
-                    specials: $(this).text() !== 'Hide'
+                    specials: $(event.currentTarget).text() !== 'Hide'
                 }
             }
-        }).then(response => {
-            log.info(response.data);
-            window.location.reload();
-        }).catch(err => {
-            log.error(err.data);
         });
+        window.location.reload();
     });
 };

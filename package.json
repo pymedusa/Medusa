@@ -14,7 +14,7 @@
     "test-js": "xo",
     "test-api": "dredd --config dredd/dredd.yml",
     "security": "snyk test",
-    "build": "gulp build"
+    "build": "NODE_ENV=production gulp build"
   },
   "dependencies": {
     "medusa-lib": "0.0.15",
@@ -40,7 +40,7 @@
     "gulp-sass": "^3.1.0",
     "gulp-sourcemaps": "^2.6.1",
     "gulp-swagger-js-codegen": "^1.0.0",
-    "gulp-uglify": "^3.0.0",
+    "gulp-uglify-es": "^0.1.4",
     "gulp-util": "^3.0.8",
     "gulp-xo": "^0.16.0",
     "imagemin-pngquant": "^5.0.1",

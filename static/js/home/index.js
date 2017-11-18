@@ -1,7 +1,7 @@
 const MEDUSA = require('../core');
-const api = require('../api');
+const medusa = require('..');
 
-MEDUSA.home.index = function() {
+MEDUSA.home.index = () => {
     // Resets the tables sorting, needed as we only use a single call for both tables in tablesorter
     $('.resetsorting').on('click', () => {
         $('table').trigger('filterReset');
@@ -18,7 +18,6 @@ MEDUSA.home.index = function() {
     }, 500));
 
     const imgLazyLoad = new LazyLoad({
-        // Example of options object -> see options section
         threshold: 500
     });
 
@@ -95,9 +94,9 @@ MEDUSA.home.index = function() {
         $(this).find('.ui-progressbar-value').addClass('progress-' + classToAdd);
     });
 
-    $('img#network').on('error', function() {
-        $(this).parent().text($(this).attr('alt'));
-        $(this).remove();
+    $('img#network').on('error', event => {
+        $(event.currentTarget).parent().text($(this).attr('alt'));
+        $(event.currentTarget).remove();
     });
 
     $('#showListTableShows:has(tbody tr), #showListTableAnime:has(tbody tr)').tablesorter({
@@ -105,15 +104,15 @@ MEDUSA.home.index = function() {
         sortList: [[7, 1], [2, 0]],
         textExtraction: (function() {
             return {
-                0(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                1(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                3(node) { return $(node).find('span').prop('title').toLowerCase(); }, // eslint-disable-line brace-style
-                4(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); }, // eslint-disable-line brace-style
-                5(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                6(node) { return $(node).find('span:first').text(); }, // eslint-disable-line brace-style
-                7(node) { return $(node).data('show-size'); }, // eslint-disable-line brace-style
-                8(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-                10(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
+                0: node => $(node).find('time').attr('datetime'),
+                1: node => $(node).find('time').attr('datetime'),
+                3: node => $(node).find('span').prop('title').toLowerCase(),
+                4: node => $(node).find('a[data-indexer-name]').attr('data-indexer-name'),
+                5: node => $(node).find('span').text().toLowerCase(),
+                6: node => $(node).find('span:first').text(),
+                7: node => $(node).data('show-size'),
+                8: node => $(node).find('img').attr('alt'),
+                10: node => $(node).find('img').attr('alt')
             };
         })(),
         widgets: ['saveSort', 'zebra', 'stickyHeaders', 'filter', 'columnSelector'],
@@ -325,28 +324,14 @@ MEDUSA.home.index = function() {
         }
     });
 
-    $('.show-option .show-layout').on('change', function() {
-        api.patch('config/main', {
-            layout: {
-                home: $(this).val()
-            }
-        }).then(response => {
-            log.info(response);
-            window.location.reload();
-        }).catch(err => {
-            log.info(err);
-        });
+    $('.show-option .show-layout').on('change', async event => {
+        await medusa.config({ layout: { home: $(event.currentTarget).val() } });
+        window.location.reload();
     });
 
-    $('#showRootDir').on('change', function() {
-        api.patch('config/main', {
-            selectedRootIndex: parseInt($(this).val(), 10)
-        }).then(response => {
-            log.info(response);
-            window.location.reload();
-        }).catch(err => {
-            log.info(err);
-        });
+    $('#showRootDir').on('change', async event => {
+        await medusa.config({ selectedRootIndex: parseInt($(event.currentTarget).val(), 10) });
+        window.location.reload();
     });
 
     const rootDir = MEDUSA.config.rootDirs;

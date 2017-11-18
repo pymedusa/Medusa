@@ -1,7 +1,7 @@
 const MEDUSA = require('../core');
-const api = require('../api');
+const medusa = require('..');
 
-MEDUSA.history.index = function() {
+MEDUSA.history.index = () => {
     $('#historyTable:has(tbody tr)').tablesorter({
         widgets: ['saveSort', 'zebra', 'filter'],
         sortList: [[0, 1]],
@@ -46,20 +46,12 @@ MEDUSA.history.index = function() {
         })()
     });
 
-    $('#history_limit').on('change', function() {
-        window.location.href = $('base').attr('href') + 'history/?limit=' + $(this).val();
+    $('#history_limit').on('change', event => {
+        window.location.href = $('base').attr('href') + 'history/?limit=' + $(event.currentTarget).val();
     });
 
-    $('.show-option select[name="layout"]').on('change', function() {
-        api.patch('config/main', {
-            layout: {
-                history: $(this).val()
-            }
-        }).then(response => {
-            log.info(response);
-            window.location.reload();
-        }).catch(err => {
-            log.info(err);
-        });
+    $('.show-option select[name="layout"]').on('change', async event => {
+        await medusa.config({ layout: { history: $(event.currentTarget).val() } });
+        window.location.reload();
     });
 };

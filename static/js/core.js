@@ -1,4 +1,4 @@
-const api = require('./api');
+const medusa = require('.');
 
 // eslint-disable-line max-lines
 // @TODO Move these into common.ini when possible,
@@ -93,9 +93,9 @@ const triggerConfigLoaded = function() {
 };
 
 if (!document.location.pathname.endsWith('/login/')) {
-    api.get('config/main').then(response => {
+    medusa.config().then(config => {
         log.setDefaultLevel('trace');
-        $.extend(MEDUSA.config, response.data);
+        $.extend(MEDUSA.config, config);
         MEDUSA.config.themeSpinner = MEDUSA.config.themeName === 'dark' ? '-dark' : '';
         MEDUSA.config.loading = '<img src="images/loading16' + MEDUSA.config.themeSpinner + '.gif" height="16" width="16" />';
 
