@@ -59,8 +59,8 @@ class RTorrentAPI(GenericClient):
             return False
 
         try:
-            # Send magnet to rTorrent
-            torrent = self.auth.load_magnet(result.url, result.hash)
+            # Send magnet to rTorrent and start it
+            torrent = self.auth.load_magnet(result.url, result.hash, start=True)
 
             if not torrent:
                 return False
@@ -91,8 +91,8 @@ class RTorrentAPI(GenericClient):
 
         # Send request to rTorrent
         try:
-            # Send torrent to rTorrent
-            torrent = self.auth.load_torrent(result.content)
+            # Send torrent to rTorrent and start it
+            torrent = self.auth.load_torrent(result.content, start=True)
 
             if not torrent:
                 return False
@@ -132,5 +132,6 @@ class RTorrentAPI(GenericClient):
                 return False, 'Error: Unable to get {name} Authentication, check your config!'.format(name=self.name)
             else:
                 return True, 'Success: Connected and Authenticated'
+
 
 api = RTorrentAPI
