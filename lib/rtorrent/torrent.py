@@ -326,7 +326,7 @@ class Torrent:
         self._assert_custom_key_valid(key)
         m = rtorrent.rpc.Multicall(self)
 
-        self.multicall_add(m, "d.set_custom{0}".format(key), value)
+        self.multicall_add(m, "d.custom{0}.set=".format(key), value)
 
         return(m.call()[-1])
 
