@@ -13,7 +13,7 @@
     "test": "concurrently --kill-others-on-fail --names \"xo,snyk\" \"npm run test:lint\" \"npm run test:security\"",
     "test:lint": "xo --verbose",
     "test:spec": "nyc ava --verbose",
-    "test:api": "dredd --config dredd/dredd.yml",
+    "test:api": "dredd --config ./dredd/dredd.yml",
     "test:security": "snyk test",
     "build": "NODE_ENV=production gulp build",
     "precommit": "npm run test && npm run build"
