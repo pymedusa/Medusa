@@ -9,10 +9,15 @@ import re
 
 from requests import RequestException
 from requests.compat import unquote_plus
+
 from simpleanidb import REQUEST_HOT
+
 from six import iteritems
+
 from tornroutes import route
+
 from traktor import TraktApi
+
 from .handler import Home
 from ..core import PageTemplate
 from .... import app, classes, config, db, helpers, logger, ui
