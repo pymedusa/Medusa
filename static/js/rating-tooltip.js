@@ -1,5 +1,3 @@
-
-
 $(() => {
     $('.imdbstars').qtip({
         content: {

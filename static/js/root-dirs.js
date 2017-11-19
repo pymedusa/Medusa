@@ -1,5 +1,3 @@
-
-
 // @TODO: Remove this when we fully drop support for IE > 8
 // Avoid `console` errors in browsers that lack a console.
 (function() { // eslint-disable-line wrap-iife

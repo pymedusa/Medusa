@@ -14,6 +14,7 @@ const glob = require('glob');
 const es = require('event-stream');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
+//
 // const postcss = require('gulp-postcss');
 // const sass = require('gulp-sass');
 const cssnano = require('cssnano');
@@ -96,7 +97,6 @@ gulp.task('css', () => {
     // .pipe(gulp.dest('build'))
     // .pipe(gulpif(!PROD, livereload({ port: 35729 })))
     // .pipe(gulpif(PROD, gulp.dest('build')));
-    return;
 });
 
 gulp.task('lint', () => {

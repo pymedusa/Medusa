@@ -1,5 +1,3 @@
-
-
 $(document).ready(() => {
     $('.submitMassEdit').on('click', () => {
         const editArr = [];

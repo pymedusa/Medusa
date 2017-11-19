@@ -1,5 +1,3 @@
-
-
 $(() => {
     $('.title a').each(function() {
         const match = $(this).parent().attr('id').match(/^scene_exception_(\d+)$/);

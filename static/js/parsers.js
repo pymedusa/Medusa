@@ -1,4 +1,3 @@
-
 const MEDUSA = require('./core');
 
 window.$.tablesorter.addParser({

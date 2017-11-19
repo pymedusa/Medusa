@@ -1,5 +1,3 @@
-
-
 $(document).ready(() => {
     const findDirIndex = which => {
         const dirParts = which.split('_');
