@@ -124,7 +124,7 @@ class EliteTrackerProvider(TorrentProvider):
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if torrent_rows[1].get_text(strip=True) == 'Aucun Resultat':
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
