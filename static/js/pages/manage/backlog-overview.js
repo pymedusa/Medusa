@@ -1,6 +1,5 @@
-
-const MEDUSA = require('../core');
-const api = require('../api');
+const MEDUSA = require('../../core');
+const api = require('../../api');
 
 MEDUSA.manage.backlogOverview = function() {
     const updateForcedSearch = data => {

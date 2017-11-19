@@ -10,6 +10,10 @@
     from medusa.providers.generic_provider import GenericProvider
     from medusa.helper.common import pretty_file_size
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/manage/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/failed-downloads.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>

@@ -5,8 +5,8 @@
     from medusa import sbdatetime
 %>
 <%block name="scripts">
-<script type="text/javascript">
-</script>
+<script type="text/javascript" src="js/pages/manage/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/backlog-overview.js?${sbPID}"></script>
 </%block>
 <%block name="content">
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>

@@ -3,6 +3,10 @@
     from medusa import common
     from medusa import app
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/manage/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/manage/episode-statuses.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 <div id="content960">
 % if not header is UNDEFINED:

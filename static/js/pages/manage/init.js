@@ -1,5 +1,4 @@
-
-const MEDUSA = require('../core');
+const MEDUSA = require('../../core');
 
 MEDUSA.manage.init = function() {
     $.makeEpisodeRow = function(indexerId, season, episode, name, checked) { // eslint-disable-line max-params

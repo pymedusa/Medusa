@@ -1,13 +1,12 @@
-
-const MEDUSA = require('../core');
-const api = require('../api');
+const MEDUSA = require('../../core');
+const api = require('../../api');
 
 MEDUSA.manage.manageSearches = function() {
     /**
      * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
      * @param exceptions - A list of exception types with their last_updates.
      */
-    const updateExceptionTable = exceptions =>{
+    const updateExceptionTable = exceptions => {
         const status = $('#sceneExceptionStatus');
 
         const medusaException = exceptions.data.filter(({ id }) => id === 'local');

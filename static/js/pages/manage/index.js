@@ -1,5 +1,4 @@
-
-const MEDUSA = require('../core');
+const MEDUSA = require('../../core');
 
 MEDUSA.manage.index = function() {
     $('.resetsorting').on('click', () => {

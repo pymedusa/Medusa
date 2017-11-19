@@ -1,35 +1,34 @@
+const MEDUSA = require('../../core');
 
-const MEDUSA = require('../core');
-
-MEDUSA.manage.episodeStatuses = function() {
+MEDUSA.manage.subtitleMissed = function() {
     $('.allCheck').on('click', function() {
         const indexerId = $(this).attr('id').split('-')[1];
         $('.' + indexerId + '-epcheck').prop('checked', $(this).prop('checked'));
     });
 
     $('.get_more_eps').on('click', function() {
-        const curIndexerId = $(this).attr('id');
-        const checked = $('#allCheck-' + curIndexerId).prop('checked');
-        const lastRow = $('tr#' + curIndexerId);
+        const indexerId = $(this).attr('id');
+        const checked = $('#allCheck-' + indexerId).prop('checked');
+        const lastRow = $('tr#' + indexerId);
         const clicked = $(this).data('clicked');
         const action = $(this).attr('value');
 
         if (clicked) {
-            if (action.toLowerCase() === 'collapse') {
-                $('table tr').filter('.show-' + curIndexerId).hide();
+            if (action === 'Collapse') {
+                $('table tr').filter('.show-' + indexerId).hide();
                 $(this).prop('value', 'Expand');
-            } else if (action.toLowerCase() === 'expand') {
-                $('table tr').filter('.show-' + curIndexerId).show();
+            } else if (action === 'Expand') {
+                $('table tr').filter('.show-' + indexerId).show();
                 $(this).prop('value', 'Collapse');
             }
         } else {
-            $.getJSON('manage/showEpisodeStatuses', {
-                indexer_id: curIndexerId, // eslint-disable-line camelcase
-                whichStatus: $('#oldStatus').val()
+            $.getJSON('manage/showSubtitleMissed', {
+                indexer_id: indexerId, // eslint-disable-line camelcase
+                whichSubs: $('#selectSubLang').val()
             }, data => {
                 $.each(data, (season, eps) => {
-                    $.each(eps, (episode, name) => {
-                        lastRow.after($.makeEpisodeRow(curIndexerId, season, episode, name, checked));
+                    $.each(eps, (episode, data) => {
+                        lastRow.after($.makeSubtitleRow(indexerId, season, episode, data.name, data.subtitles, checked));
                     });
                 });
             });
