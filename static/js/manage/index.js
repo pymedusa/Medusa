@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.manage.index = function() {
@@ -8,14 +9,14 @@ MEDUSA.manage.index = function() {
     $('#massUpdateTable:has(tbody tr)').tablesorter({
         sortList: [[1, 0]],
         textExtraction: {
-            2(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-            3(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            4(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            5(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            6(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            7(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            8(node) { return $(node).find('img').attr('alt'); }, // eslint-disable-line brace-style
-            9(node) { return $(node).find('img').attr('alt'); } // eslint-disable-line brace-style
+            2: node => $(node).find('span').text().toLowerCase(),
+            3: node => $(node).find('img').attr('alt'),
+            4: node => $(node).find('img').attr('alt'),
+            5: node => $(node).find('img').attr('alt'),
+            6: node => $(node).find('img').attr('alt'),
+            7: node => $(node).find('img').attr('alt'),
+            8: node => $(node).find('img').attr('alt'),
+            9: node => $(node).find('img').attr('alt')
         },
         widgets: ['zebra', 'filter', 'columnSelector'],
         headers: {
@@ -47,6 +48,6 @@ MEDUSA.manage.index = function() {
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', () => {
         // Call this function to copy the column selection code into the popover
-        $.tablesorter.columnSelector.attachTo($('#massUpdateTable'), '#popover-target');
+        window.$.tablesorter.columnSelector.attachTo($('#massUpdateTable'), '#popover-target');
     });
 };

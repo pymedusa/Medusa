@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 const api = require('../api');
 
@@ -6,7 +7,7 @@ MEDUSA.manage.manageSearches = function() {
      * Get total number current scene exceptions per source. Will request medusa, xem and anidb name exceptions.
      * @param exceptions - A list of exception types with their last_updates.
      */
-    const updateExceptionTable = function(exceptions) {
+    const updateExceptionTable = exceptions =>{
         const status = $('#sceneExceptionStatus');
 
         const medusaException = exceptions.data.filter(({ id }) => id === 'local');
@@ -47,7 +48,7 @@ MEDUSA.manage.manageSearches = function() {
      * @param message - A string with the message to display behind the spinner.
      * @param showSpinner - A boolean to show or not show the spinner (gif).
      */
-    const updateSpinner = function(spinnerContainer, message, showSpinner) {
+    const updateSpinner = (spinnerContainer, message, showSpinner) => {
         if (showSpinner) {
             message = `<img id="searchingAnim" src="images/loading32${MEDUSA.config.themeSpinner}.gif" height="16" width="16" />&nbsp;${message}`;
         }

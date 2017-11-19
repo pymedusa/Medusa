@@ -1,2 +1,153 @@
-!function e(t,i,n){function o(h,s){if(!i[h]){if(!t[h]){var r="function"==typeof require&&require;if(!s&&r)return r(h,!0);if(c)return c(h,!0);var a=new Error("Cannot find module '"+h+"'");throw a.code="MODULE_NOT_FOUND",a}var u=i[h]={exports:{}};t[h][0].call(u.exports,function(e){var i=t[h][1][e];return o(i||e)},u,u.exports,e,t,i,n)}return i[h].exports}for(var c="function"==typeof require&&require,h=0;h<n.length;h++)o(n[h]);return o}({1:[function(e,t,i){$(document).ready(()=>{$(".submitMassEdit").on("click",()=>{const e=[];if($(".editCheck").each(function(){!0===this.checked&&e.push($(this).attr("id").split("-")[1])}),0===e.length)return;const t=$(`\n            <form method="post" action="${$("base").attr("href")}manage/massEdit">\n                <input type="hidden" name="toEdit" value="${e.join("|")}"/>\n            </form>\n        `);t.appendTo("body"),t.submit()}),$(".submitMassUpdate").on("click",()=>{const e=[],t=[],i=[],n=[],o=[],c=[],h=[];$(".updateCheck").each(function(){!0===this.checked&&e.push($(this).attr("id").split("-")[1])}),$(".refreshCheck").each(function(){!0===this.checked&&t.push($(this).attr("id").split("-")[1])}),$(".renameCheck").each(function(){!0===this.checked&&i.push($(this).attr("id").split("-")[1])}),$(".subtitleCheck").each(function(){!0===this.checked&&n.push($(this).attr("id").split("-")[1])}),$(".removeCheck").each(function(){!0===this.checked&&c.push($(this).attr("id").split("-")[1])});let s=0;$(".deleteCheck").each(function(){!0===this.checked&&s++});const r=[].concat.apply([],[e,t,i,n,o,c,h]).length;if(s>=1&&$.confirm({title:"Delete Shows",text:"You have selected to delete "+s+" show(s).  Are you sure you wish to continue? All files will be removed from your system.",confirmButton:"Yes",cancelButton:"Cancel",dialogClass:"modal-dialog",post:!1,confirm(){if($(".deleteCheck").each(function(){!0===this.checked&&o.push($(this).attr("id").split("-")[1])}),0===r)return!1;const s=$.param({toUpdate:e.join("|"),toRefresh:t.join("|"),toRename:i.join("|"),toSubtitle:n.join("|"),toDelete:o.join("|"),toRemove:c.join("|"),toMetadata:h.join("|")});window.location.href=$("base").attr("href")+"manage/massUpdate?"+s}}),0===r)return!1;if(e.length+t.length+i.length+n.length+o.length+c.length+h.length===0)return!1;const a=$("base").attr("href")+"manage/massUpdate",u="toUpdate="+e.join("|")+"&toRefresh="+t.join("|")+"&toRename="+i.join("|")+"&toSubtitle="+n.join("|")+"&toDelete="+o.join("|")+"&toRemove="+c.join("|")+"&toMetadata="+h.join("|");$.post(a,u,()=>{location.reload(!0)})}),[".editCheck",".updateCheck",".refreshCheck",".renameCheck",".deleteCheck",".removeCheck"].forEach(e=>{let t=null;$(e).on("click",function(i){if(!t||!i.shiftKey)return void(t=this);const n=this;let o=0;$(e).each(function(){if(1===o&&(this.disabled||(this.checked=t.checked)),2===o)return!1;this!==n&&this!==t||o++})})})})},{}]},{},[1]);
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+
+$(document).ready(() => {
+    $('.submitMassEdit').on('click', () => {
+        const editArr = [];
+
+        $('.editCheck').each(function () {
+            if (this.checked === true) {
+                editArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
+        if (editArr.length === 0) {
+            return;
+        }
+
+        const submitForm = $(`
+            <form method="post" action="${$('base').attr('href')}manage/massEdit">
+                <input type="hidden" name="toEdit" value="${editArr.join('|')}"/>
+            </form>
+        `);
+        submitForm.appendTo('body');
+
+        submitForm.submit();
+    });
+
+    $('.submitMassUpdate').on('click', () => {
+        const updateArr = [];
+        const refreshArr = [];
+        const renameArr = [];
+        const subtitleArr = [];
+        const deleteArr = [];
+        const removeArr = [];
+        const metadataArr = [];
+
+        $('.updateCheck').each(function () {
+            if (this.checked === true) {
+                updateArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
+        $('.refreshCheck').each(function () {
+            if (this.checked === true) {
+                refreshArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
+        $('.renameCheck').each(function () {
+            if (this.checked === true) {
+                renameArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
+        $('.subtitleCheck').each(function () {
+            if (this.checked === true) {
+                subtitleArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
+        $('.removeCheck').each(function () {
+            if (this.checked === true) {
+                removeArr.push($(this).attr('id').split('-')[1]);
+            }
+        });
+
+        let deleteCount = 0;
+
+        $('.deleteCheck').each(function () {
+            if (this.checked === true) {
+                deleteCount++;
+            }
+        });
+
+        const totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr]).length; // eslint-disable-line no-useless-call
+
+        if (deleteCount >= 1) {
+            window.$.confirm({
+                title: 'Delete Shows',
+                text: 'You have selected to delete ' + deleteCount + ' show(s).  Are you sure you wish to continue? All files will be removed from your system.',
+                confirmButton: 'Yes',
+                cancelButton: 'Cancel',
+                dialogClass: 'modal-dialog',
+                post: false,
+                confirm() {
+                    $('.deleteCheck').each(function () {
+                        if (this.checked === true) {
+                            deleteArr.push($(this).attr('id').split('-')[1]);
+                        }
+                    });
+                    if (totalCount === 0) {
+                        return false;
+                    }
+                    const params = $.param({
+                        toUpdate: updateArr.join('|'),
+                        toRefresh: refreshArr.join('|'),
+                        toRename: renameArr.join('|'),
+                        toSubtitle: subtitleArr.join('|'),
+                        toDelete: deleteArr.join('|'),
+                        toRemove: removeArr.join('|'),
+                        toMetadata: metadataArr.join('|')
+                    });
+
+                    window.location.href = $('base').attr('href') + 'manage/massUpdate?' + params;
+                }
+            });
+        }
+
+        if (totalCount === 0) {
+            return false;
+        }
+        if (updateArr.length + refreshArr.length + renameArr.length + subtitleArr.length + deleteArr.length + removeArr.length + metadataArr.length === 0) {
+            return false;
+        }
+        const url = $('base').attr('href') + 'manage/massUpdate';
+        const params = 'toUpdate=' + updateArr.join('|') + '&toRefresh=' + refreshArr.join('|') + '&toRename=' + renameArr.join('|') + '&toSubtitle=' + subtitleArr.join('|') + '&toDelete=' + deleteArr.join('|') + '&toRemove=' + removeArr.join('|') + '&toMetadata=' + metadataArr.join('|');
+        $.post(url, params, () => {
+            location.reload(true);
+        });
+    });
+
+    ['.editCheck', '.updateCheck', '.refreshCheck', '.renameCheck', '.deleteCheck', '.removeCheck'].forEach(name => {
+        let lastCheck = null;
+
+        $(name).on('click', function (event) {
+            if (!lastCheck || !event.shiftKey) {
+                lastCheck = this;
+                return;
+            }
+
+            const check = this;
+            let found = 0;
+
+            $(name).each(function () {
+                if (found === 1) {
+                    if (!this.disabled) {
+                        this.checked = lastCheck.checked;
+                    }
+                }
+                if (found === 2) {
+                    return false;
+                }
+                if (this === check || this === lastCheck) {
+                    found++;
+                }
+            });
+        });
+    });
+});
+
+},{}]},{},[1]);
+
 //# sourceMappingURL=mass-update.js.map

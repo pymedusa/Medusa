@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.manage.subtitleMissedPP = function() {
@@ -7,10 +8,10 @@ MEDUSA.manage.subtitleMissedPP = function() {
     $('#releasesPP:has(tbody tr)').tablesorter({
         sortList: [[3, 1], [0, 0]],
         textExtraction: {
-            0(node) { return $(node).find('a').text().toLowerCase(); }, // eslint-disable-line brace-style
-            1(node) { return $(node).text().toLowerCase(); }, // eslint-disable-line brace-style
-            2(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-            3(node) { return $(node).find('span').attr('datetime'); } // eslint-disable-line brace-style
+            0: node => $(node).find('a').text().toLowerCase(),
+            1: node => $(node).text().toLowerCase(),
+            2: node => $(node).find('span').text().toLowerCase(),
+            3: node => $(node).find('span').attr('datetime')
         },
         widgets: ['saveSort', 'filter'],
         headers: {

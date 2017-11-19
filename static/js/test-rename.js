@@ -1,3 +1,5 @@
+
+
 $(document).ready(() => {
     $('.seriesCheck').on('click', function() {
         const serCheck = this;

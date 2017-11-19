@@ -1,3 +1,5 @@
+
+
 $(document).ready(() => {
     $('#saveDefaultsButton').on('click', function() {
         const anyQualArray = [];

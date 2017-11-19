@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.home.snatchSelection = function() {
@@ -68,12 +69,6 @@ MEDUSA.home.snatchSelection = function() {
         });
     });
 
-    $.fn.generateStars = function() {
-        return this.each((i, e) => {
-            $(e).html($('<span/>').width($(e).text() * 12));
-        });
-    };
-
     const initTableSorter = table => {
         // Nasty hack to re-initialize tablesorter after refresh
         $(table).tablesorter({
@@ -98,7 +93,9 @@ MEDUSA.home.snatchSelection = function() {
         });
     };
 
-    $('.imdbstars').generateStars();
+    $('.imdbstars').$('.imdbstars').each((i, e) => {
+        $(e).html($('<span/>').width($(e).text() * 12));
+    });
 
     const checkCacheUpdates = function(repeat = true) {
         const self = this;
@@ -216,7 +213,7 @@ MEDUSA.home.snatchSelection = function() {
         html: true,
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', () => {
-        $.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
+        window.$.tablesorter.columnSelector.attachTo($('#srchresults'), '#popover-target');
     });
 
     $('#btnReset').on('click', () => {

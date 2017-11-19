@@ -1,2 +1,79 @@
-!function e(t,n,o){function i(r,a){if(!n[r]){if(!t[r]){var s="function"==typeof require&&require;if(!a&&s)return s(r,!0);if(c)return c(r,!0);var l=new Error("Cannot find module '"+r+"'");throw l.code="MODULE_NOT_FOUND",l}var p=n[r]={exports:{}};t[r][0].call(p.exports,function(e){var n=t[r][1][e];return i(n||e)},p,p.exports,e,t,n,o)}return n[r].exports}for(var c="function"==typeof require&&require,r=0;r<o.length;r++)i(o[r]);return i}({1:[function(e,t,n){let o=[];$("#location").fileBrowser({title:"Select Show Location"}),$("#submit").on("click",()=>{const e=[];$("#exceptions_list option").each(function(){e.push($(this).val())}),$("#exceptions_list").val(e),(e=>{let t=$('meta[data-var="'+e+'"]').data("content");return void 0===t?(console.log(e+" is empty, did you forget to add this to main.mako?"),t):!("false"===(t=isNaN(t)?t.toLowerCase():t.toString())||"none"===t||"0"===t)})("show.is_anime")&&generateBlackWhiteList()}),$("#addSceneName").on("click",()=>{const e=$("#SceneName").val(),t=$("<option>");if(o=[],$("#exceptions_list option").each(function(){o.push($(this).val())}),$("#SceneName").val(""),!($.inArray(e,o)>-1||""===e))return $("#SceneException").show(),t.prop("value",e),t.html(e),t.appendTo("#exceptions_list")}),$("#removeSceneName").on("click",function(){$("#exceptions_list option:selected").remove(),$(this).toggleSceneException()}),$.fn.toggleSceneException=function(){o=[],$("#exceptions_list option").each(function(){o.push($(this).val())}),""===o?$("#SceneException").hide():$("#SceneException").show()},$(this).toggleSceneException()},{}]},{},[1]);
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+let allExceptions = [];
+
+const metaToBool = pyVar => {
+    let meta = $('meta[data-var="' + pyVar + '"]').data('content');
+    if (typeof meta === 'undefined') {
+        console.log(pyVar + ' is empty, did you forget to add this to main.mako?');
+        return meta;
+    }
+    meta = isNaN(meta) ? meta.toLowerCase() : meta.toString();
+    return !(meta === 'false' || meta === 'none' || meta === '0');
+};
+
+$('#location').fileBrowser({
+    title: 'Select Show Location'
+});
+
+$('#submit').on('click', () => {
+    const allExceptions = [];
+
+    $('#exceptions_list option').each(function () {
+        allExceptions.push($(this).val());
+    });
+
+    $('#exceptions_list').val(allExceptions);
+
+    if (metaToBool('show.is_anime')) {
+        generateBlackWhiteList(); // eslint-disable-line no-undef
+    }
+});
+
+$('#addSceneName').on('click', () => {
+    const sceneEx = $('#SceneName').val();
+    const option = $('<option>');
+    allExceptions = [];
+
+    $('#exceptions_list option').each(function () {
+        allExceptions.push($(this).val());
+    });
+
+    $('#SceneName').val('');
+
+    if ($.inArray(sceneEx, allExceptions) > -1 || sceneEx === '') {
+        return;
+    }
+
+    $('#SceneException').show();
+
+    option.prop('value', sceneEx);
+    option.html(sceneEx);
+    return option.appendTo('#exceptions_list');
+});
+
+$('#removeSceneName').on('click', function () {
+    $('#exceptions_list option:selected').remove();
+
+    $(this).toggleSceneException();
+});
+
+$.fn.toggleSceneException = function () {
+    allExceptions = [];
+
+    $('#exceptions_list option').each(function () {
+        allExceptions.push($(this).val());
+    });
+
+    if (allExceptions === '') {
+        $('#SceneException').hide();
+    } else {
+        $('#SceneException').show();
+    }
+};
+
+$(this).toggleSceneException();
+
+},{}]},{},[1]);
+
 //# sourceMappingURL=edit-show.js.map

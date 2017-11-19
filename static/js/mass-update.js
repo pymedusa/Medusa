@@ -1,3 +1,5 @@
+
+
 $(document).ready(() => {
     $('.submitMassEdit').on('click', () => {
         const editArr = [];
@@ -72,7 +74,7 @@ $(document).ready(() => {
         const totalCount = [].concat.apply([], [updateArr, refreshArr, renameArr, subtitleArr, deleteArr, removeArr, metadataArr]).length; // eslint-disable-line no-useless-call
 
         if (deleteCount >= 1) {
-            $.confirm({
+            window.$.confirm({
                 title: 'Delete Shows',
                 text: 'You have selected to delete ' + deleteCount + ' show(s).  Are you sure you wish to continue? All files will be removed from your system.',
                 confirmButton: 'Yes',

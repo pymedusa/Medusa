@@ -214,4 +214,4 @@
         }
         return options.field;
     };
-})(jQuery);
+})($);

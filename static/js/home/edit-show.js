@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.home.editShow = function() {
@@ -5,7 +6,7 @@ MEDUSA.home.editShow = function() {
         const apiRoot = $('body').attr('api-root');
         const apiKey = $('body').attr('api-key');
         const path = apiRoot + 'series/' + $('#series-id').attr('value') + '/asset/fanart?api_key=' + apiKey;
-        $.backstretch(path);
+        window.$.backstretch(path);
         $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
     }
 };

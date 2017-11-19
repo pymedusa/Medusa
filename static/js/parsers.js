@@ -1,6 +1,7 @@
+
 const MEDUSA = require('./core');
 
-$.tablesorter.addParser({
+window.$.tablesorter.addParser({
     id: 'loadingNames',
     is: false,
     format: s => {
@@ -11,7 +12,7 @@ $.tablesorter.addParser({
     },
     type: 'text'
 });
-$.tablesorter.addParser({
+window.$.tablesorter.addParser({
     id: 'quality',
     is: false,
     format: s => {
@@ -33,20 +34,20 @@ $.tablesorter.addParser({
     },
     type: 'numeric'
 });
-$.tablesorter.addParser({
+window.$.tablesorter.addParser({
     id: 'realISODate',
     is: false,
     format: s => new Date(s).getTime(),
     type: 'numeric'
 });
 
-$.tablesorter.addParser({
+window.$.tablesorter.addParser({
     id: 'cDate',
     is: false,
     format: s => s,
     type: 'numeric'
 });
-$.tablesorter.addParser({
+window.$.tablesorter.addParser({
     id: 'eps',
     is: false,
     format: s => {

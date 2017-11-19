@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 const api = require('../api');
 
@@ -15,10 +16,10 @@ MEDUSA.schedule.index = function() {
             widgets: ['stickyHeaders', 'filter', 'columnSelector', 'saveSort'],
             sortList,
             textExtraction: {
-                0(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                1(node) { return $(node).find('time').attr('datetime'); }, // eslint-disable-line brace-style
-                7(node) { return $(node).find('span').text().toLowerCase(); }, // eslint-disable-line brace-style
-                8(node) { return $(node).find('a[data-indexer-name]').attr('data-indexer-name'); } // eslint-disable-line brace-style
+                0: node => $(node).find('time').attr('datetime'),
+                1: node => $(node).find('time').attr('datetime'),
+                7: node => $(node).find('span').text().toLowerCase(),
+                8: node => $(node).find('a[data-indexer-name]').attr('data-indexer-name')
             },
             headers: {
                 0: { sorter: 'realISODate' },
@@ -61,7 +62,7 @@ MEDUSA.schedule.index = function() {
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', () => {
         // call this function to copy the column selection code into the popover
-        $.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
+        window.$.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
 
     $('.show-option select[name="layout"]').on('change', function() {

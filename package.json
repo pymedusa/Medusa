@@ -16,7 +16,7 @@
     "test:api": "dredd --config ./dredd/dredd.yml",
     "test:security": "snyk test",
     "build": "NODE_ENV=production gulp build",
-    "precommit": "npm run test && npm run build"
+    "precommit": "npm run test:lint && npm run build"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.6",
@@ -30,6 +30,7 @@
     "dredd": "^3.3.0",
     "event-stream": "^3.3.4",
     "glob": "^7.1.2",
+    "gulp": "^3.9.1",
     "gulp-if": "^2.0.2",
     "gulp-imagemin": "^3.4.0",
     "gulp-livereload": "^3.8.1",
@@ -41,9 +42,9 @@
     "gulp-uglify-es": "^0.1.4",
     "gulp-util": "^3.0.8",
     "gulp-xo": "^0.16.0",
-    "gulp": "^3.9.1",
     "husky": "^0.14.3",
     "imagemin-pngquant": "^5.0.1",
+    "jquery": "^3.2.1",
     "medusa-lib": "0.0.15",
     "nyc": "^11.3.0",
     "postcss-reporter": "^5.0.0",
@@ -52,7 +53,8 @@
     "url-parse": "^1.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "xo": "^0.17.1"
+    "vue": "^2.5.5",
+    "xo": "^0.18.2"
   },
   "xo": {
     "space": 4,
@@ -68,15 +70,15 @@
     },
     "envs": [
       "browser",
-      "node",
-      "jquery"
+      "node"
     ],
     "globals": [
       "PNotify",
       "LazyLoad",
       "_",
       "log",
-      "s"
+      "s",
+      "$"
     ],
     "ignores": [
       "static/js/lib/**",
@@ -84,5 +86,8 @@
       "static/js/vender.js",
       "build/**"
     ]
+  },
+  "dependencies": {
+    "tablesorter": "^2.29.0"
   }
 }

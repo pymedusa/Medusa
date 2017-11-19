@@ -1,2 +1,43 @@
-!function e(t,r,a){function s(l,o){if(!r[l]){if(!t[l]){var i="function"==typeof require&&require;if(!o&&i)return i(l,!0);if(n)return n(l,!0);var u=new Error("Cannot find module '"+l+"'");throw u.code="MODULE_NOT_FOUND",u}var c=r[l]={exports:{}};t[l][0].call(c.exports,function(e){var r=t[l][1][e];return s(r||e)},c,c.exports,e,t,r,a)}return r[l].exports}for(var n="function"==typeof require&&require,l=0;l<a.length;l++)s(a[l]);return s}({1:[function(e,t,r){$(document).ready(()=>{$("#saveDefaultsButton").on("click",function(){const e=[],t=[];$("#allowed_qualities option:selected").each((t,r)=>e.push($(r).val())),$("#preferred_qualities option:selected").each((e,r)=>t.push($(r).val())),$.get("config/general/saveAddShowDefaults",{defaultStatus:$("#statusSelect").val(),allowed_qualities:e.join(","),preferred_qualities:t.join(","),defaultFlattenFolders:$("#flatten_folders").prop("checked"),subtitles:$("#subtitles").prop("checked"),anime:$("#anime").prop("checked"),scene:$("#scene").prop("checked"),defaultStatusAfter:$("#statusSelectAfter").val()}),$(this).prop("disabled",!0),new PNotify({title:"Saved Defaults",text:'Your "add show" defaults have been set to your current selections.',shadow:!1})}),$("#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter").on("change",()=>{$("#saveDefaultsButton").prop("disabled",!1)}),$("#qualityPreset").on("change",()=>{$("span.prev").click(),$("span.next").click()})})},{}]},{},[1]);
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+
+$(document).ready(() => {
+    $('#saveDefaultsButton').on('click', function () {
+        const anyQualArray = [];
+        const bestQualArray = [];
+        $('#allowed_qualities option:selected').each((i, d) => anyQualArray.push($(d).val()));
+        $('#preferred_qualities option:selected').each((i, d) => bestQualArray.push($(d).val()));
+
+        $.get('config/general/saveAddShowDefaults', {
+            defaultStatus: $('#statusSelect').val(),
+            allowed_qualities: anyQualArray.join(','), // eslint-disable-line camelcase
+            preferred_qualities: bestQualArray.join(','), // eslint-disable-line camelcase
+            defaultFlattenFolders: $('#flatten_folders').prop('checked'),
+            subtitles: $('#subtitles').prop('checked'),
+            anime: $('#anime').prop('checked'),
+            scene: $('#scene').prop('checked'),
+            defaultStatusAfter: $('#statusSelectAfter').val()
+        });
+
+        $(this).prop('disabled', true);
+        new PNotify({ // eslint-disable-line no-new
+            title: 'Saved Defaults',
+            text: 'Your "add show" defaults have been set to your current selections.',
+            shadow: false
+        });
+    });
+
+    $('#statusSelect, #qualityPreset, #flatten_folders, #allowed_qualities, #preferred_qualities, #subtitles, #scene, #anime, #statusSelectAfter').on('change', () => {
+        $('#saveDefaultsButton').prop('disabled', false);
+    });
+
+    $('#qualityPreset').on('change', () => {
+        // @TODO: fix issue #181 - force re-render to correct the height of the outer div
+        $('span.prev').click();
+        $('span.next').click();
+    });
+});
+
+},{}]},{},[1]);
+
 //# sourceMappingURL=add-show-options.js.map

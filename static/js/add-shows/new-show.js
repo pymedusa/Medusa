@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.addShows.newShow = function() {

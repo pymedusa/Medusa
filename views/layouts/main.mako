@@ -49,7 +49,7 @@
         <%block name="css" />
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
-        <div v-cloak id="vue-wrap" class="container-fluid">
+        <div id="vue-wrap" class="container-fluid">
 
             <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
             <div id="summaryBackground" class="shadow" style="display: none"></div>
@@ -80,6 +80,7 @@
 
         <script type="text/javascript" src="js/config/backup-restore.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/index.js?${sbPID}"></script>
+        <script type="text/javascript" src="js/config/info.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/init.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/notifications.js?${sbPID}"></script>
         <script type="text/javascript" src="js/config/post-processing.js?${sbPID}"></script>

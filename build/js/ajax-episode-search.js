@@ -1,2 +1,256 @@
-!function e(a,t,r){function s(i,n){if(!t[i]){if(!a[i]){var c="function"==typeof require&&require;if(!n&&c)return c(i,!0);if(o)return o(i,!0);var l=new Error("Cannot find module '"+i+"'");throw l.code="MODULE_NOT_FOUND",l}var p=t[i]={exports:{}};a[i][0].call(p.exports,function(e){var t=a[i][1][e];return s(t||e)},p,p.exports,e,a,t,r)}return t[i].exports}for(var o="function"==typeof require&&require,i=0;i<r.length;i++)s(r[i]);return s}({1:[function(e,a,t){let r=!1,s=!1,o="";PNotify.prototype.options.maxonscreen=5,$.fn.forcedSearches=[];const i=e=>{e.on("click.disabled",!1),e.prop("enableClick","1"),e.fadeTo("fast",1)},n=e=>{e.off("click.disabled"),e.prop("enableClick","0"),e.fadeTo("fast",.5)},c=()=>{const e=$("#series-id").val(),a=void 0===e?"home/getManualSearchStatus":"home/getManualSearchStatus?show="+e;let t=5e3;$.ajax({url:a,error(){t=3e4},type:"GET",dataType:"JSON",complete(){setTimeout(c,t)},timeout:15e3}).done(e=>{t=e.episodes?5e3:15e3,(e=>{$.each(e.episodes,(e,a)=>{let t="";const r=$("a[id="+a.show+"x"+a.season+"x"+a.episode+"]"),s=r.children("img[data-ep-search]"),o=r.parent();if(r){let e="";"searching"===a.searchstatus.toLowerCase()?(s.prop("title","Searching"),s.prop("alt","Searching"),s.prop("src","images/loading16.gif"),n(r),t=a.searchstatus):"queued"===a.searchstatus.toLowerCase()?(s.prop("title","Queued"),s.prop("alt","queued"),s.prop("src","images/queued.png"),n(r),t=a.searchstatus):"finished"===a.searchstatus.toLowerCase()&&(s.prop("title","Searching"),s.prop("alt","searching"),s.parent().prop("class","epRetry"),s.prop("src","images/search16.png"),i(r),e=/(\w+(\s\((\bBest\b|\bProper\b)\))?)\s\((.+?)\)/,t=a.status.replace(e,'$1 <span class="quality '+a.quality+'">$4</span>'),o.closest("tr").prop("class",a.overview+" season-"+a.season+" seasonstyle")),o.siblings(".col-status").html(t)}const c=$("a[id=forceUpdate-"+a.show+"x"+a.season+"x"+a.episode+"]"),l=c.children("img");c&&("searching"===a.searchstatus.toLowerCase()?(l.prop("title","Searching"),l.prop("alt","Searching"),l.prop("src","images/loading16.gif"),n(c)):"queued"===a.searchstatus.toLowerCase()?(l.prop("title","Queued"),l.prop("alt","queued"),l.prop("src","images/queued.png")):"finished"===a.searchstatus.toLowerCase()&&(l.prop("title","Forced Search"),l.prop("alt","[search]"),l.prop("src","images/search16.png"),"snatched"===a.overview.toLowerCase()?c.closest("tr").remove():i(c)))})})(e)})};$(document).ready(()=>c()),$.ajaxEpSearch=function(e){e=$.extend({},{size:16,colorRow:!1,loadingImage:"loading16.gif",queuedImage:"queued.png",noImage:"no16.png",yesImage:"yes16.png"},e),$(".epRetry").on("click",function(e){if(e.preventDefault(),"0"===$(this).prop("enableClick"))return!1;o=$(this),$("#forcedSearchModalFailed").modal("show")});const a=()=>{const a=o.parent();let t,i,c;const l=o,p=o.children("img");p.prop("title","loading"),p.prop("alt",""),p.prop("src","images/"+e.loadingImage);let d=o.prop("href");return r||(d=d.replace("retryEpisode","searchEpisode")),s&&d.indexOf("retryEpisode")>=0&&(d+="&down_cur_quality=1"),$.getJSON(d,r=>{if("failure"===r.result.toLowerCase())t=e.noImage,i="failed";else{t=e.loadingImage,i="success",e.colorRow&&a.parent().removeClass("skipped wanted qual good unaired").addClass("snatched");c=r.result.replace(/(\w+)\s\((.+?)\)/,'$1 <span class="quality '+r.quality+'">$2</span>'),a.siblings(".col-status").html(c),n(l)}p.prop("title",i),p.prop("alt",i),p.prop("height",e.size),p.prop("src","images/"+t)}),!1};$(".epSearch").on("click",function(e){if(e.preventDefault(),"0"===$(this).prop("enableClick"))return!1;o=$(this),$(this).parent().parent().children(".col-status").children(".quality").length>0?$("#forcedSearchModalQuality").modal("show"):a()}),$(".epManualSearch").on("click",function(e){if(e.preventDefault(),$(this).hasClass("disabled"))return!1;$(".epManualSearch").addClass("disabled"),$(".epManualSearch").fadeTo(1,.1);const a=this.href;e.shiftKey||e.ctrlKey||2===e.which?window.open(a,"_blank"):window.location=a}),$("#forcedSearchModalFailed .btn").on("click",function(){r="yes"===$(this).text().toLowerCase(),$("#forcedSearchModalQuality").modal("show")}),$("#forcedSearchModalQuality .btn").on("click",function(){s="yes"===$(this).text().toLowerCase(),a()})}},{}]},{},[1]);
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+const searchStatusUrl = 'home/getManualSearchStatus';
+let failedDownload = false;
+let qualityDownload = false;
+let selectedEpisode = '';
+PNotify.prototype.options.maxonscreen = 5;
+
+$.fn.forcedSearches = [];
+
+const enableLink = el => {
+    el.on('click.disabled', false);
+    el.prop('enableClick', '1');
+    el.fadeTo('fast', 1);
+};
+
+const disableLink = el => {
+    el.off('click.disabled');
+    el.prop('enableClick', '0');
+    el.fadeTo('fast', 0.5);
+};
+
+const updateImages = data => {
+    $.each(data.episodes, (name, ep) => {
+        // Get td element for current ep
+        const loadingImage = 'loading16.gif';
+        const queuedImage = 'queued.png';
+        const searchImage = 'search16.png';
+        let htmlContent = '';
+        // Try to get the <a> Element
+        const el = $('a[id=' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        const img = el.children('img[data-ep-search]');
+        const parent = el.parent();
+        if (el) {
+            let rSearchTerm = '';
+            if (ep.searchstatus.toLowerCase() === 'searching') {
+                //
+                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                img.prop('title', 'Searching');
+                img.prop('alt', 'Searching');
+                img.prop('src', 'images/' + loadingImage);
+                disableLink(el);
+                htmlContent = ep.searchstatus;
+            } else if (ep.searchstatus.toLowerCase() === 'queued') {
+                //
+                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                img.prop('title', 'Queued');
+                img.prop('alt', 'queued');
+                img.prop('src', 'images/' + queuedImage);
+                disableLink(el);
+                htmlContent = ep.searchstatus;
+            } else if (ep.searchstatus.toLowerCase() === 'finished') {
+                //
+                // el=$('td#' + ep.season + 'x' + ep.episode + '.search img');
+                img.prop('title', 'Searching');
+                img.prop('alt', 'searching');
+                img.parent().prop('class', 'epRetry');
+                img.prop('src', 'images/' + searchImage);
+                enableLink(el);
+
+                // Update Status and Quality
+                rSearchTerm = /(\w+(\s\((\bBest\b|\bProper\b)\))?)\s\((.+?)\)/;
+                htmlContent = ep.status.replace(rSearchTerm, "$1" + ' <span class="quality ' + ep.quality + '">' + "$4" + '</span>'); // eslint-disable-line quotes, no-useless-concat
+                parent.closest('tr').prop('class', ep.overview + ' season-' + ep.season + ' seasonstyle');
+            }
+            // Update the status column if it exists
+            parent.siblings('.col-status').html(htmlContent);
+        }
+        const elementCompleteEpisodes = $('a[id=forceUpdate-' + ep.show + 'x' + ep.season + 'x' + ep.episode + ']');
+        const imageCompleteEpisodes = elementCompleteEpisodes.children('img');
+        if (elementCompleteEpisodes) {
+            if (ep.searchstatus.toLowerCase() === 'searching') {
+                imageCompleteEpisodes.prop('title', 'Searching');
+                imageCompleteEpisodes.prop('alt', 'Searching');
+                imageCompleteEpisodes.prop('src', 'images/' + loadingImage);
+                disableLink(elementCompleteEpisodes);
+            } else if (ep.searchstatus.toLowerCase() === 'queued') {
+                imageCompleteEpisodes.prop('title', 'Queued');
+                imageCompleteEpisodes.prop('alt', 'queued');
+                imageCompleteEpisodes.prop('src', 'images/' + queuedImage);
+            } else if (ep.searchstatus.toLowerCase() === 'finished') {
+                imageCompleteEpisodes.prop('title', 'Forced Search');
+                imageCompleteEpisodes.prop('alt', '[search]');
+                imageCompleteEpisodes.prop('src', 'images/' + searchImage);
+                if (ep.overview.toLowerCase() === 'snatched') {
+                    elementCompleteEpisodes.closest('tr').remove();
+                } else {
+                    enableLink(elementCompleteEpisodes);
+                }
+            }
+        }
+    });
+};
+
+const checkManualSearches = () => {
+    const showId = $('#series-id').val();
+    const url = showId === undefined ? searchStatusUrl : searchStatusUrl + '?show=' + showId;
+    let pollInterval = 5000;
+    $.ajax({
+        url,
+        error() {
+            pollInterval = 30000;
+        },
+        type: 'GET',
+        dataType: 'JSON',
+        complete() {
+            setTimeout(checkManualSearches, pollInterval);
+        },
+        timeout: 15000 // Timeout every 15 secs
+    }).done(data => {
+        if (data.episodes) {
+            pollInterval = 5000;
+        } else {
+            pollInterval = 15000;
+        }
+        updateImages(data);
+        //
+        // cleanupManualSearches(data);
+    });
+};
+
+$(document).ready(() => checkManualSearches());
+
+$.ajaxEpSearch = function (options) {
+    options = $.extend({}, {
+        size: 16,
+        colorRow: false,
+        loadingImage: 'loading16.gif',
+        queuedImage: 'queued.png',
+        noImage: 'no16.png',
+        yesImage: 'yes16.png'
+    }, options);
+
+    $('.epRetry').on('click', function (event) {
+        event.preventDefault();
+
+        // Check if we have disabled the click
+        if ($(this).prop('enableClick') === '0') {
+            return false;
+        }
+
+        selectedEpisode = $(this);
+
+        $('#forcedSearchModalFailed').modal('show');
+    });
+
+    const forcedSearch = () => {
+        const parent = selectedEpisode.parent();
+        let imageName;
+        let imageResult;
+        let htmlContent;
+
+        // Create var for anchor
+        const link = selectedEpisode;
+
+        // Create var for img under anchor and set options for the loading gif
+        const img = selectedEpisode.children('img');
+        img.prop('title', 'loading');
+        img.prop('alt', '');
+        img.prop('src', 'images/' + options.loadingImage);
+
+        let url = selectedEpisode.prop('href');
+
+        if (!failedDownload) {
+            url = url.replace('retryEpisode', 'searchEpisode');
+        }
+
+        // Only pass the down_cur_quality flag when retryEpisode() is called
+        if (qualityDownload && url.indexOf('retryEpisode') >= 0) {
+            url += '&down_cur_quality=1';
+        }
+
+        // @TODO: Move to the API
+        $.getJSON(url, data => {
+            // If they failed then just put the red X
+            if (data.result.toLowerCase() === 'failure') {
+                imageName = options.noImage;
+                imageResult = 'failed';
+            } else {
+                // If the snatch was successful then apply the
+                // corresponding class and fill in the row appropriately
+                imageName = options.loadingImage;
+                imageResult = 'success';
+                // Color the row
+                if (options.colorRow) {
+                    parent.parent().removeClass('skipped wanted qual good unaired').addClass('snatched');
+                }
+                // Applying the quality class
+                const rSearchTerm = /(\w+)\s\((.+?)\)/;
+                htmlContent = data.result.replace(rSearchTerm, '$1 <span class="quality ' + data.quality + '">$2</span>');
+                // Update the status column if it exists
+                parent.siblings('.col-status').html(htmlContent);
+                // Only if the queuing was successful, disable the onClick event of the loading image
+                disableLink(link);
+            }
+
+            // Put the corresponding image as the result of queuing of the manual search
+            img.prop('title', imageResult);
+            img.prop('alt', imageResult);
+            img.prop('height', options.size);
+            img.prop('src', 'images/' + imageName);
+        });
+        return false;
+    };
+
+    $('.epSearch').on('click', function (event) {
+        event.preventDefault();
+
+        // Check if we have disabled the click
+        if ($(this).prop('enableClick') === '0') {
+            return false;
+        }
+
+        selectedEpisode = $(this);
+
+        // @TODO: Replace this with an easier to read selector
+        if ($(this).parent().parent().children('.col-status').children('.quality').length > 0) {
+            $('#forcedSearchModalQuality').modal('show');
+        } else {
+            forcedSearch();
+        }
+    });
+
+    $('.epManualSearch').on('click', function (event) {
+        event.preventDefault();
+
+        // @TODO: Omg this disables all the manual snatch icons, when one is clicked
+        if ($(this).hasClass('disabled')) {
+            return false;
+        }
+
+        $('.epManualSearch').addClass('disabled');
+        $('.epManualSearch').fadeTo(1, 0.1);
+
+        const url = this.href;
+        if (event.shiftKey || event.ctrlKey || event.which === 2) {
+            window.open(url, '_blank');
+        } else {
+            window.location = url;
+        }
+    });
+
+    $('#forcedSearchModalFailed .btn').on('click', function () {
+        failedDownload = $(this).text().toLowerCase() === 'yes';
+        $('#forcedSearchModalQuality').modal('show');
+    });
+
+    $('#forcedSearchModalQuality .btn').on('click', function () {
+        qualityDownload = $(this).text().toLowerCase() === 'yes';
+        forcedSearch();
+    });
+};
+
+},{}]},{},[1]);
+
 //# sourceMappingURL=ajax-episode-search.js.map

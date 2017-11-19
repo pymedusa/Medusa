@@ -14,8 +14,8 @@ const glob = require('glob');
 const es = require('event-stream');
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
-const postcss = require('gulp-postcss');
-const sass = require('gulp-sass');
+// const postcss = require('gulp-postcss');
+// const sass = require('gulp-sass');
 const cssnano = require('cssnano');
 const autoprefixer = require('autoprefixer');
 const reporter = require('postcss-reporter');
@@ -41,8 +41,7 @@ const staticAssets = [
     'static/js/lib/**/*',
     'static/js/vender.js',
     'static/js/vender.min.js',
-    'static/css/lib/**/*',
-    'static/css/*.ttf'
+    'static/css/**/*'
 ];
 
 gulp.task('default', ['build']);
@@ -85,17 +84,19 @@ gulp.task('img', () => {
 });
 
 gulp.task('css', () => {
-    return gulp
-    .src('static/css/**/*.css', {
-        base: 'static'
-    })
-    .pipe(sourcemaps.init())
-    .pipe(sass().on('error', sass.logError))
-    .pipe(postcss(processors))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('build'))
-    .pipe(gulpif(!PROD, livereload({ port: 35729 })))
-    .pipe(gulpif(PROD, gulp.dest('build')));
+    //
+    // return gulp
+    // .src('static/css/**/*.css', {
+    //     base: 'static'
+    // })
+    // .pipe(sourcemaps.init())
+    // .pipe(sass().on('error', sass.logError))
+    // .pipe(postcss(processors))
+    // .pipe(sourcemaps.write('./'))
+    // .pipe(gulp.dest('build'))
+    // .pipe(gulpif(!PROD, livereload({ port: 35729 })))
+    // .pipe(gulpif(PROD, gulp.dest('build')));
+    return;
 });
 
 gulp.task('lint', () => {

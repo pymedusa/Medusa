@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.config.postProcessing = function() { // eslint-disable-line max-lines

@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 const medusa = require('..');
 const startAjaxEpisodeSubtitles = require('../ajax-episode-subtitles');
@@ -330,13 +331,9 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         setAbsoluteSceneNumbering(forAbsolute, sceneAbsolute);
     });
 
-    $.fn.generateStars = function() {
-        return this.each((i, e) => {
-            $(e).html($('<span/>').width($(e).text() * 12));
-        });
-    };
-
-    $('.imdbstars').generateStars();
+    $('.imdbstars').each((i, e) => {
+        $(e).html($('<span/>').width($(e).text() * 12));
+    });
 
     $('#showTable, #animeTable').tablesorter({
         widgets: ['saveSort', 'stickyHeaders', 'columnSelector'],
@@ -353,7 +350,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         html: true,
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', () => {
-        $.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
+        window.$.tablesorter.columnSelector.attachTo($('#showTable, #animeTable'), '#popover-target');
     });
 
     // Moved and rewritten this from displayShow. This changes the button when clicked for collapsing/expanding the

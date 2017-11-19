@@ -30,13 +30,6 @@ const UTIL = {
         }
     },
     init() {
-        if (typeof startVue === 'function') { // eslint-disable-line no-undef
-            startVue(); // eslint-disable-line no-undef
-        } else {
-            $('[v-cloak]').removeAttr('v-cloak');
-        }
-
-        const body = document.body;
         $('[asset]').each(function() {
             const asset = $(this).attr('asset');
             const series = $(this).attr('series');
@@ -52,6 +45,8 @@ const UTIL = {
                 $(this).attr('href', path);
             }
         });
+
+        const body = document.body;
         const controller = body.getAttribute('data-controller');
         const action = body.getAttribute('data-action');
 

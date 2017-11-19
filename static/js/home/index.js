@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 const medusa = require('..');
 
@@ -318,9 +319,9 @@ MEDUSA.home.index = () => {
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', () => {
         // Call this function to copy the column selection code into the popover
-        $.tablesorter.columnSelector.attachTo($('#showListTableShows'), '#popover-target');
+        window.$.tablesorter.columnSelector.attachTo($('#showListTableShows'), '#popover-target');
         if (MEDUSA.config.animeSplitHome) {
-            $.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
+            window.$.tablesorter.columnSelector.attachTo($('#showListTableAnime'), '#popover-target');
         }
     });
 

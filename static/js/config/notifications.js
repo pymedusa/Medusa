@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 MEDUSA.config.notifications = function() { // eslint-disable-line max-lines

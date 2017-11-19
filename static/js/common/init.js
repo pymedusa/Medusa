@@ -1,3 +1,4 @@
+
 const MEDUSA = require('../core');
 
 const apiKey = $('body').attr('api-key');
@@ -23,7 +24,7 @@ MEDUSA.common.init = function() {
         if (seriesId) {
             const apiRoot = $('body').attr('api-root');
             const path = apiRoot + 'series/' + $('#series-slug').attr('value') + '/asset/fanart?api_key=' + apiKey;
-            $.backstretch(path);
+            window.$.backstretch(path);
             $('.backstretch').css('top', backstretchOffset());
             $('.backstretch').css('opacity', MEDUSA.config.fanartBackgroundOpacity).fadeIn(500);
         }
@@ -163,7 +164,7 @@ MEDUSA.common.init = function() {
         }
     };
 
-    $.confirm.options = {
+    window.$.confirm.options = {
         confirmButton: 'Yes',
         cancelButton: 'Cancel',
         dialogClass: 'modal-dialog',
