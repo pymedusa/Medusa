@@ -18235,31 +18235,6 @@ module.exports = Vue$3;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":125}],135:[function(require,module,exports){
-const Vue = require('vue/dist/vue.common');
-const MEDUSA = require('../core');
-const medusa = require('..');
-
-MEDUSA.config.info = async () => {
-    const app = new Vue({
-        el: '#config-content',
-        data: await medusa.config(),
-        methods: {
-            redirect(e) {
-                e.preventDefault();
-                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
-            },
-            prettyPrintJSON(x) {
-                return JSON.stringify(x, undefined, 4);
-            }
-        }
-    });
-    $('[v-cloak]').removeAttr('v-cloak');
-
-    return app;
-};
-
-},{"..":137,"../core":136,"vue/dist/vue.common":134}],136:[function(require,module,exports){
-
 const medusa = require('.');
 
 // eslint-disable-line max-lines
@@ -18368,7 +18343,7 @@ if (!document.location.pathname.endsWith('/login/')) {
 
 module.exports = MEDUSA;
 
-},{".":137}],137:[function(require,module,exports){
+},{".":136}],136:[function(require,module,exports){
 const Medusa = require('medusa-lib');
 
 const medusa = new Medusa({
@@ -18384,6 +18359,30 @@ const medusa = new Medusa({
 
 module.exports = medusa;
 
-},{"medusa-lib":121}]},{},[135]);
+},{"medusa-lib":121}],137:[function(require,module,exports){
+const Vue = require('vue/dist/vue.common');
+const MEDUSA = require('../../core');
+const medusa = require('../../');
+
+MEDUSA.config.info = async () => {
+    const app = new Vue({
+        el: '#config-content',
+        data: await medusa.config(),
+        methods: {
+            redirect(e) {
+                e.preventDefault();
+                window.open(MEDUSA.info.anonRedirect + e.target.href, '_blank');
+            },
+            prettyPrintJSON(x) {
+                return JSON.stringify(x, undefined, 4);
+            }
+        }
+    });
+    $('[v-cloak]').removeAttr('v-cloak');
+
+    return app;
+};
+
+},{"../../":136,"../../core":135,"vue/dist/vue.common":134}]},{},[137]);
 
 //# sourceMappingURL=info.js.map

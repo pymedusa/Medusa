@@ -8,6 +8,10 @@
     from medusa.indexers.indexer_api import indexerApi
     from medusa.indexers.indexer_config import get_trakt_indexer
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/config/notifications.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>

@@ -10,6 +10,10 @@
     from medusa.metadata.generic import GenericMetadata
     from medusa import naming
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/config/post-processing.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 <div id="content960">
     % if not header is UNDEFINED:

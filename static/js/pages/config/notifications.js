@@ -1,5 +1,4 @@
-
-const MEDUSA = require('../core');
+const MEDUSA = require('../../core');
 
 MEDUSA.config.notifications = function() { // eslint-disable-line max-lines
     $('#testGrowl').on('click', function() {

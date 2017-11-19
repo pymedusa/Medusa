@@ -11,6 +11,10 @@
     from medusa.indexers.indexer_api import indexerApi
     gh_branch = app.GIT_REMOTE_BRANCHES or app.version_check_scheduler.action.list_remote_branches()
 %>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/config/index.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 % if not header is UNDEFINED:
     <h1 class="header">${header}</h1>

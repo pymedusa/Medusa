@@ -1,4 +1,8 @@
 <%inherit file="/layouts/main.mako"/>
+<%block name="scripts">
+<script type="text/javascript" src="js/pages/config/init.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/config/info.js?${sbPID}"></script>
+</%block>
 <%block name="content">
 <h1 class="header">Medusa Configuration</h1>
 <div id="config-content">

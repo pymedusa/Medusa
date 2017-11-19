@@ -1,6 +1,5 @@
-
-const MEDUSA = require('../core');
-const medusa = require('..');
+const MEDUSA = require('../../core');
+const medusa = require('../../');
 
 MEDUSA.config.index = () => {
     if ($('input[name="proxy_setting"]').val().length === 0) {

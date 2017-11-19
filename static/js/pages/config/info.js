@@ -1,6 +1,6 @@
 const Vue = require('vue/dist/vue.common');
-const MEDUSA = require('../core');
-const medusa = require('..');
+const MEDUSA = require('../../core');
+const medusa = require('../../');
 
 MEDUSA.config.info = async () => {
     const app = new Vue({

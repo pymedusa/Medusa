@@ -7560,42 +7560,6 @@ if (hadRuntime) {
 });
 
 },{}],134:[function(require,module,exports){
-
-const MEDUSA = require('../core');
-const medusa = require('..');
-
-MEDUSA.config.index = () => {
-    if ($('input[name="proxy_setting"]').val().length === 0) {
-        $('input[id="proxy_indexers"]').prop('checked', false);
-        $('label[for="proxy_indexers"]').hide();
-    }
-
-    $('#theme_name').on('change', async event => {
-        const theme = $('#theme-stylesheet');
-        const oldThemeName = theme.attr('href').split('/').pop().split('.')[0];
-        const newThemeName = $(event.currentTarget).val();
-
-        await medusa.config({ theme: { name: newThemeName } });
-
-        theme[0].href = theme[0].href.replace(oldThemeName, newThemeName);
-    });
-
-    $('input[name="proxy_setting"]').on('input', event => {
-        if ($(event.currentTarget).val().length === 0) {
-            $('input[id="proxy_indexers"]').prop('checked', false);
-            $('label[for="proxy_indexers"]').hide();
-        } else {
-            $('label[for="proxy_indexers"]').show();
-        }
-    });
-
-    $('#log_dir').fileBrowser({
-        title: 'Select log file folder location'
-    });
-};
-
-},{"..":136,"../core":135}],135:[function(require,module,exports){
-
 const medusa = require('.');
 
 // eslint-disable-line max-lines
@@ -7704,7 +7668,7 @@ if (!document.location.pathname.endsWith('/login/')) {
 
 module.exports = MEDUSA;
 
-},{".":136}],136:[function(require,module,exports){
+},{".":135}],135:[function(require,module,exports){
 const Medusa = require('medusa-lib');
 
 const medusa = new Medusa({
@@ -7720,6 +7684,47 @@ const medusa = new Medusa({
 
 module.exports = medusa;
 
-},{"medusa-lib":121}]},{},[134]);
+},{"medusa-lib":121}],136:[function(require,module,exports){
+const MEDUSA = require('../../core');
 
-//# sourceMappingURL=index.js.map
+MEDUSA.config.backupRestore = function () {
+    $('#Backup').on('click', () => {
+        $('#Backup').prop('disabled', true);
+        $('#Backup-result').html(MEDUSA.config.loading);
+
+        const backupDir = $('#backupDir').val();
+        $.get('config/backuprestore/backup', {
+            backupDir
+        }).done(data => {
+            $('#Backup-result').html(data);
+            $('#Backup').prop('disabled', false);
+        });
+    });
+    $('#Restore').on('click', () => {
+        $('#Restore').prop('disabled', true);
+        $('#Restore-result').html(MEDUSA.config.loading);
+
+        const backupFile = $('#backupFile').val();
+        $.get('config/backuprestore/restore', {
+            backupFile
+        }).done(data => {
+            $('#Restore-result').html(data);
+            $('#Restore').prop('disabled', false);
+        });
+    });
+
+    $('#backupDir').fileBrowser({
+        title: 'Select backup folder to save to',
+        key: 'backupPath'
+    });
+    $('#backupFile').fileBrowser({
+        title: 'Select backup files to restore',
+        key: 'backupFile',
+        includeFiles: 1
+    });
+    $('#config-components').tabs();
+};
+
+},{"../../core":134}]},{},[136]);
+
+//# sourceMappingURL=backup-restore.js.map
