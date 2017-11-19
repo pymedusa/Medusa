@@ -13,6 +13,7 @@
 <%block name="scripts">
 <script type="text/javascript" src="js/ajax-episode-search.js?${sbPID}"></script>
 <script type="text/javascript" src="js/plot-tooltip.js?${sbPID}"></script>
+<script type="text/javascript" src="js/pages/schedule/index.js?${sbPID}"></script>
 </%block>
 
 <%block name="content">

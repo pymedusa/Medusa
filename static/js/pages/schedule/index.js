@@ -1,6 +1,5 @@
-
-const MEDUSA = require('../core');
-const api = require('../api');
+const MEDUSA = require('../../core');
+const api = require('../../api');
 
 MEDUSA.schedule.index = function() {
     if ($.isMeta({ layout: 'schedule' }, ['list'])) {
@@ -61,7 +60,6 @@ MEDUSA.schedule.index = function() {
         html: true,
         content: '<div id="popover-target"></div>'
     }).on('shown.bs.popover', () => {
-        // call this function to copy the column selection code into the popover
         window.$.tablesorter.columnSelector.attachTo($('#showListTable'), '#popover-target');
     });
 
