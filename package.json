@@ -15,8 +15,7 @@
     "test:spec": "nyc ava --verbose",
     "test:api": "dredd --config ./dredd/dredd.yml",
     "test:security": "snyk test",
-    "build": "NODE_ENV=production gulp build",
-    "precommit": "npm run test:lint && npm run build"
+    "build": "NODE_ENV=production gulp build"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.6",
@@ -42,7 +41,6 @@
     "gulp-uglify-es": "^0.1.4",
     "gulp-util": "^3.0.8",
     "gulp-xo": "^0.16.0",
-    "husky": "^0.14.3",
     "imagemin-pngquant": "^5.0.1",
     "jquery": "^3.2.1",
     "medusa-lib": "0.0.16",
