@@ -15,7 +15,7 @@
     "test:spec": "nyc ava --verbose",
     "test:api": "dredd --config ./dredd/dredd.yml",
     "test:security": "snyk test",
-    "build": "NODE_ENV=production gulp build"
+    "build": "cross-env NODE_ENV=production gulp build"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.6",
