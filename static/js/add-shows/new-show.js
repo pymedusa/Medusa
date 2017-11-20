@@ -1,5 +1,5 @@
-
 const MEDUSA = require('../core');
+const { updateBlackWhiteList, generateBlackWhiteList } = require('../blackwhite');
 
 MEDUSA.addShows.newShow = function() {
     const updateSampleText = () => {
@@ -15,7 +15,7 @@ MEDUSA.addShows.newShow = function() {
         } else {
             showName = '';
         }
-        $.updateBlackWhiteList(showName);
+        updateBlackWhiteList(showName);
         let sampleText = 'Adding show <b>' + showName + '</b> into <b>';
 
         // If we have a root dir selected, figure out the path
@@ -157,7 +157,7 @@ MEDUSA.addShows.newShow = function() {
             alert('You must choose a show to continue'); // eslint-disable-line no-alert
             return false;
         }
-        generateBlackWhiteList(); // eslint-disable-line no-undef
+        generateBlackWhiteList();
         $('#addShowForm').submit();
     });
 
