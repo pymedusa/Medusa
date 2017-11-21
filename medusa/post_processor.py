@@ -873,30 +873,60 @@ class PostProcessor(object):
         :param preferred: Qualities that are preferred
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
-        if current_quality is common.Quality.NONE:
-            return False, 'There is no current quality. Skipping as we can only replace existing qualities'
-        if new_quality in preferred:
-            if current_quality in preferred:
-                if new_quality > current_quality:
-                    return True, 'New quality is higher than current Preferred. Accepting quality'
-                elif new_quality < current_quality:
-                    return False, 'New quality is lower than current Preferred. Ignoring quality'
-                else:
-                    return False, 'New quality is equal than current Preferred. Ignoring quality'
-            return True, 'New quality is Preferred'
-        elif new_quality in allowed:
-            if current_quality in preferred:
-                return False, 'Current quality is Allowed but we already have a current Preferred. Ignoring quality'
-            elif current_quality not in allowed:
-                return True, 'New quality is Allowed and we don\'t have a current Preferred. Accepting quality'
-            elif new_quality > current_quality:
-                return True, 'New quality is higher than current Allowed. Accepting quality'
-            elif new_quality < current_quality:
-                return False, 'New quality is lower than current Allowed. Ignoring quality'
+        replace_allowed = {
+            'higher': False,
+            'same': False,
+            'lower': False,
+        }
+        replace_preferred = {
+            'higher': False,
+            'same': False,
+            'lower': False,
+        }
+        replace = {
+            'allowed': replace_allowed,
+            'preferred': replace_preferred,
+        }
+
+        def get_level(quality):
+            if quality in preferred:
+                return 'preferred'
+            elif quality in allowed:
+                return 'allowed'
             else:
-                return False, 'New quality is equal to current Allowed. Ignoring quality'
-        else:
-            return False, 'New quality is not in Allowed|Preferred. Ignoring quality'
+                raise ValueError('Quality not in allowed or preferred.')
+
+        def compare(first, second):
+            if first > second:
+                return 'higher'
+            elif new_quality < current_quality:
+                return 'lower'
+            elif new_quality == current_quality:
+                return 'same'
+            else:
+                raise ValueError('Could not compare qualities')
+
+        try:
+            new = get_level(new_quality)
+            existing = get_level(current_quality)
+        except ValueError:
+            return False, 'Replacing requires both a new and existing quality'
+
+        if new != existing:  # qualities are not the same level
+            if new == 'preferred':
+                msg = 'New quality is {0}'
+                return True, msg.format(new)
+            elif existing == 'preferred':
+                msg = 'New quality is {0} but existing is {1}'
+                return False, msg.format(new, existing)
+        else:  # qualities are the same level
+            status = compare(new_quality, current_quality)
+            if replace[existing][status]:  # replace based on settings
+                msg = 'Replacing {0} quality with {1} {0} quality'
+                return True, msg.format(existing, status)
+            else:
+                msg = 'Not replacing {0} quality with {1} {0} quality'
+                return False, msg.format(existing, status)
 
     def _run_extra_scripts(self, ep_obj):
         """
