@@ -1621,11 +1621,11 @@ class Home(WebRoot):
                         logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
                         try:
                             os.mkdir(new_location)
-                        except OSError as e:
+                        except OSError as error:
                             errors += 1
                             changed_location = False
-                            logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
-                                       (location=new_location, error=e.message or e.strerror), logger.WARNING)
+                            logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
+                                       (location=new_location, msg=error), logger.WARNING)
                         else:
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)

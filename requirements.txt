@@ -27,3 +27,4 @@ git+https://github.com/Diaoul/subliminal.git@425781d123cfafddc7967b8b09a3d9fe732
 tornado==4.5.2
 tornroutes==0.5.1
 validators==0.12.0
+vcrpy==1.11.1
