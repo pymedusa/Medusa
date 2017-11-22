@@ -126,10 +126,12 @@ class Notifier(object):
         hosts = (x.strip() for x in gen_hosts if x.strip())
         hosts_all = hosts_match = {}
         hosts_failed = set()
+        schema = 'https' if app.PLEX_SERVER_HTTPS else 'http'
 
         for cur_host in hosts:
-
-            url = 'http{0}://{1}/library/sections'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host)
+            url = '{schema}://{host}/library/sections'.format(
+                schema=schema, host=cur_host
+            )
             try:
                 # TODO: SESSION: Check if this needs exception handling.
                 xml_response = self.session.get(url, headers=self.headers).text
@@ -185,7 +187,9 @@ class Notifier(object):
         hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
         for section_key, cur_host in iteritems(hosts_try):
 
-            url = 'http{0}://{1}/library/sections/{2}/refresh'.format(('', 's')[bool(app.PLEX_SERVER_HTTPS)], cur_host, section_key)
+            url = '{schema}://{host}/library/sections/{key}/refresh'.format(
+                schema=schema, host=cur_host, key=section_key,
+            )
             try:
                 # TODO: Check if this needs exception handling
                 self.session.get(url, headers=self.headers).text
