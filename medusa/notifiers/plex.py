@@ -123,7 +123,7 @@ class Notifier(object):
 
         file_location = '' if not ep_obj else ep_obj.location
         gen_hosts = generate(hosts)
-        hosts = {x.strip() for x in gen_hosts if x.strip()}
+        hosts = (x.strip() for x in gen_hosts if x.strip())
         hosts_all = hosts_match = {}
         hosts_failed = set()
 
