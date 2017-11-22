@@ -177,7 +177,7 @@ class Notifier(object):
                             hosts_match.update(keyed_host)
 
         if force:
-            return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
+            return ', '.join(failed_hosts) if failed_hosts else None
 
         if hosts_match:
             log.debug(u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}', ', '.join(set(hosts_match)))
@@ -196,8 +196,7 @@ class Notifier(object):
             except Exception as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
                 hosts_failed.add(cur_host)
-
-        return (', '.join(set(hosts_failed)), None)[not len(hosts_failed)]
+        return ', '.join(hosts_failed) if hosts_failed else None
 
     def get_token(self, username=None, password=None, plex_server_token=None):
         username = username or app.PLEX_SERVER_USERNAME
