@@ -125,7 +125,7 @@ class Notifier(object):
         gen_hosts = generate(hosts)
         hosts = (x.strip() for x in gen_hosts if x.strip())
         all_hosts = {}
-        hosts_match = {}
+        matching_hosts = {}
         hosts_failed = set()
         schema = 'https' if app.PLEX_SERVER_HTTPS else 'http'
 
@@ -175,13 +175,13 @@ class Notifier(object):
                         location_path = re.sub(r'^(.{,2})[/\\]', '', location_path)
 
                         if section_path in location_path:
-                            hosts_match.update(keyed_host)
+                            matching_hosts.update(keyed_host)
 
         if force:
             return ', '.join(failed_hosts) if failed_hosts else None
 
-        if hosts_match:
-            hosts_try = hosts_match
+        if matching_hosts:
+            hosts_try = matching_hosts
             result = u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}'
         else:
             hosts_try = all_hosts
