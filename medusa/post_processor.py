@@ -889,9 +889,11 @@ class PostProcessor(object):
     def _should_process(cls, current_quality, new_quality, allowed, preferred,
                         allowed_cfg=None, preferred_cfg=None):
         """
-        Determines whether to replace existing files.  This determination
-        is completely separate from the decision on whether to search
-        for a file (the should_search method) and is user configurable.
+        Determine whether to replace existing files.
+
+        This determination is completely separate from the decision on
+        whether to search for a file (the should_search method) and is
+        user configurable.
 
         :param current_quality: The current quality of the episode that is being processed
         :param new_quality: The new quality of the episode that is being processed
@@ -901,7 +903,6 @@ class PostProcessor(object):
         :param preferred_cfg: Configuration for replacing preferred qualities
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
-
         def get_level(quality):
             """Determine if quality is allowed or preferred."""
             if quality in preferred:
