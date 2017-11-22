@@ -61,14 +61,42 @@ from rarfile import Error as RarError, NeedFirstVolume
 from six import text_type
 
 
+def make_replace_config(high, same, low):
+    """
+    Make a configuration dictionary.
+
+    :param high: Release with a higher quality should replace existing quality
+    :param high: Release with the same quality should replace existing quality
+    :
+    """
+    return {
+        'higher': high,
+        'same': same,
+        'lower': low,
+    }
+
+
+STRICT_REPLACE = make_replace_config(False, False, False)
+PERMISSIVE_REPLACE = make_replace_config(True, True, True)
+UPGRADE_REPLACE = make_replace_config(True, False, False)
+DOWNGRADE_REPLACE = make_replace_config(False, False, True)
+
+# Use legacy settings as default
+DEFAULT_ALLOWED_REPLACE_CFG = UPGRADE_REPLACE
+DEFAULT_PREFERRED_REPLACE_CFG = UPGRADE_REPLACE
+
+
 class PostProcessor(object):
-    """A class which will process a media file according to the post processing settings in the config."""
+    """Process a media file according to post processing config settings."""
 
     EXISTS_LARGER = 1
     EXISTS_SAME = 2
     EXISTS_SMALLER = 3
     DOESNT_EXIST = 4
     IGNORED_FILESTRINGS = ['.AppleDouble', '.DS_Store']
+
+    allowed_replace = DEFAULT_ALLOWED_REPLACE_CFG
+    preferred_replace = DEFAULT_PREFERRED_REPLACE_CFG
 
     def __init__(self, file_path, nzb_name=None, process_method=None, is_priority=None):
         """
@@ -857,35 +885,26 @@ class PostProcessor(object):
         # If in_history is True it must be a priority download
         return bool(self.in_history or self.is_priority)
 
-    @staticmethod
-    def _should_process(current_quality, new_quality, allowed, preferred):
+    @classmethod
+    def _should_process(cls, current_quality, new_quality, allowed, preferred,
+                        allowed_cfg=None, preferred_cfg=None):
         """
-        Determine if a quality should be processed according to the quality system.
-
-        This method is used only for replace existing files
-        Despite quality system rules (should_search method), in should_process method:
-         - New higher Allowed replaces current Allowed (overrrides rule where Allowed is final quality)
-         - New higher Preferred replaces current Preferred (overrides rule where Preffered is final quality)
+        Determines whether to replace existing files.  This determination
+        is completely separate from the decision on whether to search
+        for a file (the should_search method) and is user configurable.
 
         :param current_quality: The current quality of the episode that is being processed
         :param new_quality: The new quality of the episode that is being processed
         :param allowed: Qualities that are allowed
         :param preferred: Qualities that are preferred
+        :param allowed_cfg: Configuration for replacing allowed qualities
+        :param preferred_cfg: Configuration for replacing preferred qualities
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
-        replace_allowed = {
-            'higher': False,
-            'same': False,
-            'lower': False,
-        }
-        replace_preferred = {
-            'higher': False,
-            'same': False,
-            'lower': False,
-        }
+
         replace = {
-            'allowed': replace_allowed,
-            'preferred': replace_preferred,
+            'allowed': allowed_cfg or cls.allowed_replace,
+            'preferred': preferred_cfg or cls.preferred_replace,
         }
 
         def get_level(quality):
