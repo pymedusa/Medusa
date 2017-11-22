@@ -9,6 +9,7 @@ from medusa.helpers.utils import generate
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
 
+import requests
 from six import iteritems
 
 try:
@@ -196,9 +197,8 @@ class Notifier(object):
                 schema=schema, host=cur_host, key=section_key,
             )
             try:
-                # TODO: Check if this needs exception handling
                 self.session.get(url, headers=self.headers).text
-            except Exception as error:
+            except requests.RequestException as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
                 failed_hosts.add(cur_host)
         return ', '.join(failed_hosts) if failed_hosts else None
