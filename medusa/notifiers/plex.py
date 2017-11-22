@@ -180,11 +180,13 @@ class Notifier(object):
             return ', '.join(failed_hosts) if failed_hosts else None
 
         if hosts_match:
-            log.debug(u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}', ', '.join(set(hosts_match)))
+            hosts_try = hosts_match
+            result = u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}'
         else:
-            log.debug(u'PLEX: Updating all hosts with TV sections: {0}', ', '.join(set(hosts_all)))
+            hosts_try = hosts_all
+            result = u'PLEX: Updating all hosts with TV sections: {0}'
+        log.debug(result.format(', '.join(hosts_try)))
 
-        hosts_try = (hosts_match.copy(), hosts_all.copy())[not len(hosts_match)]
         for section_key, cur_host in iteritems(hosts_try):
 
             url = '{schema}://{host}/library/sections/{key}/refresh'.format(
