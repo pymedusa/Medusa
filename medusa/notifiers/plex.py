@@ -23,13 +23,13 @@ log.logger.addHandler(logging.NullHandler())
 
 class Notifier(object):
     def __init__(self):
-        self.headers = {
+        self.session = MedusaSession()
+        self.session.headers.update({
             'X-Plex-Device-Name': 'Medusa',
             'X-Plex-Product': 'Medusa Notifier',
             'X-Plex-Client-Identifier': common.USER_AGENT,
             'X-Plex-Version': '2016.02.10'
-        }
-        self.session = MedusaSession()
+        })
 
     @staticmethod
     def _notify_pht(message, title='Medusa', host=None, username=None, password=None, force=False):  # pylint: disable=too-many-arguments
@@ -136,7 +136,7 @@ class Notifier(object):
             )
 
             try:
-                response = self.session.get(url, headers=self.headers)
+                response = self.session.get(url)
             except requests.RequestException as error:
                 log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
                 failed_hosts.add(cur_host)
@@ -202,7 +202,7 @@ class Notifier(object):
                 schema=schema, host=cur_host, key=section_key,
             )
             try:
-                response = self.session.get(url, headers=self.headers)
+                response = self.session.get(url)
             except requests.RequestException as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
                 failed_hosts.add(cur_host)
@@ -217,10 +217,10 @@ class Notifier(object):
         plex_server_token = plex_server_token or app.PLEX_SERVER_TOKEN
 
         if plex_server_token:
-            self.headers['X-Plex-Token'] = plex_server_token
+            self.session.headers['X-Plex-Token'] = plex_server_token
 
-        if 'X-Plex-Token' in self.headers:
-            return True
+        if 'X-Plex-Token' in self.session.headers:
+            return self.session.headers['X-Plex-Token']
 
         if not (username and password):
             return True
@@ -234,13 +234,12 @@ class Notifier(object):
 
         try:
             response = self.session.post('https://plex.tv/users/sign_in.json',
-                                         data=params,
-                                         headers=self.headers).json()
+                                         data=params).json()
 
-            self.headers['X-Plex-Token'] = response['user']['authentication_token']
+            self.session.headers['X-Plex-Token'] = response['user']['authentication_token']
 
         except Exception as error:
-            self.headers.pop('X-Plex-Token', '')
+            self.session.headers.pop('X-Plex-Token', '')
             log.debug(u'PLEX: Error fetching credentials from from plex.tv for user {0}: {1}', username, error)
 
-        return 'X-Plex-Token' in self.headers
+        return self.session.headers.get('X-Plex-Token')
