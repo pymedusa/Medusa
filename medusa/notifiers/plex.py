@@ -212,6 +212,19 @@ class Notifier(object):
         return ', '.join(failed_hosts) if failed_hosts else None
 
     def get_token(self, username=None, password=None, plex_server_token=None):
+        """
+        Get auth token.
+
+        Try to get the auth token from the argument, the config, the session,
+        or the Plex website in that order.
+
+        :param username: plex.tv username
+        :param password: plex.tv password
+        :param plex_server_token: auth token
+
+        :returns: Plex auth token being used or True if authentication is
+            not required, else None
+        """
         username = username or app.PLEX_SERVER_USERNAME
         password = password or app.PLEX_SERVER_PASSWORD
         plex_server_token = plex_server_token or app.PLEX_SERVER_TOKEN
