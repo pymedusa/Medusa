@@ -162,8 +162,10 @@ class Notifier(object):
 
             for section in sections:
                 if 'show' == section.attrib['type']:
-
-                    keyed_host = [(str(section.attrib['key']), cur_host)]
+                    key = str(section.attrib['key'])
+                    keyed_host = {
+                        key: cur_host,
+                    }
                     all_hosts.update(keyed_host)
                     if not file_location:
                         continue
