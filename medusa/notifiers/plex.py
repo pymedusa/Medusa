@@ -126,7 +126,7 @@ class Notifier(object):
         hosts = (x.strip() for x in gen_hosts if x.strip())
         all_hosts = {}
         matching_hosts = {}
-        hosts_failed = set()
+        failed_hosts = set()
         schema = 'https' if app.PLEX_SERVER_HTTPS else 'http'
 
         for cur_host in hosts:
@@ -138,26 +138,26 @@ class Notifier(object):
                 xml_response = self.session.get(url, headers=self.headers).text
                 if not xml_response:
                     log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
-                    hosts_failed.add(cur_host)
+                    failed_hosts.add(cur_host)
                     continue
 
                 media_container = etree.fromstring(xml_response)
             except IOError as error:
                 log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
                 continue
             except Exception as error:
                 if 'invalid token' in str(error):
                     log.warning(u'PLEX: Please set TOKEN in Plex settings: ')
                 else:
                     log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
                 continue
 
             sections = media_container.findall('.//Directory')
             if not sections:
                 log.debug(u'PLEX: Plex Media Server not running on: {0}', cur_host)
-                hosts_failed.add(cur_host)
+                failed_hosts.add(cur_host)
                 continue
 
             for section in sections:
@@ -198,8 +198,8 @@ class Notifier(object):
                 self.session.get(url, headers=self.headers).text
             except Exception as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
-                hosts_failed.add(cur_host)
-        return ', '.join(hosts_failed) if hosts_failed else None
+                failed_hosts.add(cur_host)
+        return ', '.join(failed_hosts) if failed_hosts else None
 
     def get_token(self, username=None, password=None, plex_server_token=None):
         username = username or app.PLEX_SERVER_USERNAME
