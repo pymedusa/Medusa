@@ -28,7 +28,7 @@ class Notifier(object):
             'X-Plex-Device-Name': 'Medusa',
             'X-Plex-Product': 'Medusa Notifier',
             'X-Plex-Client-Identifier': common.USER_AGENT,
-            'X-Plex-Version': '2016.02.10'
+            'X-Plex-Version': app.APP_VERSION,
         })
 
     @staticmethod
