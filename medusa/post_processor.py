@@ -908,6 +908,7 @@ class PostProcessor(object):
         }
 
         def get_level(quality):
+            """Determine if quality is allowed or preferred."""
             if quality in preferred:
                 return 'preferred'
             elif quality in allowed:
@@ -916,6 +917,12 @@ class PostProcessor(object):
                 raise ValueError('Quality not in allowed or preferred.')
 
         def compare(first, second):
+            """
+            Compare two qualities.
+
+            Determine if the first quality is higher, lower, or the same as
+            the second.
+            """
             if first > second:
                 return 'higher'
             elif new_quality < current_quality:
