@@ -124,7 +124,7 @@ class Notifier(object):
         file_location = '' if not ep_obj else ep_obj.location
         gen_hosts = generate(hosts)
         hosts = (x.strip() for x in gen_hosts if x.strip())
-        hosts_all = {}
+        all_hosts = {}
         hosts_match = {}
         hosts_failed = set()
         schema = 'https' if app.PLEX_SERVER_HTTPS else 'http'
@@ -164,7 +164,7 @@ class Notifier(object):
                 if 'show' == section.attrib['type']:
 
                     keyed_host = [(str(section.attrib['key']), cur_host)]
-                    hosts_all.update(keyed_host)
+                    all_hosts.update(keyed_host)
                     if not file_location:
                         continue
 
@@ -184,7 +184,7 @@ class Notifier(object):
             hosts_try = hosts_match
             result = u'PLEX: Updating hosts where TV section paths match the downloaded show: {0}'
         else:
-            hosts_try = hosts_all
+            hosts_try = all_hosts
             result = u'PLEX: Updating all hosts with TV sections: {0}'
         log.debug(result.format(', '.join(hosts_try)))
 
