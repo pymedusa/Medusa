@@ -239,20 +239,32 @@ class Notifier(object):
             return True
 
         log.debug(u'PLEX: fetching plex.tv credentials for user: {0}', username)
+        error_msg = u'PLEX: Error fetching credentials from plex.tv for user {0}: {1}'
+        try:  # sign in
+            response = self.session.post(
+                'https://plex.tv/users/sign_in.json',
+                data={
+                    'user[login]': username,
+                    'user[password]': password,
+                }
+            )
+            response.raise_for_status()
+        except requests.RequestException as error:
+            log.debug(error_msg, username, error)
+            return
 
-        params = {
-            'user[login]': username,
-            'user[password]': password
-        }
+        try:  # get json data
+            data = response.json()
+        except ValueError as error:
+            log.debug(error_msg, username, error)
+            return
 
-        try:
-            response = self.session.post('https://plex.tv/users/sign_in.json',
-                                         data=params).json()
-
-            self.session.headers['X-Plex-Token'] = response['user']['authentication_token']
-
-        except Exception as error:
-            self.session.headers.pop('X-Plex-Token', '')
-            log.debug(u'PLEX: Error fetching credentials from from plex.tv for user {0}: {1}', username, error)
+        try:  # get token from key
+            plex_server_token = data['user']['authentication_token']
+        except KeyError as error:
+            log.debug(error_msg, username, error)
+            return
+        else:
+            self.session.headers['X-Plex-Token'] = plex_server_token
 
         return self.session.headers.get('X-Plex-Token')
