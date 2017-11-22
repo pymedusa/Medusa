@@ -902,11 +902,6 @@ class PostProcessor(object):
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
 
-        replace = {
-            'allowed': allowed_cfg or cls.allowed_replace,
-            'preferred': preferred_cfg or cls.preferred_replace,
-        }
-
         def get_level(quality):
             """Determine if quality is allowed or preferred."""
             if quality in preferred:
@@ -931,6 +926,11 @@ class PostProcessor(object):
                 return 'same'
             else:
                 raise ValueError('Could not compare qualities')
+
+        replace = {
+            'allowed': allowed_cfg or cls.allowed_replace,
+            'preferred': preferred_cfg or cls.preferred_replace,
+        }
 
         try:
             new = get_level(new_quality)
