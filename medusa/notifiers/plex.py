@@ -197,10 +197,13 @@ class Notifier(object):
                 schema=schema, host=cur_host, key=section_key,
             )
             try:
-                self.session.get(url, headers=self.headers).text
+                response = self.session.get(url, headers=self.headers)
             except requests.RequestException as error:
                 log.warning(u'PLEX: Error updating library section for Plex Media Server: {0}', ex(error))
                 failed_hosts.add(cur_host)
+            else:
+                del response  # request succeeded so response is not needed
+
         return ', '.join(failed_hosts) if failed_hosts else None
 
     def get_token(self, username=None, password=None, plex_server_token=None):
