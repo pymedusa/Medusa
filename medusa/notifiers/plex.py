@@ -134,26 +134,31 @@ class Notifier(object):
             url = '{schema}://{host}/library/sections'.format(
                 schema=schema, host=cur_host
             )
-            try:
-                # TODO: SESSION: Check if this needs exception handling.
-                xml_response = self.session.get(url, headers=self.headers).text
-                if not xml_response:
-                    log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
-                    failed_hosts.add(cur_host)
-                    continue
 
-                media_container = etree.fromstring(xml_response)
-            except IOError as error:
+            try:
+                response = self.session.get(url, headers=self.headers)
+            except requests.RequestException as error:
                 log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
                 failed_hosts.add(cur_host)
                 continue
-            except Exception as error:
-                if 'invalid token' in str(error):
-                    log.warning(u'PLEX: Please set TOKEN in Plex settings: ')
+
+            try:
+                response.raise_for_status()
+            except requests.RequestException as error:
+                if response.status_code == 401:
+                    log.warning(u'PLEX: Unauthorized. Please set TOKEN or USERNAME and PASSWORD in Plex settings')
                 else:
                     log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', ex(error))
                 failed_hosts.add(cur_host)
                 continue
+            else:
+                xml_response = response.text
+                if not xml_response:
+                    log.warning(u'PLEX: Error while trying to contact Plex Media Server: {0}', cur_host)
+                    failed_hosts.add(cur_host)
+                    continue
+                else:
+                    media_container = etree.fromstring(xml_response)
 
             sections = media_container.findall('.//Directory')
             if not sections:
