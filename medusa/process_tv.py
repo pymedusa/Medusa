@@ -631,11 +631,6 @@ class ProcessResult(object):
     @staticmethod
     def move_torrent(info_hash, release_names):
         """Move torrent to a given seeding folder after PP."""
-        if not os.path.isdir(app.TORRENT_SEED_LOCATION):
-            logger.log('Not possible to move torrent after post-processing because seed location is invalid',
-                       logger.WARNING)
-            return False
-
         if release_names:
             # Log 'release' or 'releases'
             s = 's' if len(release_names) > 1 else ''
