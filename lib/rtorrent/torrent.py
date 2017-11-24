@@ -345,7 +345,7 @@ class Torrent:
         """Only checks instance variables, shouldn't be called directly"""
         # if hashing == 3, then torrent is marked for hash checking
         # if hash_checking == False, then torrent is waiting to be checked
-        self.hash_checking_queued = (self.hashing == 3 and
+        self.hash_checking_queued = (self.hashing_status == 3 and
                                      self.hash_checking is False)
 
         return(self.hash_checking_queued)
@@ -359,7 +359,7 @@ class Torrent:
         self.multicall_add(m, "d.is_hash_checking")
         results = m.call()
 
-        setattr(self, "hashing", results[0])
+        setattr(self, "hashing_status", results[0])
         setattr(self, "hash_checking", results[1])
 
         return(self._is_hash_checking_queued())
@@ -440,7 +440,7 @@ methods = [
     Method(Torrent, 'is_pex_active', 'd.is_pex_active',
            boolean=True,
            ),
-    Method(Torrent, 'get_hashing', 'd.get_hashing'),
+    Method(Torrent, 'hashing', 'd.hashing'),
     Method(Torrent, 'get_bitfield', 'd.get_bitfield'),
     Method(Torrent, 'get_local_id_html', 'd.get_local_id_html'),
     Method(Torrent, 'get_connection_leech', 'd.get_connection_leech'),
