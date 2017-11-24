@@ -55,9 +55,7 @@ class Torrent:
 
     def _call_custom_methods(self):
         """only calls methods that check instance variables."""
-        self.is_hash_checking_queued()
-        self._is_started()
-        self._is_paused()
+        self._is_hash_checking_queued()
 
     def get_peers(self):
         """Get list of Peer instances for given torrent.
@@ -345,8 +343,8 @@ class Torrent:
         """Only checks instance variables, shouldn't be called directly"""
         # if hashing == 3, then torrent is marked for hash checking
         # if hash_checking == False, then torrent is waiting to be checked
-        self.hash_checking_queued = (self.hashing_status == 3 and
-                                     self.hash_checking is False)
+        self.hash_checking_queued = (getattr(self, 'hashing_status', 0) > 0 and
+                                     getattr(self, 'hash_checking', 0) == 1)
 
         return(self.hash_checking_queued)
 
@@ -364,29 +362,29 @@ class Torrent:
 
         return(self._is_hash_checking_queued())
 
-    def _is_paused(self):
-        """Only checks instance variables, shouldn't be called directly"""
-        self.paused = (self.state == 0)
-        return(self.paused)
+    def get_state(self):
+        m = rtorrent.rpc.Multicall(self)
+        self.multicall_add(m, 'd.state')
+
+        return(m.call()[-1])
 
     def is_paused(self):
         """Check if torrent is paused
 
         @note: Variable where the result for this method is stored: Torrent.paused"""
-        self.get_state()
-        return(self._is_paused())
+        state = self.get_state()
+        self.paused = state == 0
 
-    def _is_started(self):
-        """Only checks instance variables, shouldn't be called directly"""
-        self.started = (self.state == 1)
-        return(self.started)
+        return(self.paused)
 
     def is_started(self):
         """Check if torrent is started
 
         @note: Variable where the result for this method is stored: Torrent.started"""
-        self.get_state()
-        return(self._is_started())
+        state = self.get_state()
+        self.started = state == 1
+
+        return(self.started)
 
 
 methods = [
@@ -400,7 +398,7 @@ methods = [
     Method(Torrent, 'get_peers_max', 'd.get_peers_max'),
     Method(Torrent, 'get_tracker_focus', 'd.get_tracker_focus'),
     Method(Torrent, 'get_skip_total', 'd.get_skip_total'),
-    Method(Torrent, 'get_state', 'd.get_state'),
+    Method(Torrent, 'state', 'd.state'),
     Method(Torrent, 'get_peer_exchange', 'd.get_peer_exchange'),
     Method(Torrent, 'get_down_rate', 'd.get_down_rate'),
     Method(Torrent, 'get_connection_seed', 'd.get_connection_seed'),
