@@ -355,7 +355,7 @@ class Torrent:
 
         @note: Variable where the result for this method is stored Torrent.hash_checking_queued"""
         m = rtorrent.rpc.Multicall(self)
-        self.multicall_add(m, "d.get_hashing")
+        self.multicall_add(m, "d.hashing")
         self.multicall_add(m, "d.is_hash_checking")
         results = m.call()
 
