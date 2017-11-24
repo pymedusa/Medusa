@@ -175,7 +175,7 @@ class RTorrent:
                              if m.is_retriever() and m.is_available(self)]
 
         m = rtorrent.rpc.Multicall(self)
-        m.add("d.multicall", view, "d.get_hash=",
+        m.add("d.multicall2", "", view, "d.hash=",
               *[method.rpc_call + "=" for method in retriever_methods])
 
         results = m.call()[0]  # only sent one call, only need first result
@@ -387,7 +387,7 @@ class RTorrent:
             finput = torrent
 
         # rtorrent > 0.9.6 requires first parameter @target
-        target = ""
+        target = ''
         getattr(p, func_name)(target, finput, *params)
 
     def get_views(self):
