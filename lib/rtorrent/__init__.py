@@ -231,23 +231,27 @@ class RTorrent:
 
         return(func_name)
 
-    def load_magnet(self, magneturl, info_hash, start=False, verbose=False, verify_load=True):  # @IgnorePep8
+    def load_magnet(self, magneturl, info_hash, **kwargs):
+
+        start = kwargs.pop('start', False)
+        verbose = kwargs.pop('verbose', False)
+        verify_load = kwargs.pop('verify_load', True)
+        max_retries = kwargs.pop('max_retries', 3)
+        params = kwargs.pop('params', [])
 
         p = self._get_conn()
-
         info_hash = info_hash.upper()
 
-        func_name = self._get_load_function("url", start, verbose)
+        func_name = self._get_load_function('url', start, verbose)
 
         # load magnet
         # rtorrent > 0.9.6 requires first parameter @target
-        target = ""
-        getattr(p, func_name)(target, magneturl)
+        target = ''
+        getattr(p, func_name)(target, magneturl, *params)
 
         if verify_load:
-            MAX_RETRIES = 3
             i = 0
-            while i < MAX_RETRIES:
+            while i < max_retries:
                 for torrent in self.get_torrents():
                     if torrent.info_hash != info_hash:
                         continue
@@ -257,9 +261,8 @@ class RTorrent:
             assert info_hash in [t.info_hash for t in self.torrents],\
                 "Adding torrent was unsuccessful."
 
-            MAX_RETRIES = 3
             i = 0
-            while i < MAX_RETRIES:
+            while i < max_retries:
                 for torrent in self.get_torrents():
                     if torrent.info_hash == info_hash:
                         if str(info_hash) not in str(torrent.name):
@@ -268,7 +271,7 @@ class RTorrent:
 
         return(torrent)
 
-    def load_torrent(self, torrent, start=False, verbose=False, verify_load=True):  # @IgnorePep8
+    def load_torrent(self, torrent, **kwargs):
         """
         Loads torrent into rTorrent (with various enhancements)
 
@@ -302,22 +305,27 @@ class RTorrent:
         this function doesn't execute instantaneously. If that's what you're
         looking for, use load_torrent_simple() instead.
         """
+        start = kwargs.pop('start', False)
+        verbose = kwargs.pop('verbose', False)
+        verify_load = kwargs.pop('verify_load', True)
+        max_retries = kwargs.pop('max_retries', 3)
+        params = kwargs.pop('params', [])
+
         p = self._get_conn()
         tp = TorrentParser(torrent)
         torrent = xmlrpclib.Binary(tp._raw_torrent)
         info_hash = tp.info_hash
 
-        func_name = self._get_load_function("raw", start, verbose)
+        func_name = self._get_load_function('raw', start, verbose)
 
         # load torrent
         # rtorrent > 0.9.6 requires first parameter @target
-        target = ""
-        getattr(p, func_name)(target, torrent)
+        target = ''
+        getattr(p, func_name)(target, torrent, *params)
 
         if verify_load:
-            MAX_RETRIES = 3
             i = 0
-            while i < MAX_RETRIES:
+            while i < max_retries:
                 self.get_torrents()
                 if info_hash in [t.info_hash for t in self.torrents]:
                     break
@@ -331,8 +339,7 @@ class RTorrent:
 
         return(find_torrent(info_hash, self.torrents))
 
-    def load_torrent_simple(self, torrent, file_type,
-                            start=False, verbose=False):
+    def load_torrent_simple(self, torrent, file_type, **kwargs):
         """Loads torrent into rTorrent
 
         @param torrent: can be a url, a path to a local file, or the raw data
@@ -357,6 +364,10 @@ class RTorrent:
         verification that the torrent was successfully added to rTorrent.
         Use load_torrent() if you would like these features.
         """
+        start = kwargs.pop('start', False)
+        verbose = kwargs.pop('verbose', False)
+        params = kwargs.pop('params', [])
+
         p = self._get_conn()
 
         assert file_type in ["raw", "file", "url"], \
@@ -377,7 +388,7 @@ class RTorrent:
 
         # rtorrent > 0.9.6 requires first parameter @target
         target = ""
-        getattr(p, func_name)(target, finput)
+        getattr(p, func_name)(target, finput, *params)
 
     def get_views(self):
         p = self._get_conn()
@@ -497,6 +508,7 @@ def __check_supported_methods(rt):
     pprint(all_methods - supported_methods)
     print("Supported methods NOT in all methods")
     pprint(supported_methods - all_methods)
+
 
 methods = [
     # RETRIEVERS

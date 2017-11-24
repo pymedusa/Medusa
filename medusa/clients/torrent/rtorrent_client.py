@@ -53,27 +53,33 @@ class RTorrentAPI(GenericClient):
 
         return self.auth
 
+    @staticmethod
+    def _get_params(result):
+        params = []
+
+        # Set label
+        label = app.TORRENT_LABEL
+        if result.show.is_anime:
+            label = app.TORRENT_LABEL_ANIME
+        if label:
+            params.append('d.custom1.set={0}'.format(label))
+
+        if app.TORRENT_PATH:
+            params.append('d.directory.set={0}'.format(app.TORRENT_PATH))
+
+        return params
+
     def _add_torrent_uri(self, result):
 
         if not (self.auth or result):
             return False
 
         try:
+            params = self._get_params(result)
             # Send magnet to rTorrent and start it
-            torrent = self.auth.load_magnet(result.url, result.hash, start=True)
-
+            torrent = self.auth.load_magnet(result.url, result.hash, start=True, params=params)
             if not torrent:
                 return False
-
-            # Set label
-            label = app.TORRENT_LABEL
-            if result.show.is_anime:
-                label = app.TORRENT_LABEL_ANIME
-            if label:
-                torrent.set_custom(1, label)
-
-            if app.TORRENT_PATH:
-                torrent.set_directory(app.TORRENT_PATH)
 
         except Exception as msg:
             log.warning('Error while sending torrent: {error!r}',
@@ -87,23 +93,12 @@ class RTorrentAPI(GenericClient):
         if not (self.auth or result):
             return False
 
-        # Send request to rTorrent
         try:
+            params = self._get_params(result)
             # Send torrent to rTorrent and start it
-            torrent = self.auth.load_torrent(result.content, start=True)
-
+            torrent = self.auth.load_torrent(result.content, start=True, params=params)
             if not torrent:
                 return False
-
-            # Set label
-            label = app.TORRENT_LABEL
-            if result.show.is_anime:
-                label = app.TORRENT_LABEL_ANIME
-            if label:
-                torrent.set_custom(1, label)
-
-            if app.TORRENT_PATH:
-                torrent.set_directory(app.TORRENT_PATH)
 
         except Exception as msg:
             log.warning('Error while sending torrent: {error!r}',
