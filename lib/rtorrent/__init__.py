@@ -236,7 +236,7 @@ class RTorrent:
         start = kwargs.pop('start', False)
         verbose = kwargs.pop('verbose', False)
         verify_load = kwargs.pop('verify_load', True)
-        max_retries = kwargs.pop('max_retries', 3)
+        max_retries = kwargs.pop('max_retries', 5)
         params = kwargs.pop('params', [])
 
         p = self._get_conn()
@@ -253,23 +253,13 @@ class RTorrent:
             i = 0
             while i < max_retries:
                 for torrent in self.get_torrents():
-                    if torrent.info_hash != info_hash:
-                        continue
-                    time.sleep(1)
-                    i += 1
-
-            assert info_hash in [t.info_hash for t in self.torrents],\
-                "Adding torrent was unsuccessful."
-
-            i = 0
-            while i < max_retries:
-                for torrent in self.get_torrents():
                     if torrent.info_hash == info_hash:
-                        if str(info_hash) not in str(torrent.name):
-                            time.sleep(1)
-                            i += 1
+                        return True
+                time.sleep(1)
+                i += 1
+            return False
 
-        return(torrent)
+        return True
 
     def load_torrent(self, torrent, **kwargs):
         """
