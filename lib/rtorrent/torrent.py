@@ -54,8 +54,10 @@ class Torrent:
                          self.info_hash, self.name)
 
     def _call_custom_methods(self):
-        """only calls methods that check instance variables."""
+        """Only calls methods that check instance variables."""
         self._is_hash_checking_queued()
+        self._is_started()
+        self._is_paused()
 
     def get_peers(self):
         """Get list of Peer instances for given torrent.
@@ -124,7 +126,6 @@ class Torrent:
 
         @note: also assigns return value to self.files
         """
-
         self.files = []
         retriever_methods = [m for m in rtorrent.file.methods
                              if m.is_retriever() and m.is_available(self._rt_obj)]
@@ -156,6 +157,12 @@ class Torrent:
                                    f_index, **results_dict))
 
         return(self.files)
+
+    def get_state(self):
+        m = rtorrent.rpc.Multicall(self)
+        self.multicall_add(m, 'd.state')
+
+        return(m.call()[-1])
 
     def set_directory(self, d):
         """Modify download directory
@@ -343,8 +350,8 @@ class Torrent:
         """Only checks instance variables, shouldn't be called directly"""
         # if hashing == 3, then torrent is marked for hash checking
         # if hash_checking == False, then torrent is waiting to be checked
-        self.hash_checking_queued = (getattr(self, 'hashing_status', 0) > 0 and
-                                     getattr(self, 'hash_checking', 0) == 1)
+        self.hash_checking_queued = (self.hashing == 3 and
+                                     self.hash_checking is False)
 
         return(self.hash_checking_queued)
 
@@ -357,16 +364,16 @@ class Torrent:
         self.multicall_add(m, "d.is_hash_checking")
         results = m.call()
 
-        setattr(self, "hashing_status", results[0])
+        setattr(self, "hashing", results[0])
         setattr(self, "hash_checking", results[1])
 
         return(self._is_hash_checking_queued())
 
-    def get_state(self):
-        m = rtorrent.rpc.Multicall(self)
-        self.multicall_add(m, 'd.state')
+    def _is_paused(self):
+        """Only checks instance variables, shouldn't be called directly"""
+        self.paused = self.state == 0
 
-        return(m.call()[-1])
+        return(self.paused)
 
     def is_paused(self):
         """Check if torrent is paused
@@ -376,6 +383,12 @@ class Torrent:
         self.paused = state == 0
 
         return(self.paused)
+
+    def _is_started(self):
+        """Only checks instance variables, shouldn't be called directly"""
+        self.started = self.state == 1
+
+        return(self.started)
 
     def is_started(self):
         """Check if torrent is started
@@ -459,7 +472,7 @@ methods = [
            ),
     Method(Torrent, 'get_max_size_pex', 'd.get_max_size_pex'),
     Method(Torrent, 'get_num_chunks_hashed', 'd.get_chunks_hashed',
-           aliases=("get_chunks_hashed",)),
+           aliases=('get_chunks_hashed',)),
     Method(Torrent, 'get_num_chunks_wanted', 'd.wanted_chunks'),
     Method(Torrent, 'get_priority', 'd.get_priority'),
     Method(Torrent, 'get_skip_rate', 'd.get_skip_rate'),

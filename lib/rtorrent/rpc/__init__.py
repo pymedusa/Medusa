@@ -48,7 +48,7 @@ def _handle_unavailable_rpc_method(method, rt_obj):
     if rt_obj._get_client_version_tuple() < method.min_version:
         msg = "This method is only available in " \
             "RTorrent version v{0} or later".format(
-            convert_version_tuple_to_str(method.min_version))
+                convert_version_tuple_to_str(method.min_version))
 
     raise MethodError(msg)
 
@@ -76,8 +76,7 @@ class Method:
             "post_process_func", None)  # : custom post process function
         self.aliases = kwargs.get(
             "aliases", [])  # : aliases for method (optional)
-        self.required_args = []
-            #: Arguments required when calling the method (not utilized)
+        self.required_args = []  #: Arguments required when calling the method (not utilized)
 
         self.method_type = self._get_method_type()
 
@@ -87,11 +86,12 @@ class Method:
 
     def __repr__(self):
         return safe_repr("Method(method_name='{0}', rpc_call='{1}')",
-                        self.method_name, self.rpc_call)
+                         self.method_name, self.rpc_call)
 
     def _get_method_type(self):
         """Determine whether method is a modifier or a retriever"""
-        if self.method_name[:4] == "set_": return('m')  # modifier
+        if self.method_name[:4] == "set_":
+            return('m')  # modifier
         else:
             return('r')  # retriever
 
@@ -208,16 +208,6 @@ def call_method(class_obj, method, *args):
     m.add(method, *args)
     # only added one method, only getting one result back
     ret_value = m.call()[0]
-
-    ####### OBSOLETE ##########################################################
-    # if method.is_retriever():
-    #    #value = process_result(method, ret_value)
-    #    value = ret_value #MultiCall already processed the result
-    # else:
-    #    # we're setting the user's input to method.varname
-    #    # but we'll return the value that xmlrpc gives us
-    #    value = process_result(method, args[-1])
-    ##########################################################################
 
     return(ret_value)
 

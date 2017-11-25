@@ -22,9 +22,7 @@ import os.path
 import time
 import xmlrpclib
 
-from rtorrent.common import (find_torrent,  # @UnresolvedImport
-                             is_valid_port,  # @UnresolvedImport
-                             convert_version_tuple_to_str)  # @UnresolvedImport
+from rtorrent import common
 from rtorrent.lib.torrentparser import TorrentParser  # @UnresolvedImport
 from rtorrent.lib.xmlrpc.http import HTTPServerProxy  # @UnresolvedImport
 from rtorrent.lib.xmlrpc.scgi import SCGIServerProxy  # @UnresolvedImport
@@ -40,12 +38,12 @@ __contact__ = "chris@chrisjlucas.com"
 __license__ = "MIT"
 
 MIN_RTORRENT_VERSION = (0, 8, 1)
-MIN_RTORRENT_VERSION_STR = convert_version_tuple_to_str(MIN_RTORRENT_VERSION)
+MIN_RTORRENT_VERSION_STR = common.convert_version_tuple_to_str(MIN_RTORRENT_VERSION)
 
 
 class RTorrent:
+    """Create a new rTorrent connection."""
 
-    """ Create a new rTorrent connection """
     rpc_prefix = None
 
     def __init__(self, uri, username=None, password=None,
@@ -142,7 +140,7 @@ class RTorrent:
 
             rtver = getattr(self, "client_version")
             self._client_version_tuple = tuple([int(i) for i in
-                                                rtver.split(".")])
+                                                rtver.split('.')])
 
         return self._client_version_tuple
 
@@ -160,7 +158,7 @@ class RTorrent:
 
         return(self._rpc_methods or self._update_rpc_methods())
 
-    def get_torrents(self, view="main"):
+    def get_torrents(self, view='main'):
         """Get list of all torrents in specified view
 
         @return: list of L{Torrent} instances
@@ -175,8 +173,8 @@ class RTorrent:
                              if m.is_retriever() and m.is_available(self)]
 
         m = rtorrent.rpc.Multicall(self)
-        m.add("d.multicall2", "", view, "d.hash=",
-              *[method.rpc_call + "=" for method in retriever_methods])
+        m.add('d.multicall2', '', view, 'd.hash=',
+              *[method.rpc_call + '=' for method in retriever_methods])
 
         results = m.call()[0]  # only sent one call, only need first result
 
@@ -197,8 +195,8 @@ class RTorrent:
     def _manage_torrent_cache(self):
         """Carry tracker/peer/file lists over to new torrent list"""
         for torrent in self._torrent_cache:
-            new_torrent = rtorrent.common.find_torrent(torrent.info_hash,
-                                                       self.torrents)
+            new_torrent = common.find_torrent(torrent.info_hash,
+                                              self.torrents)
             if new_torrent is not None:
                 new_torrent.files = torrent.files
                 new_torrent.peers = torrent.peers
@@ -207,27 +205,27 @@ class RTorrent:
         self._torrent_cache = self.torrents
 
     def _get_load_function(self, file_type, start, verbose):
-        """Determine correct "load torrent" RPC method"""
+        """Determine correct 'load torrent' RPC method"""
         func_name = None
-        if file_type == "url":
+        if file_type == 'url':
             # url strings can be input directly
             if start and verbose:
-                func_name = "load.start_verbose"
+                func_name = 'load.start_verbose'
             elif start:
-                func_name = "load.start"
+                func_name = 'load.start'
             elif verbose:
-                func_name = "load.verbose"
+                func_name = 'load.verbose'
             else:
-                func_name = "load.normal"
-        elif file_type in ["file", "raw"]:
+                func_name = 'load.normal'
+        elif file_type in ['file', 'raw']:
             if start and verbose:
-                func_name = "load.raw_start_verbose"
+                func_name = 'load.raw_start_verbose'
             elif start:
-                func_name = "load.raw_start"
+                func_name = 'load.raw_start'
             elif verbose:
-                func_name = "load.raw_verbose"
+                func_name = 'load.raw_verbose'
             else:
-                func_name = "load.raw"
+                func_name = 'load.raw'
 
         return(func_name)
 
@@ -316,18 +314,14 @@ class RTorrent:
         if verify_load:
             i = 0
             while i < max_retries:
-                self.get_torrents()
-                if info_hash in [t.info_hash for t in self.torrents]:
-                    break
-
-                # was still getting AssertionErrors, delay should help
+                for torrent in self.get_torrents():
+                    if torrent.info_hash == info_hash:
+                        return True
                 time.sleep(1)
                 i += 1
+            return False
 
-            assert info_hash in [t.info_hash for t in self.torrents],\
-                "Adding torrent was unsuccessful."
-
-        return(find_torrent(info_hash, self.torrents))
+        return True
 
     def load_torrent_simple(self, torrent, file_type, **kwargs):
         """Loads torrent into rTorrent
@@ -336,7 +330,7 @@ class RTorrent:
         of a torrent file
         @type torrent: str
 
-        @param file_type: valid options: "url", "file", or "raw"
+        @param file_type: valid options: 'url', 'file', or 'raw'
         @type file_type: str
 
         @param start: start torrent when loaded
@@ -360,25 +354,31 @@ class RTorrent:
 
         p = self._get_conn()
 
-        assert file_type in ["raw", "file", "url"], \
-            "Invalid file_type, options are: 'url', 'file', 'raw'."
+        if file_type not in ['raw', 'file', 'url']:
+            print("Invalid file_type, options are: 'url', 'file', 'raw'.")
+            return False
+
         func_name = self._get_load_function(file_type, start, verbose)
 
-        if file_type == "file":
+        if file_type == 'file':
             # since we have to assume we're connected to a remote rTorrent
             # client, we have to read the file and send it to rT as raw
-            assert os.path.isfile(torrent), \
-                "Invalid path: \"{0}\"".format(torrent)
-            torrent = open(torrent, "rb").read()
+            if not os.path.isfile(torrent):
+                print('Invalid path: {0}'.format(torrent))
+                return False
 
-        if file_type in ["raw", "file"]:
+            torrent = open(torrent, 'rb').read()
+
+        if file_type in ['raw', 'file']:
             finput = xmlrpclib.Binary(torrent)
-        elif file_type == "url":
+        elif file_type == 'url':
             finput = torrent
 
         # rtorrent > 0.9.6 requires first parameter @target
         target = ''
         getattr(p, func_name)(target, finput, *params)
+
+        return True
 
     def get_views(self):
         p = self._get_conn()
@@ -389,8 +389,7 @@ class RTorrent:
 
         if persistent is True:
             p.group.insert_persistent_view('', name)
-        else:
-            assert view is not None, "view parameter required on non-persistent groups"  # @IgnorePep8
+        elif view is not None:
             p.group.insert('', name, view)
 
         self._update_rpc_methods()
@@ -410,7 +409,7 @@ class RTorrent:
 
         @raise AssertionError: if invalid port is given
         """
-        assert is_valid_port(port), "Valid port range is 0-65535"
+        assert common.is_valid_port(port), "Valid port range is 0-65535"
         self.dht_port = self._p.set_dht_port(port)
 
     def enable_check_hash(self):
@@ -423,7 +422,7 @@ class RTorrent:
 
     def find_torrent(self, info_hash):
         """Frontend for rtorrent.common.find_torrent"""
-        return(rtorrent.common.find_torrent(info_hash, self.get_torrents()))
+        return(common.find_torrent(info_hash, self.get_torrents()))
 
     def poll(self):
         """ poll rTorrent to get latest torrent/peer/tracker/file information
@@ -478,7 +477,7 @@ def __compare_rpc_methods(rt_new, rt_old):
     from pprint import pprint
     rt_new_methods = set(rt_new._get_rpc_methods())
     rt_old_methods = set(rt_old._get_rpc_methods())
-    print("New Methods:")
+    print("New methods:")
     pprint(rt_new_methods - rt_old_methods)
     print("Methods not in new rTorrent:")
     pprint(rt_old_methods - rt_new_methods)
