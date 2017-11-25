@@ -26,7 +26,7 @@ import re
 import subprocess
 import time
 
-from babelfish import Country, Language, language_converters
+from babelfish import Country, Language, LanguageReverseError, language_converters
 
 from dogpile.cache.api import NO_VALUE
 
@@ -210,7 +210,7 @@ def from_ietf_code(code, unknown='und'):
     """
     try:
         return Language.fromietf(code)
-    except ValueError:
+    except (LanguageReverseError, ValueError):
         return Language(unknown) if unknown else None
 
 
