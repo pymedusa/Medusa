@@ -46,6 +46,9 @@
                 <td class="tvShow" align="left">
                     <span class="break-word" title=${os.path.relpath(epResult['release'], app.TV_DOWNLOAD_DIR)}>
                         ${os.path.basename(epResult['release'])}
+                        % if epResult['warn_user']:
+                            <img src="images/warning.png" height="16" alt="search subtitles" title="Possible subtitle match" />
+                        % endif
                     </span>
                 </td>
                 <td class="tvShow" align="center">

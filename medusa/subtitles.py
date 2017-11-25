@@ -27,7 +27,6 @@ import subprocess
 import time
 
 from babelfish import Country, Language, language_converters
-
 from dogpile.cache.api import NO_VALUE
 
 import knowit
@@ -432,9 +431,16 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
         logger.info(u'No subtitles found for %s', os.path.basename(video_path))
         return []
 
+    warn_user = False
+    needed_guess = {'format', 'series', 'year', 'episode', 'season', 'video_codec', 'release_group'}
     min_score = get_min_score()
     scored_subtitles = score_subtitles(subtitles_list, video)
     for subtitle, score in scored_subtitles:
+        missing_guess = list(needed_guess - subtitle.get_matches(video))
+        warn_user = warn_user or (['release_group'] == missing_guess or  # RARBG cases when they rename release group
+                                  ['series', 'release_group'] == missing_guess or  # Like above + series name
+                                  ['format'] == missing_guess or  # If everything matches but format (webdl vs webrip)
+                                  ['series'] == missing_guess)  # Only series name doesn't match (alternative title)
         logger.debug(u'[{0:>13s}:{1:<5s}] score = {2:3d}/{3:3d} for {4}'.format(
             subtitle.provider_name, subtitle.language, score, min_score, get_subtitle_description(subtitle)))
 
@@ -445,6 +451,10 @@ def download_subtitles(tv_episode, video_path=None, subtitles=True, embedded_sub
     if not found_subtitles:
         logger.info(u'No subtitles found for %s with a minimum score of %d',
                     os.path.basename(video_path), min_score)
+        if warn_user:
+            for index, release in enumerate(app.RELEASES_IN_PP):
+                if release.get('release') == video_path:
+                    app.RELEASES_IN_PP[index]['warn_user'] = True
         return []
 
     return save_subs(tv_episode, video, found_subtitles, video_path=video_path)
