@@ -167,6 +167,13 @@ class LegendasTVProvider(Provider):
     subtitle_class = LegendasTVSubtitle
 
     def __init__(self, username=None, password=None):
+
+        # Provider needs UNRAR installed. If not available raise ConfigurationError
+        try:
+            rarfile.custom_check(rarfile.UNRAR_TOOL)
+        except rarfile.RarExecError:
+            raise ConfigurationError('UNRAR tool not available')
+
         if any((username, password)) and not all((username, password)):
             raise ConfigurationError('Username and password must be specified')
 
@@ -356,10 +363,16 @@ class LegendasTVProvider(Provider):
                 # episode
                 if season and episode:
                     # discard mismatches on episode in non-pack archives
-                    if not archive.pack and 'episode' in guess and guess['episode'] != episode:
-                        logger.debug('Mismatched episode %s, discarding archive: %s',
-                                     guess['episode'], archive.name)
-                        continue
+
+                    # Guessit may return int for single episode or list for multi-episode
+                    # Check if archive name has multiple episodes releases on it
+                    if not archive.pack and 'episode' in guess:
+                        wanted_episode = set(episode) if isinstance(episode, list) else {episode}
+                        archive_episode = guess['episode'] if isinstance(guess['episode'], list) else {guess['episode']}
+
+                        if not wanted_episode.intersection(archive_episode):
+                            logger.debug('Mismatched episode %s, discarding archive: %s', guess['episode'], clean_name)
+                            continue
 
                 # extract text containing downloads, rating and timestamp
                 data_text = archive_soup.find('p', class_='data').text
