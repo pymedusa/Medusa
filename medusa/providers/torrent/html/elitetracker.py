@@ -96,6 +96,7 @@ class EliteTrackerProvider(TorrentProvider):
                               {'search': search_string})
 
                 search_params['keywords'] = search_string
+                search_params['category'] = 30
                 response = self.session.get(self.urls['search'], params=search_params)
                 if not response or not response.text:
                     log.debug('No data returned from provider')
@@ -123,7 +124,7 @@ class EliteTrackerProvider(TorrentProvider):
             torrent_rows = torrent_table('tr') if torrent_table else []
 
             # Continue only if at least one release is found
-            if len(torrent_rows) < 2:
+            if torrent_rows[1].get_text(strip=True) == 'Aucun Resultat':
                 log.debug('Data returned from provider does not contain any torrents')
                 return items
 
@@ -160,8 +161,11 @@ class EliteTrackerProvider(TorrentProvider):
                     torrent_size = torrent('td')[labels.index('Taille')].get_text(strip=True)
                     size = convert_size(torrent_size) or -1
 
+                    # Get Pubdate if it is available. Sometimes only PRE is displayed.
                     pubdate_raw = torrent('td')[labels.index('Nom')].find_all('div')[-1].get_text(strip=True)
-                    pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
+                    pubdate = None
+                    if 'PRE' not in pubdate_raw:
+                        pubdate = self.parse_pubdate(pubdate_raw, dayfirst=True)
 
                     item = {
                         'title': title,
@@ -169,8 +173,9 @@ class EliteTrackerProvider(TorrentProvider):
                         'size': size,
                         'seeders': seeders,
                         'leechers': leechers,
-                        'pubdate': pubdate,
+                        'pubdate': pubdate
                     }
+
                     if mode != 'RSS':
                         log.debug('Found result: {0} with {1} seeders and {2} leechers',
                                   title, seeders, leechers)

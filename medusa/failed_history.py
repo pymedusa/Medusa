@@ -18,9 +18,7 @@
 # along with Medusa. If not, see <http://www.gnu.org/licenses/>.
 """failed history code."""
 import re
-
 from datetime import datetime, timedelta
-
 from . import db, logger
 from .common import FAILED, Quality, WANTED, statusStrings
 from .helper.common import episode_num

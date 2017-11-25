@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.helper.common import convert_size, try_int
@@ -120,7 +119,7 @@ class NyaaProvider(TorrentProvider):
                                   " minimum seeders: {0}. Seeders: {1}", title, seeders)
                     continue
 
-                size = convert_size(item['nyaa_size'], units=units) or -1
+                size = convert_size(item['nyaa_size'], default=-1, units=units)
 
                 pubdate = self.parse_pubdate(item['published'])
 
@@ -138,8 +137,7 @@ class NyaaProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 

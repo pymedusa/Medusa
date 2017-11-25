@@ -1,21 +1,6 @@
 # coding=utf-8
-# Author: Nic Wolfe <nic@wolfeden.ca>
-#
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+"""Scene exceptions module."""
 
 from __future__ import unicode_literals
 
@@ -27,11 +12,10 @@ from collections import defaultdict
 
 import adba
 from medusa.indexers.indexer_api import indexerApi
-from requests.exceptions import RequestException
 from six import iteritems
 from . import app, db, helpers
 from .indexers.indexer_config import INDEXER_TVDBV2
-from .session.core import MedusaSession
+from .session.core import MedusaSafeSession
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +23,7 @@ exceptions_cache = defaultdict(lambda: defaultdict(set))
 exceptionLock = threading.Lock()
 
 VALID_XEM_ORIGINS = {'anidb', 'tvdb', }
-xem_session = MedusaSession()
+safe_session = MedusaSafeSession()
 
 # TODO: Fix multiple indexer support
 
@@ -296,39 +280,31 @@ def _get_custom_exceptions(force):
 
     if force or should_refresh('custom_exceptions'):
         for indexer in indexerApi().indexers:
+            location = indexerApi(indexer).config['scene_loc']
+            logger.info(
+                'Checking for scene exception updates from {location}',
+                location=location
+            )
             try:
-                location = indexerApi(indexer).config['scene_loc']
-                logger.info(
-                    'Checking for scene exception updates from {location}',
-                    location=location
-                )
-
-                try:
-                    jdata = indexerApi(indexer).session.get(location, timeout=60).json()
-                except (ValueError, AttributeError, RequestException) as error:
-                    logger.debug(
-                        'Check scene exceptions update failed. Unable to '
-                        'update from {location}. Error: {error}'.format(
-                            location=location, error=error
-                        )
-                    )
-                    return custom_exceptions
-
-                indexer_ids = jdata[indexerApi(indexer).config['identifier']]
-                for indexer_id in indexer_ids:
-                    indexer_exceptions = indexer_ids[indexer_id]
-                    alias_list = [{exception: int(season)}
-                                  for season in indexer_exceptions
-                                  for exception in indexer_exceptions[season]]
-                    custom_exceptions[indexer][indexer_id] = alias_list
-            except Exception as error:
-                logger.error(
-                    'Unable to update scene exceptions for {indexer}.'
-                    ' Error: {error}'.format(
-                        indexer=indexer, error=error
+                # When any Medusa Safe session exception, session returns None and then AttributeError when json()
+                jdata = safe_session.get(location, timeout=60).json()
+            except (ValueError, AttributeError) as error:
+                logger.debug(
+                    'Check scene exceptions update failed. Unable to '
+                    'update from {location}. Error: {error}'.format(
+                        location=location, error=error
                     )
                 )
-                continue
+                # If unable to get scene exceptions, assume we can't connect to CDN so we don't `continue`
+                return custom_exceptions
+
+            indexer_ids = jdata[indexerApi(indexer).config['identifier']]
+            for indexer_id in indexer_ids:
+                indexer_exceptions = indexer_ids[indexer_id]
+                alias_list = [{exception: int(season)}
+                              for season in indexer_exceptions
+                              for exception in indexer_exceptions[season]]
+                custom_exceptions[indexer][indexer_id] = alias_list
 
             set_last_refresh('custom_exceptions')
 
@@ -374,7 +350,7 @@ def _get_xem_exceptions(force):
                 )
             )
 
-            response = xem_session.get(url, params=params, timeout=60)
+            response = safe_session.get(url, params=params, timeout=60)
             try:
                 jdata = response.json()
             except (ValueError, AttributeError) as error:

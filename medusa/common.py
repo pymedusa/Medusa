@@ -22,10 +22,8 @@ import os
 import platform
 import re
 import uuid
-
 from collections import namedtuple
 from os import path
-
 from fake_useragent import UserAgent, settings as ua_settings
 
 import knowit
@@ -40,7 +38,7 @@ from six.moves import reduce
 if PY3:
     long = int
 
-# If some provider has an issue with functionality of SR, other than user
+# If some provider has an issue with functionality of Medusa, other than user
 # agents, it's best to come talk to us rather than block.  It is no different
 # than us going to a provider if we have questions or issues.
 # Be a team player here. This is disabled, and was only added for testing,
@@ -48,8 +46,9 @@ if PY3:
 # To enable, set SPOOF_USER_AGENT = True
 SPOOF_USER_AGENT = False
 INSTANCE_ID = str(uuid.uuid1())
+VERSION = '0.1.17'
 USER_AGENT = u'Medusa/{version} ({system}; {release}; {instance})'.format(
-    version=u'0.0.1', system=platform.system(), release=platform.release(),
+    version=VERSION, system=platform.system(), release=platform.release(),
     instance=INSTANCE_ID)
 ua_settings.DB = path.abspath(path.join(path.dirname(__file__), '../lib/fake_useragent/ua.json'))
 UA_POOL = UserAgent()

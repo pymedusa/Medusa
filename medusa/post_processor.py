@@ -1094,8 +1094,9 @@ class PostProcessor(object):
                 # clean up any left over folders
                 if cur_ep.location:
                     helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.series._location)
-            except (OSError, IOError):
-                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
+            except (OSError, IOError) as error:
+                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files. '
+                                                           u'Error: {msg}'.format(msg=error))
 
             # set the status of the episodes
             # for cur_ep in [ep_obj] + ep_obj.related_episodes:
@@ -1110,9 +1111,10 @@ class PostProcessor(object):
 
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.addFolder(ep_obj.series._location)
-            except (OSError, IOError):
-                raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {0}'.format
-                                                           (ep_obj.series._location))
+            except (OSError, IOError) as error:
+                raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {location}. '
+                                                           u'Error: {msg}'.format(location=ep_obj.series._location,
+                                                                                  msg=error))
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
             ep_obj.series.write_metadata(True)
@@ -1202,7 +1204,9 @@ class PostProcessor(object):
                 logger.log(u"'{0}' is an unknown file processing method. "
                            u"Please correct your app's usage of the API.".format(self.process_method), logger.WARNING)
                 raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
-        except (OSError, IOError):
+        except (OSError, IOError) as error:
+            self.log(u'Unable to move file {0} to {1}: {2!r}'.format
+                     (self.file_path, dest_path, error), logger.ERROR)
             raise EpisodePostProcessingFailedException('Unable to move the files to their new home')
 
         # download subtitles
@@ -1261,7 +1265,9 @@ class PostProcessor(object):
 
         self._run_extra_scripts(ep_obj)
 
-        if app.USE_TORRENTS and app.PROCESS_METHOD in ('hardlink', 'symlink') and app.TORRENT_SEED_LOCATION:
+        if not self.nzb_name and all([app.USE_TORRENTS,
+                                     app.PROCESS_METHOD in ('hardlink', 'symlink'),
+                                     app.TORRENT_SEED_LOCATION]):
             # Store self.info_hash and self.release_name so later we can remove from client if setting is enabled
             if self.info_hash:
                 existing_release_names = app.RECENTLY_POSTPROCESSED.get(self.info_hash, [])

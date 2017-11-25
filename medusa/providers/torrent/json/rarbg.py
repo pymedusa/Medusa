@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 import datetime
 import logging
 import time
-import traceback
 
 from medusa import (
     app,
@@ -51,7 +50,7 @@ class RarbgProvider(TorrentProvider):
         self.minleech = None
 
         # Cache
-        self.cache = tv.Cache(self, min_time=10)  # only poll RARBG every 10 minutes max
+        self.cache = tv.Cache(self, min_time=15)
 
     def search(self, search_strings, age=0, ep_obj=None):
         """
@@ -134,6 +133,7 @@ class RarbgProvider(TorrentProvider):
                         log_level = logging.WARNING
                     else:
                         log_level = logging.DEBUG
+
                     log.log(log_level, '{msg} Code: {code}', {'msg': error, 'code': error_code})
                     continue
 
@@ -153,7 +153,6 @@ class RarbgProvider(TorrentProvider):
         items = []
 
         torrent_rows = data.get('torrent_results', {})
-
         if not torrent_rows:
             log.debug('Data returned from provider does not contain any torrents')
             return items
@@ -165,8 +164,8 @@ class RarbgProvider(TorrentProvider):
                 if not all([title, download_url]):
                     continue
 
-                seeders = row.pop('seeders')
-                leechers = row.pop('leechers')
+                seeders = row.pop('seeders', 0)
+                leechers = row.pop('leechers', 0)
 
                 # Filter unseeded torrent
                 if seeders < min(self.minseed, 1):
@@ -176,8 +175,8 @@ class RarbgProvider(TorrentProvider):
                                   title, seeders)
                     continue
 
-                torrent_size = row.pop('size', -1)
-                size = convert_size(torrent_size) or -1
+                torrent_size = row.pop('size', None)
+                size = convert_size(torrent_size, default=-1)
 
                 pubdate_raw = row.pop('pubdate', None)
                 pubdate = self.parse_pubdate(pubdate_raw)
@@ -196,8 +195,7 @@ class RarbgProvider(TorrentProvider):
 
                 items.append(item)
             except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                log.error('Failed parsing provider. Traceback: {0!r}',
-                          traceback.format_exc())
+                log.exception('Failed parsing provider.')
 
         return items
 

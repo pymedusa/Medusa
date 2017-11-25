@@ -21,10 +21,6 @@
 <%namespace file="/inc_defs.mako" import="renderQualityPill"/>
 <input type="hidden" id="series-id" value="${show.indexerid}" />
 <input type="hidden" id="series-slug" value="${show.slug}" />
-<div class="clearfix"></div><!-- div.clearfix //-->
-</div>
-<div class="clearfix"></div>
-<div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
 
 <%include file="/partials/showheader.mako"/>
 
@@ -105,7 +101,7 @@
                             % if not app.DISPLAY_ALL_SEASONS:
                                 <button id="showseason-${epResult['season']}" type="button" class="btn pull-right" data-toggle="collapse" data-target="#collapseSeason-${epResult['season']}">Hide Episodes</button>
                             % endif
-                            <button id="popover" type="button" class="btn pull-right">Select Columns <b class="caret"></b></button>
+                            <button id="popover" type="button" class="btn pull-right selectColumns">Select Columns <b class="caret"></b></button>
                         </div> <!-- end column select and hide/show episodes -->
                     </th>
                 </tr>
