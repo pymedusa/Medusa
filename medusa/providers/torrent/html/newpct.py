@@ -24,6 +24,7 @@ class NewpctProvider(TorrentProvider):
     """Newpct Torrent provider."""
 
     search_regex = re.compile(r'(.*) S0?(\d+)E0?(\d+)')
+    anime_search_regex = re.compile(r'(.*) (\d+)')
     torrent_id = re.compile(r'\/(\d{6,7})_')
 
     def __init__(self):
@@ -46,6 +47,7 @@ class NewpctProvider(TorrentProvider):
         # Proper Strings
 
         # Miscellaneous Options
+        self.supports_absolute_numbering = True
         self.onlyspasearch = None
         self.torrent_id_counter = None
 
@@ -82,10 +84,7 @@ class NewpctProvider(TorrentProvider):
                     log.debug('Search string: {search}',
                               {'search': search_string})
 
-                    search_matches = NewpctProvider.search_regex.match(search_string)
-                    norm_name = re.sub(r'\W', '-', search_matches.group(1))
-                    name = norm_name.replace('--', '-').strip('-').lower()
-                    chapter = '{0}{1}'.format(search_matches.group(2), search_matches.group(3))
+                    name, chapter = self._parse_title(search_string)
                     search_urls = [self.urls[url].format(name, chapter) for url in self.urls
                                    if url.startswith('download')]
 
@@ -179,6 +178,21 @@ class NewpctProvider(TorrentProvider):
                     log.exception('Failed parsing provider.')
 
         return items
+
+    def _parse_title(self, search_string):
+        if self.show and self.show.is_anime:
+            search_matches = NewpctProvider.anime_search_regex.match(search_string)
+            name = search_matches.group(1)
+            chapter = '1{0}'.format(search_matches.group(2))
+        else:
+            search_matches = NewpctProvider.search_regex.match(search_string)
+            name = search_matches.group(1)
+            chapter = '{0}{1}'.format(search_matches.group(2), search_matches.group(3))
+
+        norm_name = re.sub(r'\W', '-', name)
+        title = norm_name.replace('--', '-').strip('-').lower()
+
+        return title, chapter
 
     def _get_content(self, torrent_url, mode):
         response = self.session.get(torrent_url)
