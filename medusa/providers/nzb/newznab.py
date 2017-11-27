@@ -100,7 +100,7 @@ class NewznabProvider(NZBProvider):
             't': 'search',
             'limit': 100,
             'offset': 0,
-            'cat': self.cat_ids,
+            'cat': ','.join(self.cat_ids),
             'maxage': app.USENET_RETENTION
         }
 
