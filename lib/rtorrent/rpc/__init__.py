@@ -31,7 +31,7 @@ def get_varname(rpc_call):
     """Transform rpc method into variable name.
 
     @newfield example: Example
-    @example: if the name of the rpc method is 'p.get_down_rate', the variable
+    @example: if the name of the rpc method is 'p.down_rate', the variable
     name will be 'down_rate'
     """
     # extract variable name from xmlrpc func name
