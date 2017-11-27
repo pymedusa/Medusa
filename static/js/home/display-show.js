@@ -16,6 +16,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
         $('#summaryBackground').offset({top: top, left: 0});
+        $('#summaryBackground').show();
     }
 
     function movecheckboxControlsBackground() {
@@ -23,6 +24,7 @@ MEDUSA.home.displayShow = function() { // eslint-disable-line max-lines
         var top = $('#checkboxControls').offset().top - 3;
         $('#checkboxControlsBackground').height(height);
         $('#checkboxControlsBackground').offset({top: top, left: 0});
+        $('#checkboxControlsBackground').show();
     }
 
     $(window).resize(function() {

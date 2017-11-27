@@ -260,7 +260,15 @@
                                 </span>
                             </label>
                         </div>
-
+                        <div class="field-pair">
+                            <label for="layout_wide">
+                                <span class="component-title">Use wider layout</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" class="enabler" name="layout_wide" id="layout_wide" ${('', 'checked="checked"')[bool(app.LAYOUT_WIDE)]}>
+                                    <p>uses all available space in the page</p>
+                                </span>
+                            </label>
+                        </div>
                         <div class="field-pair">
                             <label for="fanart_background">
                                 <span class="component-title">Show fanart in the background</span>

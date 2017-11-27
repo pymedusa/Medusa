@@ -21,3 +21,8 @@ def generate(it):
             yield item
     else:
         yield it
+
+
+def split_and_strip(value, sep=','):
+    """Split a value based on the passed separator, and remove whitespace for each individual value."""
+    return [_.strip() for _ in value.split(sep)] if isinstance(value, string_types) else value

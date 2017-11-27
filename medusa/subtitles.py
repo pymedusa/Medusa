@@ -26,7 +26,7 @@ import re
 import subprocess
 import time
 
-from babelfish import Country, Language, language_converters
+from babelfish import Country, Language, LanguageReverseError, language_converters
 
 from dogpile.cache.api import NO_VALUE
 
@@ -210,7 +210,7 @@ def from_ietf_code(code, unknown='und'):
     """
     try:
         return Language.fromietf(code)
-    except ValueError:
+    except (LanguageReverseError, ValueError):
         return Language(unknown) if unknown else None
 
 
@@ -975,7 +975,7 @@ class SubtitlesFinder(object):
                 "WHERE "
                 "s.subtitles = 1 "
                 "AND s.paused = 0 "
-                "AND (e.status LIKE '%4' OR e.status LIKE '%6') "
+                "AND e.status LIKE '%4' "
                 "AND e.season > 0 "
                 "AND e.location != '' "
                 "AND age {} 30 "

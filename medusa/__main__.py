@@ -922,6 +922,7 @@ class Application(object):
             app.SELECTED_ROOT = check_setting_int(app.CFG, 'GUI', 'selected_root', -1)
             app.BACKLOG_PERIOD = check_setting_str(app.CFG, 'GUI', 'backlog_period', 'all')
             app.BACKLOG_STATUS = check_setting_str(app.CFG, 'GUI', 'backlog_status', 'all')
+            app.LAYOUT_WIDE = check_setting_bool(app.CFG, 'GUI', 'layout_wide', 0)
 
             app.FALLBACK_PLEX_ENABLE = check_setting_int(app.CFG, 'General', 'fallback_plex_enable', 1)
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
@@ -1016,7 +1017,7 @@ class Application(object):
                         load_provider_setting(app.CFG, provider, 'string', 'url', '', censor_log='low')
                         load_provider_setting(app.CFG, provider, 'bool', 'needs_auth', 1)
                     # configurable
-                    load_provider_setting(app.CFG, provider, 'string', 'cat_ids', '', censor_log='low')
+                    load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', censor_log='low', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
                 logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
@@ -1533,7 +1534,7 @@ class Application(object):
                     'sorting', 'ratio', 'minseed', 'minleech', 'options', 'freelech', 'cat', 'subtitle', 'cookies',
                 ],
                 GenericProvider.NZB: [
-                    'cats_id'
+                    'cat_ids'
                 ],
             }
 
@@ -1820,6 +1821,7 @@ class Application(object):
         new_config['GUI']['timezone_display'] = app.TIMEZONE_DISPLAY
         new_config['GUI']['poster_sortby'] = app.POSTER_SORTBY
         new_config['GUI']['poster_sortdir'] = app.POSTER_SORTDIR
+        new_config['GUI']['layout_wide'] = app.LAYOUT_WIDE
 
         new_config['Subtitles'] = {}
         new_config['Subtitles']['use_subtitles'] = int(app.USE_SUBTITLES)

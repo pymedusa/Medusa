@@ -3,12 +3,9 @@
 """Search core module."""
 
 import datetime
-import errno
 import logging
 import os
 import threading
-import traceback
-from socket import timeout as socket_timeout
 
 from medusa import (
     app,
@@ -45,11 +42,8 @@ from medusa.helper.exceptions import (
     ex,
 )
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.providers import sorted_provider_list
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
-
-import requests
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -152,7 +146,7 @@ def snatch_episode(result):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:
-                log.warning(u'Torrent file content is empty')
+                log.warning(u'Torrent file content is empty: {0}', result.name)
                 result_downloaded = False
     else:
         log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
@@ -416,8 +410,6 @@ def search_for_needed_episodes(force=False):
     """
     found_results = {}
 
-    did_search = False
-
     show_list = app.showList
     from_date = datetime.date.fromordinal(1)
     episodes = []
@@ -437,6 +429,12 @@ def search_for_needed_episodes(force=False):
     original_thread_name = threading.currentThread().name
 
     providers = enabled_providers(u'daily')
+
+    if not providers:
+        log.warning(u'No NZB/Torrent providers found or enabled in the application config for daily searches.'
+                    u' Please check your settings')
+        return found_results.values()
+
     log.info(u'Using daily search providers')
     for cur_provider in providers:
         threading.currentThread().name = u'{thread} :: [{provider}]'.format(thread=original_thread_name,
@@ -451,12 +449,6 @@ def search_for_needed_episodes(force=False):
         except AuthException as error:
             log.error(u'Authentication error: {0}', ex(error))
             continue
-        except Exception as error:
-            log.debug(traceback.format_exc())
-            log.error(u'Error while searching {0}, skipping: {1}', cur_provider.name, ex(error))
-            continue
-
-        did_search = True
 
         # pick a single result for each episode, respecting existing results
         for cur_ep in cur_found_results:
@@ -479,12 +471,6 @@ def search_for_needed_episodes(force=False):
 
     threading.currentThread().name = original_thread_name
 
-    if not did_search:
-        log.warning(
-            u'No NZB/Torrent providers found or enabled in the application config for daily searches. '
-            u'Please check your settings.'
-        )
-
     return found_results.values()
 
 
@@ -505,8 +491,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
     final_results = []
     manual_search_results = []
 
-    did_search = False
-
     # build name cache for show
     name_cache.build_name_cache(show)
 
@@ -514,12 +498,14 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
 
     if manual_search:
         log.info(u'Using manual search providers')
-        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-                     if x.is_active() and x.enable_manualsearch]
+        providers = enabled_providers(u'manualsearch')
     else:
         log.info(u'Using backlog search providers')
-        providers = [x for x in sorted_provider_list(app.RANDOMIZE_PROVIDERS)
-                     if x.is_active() and x.enable_backlog]
+        providers = enabled_providers(u'backlog')
+
+    if not providers:
+        log.warning(u'No NZB/Torrent providers found or enabled in the application config for {0} searches.'
+                    u' Please check your settings', 'manual' if manual_search else 'backlog')
 
     threading.currentThread().name = original_thread_name
 
@@ -556,37 +542,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
             except AuthException as error:
                 log.error(u'Authentication error: {0}', ex(error))
                 break
-            except socket_timeout as error:
-                log.debug(u'Connection timed out (sockets) while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except (requests.exceptions.HTTPError, requests.exceptions.TooManyRedirects) as error:
-                log.debug(u'HTTP error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ConnectionError as error:
-                log.debug(u'Connection error while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.Timeout as error:
-                log.debug(u'Connection timed out while searching {0}. Error: {1!r}',
-                          cur_provider.name, ex(error))
-                break
-            except requests.exceptions.ContentDecodingError as error:
-                log.debug(u'Content-Encoding was gzip, but content was not compressed while searching {0}.'
-                          u' Error: {1!r}', cur_provider.name, ex(error))
-                break
-            except Exception as error:
-                if u'ECONNRESET' in error or (hasattr(error, u'errno') and error.errno == errno.ECONNRESET):
-                    log.warning(u'Connection reseted by peer while searching {0}. Error: {1!r}',
-                                cur_provider.name, ex(error))
-                else:
-                    log.debug(traceback.format_exc())
-                    log.error(u'Unknown exception while searching {0}. Error: {1!r}',
-                              cur_provider.name, ex(error))
-                break
-
-            did_search = True
 
             if search_results:
                 # make a list of all the results for this provider
@@ -818,10 +773,6 @@ def search_providers(show, episodes, forced_search=False, down_cur_quality=False
                             found = True
             if not found:
                 final_results += [best_result]
-
-    if not did_search:
-        log.warning(u'No NZB/Torrent providers found or enabled in the application config for backlog searches.'
-                    u' Please check your settings.')
 
     # Remove provider from thread name before return results
     threading.currentThread().name = original_thread_name

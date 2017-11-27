@@ -24,7 +24,7 @@ pre {
         title = 'ERROR logs'
 %>
 
-<div class="row wide">
+<div class="row">
     <div class="col-md-12 wide">
         % if not header is UNDEFINED:
             <h1 class="header">${header}</h1>
@@ -34,7 +34,7 @@ pre {
     </div>
 </div>
 
-<div class="row wide">
+<div class="row">
 <div class="col-md-12">
 <pre>
 % if errors:
