@@ -164,7 +164,7 @@ class Torrent:
         return(m.call()[-1])
 
     def set_directory(self, d):
-        """Modify download directory
+        """Modify download directory.
 
         @note: Needs to stop torrent in order to change the directory.
         Also doesn't restart after directory is set, that must be called
@@ -177,7 +177,7 @@ class Torrent:
         self.directory = m.call()[-1]
 
     def set_directory_base(self, d):
-        """Modify base download directory
+        """Modify base download directory.
 
         @note: Needs to stop torrent in order to change the directory.
         Also doesn't restart after directory is set, that must be called
@@ -188,7 +188,7 @@ class Torrent:
         self.multicall_add(m, 'd.directory_base.set', d)
 
     def start(self):
-        """Start the torrent"""
+        """Start the torrent."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.try_start')
         self.multicall_add(m, 'd.is_active')
@@ -197,7 +197,7 @@ class Torrent:
         return(self.active)
 
     def stop(self):
-        """"Stop the torrent"""
+        """Stop the torrent."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.try_stop')
         self.multicall_add(m, 'd.is_active')
@@ -206,50 +206,51 @@ class Torrent:
         return(self.active)
 
     def pause(self):
-        """Pause the torrent"""
+        """Pause the torrent."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.pause')
 
         return(m.call()[-1])
 
     def resume(self):
-        """Resume the torrent"""
+        """Resume the torrent."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.resume')
 
         return(m.call()[-1])
 
     def close(self):
-        """Close the torrent and it's files"""
+        """Close the torrent and it's files."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.close')
 
         return(m.call()[-1])
 
     def erase(self):
-        """Delete the torrent
+        """Delete the torrent.
 
-        @note: doesn't delete the downloaded files"""
+        @note: doesn't delete the downloaded files
+        """
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.erase')
 
         return(m.call()[-1])
 
     def check_hash(self):
-        """(Re)hash check the torrent"""
+        """(Re)hash check the torrent."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.check_hash')
 
         return(m.call()[-1])
 
     def poll(self):
-        """poll rTorrent to get latest peer/tracker/file information"""
+        """Poll rTorrent to get latest peer/tracker/file information."""
         self.get_peers()
         self.get_trackers()
         self.get_files()
 
     def update(self):
-        """Refresh torrent data
+        """Refresh torrent data.
 
         @note: All fields are stored as attributes to self.
 
@@ -268,10 +269,11 @@ class Torrent:
         self._call_custom_methods()
 
     def accept_seeders(self, accept_seeds):
-        """Enable/disable whether the torrent connects to seeders
+        """Enable/disable whether the torrent connects to seeders.
 
         @param accept_seeds: enable/disable accepting seeders
-        @type accept_seeds: bool"""
+        @type accept_seeds: bool
+        """
         if accept_seeds:
             call = 'd.accepting_seeders.enable'
         else:
@@ -283,7 +285,7 @@ class Torrent:
         return(m.call()[-1])
 
     def announce(self):
-        """Announce torrent info to tracker(s)"""
+        """Announce torrent info to tracker(s)."""
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.tracker_announce')
 
@@ -295,8 +297,7 @@ class Torrent:
             'key must be an integer between 1-5'
 
     def get_custom(self, key):
-        """
-        Get custom value
+        """Get custom value.
 
         @param key: the index for the custom field (between 1-5)
         @type key: int
@@ -313,8 +314,7 @@ class Torrent:
         return (getattr(self, field))
 
     def set_custom(self, key, value):
-        """
-        Set custom value
+        """Set custom value.
 
         @param key: the index for the custom field (between 1-5)
         @type key: int
@@ -344,7 +344,7 @@ class Torrent:
     # CUSTOM METHODS (Not part of the official rTorrent API)
     ##########################################################################
     def _is_hash_checking_queued(self):
-        """Only checks instance variables, shouldn't be called directly"""
+        """Only checks instance variables, shouldn't be called directly."""
         # if hashing == 3, then torrent is marked for hash checking
         # if hash_checking == False, then torrent is waiting to be checked
         self.hash_checking_queued = (self.hashing == 3 and
@@ -353,9 +353,10 @@ class Torrent:
         return(self.hash_checking_queued)
 
     def is_hash_checking_queued(self):
-        """Check if torrent is waiting to be hash checked
+        """Check if torrent is waiting to be hash checked.
 
-        @note: Variable where the result for this method is stored Torrent.hash_checking_queued"""
+        @note: Variable where the result for this method is stored Torrent.hash_checking_queued
+        """
         m = rtorrent.rpc.Multicall(self)
         self.multicall_add(m, 'd.hashing')
         self.multicall_add(m, 'd.is_hash_checking')
@@ -367,30 +368,32 @@ class Torrent:
         return(self._is_hash_checking_queued())
 
     def _is_paused(self):
-        """Only checks instance variables, shouldn't be called directly"""
+        """Only checks instance variables, shouldn't be called directly."""
         self.paused = self.state == 0
 
         return(self.paused)
 
     def is_paused(self):
-        """Check if torrent is paused
+        """Check if torrent is paused.
 
-        @note: Variable where the result for this method is stored: Torrent.paused"""
+        @note: Variable where the result for this method is stored: Torrent.paused
+        """
         state = self.get_state()
         self.paused = state == 0
 
         return(self.paused)
 
     def _is_started(self):
-        """Only checks instance variables, shouldn't be called directly"""
+        """Only checks instance variables, shouldn't be called directly."""
         self.started = self.state == 1
 
         return(self.started)
 
     def is_started(self):
-        """Check if torrent is started
+        """Check if torrent is started.
 
-        @note: Variable where the result for this method is stored: Torrent.started"""
+        @note: Variable where the result for this method is stored: Torrent.started
+        """
         state = self.get_state()
         self.started = state == 1
 

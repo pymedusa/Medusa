@@ -59,7 +59,7 @@ class DummyClass:
 
 
 class Method:
-    """Represents an individual RPC method"""
+    """Represents an individual RPC method."""
 
     def __init__(self, _class, method_name,
                  rpc_call, docstring=None, varname=None, **kwargs):
@@ -89,7 +89,7 @@ class Method:
                          self.method_name, self.rpc_call)
 
     def _get_method_type(self):
-        """Determine whether method is a modifier or a retriever"""
+        """Determine whether method is a modifier or a retriever."""
         if self.method_name[:4] == 'set_':
             return('m')  # modifier
         else:
@@ -125,7 +125,7 @@ class Multicall:
         self.calls = []
 
     def add(self, method, *args):
-        """Add call to multicall
+        """Add call to multicall.
 
         @param method: L{Method} instance or name of raw RPC method
         @type method: Method or str
@@ -154,7 +154,7 @@ class Multicall:
             print(c)
 
     def call(self):
-        """Execute added multicall calls
+        """Execute added multicall calls.
 
         @return: the results (post-processed), in the order they were added
         @rtype: tuple
@@ -182,7 +182,7 @@ class Multicall:
 
 
 def call_method(class_obj, method, *args):
-    """Handles single RPC calls
+    """Handle single RPC calls.
 
     @param class_obj: Peer/File/Torrent/Tracker/RTorrent instance
     @type class_obj: object
@@ -213,7 +213,7 @@ def call_method(class_obj, method, *args):
 
 
 def find_method(rpc_call):
-    """Return L{Method} instance associated with given RPC call"""
+    """Return L{Method} instance associated with given RPC call."""
     method_lists = [
         rtorrent.methods,
         rtorrent.file.methods,
@@ -231,7 +231,7 @@ def find_method(rpc_call):
 
 
 def process_result(method, result):
-    """Process given C{B{result}} based on flags set in C{B{method}}
+    """Process given C{B{result}} based on flags set in C{B{method}}.
 
     @param method: L{Method} instance
     @type method: Method
@@ -257,7 +257,7 @@ def process_result(method, result):
 
 
 def _build_rpc_methods(class_, method_list):
-    """Build glorified aliases to raw RPC methods"""
+    """Build glorified aliases to raw RPC methods."""
     instance = None
     if not inspect.isclass(class_):
         instance = class_

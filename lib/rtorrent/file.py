@@ -39,7 +39,7 @@ class File:
             self.info_hash, self.index)  # : unique id to pass to rTorrent
 
     def update(self):
-        """Refresh file data
+        """Refresh file data.
 
         @note: All fields are stored as attributes to self.
 

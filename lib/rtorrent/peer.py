@@ -27,6 +27,7 @@ Method = rtorrent.rpc.Method
 
 class Peer:
     """Represents an individual peer within a L{Torrent} instance."""
+
     def __init__(self, _rt_obj, info_hash, **kwargs):
         self._rt_obj = _rt_obj
         self.info_hash = info_hash  # : info hash for the torrent the peer is associated with
@@ -40,7 +41,7 @@ class Peer:
         return safe_repr('Peer(id={0})', self.id)
 
     def update(self):
-        """Refresh peer data
+        """Refresh peer data.
 
         @note: All fields are stored as attributes to self.
 

@@ -82,7 +82,7 @@ class RTorrent:
             self._verify_conn()
 
     def _get_conn(self):
-        """Get ServerProxy instance"""
+        """Get ServerProxy instance."""
         if self.username is not None and self.password is not None:
             if self.schema == 'scgi':
                 raise NotImplementedError()
@@ -151,16 +151,15 @@ class RTorrent:
         return self._rpc_methods
 
     def _get_rpc_methods(self):
-        """ Get list of raw RPC commands
+        """Get list of raw RPC commands.
 
         @return: raw RPC commands
         @rtype: list
         """
-
         return(self._rpc_methods or self._update_rpc_methods())
 
     def get_torrents(self, view='main'):
-        """Get list of all torrents in specified view
+        """Get list of all torrents in specified view.
 
         @return: list of L{Torrent} instances
 
@@ -194,7 +193,7 @@ class RTorrent:
         return(self.torrents)
 
     def _manage_torrent_cache(self):
-        """Carry tracker/peer/file lists over to new torrent list"""
+        """Carry tracker/peer/file lists over to new torrent list."""
         for torrent in self._torrent_cache:
             new_torrent = common.find_torrent(torrent.info_hash,
                                               self.torrents)
@@ -206,7 +205,7 @@ class RTorrent:
         self._torrent_cache = self.torrents
 
     def _get_load_function(self, file_type, start, verbose):
-        """Determine correct 'load torrent' RPC method"""
+        """Determine correct 'load torrent' RPC method."""
         func_name = None
         if file_type == 'url':
             # url strings can be input directly
@@ -259,7 +258,7 @@ class RTorrent:
 
     def load_torrent(self, torrent, **kwargs):
         """
-        Loads torrent into rTorrent (with various enhancements)
+        Load torrent into rTorrent (with various enhancements).
 
         @param torrent: can be a url, a path to a local file, or the raw data
         of a torrent file
@@ -320,7 +319,7 @@ class RTorrent:
         return True
 
     def load_torrent_simple(self, torrent, file_type, **kwargs):
-        """Loads torrent into rTorrent
+        """Load torrent into rTorrent.
 
         @param torrent: can be a url, a path to a local file, or the raw data
         of a torrent file
@@ -397,7 +396,7 @@ class RTorrent:
         return group
 
     def set_dht_port(self, port):
-        """Set DHT port
+        """Set DHT port.
 
         @param port: port
         @type port: int
@@ -408,19 +407,19 @@ class RTorrent:
         self.dht_port = self._p.set_dht_port(port)
 
     def enable_check_hash(self):
-        """Alias for set_check_hash(True)"""
+        """Alias for set_check_hash(True)."""
         self.set_check_hash(True)
 
     def disable_check_hash(self):
-        """Alias for set_check_hash(False)"""
+        """Alias for set_check_hash(False)."""
         self.set_check_hash(False)
 
     def find_torrent(self, info_hash):
-        """Frontend for rtorrent.common.find_torrent"""
+        """Frontend for rtorrent.common.find_torrent."""
         return(common.find_torrent(info_hash, self.get_torrents()))
 
     def poll(self):
-        """ poll rTorrent to get latest torrent/peer/tracker/file information
+        """Poll rTorrent to get latest torrent/peer/tracker/file information.
 
         @note: This essentially refreshes every aspect of the rTorrent
         connection, so it can be very slow if working with a remote
@@ -434,7 +433,7 @@ class RTorrent:
             t.poll()
 
     def update(self):
-        """Refresh rTorrent client info
+        """Refresh rTorrent client info.
 
         @note: All fields are stored as attributes to self.
 

@@ -44,15 +44,15 @@ class Tracker:
                          self.index, self.url)
 
     def enable(self):
-        """Alias for set_enabled('yes')"""
+        """Alias for set_enabled('yes')."""
         self.set_enabled('yes')
 
     def disable(self):
-        """Alias for set_enabled('no')"""
+        """Alias for set_enabled('no')."""
         self.set_enabled('no')
 
     def update(self):
-        """Refresh tracker data
+        """Refresh tracker data.
 
         @note: All fields are stored as attributes to self.
 
