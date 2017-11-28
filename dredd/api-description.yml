@@ -3,7 +3,7 @@ info:
   title: Medusa API
   description: DESCRIPTION
   version: "1.0.0"
-host: 0.0.0.0:8081
+host: localhost:8081
 schemes:
   - http
   - https
