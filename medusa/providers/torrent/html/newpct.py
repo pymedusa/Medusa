@@ -71,6 +71,10 @@ class NewpctProvider(TorrentProvider):
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
 
+            if self.show and (self.show.air_by_date or self.show.is_sports):
+                log.debug("Provider doesn't support air by date or sports search")
+                continue
+
             # Only search if user conditions are true
             if self.onlyspasearch and lang_info != 'es' and mode != 'RSS':
                 log.debug('Show info is not Spanish, skipping provider search')
