@@ -18,8 +18,8 @@ install:
 script:
   - 'cd vue && yarn test && cd ..'
   - yarn test-js
-  - tox -v --recreate
   - yarn test-api
+  - tox -v --recreate
 cache:
   yarn: true
   directories:
