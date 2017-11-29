@@ -1,10 +1,10 @@
 FROM lsiobase/alpine.python:3.6
-MAINTAINER sparklyballs
+MAINTAINER bobbysteel
 
 # set version label
 ARG BUILD_DATE
 ARG VERSION
-LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL build_version="Version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 
 # install packages
 RUN \
@@ -16,7 +16,7 @@ RUN \
 COPY . /app/medusa/
 
 # copy local files
-COPY docker/root/ /
+COPY .docker/root/ /
 
 # ports and volumes
 EXPOSE 8081
