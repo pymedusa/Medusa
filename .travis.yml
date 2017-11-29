@@ -19,7 +19,6 @@ script:
   - 'cd vue && yarn test && cd ..'
   - yarn test-js
   - tox -v --recreate
-  - yarn test-api
 cache:
   yarn: true
   directories:
