@@ -553,7 +553,7 @@ class GenericProvider(object):
                     seconds = 0
                 else:
                     match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                    seconds = parse(match.group('time'))
+                    seconds = parse(match.group('time')) or 0
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
