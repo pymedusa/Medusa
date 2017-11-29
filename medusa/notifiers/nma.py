@@ -72,7 +72,7 @@ class Notifier(object):
         response = p.push(application=title, event=event, description=message, priority=nma_priority, batch_mode=batch)
 
         if not response[','.join(nma_api)][u'code'] == u'200':
-            log.info(u'Could not send notification to NotifyMyAndroid')
+            log.warning(u'NMA: Could not send notification to NotifyMyAndroid')
             return False
         else:
             log.info(u'NMA: Notification sent to NotifyMyAndroid')
