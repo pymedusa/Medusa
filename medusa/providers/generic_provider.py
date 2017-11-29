@@ -553,7 +553,7 @@ class GenericProvider(object):
                     seconds = 0
                 else:
                     match = re.search(r'(?P<time>\d+\W*\w+)', pubdate)
-                    seconds = parse(match.group('time')) or 0
+                    seconds = parse(match.group('time'))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
             dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
@@ -564,7 +564,7 @@ class GenericProvider(object):
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except (AttributeError, ValueError):
+        except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
