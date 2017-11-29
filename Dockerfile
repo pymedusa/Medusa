@@ -20,4 +20,4 @@ COPY docker/root/ /
 
 # ports and volumes
 EXPOSE 8081
-VOLUME /config /downloads /tv
+VOLUME /config /downloads /tv /anime
