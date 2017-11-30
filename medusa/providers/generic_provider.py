@@ -695,7 +695,7 @@ class GenericProvider(object):
         urls = []
         filename = ''
 
-        if result.url.startswith('magnet'):
+        if result.url.startswith('magnet:'):
             try:
                 info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
 
@@ -723,7 +723,7 @@ class GenericProvider(object):
 
         # Some NZB providers (e.g. Jackett) can also download torrents
         if (result.url.endswith(GenericProvider.TORRENT) or
-                result.url.startswith('magnet')) and self.provider_type == GenericProvider.NZB:
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')
         else:
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
