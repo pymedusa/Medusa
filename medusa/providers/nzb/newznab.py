@@ -211,7 +211,7 @@ class NewznabProvider(NZBProvider):
                             download_url = url
                         elif validators.url(url):
                             download_url = url
-                            # Jackett needs extension added
+                            # Jackett needs extension added (since v0.8.396)
                             if not url.endswith('.torrent'):
                                 content_type = item.enclosure.get('type', '')
                                 if content_type == 'application/x-bittorrent':
