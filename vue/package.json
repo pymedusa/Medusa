@@ -2,10 +2,10 @@
     "name": "Medusa",
     "private": true,
     "scripts": {
-        "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+        "test": "yarn lint && yarn coverage && yarn report-coverage",
         "lint": "xo --verbose",
-        "test": "yarn lint && yarn test-coverage",
-        "test-coverage": "cross-env NODE_ENV=test nyc ava",
+        "coverage": "nyc ava",
+        "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
         "watchify": "watchify -p browserify-hmr src/main.js -o dist/build.js",
         "build": "yarn build:browserify && yarn build:uglify",
         "build:browserify": "cross-env NODE_ENV=production browserify -g envify src/main.js > dist/build.js",

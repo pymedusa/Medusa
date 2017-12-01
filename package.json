@@ -10,10 +10,10 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "test": "yarn lint && yarn coverage && yarn report-coverage",
     "lint": "xo --verbose",
-    "test": "yarn lint && yarn test-coverage",
-    "test-coverage": "cross-env NODE_ENV=test nyc ava",
+    "coverage": "nyc ava",
+    "report-coverage": "nyc report --reporter=lcov > coverage.lcov && codecov",
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
