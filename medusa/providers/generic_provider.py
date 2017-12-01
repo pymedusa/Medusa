@@ -222,6 +222,14 @@ class GenericProvider(object):
             return results
 
         if items_list:
+            # Remove duplicate items
+            items_list_without_dups = []
+            for item in items_list:
+                if item['link'] not in [_['link'] for _ in items_list_without_dups]:
+                    items_list_without_dups.append(item)
+
+            items_list = items_list_without_dups
+
             # categorize the items into lists by quality
             items = defaultdict(list)
             for item in items_list:
