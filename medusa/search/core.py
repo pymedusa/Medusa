@@ -467,6 +467,11 @@ def search_for_needed_episodes(force=False):
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
 
+            # if the option app.FAIL_OVER_ENABLED is enabled and the cached result type (torrent/nzb) is configured in
+            # the list app.FAIL_OVER_DELAY_FOR and it's younger then then it's FAIL_OVER_DELAY_HOURS time (hours)
+            # skipp it.
+
+
             found_results[cur_ep] = best_result
 
     threading.currentThread().name = original_thread_name

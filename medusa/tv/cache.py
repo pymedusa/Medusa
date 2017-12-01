@@ -51,7 +51,8 @@ class CacheDBConnection(db.DBConnection):
                     b'    url TEXT,'
                     b'    time NUMERIC,'
                     b'    quality NUMERIC,'
-                    b'    release_group TEXT)'.format(name=provider_id))
+                    b'    release_group TEXT'
+                    b'    date_added NUMERIC)'.format(name=provider_id))
             else:
                 sql_results = self.select(
                     b'SELECT url, COUNT(url) AS count '
@@ -86,6 +87,7 @@ class CacheDBConnection(db.DBConnection):
                 ('size', 'NUMERIC', -1),
                 ('pubdate', 'NUMERIC', None),
                 ('proper_tags', 'TEXT', None),
+                ('date_added', 'NUMERIC', 0),
             )
             for column, data_type, default in table:
                 # add columns to table if missing
@@ -290,6 +292,7 @@ class Cache(object):
         seeders, leechers = self._get_result_info(item)
         size = self._get_size(item)
         pubdate = self._get_pubdate(item)
+        date_added = time()
 
         self._check_item_auth(title, url)
 
@@ -298,7 +301,7 @@ class Cache(object):
             url = self._translate_link_url(url)
 
             return self.add_cache_entry(title, url, seeders,
-                                        leechers, size, pubdate)
+                                        leechers, size, pubdate, date_added)
 
         else:
             log.debug('The data returned from the {0} feed is incomplete,'
@@ -363,7 +366,7 @@ class Cache(object):
 
         return True
 
-    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, parsed_result=None):
+    def add_cache_entry(self, name, url, seeders, leechers, size, pubdate, date_added, parsed_result=None):
         """Add item into cache database."""
         try:
             # Use the already passed parsed_result of possible.
@@ -405,19 +408,33 @@ class Cache(object):
             # Store proper_tags as proper1|proper2|proper3
             proper_tags = '|'.join(parse_result.proper_tags)
 
-            log.debug('Added RSS item: {0} to cache: {1}', name, self.provider_id)
-            return [
-                b'INSERT OR REPLACE INTO [{name}] '
-                b'   (name, season, episodes, indexerid, url, '
-                b'    time, quality, release_group, version, '
-                b'    seeders, leechers, size, pubdate, proper_tags) '
-                b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
-                    name=self.provider_id
-                ),
-                [name, season, episode_text, parse_result.show.indexerid, url,
-                 cur_timestamp, quality, release_group, version,
-                 seeders, leechers, size, pubdate, proper_tags]
-            ]
+            if not self.item_in_cache(url):
+                log.debug('Added RSS item: {0} to cache: {1}', name, self.provider_id)
+                return [
+                    b'INSERT INTO [{name}] '
+                    b'   (name, season, episodes, indexerid, url, '
+                    b'    time, quality, release_group, version, '
+                    b'    seeders, leechers, size, pubdate, proper_tags, date_added) '
+                    b'VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'.format(
+                        name=self.provider_id
+                    ),
+                    [name, season, episode_text, parse_result.show.indexerid, url,
+                     cur_timestamp, quality, release_group, version,
+                     seeders, leechers, size, pubdate, proper_tags, cur_timestamp]
+                ]
+            else:
+                log.debug('Updating RSS item: {0} to cache: {1}', name, self.provider_id)
+                return [
+                    b'UPDATE [{name}] '
+                    b'SET name=?, season=?, episodes=?, indexerid=?, url=?, '
+                    b'    time=?, quality=?, release_group=?, version=?, '
+                    b'    seeders=?, leechers=?, size=?, pubdate=?, proper_tags=?) '.format(
+                        name=self.provider_id
+                    ),
+                    [name, season, episode_text, parse_result.show.indexerid, url,
+                     cur_timestamp, quality, release_group, version,
+                     seeders, leechers, size, pubdate, proper_tags]
+                ]
 
     def search_cache(self, episode, forced_search=False,
                      down_cur_quality=False):
@@ -425,6 +442,16 @@ class Cache(object):
         needed_eps = self.find_needed_episodes(episode, forced_search,
                                                down_cur_quality)
         return needed_eps[episode] if episode in needed_eps else []
+
+    def item_in_cache(self, url):
+        """Check if the url is already available for the specific provider."""
+        cache_db_con = self._get_db()
+        return cache_db_con.select(
+            b'SELECT COUNT(url) AS count '
+            b'FROM [{provider}] '
+            b'WHERE url=?'.format(provider=self.provider_id)
+            , [url]
+        )['count']
 
     def find_needed_episodes(self, episode, forced_search=False,
                              down_cur_quality=False):
