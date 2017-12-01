@@ -11,6 +11,7 @@ install:
   - pip install dredd_hooks
   - pip install PyYAML
   - pip install six
+  - pip install codecov
   - nvm install node
   - nvm use node
   - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
@@ -26,6 +27,8 @@ cache:
     - node_modules
 after_failure:
   - cat ./dredd/data/Logs/application.log
+after_success:
+  - codecov
 notifications:
   slack:
     secure: >-
