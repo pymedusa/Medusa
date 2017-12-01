@@ -45,6 +45,7 @@
         "babel-plugin-transform-runtime": "^6.23.0",
         "babel-preset-stage-3": "^6.24.1",
         "bson": "^1.0.4",
+        "codecov": "^3.0.0",
         "eslint-plugin-vue": "^2.0.1",
         "localStorage-mock": "^1.0.3",
         "localstorage-polyfill": "^1.0.1",
