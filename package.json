@@ -10,14 +10,18 @@
   },
   "homepage": "https://github.com/PyMedusa/Medusa#readme",
   "scripts": {
-    "test-js": "xo",
+    "coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
+    "lint": "xo --verbose",
+    "test": "yarn lint && yarn test-coverage",
+    "test-coverage": "cross-env NODE_ENV=test nyc ava",
     "test-css": "node_modules/stylelint/bin/stylelint.js 'static/css/*.css'",
     "test-api": "node_modules/.bin/dredd --config dredd/dredd.yml",
     "security": "snyk test",
     "build": "node_modules/grunt-cli/bin/grunt",
-    "install": "yarn run test-js"
+    "install": "yarn run test"
   },
   "devDependencies": {
+    "codecov": "^3.0.0",
     "dredd": "^4.7.2",
     "grunt": "^0.4.5",
     "grunt-bower-concat": "^1.0.0",
