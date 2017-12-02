@@ -10,7 +10,7 @@ futures==3.2.0
 guessit==2.1.4
 html5lib==0.999999999
 imdbpie==4.3.0
-jsonrpclib==0.1.7
+jsonrpclib==0.13
 knowit==0.2.4
 lockfile==0.12.2
 Mako==1.0.7
