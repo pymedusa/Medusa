@@ -24,7 +24,7 @@ def test_search_daily(providers, limit=3):
 
         for i, result in enumerate(actual):
             # Only compare up to the info hash if we have magnets
-            if provider.data['daily']['results'][i]['link'].startswith('magnet'):
+            if provider.data['daily']['results'][i]['link'].startswith('magnet:'):
                 result['link'] = result['link'][:60]
             # Only verify that we got a datetime object for now
             pubdate = provider.data['daily']['results'][i]['pubdate']
@@ -51,7 +51,7 @@ def test_search_backlog(providers, limit=2):
 
             for i, result in enumerate(actual):
                 # Only compare up to the info hash if we have magnets
-                if provider.data['backlog']['results'][i]['link'].startswith('magnet'):
+                if provider.data['backlog']['results'][i]['link'].startswith('magnet:'):
                     result['link'] = result['link'][:60]
                 # Only verify that we got a datetime object for now
                 pubdate = provider.data['backlog']['results'][i]['pubdate']

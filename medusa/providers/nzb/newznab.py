@@ -205,20 +205,27 @@ class NewznabProvider(NZBProvider):
                     title = item.title.get_text(strip=True)
                     download_url = None
 
-                    if item.link:
+                    if item.enclosure:
+                        url = item.enclosure.get('url', '').strip()
+                        if url.startswith('magnet:'):
+                            download_url = url
+                        elif validators.url(url):
+                            download_url = url
+                            # Jackett needs extension added (since v0.8.396)
+                            if not url.endswith('.torrent'):
+                                content_type = item.enclosure.get('type', '')
+                                if content_type == 'application/x-bittorrent':
+                                    download_url = '{0}{1}'.format(url, '.torrent')
+
+                    if not download_url and item.link:
                         url = item.link.get_text(strip=True)
-                        if validators.url(url) or url.startswith('magnet'):
+                        if validators.url(url) or url.startswith('magnet:'):
                             download_url = url
 
                         if not download_url:
                             url = item.link.next.strip()
-                            if validators.url(url) or url.startswith('magnet'):
+                            if validators.url(url) or url.startswith('magnet:'):
                                 download_url = url
-
-                    if not download_url and item.enclosure:
-                        url = item.enclosure.get('url', '').strip()
-                        if validators.url(url) or url.startswith('magnet'):
-                            download_url = url
 
                     if not (title and download_url):
                         continue
