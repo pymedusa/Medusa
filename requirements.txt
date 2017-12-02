@@ -6,7 +6,7 @@ configobj==5.0.6
 contextlib2==0.5.5
 dogpile.cache==0.6.4
 git+https://github.com/kurtmckee/feedparser.git@f1dd1bb923ebfe6482fc2521c1f150b4032289ec#egg=feedparser
-futures==3.1.1
+futures==3.2.0
 guessit==2.1.4
 html5lib==0.999999999
 imdbpie==4.3.0
