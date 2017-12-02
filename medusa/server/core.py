@@ -5,6 +5,11 @@ from __future__ import unicode_literals
 import os
 import threading
 
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.web import Application, RedirectHandler, StaticFileHandler, url
+from tornroutes import route
+
 from medusa.server.api.v2.alias import AliasHandler
 from medusa.server.api.v2.alias_source import (
     AliasSourceHandler,
@@ -19,16 +24,13 @@ from medusa.server.api.v2.series import SeriesHandler
 from medusa.server.api.v2.series_asset import SeriesAssetHandler
 from medusa.server.api.v2.series_legacy import SeriesLegacyHandler
 from medusa.server.api.v2.series_operation import SeriesOperationHandler
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.web import Application, RedirectHandler, StaticFileHandler, url
-from tornroutes import route
+from medusa.server.web.manage import web_socket
 from .api.v1.core import ApiHandler
-from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, TokenHandler
+from .web import CalendarHandler, KeyHandler, LoginHandler, LogoutHandler, \
+    TokenHandler
 from .web.core.base import AuthenticatedStaticFileHandler
 from .. import app, logger
 from ..helpers import create_https_certificates, generate_api_key
-from ..ws import MedusaWebSocketHandler
 
 
 def get_apiv2_handlers(base):
@@ -143,7 +145,7 @@ class AppWebServer(threading.Thread):  # pylint: disable=too-many-instance-attri
 
         # Websocket handler
         self.app.add_handlers(".*$", [
-            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), MedusaWebSocketHandler.WebSocketUIHandler)
+            (r'{base}/ui(/?.*)'.format(base=self.options['web_socket']), web_socket.WebSocketUIHandler)
         ])
 
         # Static File Handlers
