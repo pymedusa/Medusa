@@ -305,7 +305,7 @@ class Application(object):
         # Build from the DB to start with
         self.load_shows_from_db()
 
-        logger.info("Starting Medusa [{branch}] using '{config}'", branch=app.BRANCH, config=app.CONFIG_FILE)
+        logger.info('Starting Medusa [{branch}] using {config!r}', branch=app.BRANCH, config=app.CONFIG_FILE)
 
         self.clear_cache()
 
@@ -482,7 +482,7 @@ class Application(object):
 
             app.WEB_HOST = check_setting_str(app.CFG, 'General', 'web_host', '0.0.0.0')
             app.WEB_IPV6 = bool(check_setting_int(app.CFG, 'General', 'web_ipv6', 0))
-            app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip("/")
+            app.WEB_ROOT = check_setting_str(app.CFG, 'General', 'web_root', '').rstrip('/')
             app.WEB_LOG = bool(check_setting_int(app.CFG, 'General', 'web_log', 0))
             app.WEB_USERNAME = check_setting_str(app.CFG, 'General', 'web_username', '', censor_log='normal')
             app.WEB_PASSWORD = check_setting_str(app.CFG, 'General', 'web_password', '', censor_log='low')
@@ -497,7 +497,7 @@ class Application(object):
             app.INDEXER_DEFAULT_LANGUAGE = check_setting_str(app.CFG, 'General', 'indexerDefaultLang', 'en')
             app.EP_DEFAULT_DELETED_STATUS = check_setting_int(app.CFG, 'General', 'ep_default_deleted_status', 6)
             app.LAUNCH_BROWSER = bool(check_setting_int(app.CFG, 'General', 'launch_browser', 1))
-            app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', "")
+            app.DOWNLOAD_URL = check_setting_str(app.CFG, 'General', 'download_url', '')
             app.LOCALHOST_IP = check_setting_str(app.CFG, 'General', 'localhost_ip', '')
             app.CPU_PRESET = check_setting_str(app.CFG, 'General', 'cpu_preset', 'NORMAL')
             app.ANON_REDIRECT = check_setting_str(app.CFG, 'General', 'anon_redirect', 'http://dereferer.org/?')
@@ -705,8 +705,8 @@ class Application(object):
             app.PROWL_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_ondownload', 0))
             app.PROWL_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'Prowl', 'prowl_notify_onsubtitledownload', 0))
             app.PROWL_API = check_setting_list(app.CFG, 'Prowl', 'prowl_api', '', censor_log='low')
-            app.PROWL_PRIORITY = check_setting_str(app.CFG, 'Prowl', 'prowl_priority', "0")
-            app.PROWL_MESSAGE_TITLE = check_setting_str(app.CFG, 'Prowl', 'prowl_message_title', "Medusa")
+            app.PROWL_PRIORITY = check_setting_str(app.CFG, 'Prowl', 'prowl_priority', '0')
+            app.PROWL_MESSAGE_TITLE = check_setting_str(app.CFG, 'Prowl', 'prowl_message_title', 'Medusa')
 
             app.USE_TWITTER = bool(check_setting_int(app.CFG, 'Twitter', 'use_twitter', 0))
             app.TWITTER_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Twitter', 'twitter_notify_onsnatch', 0))
@@ -802,7 +802,7 @@ class Application(object):
             app.NMA_NOTIFY_ONDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_ondownload', 0))
             app.NMA_NOTIFY_ONSUBTITLEDOWNLOAD = bool(check_setting_int(app.CFG, 'NMA', 'nma_notify_onsubtitledownload', 0))
             app.NMA_API = check_setting_list(app.CFG, 'NMA', 'nma_api', '', censor_log='low')
-            app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', "0")
+            app.NMA_PRIORITY = check_setting_str(app.CFG, 'NMA', 'nma_priority', '0')
 
             app.USE_PUSHALOT = bool(check_setting_int(app.CFG, 'Pushalot', 'use_pushalot', 0))
             app.PUSHALOT_NOTIFY_ONSNATCH = bool(check_setting_int(app.CFG, 'Pushalot', 'pushalot_notify_onsnatch', 0))
@@ -910,7 +910,7 @@ class Application(object):
             app.TRIM_ZERO = bool(check_setting_int(app.CFG, 'GUI', 'trim_zero', 0))
             app.DATE_PRESET = check_setting_str(app.CFG, 'GUI', 'date_preset', '%x')
             app.TIME_PRESET_W_SECONDS = check_setting_str(app.CFG, 'GUI', 'time_preset', '%I:%M:%S %p')
-            app.TIME_PRESET = app.TIME_PRESET_W_SECONDS.replace(u":%S", u"")
+            app.TIME_PRESET = app.TIME_PRESET_W_SECONDS.replace(u':%S', u'')
             app.TIMEZONE_DISPLAY = check_setting_str(app.CFG, 'GUI', 'timezone_display', 'local')
             app.POSTER_SORTBY = check_setting_str(app.CFG, 'GUI', 'poster_sortby', 'name')
             app.POSTER_SORTDIR = check_setting_int(app.CFG, 'GUI', 'poster_sortdir', 1)
@@ -1020,7 +1020,7 @@ class Application(object):
                     load_provider_setting(app.CFG, provider, 'list', 'cat_ids', '', censor_log='low', split_value=',')
 
             if not os.path.isfile(app.CONFIG_FILE):
-                logger.debug(u"Unable to find '{config}', all settings will be default!", config=app.CONFIG_FILE)
+                logger.debug(u'Unable to find {config!r}, all settings will be default!', config=app.CONFIG_FILE)
                 self.save_config()
 
             if app.SUBTITLES_ERASE_CACHE:
@@ -1028,10 +1028,10 @@ class Application(object):
                     for cache_file in ['application.dbm', 'subliminal.dbm']:
                         file_path = os.path.join(app.CACHE_DIR, cache_file)
                         if os.path.isfile(file_path):
-                            logger.info(u"Removing subtitles cache file: {cache_file}", cache_file=file_path)
+                            logger.info(u'Removing subtitles cache file: {cache_file}', cache_file=file_path)
                             os.remove(file_path)
                 except OSError as e:
-                    logger.warning(u"Unable to remove subtitles cache files. Error: {error}", error=e)
+                    logger.warning(u'Unable to remove subtitles cache files. Error: {error}', error=e)
                 # Disable flag to erase cache
                 app.SUBTITLES_ERASE_CACHE = 0
 
@@ -1080,42 +1080,42 @@ class Application(object):
             # updaters
             app.version_check_scheduler = scheduler.Scheduler(version_checker.CheckVersion(),
                                                               cycleTime=datetime.timedelta(hours=app.UPDATE_FREQUENCY),
-                                                              threadName="CHECKVERSION", silent=False)
+                                                              threadName='CHECKVERSION', silent=False)
 
             app.show_queue_scheduler = scheduler.Scheduler(show_queue.ShowQueue(),
                                                            cycleTime=datetime.timedelta(seconds=3),
-                                                           threadName="SHOWQUEUE")
+                                                           threadName='SHOWQUEUE')
 
             app.show_update_scheduler = scheduler.Scheduler(show_updater.ShowUpdater(),
                                                             cycleTime=datetime.timedelta(hours=1),
-                                                            threadName="SHOWUPDATER",
+                                                            threadName='SHOWUPDATER',
                                                             start_time=datetime.time(hour=app.SHOWUPDATE_HOUR,
                                                                                      minute=random.randint(0, 59)))
 
             # snatcher used for manual search, manual picked results
             app.manual_snatch_scheduler = scheduler.Scheduler(SnatchQueue(),
                                                               cycleTime=datetime.timedelta(seconds=3),
-                                                              threadName="MANUALSNATCHQUEUE")
+                                                              threadName='MANUALSNATCHQUEUE')
             # searchers
             app.search_queue_scheduler = scheduler.Scheduler(SearchQueue(),
                                                              cycleTime=datetime.timedelta(seconds=3),
-                                                             threadName="SEARCHQUEUE")
+                                                             threadName='SEARCHQUEUE')
 
             app.forced_search_queue_scheduler = scheduler.Scheduler(ForcedSearchQueue(),
                                                                     cycleTime=datetime.timedelta(seconds=3),
-                                                                    threadName="FORCEDSEARCHQUEUE")
+                                                                    threadName='FORCEDSEARCHQUEUE')
 
             # TODO: update_interval should take last daily/backlog times into account!
             update_interval = datetime.timedelta(minutes=app.DAILYSEARCH_FREQUENCY)
             app.daily_search_scheduler = scheduler.Scheduler(DailySearcher(),
                                                              cycleTime=update_interval,
-                                                             threadName="DAILYSEARCHER",
+                                                             threadName='DAILYSEARCHER',
                                                              run_delay=update_interval)
 
             update_interval = datetime.timedelta(minutes=app.BACKLOG_FREQUENCY)
             app.backlog_search_scheduler = BacklogSearchScheduler(BacklogSearcher(),
                                                                   cycleTime=update_interval,
-                                                                  threadName="BACKLOG",
+                                                                  threadName='BACKLOG',
                                                                   run_delay=update_interval)
 
             if app.CHECK_PROPERS_INTERVAL in app.PROPERS_SEARCH_INTERVAL:
@@ -1127,7 +1127,7 @@ class Application(object):
 
             app.proper_finder_scheduler = scheduler.Scheduler(ProperFinder(),
                                                               cycleTime=update_interval,
-                                                              threadName="FINDPROPERS",
+                                                              threadName='FINDPROPERS',
                                                               start_time=run_at,
                                                               run_delay=update_interval)
 
@@ -1135,27 +1135,27 @@ class Application(object):
             update_interval = datetime.timedelta(minutes=app.AUTOPOSTPROCESSOR_FREQUENCY)
             app.auto_post_processor_scheduler = scheduler.Scheduler(auto_post_processor.PostProcessor(),
                                                                     cycleTime=update_interval,
-                                                                    threadName="POSTPROCESSOR",
+                                                                    threadName='POSTPROCESSOR',
                                                                     silent=not app.PROCESS_AUTOMATICALLY,
                                                                     run_delay=update_interval)
             update_interval = datetime.timedelta(minutes=5)
             app.trakt_checker_scheduler = scheduler.Scheduler(trakt_checker.TraktChecker(),
                                                               cycleTime=datetime.timedelta(hours=1),
-                                                              threadName="TRAKTCHECKER",
+                                                              threadName='TRAKTCHECKER',
                                                               run_delay=update_interval,
                                                               silent=not app.USE_TRAKT)
 
             update_interval = datetime.timedelta(hours=app.SUBTITLES_FINDER_FREQUENCY)
             app.subtitles_finder_scheduler = scheduler.Scheduler(subtitles.SubtitlesFinder(),
                                                                  cycleTime=update_interval,
-                                                                 threadName="FINDSUBTITLES",
+                                                                 threadName='FINDSUBTITLES',
                                                                  run_delay=update_interval,
                                                                  silent=not app.USE_SUBTITLES)
 
             update_interval = datetime.timedelta(minutes=app.TORRENT_CHECKER_FREQUENCY)
             app.torrent_checker_scheduler = scheduler.Scheduler(torrent_checker.TorrentChecker(),
                                                                 cycleTime=update_interval,
-                                                                threadName="TORRENTCHECKER",
+                                                                threadName='TORRENTCHECKER',
                                                                 run_delay=update_interval)
 
             app.__INITIALIZED__ = True
@@ -1190,9 +1190,9 @@ class Application(object):
                         shutil.move(dest_folder, os.path.join(os.path.dirname(dest_folder), bak_filename))
 
                     shutil.move(src_folder, dest_folder)
-                    logger.log(u"Restore: restoring cache successful", logger.INFO)
-                except OSError as e:
-                    logger.log(u"Restore: restoring cache failed: {0!r}".format(e), logger.ERROR)
+                    logger.info(u'Restore: restoring cache successful')
+                except OSError as error:
+                    logger.error(u'Restore: restoring cache failed: {error!r}', error=error)
 
             restore_cache(os.path.join(restore_folder, 'cache'), cache_folder)
         finally:
@@ -2007,7 +2007,7 @@ class Application(object):
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
             logger.info('Restarting Medusa with {options}', options=popen_list)
-            # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
+            # shutdown the logger to make sure it's released the logfile BEFORE it restarts Medusa.
             logging.shutdown()
             print(popen_list)
             subprocess.Popen(popen_list, cwd=os.getcwd())

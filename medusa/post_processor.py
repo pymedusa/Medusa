@@ -1151,8 +1151,9 @@ class PostProcessor(object):
                 # clean up any left over folders
                 if cur_ep.location:
                     helpers.delete_empty_folders(os.path.dirname(cur_ep.location), keep_dir=ep_obj.series._location)
-            except (OSError, IOError):
-                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files')
+            except (OSError, IOError) as error:
+                raise EpisodePostProcessingFailedException(u'Unable to delete the existing files. '
+                                                           u'Error: {msg}'.format(msg=error))
 
             # set the status of the episodes
             # for cur_ep in [ep_obj] + ep_obj.related_episodes:
@@ -1167,9 +1168,10 @@ class PostProcessor(object):
 
                 # do the library update for synoindex
                 notifiers.synoindex_notifier.addFolder(ep_obj.series._location)
-            except (OSError, IOError):
-                raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {0}'.format
-                                                           (ep_obj.series._location))
+            except (OSError, IOError) as error:
+                raise EpisodePostProcessingFailedException(u'Unable to create the show directory: {location}. '
+                                                           u'Error: {msg}'.format(location=ep_obj.series._location,
+                                                                                  msg=error))
 
             # get metadata for the show (but not episode because it hasn't been fully processed)
             ep_obj.series.write_metadata(True)

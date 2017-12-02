@@ -766,7 +766,7 @@ paths:
             items:
               $ref: '#/definitions/Log'
           examples:
-            'application/json':
+            'application/json; charset=UTF-8':
               - $ref: '#/definitions/Log/example'
               - $ref: '#/definitions/Log/example'
               - $ref: '#/definitions/Log/example'
