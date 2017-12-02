@@ -45,6 +45,7 @@ class YggtorrentProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.translation = {
+            'heure': 'hour',
             'heures': 'hours',
             'jour': 'day',
             'jours': 'days',
@@ -137,8 +138,13 @@ class YggtorrentProvider(TorrentProvider):
                     pubdate = None
                     pubdate_match = re.match(r'(\d+)\s(\w+)', cells[2].get_text(strip=True))
                     if pubdate_match:
-                        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), self.translation.get(pubdate_match.group(2)))
-                        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                        translated = self.translation.get(pubdate_match.group(2))
+                        if not translated:
+                            log.exception('No translation mapping available for value: {0}', pubdate_match.group(2))
+                            continue
+                        else:
+                            pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
+                            pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
                     else:
                         log.warning('Could not translate publishing date with value: {0}', cells[2].get_text(strip=True))
 

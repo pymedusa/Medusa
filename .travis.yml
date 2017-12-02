@@ -1,6 +1,6 @@
 language: python
 python:
-  - 2.7.9
+  - 2.7.10
 sudo: false
 branches:
   except:
@@ -19,7 +19,6 @@ script:
   - 'cd vue && yarn test && cd ..'
   - yarn test-js
   - tox -v --recreate
-  - yarn test-api
 cache:
   yarn: true
   directories:

@@ -83,7 +83,8 @@ class NewpctProvider(TorrentProvider):
                               {'search': search_string})
 
                     search_matches = NewpctProvider.search_regex.match(search_string)
-                    name = search_matches.group(1).lower().replace(' ', '-')
+                    norm_name = re.sub(r'\W', '-', search_matches.group(1))
+                    name = norm_name.replace('--', '-').strip('-').lower()
                     chapter = '{0}{1}'.format(search_matches.group(2), search_matches.group(3))
                     search_urls = [self.urls[url].format(name, chapter) for url in self.urls
                                    if url.startswith('download')]
@@ -139,8 +140,8 @@ class NewpctProvider(TorrentProvider):
                             title, torrent_id, torrent_size, pubdate_raw = torrent_content
                         else:
                             self.torrent_id_counter -= 1
-                            title = '{0} {1}'.format(anchor.h2.get_text(strip=True),
-                                                     quality.contents[0].strip())
+                            h2 = anchor.h2.get_text(strip=True).replace('  ', ' ')
+                            title = '{0} {1}'.format(h2, quality.contents[0].strip())
                             torrent_id = self.torrent_id_counter
                             torrent_size = quality.contents[1].text.replace('Tamaño', '').strip()
                     else:

@@ -1,0 +1,5 @@
+#!/usr/bin/with-contenv bash
+
+exec \
+	s6-setuidgid abc python /app/medusa/start.py \
+	--nolaunch --datadir /config
