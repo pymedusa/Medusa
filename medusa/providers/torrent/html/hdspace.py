@@ -53,7 +53,7 @@ class HDSpaceProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)  # only poll HDSpace every 10 minutes max
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
