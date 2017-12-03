@@ -34,7 +34,7 @@ class YggtorrentProvider(TorrentProvider):
         self.password = None
 
         # URLs
-        self.url = 'https://yggtorrent.com/'
+        self.url = 'https://ww1.yggtorrent.com/'
         self.urls = {
             'login': urljoin(self.url, 'user/login'),
             'search': urljoin(self.url, 'engine/search'),
@@ -45,8 +45,10 @@ class YggtorrentProvider(TorrentProvider):
 
         # Miscellaneous Options
         self.translation = {
-            'jour': 'hour',
-            'jours': 'hours',
+            'heure': 'hour',
+            'heures': 'hours',
+            'jour': 'day',
+            'jours': 'days',
             'mois': 'month',
             'an': 'year',
             'années': 'years'
@@ -59,7 +61,7 @@ class YggtorrentProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -73,7 +75,9 @@ class YggtorrentProvider(TorrentProvider):
             return results
 
         # Search Params
-        search_params = {}
+        search_params = {
+            'category': 2145
+        }
 
         for mode in search_strings:
             log.debug('Search mode: {0}', mode)
@@ -121,7 +125,7 @@ class YggtorrentProvider(TorrentProvider):
                     continue
                 try:
                     title = cells[0].find('a', class_='torrent-name').get_text(strip=True)
-                    download_url = urljoin(self.url, cells[0].find('a', target='_blank')['href'])
+                    download_url = cells[0].find_all('a')[2]['href']
                     if not (title and download_url):
                         continue
 
@@ -134,8 +138,13 @@ class YggtorrentProvider(TorrentProvider):
                     pubdate = None
                     pubdate_match = re.match(r'(\d+)\s(\w+)', cells[2].get_text(strip=True))
                     if pubdate_match:
-                        pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), self.translation.get(pubdate_match.group(2)))
-                        pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
+                        translated = self.translation.get(pubdate_match.group(2))
+                        if not translated:
+                            log.exception('No translation mapping available for value: {0}', pubdate_match.group(2))
+                            continue
+                        else:
+                            pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
+                            pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
                     else:
                         log.warning('Could not translate publishing date with value: {0}', cells[2].get_text(strip=True))
 

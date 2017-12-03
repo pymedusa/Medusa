@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 3
+      pubdate: 2017-11-12 00:00:00
+      title: '[VeteranSubs]_Ballroom_e_Youkoso_-_19_[720p]_[1c7330de].mkv'
+      leechers: 2
+      link: https://anidex.info/dl/94786
+      size: 309329920
+    - seeders: 15
+      pubdate: 2017-11-12 00:00:00
+      title: '[DefinitelyNotMe] Animegataris - 06 VOSTFR [1080p].mkv'
+      leechers: 10
+      link: https://anidex.info/dl/94782
+      size: 579862528
+    - seeders: 11
+      pubdate: 2017-11-12 00:00:00
+      title: '[DefinitelyNotMe] Animegataris - 06 VOSTFR [720p].mkv'
+      leechers: 8
+      link: https://anidex.info/dl/94781
+      size: 307232768
+
+backlog:
+  search_strings:
+    Episode: ['Dragon Ball Super 115']
+  results:
+    - seeders: 70
+      pubdate: 2017-11-12 00:00:00
+      title: '[DBS EN VF]Dragon Ball Super 115 VOSTFR HD 720P'
+      leechers: 6
+      link: https://anidex.info/dl/94644
+      size: 252706816
+    - seeders: 71
+      pubdate: 2017-11-12 00:00:00
+      title: '[PuyaSubs!] Dragon Ball Super - 115 [1080p][A76C1894].mkv'
+      leechers: 11
+      link: https://anidex.info/dl/94605
+      size: 566231040

@@ -19,7 +19,7 @@ from zipfile import ZipFile, is_zipfile
 from subliminal.providers import Provider
 from subliminal import __version__
 from subliminal.cache import EPISODE_EXPIRATION_TIME, SHOW_EXPIRATION_TIME, region
-from subliminal.exceptions import AuthenticationError, ConfigurationError, TooManyRequests
+from subliminal.exceptions import AuthenticationError, ConfigurationError, DownloadLimitExceeded
 from subliminal.subtitle import (Subtitle, fix_line_ending, guess_matches, sanitize)
 from subliminal.video import Episode
 
@@ -291,13 +291,13 @@ class ItaSAProvider(Provider):
                 content = self._download_zip(int(subtitle.find('id').text))
                 if not is_zipfile(io.BytesIO(content)):   # pragma: no cover
                     if 'limite di download' in content:
-                        raise TooManyRequests()
+                        raise DownloadLimitExceeded('You reached the download limit')
                     else:
                         raise ConfigurationError('Not a zip file: %r' % content)
 
                 with ZipFile(io.BytesIO(content)) as zf:
                     episode_re = re.compile('s(\d{1,2})e(\d{1,2})')
-                    for index, name in enumerate(zf.namelist()):
+                    for name in zf.namelist():
                         match = episode_re.search(name)
                         if not match:  # pragma: no cover
                             logger.debug('Cannot decode subtitle %r', name)
@@ -310,7 +310,8 @@ class ItaSAProvider(Provider):
                                 None,
                                 None,
                                 None,
-                                name)
+                                name,
+                            )
                             sub.content = fix_line_ending(zf.read(name))
                             subs.append(sub)
 
@@ -451,7 +452,7 @@ class ItaSAProvider(Provider):
             content = self._download_zip(sub.sub_id)
             if not is_zipfile(io.BytesIO(content)):   # pragma: no cover
                 if 'limite di download' in content:
-                    raise TooManyRequests()
+                    raise DownloadLimitExceeded('You reached the download limit')
                 else:
                     raise ConfigurationError('Not a zip file: %r' % content)
 

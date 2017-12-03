@@ -8,7 +8,7 @@ from medusa import (
     app,
     db,
 )
-from medusa.helper.collections import NonEmptyDict
+from medusa.helper.mappings import NonEmptyDict
 from medusa.server.api.v2.base import (
     BaseRequestHandler,
     BooleanField,

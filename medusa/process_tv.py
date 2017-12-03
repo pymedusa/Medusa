@@ -1,25 +1,11 @@
 # coding=utf-8
-#
-# This file is part of Medusa.
-#
-# Medusa is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Medusa is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Medusa. If not, see <http://www.gnu.org/licenses/>.
+
+"""Process TV module."""
 
 from __future__ import unicode_literals
 
 import os
 import shutil
-import socket
 import stat
 
 from medusa import app, db, failed_processor, helpers, logger, notifiers, post_processor
@@ -28,8 +14,6 @@ from medusa.helper.common import is_sync_file
 from medusa.helper.exceptions import EpisodePostProcessingFailedException, FailedPostProcessingFailedException, ex
 from medusa.name_parser.parser import InvalidNameException, InvalidShowException, NameParser
 from medusa.subtitles import accept_any, accept_unknown, get_embedded_subtitles
-
-import requests
 
 import shutil_custom
 
@@ -43,7 +27,7 @@ shutil.copyfile = shutil_custom.copyfile_custom
 
 class ProcessResult(object):
 
-    IGNORED_FOLDERS = ('.AppleDouble', '.@__thumb', '@eaDir')
+    IGNORED_FOLDERS = ('@eaDir',)
 
     def __init__(self, path, process_method=None):
 
@@ -54,7 +38,7 @@ class ProcessResult(object):
         self.result = True
         self.succeeded = True
         self.missedfiles = []
-        self.allowed_extensions = app.ALLOWED_EXTENSIONS.split(',')
+        self.allowed_extensions = app.ALLOWED_EXTENSIONS
 
     @property
     def directory(self):
@@ -165,7 +149,9 @@ class ProcessResult(object):
                     if not self.process_method == 'move' or (proc_type == 'manual' and not delete_on):
                         continue
 
-                    self.delete_folder(os.path.join(dir_path, '@eaDir'))
+                    for folder in self.IGNORED_FOLDERS:
+                        self.delete_folder(os.path.join(dir_path, folder))
+
                     if self.unwanted_files:
                         self.delete_files(dir_path, self.unwanted_files)
 
@@ -177,7 +163,7 @@ class ProcessResult(object):
 
                 else:
                     self.log('Found temporary sync files in folder: {0}'.format(dir_path))
-                    self.log('Skipping post processing for folder: {0}'.format(dir_path))
+                    self.log('Skipping post-processing for folder: {0}'.format(dir_path))
                     self.missedfiles.append('{0}: Sync files found'.format(dir_path))
 
         if self.succeeded:
@@ -213,9 +199,32 @@ class ProcessResult(object):
         :return: True if the directory is valid for processing, otherwise False
         :rtype: Boolean
         """
-        folder = os.path.basename(path)
-        if folder in self.IGNORED_FOLDERS:
+        if not self._is_valid_folder(path, failed):
             return False
+
+        folder = os.path.basename(path)
+        if helpers.is_hidden_folder(path) or any(f == folder for f in self.IGNORED_FOLDERS):
+            self.log('Ignoring folder: {0}'.format(folder), logger.DEBUG)
+            self.missedfiles.append('{0}: Hidden or ignored folder'.format(path))
+            return False
+
+        for root, dirs, files in os.walk(path):
+            for subfolder in dirs:
+                if not self._is_valid_folder(os.path.join(root, subfolder), failed):
+                    return False
+            for each_file in files:
+                if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
+                    return True
+            # Stop at first subdirectories if post-processing path
+            if self.directory == path:
+                break
+
+        self.log('No processable items found in folder: {0}'.format(path), logger.DEBUG)
+        return False
+
+    def _is_valid_folder(self, path, failed):
+        """Verify folder validity based on the checks below."""
+        folder = os.path.basename(path)
 
         if folder.startswith('_FAILED_'):
             self.log('The directory name indicates it failed to extract.', logger.DEBUG)
@@ -224,31 +233,19 @@ class ProcessResult(object):
             self.log('The directory name indicates that it was previously rejected for being undersized.',
                      logger.DEBUG)
             failed = True
-        elif folder.upper().startswith('_UNPACK'):
-            self.log('The directory name indicates that this release is in the process of being unpacked.',
-                     logger.DEBUG)
-            self.missedfiles.append('{0}: Being unpacked'.format(folder))
-            return False
 
         if failed:
             self.process_failed(path)
-            self.missedfiles.append('{0}: Failed download'.format(folder))
+            self.missedfiles.append('{0}: Failed download'.format(path))
             return False
 
-        if helpers.is_hidden_folder(path):
-            self.log('Ignoring hidden folder: {0}'.format(folder), logger.DEBUG)
-            self.missedfiles.append('{0}: Hidden folder'.format(folder))
+        if folder.startswith('_unpack'):
+            self.log('The directory name indicates that this release is in the process of being unpacked.',
+                     logger.DEBUG)
+            self.missedfiles.append('{0}: Being unpacked'.format(path))
             return False
 
-        for root, dirs, files in os.walk(path):
-            for each_file in files:
-                if helpers.is_media_file(each_file) or helpers.is_rar_file(each_file):
-                    return True
-            del root  # unused variable
-            del dirs  # unused variable
-
-        self.log('No processable items found in folder: {0}'.format(path), logger.DEBUG)
-        return False
+        return True
 
     def _get_files(self, path):
         """Return the path to a folder and its contents as a tuple."""
@@ -634,11 +631,6 @@ class ProcessResult(object):
     @staticmethod
     def move_torrent(info_hash, release_names):
         """Move torrent to a given seeding folder after PP."""
-        if not os.path.isdir(app.TORRENT_SEED_LOCATION):
-            logger.log('Not possible to move torrent after post-processing because seed location is invalid',
-                       logger.WARNING)
-            return False
-
         if release_names:
             # Log 'release' or 'releases'
             s = 's' if len(release_names) > 1 else ''
@@ -649,14 +641,9 @@ class ProcessResult(object):
 
         logger.log('Trying to move torrent after post-processing', logger.DEBUG)
         client = torrent.get_client_class(app.TORRENT_METHOD)()
-
+        torrent_moved = False
         try:
             torrent_moved = client.move_torrent(info_hash)
-        except (requests.exceptions.RequestException, socket.gaierror) as error:
-            logger.log("Couldn't connect to client to move torrent for release{s} '{release}' with hash: {hash} "
-                       "to: '{path}'. Error: {error}".format(release=release_names, hash=info_hash, error=error.message,
-                                                             path=app.TORRENT_SEED_LOCATION, s=s), logger.WARNING)
-            return False
         except AttributeError:
             logger.log("Your client doesn't support moving torrents to new location", logger.WARNING)
             return False

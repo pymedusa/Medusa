@@ -56,7 +56,7 @@ class HoundDawgsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -205,7 +205,7 @@ class HoundDawgsProvider(TorrentProvider):
 
         # Initialize session with a GET to have cookies
         self.session.get(self.urls['base_url'])
-        response = self.session.get(self.urls['login'], data=login_params)
+        response = self.session.post(self.urls['login'], data=login_params)
         if not response or not response.text:
             log.warning('Unable to connect to provider')
             return False

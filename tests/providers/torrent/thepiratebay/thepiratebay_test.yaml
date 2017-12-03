@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
+      pubdate:
+      title: Ink.Master.Angels.S01E06.WEB.x264-TBS[ettv]
+      leechers: 0
+      link: magnet:?xt=urn:btih:2c0822768c241e36d770f1e60dc54fd093c68549
+      size: 549055365
+    - seeders: 124
+      pubdate:
+      title: The.Voice.S13E14.WEB.x264-TBS[ettv]
+      leechers: 78
+      link: magnet:?xt=urn:btih:f16cbe510298eee0c1477b5477dd408568489bec
+      size: 620169789
+    - seeders: 44
+      pubdate:
+      title: The.Mayor.2017.S01E06.WEB.x264-TBS[ettv]
+      leechers: 21
+      link: magnet:?xt=urn:btih:94411f7130f1d170b5ee13532ade9171d6dde7d4
+      size: 183207198
+
+backlog:
+  search_strings:
+    Episode: ['Arrow S05E07']
+  results:
+    - seeders: 0
+      pubdate:
+      title: Arrow S05E07 Vigilante 1080p AMZN WEBRip HEVC DD5.1 x265
+      leechers: 0
+      link: magnet:?xt=urn:btih:1a8317696f560d19336d13dfaaa70048130c73ce
+      size: 645587271
+    - seeders: 1
+      pubdate:
+      title: Arrow.S05E07.1080p.WEB-DL.6CH.x265.HEVC-PSA
+      leechers: 3
+      link: magnet:?xt=urn:btih:d540765a1d0b49ec1c7bf6186c42d9e652500aaa
+      size: 524350914

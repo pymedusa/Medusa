@@ -15,6 +15,7 @@ MEDUSA.home.snatchSelection = function() {
         var top = $('#summary').offset().top + 5;
         $('#summaryBackground').height(height);
         $('#summaryBackground').offset({top: top, left: 0});
+        $('#summaryBackground').show();
     }
 
     $(window).resize(function() {
@@ -237,5 +238,15 @@ MEDUSA.home.snatchSelection = function() {
             $('#showhistory').text('Hide History');
             $('#wrapper').prop('data-history-toggle', 'show');
         });
+    });
+
+    $(document).on('click', '.release-name-ellipses, .release-name-ellipses-toggled', function(el) {
+        const target = $(el.currentTarget);
+
+        if (target.hasClass('release-name-ellipses')) {
+            target.switchClass('release-name-ellipses', 'release-name-ellipses-toggled', 100);
+        } else {
+            target.switchClass('release-name-ellipses-toggled', 'release-name-ellipses', 100);
+        }
     });
 };

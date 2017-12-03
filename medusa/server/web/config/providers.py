@@ -7,14 +7,15 @@ from __future__ import unicode_literals
 import json
 import os
 
+from medusa import app, config, logger, providers, ui
+from medusa.helper.common import try_int
+from medusa.helpers.utils import split_and_strip
+from medusa.providers.generic_provider import GenericProvider
+from medusa.providers.nzb.newznab import NewznabProvider
+from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+from medusa.server.web.config.handler import Config
+from medusa.server.web.core import PageTemplate
 from tornroutes import route
-from .handler import Config
-from ..core import PageTemplate
-from .... import app, config, logger, providers, ui
-from ....helper.common import try_int
-from ....providers.generic_provider import GenericProvider
-from ....providers.nzb.newznab import NewznabProvider
-from ....providers.torrent.rss.rsstorrent import TorrentRssProvider
 
 
 @route('/config/providers(/?.*)')
@@ -53,7 +54,7 @@ class ConfigProviders(Config):
             return json.dumps({'success': temp_provider.get_id()})
 
     @staticmethod
-    def saveNewznabProvider(name, url, key=''):
+    def saveNewznabProvider(name, url, api_key=''):
         """
         Save a Newznab Provider
         """
@@ -68,9 +69,9 @@ class ConfigProviders(Config):
                 provider_dict[name].name = name
                 provider_dict[name].url = config.clean_url(url)
 
-            provider_dict[name].key = key
-            # a 0 in the key spot indicates that no key is needed
-            if key == '0':
+            provider_dict[name].api_key = api_key
+            # a 0 in the api key spot indicates that no api key is needed
+            if api_key == '0':
                 provider_dict[name].needs_auth = False
             else:
                 provider_dict[name].needs_auth = True
@@ -78,12 +79,12 @@ class ConfigProviders(Config):
             return '|'.join([provider_dict[name].get_id(), provider_dict[name].config_string()])
 
         else:
-            new_provider = NewznabProvider(name, url, key=key)
+            new_provider = NewznabProvider(name, url, api_key=api_key)
             app.newznabProviderList.append(new_provider)
             return '|'.join([new_provider.get_id(), new_provider.config_string()])
 
     @staticmethod
-    def getNewznabCategories(name, url, key):
+    def getNewznabCategories(name, url, api_key):
         """
         Retrieves a list of possible categories with category id's
         Using the default url/api?cat
@@ -95,7 +96,7 @@ class ConfigProviders(Config):
             error += '\nNo Provider Name specified'
         if not url:
             error += '\nNo Provider Url specified'
-        if not key:
+        if not api_key:
             error += '\nNo Provider Api key specified'
 
         if error != '':
@@ -105,7 +106,7 @@ class ConfigProviders(Config):
         # providerDict = dict(zip([x.get_id() for x in api.newznabProviderList], api.newznabProviderList))
 
         # Get newznabprovider obj with provided name
-        temp_provider = NewznabProvider(name, url, key)
+        temp_provider = NewznabProvider(name, url, api_key)
 
         success, tv_categories, error = temp_provider.get_newznab_categories()
 
@@ -219,7 +220,7 @@ class ConfigProviders(Config):
                 cur_name, cur_url, cur_key, cur_cat = curNewznabProviderStr.split('|')
                 cur_url = config.clean_url(cur_url)
 
-                new_provider = NewznabProvider(cur_name, cur_url, key=cur_key, cat_ids=cur_cat)
+                new_provider = NewznabProvider(cur_name, cur_url, api_key=cur_key, cat_ids=cur_cat)
 
                 cur_id = new_provider.get_id()
 
@@ -227,8 +228,8 @@ class ConfigProviders(Config):
                 if cur_id in newznab_provider_dict:
                     newznab_provider_dict[cur_id].name = cur_name
                     newznab_provider_dict[cur_id].url = cur_url
-                    newznab_provider_dict[cur_id].key = cur_key
-                    newznab_provider_dict[cur_id].cat_ids = cur_cat
+                    newznab_provider_dict[cur_id].api_key = cur_key
+                    newznab_provider_dict[cur_id].cat_ids = split_and_strip(cur_cat)
                     # a 0 in the key spot indicates that no key is needed
                     if cur_key == '0':
                         newznab_provider_dict[cur_id].needs_auth = False
@@ -264,30 +265,6 @@ class ConfigProviders(Config):
                     except (AttributeError, KeyError):
                         newznab_provider_dict[cur_id].enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
-                    try:
-                        newznab_provider_dict[cur_id].enable_api_hit_cooldown = config.checkbox_to_value(
-                            kwargs['{id}_enable_api_hit_cooldown'.format(id=cur_id)])
-                        newznab_provider_dict[cur_id].session.enable_api_hit_cooldown = newznab_provider_dict[
-                            cur_id].enable_api_hit_cooldown
-                        newznab_provider_dict[cur_id].session.configure_hooks()
-                    except (AttributeError, KeyError):
-                        newznab_provider_dict[cur_id].enable_api_hit_cooldown = 0  # these exceptions are actually catching unselected checkboxes
-
-                    try:
-                        newznab_provider_dict[cur_id].api_hit_limit = int(str(kwargs['{id}_api_hit_limit'.format(id=cur_id)]))
-                        newznab_provider_dict[cur_id].session.api_hit_limit = newznab_provider_dict[cur_id].api_hit_limit
-                        newznab_provider_dict[cur_id].session.configure_hooks()
-                    except (AttributeError, KeyError):
-                        newznab_provider_dict[cur_id].api_hit_limit = 0  # these exceptions are actually catching unselected checkboxes
-
-                    try:
-                        newznab_provider_dict[cur_id].daily_reserve_calls = int(str(kwargs['{id}_daily_reserve_calls'.format(id=cur_id)]))
-                        newznab_provider_dict[cur_id].session.daily_reserve_calls = newznab_provider_dict[
-                            cur_id].daily_reserve_calls
-                        newznab_provider_dict[cur_id].session.configure_hooks()
-                    except (AttributeError, KeyError):
-                        newznab_provider_dict[cur_id].daily_reserve_calls = 0  # these exceptions are actually catching unselected checkboxes
-
                 else:
                     app.newznabProviderList.append(new_provider)
 
@@ -297,6 +274,9 @@ class ConfigProviders(Config):
         for cur_provider in app.newznabProviderList:
             if cur_provider.get_id() not in finished_names:
                 app.newznabProviderList.remove(cur_provider)
+
+        # Update the custom newznab provider list
+        NewznabProvider.save_newnab_providers()
 
         torrent_rss_provider_dict = dict(
             zip([x.get_id() for x in app.torrentRssProviderList], app.torrentRssProviderList))
@@ -330,6 +310,9 @@ class ConfigProviders(Config):
         for cur_provider in app.torrentRssProviderList:
             if cur_provider.get_id() not in finished_names:
                 app.torrentRssProviderList.remove(cur_provider)
+
+        # Update the torrentrss provider list
+        app.TORRENTRSS_PROVIDERS = [provider.name for provider in app.torrentRssProviderList]
 
         disabled_list = []
         # do the enable/disable
@@ -522,7 +505,8 @@ class ConfigProviders(Config):
         for cur_nzb_provider in [prov for prov in providers.sorted_provider_list() if
                                  prov.provider_type == GenericProvider.NZB]:
 
-            if hasattr(cur_nzb_provider, 'api_key'):
+            # We don't want to overwrite the api key, as that's not available in the second tab for newznab providers.
+            if hasattr(cur_nzb_provider, 'api_key') and not isinstance(cur_nzb_provider, NewznabProvider):
                 try:
                     cur_nzb_provider.api_key = str(kwargs['{id}_api_key'.format(id=cur_nzb_provider.get_id())]).strip()
                 except (AttributeError, KeyError):
@@ -568,7 +552,7 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     cur_nzb_provider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
 
-        app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
+        # app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
         app.PROVIDER_ORDER = provider_list
 
         app.instance.save_config()

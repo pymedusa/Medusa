@@ -41,7 +41,7 @@
                 <div id="tableDiv"></div>
                 <br>
                 <br>
-                <input class="btn btn-primary" type="button" value="Submit" id="submitShowDirs" />
+                <input class="btn" type="button" value="Submit" id="submitShowDirs" />
             </form>
         </div>
     </div>

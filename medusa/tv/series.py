@@ -28,7 +28,6 @@ from medusa import (
     network_timezones,
     notifiers,
     post_processor,
-    subtitles,
 )
 from medusa.black_and_white_list import BlackAndWhiteList
 from medusa.common import (
@@ -49,7 +48,6 @@ from medusa.common import (
     qualityPresets,
     statusStrings,
 )
-from medusa.helper.collections import NonEmptyDict
 from medusa.helper.common import (
     episode_num,
     pretty_file_size,
@@ -65,6 +63,7 @@ from medusa.helper.exceptions import (
     ShowNotFoundException,
     ex,
 )
+from medusa.helper.mappings import NonEmptyDict
 from medusa.helpers.externals import get_externals, load_externals_from_db
 from medusa.image_cache import ImageCache
 from medusa.indexers.indexer_api import indexerApi
@@ -81,6 +80,7 @@ from medusa.indexers.indexer_exceptions import (
     IndexerException,
     IndexerSeasonNotFound,
 )
+from medusa.indexers.tmdb.tmdb import Tmdb
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.media.banner import ShowBanner
 from medusa.media.fan_art import ShowFanArt
@@ -94,6 +94,10 @@ from medusa.name_parser.parser import (
 from medusa.sbdatetime import sbdatetime
 from medusa.scene_exceptions import get_scene_exceptions
 from medusa.show.show import Show
+from medusa.subtitles import (
+    code_from_code,
+    from_country_code_to_name,
+)
 from medusa.tv.base import Identifier, TV
 from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
@@ -428,7 +432,7 @@ class Series(TV):
     @property
     def subtitle_flag(self):
         """Subtitle flag."""
-        return subtitles.code_from_code(self.lang) if self.lang else ''
+        return code_from_code(self.lang) if self.lang else ''
 
     @property
     def show_type(self):
@@ -492,6 +496,11 @@ class Series(TV):
             sbdatetime.convert_to_setting(network_timezones.parse_date_time(self.next_aired, self.airs, self.network))
             if try_int(self.next_aired, 1) > MILLIS_YEAR_1900 else None
         )
+
+    @property
+    def countries(self):
+        """Return countries."""
+        return [v for v in self.imdb_info.get('countries', '').split('|') if v]
 
     @property
     def genres(self):
@@ -797,11 +806,11 @@ class Series(TV):
         """Return all related words to show: preferred, undesired, ignore, require."""
         words = namedtuple('show_words', ['preferred_words', 'undesired_words', 'ignored_words', 'required_words'])
 
-        preferred_words = ','.join(app.PREFERRED_WORDS.split(',')) if app.PREFERRED_WORDS.split(',') else ''
-        undesired_words = ','.join(app.UNDESIRED_WORDS.split(',')) if app.UNDESIRED_WORDS.split(',') else ''
+        preferred_words = app.PREFERRED_WORDS
+        undesired_words = app.UNDESIRED_WORDS
 
-        global_ignore = app.IGNORE_WORDS.split(',') if app.IGNORE_WORDS else []
-        global_require = app.REQUIRE_WORDS.split(',') if app.REQUIRE_WORDS else []
+        global_ignore = app.IGNORE_WORDS
+        global_require = app.REQUIRE_WORDS
         show_ignore = self.rls_ignore_words.split(',') if self.rls_ignore_words else []
         show_require = self.rls_require_words.split(',') if self.rls_require_words else []
 
@@ -812,8 +821,8 @@ class Series(TV):
         # Join new global required with show require
         final_require = show_require + [i for i in global_require if i.lower() not in [r.lower() for r in show_ignore]]
 
-        ignored_words = ','.join(final_ignore)
-        required_words = ','.join(final_require)
+        ignored_words = final_ignore
+        required_words = final_require
 
         return words(preferred_words, undesired_words, ignored_words, required_words)
 
@@ -1548,29 +1557,41 @@ class Series(TV):
 
         imdb_obj = imdb_api.get_title_by_id(self.imdb_id)
 
+        tmdb_id = self.externals.get('tmdb_id')
+        if tmdb_id:
+            # Country codes and countries obtained from TMDB's API. Not IMDb info.
+            country_codes = Tmdb().get_show_country_codes(tmdb_id)
+            if country_codes:
+                countries = (from_country_code_to_name(country) for country in country_codes)
+                self.imdb_info['countries'] = '|'.join(filter(None, countries))
+                self.imdb_info['country_codes'] = '|'.join(country_codes).lower()
+
+        # Make sure these always have a value
+        self.imdb_info['countries'] = self.imdb_info.get('countries', '')
+        self.imdb_info['country_codes'] = self.imdb_info.get('country_codes', '')
+
         # If the show has no year, IMDb returned something we don't want
-        if not imdb_obj.year:
-            log.debug(u'{id}: IMDb returned invalid info for {imdb_id}, skipping update.',
+        if not imdb_obj or not imdb_obj.year:
+            log.debug(u'{id}: IMDb returned none or invalid info for {imdb_id}, skipping update.',
                       {'id': self.indexerid, 'imdb_id': self.imdb_id})
             return
 
-        self.imdb_info = {
+        # Set retrieved IMDb ID as imdb_id for externals
+        self.externals['imdb_id'] = self.imdb_id
+
+        self.imdb_info.update({
             'imdb_id': imdb_obj.imdb_id,
             'title': imdb_obj.title,
             'year': imdb_obj.year,
             'akas': '',
             'genres': '|'.join(imdb_obj.genres or ''),
-            'countries': '',
-            'country_codes': '',
-            'rating': str(imdb_obj.rating) or '',
+            'rating': str(imdb_obj.rating) if imdb_obj.rating else '',
             'votes': imdb_obj.votes or '',
             'runtimes': int(imdb_obj.runtime / 60) if imdb_obj.runtime else '',  # Time is returned in seconds
             'certificates': imdb_obj.certification or '',
             'plot': imdb_obj.plots[0] if imdb_obj.plots else imdb_obj.plot_outline or '',
             'last_update': datetime.date.today().toordinal(),
-        }
-
-        self.externals['imdb_id'] = self.imdb_id
+        })
 
         log.debug(u'{id}: Obtained info from IMDb: {imdb_info}',
                   {'id': self.indexerid, 'imdb_info': self.imdb_info})
@@ -1992,7 +2013,8 @@ class Series(TV):
         data['cache'] = NonEmptyDict()
         data['cache']['poster'] = self.poster
         data['cache']['banner'] = self.banner
-        data['countries'] = self.imdb_countries
+        data['countries'] = self.countries  # e.g. ['ITALY', 'FRANCE']
+        data['country_codes'] = self.imdb_countries  # e.g. ['it', 'fr']
         data['plot'] = self.imdb_plot or self.plot
         data['config'] = NonEmptyDict()
         data['config']['location'] = self.raw_location

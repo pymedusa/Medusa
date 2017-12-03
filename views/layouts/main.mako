@@ -50,13 +50,18 @@
     </head>
     <body ${('data-controller="' + controller + '" data-action="' + action + '" api-key="' + app.API_KEY +'"  api-root="api/v2/"', '')[title == 'Login']}>
         <div v-cloak id="vue-wrap" class="container-fluid">
+
+            <!-- These are placeholders used by the displayShow template. As they transform to full width divs, they need to be located outside the template. -->
+            <div id="summaryBackground" class="shadow" style="display: none"></div>
+            <div id="checkboxControlsBackground" class="shadow" style="display: none"></div>
+
             <%include file="/partials/header.mako"/>
             % if submenu:
             <%include file="/partials/submenu.mako"/>
             % endif
             <%include file="/partials/alerts.mako"/>
                <div id="content-row" class="row">
-                    <div id="content-col" class="col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1 col-sm-12 col-xs-12">
+                    <div id="content-col" class="${'col-lg-10 col-lg-offset-1 col-md-10 col-md-offset-1' if not app.LAYOUT_WIDE else 'col-lg-12 col-md-12'} col-sm-12 col-xs-12">
                         <%block name="content" />
                     </div>
                </div><!-- /content -->

@@ -37,7 +37,7 @@ $(document).ready(function() {
         $('#allowed_qualities :selected').each(function(i, selected) {
             selectedAllowed[i] = $(selected).val();
         });
-        var url = 'series/' + $('#series_slug').attr('value') +
+        var url = 'series/' + $('#series-slug').attr('value') +
                   '/legacy/backlogged' +
                   '?allowed=' + selectedAllowed +
                   '&preferred=' + selectedPreffered;
@@ -69,7 +69,7 @@ $(document).ready(function() {
     }
 
     function archiveEpisodes() {
-        var url = 'series/' + $('#series_slug').attr('value') + '/operation';
+        var url = 'series/' + $('#series-slug').attr('value') + '/operation';
         api.post(url, {type: 'ARCHIVE_EPISODES'}).then(function(response) {
             var html = '';
             if (response.status === 201) {

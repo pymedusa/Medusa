@@ -2,7 +2,6 @@
 """Tests for medusa/test_should_refresh.py."""
 from medusa.common import (ARCHIVED, DOWNLOADED, IGNORED, Quality, SKIPPED, SNATCHED,
                            SNATCHED_BEST, SNATCHED_PROPER, UNAIRED)
-
 from medusa.tv import Series
 
 import pytest

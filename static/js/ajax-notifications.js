@@ -57,9 +57,12 @@ function wsCheckNotifications() {
     };
 }
 
-$(document).ready(function() {
-    wsCheckNotifications();
-    if (test) {
-        displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
+// Listen for the config loaded event.
+window.addEventListener('build', function(e) {
+    if (e.detail === 'medusa config loaded') {
+        wsCheckNotifications();
+        if (test) {
+            displayPNotify('error', 'test', 'test<br><i class="test-class">hello <b>world</b></i><ul><li>item 1</li><li>item 2</li></ul>', 'notification-test');
+        }
     }
-});
+}, false);

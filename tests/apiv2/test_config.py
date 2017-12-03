@@ -5,7 +5,7 @@ import platform
 import sys
 
 from medusa import app, db
-from medusa.helper.collections import NonEmptyDict
+from medusa.helper.mappings import NonEmptyDict
 
 import pytest
 from tornado.httpclient import HTTPError

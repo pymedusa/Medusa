@@ -28,7 +28,7 @@ import traceback
 from . import app, db, logger
 from .helper.exceptions import ex
 from .indexers.indexer_api import indexerApi
-from .scene_exceptions import xem_session
+from .scene_exceptions import safe_session
 from .show.show import Show
 
 
@@ -202,7 +202,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
 
     main_db_con = db.DBConnection()
     # Season/episode can be 0 so can't check "if season"
-    if season is not None and episode is not None:
+    if season is not None and episode is not None and absolute_number is None:
         main_db_con.action(
             "INSERT OR IGNORE INTO scene_numbering (indexer, indexer_id, season, episode) VALUES (?,?,?,?)",
             [indexer, indexer_id, season, episode])
@@ -211,7 +211,7 @@ def set_scene_numbering(indexer_id, indexer, season=None, episode=None,  # pylin
             "UPDATE scene_numbering SET scene_season = ?, scene_episode = ? WHERE indexer = ? and indexer_id = ? and season = ? and episode = ?",
             [sceneSeason, sceneEpisode, indexer, indexer_id, season, episode])
     # absolute_number can be 0 so can't check "if absolute_number"
-    elif absolute_number is not None:
+    else:
         main_db_con.action(
             "INSERT OR IGNORE INTO scene_numbering (indexer, indexer_id, absolute_number) VALUES (?,?,?)",
             [indexer, indexer_id, absolute_number])
@@ -497,23 +497,20 @@ def xem_refresh(indexer_id, indexer, force=False):
                 return
             # XEM MAP URL
             url = "http://thexem.de/map/havemap?origin={0}".format(indexerApi(indexer).config['xem_origin'])
-            # TODO: Check if this needs exception handling
-            parsedJSON = xem_session.get(url).json()
-            if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result'] or 'data' not in parsedJSON or str(indexer_id) not in parsedJSON['data']:
+            parsed_json = safe_session.get_json(url)
+            if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result'] or 'data' not in parsed_json or str(indexer_id) not in parsed_json['data']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
                 return
 
             # XEM API URL
             url = "http://thexem.de/map/all?id={0}&origin={1}&destination=scene".format(indexer_id, indexerApi(indexer).config['xem_origin'])
-
-            # TODO: Check if this needs exception handling.
-            parsedJSON = xem_session.get(url).json()
-            if not parsedJSON or 'result' not in parsedJSON or 'success' not in parsedJSON['result']:
+            parsed_json = safe_session.get_json(url)
+            if not parsed_json or 'result' not in parsed_json or 'success' not in parsed_json['result']:
                 logger.log(u'No XEM data for show ID {0} on {1}'.format(indexer_id, indexerApi(indexer).name), logger.DEBUG)
                 return
 
             cl = []
-            for entry in parsedJSON['data']:
+            for entry in parsed_json['data']:
                 if 'scene' in entry:
                     cl.append([
                         "UPDATE tv_episodes SET scene_season = ?, scene_episode = ?, scene_absolute_number = ? WHERE showid = ? AND season = ? AND episode = ?",

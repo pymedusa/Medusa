@@ -10,6 +10,7 @@ from medusa.indexers.indexer_config import indexerConfig, mappings
 from medusa.indexers.indexer_exceptions import IndexerException, IndexerShowAllreadyInLibrary, IndexerUnavailable
 from medusa.logger.adapters.style import BraceAdapter
 
+from requests.exceptions import RequestException
 from traktor import AuthException, TokenExpiredException, TraktApi, TraktException
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -103,7 +104,7 @@ def get_externals(show=None, indexer=None, indexed_show=None):
             # except for the indexers own.
             try:
                 new_show_externals.update(t.get_id_by_external(**new_show_externals))
-            except IndexerException as error:
+            except (IndexerException, RequestException) as error:
                 log.warning(
                     u'Error getting external ids for other'
                     u' indexer {name}: {reason}',

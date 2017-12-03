@@ -136,7 +136,7 @@ class Home(WebRoot):
         selected_root = int(app.SELECTED_ROOT)
         shows_dir = None
         if selected_root is not None and app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
             try:
                 shows_dir = backend_dirs[selected_root] if selected_root != -1 else None
@@ -394,7 +394,7 @@ class Home(WebRoot):
     def testKODI(host=None, username=None, password=None):
         host = config.clean_hosts(host)
         final_result = ''
-        for curHost in [x.strip() for x in host.split(',')]:
+        for curHost in [x.strip() for x in host if x.strip()]:
             cur_result = notifiers.kodi_notifier.test_notify(unquote_plus(curHost), username, password)
             if len(cur_result.split(':')) > 2 and 'OK' in cur_result.split(':')[2]:
                 final_result += 'Test KODI notice sent successfully to {host}<br>\n'.format(host=unquote_plus(curHost))
@@ -667,7 +667,7 @@ class Home(WebRoot):
         tv_dir_free = helpers.get_disk_space_usage(app.TV_DOWNLOAD_DIR)
         root_dir = {}
         if app.ROOT_DIRS:
-            backend_pieces = app.ROOT_DIRS.split('|')
+            backend_pieces = app.ROOT_DIRS
             backend_dirs = backend_pieces[1:]
         else:
             backend_dirs = []
@@ -1621,11 +1621,11 @@ class Home(WebRoot):
                         logger.log(u"Show directory doesn't exist, creating it", logger.INFO)
                         try:
                             os.mkdir(new_location)
-                        except OSError as e:
+                        except OSError as error:
                             errors += 1
                             changed_location = False
-                            logger.log(u"Unable to create the show directory '{location}. Error: {error}".format
-                                       (location=new_location, error=e.message or e.strerror), logger.WARNING)
+                            logger.log(u"Unable to create the show directory '{location}'. Error: {msg}".format
+                                       (location=new_location, msg=error), logger.WARNING)
                         else:
                             logger.log(u"New show directory created", logger.INFO)
                             helpers.chmod_as_parent(new_location)
@@ -1827,11 +1827,11 @@ class Home(WebRoot):
                 show_name = quote_plus(show_obj.name.encode('utf-8'))
 
         if app.KODI_UPDATE_ONLYFIRST:
-            host = app.KODI_HOST.split(',')[0].strip()
+            host = app.KODI_HOST[0].strip()
         else:
-            host = app.KODI_HOST
+            host = ', '.join(app.KODI_HOST)
 
-        if notifiers.kodi_notifier.update_library(showName=show_name):
+        if notifiers.kodi_notifier.update_library(series_name=show_name):
             ui.notifications.message('Library update command sent to KODI host(s): {host}'.format(host=host))
         else:
             ui.notifications.error('Unable to contact one or more KODI host(s): {host}'.format(host=host))
@@ -1844,9 +1844,9 @@ class Home(WebRoot):
     def updatePLEX(self):
         if None is notifiers.plex_notifier.update_library():
             ui.notifications.message(
-                'Library update command sent to Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+                'Library update command sent to Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         else:
-            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=app.PLEX_SERVER_HOST))
+            ui.notifications.error('Unable to contact Plex Media Server host: {host}'.format(host=', '.join(app.PLEX_SERVER_HOST)))
         return self.redirect('/home/')
 
     def updateEMBY(self, show=None):

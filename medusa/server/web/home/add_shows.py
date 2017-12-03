@@ -8,12 +8,16 @@ import os
 import re
 
 from requests import RequestException
-
 from requests.compat import unquote_plus
+
 from simpleanidb import REQUEST_HOT
+
 from six import iteritems
+
 from tornroutes import route
+
 from traktor import TraktApi
+
 from .handler import Home
 from ..core import PageTemplate
 from .... import app, classes, config, db, helpers, logger, ui
@@ -114,7 +118,7 @@ class HomeAddShows(Home):
         root_dirs = [unquote_plus(x) for x in root_dirs]
 
         if app.ROOT_DIRS:
-            default_index = int(app.ROOT_DIRS.split('|')[0])
+            default_index = int(app.ROOT_DIRS[0])
         else:
             default_index = 0
 
@@ -444,7 +448,7 @@ class HomeAddShows(Home):
             default_status_after = app.STATUS_DEFAULT_AFTER
 
             if app.ROOT_DIRS:
-                root_dirs = app.ROOT_DIRS.split('|')
+                root_dirs = app.ROOT_DIRS
                 location = root_dirs[int(root_dirs[0]) + 1]
             else:
                 location = None
