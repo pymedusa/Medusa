@@ -181,25 +181,6 @@ class BaseIndexer(object):
         """Indexer representation, returning representation of all shows indexed."""
         return str(self.shows)
 
-    def _clean_data(self, data):  # pylint: disable=no-self-use
-        """Clean up strings.
-
-        Issues corrected:
-        - Replaces &amp; with &
-        - Trailing whitespace
-        """
-        if isinstance(data, basestring):
-            data = data.replace('&amp;', '&')
-            data = data.strip()
-
-            tag_re = re.compile(r'(<!--.*?-->|<[^>]*>)')
-            # Remove well-formed tags
-            no_tags = tag_re.sub('', data)
-            # Clean up anything else by escaping
-            data = cgi.escape(no_tags)
-
-        return data
-
     def _set_item(self, sid, seas, ep, attrib, value):  # pylint: disable=too-many-arguments
         """Create a new episode, creating Show(), Season() and Episode()s as required.
 
