@@ -223,26 +223,27 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 )
             )
 
-            # If this is a season search, we've changed the episode search string. But we also want to look for the
-            # episode sql field being empty.
+            # Let's start by adding the default parameters, which are used to subsitute the '?'s.
             add_params = [cur_provider.provider_type.title(), cur_provider.image_name(),
                           cur_provider.name, cur_provider.get_id(), minseed, minleech, show]
 
             if manual_search_type != 'season':
-                additional_sql = " AND season = ? AND episodes LIKE ? "
-
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
                 if not int(show_all_results):
-                    common_sql += additional_sql
+                    # If it's an episode search, pass season and episode.
+                    common_sql += " AND season = ? AND episodes LIKE ? "
                     add_params += [season, "%|{0}|%".format(episode)]
-            else:
-                list_of_episodes = '{0}{1}'.format(' episodes LIKE ', ' AND episodes LIKE '.join(
-                    ['?' for _ in show_obj.get_all_episodes(season)]))
-                additional_sql = " AND season = ? AND (episodes LIKE ? OR {list_of_episodes})".format(list_of_episodes=list_of_episodes)
 
+            else:
                 # If were not looking for all results, meaning don't do the filter on season + ep, add sql
                 if not int(show_all_results):
-                    common_sql += additional_sql
+                    list_of_episodes = '{0}{1}'.format(' episodes LIKE ', ' AND episodes LIKE '.join(
+                        ['?' for _ in show_obj.get_all_episodes(season)]
+                    ))
+
+                    common_sql += " AND season = ? AND (episodes LIKE ? OR {list_of_episodes})".format(
+                        list_of_episodes=list_of_episodes
+                    )
                     add_params += [season, '||']  # When the episodes field is empty.
                     add_params += ['%|{episode}|%'.format(episode=ep.episode) for ep in show_obj.get_all_episodes(season)]
 
