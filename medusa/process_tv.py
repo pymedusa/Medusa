@@ -146,7 +146,8 @@ class ProcessResult(object):
                                        ignore_subs=ignore_subs)
 
                     # Always delete files if they are being moved or if it's explicitly wanted
-                    if not self.process_method == 'move' or (proc_type == 'manual' and not delete_on):
+                    clean_folder = proc_type == 'manual' and delete_on
+                    if not self.process_method == 'move' or not clean_folder:
                         continue
 
                     for folder in self.IGNORED_FOLDERS:
@@ -155,7 +156,7 @@ class ProcessResult(object):
                     if self.unwanted_files:
                         self.delete_files(dir_path, self.unwanted_files)
 
-                    if all([not app.NO_DELETE or proc_type == 'manual', self.process_method == 'move',
+                    if all([not app.NO_DELETE or clean_folder, self.process_method in ('move', 'copy'),
                             os.path.normpath(dir_path) != os.path.normpath(app.TV_DOWNLOAD_DIR)]):
 
                         if self.delete_folder(dir_path):
