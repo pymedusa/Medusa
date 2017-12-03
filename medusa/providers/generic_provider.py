@@ -645,9 +645,9 @@ class GenericProvider(object):
             episode_string = show_name + self.search_separator
 
             if episode.series.air_by_date or episode.series.sports:
-                episode_string += str(episode.airdate).split('-')[0]
+                search_string['Season'].append(episode_string + str(episode.airdate).split('-')[0])
             elif episode.series.anime:
-                episode_string += 'Season'
+                search_string['Season'].append(episode_string + 'Season')
             else:
                 for season_template in self.season_templates:
                     templated_episode_string = episode_string + season_template.format(season=episode.scene_season)
