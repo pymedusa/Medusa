@@ -484,9 +484,19 @@ class PostProcessor(object):
                          (cur_file_path, new_file_path, e), logger.ERROR)
                 raise EpisodePostProcessingFailedException('Unable to move and link the files to their new home')
 
-        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink}.get(self.process_method)
-        # Subtitle action should be move in case of hardlink|symlink as downloaded subtitle is not part of torrent
-        subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move}.get(self.process_method)
+        def reflink(cur_file_path, new_file_path):
+            self.log(u'Reflink file from {0} to {1}'.format(cur_file_path, new_basename), logger.DEBUG)
+            try:
+                helpers.reflink_file(cur_file_path, new_file_path)
+                helpers.chmod_as_parent(new_file_path)
+            except (IOError, OSError) as e:
+                self.log(u'Unable to reflink file {0} to {1}: {2!r}'.format
+                         (cur_file_path, new_file_path, e), logger.ERROR)
+                raise EpisodePostProcessingFailedException('Unable to copy the files to their new home')
+
+        action = {'copy': copy, 'move': move, 'hardlink': hardlink, 'symlink': symlink, 'reflink': reflink}.get(self.process_method)
+        # Subtitle action should be move in case of hardlink|symlink|reflink as downloaded subtitle is not part of torrent
+        subtitle_action = {'copy': copy, 'move': move, 'hardlink': move, 'symlink': move, 'reflink': move}.get(self.process_method)
         self._combined_file_operation(file_path, new_path, new_basename, associated_files,
                                       action=action, subtitle_action=subtitle_action, subtitles=subtitles)
 

@@ -63,8 +63,8 @@
                                     <span class="component-title">Processing Method:</span>
                                     <span class="component-desc">
                                         <select name="process_method" id="process_method" class="form-control input-sm">
-                                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link"} %>
-                                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink'):
+                                            <% process_method_text = {'copy': "Copy", 'move': "Move", 'hardlink': "Hard Link", 'symlink' : "Symbolic Link", 'reflink': "Reference Link"} %>
+                                            % for cur_action in ('copy', 'move', 'hardlink', 'symlink', 'reflink'):
                                             <option value="${cur_action}" ${'selected="selected"' if app.PROCESS_METHOD == cur_action else ''}>${process_method_text[cur_action]}</option>
                                             % endfor
                                         </select>

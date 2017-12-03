@@ -20,6 +20,7 @@ profilehooks==1.9.0
 PyGithub==1.35
 PyNMA==1.0
 python-dateutil==2.6.1
+reflink==0.1.4
 requests==2.18.4
 SQLAlchemy==1.1.14
 stevedore==1.26.0

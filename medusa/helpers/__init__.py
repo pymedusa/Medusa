@@ -14,6 +14,7 @@ import os
 import platform
 import random
 import re
+import reflink
 import shutil
 import socket
 import ssl
@@ -418,6 +419,66 @@ def move_and_symlink_file(src_file, dest_file):
                 }
             )
             copy_file(src_file, dest_file)
+
+
+def reflink_file(src_file, dest_file):
+    """Copy a file from source to destination with a reference link.
+
+    :param src_file: Source file
+    :type src_file: str
+    :param dest_file: Destination file
+    :type dest_file: str
+    """
+    try:
+        reflink.reflink(str(src_file), str(dest_file))
+    except reflink.ReflinkImpossibleError as msg:
+        if msg.args[0] == 'EOPNOTSUPP':
+            log.warning(
+                u'Failed to create reference link of {source} at {destination}.'
+                u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
+                    'source': src_file,
+                    'destination': dest_file,
+                }
+            )
+            copy_file(src_file, dest_file)
+        elif msg.args[0] == 'EXDEV':
+            log.warning(
+                u'Failed to create reference link of {source} at {destination}.'
+                u' Error: Can not reflink between two devices. Copying instead', {
+                    'source': src_file,
+                    'destination': dest_file,
+                }
+            )
+            copy_file(src_file, dest_file)
+        else:
+            log.warning(
+                u'Failed to create reflink of {source} at {destination}.'
+                u' Error: {error!r}. Copying instead', {
+                    'source': src_file,
+                    'destination': dest_file,
+                    'error': msg,
+                }
+            )
+            copy_file(src_file, dest_file)
+    except NotImplementedError:
+        log.warning(
+            u'Failed to create reference link of {source} at {destination}.'
+            u' Error: Filesystem or OS has not implemented reflink. Copying instead', {
+                'source': src_file,
+                'destination': dest_file,
+            }
+        )
+        copy_file(src_file, dest_file)
+    except IOError as msg:
+        log.warning(
+            u'Failed to create reflink of {source} at {destination}.'
+            u' Error: {error!r}. Copying instead', {
+                'source': src_file,
+                'destination': dest_file,
+                'error': msg,
+            }
+        )
+        copy_file(src_file, dest_file)
 
 
 def make_dirs(path):
