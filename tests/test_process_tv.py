@@ -361,7 +361,7 @@ def test__clean_up(monkeypatch, p, create_structure):
     if p['expected'] is False:
         expected = os.path.isdir(path)
     else:
-        expected = os.listdir(path)
+        expected = sorted(os.listdir(path))
 
     # Then
     assert p['expected'] == expected
