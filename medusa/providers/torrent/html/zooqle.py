@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -50,7 +49,7 @@ class ZooqleProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=15)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -162,8 +161,7 @@ class ZooqleProvider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

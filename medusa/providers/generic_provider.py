@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from base64 import b16encode, b32decode
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -29,11 +28,10 @@ from medusa.common import (
     MULTI_EP_RESULT,
     Quality,
     SEASON_RESULT,
-    UA_POOL,
+    USER_AGENT,
 )
 from medusa.db import DBConnection
 from medusa.helper.common import (
-    replace_extension,
     sanitize_filename,
 )
 from medusa.helpers import (
@@ -54,7 +52,7 @@ from medusa.show.show import Show
 
 from pytimeparse import parse
 
-from requests.utils import add_dict_to_cookiejar
+from requests.utils import add_dict_to_cookiejar, dict_from_cookiejar
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -75,24 +73,18 @@ class GenericProvider(object):
 
         self.anime_only = False
         self.bt_cache_urls = [
-            'https://torrentproject.se/torrent/{info_hash}.torrent',
             'http://reflektor.karmorra.info/torrent/{info_hash}.torrent',
-            'http://thetorrent.org/torrent/{info_hash}.torrent',
-            'http://piratepublic.com/download.php?id={info_hash}',
-            'http://www.legittorrents.info/download.php?id={info_hash}',
             'https://torrent.cd/torrents/download/{info_hash}/.torrent',
             'https://asnet.pw/download/{info_hash}/',
-            'https://skytorrents.in/file/{info_hash}/.torrent',
             'http://p2pdl.com/download/{info_hash}',
             'http://itorrents.org/torrent/{info_hash}.torrent',
-            'https://torcache.pro/{info_hash}.torrent',
         ]
         self.cache = tv.Cache(self)
         self.enable_backlog = False
         self.enable_manualsearch = False
         self.enable_daily = False
         self.enabled = False
-        self.headers = {'User-Agent': UA_POOL.random}
+        self.headers = {'User-Agent': USER_AGENT}
         self.proper_strings = ['PROPER|REPACK|REAL|RERIP']
         self.provider_type = None
         self.public = False
@@ -105,8 +97,12 @@ class GenericProvider(object):
         self.supports_backlog = True
         self.url = ''
         self.urls = {}
+
         # Ability to override the search separator. As for example anizb is using '*' instead of space.
         self.search_separator = ' '
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name.S03'
+        )
 
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
         self.enable_cookies = False
@@ -138,9 +134,6 @@ class GenericProvider(object):
 
             log.info('Downloading {result} from {provider} at {url}',
                      {'result': result.name, 'provider': self.name, 'url': url})
-
-            if url.endswith(GenericProvider.TORRENT) and filename.endswith(GenericProvider.NZB):
-                filename = replace_extension(filename, GenericProvider.TORRENT)
 
             verify = False if self.public else None
 
@@ -216,14 +209,17 @@ class GenericProvider(object):
                     continue
 
             search_strings = []
-            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
+            season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
+            if season_search:
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
                 search_strings = self._get_episode_search_strings(episode)
 
             for search_string in search_strings:
                 # Find results from the provider
-                items_list += self.search(search_string, ep_obj=episode)
+                items_list += self.search(
+                    search_string, ep_obj=episode, manual_search=manual_search
+                )
 
             # In season search, we can't loop in episodes lists as we only need one episode to get the season string
             if search_mode == 'sponly':
@@ -451,10 +447,36 @@ class GenericProvider(object):
     @staticmethod
     def get_url_hook(response, **kwargs):
         """Get URL hook."""
-        log.debug('{0} URL: {1} [Status: {2}]', response.request.method, response.request.url, response.status_code)
+        request = response.request
+        log.debug(
+            '{method} URL: {url} [Status: {status}]', {
+                'method': request.method,
+                'url': request.url,
+                'status': response.status_code,
+            }
+        )
+        log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
-        if response.request.method == 'POST':
-            log.debug('With post data: {0}', response.request.body)
+        if request.method.upper() == 'POST':
+            body = request.body
+            # try to log post data using various codecs to decode
+            if isinstance(body, unicode):
+                log.debug('With post data: {0}', body)
+                return
+
+            codecs = ('utf-8', 'latin1', 'cp1252')
+            for codec in codecs:
+                try:
+                    data = body.decode(codec)
+                except UnicodeError as error:
+                    log.debug('Failed to decode post data as {codec}: {msg}',
+                              {'codec': codec, 'msg': error})
+                else:
+                    log.debug('With post data: {0}', data)
+                    break
+            else:
+                log.warning('Failed to decode post data with {codecs}',
+                            {'codecs': codecs})
 
     def get_url(self, url, post_data=None, params=None, timeout=30, **kwargs):
         """Load the given URL."""
@@ -504,12 +526,12 @@ class GenericProvider(object):
         """Login to provider."""
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """Search the provider."""
         return []
 
     @staticmethod
-    def parse_pubdate(pubdate, human_time=False, timezone=None):
+    def parse_pubdate(pubdate, human_time=False, timezone=None, **kwargs):
         """
         Parse publishing date into a datetime object.
 
@@ -517,9 +539,15 @@ class GenericProvider(object):
         :param human_time: string uses human slang ("4 hours ago")
         :param timezone: use a different timezone ("US/Eastern")
 
+        :keyword dayfirst: Interpret the first value as the day
+        :keyword yearfirst: Interpret the first value as the year
+
         :returns: a datetime object or None
         """
         now_alias = ('right now', 'just now', 'now')
+
+        df = kwargs.pop('dayfirst', False)
+        yf = kwargs.pop('yearfirst', False)
 
         # This can happen from time to time
         if pubdate is None:
@@ -535,7 +563,7 @@ class GenericProvider(object):
                     seconds = parse(match.group('time'))
                 return datetime.now(tz.tzlocal()) - timedelta(seconds=seconds)
 
-            dt = parser.parse(pubdate, fuzzy=True)
+            dt = parser.parse(pubdate, dayfirst=df, yearfirst=yf, fuzzy=True)
             # Always make UTC aware if naive
             if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
                 dt = dt.replace(tzinfo=tz.gettz('UTC'))
@@ -543,7 +571,7 @@ class GenericProvider(object):
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except (AttributeError, ValueError):
+        except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
@@ -559,7 +587,11 @@ class GenericProvider(object):
             'Episode': []
         }
 
-        for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
+        all_possible_show_names = episode.series.get_all_possible_names()
+        if episode.scene_season:
+            all_possible_show_names = all_possible_show_names.union(episode.series.get_all_possible_names(season=episode.scene_season))
+
+        for show_name in all_possible_show_names:
             episode_string = show_name + self.search_separator
             episode_string_fallback = None
 
@@ -610,16 +642,16 @@ class GenericProvider(object):
         }
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + ' '
+            episode_string = show_name + self.search_separator
 
             if episode.series.air_by_date or episode.series.sports:
-                episode_string += str(episode.airdate).split('-')[0]
+                search_string['Season'].append(episode_string + str(episode.airdate).split('-')[0])
             elif episode.series.anime:
-                episode_string += 'Season'
+                search_string['Season'].append(episode_string + 'Season')
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
-
-            search_string['Season'].append(episode_string.strip())
+                for season_template in self.season_templates:
+                    templated_episode_string = episode_string + season_template.format(season=episode.scene_season)
+                    search_string['Season'].append(templated_episode_string.strip())
 
         return [search_string]
 
@@ -670,7 +702,7 @@ class GenericProvider(object):
         urls = []
         filename = ''
 
-        if result.url.startswith('magnet'):
+        if result.url.startswith('magnet:'):
             try:
                 info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
 
@@ -694,7 +726,14 @@ class GenericProvider(object):
         else:
             urls = [result.url]
 
-        filename = join(self._get_storage_dir(), sanitize_filename(result.name) + '.' + self.provider_type)
+        result_name = sanitize_filename(result.name)
+
+        # Some NZB providers (e.g. Jackett) can also download torrents
+        if (result.url.endswith(GenericProvider.TORRENT) or
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
+            filename = join(app.TORRENT_DIR, result_name + '.torrent')
+        else:
+            filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
         return urls, filename
 
@@ -725,28 +764,98 @@ class GenericProvider(object):
 
         :return: A dict with the the keys result as bool and message as string
         """
+        # Added exception for rss torrent providers, as for them adding cookies initial should be optional.
+        from medusa.providers.torrent.rss.rsstorrent import TorrentRssProvider
+        if isinstance(self, TorrentRssProvider) and not self.cookies:
+            return {'result': True,
+                    'message': 'This is a TorrentRss provider without any cookies provided. '
+                               'Cookies for this provider are considered optional.'}
+
         # This is the generic attribute used to manually add cookies for provider authentication
-        if self.enable_cookies:
-            if self.cookies:
-                cookie_validator = re.compile(r'^(\w+=\w+)(;\w+=\w+)*$')
-                if not cookie_validator.match(self.cookies):
-                    ui.notifications.message(
-                        'Failed to validate cookie for provider {provider}'.format(provider=self.name),
-                        'Cookie is not correctly formatted: {0}'.format(self.cookies))
-                    return {'result': False,
-                            'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
+        if not self.enable_cookies:
+            return {'result': False,
+                    'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
 
-                # cookie_validator got at least one cookie key/value pair, let's return success
-                add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
-                return {'result': True,
-                        'message': ''}
+        if not self.cookies:
+            return {'result': False,
+                    'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
 
-            else:  # Cookies not set. Don't need to check cookies
-                return {'result': True,
-                        'message': 'No Cookies added from ui for provider: {0}'.format(self.name)}
+        cookie_validator = re.compile(r'^([\w%]+=[\w%]+)(;[\w%]+=[\w%]+)*$')
+        if not cookie_validator.match(self.cookies):
+            ui.notifications.message(
+                'Failed to validate cookie for provider {provider}'.format(provider=self.name),
+                'Cookie is not correctly formatted: {0}'.format(self.cookies))
+            return {'result': False,
+                    'message': 'Cookie is not correctly formatted: {0}'.format(self.cookies)}
 
-        return {'result': False,
-                'message': 'Adding cookies is not supported for provider: {0}'.format(self.name)}
+        if not all(req_cookie in [x.rsplit('=', 1)[0] for x in self.cookies.split(';')]
+                   for req_cookie in self.required_cookies):
+            return {
+                'result': False,
+                'message': "You haven't configured the requied cookies. Please login at {provider_url}, "
+                           "and make sure you have copied the following cookies: {required_cookies!r}"
+                           .format(provider_url=self.name, required_cookies=self.required_cookies)
+            }
+
+        # cookie_validator got at least one cookie key/value pair, let's return success
+        add_dict_to_cookiejar(self.session.cookies, dict(x.rsplit('=', 1) for x in self.cookies.split(';')))
+        return {'result': True,
+                'message': ''}
+
+    def check_required_cookies(self):
+        """
+        Check if we have the required cookies in the requests sessions object.
+
+        Meaning that we've already successfully authenticated once, and we don't need to go through this again.
+        Note! This doesn't mean the cookies are correct!
+        """
+        if not hasattr(self, 'required_cookies'):
+            # A reminder for the developer, implementing cookie based authentication.
+            log.error(
+                'You need to configure the required_cookies attribute, for the provider: {provider}',
+                {'provider': self.name}
+            )
+            return False
+        return all(dict_from_cookiejar(self.session.cookies).get(cookie) for cookie in self.required_cookies)
+
+    def cookie_login(self, check_login_text, check_url=None):
+        """
+        Check the response for text that indicates a login prompt.
+
+        In that case, the cookie authentication was not successful.
+        :param check_login_text: A string that's visible when the authentication failed.
+        :param check_url: The url to use to test the login with cookies. By default the providers home page is used.
+
+        :return: False when authentication was not successful. True if successful.
+        """
+        check_url = check_url or self.url
+
+        if self.check_required_cookies():
+            # All required cookies have been found within the current session, we don't need to go through this again.
+            return True
+
+        if self.cookies:
+            result = self.add_cookies_from_ui()
+            if not result['result']:
+                ui.notifications.message(result['message'])
+                log.warning(result['message'])
+                return False
+        else:
+            log.warning('Failed to login, you will need to add your cookies in the provider settings')
+            ui.notifications.error('Failed to auth with {provider}'.format(provider=self.name),
+                                   'You will need to add your cookies in the provider settings')
+            return False
+
+        response = self.session.get(check_url)
+        if not response or any([not (response.text and response.status_code == 200),
+                                check_login_text.lower() in response.text.lower()]):
+            log.warning('Please configure the required cookies for this provider. Check your provider settings')
+            ui.notifications.error('Wrong cookies for {provider}'.format(provider=self.name),
+                                   'Check your provider settings')
+            self.session.cookies.clear()
+            return False
+        else:
+            return True
 
     def __str__(self):
         """Return provider name and provider type."""

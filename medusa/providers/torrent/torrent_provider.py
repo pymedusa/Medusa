@@ -40,10 +40,10 @@ class TorrentProvider(GenericProvider):
     @property
     def _custom_trackers(self):
         """Check if provider has custom trackers."""
-        if not self.public or not app.TRACKERS_LIST.strip():
+        if not self.public or not app.TRACKERS_LIST:
             return ''
 
-        return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST.split(',') if x.strip())
+        return '&tr=' + '&tr='.join(x.strip() for x in app.TRACKERS_LIST if x.strip())
 
     def _get_result(self, episodes):
         """Return a provider result object."""

@@ -15,13 +15,15 @@ pre {
 </style>
 </%block>
 <%block name="content">
-<%!
-    random_show = choice(app.showList)
-%>
-<input type="hidden" id="showID" value="${getattr(random_show, 'indexerid', '')}" />
-<input type="hidden" id="series_slug" value="${getattr(random_show, 'slug', '')}" />
 
-<div class="row wide">
+<%
+    # pick a random series to show as background
+    random_show = choice(app.showList) if app.showList else None
+%>
+<input type="hidden" id="series-id" value="${getattr(random_show, 'indexerid', '')}" />
+<input type="hidden" id="series-slug" value="${getattr(random_show, 'slug', '')}" />
+
+<div class="row">
         <div class="col-md-12">
             % if not header is UNDEFINED:
                 <h1 class="header">${header}</h1>
@@ -79,7 +81,7 @@ pre {
             </div>
         </div> <!-- End form group -->
 </div> <!-- row -->
-<div class="row wide">
+<div class="row">
     <div class="col-md-12 ${'fanartOpacity' if app.FANART_BACKGROUND else ''}">
         <pre><div class="notepad"><a id="viewlog-text-view" href="errorlogs/viewlog/?text_view=1"><img src="images/notepad.png"/></a></div>${log_lines}</pre>
     </div>

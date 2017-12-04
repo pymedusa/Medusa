@@ -2,7 +2,7 @@
 """Request handler for alias (scene exceptions)."""
 
 from medusa import db
-from medusa.helper.collections import NonEmptyDict
+from medusa.helper.mappings import NonEmptyDict
 from medusa.server.api.v2.base import BaseRequestHandler
 from medusa.tv.series import SeriesIdentifier
 from tornado.escape import json_decode

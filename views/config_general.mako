@@ -260,7 +260,15 @@
                                 </span>
                             </label>
                         </div>
-
+                        <div class="field-pair">
+                            <label for="layout_wide">
+                                <span class="component-title">Use wider layout</span>
+                                <span class="component-desc">
+                                    <input type="checkbox" class="enabler" name="layout_wide" id="layout_wide" ${('', 'checked="checked"')[bool(app.LAYOUT_WIDE)]}>
+                                    <p>uses all available space in the page</p>
+                                </span>
+                            </label>
+                        </div>
                         <div class="field-pair">
                             <label for="fanart_background">
                                 <span class="component-title">Show fanart in the background</span>
@@ -554,8 +562,8 @@
                                 <span class="component-title">No Restart</span>
                                 <span class="component-desc">
                                     <input type="checkbox" name="no_restart" id="no_restart" ${'checked="checked"' if app.NO_RESTART else ''}/>
-                                    <p>Only shutdown when restarting SR.
-                                    Only select this when you have external software restarting SR automatically when it stops (like FireDaemon)</p>
+                                    <p>Only shutdown when restarting Medusa.
+                                    Only select this when you have external software restarting Medusa automatically when it stops (like FireDaemon)</p>
                                 </span>
                             </label>
                         </div>

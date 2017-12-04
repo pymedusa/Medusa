@@ -43,7 +43,7 @@ class HDTorrentsProvider(TorrentProvider):
         }
 
         # Proper Strings
-        self.proper_strings = ['PROPER', 'REPACK', 'REAL']
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
         self.freeleech = None
@@ -55,7 +55,7 @@ class HDTorrentsProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=30)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 

@@ -33,14 +33,14 @@ class ConfigGeneral(Config):
 
     @staticmethod
     def saveRootDirs(rootDirString=None):
-        app.ROOT_DIRS = rootDirString
+        app.ROOT_DIRS = rootDirString.split('|')
 
     @staticmethod
     def saveAddShowDefaults(defaultStatus, allowed_qualities, preferred_qualities, defaultFlattenFolders, subtitles=False,
                             anime=False, scene=False, defaultStatusAfter=WANTED):
 
-        allowed_qualities = allowed_qualities.split(',') if allowed_qualities else []
-        preferred_qualities = preferred_qualities.split(',') if preferred_qualities else []
+        allowed_qualities = [_.strip() for _ in allowed_qualities.split(',')] if allowed_qualities else []
+        preferred_qualities = [_.strip() for _ in preferred_qualities.split(',')] if preferred_qualities else []
 
         new_quality = Quality.combine_qualities([int(quality) for quality in allowed_qualities], [int(quality) for quality in preferred_qualities])
 
@@ -59,7 +59,7 @@ class ConfigGeneral(Config):
     def saveGeneral(self, log_dir=None, log_nr=5, log_size=1, web_port=None, notify_on_login=None, web_log=None, encryption_version=None, web_ipv6=None,
                     trash_remove_show=None, trash_rotate_logs=None, update_frequency=None, skip_removed_files=None,
                     indexerDefaultLang='en', ep_default_deleted_status=None, launch_browser=None, showupdate_hour=3, web_username=None,
-                    api_key=None, indexer_default=None, timezone_display=None, cpu_preset='NORMAL',
+                    api_key=None, indexer_default=None, timezone_display=None, cpu_preset='NORMAL', layout_wide=None,
                     web_password=None, version_notify=None, enable_https=None, https_cert=None, https_key=None,
                     handle_reverse_proxy=None, sort_article=None, auto_update=None, notify_on_update=None,
                     proxy_setting=None, proxy_indexers=None, anon_redirect=None, git_path=None, git_remote=None,
@@ -187,6 +187,7 @@ class ConfigGeneral(Config):
         app.HANDLE_REVERSE_PROXY = config.checkbox_to_value(handle_reverse_proxy)
 
         app.THEME_NAME = theme_name
+        app.LAYOUT_WIDE = config.checkbox_to_value(layout_wide)
         app.FANART_BACKGROUND = config.checkbox_to_value(fanart_background)
         app.FANART_BACKGROUND_OPACITY = fanart_background_opacity
 

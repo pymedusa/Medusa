@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 0
+      pubdate: 2017-11-17 00:00:00
+      title: '[Sick-Fansubs] Boruto - Naruto Next Generations 33 [720p][EA92D113].mp4'
+      leechers: 4
+      link: https://nyaa.si/download/979570.torrent
+      size: 364275302
+    - seeders: 10
+      pubdate: 2017-11-17 00:00:00
+      title: '[PuyaSubs!] Net-Juu no Susume - 07 [720p][073ED4B2].mkv'
+      leechers: 25
+      link: https://nyaa.si/download/979569.torrent
+      size: 337536614
+    - seeders: 8
+      pubdate: 2017-11-17 00:00:00
+      title: '[PuyaSubs!] Net-Juu no Susume - 07 [1080p][CB41FA09].mkv'
+      leechers: 17
+      link: https://nyaa.si/download/979568.torrent
+      size: 567594188
+
+backlog:
+  search_strings:
+    Episode: ['Dragon Ball Super 115']
+  results:
+    - seeders: 18
+      pubdate: 2017-11-14 00:00:00
+      title: '[SOFCJ-Raws] Dragon Ball Super - 115 (THK 1280x720 x264 AAC).mp4'
+      leechers: 5
+      link: https://nyaa.si/download/978757.torrent
+      size: 678323814
+    - seeders: 27
+      pubdate: 2017-11-14 00:00:00
+      title: '[SOFCJ-Raws] Dragon Ball Super - 115 (CX 1280x720 x264 AAC).mp4'
+      leechers: 8
+      link: https://nyaa.si/download/978756.torrent
+      size: 620442419

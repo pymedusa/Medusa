@@ -8,17 +8,13 @@ import re
 import time
 import traceback
 from base64 import b16encode, b32decode
-
 from hashlib import sha1
-
 from bencode import bdecode, bencode
 from bencode.BTL import BTFailure
-
 from medusa import app, db
 from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.session.core import MedusaSession
-
 import requests
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -200,7 +196,7 @@ class GenericClient(object):
     @staticmethod
     def _get_info_hash(result):
 
-        if result.url.startswith('magnet'):
+        if result.url.startswith('magnet:'):
             result.hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0]
             if len(result.hash) == 32:
                 result.hash = b16encode(b32decode(result.hash)).lower()
@@ -253,7 +249,7 @@ class GenericClient(object):
             if not result.hash:
                 return False
 
-            if result.url.startswith('magnet'):
+            if result.url.startswith('magnet:'):
                 r_code = self._add_torrent_uri(result)
             else:
                 r_code = self._add_torrent_file(result)
