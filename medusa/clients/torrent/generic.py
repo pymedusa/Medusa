@@ -109,7 +109,7 @@ class GenericClient(object):
         log.debug('{name}: Response to {method} request is {response}', {
             'name': self.name,
             'method': method.upper(),
-            'response':  self.response.text[0:99] + '...' if len(self.response.text) > 102 else self.response.text
+            'response': self.response.text[0:99] + '...' if len(self.response.text) > 102 else self.response.text
         })
 
         return True
