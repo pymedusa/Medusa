@@ -9,6 +9,7 @@ import logging
 import os
 import re
 from base64 import b64encode
+from datetime import datetime, timedelta
 
 from medusa import app
 from medusa.clients.torrent.generic import GenericClient
@@ -253,7 +254,7 @@ class TransmissionAPI(GenericClient):
         5 = Queued to seed
         6 = Seeding
 
-        isFinished = whether seeding finished (based on idle timeout or seed ratio)
+        isFinished = whether seeding finished (based on seed ratio)
         IsStalled =  Based on Tranmission setting "Transfer is stalled when inactive for"
         """
         log.info('Checking Transmission torrent status.')
@@ -261,7 +262,7 @@ class TransmissionAPI(GenericClient):
         return_params = {
             'fields': ['name', 'hashString', 'percentDone', 'status',
                        'isStalled', 'errorString', 'seedRatioLimit',
-                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files']
+                       'isFinished', 'uploadRatio', 'seedIdleLimit', 'files', 'activityDate']
         }
 
         post_data = json.dumps({'arguments': return_params, 'method': 'torrent-get'})
@@ -309,10 +310,17 @@ class TransmissionAPI(GenericClient):
             elif error_string and 'unregistered torrent' in error_string.lower():
                 status = 'unregistered'
             elif torrent['status'] == 0:
-                if torrent['percentDone'] == 1 and torrent.get('isFinished'):
-                    status = 'completed'
-                else:
-                    status = 'stopped'
+                status = 'stopped'
+                if torrent['percentDone'] == 1:
+                    # Check if torrent is stopped because of idle timeout
+                    seed_timeouted = False
+                    if torrent['activityDate'] > 0 and torrent['seedIdleLimit'] > 0 and torrent['seedIdleLimit'] > 0:
+                        last_activity_date = datetime.fromtimestamp(torrent['activityDate'])
+                        seed_timeouted = (datetime.now() - timedelta(
+                            minutes=torrent['seedIdleLimit'])) > last_activity_date
+
+                    if torrent.get('isFinished') or seed_timeouted:
+                        status = 'completed'
             elif torrent['status'] == 6:
                 status = 'seeding'
 
