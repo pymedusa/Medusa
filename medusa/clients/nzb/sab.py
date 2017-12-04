@@ -14,6 +14,7 @@ import logging
 
 from medusa import app
 from medusa.logger.adapters.style import BraceAdapter
+from medusa.providers.nzb.binsearch import BinSearchProvider
 from medusa.session.core import MedusaSafeSession
 
 from requests.compat import urljoin
@@ -23,13 +24,7 @@ log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSafeSession()
 
-
 def send_nzb(nzb):
-    """
-    Sends an NZB to SABnzbd via the API.
-
-    :param nzb: The NZBSearchResult object to send to SAB
-    """
     session.params.update({
         'output': 'json',
         'ma_username': app.SAB_USERNAME,
@@ -49,17 +44,67 @@ def send_nzb(nzb):
     # set up a dict with the URL params in it
     params = {
         'cat': category,
-        'mode': 'addurl',
-        'name': nzb.url,
     }
 
     if nzb.priority:
         params['priority'] = 2 if app.SAB_FORCED else 1
 
+    if isinstance(nzb.provider, BinSearchProvider):
+        params['mode'] = 'addfile'
+        return send_nzb_post(params, nzb)
+    else:
+        params.update({'name': nzb.url,
+                       'mode': 'addurl'})
+        return send_nzb_get(params)
+
+
+def send_nzb_get(params):
+    """
+    Sends an NZB to SABnzbd via the API.
+
+    :param nzb: The NZBSearchResult object to send to SAB
+    """
+
     log.info('Sending NZB to SABnzbd')
     url = urljoin(app.SAB_HOST, 'api')
 
     response = session.get(url, params=params, verify=False)
+
+    try:
+        data = response.json()
+    except ValueError:
+        log.info('Error connecting to sab, no data returned')
+    else:
+        log.debug('Result text from SAB: {0}', data)
+        result, text = _check_sab_response(data)
+        del text
+        return result
+
+
+def send_nzb_post(params, nzb):
+    """
+    Sends an NZB to SABnzbd via the API.
+
+    :param nzb: The NZBSearchResult object to send to SAB
+    """
+
+    log.info('Sending NZB to SABnzbd using the post multipart/form data.')
+    url = urljoin(app.SAB_HOST, 'api')
+
+    nzb_data = nzb.provider.download_nzb_for_post(nzb)
+
+    files = {
+        'name': nzb_data
+    }
+
+    data = session.params
+    data.update(params)
+    data['nzbname'] = nzb.name
+
+    # Empty session.params, because else these are added to the url.
+    session.params = {}
+
+    response = session.post(url, data=data, files=files, verify=False)
 
     try:
         data = response.json()

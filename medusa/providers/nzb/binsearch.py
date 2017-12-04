@@ -12,12 +12,13 @@ from medusa.bs4_parser import BS4Parser
 
 from medusa.helper.common import convert_size
 from medusa.helpers import download_file
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
 from requests.compat import urljoin
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 class BinSearchProvider(NZBProvider):
@@ -48,7 +49,7 @@ class BinSearchProvider(NZBProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         results = []
         search_params = {
             'adv_age': '',
@@ -186,7 +187,7 @@ class BinSearchProvider(NZBProvider):
                 continue
 
             if url.startswith('http'):
-                self.headers.update({
+                self.session.headers.update({
                     'Referer': '/'.join(url.split('/')[:3]) + '/'
                 })
 
@@ -215,6 +216,26 @@ class BinSearchProvider(NZBProvider):
                         {'result': result.name})
 
         return False
+
+    def download_nzb_for_post(self, result):
+        if not self.login():
+            return False
+
+        # For now to separate the url and the post data, where splitting it with a pipe.
+        url, data = result.url.split('|')
+
+        data = {
+            data.split('=')[1]: 'on',
+            'action': 'nzb'
+        }
+
+        log.info('Downloading {result} from {provider} at {url} and data {data}',
+                 {'result': result.name, 'provider': self.name, 'url': result.url, 'data': data})
+
+        verify = False if self.public else None
+        nzb_data = self.session.post(url, data=data, headers=self.session.headers, verify=verify, allow_redirects=True).content
+
+        return nzb_data
 
 
 provider = BinSearchProvider()
