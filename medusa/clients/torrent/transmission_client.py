@@ -17,6 +17,7 @@ from medusa.helpers import (
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
+    is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
 
@@ -294,6 +295,8 @@ class TransmissionAPI(GenericClient):
             for i in torrent['files']:
                 # Check if media was processed
                 # OR check hash in case of RARed torrents
+                if not is_media_file(i['name']):
+                    continue
                 if is_already_processed_media(i['name']) or is_info_hash_processed(str(torrent['hashString'])):
                     to_remove = True
 
