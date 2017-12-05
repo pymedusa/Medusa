@@ -17,8 +17,6 @@ log.logger.addHandler(logging.NullHandler())
 class Notifier(object):
     """Slack notifier class."""
 
-    SLACK_WEBHOOK_URL = 'https://hooks.slack.com/services/'
-
     def notify_snatch(self, ep_name, is_proper):
         """
         Send a notification to a Slack channel when an episode is snatched.
@@ -84,18 +82,17 @@ class Notifier(object):
 
     def _send_slack(self, message=None, webhook=None):
         """Send the http request using the Slack webhook."""
-        app.SLACK_WEBHOOK = webhook or app.SLACK_WEBHOOK
-        slack_webhook = self.SLACK_WEBHOOK_URL + app.SLACK_WEBHOOK.replace(self.SLACK_WEBHOOK_URL, '')
+        webhook = webhook or app.SLACK_WEBHOOK
 
         log.info('Sending slack message: {message}', {'message': message})
-        log.info('Sending slack message  to url: {url}', {'url': slack_webhook})
+        log.info('Sending slack message  to url: {url}', {'url': webhook})
 
         if isinstance(message, six.text_type):
             message = message.encode('utf-8')
 
         headers = {b'Content-Type': b'application/json'}
         try:
-            r = requests.post(slack_webhook, data=json.dumps(dict(text=message, username='MedusaBot')), headers=headers)
+            r = requests.post(webhook, data=json.dumps(dict(text=message, username='MedusaBot')), headers=headers)
             r.raise_for_status()
         except Exception:
             log.exception('Error Sending Slack message')
