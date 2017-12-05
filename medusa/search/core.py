@@ -6,6 +6,7 @@ import datetime
 import logging
 import os
 import threading
+import time
 
 from medusa import (
     app,
@@ -44,6 +45,7 @@ from medusa.helper.exceptions import (
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.generic_provider import GenericProvider
 from medusa.show import naming
+
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
@@ -467,10 +469,29 @@ def search_for_needed_episodes(force=False):
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
 
-            # if the option app.FAIL_OVER_ENABLED is enabled and the cached result type (torrent/nzb) is configured in
-            # the list app.FAIL_OVER_DELAY_FOR and it's younger then then it's FAIL_OVER_DELAY_HOURS time (hours)
-            # skipp it.
+            # if the providers attribute fail_over_enabled is enabled for this provider and it's younger then then it's
+            # fail_over_delay time (hours) skipp it. For this we need to check if the result has already been
+            # stored in the provider cache db, and if it's still younger then the providers attribute fail_over_delay.
+            if cur_provider.fail_over_enabled and cur_provider.fail_over_hours:
+                from medusa.search.manual import get_provider_cache_results
+                results = get_provider_cache_results(
+                    cur_ep.series.indexer, show_all_results=False, perform_search=False, show=cur_ep.series.indexerid,
+                    season=cur_ep.season, episode=cur_ep.episode, manual_search_type='episode'
+                )
 
+                if results.get('found_items'):
+                    results['found_items'].sort(key=lambda d: int(d['date_added']))
+                    first_result = results['found_items'][0]
+                    if first_result['date_added'] + cur_provider.fail_over_hours * 3600 > int(time.time()):
+                        # The provider's fail over cooldown time hasn't expired yet. We're holding back the snatch.
+                        log.debug(
+                            u'Holding back best result {name} for provider {provider}. The provider is waiting'
+                            u' {fail_over_hours} hours, before accepting the release.', {'name': first_result['name'],
+                                                                                         'provider': cur_provider.name,
+                                                                                         'fail_over_hours': cur_provider.fail_over_hours
+                                                                                         }
+                        )
+                        continue
 
             found_results[cur_ep] = best_result
 

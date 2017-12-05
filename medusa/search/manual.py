@@ -217,7 +217,7 @@ def get_provider_cache_results(indexer, show_all_results=None, perform_search=No
                 b" ? AS 'provider', ? AS 'provider_id', ? 'provider_minseed',"
                 b" ? 'provider_minleech', name, season, episodes, indexerid,"
                 b" url, time, proper_tags, quality, release_group, version,"
-                b" seeders, leechers, size, time, pubdate "
+                b" seeders, leechers, size, time, pubdate, date_added "
                 b"FROM '{provider_id}' "
                 b"WHERE indexerid = ? AND quality > 0 ".format(
                     provider_id=cur_provider.get_id()

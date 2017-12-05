@@ -108,9 +108,9 @@ class GenericProvider(object):
         self.max_recent_items = 5
         self.stop_at = 3
 
-        # Police attributes
-        self.enable_api_hit_cooldown = False
-        self.enable_daily_request_reserve = False
+        # Delay downloads
+        self.fail_over_enabled = False
+        self.fail_over_hours = 8
 
     def download_result(self, result):
         """Download result from provider."""

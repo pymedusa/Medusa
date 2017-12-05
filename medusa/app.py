@@ -234,14 +234,6 @@ ALLOW_HIGH_PRIORITY = False
 SAB_FORCED = False
 RANDOMIZE_PROVIDERS = False
 
-# FAIL_OVER_DELAY_FOR has a list for which it will wait [FAIL_OVER_DELAY_HOURS] hours before allowing to snatch a result.
-# 'torrent' or/and 'nzb' can be used. For example if ['torrent'] is configured, it will wait 8 hours on a torrent result
-# but directly download an nzb result when found. Enabling both will result in it always to wait 8 hours before accepting
-# a result.
-FAIL_OVER_ENABLED = False
-FAIL_OVER_DELAY_HOURS = 8
-FAIL_OVER_DELAY_FOR = ['torrent']
-
 AUTOPOSTPROCESSOR_FREQUENCY = None
 DAILYSEARCH_FREQUENCY = None
 UPDATE_FREQUENCY = None
