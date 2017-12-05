@@ -54,15 +54,16 @@ class GenericClient(object):
             self.last_time = time.time()
             self._get_auth()
 
-        text = str(data)
+        text_params = str(params)
+        text_data = str(data)
         log.debug(
             '{name}: Requested a {method} connection to {url} with'
             ' params: {params} Data: {data}', {
                 'name': self.name,
                 'method': method.upper(),
                 'url': self.url,
-                'params': params,
-                'data': text[0:99] + '...' if len(text) > 102 else text
+                'params': text_params[0:99] + '...' if len(text_params) > 102 else text_params,
+                'data': text_data[0:99] + '...' if len(text_data) > 102 else text_data
             }
         )
 
@@ -71,8 +72,8 @@ class GenericClient(object):
 
             return False
         try:
-            self.response = self.session.__getattribute__(method)(self.url, params=params, data=data, files=files,
-                                                                  cookies=cookies, timeout=120, verify=False)
+            self.response = self.session.request(method, self.url, params=params, data=data, files=files,
+                                                 cookies=cookies, timeout=120, verify=False)
         except requests.exceptions.ConnectionError as msg:
             log.error('{name}: Unable to connect {error}',
                       {'name': self.name, 'error': msg})
@@ -108,7 +109,7 @@ class GenericClient(object):
         log.debug('{name}: Response to {method} request is {response}', {
             'name': self.name,
             'method': method.upper(),
-            'response': self.response.text
+            'response': self.response.text[0:1024] + '...' if len(self.response.text) > 1027 else self.response.text
         })
 
         return True
