@@ -5,13 +5,16 @@
 from __future__ import unicode_literals
 
 import logging
+from os.path import join
 import re
 
 from medusa import tv
+
 from medusa.bs4_parser import BS4Parser
 
-from medusa.helper.common import convert_size
+from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helpers import download_file
+
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
@@ -27,6 +30,7 @@ class BinSearchProvider(NZBProvider):
     size_regex = re.compile(r'size: (\d+\.\d+\xa0\w{2}), parts', re.I)
     title_regex = re.compile(r'\"([^\"]+)"', re.I)
     title_regex_rss = re.compile(r'- \"([^\"]+)"', re.I)
+    nzb_check_segment = re.compile(r'<segment bytes="[\d+].*"')
 
     def __init__(self):
         """Initialize the class."""
@@ -76,7 +80,7 @@ class BinSearchProvider(NZBProvider):
                             'max': 50,
                         }
                         search_url = self.urls['rss']
-                    response = self.get_url(search_url, params=search_params)
+                    response = self.session.get(search_url, params=search_params)
                     if not response:
                         log.debug('No data returned from provider')
                         continue
@@ -176,48 +180,55 @@ class BinSearchProvider(NZBProvider):
         return items
 
     def download_result(self, result):
-        """Download result from provider."""
+        """
+        Download result from provider.
+
+        This is used when a blackhole is used for sending the nzb file to the nzb client.
+        For now the url and the post data is stored as one string in the db, using a pipe (|) to separate them.
+
+        :param result: A SearchResult object.
+        :return: The result of the nzb download (True/False).
+        """
         if not self.login():
             return False
 
-        urls, filename = self._make_url(result)
+        result_name = sanitize_filename(result.name)
+        filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
 
-        for url in urls:
-            if 'NO_DOWNLOAD_NAME' in url:
-                continue
+        if result.url.startswith('http'):
+            self.session.headers.update({
+                'Referer': '/'.join(result.url.split('/')[:3]) + '/'
+            })
 
-            if url.startswith('http'):
-                self.session.headers.update({
-                    'Referer': '/'.join(url.split('/')[:3]) + '/'
-                })
+        log.info('Downloading {result} from {provider} at {url}',
+                 {'result': result.name, 'provider': self.name, 'url': result.url})
 
-            log.info('Downloading {result} from {provider} at {url}',
-                     {'result': result.name, 'provider': self.name, 'url': url})
+        verify = False if self.public else None
 
-            verify = False if self.public else None
+        url, data = result.url.split('|')
 
-            url, data = url.split('|')
+        data = {
+            data.split('=')[1]: 'on',
+            'action': 'nzb'
+        }
 
-            data = {
-                data.split('=')[1]: 'on',
-                'action': 'nzb'
-            }
+        if download_file(url, filename, method='POST', data=data, session=self.session,
+                         headers=self.headers, verify=verify):
 
-            if download_file(url, filename, method='POST', data=data, session=self.session, headers=self.headers,
-                             hooks={'response': self.get_url_hook}, verify=verify):
-
-                if self._verify_download(filename):
-                    log.info('Saved {result} to {location}',
-                             {'result': result.name, 'location': filename})
-                    return True
-
-        if urls:
-            log.warning('Failed to download any results for {result}',
-                        {'result': result.name})
+            if self._verify_download(filename):
+                log.info('Saved {result} to {location}',
+                         {'result': result.name, 'location': filename})
+                return True
 
         return False
 
     def download_nzb_for_post(self, result):
+        """
+        Downloading the nzb content, prior to sending it to the nzb download client.
+
+        :param result: Nzb SearchResult object.
+        :return: The content of the nzb file if successful else None.
+        """
         if not self.login():
             return False
 
@@ -233,9 +244,16 @@ class BinSearchProvider(NZBProvider):
                  {'result': result.name, 'provider': self.name, 'url': result.url, 'data': data})
 
         verify = False if self.public else None
-        nzb_data = self.session.post(url, data=data, headers=self.session.headers, verify=verify, allow_redirects=True).content
 
-        return nzb_data
+        result = self.session.post(url, data=data, headers=self.session.headers,
+                                   verify=verify, hooks={}, allow_redirects=True).content
+
+        # Validate that the result has the content of a valid nzb.
+        if not BinSearchProvider.nzb_check_segment.match(result):
+            log.info('Result returned from BinSearch was not a valid nzb')
+            return None
+
+        return result
 
 
 provider = BinSearchProvider()

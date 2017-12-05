@@ -13,6 +13,7 @@ import datetime
 import logging
 
 from medusa import app
+from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.binsearch import BinSearchProvider
 from medusa.session.core import MedusaSafeSession
@@ -24,7 +25,14 @@ log.logger.addHandler(logging.NullHandler())
 
 session = MedusaSafeSession()
 
+
 def send_nzb(nzb):
+    """
+    Dispatch method for sending an nzb to sabnzbd using it's api.
+
+    :param nzb: nzb SearchResult object
+    :return: result of the communication with sabnzbd (True/False)
+    """
     session.params.update({
         'output': 'json',
         'ma_username': app.SAB_USERNAME,
@@ -60,9 +68,10 @@ def send_nzb(nzb):
 
 def send_nzb_get(params):
     """
-    Sends an NZB to SABnzbd via the API.
+    Sends an NZB to SABnzbd via the API using a get request.
 
     :param nzb: The NZBSearchResult object to send to SAB
+    :return: result of the communication with sabnzbd (True/False)
     """
 
     log.info('Sending NZB to SABnzbd')
@@ -85,13 +94,23 @@ def send_nzb_post(params, nzb):
     """
     Sends an NZB to SABnzbd via the API.
 
+    :param params: Prepared post parameters.
     :param nzb: The NZBSearchResult object to send to SAB
+    :return: result of the communication with sabnzbd (True/False)
     """
 
     log.info('Sending NZB to SABnzbd using the post multipart/form data.')
     url = urljoin(app.SAB_HOST, 'api')
 
-    nzb_data = nzb.provider.download_nzb_for_post(nzb)
+    try:
+        nzb_data = nzb.provider.download_nzb_for_post(nzb)
+    except (AttributeError, ValueError):
+        log.info('Error trying to get the nzb data from provider binsearch, no data returned')
+        return False
+
+    if not nzb_data:
+        log.info('Error trying to get the nzb data from provider binsearch, no data returned')
+        return False
 
     files = {
         'name': nzb_data
@@ -99,7 +118,7 @@ def send_nzb_post(params, nzb):
 
     data = session.params
     data.update(params)
-    data['nzbname'] = nzb.name
+    data['nzbname'] = sanitize_filename(nzb.name)
 
     # Empty session.params, because else these are added to the url.
     session.params = {}
