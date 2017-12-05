@@ -314,7 +314,7 @@ class TransmissionAPI(GenericClient):
                 if torrent['percentDone'] == 1:
                     # Check if torrent is stopped because of idle timeout
                     seed_timeouted = False
-                    if torrent['activityDate'] > 0 and torrent['seedIdleLimit'] > 0 and torrent['seedIdleLimit'] > 0:
+                    if torrent['activityDate'] > 0 and torrent['seedIdleLimit'] > 0:
                         last_activity_date = datetime.fromtimestamp(torrent['activityDate'])
                         seed_timeouted = (datetime.now() - timedelta(
                             minutes=torrent['seedIdleLimit'])) > last_activity_date
