@@ -3,8 +3,11 @@
 import logging
 
 from medusa import app, common
+from medusa.helper.common import http_code_description
 from medusa.logger.adapters.style import BraceAdapter
+
 from pynma import pynma
+
 from six import text_type
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -18,7 +21,8 @@ class Notifier(object):
 
     def notify_snatch(self, ep_name, is_proper):
         if app.NMA_NOTIFY_ONSNATCH:
-            self._sendNMA(nma_api=None, nma_priority=None, event=common.notifyStrings[(common.NOTIFY_SNATCH, common.NOTIFY_SNATCH_PROPER)[is_proper]],
+            self._sendNMA(nma_api=None, nma_priority=None,
+                          event=common.notifyStrings[(common.NOTIFY_SNATCH,common.NOTIFY_SNATCH_PROPER)[is_proper]],
                           message=ep_name)
 
     def notify_download(self, ep_name):
@@ -84,6 +88,5 @@ class Notifier(object):
         elif response_status_code == u'400':
             log.error(u'{0} Data supplied is in the wrong format, invalid length or null', log_message)
         else:
-            log.warning(u'{0} Status code: {1}', log_message, response_status_code)
+            log.warning(u'{0} Error: {1}', log_message, http_code_description(response_status_code))
         return False
-
