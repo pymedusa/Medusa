@@ -84,6 +84,6 @@ class Notifier(object):
         elif response_status_code == u'400':
             log.error(u'{0} Data supplied is in the wrong format, invalid length or null', log_message)
         else:
-            log.warning(u'{0} Status code: {0}', response_status_code)
+            log.warning(u'{0} Status code: {1}', log_message, response_status_code)
         return False
 
