@@ -27,9 +27,14 @@ def log_url(response, **kwargs):
     log.debug('User-Agent: {}'.format(request.headers['User-Agent']))
 
     if request.method.upper() == 'POST':
-        body = request.body \
-            if 'multipart/form-data' not in request.headers.get('content-type', '') \
-            else request.body[1:99].replace('\n', ' ') + '...' if request.body else None
+        if request.body:
+            if 'multipart/form-data' not in request.headers.get('content-type', ''):
+                body = request.body
+            else:
+                body = request.body[1:99].replace('\n', ' ') + '...'
+        else:
+            body = ''
+
         # try to log post data using various codecs to decode
         if isinstance(body, unicode):
             log.debug('With post data: {0}', body)
