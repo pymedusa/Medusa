@@ -71,9 +71,19 @@ class Notifier(object):
                   event, message, nma_priority, batch)
         response = p.push(application=title, event=event, description=message, priority=nma_priority, batch_mode=batch)
 
-        if not response[','.join(nma_api)][u'code'] == u'200':
-            log.warning(u'NMA: Could not send notification to NotifyMyAndroid')
-            return False
-        else:
+        response_status_code = response[','.join(nma_api)][u'code']
+        log_message = u'NMA: Could not send notification to NotifyMyAndroid.'
+
+        if response_status_code == u'200':
             log.info(u'NMA: Notification sent to NotifyMyAndroid')
             return True
+        elif response_status_code == u'402':
+            log.info(u'{0} Maximum number of API calls per hour exceeded', log_message)
+        elif response_status_code == u'401':
+            log.warning(u'{0} The apikey provided is not valid', log_message)
+        elif response_status_code == u'400':
+            log.error(u'{0} Data supplied is in the wrong format, invalid length or null', log_message)
+        else:
+            log.warning(u'{0} Status code: {0}', response_status_code)
+        return False
+
