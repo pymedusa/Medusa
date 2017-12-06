@@ -547,31 +547,30 @@ def _map_quality(show_obj):
 
 
 def _get_root_dirs():
-    if app.ROOT_DIRS == '':
+    if not app.ROOT_DIRS:
         return {}
 
     root_dir = {}
-    root_dirs = app.ROOT_DIRS
     default_index = int(app.ROOT_DIRS[0])
+    root_dir['default_index'] = default_index
+    # clean up the list: replace %xx escapes with single-character equivalent
+    # and remove default_index value from list (this fixes the offset)
+    root_dirs = [
+        unquote_plus(x)
+        for x in app.ROOT_DIRS[1:]
+    ]
 
-    root_dir['default_index'] = int(app.ROOT_DIRS[0])
-    # remove default_index value from list (this fixes the offset)
-    root_dirs.pop(0)
-
-    if len(root_dirs) < default_index:
+    try:
+        default_dir = root_dirs[default_index]
+    except IndexError:
         return {}
-
-    # clean up the list - replace %xx escapes by their single-character equivalent
-    root_dirs = [unquote_plus(x) for x in root_dirs]
-
-    default_dir = root_dirs[default_index]
 
     dir_list = []
     for root_dir in root_dirs:
         valid = 1
         try:
             os.listdir(root_dir)
-        except Exception:
+        except OSError:
             valid = 0
         default = 0
         if root_dir is default_dir:
@@ -1335,7 +1334,7 @@ class CMD_AddRootDir(ApiCall):
         """ Add a new root (parent) directory to Medusa """
 
         self.location = unquote_plus(self.location)
-        location_matched = 0
+        location_matched = False
         index = 0
 
         # disallow adding/setting an invalid dir
@@ -1344,31 +1343,35 @@ class CMD_AddRootDir(ApiCall):
 
         root_dirs = []
 
-        if app.ROOT_DIRS == '':
-            self.default = 1
+        if not app.ROOT_DIRS:
+            self.default = True
         else:
-            root_dirs = app.ROOT_DIRS
             index = int(app.ROOT_DIRS[0])
-            root_dirs.pop(0)
-            # clean up the list - replace %xx escapes by their single-character equivalent
-            root_dirs = [unquote_plus(x) for x in root_dirs]
-            for x in root_dirs:
-                if x == self.location:
-                    location_matched = 1
-                    if self.default == 1:
+            # clean up the list: replace %xx escapes with single-character equivalent
+            # and remove default_index value from list (this fixes the offset)
+            root_dirs = [
+                unquote_plus(directory)
+                for directory in app.ROOT_DIRS[1:]
+            ]
+            for directory in root_dirs:
+                if directory == self.location:
+                    location_matched = True
+                    if self.default:
                         index = root_dirs.index(self.location)
                     break
 
-        if location_matched == 0:
-            if self.default == 1:
+        if not location_matched:
+            if self.default:
                 root_dirs.insert(0, self.location)
             else:
                 root_dirs.append(self.location)
 
-        root_dirs_new = [unquote_plus(x) for x in root_dirs]
+        root_dirs_new = [
+            unquote_plus(directory)
+            for directory in root_dirs
+        ]
+        # reinsert index value in the list
         root_dirs_new.insert(0, index)
-        root_dirs_new = '|'.join(text_type(x) for x in root_dirs_new)
-
         app.ROOT_DIRS = root_dirs_new
         return _responds(RESULT_SUCCESS, _get_root_dirs(), msg='Root directories updated')
 
@@ -1445,36 +1448,41 @@ class CMD_DeleteRootDir(ApiCall):
 
     def run(self):
         """ Delete a root (parent) directory from Medusa """
-        if app.ROOT_DIRS == '':
+        if not app.ROOT_DIRS:
             return _responds(RESULT_FAILURE, _get_root_dirs(), msg='No root directories detected')
 
-        new_index = 0
-        root_dirs_new = []
-        root_dirs = app.ROOT_DIRS
-        index = int(root_dirs[0])
-        root_dirs.pop(0)
-        # clean up the list - replace %xx escapes by their single-character equivalent
-        root_dirs = [unquote_plus(x) for x in root_dirs]
-        old_root_dir = root_dirs[index]
-        for curRootDir in root_dirs:
-            if not curRootDir == self.location:
-                root_dirs_new.append(curRootDir)
+        index = int(app.ROOT_DIRS[0])
+        # clean up the list: replace %xx escapes with single-character equivalent
+        # and remove default_index value from list (this fixes the offset)
+        root_dirs = [
+            unquote_plus(directory)
+            for directory in app.ROOT_DIRS[1:]
+        ]
+        default_dir = root_dirs[index]
+        location = unquote_plus(self.location)
+        try:
+            root_dirs.remove(location)
+        except ValueError:
+            result = RESULT_FAILURE
+            msg = 'Location not in root directories'
+            return _responds(result, _get_root_dirs(), msg=msg)
+
+        try:
+            index = root_dirs.index(default_dir)
+        except ValueError:
+            if default_dir == location:
+                result = RESULT_DENIED
+                msg = 'Default directory cannot be deleted; Please set a new default directory.'
             else:
-                new_index = 0
+                result = RESULT_ERROR
+                msg = 'Default directory not found'
+        else:
+            root_dirs.insert(0, index)
+            app.ROOT_DIRS = root_dirs
+            result = RESULT_SUCCESS
+            msg = 'Root directory {0} deleted'.format(location)
 
-        for curIndex, curNewRootDir in enumerate(root_dirs_new):
-            if curNewRootDir is old_root_dir:
-                new_index = curIndex
-                break
-
-        root_dirs_new = [unquote_plus(x) for x in root_dirs_new]
-        if root_dirs_new:
-            root_dirs_new.insert(0, new_index)
-        root_dirs_new = '|'.join(text_type(x) for x in root_dirs_new)
-
-        app.ROOT_DIRS = root_dirs_new
-        # what if the root dir was not found?
-        return _responds(RESULT_SUCCESS, _get_root_dirs(), msg='Root directory deleted')
+        return _responds(result, _get_root_dirs(), msg=msg)
 
 
 class CMD_GetDefaults(ApiCall):
@@ -1969,7 +1977,7 @@ class CMD_ShowAddExisting(ApiCall):
         if not indexer_name:
             return _responds(RESULT_FAILURE, msg='Unable to retrieve information from indexer')
 
-        # set indexer so we can pass it along when adding show to SR
+        # set indexer so we can pass it along when adding show to Medusa
         indexer = indexer_result['data']['results'][0]['indexer']
 
         # use default quality as a fail-safe

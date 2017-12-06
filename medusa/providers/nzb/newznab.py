@@ -71,18 +71,29 @@ class NewznabProvider(NZBProvider):
 
         self.caps = False
         self.cap_tv_search = None
-        self.force_query = False
         self.providers_without_caps = ['gingadaddy', '6box']
+
+        # For now apply the additional season search string for all newznab providers.
+        # If we want to limited this per provider, I suggest using a dict, with provider: [list of season templates]
+        # construction.
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name S03'
+            'Season {season}',  # example: 'Series.Name Season 3'
+        )
 
         self.cache = tv.Cache(self)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, force_query=False, manual_search=False, **kwargs):
         """
         Search a provider and parse the results.
 
         :param search_strings: A dict with mode (key) and the search value (value)
         :param age: Not used
         :param ep_obj: Not used
+        :param force_query: Newznab will by default search using the tvdb/tmdb/imdb id for a show. As a backup it
+        can also search using a query string, like the showtitle with the season/episode number. The force_query
+        parameter can be passed to force a search using the query string.
+        :param manual_search: If the search is started through a manual search, we're utilizing the force_query param.
         :returns: A list of search results (structure)
         """
         results = []
@@ -113,7 +124,7 @@ class NewznabProvider(NZBProvider):
 
             if mode != 'RSS':
                 match_indexer = self._match_indexer()
-                if match_indexer and not self.force_query:
+                if match_indexer and not force_query:
                     search_params['t'] = 'tvsearch'
                     search_params.update(match_indexer)
 
@@ -165,10 +176,9 @@ class NewznabProvider(NZBProvider):
                 if 'tvdbid' in search_params:
                     break
 
-        # Reprocess but now use force_query = True
-        if not results and not self.force_query:
-            self.force_query = True
-            return self.search(search_strings, ep_obj=ep_obj)
+        # Reprocess but now use force_query = True if there are no results (backlog, daily, force) or if it's a manual search.
+        if (not results or manual_search) and not force_query:
+            return self.search(search_strings, ep_obj=ep_obj, force_query=True)
 
         return results
 
@@ -205,20 +215,27 @@ class NewznabProvider(NZBProvider):
                     title = item.title.get_text(strip=True)
                     download_url = None
 
-                    if item.link:
+                    if item.enclosure:
+                        url = item.enclosure.get('url', '').strip()
+                        if url.startswith('magnet:'):
+                            download_url = url
+                        elif validators.url(url):
+                            download_url = url
+                            # Jackett needs extension added (since v0.8.396)
+                            if not url.endswith('.torrent'):
+                                content_type = item.enclosure.get('type', '')
+                                if content_type == 'application/x-bittorrent':
+                                    download_url = '{0}{1}'.format(url, '.torrent')
+
+                    if not download_url and item.link:
                         url = item.link.get_text(strip=True)
-                        if validators.url(url) or url.startswith('magnet'):
+                        if validators.url(url) or url.startswith('magnet:'):
                             download_url = url
 
                         if not download_url:
                             url = item.link.next.strip()
-                            if validators.url(url) or url.startswith('magnet'):
+                            if validators.url(url) or url.startswith('magnet:'):
                                 download_url = url
-
-                    if not download_url and item.enclosure:
-                        url = item.enclosure.get('url', '').strip()
-                        if validators.url(url) or url.startswith('magnet'):
-                            download_url = url
 
                     if not (title and download_url):
                         continue

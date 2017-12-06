@@ -97,8 +97,12 @@ class GenericProvider(object):
         self.supports_backlog = True
         self.url = ''
         self.urls = {}
+
         # Ability to override the search separator. As for example anizb is using '*' instead of space.
         self.search_separator = ' '
+        self.season_templates = (
+            'S{season:0>2}',  # example: 'Series.Name.S03'
+        )
 
         # Use and configure the attribute enable_cookies to show or hide the cookies input field per provider
         self.enable_cookies = False
@@ -205,14 +209,17 @@ class GenericProvider(object):
                     continue
 
             search_strings = []
-            if (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly':
+            season_search = (len(episodes) > 1 or manual_search_type == 'season') and search_mode == 'sponly'
+            if season_search:
                 search_strings = self._get_season_search_strings(episode)
             elif search_mode == 'eponly':
                 search_strings = self._get_episode_search_strings(episode)
 
             for search_string in search_strings:
                 # Find results from the provider
-                items_list += self.search(search_string, ep_obj=episode)
+                items_list += self.search(
+                    search_string, ep_obj=episode, manual_search=manual_search
+                )
 
             # In season search, we can't loop in episodes lists as we only need one episode to get the season string
             if search_mode == 'sponly':
@@ -519,7 +526,7 @@ class GenericProvider(object):
         """Login to provider."""
         return True
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """Search the provider."""
         return []
 
@@ -564,7 +571,7 @@ class GenericProvider(object):
                 dt = dt.astimezone(tz.gettz(timezone))
             return dt
 
-        except (AttributeError, ValueError):
+        except (AttributeError, TypeError, ValueError):
             log.exception('Failed parsing publishing date: {0}', pubdate)
 
     def _get_result(self, episodes=None):
@@ -635,16 +642,16 @@ class GenericProvider(object):
         }
 
         for show_name in episode.series.get_all_possible_names(season=episode.scene_season):
-            episode_string = show_name + ' '
+            episode_string = show_name + self.search_separator
 
             if episode.series.air_by_date or episode.series.sports:
-                episode_string += str(episode.airdate).split('-')[0]
+                search_string['Season'].append(episode_string + str(episode.airdate).split('-')[0])
             elif episode.series.anime:
-                episode_string += 'Season'
+                search_string['Season'].append(episode_string + 'Season')
             else:
-                episode_string += 'S{season:0>2}'.format(season=episode.scene_season)
-
-            search_string['Season'].append(episode_string.strip())
+                for season_template in self.season_templates:
+                    templated_episode_string = episode_string + season_template.format(season=episode.scene_season)
+                    search_string['Season'].append(templated_episode_string.strip())
 
         return [search_string]
 
@@ -695,7 +702,7 @@ class GenericProvider(object):
         urls = []
         filename = ''
 
-        if result.url.startswith('magnet'):
+        if result.url.startswith('magnet:'):
             try:
                 info_hash = re.findall(r'urn:btih:([\w]{32,40})', result.url)[0].upper()
 
@@ -723,7 +730,7 @@ class GenericProvider(object):
 
         # Some NZB providers (e.g. Jackett) can also download torrents
         if (result.url.endswith(GenericProvider.TORRENT) or
-                result.url.startswith('magnet')) and self.provider_type == GenericProvider.NZB:
+                result.url.startswith('magnet:')) and self.provider_type == GenericProvider.NZB:
             filename = join(app.TORRENT_DIR, result_name + '.torrent')
         else:
             filename = join(self._get_storage_dir(), result_name + '.' + self.provider_type)
