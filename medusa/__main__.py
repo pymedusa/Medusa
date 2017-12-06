@@ -2010,7 +2010,7 @@ class Application(object):
             if '--nolaunch' not in popen_list:
                 popen_list += ['--nolaunch']
             logger.info('Restarting Medusa with {options}', options=popen_list)
-            # shutdown the logger to make sure it's released the logfile BEFORE it restarts SR.
+            # shutdown the logger to make sure it's released the logfile BEFORE it restarts Medusa.
             logging.shutdown()
             print(popen_list)
             subprocess.Popen(popen_list, cwd=os.getcwd())

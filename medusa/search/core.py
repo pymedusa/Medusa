@@ -119,7 +119,7 @@ def snatch_episode(result):
     else:
         end_status = SNATCHED
 
-    if result.url.startswith(u'magnet') or result.url.endswith(u'torrent'):
+    if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
         result.resultType = u'torrent'
 
     # NZBs can be sent straight to SAB or saved to disk
@@ -140,11 +140,11 @@ def snatch_episode(result):
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         else:
-            if not result.content and not result.url.startswith(u'magnet'):
+            if not result.content and not result.url.startswith(u'magnet:'):
                 if result.provider.login():
                     result.content = result.provider.get_content(result.url)
 
-            if result.content or result.url.startswith(u'magnet'):
+            if result.content or result.url.startswith(u'magnet:'):
                 client = torrent.get_client_class(app.TORRENT_METHOD)()
                 result_downloaded = client.send_torrent(result)
             else:

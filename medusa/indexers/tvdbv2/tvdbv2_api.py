@@ -354,11 +354,8 @@ class TVDBv2(BaseIndexer):
             for k, v in cur_ep.items():
                 k = k.lower()
 
-                if v is not None:
-                    if v and k == 'filename':
-                        v = urljoin(self.config['artwork_prefix'], v)
-                    else:
-                        v = self._clean_data(v)
+                if v and k == 'filename':
+                    v = urljoin(self.config['artwork_prefix'], v)
 
                 self._set_item(tvdb_id, seas_no, ep_no, k, v)
 

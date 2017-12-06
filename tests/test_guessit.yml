@@ -4198,3 +4198,13 @@
   release_group: Yomi
   container: mkv
   type: episode
+
+# 20-40 added to the expected_groups.
+? Show.Name.Season.6.480p.HDTV.H264-20-40.WEB-DL
+: title: Show Name
+  season: 6
+  screen_size: 480p
+  video_codec: h264
+  release_group: 20-40
+  format: WEB-DL
+  type: episode
