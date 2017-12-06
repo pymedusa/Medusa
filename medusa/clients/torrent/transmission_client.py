@@ -59,12 +59,9 @@ class TransmissionAPI(GenericClient):
             'method': 'session-get',
         })
 
-        try:
-            self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
-                                              verify=app.TORRENT_VERIFY_CERT)
-            self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
-        except Exception:
-            return None
+        self.response = self.session.post(self.url, data=post_data.encode('utf-8'), timeout=120,
+                                          verify=app.TORRENT_VERIFY_CERT)
+        self.auth = re.search(r'X-Transmission-Session-Id:\s*(\w+)', self.response.text).group(1)
 
         self.session.headers.update({'x-transmission-session-id': self.auth})
 
