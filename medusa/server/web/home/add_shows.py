@@ -101,7 +101,7 @@ class HomeAddShows(Home):
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
                                    show['seriesname'].encode('utf-8'), show['firstaired'] or 'N/A',
-                                   show['network'] or 'N/A') for show in shows})
+                                   show['network'].encode('utf-8') or 'N/A') for show in shows})
 
         lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})
