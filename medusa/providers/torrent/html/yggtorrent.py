@@ -147,7 +147,6 @@ class YggtorrentProvider(TorrentProvider):
                         translated = self.translation.get(pubdate_match.group(2))
                         if not translated:
                             log.exception('No translation mapping available for value: {0}', pubdate_match.group(2))
-                            continue
                         else:
                             pubdate_raw = '{0} {1}'.format(pubdate_match.group(1), translated)
                             pubdate = self.parse_pubdate(pubdate_raw, human_time=True)
