@@ -30,7 +30,7 @@ class BinSearchProvider(NZBProvider):
     size_regex = re.compile(r'size: (\d+\.\d+\xa0\w{2}), parts', re.I)
     title_regex = re.compile(r'\"([^\"]+)"', re.I)
     title_regex_rss = re.compile(r'- \"([^\"]+)"', re.I)
-    nzb_check_segment = re.compile(r'<segment bytes="[\d+].*"')
+    nzb_check_segment = re.compile(r'<segment bytes="[\d]+"')
 
     def __init__(self):
         """Initialize the class."""
@@ -249,7 +249,7 @@ class BinSearchProvider(NZBProvider):
                                    verify=verify, hooks={}, allow_redirects=True).content
 
         # Validate that the result has the content of a valid nzb.
-        if not BinSearchProvider.nzb_check_segment.match(result):
+        if not BinSearchProvider.nzb_check_segment.search(result):
             log.info('Result returned from BinSearch was not a valid nzb')
             return None
 
