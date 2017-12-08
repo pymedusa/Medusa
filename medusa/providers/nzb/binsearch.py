@@ -47,6 +47,7 @@ class BinSearchProvider(NZBProvider):
         }
 
         # Proper Strings
+        self.proper_strings = ['PROPER', 'REPACK', 'REAL', 'RERIP']
 
         # Miscellaneous Options
 
