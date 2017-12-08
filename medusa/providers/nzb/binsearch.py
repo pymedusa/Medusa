@@ -89,7 +89,7 @@ class BinSearchProvider(NZBProvider):
 
         return results
 
-    def parse(self, data, mode, query=''):
+    def parse(self, data, mode):
         """
         Parse search results for items.
 
@@ -105,6 +105,10 @@ class BinSearchProvider(NZBProvider):
         items = []
 
         with BS4Parser(data, 'html5lib') as html:
+
+            # We need to store the post url, to be used with every result later on.
+            post_url = html.find('form', {'method': 'post'})['action']
+
             table = html.find('table', class_='xMenuT')
             rows = table('tr') if table else []
             row_offset = 1
@@ -149,13 +153,7 @@ class BinSearchProvider(NZBProvider):
                 print(size)
                 size = int(size)
 
-                query = query or title
-
-                download_url = 'https://www.binsearch.info/fcgi/nzb.fcgi?q={query}&max=100&adv_age=1100&server='.format(
-                    query=query
-                )
-
-                download_url = '{download_url}|nzb_id={nzb_id}'.format(download_url=download_url, nzb_id=nzb_id)
+                download_url = urljoin(self.url, '{post_url}|nzb_id={nzb_id}'.format(post_url=post_url, nzb_id=nzb_id))
 
                 # For future use
                 # detail_url = 'https://www.binsearch.info/?q={0}'.format(title)
