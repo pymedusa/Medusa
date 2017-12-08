@@ -496,6 +496,20 @@ class ConfigProviders(Config):
                 except (AttributeError, KeyError):
                     cur_torrent_provider.subtitle = 0  # these exceptions are actually catching unselected checkboxes
 
+            if hasattr(cur_torrent_provider, 'enable_search_delay'):
+                try:
+                    cur_torrent_provider.enable_search_delay = config.checkbox_to_value(
+                        kwargs['{id}_enable_search_delay'.format(id=cur_torrent_provider.get_id())])
+                except (AttributeError, KeyError):
+                    cur_torrent_provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(cur_torrent_provider, 'search_delay'):
+                try:
+                    search_delay = float(str(kwargs['{id}_search_delay'.format(id=cur_torrent_provider.get_id())]).strip())
+                    cur_torrent_provider.search_delay = (int(search_delay * 60), 30)[search_delay < 0.5]
+                except (AttributeError, KeyError, ValueError):
+                    cur_torrent_provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
+
             if cur_torrent_provider.enable_cookies:
                 try:
                     cur_torrent_provider.cookies = str(kwargs['{id}_cookies'.format(id=cur_torrent_provider.get_id())]).strip()
@@ -551,6 +565,21 @@ class ConfigProviders(Config):
                         kwargs['{id}_enable_backlog'.format(id=cur_nzb_provider.get_id())])
                 except (AttributeError, KeyError):
                     cur_nzb_provider.enable_backlog = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(cur_nzb_provider, 'enable_search_delay'):
+                try:
+                    cur_nzb_provider.enable_search_delay = config.checkbox_to_value(
+                        kwargs['{id}_enable_search_delay'.format(id=cur_nzb_provider.get_id())])
+                except (AttributeError, KeyError):
+                    cur_nzb_provider.enable_search_delay = 0  # these exceptions are actually catching unselected checkboxes
+
+            if hasattr(cur_nzb_provider, 'search_delay'):
+                try:
+                    search_delay = float(
+                        str(kwargs['{id}_search_delay'.format(id=cur_nzb_provider.get_id())]).strip())
+                    cur_nzb_provider.search_delay = (int(search_delay * 60), 30)[search_delay < 0.5]
+                except (AttributeError, KeyError, ValueError):
+                    cur_nzb_provider.search_delay = 480  # these exceptions are actually catching unselected checkboxes
 
         # app.NEWZNAB_DATA = '!!!'.join([x.config_string() for x in app.newznabProviderList])
         app.PROVIDER_ORDER = provider_list
