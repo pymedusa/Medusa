@@ -113,8 +113,8 @@ class GenericProvider(object):
         self.stop_at = 3
 
         # Delay downloads
-        self.fail_over_enabled = False
-        self.fail_over_hours = 8
+        self.enable_search_delay = False
+        self.search_delay = 480  # minutes
 
     def download_result(self, result):
         """Download result from provider."""

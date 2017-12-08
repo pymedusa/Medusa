@@ -469,12 +469,12 @@ def search_for_needed_episodes(force=False):
             if cur_ep in found_results and best_result.quality <= found_results[cur_ep].quality:
                 continue
 
-            # if the providers attribute fail_over_enabled is enabled for this provider and it's younger then then it's
-            # fail_over_delay time (hours) skipp it. For this we need to check if the result has already been
-            # stored in the provider cache db, and if it's still younger then the providers attribute fail_over_delay.
-            if cur_provider.fail_over_enabled and cur_provider.fail_over_hours:
+            # if the providers attribute enable_search_delay is enabled for this provider and it's younger then then it's
+            # search_delay time (minutes) skipp it. For this we need to check if the result has already been
+            # stored in the provider cache db, and if it's still younger then the providers attribute search_delay.
+            if cur_provider.enable_search_delay and cur_provider.search_delay:  # In minutes
                 log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
-                          {'provider': cur_provider.name, 'delay': cur_provider.fail_over_hours})
+                          {'provider': cur_provider.name, 'delay': round(cur_provider.search_delay / 60, 1)})
                 from medusa.search.manual import get_provider_cache_results
                 results = get_provider_cache_results(
                     cur_ep.series.indexer, show_all_results=False, perform_search=False, show=cur_ep.series.indexerid,
@@ -484,16 +484,16 @@ def search_for_needed_episodes(force=False):
                 if results.get('found_items'):
                     results['found_items'].sort(key=lambda d: int(d['date_added']))
                     first_result = results['found_items'][0]
-                    if first_result['date_added'] + cur_provider.fail_over_hours * 3600 > int(time.time()):
-                        # The provider's fail over cooldown time hasn't expired yet. We're holding back the snatch.
+                    if first_result['date_added'] + cur_provider.search_delay * 60 > int(time.time()):
+                        # The provider's delay cooldown time hasn't expired yet. We're holding back the snatch.
                         log.debug(
                             u'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}. The provider is waiting'
-                            u' {fail_over_hours} hours, before accepting the release. Still {hours_left} to go.', {
+                            u' {search_delay_minutes} hours, before accepting the release. Still {hours_left} to go.', {
                                 'best_result': best_result.name,
                                 'first_result': first_result['name'],
                                 'provider': cur_provider.name,
-                                'fail_over_hours': cur_provider.fail_over_hours,
-                                'hours_left': int((int(time.time()) + (first_result['date_added'] - cur_provider.fail_over_hours * 3600)) / 3600)
+                                'search_delay_minutes': round(cur_provider.search_delay / 60, 1),
+                                'hours_left': int((int(time.time()) + (first_result['date_added'] - cur_provider.search_delay * 60)) / 3600)
                             }
                         )
                         continue
