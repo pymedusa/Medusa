@@ -473,7 +473,7 @@ def search_for_needed_episodes(force=False):
             # fail_over_delay time (hours) skipp it. For this we need to check if the result has already been
             # stored in the provider cache db, and if it's still younger then the providers attribute fail_over_delay.
             if cur_provider.fail_over_enabled and cur_provider.fail_over_hours:
-                log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay}',
+                log.debug('DELAY: Provider {provider} delay enabled, with an expiration of {delay} hours',
                           {'provider': cur_provider.name, 'delay': cur_provider.fail_over_hours})
                 from medusa.search.manual import get_provider_cache_results
                 results = get_provider_cache_results(
@@ -487,23 +487,24 @@ def search_for_needed_episodes(force=False):
                     if first_result['date_added'] + cur_provider.fail_over_hours * 3600 > int(time.time()):
                         # The provider's fail over cooldown time hasn't expired yet. We're holding back the snatch.
                         log.debug(
-                            u'DELAY: Holding back best result {name} for provider {provider}. The provider is waiting'
-                            u' {fail_over_hours} hours, before accepting the release.', {'name': first_result['name'],
-                                                                                         'provider': cur_provider.name,
-                                                                                         'fail_over_hours': cur_provider.fail_over_hours
-                                                                                         }
+                            u'DELAY: Holding back best result {best_result} over {first_result} for provider {provider}. The provider is waiting'
+                            u' {fail_over_hours} hours, before accepting the release. Still {hours_left} to go.', {
+                                'best_result': best_result.name,
+                                'first_result': first_result['name'],
+                                'provider': cur_provider.name,
+                                'fail_over_hours': cur_provider.fail_over_hours,
+                                'hours_left': int((int(time.time()) + (first_result['date_added'] - cur_provider.fail_over_hours * 3600)) / 3600)
+                            }
                         )
                         continue
                     else:
-                        log.debug(
-                            u'DELAY: Provider {provider}, found a result in cache, but the delay has not yet expired. '
-                            u'Timestamp of first result: {first_result}. Time left: {left} hours',
-                            {'provider': cur_provider.name, 'first_result': first_result['date_added'],
-                             'left': int((int(time.time()) + (first_result['date_added'] - cur_provider.fail_over_hours * 3600)) / 3600)}
-                        )
+                        log.debug(u'DELAY: Provider {provider}, found a result in cache, and the delay has expired. '
+                                  u'Time of first result: {first_result}',
+                                  {'provider': cur_provider.name, 'first_result': datetime.datetime.fromtimestamp(first_result['date_added'])})
                 else:
-                    log.debug(u'DELAY: Provider {provider}, searched cache but could not get any results for: {season}x{episode}',
-                              {'provider': cur_provider.name, 'season': cur_ep.season, 'episode': cur_ep.episode})
+                    # This should never happen.
+                    log.debug(u'DELAY: Provider {provider}, searched cache but could not get any results for: {series} {season_ep}',
+                              {'provider': cur_provider.name, 'series': cur_ep.series.name, 'season_ep': episode_num(cur_ep.season, cur_ep.episode)})
 
             found_results[cur_ep] = best_result
 
