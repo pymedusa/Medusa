@@ -134,7 +134,7 @@ class BinSearchProvider(NZBProvider):
                         continue
                     nzb_id = nzb_id_input['name']
                     # Try and get the the article subject from the weird binsearch format
-                    title = self.clean_title(col['subject'], mode)
+                    title = self.clean_title(col['subject'].text, mode)
 
                 except AttributeError:
                     log.debug('Parsing rows, that may not always have usefull info. Skipping to next.')
@@ -173,7 +173,7 @@ class BinSearchProvider(NZBProvider):
         return items
 
     @staticmethod
-    def clean_title(title_field, mode):
+    def clean_title(title, mode):
         """
         A title clean function for binsearch results.
 
@@ -181,14 +181,15 @@ class BinSearchProvider(NZBProvider):
         When adding to this function, make sure you update the tests.
         """
         if mode == 'RSS':
-            title = BinSearchProvider.title_regex_rss.search(title_field.text).group(1)
+            title = BinSearchProvider.title_regex_rss.search(title).group(1)
         else:
-            title = BinSearchProvider.title_regex.search(title_field.text).group(1)
+            title = BinSearchProvider.title_regex.search(title).group(1)
             if BinSearchProvider.title_reqex_clean.search(title):
                 title = BinSearchProvider.title_reqex_clean.search(title).group(1)
-        for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb'):
+        for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb', '.part'):
             # Strip extensions that aren't part of the file name
-            title = title.rstrip(extension)
+            if title.endswith(extension):
+                title = title[:len(title)-len(extension)]
         return title
 
     def download_result(self, result):
