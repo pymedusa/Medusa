@@ -67,7 +67,6 @@ def make_replace_config(high, same, low):
 
     :param high: Release with a higher quality should replace existing quality
     :param high: Release with the same quality should replace existing quality
-    :
     """
     return {
         'higher': high,
@@ -76,14 +75,16 @@ def make_replace_config(high, same, low):
     }
 
 
-STRICT_REPLACE = make_replace_config(False, False, False)
-PERMISSIVE_REPLACE = make_replace_config(True, True, True)
-UPGRADE_REPLACE = make_replace_config(True, False, False)
-DOWNGRADE_REPLACE = make_replace_config(False, False, True)
+# -- REPLACEMENT PROFILES --
+STRICT_REPLACE = make_replace_config(False, False, False)  # never replace
+PERMISSIVE_REPLACE = make_replace_config(True, True, True)  # replace all
+UPGRADE_REPLACE = make_replace_config(True, False, False)  # only upgrade
+DOWNGRADE_REPLACE = make_replace_config(False, False, True)  # only downgrade
 
 # Use legacy settings as default
 DEFAULT_ALLOWED_REPLACE_CFG = UPGRADE_REPLACE
 DEFAULT_PREFERRED_REPLACE_CFG = UPGRADE_REPLACE
+DEFAULT_UNDESIRED_REPLACE_CFG = STRICT_REPLACE
 
 
 class PostProcessor(object):
@@ -97,6 +98,7 @@ class PostProcessor(object):
 
     allowed_replace = DEFAULT_ALLOWED_REPLACE_CFG
     preferred_replace = DEFAULT_PREFERRED_REPLACE_CFG
+    undesired_replace = DEFAULT_UNDESIRED_REPLACE_CFG
 
     def __init__(self, file_path, nzb_name=None, process_method=None, is_priority=None):
         """
@@ -887,7 +889,8 @@ class PostProcessor(object):
 
     @classmethod
     def _should_process(cls, current_quality, new_quality, allowed, preferred,
-                        allowed_cfg=None, preferred_cfg=None):
+                        allowed_cfg=None, preferred_cfg=None,
+                        undesired_cfg=None, ):
         """
         Determine whether to replace existing files.
 
@@ -901,16 +904,17 @@ class PostProcessor(object):
         :param preferred: Qualities that are preferred
         :param allowed_cfg: Configuration for replacing allowed qualities
         :param preferred_cfg: Configuration for replacing preferred qualities
+        :param undesired_cfg: Configuration for replacing undesired qualities
         :return: Tuple with Boolean if the quality should be processed and String with reason if should process or not
         """
         def get_level(quality):
-            """Determine if quality is allowed or preferred."""
+            """Determine if quality is allowed, preferred, or undesired."""
             if quality in preferred:
                 return 'preferred'
             elif quality in allowed:
                 return 'allowed'
             else:
-                raise ValueError('Quality not in allowed or preferred.')
+                return 'undesired'
 
         def compare(first, second):
             """
@@ -928,22 +932,31 @@ class PostProcessor(object):
             else:
                 raise ValueError('Could not compare qualities')
 
+        def higher_preference(first, second):
+            """Compare preference level."""
+            asc_order = [
+                'undesired',
+                'allowed',
+                'preferred',
+            ]
+            first_preference = asc_order.index(first)
+            second_preference = asc_order.index(second)
+            return first_preference > second_preference
+
         replace = {
+            'undesired': undesired_cfg or cls.undesired_replace,
             'allowed': allowed_cfg or cls.allowed_replace,
             'preferred': preferred_cfg or cls.preferred_replace,
         }
 
-        try:
-            new = get_level(new_quality)
-            existing = get_level(current_quality)
-        except ValueError:
-            return False, 'Replacing requires both a new and existing quality'
+        new = get_level(new_quality)
+        existing = get_level(current_quality)
 
         if new != existing:  # qualities are not the same level
-            if new == 'preferred':
+            if higher_preference(new, existing):
                 msg = 'New quality is {0}'
                 return True, msg.format(new)
-            elif existing == 'preferred':
+            else:
                 msg = 'New quality is {0} but existing is {1}'
                 return False, msg.format(new, existing)
         else:  # qualities are the same level
