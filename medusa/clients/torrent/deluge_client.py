@@ -14,6 +14,7 @@ from medusa.helpers import (
     is_already_processed_media,
     is_info_hash_in_history,
     is_info_hash_processed,
+    is_media_file,
 )
 from medusa.logger.adapters.style import BraceAdapter
 from requests.exceptions import RequestException
@@ -37,6 +38,8 @@ def read_torrent_status(torrent_data):
         for i in details['files']:
             # Check if media was processed
             # OR check hash in case of RARed torrents
+            if not is_media_file(i['path']):
+                continue
             if is_already_processed_media(i['path']) or is_info_hash_processed(info_hash):
                 to_remove = True
 

@@ -23,7 +23,7 @@ python-dateutil==2.6.1
 requests==2.18.4
 SQLAlchemy==1.1.14
 stevedore==1.26.0
-git+https://github.com/Diaoul/subliminal.git@56c761f4778b74e76532dc5f517160e09a792044#egg=subliminal
+git+https://github.com/Diaoul/subliminal.git@7bbc7a1cfc5e8f9e556998a69b655daa07c231c4#egg=subliminal
 tornado==4.5.2
 tornroutes==0.5.1
 validators==0.12.0
