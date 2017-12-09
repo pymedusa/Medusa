@@ -55,8 +55,8 @@ class YggtorrentProvider(TorrentProvider):
             'jours': 'days',
             'mois': 'month',
             'an': 'year',
-            'ans': 'years',
             'année': 'year',
+            'ans': 'years',
             'années': 'years'
         }
 
