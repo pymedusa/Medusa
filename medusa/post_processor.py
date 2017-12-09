@@ -18,6 +18,7 @@
 """Post processor module."""
 
 import fnmatch
+import logging
 import os
 import re
 import stat
@@ -47,6 +48,7 @@ from medusa.helper.exceptions import (
     ShowDirectoryNotFoundException,
 )
 from medusa.helpers import is_subtitle, verify_freespace
+from medusa.logger.adapters.style import BraceAdapter
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
@@ -59,6 +61,9 @@ import rarfile
 from rarfile import Error as RarError, NeedFirstVolume
 
 from six import text_type
+
+log = BraceAdapter(logging.getLogger(__name__))
+log.logger.addHandler(logging.NullHandler())
 
 
 def make_replace_config(high, same, low):
@@ -130,6 +135,7 @@ class PostProcessor(object):
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
                                            ('nzb name', self.nzb_name)])
+        log.debug(u'Initialized post processor:\n{0}'.format(self))
 
     def log(self, message, level=logger.INFO):
         """
@@ -1348,3 +1354,23 @@ class PostProcessor(object):
                            (self.file_path), logger.WARNING)
 
         return True
+
+    def __repr__(self):
+        return u"""
+        *** Post Processing ***
+        Folder ............. {self.folder_path}
+        Full path to file .. {self.file_path}
+        File name .......... {self.file_name}
+        Relative path ...... {self.rel_path}
+        NZB name ........... {self.nzb_name}
+        Process method ..... {self.process_method}
+        In history ......... {self.in_history}
+        Release group ...... {self.release_group}
+        Release name ....... {self.release_name}
+        Is proper .......... {self.is_proper}
+        Is priority ........ {self.is_priority}
+        Version ............ {self.version}
+        aniDB episode ...... {self.anidbEpisode}
+        Manually searched .. {self.manually_searched}
+        Info hash .......... {self.info_hash}
+        """.format(self=self)
