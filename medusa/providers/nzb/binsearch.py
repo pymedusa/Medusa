@@ -15,6 +15,7 @@ from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helpers import download_file
 
+
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
 
@@ -29,6 +30,7 @@ class BinSearchProvider(NZBProvider):
 
     size_regex = re.compile(r'size: (\d+\.\d+\xa0\w{2}), parts', re.I)
     title_regex = re.compile(r'\"([^\"]+)"', re.I)
+    title_reqex_clean = re.compile(r'^[ \d_]+ (.+)')
     title_regex_rss = re.compile(r'- \"([^\"]+)"', re.I)
     nzb_check_segment = re.compile(r'<segment bytes="[\d]+"')
 
@@ -132,15 +134,8 @@ class BinSearchProvider(NZBProvider):
                         continue
                     nzb_id = nzb_id_input['name']
                     # Try and get the the article subject from the weird binsearch format
-                    if mode == 'RSS':
-                        title_field = col['subject']
-                        title = BinSearchProvider.title_regex_rss.search(title_field.text).group(1)
-                    else:
-                        title_field = col['subject']
-                        title = BinSearchProvider.title_regex.search(title_field.text).group(1)
-                    for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb'):
-                        # Strip extensions that aren't part of the file name
-                        title = title.rstrip(extension)
+                    title = self.clean_title(col['subject'], mode)
+
                 except AttributeError:
                     log.debug('Parsing rows, that may not always have usefull info. Skipping to next.')
                     continue
@@ -151,7 +146,6 @@ class BinSearchProvider(NZBProvider):
                 if size_field:
                     size_field = size_field.group(1)
                 size = convert_size(size_field, sep='\xa0') or -1
-                print(size)
                 size = int(size)
 
                 download_url = urljoin(self.url, '{post_url}|nzb_id={nzb_id}'.format(post_url=post_url, nzb_id=nzb_id))
@@ -177,6 +171,25 @@ class BinSearchProvider(NZBProvider):
                 items.append(item)
 
         return items
+
+    @staticmethod
+    def clean_title(title_field, mode):
+        """
+        A title clean function for binsearch results.
+
+        RSS search requires different cleaning then the other searches.
+        When adding to this function, make sure you update the tests.
+        """
+        if mode == 'RSS':
+            title = BinSearchProvider.title_regex_rss.search(title_field.text).group(1)
+        else:
+            title = BinSearchProvider.title_regex.search(title_field.text).group(1)
+            if BinSearchProvider.title_reqex_clean.search(title):
+                title = BinSearchProvider.title_reqex_clean.search(title).group(1)
+        for extension in ('.nfo', '.par2', '.rar', '.zip', '.nzb'):
+            # Strip extensions that aren't part of the file name
+            title = title.rstrip(extension)
+        return title
 
     def download_result(self, result):
         """
@@ -253,6 +266,16 @@ class BinSearchProvider(NZBProvider):
             return None
 
         return result
+
+    def _get_size(self, item):
+        """
+        Get result size.
+
+        Overwrite this, as the default _get_size() from nzb_provider isn't working for us.
+        :param item:
+        :return: size in bytes or -1
+        """
+        return item.get('size', -1)
 
 
 provider = BinSearchProvider()
