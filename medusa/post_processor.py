@@ -1380,4 +1380,8 @@ class PostProcessor(object):
         aniDB episode ...... {self.anidbEpisode}
         Manually searched .. {self.manually_searched}
         Info hash .......... {self.info_hash}
+        -- REPLACEMENT CFG --
+        Preferred .......... {self.preferred_replace}
+        Allowed ............ {self.allowed_replace}
+        Undesired .......... {self.undesired_replace}
         """.format(self=self)
