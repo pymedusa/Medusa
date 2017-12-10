@@ -19,8 +19,8 @@
 import datetime
 import json
 
+from medusa.server.web.manage.web_socket import push_to_web_socket
 from . import app
-from .ws.MedusaWebSocketHandler import push_to_web_socket
 
 MESSAGE = 'notice'
 ERROR = 'error'
