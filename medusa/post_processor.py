@@ -324,25 +324,29 @@ class PostProcessor(object):
         if associated_files and len(files) == 1:
             files += self.list_associated_files(files[0], subfolders=True)
 
-        for cur_file in files:
-            if os.path.isfile(cur_file):
-                self.log(u'Deleting file: {0}'.format(cur_file), logger.DEBUG)
+        for filename in files:
+            if os.path.isfile(filename):
+                self.log(u'Deleting file: {0}'.format(filename), logger.DEBUG)
                 # check first the read-only attribute
-                file_attribute = os.stat(cur_file)[0]
+                file_attribute = os.stat(filename)[0]
                 if not file_attribute & stat.S_IWRITE:
                     # File is read-only, so make it writeable
-                    self.log(u'Read only mode on file {0}. Will try to make it writeable'.format
-                             (cur_file), logger.DEBUG)
+                    self.log(u'Read only mode on file {0}. '
+                             u'Will try to make it writeable'.format(filename),
+                             logger.DEBUG)
                     try:
-                        os.chmod(cur_file, stat.S_IWRITE)
+                        os.chmod(filename, stat.S_IWRITE)
                     except OSError as error:
-                        self.log(u'Cannot change permissions of {filename}. Error: {msg}'.format
-                                 (filename=cur_file, msg=error), logger.WARNING)
+                        self.log(
+                            u'Cannot change permissions for {path}. '
+                            u'Error: {msg}'.format(path=filename, msg=error),
+                            logger.WARNING
+                        )
 
-                os.remove(cur_file)
+                os.remove(filename)
 
                 # do the library update for synoindex
-                notifiers.synoindex_notifier.deleteFile(cur_file)
+                notifiers.synoindex_notifier.deleteFile(filename)
 
     @staticmethod
     def rename_associated_file(new_path, new_basename, filepath):
