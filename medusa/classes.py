@@ -95,8 +95,6 @@ class SearchResult(object):
         # Result type like: nzb, nzbdata, torrent
         self.result_type = u''
 
-
-
         # Store the parse result, as it might be useful for other information later on.
         self.parsed_result = None
 
