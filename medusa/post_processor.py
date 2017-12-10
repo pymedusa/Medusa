@@ -46,13 +46,13 @@ from medusa.helper.exceptions import (
     EpisodePostProcessingFailedException,
     ShowDirectoryNotFoundException,
 )
-from medusa.helpers.utils import generate
 from medusa.helpers import is_subtitle, verify_freespace
 from medusa.name_parser.parser import (
     InvalidNameException,
     InvalidShowException,
     NameParser,
 )
+from medusa.helpers.utils import generate
 from medusa.show import naming
 from medusa.subtitles import from_code, from_ietf_code, get_subtitles_dir
 
