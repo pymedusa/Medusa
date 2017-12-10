@@ -7,14 +7,13 @@ from __future__ import unicode_literals
 import logging
 import re
 
+from os.path import join
 from medusa import tv
-
 from medusa.bs4_parser import BS4Parser
 from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helpers import download_file
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
-from os.path import join
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
