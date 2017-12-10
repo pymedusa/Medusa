@@ -5,20 +5,16 @@
 from __future__ import unicode_literals
 
 import logging
-from os.path import join
 import re
 
 from medusa import tv
 
 from medusa.bs4_parser import BS4Parser
-
 from medusa.helper.common import convert_size, sanitize_filename
 from medusa.helpers import download_file
-
-
 from medusa.logger.adapters.style import BraceAdapter
 from medusa.providers.nzb.nzb_provider import NZBProvider
-
+from os.path import join
 from requests.compat import urljoin
 
 log = BraceAdapter(logging.getLogger(__name__))
@@ -56,7 +52,13 @@ class BinSearchProvider(NZBProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
+    def search(self, search_strings, **kwargs):
+        """
+        Search a provider and parse the results.
+
+        :param search_strings: A dict with mode (key) and the search value (value)
+        :returns: A list of search results (structure)
+        """
         results = []
         search_params = {
             'adv_age': '',
@@ -101,7 +103,6 @@ class BinSearchProvider(NZBProvider):
 
         :return: A list of items found
         """
-
         def process_column_header(td):
             return td.get_text(strip=True).lower()
 
@@ -153,7 +154,7 @@ class BinSearchProvider(NZBProvider):
                 # For future use
                 # detail_url = 'https://www.binsearch.info/?q={0}'.format(title)
                 human_time = True
-                date = col['age' if mode != 'RSS' else 'date'].get_text(strip=True).replace('-',' ')
+                date = col['age' if mode != 'RSS' else 'date'].get_text(strip=True).replace('-', ' ')
                 if mode == 'RSS':
                     human_time = False
                 pubdate_raw = date
@@ -175,7 +176,7 @@ class BinSearchProvider(NZBProvider):
     @staticmethod
     def clean_title(title, mode):
         """
-        A title clean function for binsearch results.
+        Clean title field, using a series of regex.
 
         RSS search requires different cleaning then the other searches.
         When adding to this function, make sure you update the tests.
@@ -237,7 +238,7 @@ class BinSearchProvider(NZBProvider):
 
     def download_nzb_for_post(self, result):
         """
-        Downloading the nzb content, prior to sending it to the nzb download client.
+        Download the nzb content, prior to sending it to the nzb download client.
 
         :param result: Nzb SearchResult object.
         :return: The content of the nzb file if successful else None.
