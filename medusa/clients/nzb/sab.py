@@ -57,16 +57,13 @@ def send_nzb(nzb):
     if nzb.priority:
         params['priority'] = 2 if app.SAB_FORCED else 1
 
-    if isinstance(nzb.provider, BinSearchProvider):
-        params['mode'] = 'addfile'
+    if nzb.result_type == 'nzbdata' and nzb.extra_info:
         return send_nzb_post(params, nzb)
     else:
-        params.update({'name': nzb.url,
-                       'mode': 'addurl'})
-        return send_nzb_get(params)
+        return send_nzb_get(params, nzb)
 
 
-def send_nzb_get(params):
+def send_nzb_get(params, nzb):
     """
     Sends an NZB to SABnzbd via the API using a get request.
 
@@ -75,6 +72,8 @@ def send_nzb_get(params):
     """
 
     log.info('Sending NZB to SABnzbd')
+
+    params.update({'name': nzb.url, 'mode': 'addurl'})
     url = urljoin(app.SAB_HOST, 'api')
 
     response = session.get(url, params=params, verify=False)
@@ -101,19 +100,9 @@ def send_nzb_post(params, nzb):
 
     log.info('Sending NZB to SABnzbd using the post multipart/form data.')
     url = urljoin(app.SAB_HOST, 'api')
-
-    try:
-        nzb_data = nzb.provider.download_nzb_for_post(nzb)
-    except (AttributeError, ValueError):
-        log.info('Error trying to get the nzb data from provider binsearch, no data returned')
-        return False
-
-    if not nzb_data:
-        log.info('Error trying to get the nzb data from provider binsearch, no data returned')
-        return False
-
+    params['mode'] = 'addfile'
     files = {
-        'name': nzb_data
+        'name': nzb.extra_info[0]
     }
 
     data = session.params

@@ -77,7 +77,7 @@ def _download_result(result):
         # save the data to disk
         try:
             with open(file_name, u'w') as fileOut:
-                fileOut.write(result.extraInfo[0])
+                fileOut.write(result.extra_info[0])
 
             helpers.chmod_as_parent(file_name)
 
@@ -120,8 +120,18 @@ def snatch_episode(result):
     if result.url.startswith(u'magnet:') or result.url.endswith(u'.torrent'):
         result.resultType = u'torrent'
 
+    # Binsearch.info requires you to download the nzb through a post.
+    if hasattr(result.provider, 'download_nzb_for_post'):
+        result.result_type = 'nzbdata'
+        nzb_data = result.provider.download_nzb_for_post(result)
+        result.extra_info.append(nzb_data)
+
+        if not nzb_data:
+            log.warning('Error trying to get the nzb data from provider binsearch, no data returned')
+            return False
+
     # NZBs can be sent straight to SAB or saved to disk
-    if result.resultType in (u'nzb', u'nzbdata'):
+    if result.result_type in (u'nzb', u'nzbdata'):
         if app.NZB_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
         elif app.NZB_METHOD == u'sabnzbd':
@@ -133,7 +143,7 @@ def snatch_episode(result):
             result_downloaded = False
 
     # Torrents can be sent to clients or saved to disk
-    elif result.resultType == u'torrent':
+    elif result.result_type == u'torrent':
         # torrents are saved to disk when blackhole mode
         if app.TORRENT_METHOD == u'blackhole':
             result_downloaded = _download_result(result)
@@ -149,7 +159,7 @@ def snatch_episode(result):
                 log.warning(u'Torrent file content is empty: {0}', result.name)
                 result_downloaded = False
     else:
-        log.error(u'Unknown result type, unable to download it: {0!r}', result.resultType)
+        log.error(u'Unknown result type, unable to download it: {0!r}', result.result_type)
         result_downloaded = False
 
     if not result_downloaded:

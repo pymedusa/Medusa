@@ -118,8 +118,8 @@ def sendNZB(nzb, proper=False):
         dupescore += 10
 
     nzbcontent64 = None
-    if nzb.resultType == 'nzbdata':
-        data = nzb.extraInfo[0]
+    if nzb.result_type == 'nzbdata':
+        data = nzb.extra_info[0]
         nzbcontent64 = standard_b64encode(data)
 
     log.info('Sending NZB to NZBget')
@@ -141,7 +141,7 @@ def sendNZB(nzb, proper=False):
                     nzbcontent64
                 )
             else:
-                if nzb.resultType == 'nzb':
+                if nzb.result_type == 'nzb':
                     if not nzb.provider.login():
                         return False
 
