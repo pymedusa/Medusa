@@ -91,6 +91,34 @@ from .tv import Series
 logger = logging.getLogger(__name__)
 
 
+CONFIG_SECTIONS = [
+    'General',
+    'PostProcesor',
+    'Subtitles',
+    'Blackhole',
+    'Newzbin',
+    'SABnzbd',
+    'NZBget',
+    # NOTIFICATIONS
+    'Boxcar2',
+    'Emby',
+    'Growl',
+    'KODI',
+    'NMA',
+    'NMJ',
+    'NMJv2',
+    'Prowl',
+    'Pushalot',
+    'Pushbullet',
+    'pyTivo',
+    'Slack',
+    'Synology',
+    'SynologyNotifier',
+    'Twitter',
+    'PLEX',
+]
+
+
 class Application(object):
     """Main application module."""
 
@@ -377,13 +405,7 @@ class Application(object):
             if app.__INITIALIZED__:
                 return False
 
-            sections = [
-                'General', 'Blackhole', 'Newzbin', 'SABnzbd', 'NZBget', 'KODI', 'PLEX', 'Emby', 'Growl', 'Prowl', 'Twitter',
-                'Boxcar2', 'NMJ', 'NMJv2', 'Synology', 'Slack', 'SynologyNotifier', 'pyTivo', 'NMA', 'Pushalot', 'Pushbullet',
-                'Subtitles', 'pyTivo',
-            ]
-
-            for section in sections:
+            for section in CONFIG_SECTIONS:
                 CheckSection(app.CFG, section)
 
             app.PRIVACY_LEVEL = check_setting_str(app.CFG, 'General', 'privacy_level', 'normal')
@@ -1866,6 +1888,16 @@ class Application(object):
 
         new_config['ANIME'] = {}
         new_config['ANIME']['anime_split_home'] = int(app.ANIME_SPLIT_HOME)
+
+        new_config['PostProcessor']['preferred_replace_higher'] = int(app.PREFERRED_REPLACES_HIGHER_QUALITY)
+        new_config['PostProcessor']['preferred_replace_same'] = int(app.PREFERRED_REPLACES_SAME_QUALITY)
+        new_config['PostProcessor']['preferred_replace_lower'] = int(app.PREFERRED_REPLACES_LOWER_QUALITY)
+        new_config['PostProcessor']['allowed_replace_higher'] = int(app.ALLOWED_REPLACES_HIGHER_QUALITY)
+        new_config['PostProcessor']['allowed_replace_same'] = int(app.ALLOWED_REPLACES_SAME_QUALITY)
+        new_config['PostProcessor']['allowed_replace_lower'] = int(app.ALLOWED_REPLACES_LOWER_QUALITY)
+        new_config['PostProcessor']['undesired_replace_higher'] = int(app.UNDESIRED_REPLACES_HIGHER_QUALITY)
+        new_config['PostProcessor']['undesired_replace_same'] = int(app.UNDESIRED_REPLACES_SAME_QUALITY)
+        new_config['PostProcessor']['undesired_replace_lower'] = int(app.UNDESIRED_REPLACES_LOWER_QUALITY)
 
         new_config.write()
 
