@@ -79,7 +79,7 @@ A full list can be found here: [Link](https://github.com/pymedusa/Medusa/wiki/Me
 | Edge| last 2 versions| last 2 versions| last 2 versions
 
 #### News and Changelog
-[news.md and CHANGES.md have moved to a separate repo, click here](https://cdn.pymedusa.com)
+[news.md and CHANGES.md have moved to a separate repo, click here](https://github.com/pymedusa/medusa.github.io/tree/master/news)
 
 #### External dependencies
 This product uses [MediaInfo](http://mediaarea.net/MediaInfo) library, Copyright (c) 2002-2016 [MediaArea.net SARL](mailto:Info@MediaArea.net)
