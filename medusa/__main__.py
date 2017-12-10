@@ -950,6 +950,16 @@ class Application(object):
             app.FALLBACK_PLEX_NOTIFICATIONS = check_setting_int(app.CFG, 'General', 'fallback_plex_notifications', 1)
             app.FALLBACK_PLEX_TIMEOUT = check_setting_int(app.CFG, 'General', 'fallback_plex_timeout', 3)
 
+            app.PREFERRED_REPLACES_HIGHER_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'preferred_replace_higher')
+            app.PREFERRED_REPLACES_SAME_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'preferred_replace_same')
+            app.PREFERRED_REPLACES_LOWER_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'preferred_replace_lower')
+            app.ALLOWED_REPLACES_HIGHER_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'allowed_replace_higher')
+            app.ALLOWED_REPLACES_SAME_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'allowed_replace_same')
+            app.ALLOWED_REPLACES_LOWER_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'allowed_replace_lower')
+            app.UNDESIRED_REPLACES_HIGHER_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'undesired_replace_higher')
+            app.UNDESIRED_REPLACES_SAME_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'undesired_replace_same')
+            app.UNDESIRED_REPLACES_LOWER_QUALITY = check_setting_bool(app.CFG, 'PostProcessor', 'undesired_replace_lower')
+
             # reconfigure the logger
             app_logger.reconfigure()
 
