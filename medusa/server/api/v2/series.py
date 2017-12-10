@@ -90,7 +90,7 @@ class SeriesHandler(BaseRequestHandler):
     def patch(self, series_slug, path_param=None):
         """Patch series."""
         if not series_slug:
-            return self._method_not_allowed('Patching multiple series are not allowed')
+            return self._method_not_allowed('Patching multiple series is not allowed')
 
         identifier = SeriesIdentifier.from_slug(series_slug)
         if not identifier:
@@ -122,6 +122,9 @@ class SeriesHandler(BaseRequestHandler):
                 set_nested_value(accepted, key, value)
             else:
                 set_nested_value(ignored, key, value)
+
+        # Save patched attributes in db.
+        series.save_to_db()
 
         if ignored:
             log.warning('Series patch ignored %r', ignored)
