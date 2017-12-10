@@ -106,7 +106,8 @@ class PostProcessor(object):
     preferred_replace = DEFAULT_PREFERRED_REPLACE_CFG
     undesired_replace = DEFAULT_UNDESIRED_REPLACE_CFG
 
-    def __init__(self, file_path, nzb_name=None, process_method=None, is_priority=None):
+    def __init__(self, file_path, nzb_name=None, process_method=None,
+                 is_priority=None, config=None):
         """
         Create a new post processor with the given file path and optionally an NZB name.
 
@@ -136,6 +137,11 @@ class PostProcessor(object):
         self.item_resources = OrderedDict([('file name', self.file_name),
                                            ('relative path', self.rel_path),
                                            ('nzb name', self.nzb_name)])
+        self.config = config or {}
+        for level in ('preferred', 'allowed', 'undesired'):
+            attr = '{0}_replace'.format(level)
+            value = config.get(level, getattr(self, attr))
+            setattr(self, attr, value)
         log.debug(u'Initialized post processor:\n{0}'.format(self))
 
     def log(self, message, level=logger.INFO):
