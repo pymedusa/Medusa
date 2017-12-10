@@ -1,6 +1,6 @@
 language: python
 python:
-  - 2.7.9
+  - 2.7.10
 sudo: false
 branches:
   except:
@@ -16,10 +16,9 @@ install:
   - 'curl -o- -L https://yarnpkg.com/install.sh | bash'
   - 'export PATH="$HOME/.yarn/bin:$PATH" && yarn install && cd vue && yarn install && cd ..'
 script:
-  - 'cd vue && yarn test && cd ..'
-  - yarn test-js
   - tox -v --recreate
-  - yarn test-api
+  - 'cd vue && yarn test && cd ..'
+  - yarn test
 cache:
   yarn: true
   directories:

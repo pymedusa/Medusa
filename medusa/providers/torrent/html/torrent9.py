@@ -5,7 +5,6 @@
 from __future__ import unicode_literals
 
 import logging
-import traceback
 
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
@@ -35,7 +34,7 @@ class Torrent9Provider(TorrentProvider):
         # URLs
         self.url = 'http://www.torrents9.pe'
         self.urls = {
-            'search': urljoin(self.url, '/search_torrent/{query}.html,trie-seeds-d'),
+            'search': urljoin(self.url, '/search_torrent/{query}.html'),
             'daily': urljoin(self.url, '/torrents_series.html,trie-date-d'),
             'download': urljoin(self.url, '{link}.torrent'),
         }
@@ -52,7 +51,7 @@ class Torrent9Provider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=20)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
@@ -153,8 +152,7 @@ class Torrent9Provider(TorrentProvider):
 
                     items.append(item)
                 except (AttributeError, TypeError, KeyError, ValueError, IndexError):
-                    log.error('Failed parsing provider. Traceback: {0!r}',
-                              traceback.format_exc())
+                    log.exception('Failed parsing provider.')
 
         return items
 

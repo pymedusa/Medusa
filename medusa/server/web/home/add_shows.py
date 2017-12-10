@@ -9,10 +9,15 @@ import re
 
 from requests import RequestException
 from requests.compat import unquote_plus
+
 from simpleanidb import REQUEST_HOT
+
 from six import iteritems
+
 from tornroutes import route
+
 from traktor import TraktApi
+
 from .handler import Home
 from ..core import PageTemplate
 from .... import app, classes, config, db, helpers, logger, ui
@@ -95,7 +100,8 @@ class HomeAddShows(Home):
 
         for i, shows in iteritems(results):
             final_results.extend({(indexerApi(i).name, i, indexerApi(i).config['show_url'], int(show['id']),
-                                   show['seriesname'].encode('utf-8'), show['firstaired']) for show in shows})
+                                   show['seriesname'].encode('utf-8'), show['firstaired'] or 'N/A',
+                                   show.get('network', '').encode('utf-8') or 'N/A') for show in shows})
 
         lang_id = indexerApi().config['langabbv_to_id'][lang]
         return json.dumps({'results': final_results, 'langid': lang_id})

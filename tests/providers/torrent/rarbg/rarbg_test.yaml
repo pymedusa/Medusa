@@ -1,0 +1,39 @@
+daily:
+  search_strings:
+    RSS: ['']
+  results:
+    - seeders: 5
+      pubdate: 2017-11-17 00:00:00
+      title: Ghost.Wars.S01E07.Whistle.Past.the.Graveyard.1080p.AMZN.WEBRip.DDP5.1.x264-NTb[rartv]
+      leechers: 11
+      link: magnet:?xt=urn:btih:6dc059d532bf54ce5d4ac61aef31f2d601f5d328
+      size: 1506137088
+    - seeders: 3
+      pubdate: 2017-11-17 00:00:00
+      title: S.W.A.T.2017.S01E03.Pamilya.1080p.AMZN.WEBRip.DDP5.1.x264-NTb[rartv]
+      leechers: 12
+      link: magnet:?xt=urn:btih:72736a12e182980ec2e4c8b4902874793ff0a71a
+      size: 2459813388
+    - seeders: 10
+      pubdate: 2017-11-17 00:00:00
+      title: Pickle.and.Peanut.S02E31E32.Gregazoids-Meat.Ballers.720p.DSNY.WEBRip.AAC2.0.x264-TVSmash[rartv]
+      leechers: 11
+      link: magnet:?xt=urn:btih:0e4241041713a8b058f4733fb7dd946c76f8b001
+      size: 566841009
+
+backlog:
+  search_strings:
+    Episode: ['Lethal Weapon S02E05']
+  results:
+    - seeders: 210
+      pubdate: 2017-11-08 00:00:00
+      title: Lethal.Weapon.S02E05.HDTV.x264-KILLERS[rartv]
+      leechers: 16
+      link: magnet:?xt=urn:btih:0f414d9aba84fce80eacd0b9ca307ac39e748cb3
+      size: 311075131
+    - seeders: 143
+      pubdate: 2017-11-08 00:00:00
+      title: Lethal.Weapon.S02E05.720p.HDTV.x264-KILLERS[rartv]
+      leechers: 16
+      link: magnet:?xt=urn:btih:7c80f72b90e3302d55466d8d93ad870ae6c2274a
+      size: 1242475213

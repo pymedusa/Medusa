@@ -27,9 +27,9 @@ class XthorProvider(TorrentProvider):
         self.passkey = None
 
         # URLs
-        self.url = 'https://xthor.bz'
+        self.url = 'https://xthor.to'
         self.urls = {
-            'search': 'https://api.xthor.bz',
+            'search': 'https://api.xthor.to',
         }
 
         # Proper Strings
@@ -47,7 +47,7 @@ class XthorProvider(TorrentProvider):
         # Cache
         self.cache = tv.Cache(self, min_time=10)
 
-    def search(self, search_strings, age=0, ep_obj=None):
+    def search(self, search_strings, age=0, ep_obj=None, **kwargs):
         """
         Search a provider and parse the results.
 
