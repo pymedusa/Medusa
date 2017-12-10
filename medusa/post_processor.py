@@ -1364,7 +1364,7 @@ class PostProcessor(object):
 
     def __repr__(self):
         return u"""
-        *** Post Processing ***
+        *** POST PROCESSOR ***
         Folder ............. {self.folder_path}
         Full path to file .. {self.file_path}
         File name .......... {self.file_name}
