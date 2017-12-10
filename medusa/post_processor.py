@@ -71,7 +71,8 @@ def make_replace_config(high, same, low):
     Make a configuration dictionary.
 
     :param high: Release with a higher quality should replace existing quality
-    :param high: Release with the same quality should replace existing quality
+    :param same: Release with the same quality should replace existing quality
+    :param low: Release with a lower quality should replace existing quality
     """
     return {
         'higher': high,
