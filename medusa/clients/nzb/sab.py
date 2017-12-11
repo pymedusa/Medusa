@@ -15,7 +15,6 @@ import logging
 from medusa import app
 from medusa.helper.common import sanitize_filename
 from medusa.logger.adapters.style import BraceAdapter
-from medusa.providers.nzb.binsearch import BinSearchProvider
 from medusa.session.core import MedusaSafeSession
 
 from requests.compat import urljoin
