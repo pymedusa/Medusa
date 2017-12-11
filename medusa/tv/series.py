@@ -287,7 +287,7 @@ class Series(TV):
         Returns a SeriesSchema object.
         
         Calling the result with .data, will return a dict.
-        """: 
+        """
         return self._schema.dump(self)
 
     @property
