@@ -103,6 +103,7 @@ from medusa.tv.episode import Episode
 from medusa.tv.indexer import Indexer
 
 from six import text_type
+from marshmallow import Schema, fields
 
 try:
     from send2trash import send2trash
@@ -114,6 +115,14 @@ MILLIS_YEAR_1900 = datetime.datetime(year=1900, month=1, day=1).toordinal()
 
 log = BraceAdapter(logging.getLogger(__name__))
 log.logger.addHandler(logging.NullHandler())
+
+
+class SeriesSchema(Schema):
+    name = fields.Str()
+    id = fields.Method('get_id')
+
+    def get_id(self, obj):
+        return {obj.identifier.indexer.slug: obj.indexerid}
 
 
 class SeriesIdentifier(Identifier):
@@ -224,6 +233,7 @@ class Series(TV):
         self.externals = {}
         self._cached_indexer_api = None
         self.plot = None
+        self._schema = SeriesSchema()
 
         other_show = Show.find(app.showList, self.indexerid)
         if other_show is not None:
@@ -270,6 +280,15 @@ class Series(TV):
             return series
         except IndexerException as error:
             log.warning('Unable to load series from indexer: {0!r}'.format(error))
+
+    @property
+    def schema(self):
+        """
+        Returns a SeriesSchema object.
+        
+        Calling the result with .data, will return a dict.
+        """: 
+        return self._schema.dump(self)
 
     @property
     def identifier(self):
