@@ -139,7 +139,7 @@ class BaseRequestHandler(RequestHandler):
 
             path_params = r'(?:{path}|/?)'.format(path=path_params)
 
-        return resource_url + path_params + '/?$'
+        return r'{}{}/?$'.format(resource_url, path_params)
 
     @classmethod
     def create_app_handler(cls, base):
