@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import logging
 import re
-
 from os.path import join
 from medusa import tv
 from medusa.bs4_parser import BS4Parser
