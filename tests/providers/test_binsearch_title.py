@@ -25,7 +25,7 @@ import pytest
         'expected': 'Arrow.S05E02.HDTV.HebSubs.XviD-AFG'
     },
     {  # p0: None
-        'title': '[382187]-[FULL]-[#[email protected]]-[ Architects.Of.F1.S01E02.Gordon.Murray.1080p.HDTV.x264-GRiP ]-[01/23] - "architects.of.f1.s01e02.gordon.murray.1080p.hdtv.x264-grip.nfo" yEnc (1/1)collection size: 2.39 GB, parts available: 3247 / 3247- 8 par2 files- 12 rar files- 1 srr file- 1 sfv file- 1 nfo fileview NFO',
+        'title': '[382187]-[FULL]-[#[email protected]]-[ Architects.Of.F1.S01E02.Gordon.Murray.1080p.HDTV.x264-GRiP ]-[01/23] - "architects.of.f1.s01e02.gordon.murray.1080p.hdtv.x264-grip.nfo" yEnc (1/1)collection size: 2.39 GB, parts available: 3247 / 3247- 8 par2 files- 12 rar files- 1 srr file- 1 sfv file- 1 nfo fileview NFO',
         'mode': 'episode',
         'expected': 'architects.of.f1.s01e02.gordon.murray.1080p.hdtv.x264-grip'
     },
